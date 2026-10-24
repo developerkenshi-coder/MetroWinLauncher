@@ -8,6 +8,7 @@ coreKtx = "1.17.0"
 junit = "4.13.2"
 orgJson = "20240303"
 robolectric = "4.16.1"
+exifinterface = "1.4.1"
 androidxTestCore = "1.7.0"
 
 [libraries]
@@ -15,6 +16,7 @@ androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version.ref = "exifinterface" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui" }
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation" }

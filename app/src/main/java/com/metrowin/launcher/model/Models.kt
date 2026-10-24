@@ -74,5 +74,6 @@ enum class Glyph {
     Alarm, Battery, Calculator, Calendar, Camera, Cortana, Data, Excel, Files, Finance, Games,
     Browser, Mail, Maps, Messaging, Mic, Music, News, Office, OneDrive, OneNote, People, Phone,
     Photos, Podcasts, PowerPoint, Settings, Skype, Sports, Storage, Store, Video, Wallet,
-    Weather, Word, Xbox, Theme,
+    Weather, Word, Xbox, Theme, Search, Wifi, Bluetooth, Airplane, Moon, Flashlight, Rotation, Hotspot, Vpn,
+    Cast, Brightness, Bell, Kids,
 }

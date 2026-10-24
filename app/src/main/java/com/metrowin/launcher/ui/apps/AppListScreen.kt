@@ -1,6 +1,27 @@
 package com.metrowin.launcher.ui.apps
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import com.metrowin.launcher.R
+import com.metrowin.launcher.model.Glyph
+import com.metrowin.launcher.ui.components.GlyphIcon
+import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.MetroFont
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -48,6 +69,11 @@ import kotlinx.coroutines.delay
 sealed interface ListRow {
     val key: String
 
+    /** The search box at the top of the list. */
+    data object Search : ListRow {
+        override val key = "search"
+    }
+
     data class Header(val letter: String) : ListRow {
         override val key = "header:$letter"
     }
@@ -60,7 +86,7 @@ sealed interface ListRow {
 /** The alphabetical app list flattened into rows: a letter header, then the apps under it. */
 @Immutable
 class AppListModel(sections: List<AppSection>) {
-    val rows: List<ListRow> = sections.flatMap { section ->
+    val rows: List<ListRow> = listOf<ListRow>(ListRow.Search) + sections.flatMap { section ->
         listOf<ListRow>(ListRow.Header(section.key)) + section.items.map { ListRow.App(it) }
     }
     val headerIndex: Map<String, Int> =
@@ -87,9 +113,20 @@ fun AppListScreen(
     onLaunch: (AppItem) -> Unit,
     onLongPress: (item: AppItem, top: Float, height: Float) -> Unit,
     onHeaderClick: () -> Unit,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    results: List<AppItem>,
     modifier: Modifier = Modifier,
 ) {
     val insets = WindowInsets.systemBars.asPaddingValues()
+    // While searching the list is just the matches, without letter headers.
+    val rows = remember(model, query, results) {
+        if (query.isBlank()) model.rows else listOf<ListRow>(ListRow.Search) + results.map { ListRow.App(it) }
+    }
+    // Scrolling the list puts the keyboard away, and a new search starts from the top.
+    val focus = LocalFocusManager.current
+    LaunchedEffect(listState.isScrollInProgress) { if (listState.isScrollInProgress) focus.clearFocus() }
+    LaunchedEffect(query) { listState.scrollToItem(0) }
     // Rows composed within this window after the page opens animate in; rows that scroll into view later do not.
     val openedAt = remember(replayToken) { System.nanoTime() }
 
@@ -101,8 +138,9 @@ fun AppListScreen(
             bottom = insets.calculateBottomPadding() + 12.dp,
         ),
     ) {
-        itemsIndexed(model.rows, key = { _, row -> row.key }, contentType = { _, row -> row::class }) { index, row ->
+        itemsIndexed(rows, key = { _, row -> row.key }, contentType = { _, row -> row::class }) { index, row ->
             when (row) {
+                ListRow.Search -> SearchRow(query, onQueryChange)
                 is ListRow.Header -> HeaderRow(row.letter, index, listState, openedAt, exiting, onHeaderClick)
                 is ListRow.App -> AppRow(row.item, index, listState, openedAt, exiting, onLaunch, onLongPress)
             }
@@ -130,6 +168,51 @@ private fun rememberRowAway(index: Int, listState: LazyListState, openedAt: Long
         away.animateTo(1f, tween(durationMillis = 220, easing = Motion.Accelerate))
     }
     return away
+}
+
+/** The search box: a flat surface with a magnifier, the typed text and a button to clear it. */
+@Composable
+private fun SearchRow(query: String, onQueryChange: (String) -> Unit) {
+    val colors = LocalMetroColors.current
+    val focus = LocalFocusManager.current
+    val currentChange by rememberUpdatedState(onQueryChange)
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .height(52.dp)
+            .background(colors.surface)
+            .padding(horizontal = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        GlyphIcon(Glyph.Search, 24.dp, color = colors.subtle)
+        Spacer(Modifier.width(12.dp))
+        Box(Modifier.weight(1f)) {
+            if (query.isEmpty()) MetroText(stringResource(R.string.search_apps), size = 20.sp, color = colors.subtle)
+            BasicTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                singleLine = true,
+                textStyle = TextStyle(color = colors.foreground, fontSize = 20.sp, fontFamily = MetroFont, fontWeight = FontWeight.Light),
+                cursorBrush = SolidColor(LocalAccent.current),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        if (query.isNotEmpty()) {
+            Canvas(
+                Modifier
+                    .size(34.dp)
+                    .pointerInput(Unit) { detectTapGestures { currentChange("") } }
+                    .padding(10.dp),
+            ) {
+                val stroke = 2.dp.toPx()
+                drawLine(colors.subtle, Offset(0f, 0f), Offset(size.width, size.height), stroke, StrokeCap.Round)
+                drawLine(colors.subtle, Offset(size.width, 0f), Offset(0f, size.height), stroke, StrokeCap.Round)
+            }
+        }
+    }
 }
 
 @Composable
@@ -172,6 +255,7 @@ private fun AppRow(
     AppRowContent(
         item,
         Modifier
+            .testTag("app:${item.id}")
             .onGloballyPositioned { coordinates = it }
             .graphicsLayer { turnstile(away.value) }
             .metroPress(

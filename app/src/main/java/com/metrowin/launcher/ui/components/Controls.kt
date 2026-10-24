@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
@@ -100,7 +101,7 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
         ) {
             Box(
                 Modifier
-                    .offset(x = thumbX)
+                    .offset { IntOffset(thumbX.roundToPx(), 0) }
                     .size(THUMB_WIDTH, 18.dp)
                     .background(if (checked) TileWhite else colors.foreground),
             )

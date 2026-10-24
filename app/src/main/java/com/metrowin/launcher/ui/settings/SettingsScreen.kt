@@ -9,6 +9,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,10 +31,15 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +47,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.data.QuickAction
+import com.metrowin.launcher.model.AppItem
+import com.metrowin.launcher.model.Launch
+import com.metrowin.launcher.ui.components.AppSquare
+import com.metrowin.launcher.ui.kids.CheckSquare
+import com.metrowin.launcher.ui.actioncenter.QuickButton
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.ChoiceRow
 import com.metrowin.launcher.ui.components.MetroButton
@@ -58,11 +74,20 @@ fun SettingsScreen(
     onChange: ((LauncherSettings) -> LauncherSettings) -> Unit,
     onPickBackground: (Uri) -> Unit,
     onClearBackground: () -> Unit,
+    notificationAccess: Boolean,
+    onManageNotificationAccess: () -> Unit,
+    apps: List<AppItem>,
+    onStartKidsCorner: () -> Unit,
     modifier: Modifier = Modifier,
+    initialPage: Int = 0,
 ) {
     val colors = LocalMetroColors.current
-    val titles = listOf(stringResource(R.string.settings_start_theme))
-    val pagerState = rememberPagerState { titles.size }
+    val titles = listOf(
+        stringResource(R.string.settings_start_theme),
+        stringResource(R.string.settings_actions),
+        stringResource(R.string.kids_title),
+    )
+    val pagerState = rememberPagerState(initialPage = initialPage) { titles.size }
     Column(
         modifier
             .fillMaxSize()
@@ -82,6 +107,8 @@ fun SettingsScreen(
         HorizontalPager(pagerState, Modifier.weight(1f)) { page ->
             when (page) {
                 0 -> StartThemePage(settings, startBackground, onChange, onPickBackground, onClearBackground)
+                1 -> ActionsPage(settings, notificationAccess, onChange, onManageNotificationAccess)
+                2 -> KidsPage(settings, apps, onChange, onStartKidsCorner)
             }
         }
     }
@@ -179,5 +206,124 @@ private fun BackgroundPreview(image: ImageBitmap?) {
         if (image != null) {
             Image(image, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         }
+    }
+}
+
+/** Which four buttons sit on top of the Action Center, and whether notifications can be read. */
+@Composable
+private fun ActionsPage(
+    settings: LauncherSettings,
+    notificationAccess: Boolean,
+    onChange: ((LauncherSettings) -> LauncherSettings) -> Unit,
+    onManageNotificationAccess: () -> Unit,
+) {
+    val colors = LocalMetroColors.current
+    val slots = QuickAction.slots(settings.quickActions)
+    var selected by remember { mutableIntStateOf(0) }
+    Column(
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(26.dp),
+    ) {
+        Column {
+            SettingLabel(stringResource(R.string.settings_quick_actions))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                slots.forEachIndexed { index, action ->
+                    QuickButton(
+                        action, on = true, onClick = { selected = index },
+                        modifier = Modifier
+                            .weight(1f)
+                            .then(if (index == selected) Modifier.border(3.dp, colors.foreground) else Modifier),
+                    )
+                }
+            }
+            MetroText(
+                stringResource(R.string.settings_pick_action),
+                size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE,
+                modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
+            )
+            QuickAction.entries.chunked(QuickAction.SLOTS).forEach { row ->
+                Row(Modifier.padding(bottom = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    row.forEach { action ->
+                        QuickButton(
+                            action, on = action in slots,
+                            onClick = { onChange { s -> s.copy(quickActions = QuickAction.assign(slots, selected, action).map { it.id }) } },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+            }
+        }
+        Column {
+            SettingLabel(stringResource(R.string.settings_notification_access))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                MetroText(
+                    stringResource(if (notificationAccess) R.string.toggle_on else R.string.toggle_off),
+                    size = 22.sp, modifier = Modifier.weight(1f),
+                )
+                MetroButton(
+                    stringResource(if (notificationAccess) R.string.settings_manage else R.string.ac_turn_on),
+                    onClick = onManageNotificationAccess,
+                )
+            }
+        }
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+/** Which apps the Kid's Corner shows, and the button that starts it. */
+@Composable
+private fun KidsPage(
+    settings: LauncherSettings,
+    apps: List<AppItem>,
+    onChange: ((LauncherSettings) -> LauncherSettings) -> Unit,
+    onStart: () -> Unit,
+) {
+    val colors = LocalMetroColors.current
+    val choosable = remember(apps) { apps.filter { it.launch !is Launch.Internal } }
+    val ready = settings.kidsApps.any { id -> choosable.any { it.id == id } }
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+    ) {
+        item {
+            MetroText(
+                stringResource(R.string.kids_intro),
+                size = 16.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE, lineHeight = 22.sp,
+            )
+            Spacer(Modifier.height(18.dp))
+            MetroButton(
+                stringResource(R.string.kids_start),
+                Modifier.fillMaxWidth().testTag("kids:start").alpha(if (ready) 1f else 0.4f),
+            ) { if (ready) onStart() }
+            MetroText(
+                stringResource(R.string.kids_pin_hint),
+                size = 13.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE,
+                modifier = Modifier.padding(top = 10.dp),
+            )
+            Spacer(Modifier.height(22.dp))
+            SettingLabel(stringResource(R.string.kids_apps))
+        }
+        items(choosable, key = { it.id }) { app ->
+            val checked = app.id in settings.kidsApps
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .testTag("kids:app:${app.id}")
+                    .metroPress(onClick = {
+                        onChange { s -> s.copy(kidsApps = if (checked) s.kidsApps - app.id else s.kidsApps + app.id) }
+                    })
+                    .padding(vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                AppSquare(app, 44.dp)
+                Spacer(Modifier.width(14.dp))
+                MetroText(app.label, size = 20.sp, modifier = Modifier.weight(1f))
+                CheckSquare(checked)
+            }
+        }
+        item { Spacer(Modifier.height(24.dp)) }
     }
 }

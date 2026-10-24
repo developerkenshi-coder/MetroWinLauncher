@@ -74,8 +74,8 @@ fun FolderNameDialog(initial: String, onDone: (String) -> Unit, onCancel: () -> 
                 modifier = Modifier.fillMaxWidth().focusRequester(focus),
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                MetroButton(stringResource(R.string.action_ok), Modifier.weight(1f)) { onDone(name) }
-                MetroButton(stringResource(R.string.action_cancel), Modifier.weight(1f), onClick = onCancel)
+                MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f)) { onDone(name) }
+                MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f), onClick = onCancel)
             }
         }
     }

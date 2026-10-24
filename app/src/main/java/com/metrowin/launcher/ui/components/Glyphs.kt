@@ -183,6 +183,35 @@ private fun build(glyph: Glyph): Spec = when (glyph) {
     Glyph.Finance -> spec(stroke("M14 14V86H90", "M24 70L44 48L58 62L84 30", "M68 30H84V46"))
     Glyph.Battery -> spec(stroke(rect(10f, 32f, 72f, 36f, 4f)), fill(rect(84f, 44f, 6f, 12f), rect(17f, 39f, 30f, 22f)))
     Glyph.Data -> spec(stroke("M34 82V22", "M20 36L34 22L48 36", "M66 18V78", "M52 64L66 78L80 64"))
+    Glyph.Wifi -> spec(
+        stroke("M10 40A56 56 0 0 1 90 40", "M24 54A38 38 0 0 1 76 54", "M38 68A20 20 0 0 1 62 68"),
+        fill(circle(50f, 82f, 5.5f)),
+    )
+    Glyph.Bluetooth -> spec(stroke("M28 32L70 68L50 88V12L70 32L28 68"))
+    Glyph.Airplane -> spec(stroke("M50 8L58 36L92 58V68L58 58L56 80L68 88V94L50 90L32 94V88L44 80L42 58L8 68V58L42 36Z"))
+    Glyph.Moon -> spec(stroke("M62 12A40 40 0 1 0 88 62A32 32 0 0 1 62 12Z"))
+    Glyph.Flashlight -> spec(stroke("M34 10H66L58 34H42Z", rect(42f, 34f, 16f, 54f, 3f), "M50 48V62"))
+    Glyph.Rotation -> spec(
+        stroke(
+            rect(32f, 22f, 36f, 56f, 4f),
+            "M16 36A36 36 0 0 1 36 10", "M36 10L22 12", "M36 10L34 24",
+            "M84 64A36 36 0 0 1 64 90", "M64 90L78 88", "M64 90L66 76",
+        ),
+    )
+    Glyph.Hotspot -> spec(
+        stroke(circle(28f, 50f, 9f), circle(72f, 24f, 9f), circle(72f, 76f, 9f), "M36 45L64 29", "M36 55L64 71"),
+    )
+    Glyph.Vpn -> spec(stroke("M50 8L84 20V48C84 70 68 84 50 92C32 84 16 70 16 48V20Z", "M34 50L46 62L68 38"))
+    Glyph.Cast -> spec(
+        stroke("M10 72A16 16 0 0 1 28 90", "M10 56A32 32 0 0 1 44 90", "M10 40A48 48 0 0 1 60 90", "M10 26V16H90V84H68"),
+        fill(circle(14f, 86f, 4f)),
+    )
+    Glyph.Brightness -> spec(
+        stroke(circle(50f, 50f, 15f), "M50 10V24", "M50 76V90", "M10 50H24", "M76 50H90", "M22 22L32 32", "M68 68L78 78", "M78 22L68 32", "M32 68L22 78"),
+    )
+    Glyph.Bell -> spec(stroke("M50 10C34 10 26 22 26 40V58L16 70H84L74 58V40C74 22 66 10 50 10Z", "M41 78A9 9 0 0 0 59 78"))
+    Glyph.Kids -> spec(stroke(circle(50f, 50f, 38f), "M28 60A24 24 0 0 0 72 60"), fill(circle(36f, 42f, 4.5f), circle(64f, 42f, 4.5f)))
+    Glyph.Search -> spec(stroke(circle(42f, 42f, 26f), "M62 62L88 88"))
     Glyph.Theme -> spec(
         stroke("M50 12A38 38 0 1 0 50 88A9 9 0 0 0 55 72A9 9 0 0 1 64 62H74A14 14 0 0 0 88 48A38 36 0 0 0 50 12Z"),
         fill(circle(30f, 48f, 5f), circle(40f, 29f, 5f), circle(61f, 28f, 5f), circle(74f, 42f, 5f)),

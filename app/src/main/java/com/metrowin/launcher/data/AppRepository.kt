@@ -40,7 +40,10 @@ class AppRepository(private val context: Context) {
     fun load(): List<AppItem> {
         val own = context.packageName
         val ownerActivities = launcherApps.getActivityList(null, owner).filter { it.componentName.packageName != own }
-        val otherActivities = launcherApps.profiles.filter { it != owner }.flatMap { launcherApps.getActivityList(null, it) }
+        // A profile can be unavailable (a paused work profile): it must not take the other apps down with it.
+        val otherActivities = launcherApps.profiles.filter { it != owner }.flatMap { profile ->
+            runCatching { launcherApps.getActivityList(null, profile) }.getOrDefault(emptyList())
+        }
 
         // Stock apps are matched against the owner's apps only.
         val byPackage = ownerActivities.groupBy { it.componentName.packageName }
@@ -77,6 +80,12 @@ class AppRepository(private val context: Context) {
             label = context.getString(R.string.settings_start_theme),
             launch = Launch.Internal(ROUTE_SETTINGS),
             glyph = Glyph.Theme,
+        )
+        items += AppItem(
+            id = KIDS_ID,
+            label = context.getString(R.string.kids_title),
+            launch = Launch.Internal(ROUTE_KIDS),
+            glyph = Glyph.Kids,
         )
 
         ownerActivities.filterNot { it.componentName in merged }.mapTo(items) { toItem(it, owner) }
@@ -210,5 +219,7 @@ class AppRepository(private val context: Context) {
     companion object {
         const val SETTINGS_ID = "launcher:settings"
         const val ROUTE_SETTINGS = "settings"
+        const val KIDS_ID = "launcher:kids"
+        const val ROUTE_KIDS = "kids"
     }
 }

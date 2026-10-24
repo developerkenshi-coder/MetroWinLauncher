@@ -19,11 +19,14 @@
     <!--
         A launcher has to see every installed app. LauncherApps and the <queries> below already cover the
         apps that have a launcher icon; this makes the visibility complete (stock app lookups, work profile).
-        Google Play restricts this permission, a launcher is one of the cases it allows.
+        Google Play restricts this permission and asks for a justification: check it before publishing.
     -->
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
+
+    <!-- Wi-Fi state on the Action Center button. -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <!-- "uninstall" in the app list context menu. -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
@@ -134,6 +137,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+            Reads the notifications for the Action Center and the counters on the tiles. Android only
+            binds it once the user turns on "notification access" for this app.
+        -->
+        <service
+            android:name=".notifications.NotificationService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

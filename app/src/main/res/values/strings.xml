@@ -56,10 +56,43 @@
     <string name="toggle_off">Off</string>
     <string name="photo_failed">Can\'t use this photo</string>
 
+    <string name="search_apps">search</string>
+
+    <!-- Kid's Corner -->
+    <string name="kids_title">kid\'s corner</string>
+    <string name="kids_intro">Share your phone with a child: only the apps you choose show up, and the rest of the phone stays out of reach. To leave, confirm with your screen lock.</string>
+    <string name="kids_start">start kid\'s corner</string>
+    <string name="kids_apps">apps</string>
+    <string name="kids_exit">exit</string>
+    <string name="kids_exit_title">Leave kid\'s corner</string>
+    <string name="kids_pin_hint">For a stronger lock, turn on screen pinning in the Android settings.</string>
+
+    <!-- Action Center -->
+    <string name="ac_notifications">notifications</string>
+    <string name="ac_clear_all">clear all</string>
+    <string name="ac_empty">No new notifications</string>
+    <string name="ac_all_settings">all settings</string>
+    <string name="ac_access_needed">Turn on notification access to see your notifications here, and to count them on the tiles.</string>
+    <string name="ac_turn_on">turn on</string>
+    <string name="qa_wifi">Wi-Fi</string>
+    <string name="qa_bluetooth">Bluetooth</string>
+    <string name="qa_airplane">Airplane mode</string>
+    <string name="qa_flashlight">Flashlight</string>
+    <string name="qa_quiet_hours">Quiet hours</string>
+    <string name="qa_rotation">Rotation lock</string>
+    <string name="qa_location">Location</string>
+    <string name="qa_hotspot">Internet sharing</string>
+    <string name="qa_vpn">VPN</string>
+    <string name="qa_cast">Project my screen</string>
+    <string name="qa_brightness">Brightness</string>
+    <string name="qa_camera">Camera</string>
+    <string name="settings_actions">notifications+actions</string>
+    <string name="settings_quick_actions">quick actions</string>
+    <string name="settings_pick_action">Choose what the highlighted button does.</string>
+    <string name="settings_notification_access">notification access</string>
+    <string name="settings_manage">manage</string>
     <string name="folder_default_name">folder</string>
     <string name="folder_name">folder name</string>
-    <string name="action_ok">ok</string>
-    <string name="action_cancel">cancel</string>
 
     <!-- Live tiles -->
     <string name="live_today">today</string>

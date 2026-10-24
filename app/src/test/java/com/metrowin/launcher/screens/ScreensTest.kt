@@ -20,22 +20,34 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.centerY
 import androidx.compose.ui.test.down
 import androidx.compose.ui.test.moveBy
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.swipeDown
+import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.test.up
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.metrowin.launcher.data.AppSearch
 import com.metrowin.launcher.data.AppSections
 import com.metrowin.launcher.data.DefaultStart
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.LiveEvent
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.MetroCatalog
+import com.metrowin.launcher.data.QuickAction
 import com.metrowin.launcher.data.StartEntries
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Folder
@@ -44,6 +56,8 @@ import com.metrowin.launcher.model.Launch
 import com.metrowin.launcher.model.StartEntry
 import com.metrowin.launcher.model.Tile
 import com.metrowin.launcher.model.TileSize
+import com.metrowin.launcher.notifications.NotificationEntry
+import com.metrowin.launcher.ui.actioncenter.ActionCenter
 import com.metrowin.launcher.ui.apps.AppContextMenu
 import com.metrowin.launcher.ui.apps.AppListModel
 import com.metrowin.launcher.ui.apps.AppListScreen
@@ -51,8 +65,10 @@ import com.metrowin.launcher.ui.apps.JumpList
 import com.metrowin.launcher.ui.apps.MenuState
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
+import com.metrowin.launcher.ui.kids.KidsHeader
 import com.metrowin.launcher.ui.permissions.PermissionsScreen
 import com.metrowin.launcher.ui.settings.SettingsScreen
+import com.metrowin.launcher.ui.start.AppCell
 import com.metrowin.launcher.ui.start.StartActions
 import com.metrowin.launcher.ui.start.StartScreen
 import com.metrowin.launcher.ui.start.buildStartCells
@@ -106,6 +122,7 @@ class ScreensTest : ScreenshotBase() {
         openFolderId: String? = null,
         badges: Map<String, Int> = emptyMap(),
         scrollState: ScrollState = rememberScrollState(),
+        pullConnection: NestedScrollConnection? = null,
     ) = StartScreen(
         cells = buildStartCells(entries.value, items, openFolderId),
         live = live,
@@ -122,6 +139,7 @@ class ScreensTest : ScreenshotBase() {
             onMerge = { dragged, onto -> entries.value = StartEntries.merge(entries.value, dragged, onto) { "folder" } },
             onBackgroundTap = {}, onOpenApps = {},
         ),
+        pullConnection = pullConnection,
     )
 
     private fun defaultEntries(items: List<AppItem>) = mutableStateOf<List<StartEntry>>(DefaultStart.build(items))
@@ -326,6 +344,176 @@ class ScreensTest : ScreenshotBase() {
         assertTrue("the badge should draw white pixels in the corner ($white)", white > 200)
     }
 
+    private fun notification(key: String, pkg: String, title: String, text: String) =
+        NotificationEntry(key, pkg, title, text, postTime = System.currentTimeMillis() - 5 * 60_000, contentIntent = null, autoCancel = true)
+
+    @Composable
+    private fun ActionCenterContent(
+        notifications: List<NotificationEntry>,
+        onDismiss: (NotificationEntry) -> Unit = {},
+        hasAccess: Boolean = true,
+    ) {
+        ActionCenter(
+            slots = listOf(QuickAction.Wifi, QuickAction.Bluetooth, QuickAction.Airplane, QuickAction.Flashlight),
+            // Wi-Fi is on, Bluetooth is off, airplane mode and the flashlight have no state to show.
+            states = mapOf(QuickAction.Wifi to true, QuickAction.Bluetooth to false),
+            notifications = notifications,
+            appsByPackage = sampleItems().filter { it.id == "stock:messaging" }.associateBy { "com.example.messages" },
+            hasNotificationAccess = hasAccess,
+            progress = 1f,
+            onAction = {}, onAllSettings = {}, onOpenNotification = {}, onDismissNotification = onDismiss,
+            onClearAll = {}, onTurnOnNotificationAccess = {}, onClose = {},
+        )
+    }
+
+    @Test
+    fun actionCenterShowsLitButtonsAndTheNotifications() {
+        val list = listOf(
+            notification("n1", "com.example.messages", "Giulia", "Ci vediamo alle otto?"),
+            notification("n2", "com.example.other", "Backup", "Finished"),
+        )
+        show { ActionCenterContent(list) }
+        advance(300)
+        val screen = capture("action_center")
+        // Four buttons across the top: Wi-Fi is lit in the accent colour, Bluetooth is the grey of an off button.
+        assertTrue("Wi-Fi is on", isAccent(screen.getPixel(60, 110)))
+        assertFalse("Bluetooth is off", isAccent(screen.getPixel(60 + 342, 110)))
+        compose.onNodeWithTag("notification:n1").assertExists()
+        compose.onNodeWithTag("notification:n2").assertExists()
+    }
+
+    @Test
+    fun actionCenterAsksForNotificationAccessWhenItHasNone() {
+        show { ActionCenterContent(emptyList(), hasAccess = false) }
+        advance(300)
+        capture("action_center_no_access")
+        compose.onNodeWithTag("notification:n1").assertDoesNotExist()
+    }
+
+    @Test
+    fun swipingANotificationToTheRightDismissesIt() {
+        val dismissed = mutableListOf<String>()
+        val list = listOf(notification("n1", "com.example.messages", "Giulia", "Ciao"))
+        show { ActionCenterContent(list, onDismiss = { dismissed += it.key }) }
+        advance(300)
+        compose.onNodeWithTag("notification:n1").performTouchInput { swipeRight() }
+        advance(600)
+        assertEquals(listOf("n1"), dismissed)
+    }
+
+    @Test
+    fun aShortSwipeLeavesTheNotificationWhereItWas() {
+        val dismissed = mutableListOf<String>()
+        val list = listOf(notification("n1", "com.example.messages", "Giulia", "Ciao"))
+        show { ActionCenterContent(list, onDismiss = { dismissed += it.key }) }
+        advance(300)
+        compose.onNodeWithTag("notification:n1").performTouchInput {
+            down(Offset(100f, centerY))
+            moveBy(Offset(60f, 0f))
+            up()
+        }
+        advance(600)
+        assertEquals(emptyList<String>(), dismissed)
+    }
+
+    @Test
+    fun pullingStartDownFromTheTopReachesTheActionCenterGesture() {
+        val items = sampleItems()
+        val entries = defaultEntries(items)
+        var pulled = 0f
+        val connection = object : NestedScrollConnection {
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                if (available.y > 0f) pulled += available.y
+                return Offset.Zero
+            }
+        }
+        show { Start(entries, items, pullConnection = connection) }
+        advance(2_000)
+        compose.onNodeWithTag("tile:stock:phone").performTouchInput { swipeDown(startY = 40f, endY = 400f) }
+        advance(300)
+        assertTrue("dragging down at the top should hand the extra distance to the parent ($pulled)", pulled > 100f)
+    }
+
+    @Test
+    fun theActionsPageOfSettingsShowsTheFourButtons() {
+        show {
+            SettingsScreen(
+                settings = LauncherSettings(),
+                startBackground = null,
+                onChange = {}, onPickBackground = {}, onClearBackground = {},
+                notificationAccess = true, onManageNotificationAccess = {},
+                apps = emptyList(), onStartKidsCorner = {},
+            )
+        }
+        advance(300)
+        compose.onRoot().performTouchInput { swipeLeft() }
+        advance(800)
+        val screen = capture("settings_actions")
+        val pixels = screen.pixels()
+        // The accent swatches belong to the first page and are gone; the buttons are drawn in the accent colour.
+        assertFalse("accent grid should be off screen", pixels.any { it == MetroAccents[0].toArgb() })
+        assertTrue(screen.accentShare() > 0.02f)
+        // Wi-Fi is one of the four buttons and also in the list of all twelve.
+        compose.onAllNodesWithTag("quick:wifi").assertCountEquals(2)
+    }
+
+    @Test
+    fun theKidsCornerPageLetsYouPickAppsAndStartsOnlyWhenThereAreSome() {
+        var current = LauncherSettings()
+        var started = 0
+        show {
+            SettingsScreen(
+                settings = current,
+                startBackground = null,
+                onChange = { change -> current = change(current) },
+                onPickBackground = {}, onClearBackground = {},
+                notificationAccess = true, onManageNotificationAccess = {},
+                apps = sampleItems(), onStartKidsCorner = { started++ },
+                initialPage = 2,
+            )
+        }
+        advance(500)
+        capture("settings_kids")
+        // Without any app the button does nothing.
+        compose.onNodeWithTag("kids:start").performClick()
+        assertEquals(0, started)
+        // The built-in launcher pages are not offered to children.
+        compose.onNodeWithTag("kids:app:launcher:settings").assertDoesNotExist()
+        compose.onNodeWithTag("kids:app:stock:calendar").performClick()
+        assertEquals(setOf("stock:calendar"), current.kidsApps)
+    }
+
+    @Test
+    fun theKidsCornerShowsOnlyItsAppsWithoutEditingAndWithAWayOut() {
+        val (items, _) = fourTiles()
+        var longPressed = false
+        var exited = false
+        show {
+            StartScreen(
+                cells = items.take(3).map { AppCell(Tile(it.id, TileSize.Medium), it) },
+                live = LiveTileData(), badges = emptyMap(), columns = 4, background = null,
+                enterToken = 0, exitRequest = null, editingKey = null, scrollState = rememberScrollState(),
+                actions = StartActions(
+                    onClick = {}, onLongClick = { longPressed = true }, onUnpin = {}, onResize = {}, onRename = {},
+                    onMove = { _, _ -> }, onMerge = { _, _ -> }, onBackgroundTap = {}, onOpenApps = {},
+                ),
+                readOnly = true,
+                header = { KidsHeader(onExit = { exited = true }) },
+            )
+        }
+        advance(2_500)
+        capture("kids_corner")
+        compose.onNodeWithTag("tile:A").assertExists()
+        compose.onNodeWithTag("tile:D").assertDoesNotExist()
+        compose.onNodeWithTag("tile:A").performTouchInput { down(center) }
+        advance(900) // longer than a long press
+        compose.onNodeWithTag("tile:A").performTouchInput { up() }
+        assertFalse("tiles cannot be picked up in the kid's corner", longPressed)
+        compose.onNodeWithTag("kids:exit").performClick()
+        advance(100)
+        assertTrue(exited)
+    }
+
     @Test
     fun settingsPageOffersTwentyAccentColours() {
         show {
@@ -333,6 +521,8 @@ class ScreensTest : ScreenshotBase() {
                 settings = LauncherSettings(),
                 startBackground = null,
                 onChange = {}, onPickBackground = {}, onClearBackground = {},
+                notificationAccess = false, onManageNotificationAccess = {},
+                apps = emptyList(), onStartKidsCorner = {},
             )
         }
         advance(500)
@@ -352,6 +542,7 @@ class ScreensTest : ScreenshotBase() {
             AppListScreen(
                 model = model, listState = rememberLazyListState(), replayToken = 0, exiting = false,
                 onLaunch = {}, onLongPress = { _, _, _ -> }, onHeaderClick = {},
+                query = "", onQueryChange = {}, results = emptyList(),
             )
         }
         advance(80)
@@ -359,6 +550,25 @@ class ScreensTest : ScreenshotBase() {
         advance(1_500)
         val settled = capture("apps").accentShare()
         assertTrue("rows should be coming in ($entering < $settled)", entering < settled)
+    }
+
+    @Test
+    fun typingInTheSearchBoxKeepsOnlyTheMatchingApps() {
+        val items = sampleItems()
+        val model = AppListModel(AppSections.group(items))
+        val query = "cal"
+        show {
+            AppListScreen(
+                model = model, listState = rememberLazyListState(), replayToken = 0, exiting = false,
+                onLaunch = {}, onLongPress = { _, _, _ -> }, onHeaderClick = {},
+                query = query, onQueryChange = {}, results = AppSearch.filter(items, query),
+            )
+        }
+        advance(1_500)
+        compose.onNodeWithTag("app:stock:calendar").assertExists()
+        compose.onNodeWithTag("app:stock:calculator").assertExists()
+        compose.onNodeWithTag("app:stock:phone").assertDoesNotExist()
+        capture("apps_search")
     }
 
     @Test

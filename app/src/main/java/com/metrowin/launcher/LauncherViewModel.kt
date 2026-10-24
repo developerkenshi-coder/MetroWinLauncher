@@ -1,6 +1,13 @@
 package com.metrowin.launcher
 
+import android.app.ActivityOptions
 import android.app.Application
+import android.content.ComponentName
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import android.service.notification.NotificationListenerService
+import androidx.core.app.NotificationManagerCompat
 import android.graphics.Rect
 import android.net.Uri
 import android.widget.Toast
@@ -16,12 +23,17 @@ import com.metrowin.launcher.data.StartEntries
 import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.data.QuickAction
+import com.metrowin.launcher.data.QuickActionsController
 import com.metrowin.launcher.data.LiveTileRepository
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.data.StartBackgroundStore
 import com.metrowin.launcher.data.TileStore
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.StartEntry
+import com.metrowin.launcher.notifications.NotificationEntry
+import com.metrowin.launcher.notifications.NotificationHub
+import com.metrowin.launcher.notifications.NotificationService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -41,6 +53,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val liveTiles = LiveTileRepository(application)
     private val settingsStore = SettingsStore(application)
     private val backgroundStore = StartBackgroundStore(application)
+    private val quickActions = QuickActionsController(application)
 
     val icons = IconLoader(application)
 
@@ -65,6 +78,18 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val _background = MutableStateFlow<ImageBitmap?>(null)
     val background: StateFlow<ImageBitmap?> = _background.asStateFlow()
 
+    /** Notifications for the Action Center. Empty until the user turns on notification access. */
+    val notifications: StateFlow<List<NotificationEntry>> = NotificationHub.entries
+
+    /** How many notifications each app has: the counters on the tiles. */
+    val badges: StateFlow<Map<String, Int>> =
+        NotificationHub.entries.map(NotificationHub::countsByPackage).stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+
+    private val _notificationAccess = MutableStateFlow(hasNotificationAccess())
+    val notificationAccess: StateFlow<Boolean> = _notificationAccess.asStateFlow()
+
+    val torchOn: StateFlow<Boolean> = quickActions.torchOn
+
     private val _permissionsHandled = MutableStateFlow(store.permissionsHandled)
     val permissionsHandled: StateFlow<Boolean> = _permissionsHandled.asStateFlow()
 
@@ -85,12 +110,53 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     override fun onCleared() {
         stopObservingPackages()
+        quickActions.close()
     }
 
     /** Called every time the launcher comes back on screen. */
     fun onStart() {
         if (loadedLocale != null && loadedLocale != Locale.getDefault()) reloadApps()
         refreshLive()
+        val access = hasNotificationAccess()
+        _notificationAccess.value = access
+        // After the process was killed Android does not always bind the service again by itself.
+        if (access && NotificationHub.service == null) {
+            NotificationListenerService.requestRebind(ComponentName(getApplication(), NotificationService::class.java))
+        }
+    }
+
+    private fun hasNotificationAccess() =
+        NotificationManagerCompat.getEnabledListenerPackages(getApplication()).contains(getApplication<Application>().packageName)
+
+    fun quickActionState(action: QuickAction): Boolean? = quickActions.isOn(action)
+
+    fun activateQuickAction(action: QuickAction) = quickActions.activate(action)
+
+    /** Runs what the notification does when tapped, then removes it if the app asked for that. */
+    fun openNotification(entry: NotificationEntry) {
+        runCatching {
+            val options = if (Build.VERSION.SDK_INT >= 34) {
+                @Suppress("DEPRECATION") // replaced on Android 16 by finer modes, this one still works there
+                val allowed = ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                ActivityOptions.makeBasic().setPendingIntentBackgroundActivityStartMode(allowed).toBundle()
+            } else {
+                null
+            }
+            entry.contentIntent?.send(getApplication(), 0, null, null, null, null, options)
+        }
+        if (entry.autoCancel) NotificationHub.dismiss(entry.key)
+    }
+
+    fun dismissNotification(entry: NotificationEntry) = NotificationHub.dismiss(entry.key)
+
+    fun clearNotifications() = NotificationHub.dismissAll()
+
+    fun openNotificationAccessSettings() = startSettings(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+
+    fun openSystemSettings() = startSettings(Settings.ACTION_SETTINGS)
+
+    private fun startSettings(action: String) {
+        runCatching { getApplication<Application>().startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
     }
 
     fun onHomePressed() {

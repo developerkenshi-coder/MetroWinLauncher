@@ -54,10 +54,41 @@
     <string name="toggle_off">Disattivato</string>
     <string name="photo_failed">Impossibile usare questa foto</string>
 
+    <string name="search_apps">cerca</string>
+
+    <string name="kids_title">angolo bambini</string>
+    <string name="kids_intro">Condividi il telefono con un bambino: compaiono solo le app che scegli e il resto del telefono resta fuori portata. Per uscire, conferma con il blocco schermo.</string>
+    <string name="kids_start">avvia angolo bambini</string>
+    <string name="kids_apps">app</string>
+    <string name="kids_exit">esci</string>
+    <string name="kids_exit_title">Esci dall\'angolo bambini</string>
+    <string name="kids_pin_hint">Per un blocco più forte, attiva il blocco schermo (screen pinning) nelle impostazioni di Android.</string>
+
+    <string name="ac_notifications">notifiche</string>
+    <string name="ac_clear_all">cancella tutto</string>
+    <string name="ac_empty">Nessuna nuova notifica</string>
+    <string name="ac_all_settings">tutte le impostazioni</string>
+    <string name="ac_access_needed">Attiva l\'accesso alle notifiche per vederle qui e per contarle sui riquadri.</string>
+    <string name="ac_turn_on">attiva</string>
+    <string name="qa_wifi">Wi-Fi</string>
+    <string name="qa_bluetooth">Bluetooth</string>
+    <string name="qa_airplane">Modalità aereo</string>
+    <string name="qa_flashlight">Torcia</string>
+    <string name="qa_quiet_hours">Ore silenziose</string>
+    <string name="qa_rotation">Blocco rotazione</string>
+    <string name="qa_location">Posizione</string>
+    <string name="qa_hotspot">Condivisione internet</string>
+    <string name="qa_vpn">VPN</string>
+    <string name="qa_cast">Proietta lo schermo</string>
+    <string name="qa_brightness">Luminosità</string>
+    <string name="qa_camera">Fotocamera</string>
+    <string name="settings_actions">notifiche+azioni</string>
+    <string name="settings_quick_actions">azioni rapide</string>
+    <string name="settings_pick_action">Scegli cosa fa il pulsante evidenziato.</string>
+    <string name="settings_notification_access">accesso alle notifiche</string>
+    <string name="settings_manage">gestisci</string>
     <string name="folder_default_name">cartella</string>
     <string name="folder_name">nome della cartella</string>
-    <string name="action_ok">ok</string>
-    <string name="action_cancel">annulla</string>
 
     <string name="live_today">oggi</string>
     <string name="live_tomorrow">domani</string>

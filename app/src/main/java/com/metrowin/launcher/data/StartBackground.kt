@@ -5,9 +5,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.graphics.Matrix
-import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.exifinterface.media.ExifInterface
 import java.io.File
 import kotlin.math.max
 
@@ -36,6 +37,7 @@ class StartBackgroundStore(private val context: Context) {
         if (Build.VERSION.SDK_INT >= 28) decodeWithImageDecoder(uri) else decodeLegacy(uri)
 
     /** ImageDecoder applies the photo's rotation by itself. */
+    @RequiresApi(Build.VERSION_CODES.P)
     private fun decodeWithImageDecoder(uri: Uri): Bitmap =
         ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri)) { decoder, info, _ ->
             val longest = max(info.size.width, info.size.height)

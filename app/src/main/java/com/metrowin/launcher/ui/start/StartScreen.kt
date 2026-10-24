@@ -167,6 +167,9 @@ fun StartScreen(
     actions: StartActions,
     modifier: Modifier = Modifier,
     pullConnection: NestedScrollConnection? = null,
+    /** Tiles that cannot be moved or edited, and no arrow to the app list: the Kid's Corner. */
+    readOnly: Boolean = false,
+    header: (@Composable () -> Unit)? = null,
 ) {
     val currentActions by rememberUpdatedState(actions)
     Box(modifier.fillMaxSize()) {
@@ -181,12 +184,13 @@ fun StartScreen(
                 .padding(horizontal = 12.dp),
         ) {
             Spacer(Modifier.height(16.dp))
+            header?.invoke()
             TileGridView(
                 cells, live, badges, columns, background != null,
-                enterToken, exitRequest, editingKey, scrollState, actions,
+                enterToken, exitRequest, editingKey, scrollState, actions, readOnly,
             )
             Box(Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 18.dp), contentAlignment = Alignment.CenterEnd) {
-                NextPageArrow(actions.onOpenApps)
+                if (!readOnly) NextPageArrow(actions.onOpenApps)
             }
             Spacer(Modifier.navigationBarsPadding())
         }
@@ -262,6 +266,7 @@ private fun TileGridView(
     editingKey: String?,
     scrollState: ScrollState,
     actions: StartActions,
+    readOnly: Boolean,
 ) {
     val density = LocalDensity.current
     BoxWithConstraints(Modifier.fillMaxWidth()) {
@@ -385,7 +390,7 @@ private fun TileGridView(
                     PositionedTile(
                         cell, index, layout.placements[index], unit, live, badges, hasBackground,
                         enterToken, exitRequest, editingKey, drag, actions,
-                        onDragStart, onDragBy, onDragEnd,
+                        onDragStart, onDragBy, onDragEnd, readOnly,
                     )
                 }
             }
@@ -438,6 +443,7 @@ private fun PositionedTile(
     onDragStart: (StartCell, Offset) -> Unit,
     onDragBy: (Offset) -> Unit,
     onDragEnd: () -> Unit,
+    readOnly: Boolean,
 ) {
     val density = LocalDensity.current
     val currentActions by rememberUpdatedState(actions)
@@ -503,11 +509,11 @@ private fun PositionedTile(
             }
             .metroPress(
                 onClick = { currentActions.onClick(currentCell) },
-                onLongClick = { currentActions.onLongClick(currentCell) },
+                onLongClick = if (readOnly) null else ({ currentActions.onLongClick(currentCell) }),
                 enabled = exitRequest == null,
             )
             .then(
-                if (cell.isTopLevel) {
+                if (cell.isTopLevel && !readOnly) {
                     Modifier.pointerInput(Unit) {
                         detectDragGesturesAfterLongPress(
                             onDragStart = {
