@@ -39,6 +39,26 @@
     <string name="stock_word">Word</string>
     <string name="stock_xbox">Xbox</string>
 
+    <string name="settings_start_theme">start+tema</string>
+    <string name="settings_header">IMPOSTAZIONI</string>
+    <string name="theme_background">sfondo</string>
+    <string name="theme_dark">scuro</string>
+    <string name="theme_light">chiaro</string>
+    <string name="theme_accent">colore d\'accento</string>
+    <string name="theme_start_background">sfondo di start</string>
+    <string name="theme_choose_photo">scegli foto</string>
+    <string name="theme_remove_photo">rimuovi</string>
+    <string name="theme_start_background_hint">I riquadri delle app integrate mostrano la foto in trasparenza.</string>
+    <string name="theme_more_tiles">mostra più riquadri</string>
+    <string name="toggle_on">Attivato</string>
+    <string name="toggle_off">Disattivato</string>
+    <string name="photo_failed">Impossibile usare questa foto</string>
+
+    <string name="folder_default_name">cartella</string>
+    <string name="folder_name">nome della cartella</string>
+    <string name="action_ok">ok</string>
+    <string name="action_cancel">annulla</string>
+
     <string name="live_today">oggi</string>
     <string name="live_tomorrow">domani</string>
 

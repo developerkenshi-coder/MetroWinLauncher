@@ -3,23 +3,43 @@ package com.metrowin.launcher.data
 import android.content.Context
 import androidx.core.content.edit
 import com.metrowin.launcher.model.AppItem
+import com.metrowin.launcher.model.Folder
+import com.metrowin.launcher.model.StartEntry
 import com.metrowin.launcher.model.Tile
 import com.metrowin.launcher.model.TileSize
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** JSON form of the pinned tiles. Kept apart from Android storage so it can be unit tested. */
+/** JSON form of what is pinned to Start. Kept apart from Android storage so it can be unit tested. */
 object TileCodec {
-    fun encode(tiles: List<Tile>): String = JSONArray().apply {
-        tiles.forEach { put(JSONObject().put("id", it.id).put("size", it.size.code)) }
+    fun encode(entries: List<StartEntry>): String = JSONArray().apply {
+        entries.forEach { entry ->
+            put(
+                JSONObject().apply {
+                    put("id", entry.id)
+                    put("size", entry.size.code)
+                    if (entry is Folder) {
+                        put("type", "folder")
+                        put("name", entry.name)
+                        put("children", JSONArray(entry.children))
+                    }
+                },
+            )
+        }
     }.toString()
 
-    /** Null when [json] is not something [encode] wrote. */
-    fun decode(json: String): List<Tile>? = runCatching {
+    /** Null when [json] is not something [encode] wrote. Entries without a type are tiles, as in version 1. */
+    fun decode(json: String): List<StartEntry>? = runCatching {
         val array = JSONArray(json)
         List(array.length()) { i ->
             val obj = array.getJSONObject(i)
-            Tile(obj.getString("id"), TileSize.fromCode(obj.optString("size")))
+            val size = TileSize.fromCode(obj.optString("size"))
+            if (obj.optString("type") == "folder") {
+                val children = obj.getJSONArray("children")
+                Folder(obj.getString("id"), obj.optString("name"), size, List(children.length()) { children.getString(it) })
+            } else {
+                Tile(obj.getString("id"), size)
+            }
         }
     }.getOrNull()
 }
@@ -65,9 +85,9 @@ object DefaultStart {
 class TileStore(context: Context) {
     private val prefs = context.getSharedPreferences("metrowin", Context.MODE_PRIVATE)
 
-    fun loadTiles(): List<Tile>? = prefs.getString(KEY_TILES, null)?.let(TileCodec::decode)
+    fun loadTiles(): List<StartEntry>? = prefs.getString(KEY_TILES, null)?.let(TileCodec::decode)
 
-    fun saveTiles(tiles: List<Tile>) {
+    fun saveTiles(tiles: List<StartEntry>) {
         prefs.edit { putString(KEY_TILES, TileCodec.encode(tiles)) }
     }
 

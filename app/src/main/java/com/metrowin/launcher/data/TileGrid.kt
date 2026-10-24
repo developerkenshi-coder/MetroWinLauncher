@@ -8,23 +8,25 @@ data class Placement(val col: Int, val row: Int, val cols: Int, val rows: Int)
 data class GridLayout(val placements: List<Placement>, val rows: Int)
 
 /**
- * Start screen layout. The grid is 4 small tiles wide and is made of 2x2 blocks: a medium tile
- * fills one block, a wide tile fills a whole row of two blocks, and up to four small tiles share a
- * block.
+ * Start screen layout. The grid is made of 2x2 blocks, two blocks across ([TileGrid.DEFAULT_COLUMNS]
+ * small tiles) or three with "show more tiles": a medium tile fills one block, a wide tile fills two
+ * blocks side by side, and up to four small tiles share a block.
  *
  * Tiles flow in pinning order and never go back to an earlier block: a new tile is appended at the
  * end, and a block that is only part full stays that way.
  */
 object TileGrid {
-    const val COLUMNS = 4
+    const val DEFAULT_COLUMNS = 4
+    const val MORE_COLUMNS = 6
     private const val BLOCK = 2
-    private const val BLOCKS_PER_ROW = COLUMNS / BLOCK
 
-    fun place(sizes: List<TileSize>): GridLayout {
+    fun place(sizes: List<TileSize>, columns: Int = DEFAULT_COLUMNS): GridLayout {
+        require(columns % BLOCK == 0) { "columns must be a whole number of blocks" }
+        val blocksPerRow = columns / BLOCK
         val occupied = ArrayList<BooleanArray>()
 
         fun isFree(col: Int, row: Int): Boolean {
-            while (occupied.size <= row) occupied += BooleanArray(COLUMNS)
+            while (occupied.size <= row) occupied += BooleanArray(columns)
             return !occupied[row][col]
         }
 
@@ -35,12 +37,14 @@ object TileGrid {
         fun find(size: TileSize, fromBlock: Int): Placement {
             var block = fromBlock
             while (true) {
-                val row = block / BLOCKS_PER_ROW * BLOCK
-                val blockCol = block % BLOCKS_PER_ROW
+                val row = block / blocksPerRow * BLOCK
+                val blockCol = block % blocksPerRow
                 val col = blockCol * BLOCK
                 when (size) {
                     TileSize.Wide ->
-                        if (blockCol == 0 && isFree(0, row, COLUMNS, BLOCK)) return Placement(0, row, COLUMNS, BLOCK)
+                        if (blockCol + 1 < blocksPerRow && isFree(col, row, size.cols, BLOCK)) {
+                            return Placement(col, row, size.cols, BLOCK)
+                        }
                     TileSize.Medium ->
                         if (isFree(col, row, BLOCK, BLOCK)) return Placement(col, row, BLOCK, BLOCK)
                     TileSize.Small ->
@@ -56,7 +60,7 @@ object TileGrid {
         val placements = sizes.map { size ->
             find(size, cursor).also { p ->
                 for (r in p.row until p.row + p.rows) for (c in p.col until p.col + p.cols) occupied[r][c] = true
-                cursor = p.row / BLOCK * BLOCKS_PER_ROW + p.col / BLOCK
+                cursor = p.row / BLOCK * blocksPerRow + p.col / BLOCK
             }
         }
         return GridLayout(placements, placements.maxOfOrNull { it.row + it.rows } ?: 0)

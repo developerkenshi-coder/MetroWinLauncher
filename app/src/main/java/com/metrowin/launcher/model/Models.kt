@@ -1,6 +1,7 @@
 package com.metrowin.launcher.model
 
 import android.content.ComponentName
+import android.os.UserHandle
 import androidx.compose.runtime.Immutable
 
 /** Tile sizes of the Windows Phone 8 Start screen, in units of the small tile. */
@@ -17,15 +18,34 @@ enum class TileSize(val cols: Int, val rows: Int, val code: String) {
     }
 }
 
+/** Something pinned to Start: a [Tile] or a [Folder]. */
+sealed interface StartEntry {
+    val id: String
+    val size: TileSize
+}
+
 /** A tile pinned to Start. [id] is the [AppItem.id] it opens. */
 @Immutable
-data class Tile(val id: String, val size: TileSize)
+data class Tile(override val id: String, override val size: TileSize) : StartEntry
+
+/** A Start folder: tiles dragged onto each other. [children] are [AppItem.id]s. */
+@Immutable
+data class Folder(
+    override val id: String,
+    val name: String,
+    override val size: TileSize,
+    val children: List<String>,
+) : StartEntry
 
 sealed interface Launch {
-    data class Activity(val component: ComponentName) : Launch
+    /** [user] is the profile the app lives in: the owner, or a work or clone profile. */
+    data class Activity(val component: ComponentName, val user: UserHandle) : Launch
 
     /** Opens a system screen by intent action (Battery Saver, Data Sense, Storage Sense). */
     data class Action(val action: String) : Launch
+
+    /** Opens a screen of the launcher itself, such as start+theme. */
+    data class Internal(val route: String) : Launch
 }
 
 /** Which kind of live content a tile can show on its face. */
@@ -45,6 +65,8 @@ data class AppItem(
     val live: LiveKind? = null,
     val packageName: String? = null,
     val removable: Boolean = false,
+    /** The app lives in a work or clone profile, not in the owner's profile. */
+    val isWork: Boolean = false,
 )
 
 /** Glyphs drawn by the launcher for the stock apps, see ui/components/Glyphs.kt. */
@@ -52,5 +74,5 @@ enum class Glyph {
     Alarm, Battery, Calculator, Calendar, Camera, Cortana, Data, Excel, Files, Finance, Games,
     Browser, Mail, Maps, Messaging, Mic, Music, News, Office, OneDrive, OneNote, People, Phone,
     Photos, Podcasts, PowerPoint, Settings, Skype, Sports, Storage, Store, Video, Wallet,
-    Weather, Word, Xbox,
+    Weather, Word, Xbox, Theme,
 }

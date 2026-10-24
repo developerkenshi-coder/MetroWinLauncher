@@ -17,7 +17,8 @@ import androidx.compose.ui.unit.Dp
 import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.ui.theme.LocalAccent
-import com.metrowin.launcher.ui.theme.MetroSurface
+import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.TileWhite
 
 val LocalIconLoader = staticCompositionLocalOf<IconLoader?> { null }
 
@@ -44,10 +45,10 @@ fun AppArt(item: AppItem, size: Dp, modifier: Modifier = Modifier) {
 fun AppSquare(item: AppItem, size: Dp, modifier: Modifier = Modifier) {
     val glyph = item.glyph
     Box(
-        modifier.size(size).background(if (glyph != null) LocalAccent.current else MetroSurface),
+        modifier.size(size).background(if (glyph != null) LocalAccent.current else LocalMetroColors.current.surface),
         contentAlignment = Alignment.Center,
     ) {
-        if (glyph != null) GlyphIcon(glyph, size * GLYPH_IN_SQUARE) else AppIcon(item, size)
+        if (glyph != null) GlyphIcon(glyph, size * GLYPH_IN_SQUARE, color = TileWhite) else AppIcon(item, size)
     }
 }
 

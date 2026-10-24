@@ -42,7 +42,7 @@ import com.metrowin.launcher.ui.anim.turnstile
 import com.metrowin.launcher.ui.components.AppSquare
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
-import com.metrowin.launcher.ui.theme.MetroWhite
+import com.metrowin.launcher.ui.theme.TileWhite
 import kotlinx.coroutines.delay
 
 sealed interface ListRow {
@@ -152,7 +152,7 @@ private fun HeaderRow(
         contentAlignment = Alignment.CenterStart,
     ) {
         Box(Modifier.size(SquareSize).background(LocalAccent.current), contentAlignment = Alignment.Center) {
-            MetroText(letter.lowercase(), size = 32.sp, color = MetroWhite)
+            MetroText(letter.lowercase(), size = 32.sp, color = TileWhite)
         }
     }
 }

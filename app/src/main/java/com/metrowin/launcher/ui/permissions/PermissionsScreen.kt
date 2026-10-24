@@ -33,11 +33,11 @@ import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.GlyphIcon
+import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
-import com.metrowin.launcher.ui.theme.MetroBlack
-import com.metrowin.launcher.ui.theme.MetroSubtle
-import com.metrowin.launcher.ui.theme.MetroWhite
+import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.TileWhite
 
 /**
  * First-run page in the Windows Phone style (small caps header, big lowercase title). It explains
@@ -51,7 +51,7 @@ fun PermissionsScreen(onFinished: () -> Unit, modifier: Modifier = Modifier) {
     Box(
         modifier
             .fillMaxSize()
-            .background(MetroBlack)
+            .background(LocalMetroColors.current.background)
             // Swallow touches so nothing underneath reacts while this page is up.
             .pointerInput(Unit) { detectTapGestures { } },
     ) {
@@ -74,7 +74,7 @@ fun PermissionsScreen(onFinished: () -> Unit, modifier: Modifier = Modifier) {
                 MetroText(
                     stringResource(R.string.perm_intro),
                     size = 17.sp,
-                    color = MetroSubtle,
+                    color = LocalMetroColors.current.subtle,
                     maxLines = Int.MAX_VALUE,
                     lineHeight = 24.sp,
                 )
@@ -101,7 +101,7 @@ fun PermissionsScreen(onFinished: () -> Unit, modifier: Modifier = Modifier) {
 private fun PermissionRow(glyph: Glyph, title: Int, why: Int) {
     Row(Modifier.fillMaxWidth().padding(bottom = 22.dp), verticalAlignment = Alignment.Top) {
         Box(Modifier.size(52.dp).background(LocalAccent.current), contentAlignment = Alignment.Center) {
-            GlyphIcon(glyph, 32.dp)
+            GlyphIcon(glyph, 32.dp, color = TileWhite)
         }
         Spacer(Modifier.width(16.dp))
         Column(Modifier.weight(1f)) {
@@ -109,25 +109,11 @@ private fun PermissionRow(glyph: Glyph, title: Int, why: Int) {
             MetroText(
                 stringResource(why),
                 size = 15.sp,
-                color = MetroSubtle,
+                color = LocalMetroColors.current.subtle,
                 maxLines = Int.MAX_VALUE,
                 lineHeight = 21.sp,
                 weight = FontWeight.Normal,
             )
         }
-    }
-}
-
-/** Windows Phone buttons are plain outlined rectangles. */
-@Composable
-private fun MetroButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Box(
-        modifier
-            .metroPress(onClick = onClick)
-            .border(2.dp, MetroWhite)
-            .padding(vertical = 12.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        MetroText(text, size = 20.sp, weight = FontWeight.Normal)
     }
 }

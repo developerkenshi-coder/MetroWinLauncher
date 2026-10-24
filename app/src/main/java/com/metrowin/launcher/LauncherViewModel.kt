@@ -2,20 +2,26 @@ package com.metrowin.launcher
 
 import android.app.Application
 import android.graphics.Rect
+import android.net.Uri
 import android.widget.Toast
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.metrowin.launcher.data.AppRepository
 import com.metrowin.launcher.data.AppSection
 import com.metrowin.launcher.data.AppSections
 import com.metrowin.launcher.data.DefaultStart
+import com.metrowin.launcher.data.StartEntries
 import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.data.LiveTileData
+import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.LiveTileRepository
+import com.metrowin.launcher.data.SettingsStore
+import com.metrowin.launcher.data.StartBackgroundStore
 import com.metrowin.launcher.data.TileStore
 import com.metrowin.launcher.model.AppItem
-import com.metrowin.launcher.model.Tile
-import com.metrowin.launcher.model.TileSize
+import com.metrowin.launcher.model.StartEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -33,6 +39,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val apps = AppRepository(application)
     private val store = TileStore(application)
     private val liveTiles = LiveTileRepository(application)
+    private val settingsStore = SettingsStore(application)
+    private val backgroundStore = StartBackgroundStore(application)
 
     val icons = IconLoader(application)
 
@@ -43,11 +51,19 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     val sections: StateFlow<List<AppSection>> =
         _items.map(AppSections::group).stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    private val _tiles = MutableStateFlow<List<Tile>>(emptyList())
-    val tiles: StateFlow<List<Tile>> = _tiles.asStateFlow()
+    /** What is pinned to Start: tiles and folders, in order. */
+    private val _entries = MutableStateFlow<List<StartEntry>>(emptyList())
+    val entries: StateFlow<List<StartEntry>> = _entries.asStateFlow()
 
     private val _live = MutableStateFlow(LiveTileData())
     val live: StateFlow<LiveTileData> = _live.asStateFlow()
+
+    private val _settings = MutableStateFlow(settingsStore.load())
+    val settings: StateFlow<LauncherSettings> = _settings.asStateFlow()
+
+    /** The photo behind the Start tiles, if the user picked one. */
+    private val _background = MutableStateFlow<ImageBitmap?>(null)
+    val background: StateFlow<ImageBitmap?> = _background.asStateFlow()
 
     private val _permissionsHandled = MutableStateFlow(store.permissionsHandled)
     val permissionsHandled: StateFlow<Boolean> = _permissionsHandled.asStateFlow()
@@ -63,6 +79,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     init {
         reloadApps()
+        if (_settings.value.hasStartBackground) loadBackground()
         stopObservingPackages = apps.observe(::scheduleReload)
     }
 
@@ -92,17 +109,59 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         refreshLive()
     }
 
-    fun isPinned(id: String) = _tiles.value.any { it.id == id }
-
-    fun pin(item: AppItem) = updateTiles { tiles ->
-        if (tiles.any { it.id == item.id }) tiles else tiles + Tile(item.id, TileSize.Medium)
+    fun updateSettings(change: (LauncherSettings) -> LauncherSettings) {
+        val updated = change(_settings.value)
+        if (updated != _settings.value) {
+            _settings.value = updated
+            settingsStore.save(updated)
+        }
     }
 
-    fun unpin(id: String) = updateTiles { tiles -> tiles.filterNot { it.id == id } }
-
-    fun resize(id: String) = updateTiles { tiles ->
-        tiles.map { if (it.id == id) it.copy(size = it.size.next()) else it }
+    /** Shrinks and keeps the photo the user picked as the Start background. */
+    fun setStartBackground(uri: Uri) {
+        viewModelScope.launch {
+            val saved = withContext(Dispatchers.IO) { backgroundStore.save(uri) }
+            if (saved) {
+                updateSettings { it.copy(backgroundRevision = it.backgroundRevision + 1) }
+                loadBackground()
+            } else {
+                Toast.makeText(getApplication(), R.string.photo_failed, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
+
+    fun clearStartBackground() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { backgroundStore.clear() }
+            _background.value = null
+            updateSettings { it.copy(backgroundRevision = 0) }
+        }
+    }
+
+    private fun loadBackground() {
+        viewModelScope.launch {
+            _background.value = withContext(Dispatchers.IO) { backgroundStore.load()?.asImageBitmap() }
+        }
+    }
+
+    fun isPinned(id: String) = StartEntries.isPinned(_entries.value, id)
+
+    fun pin(item: AppItem) = updateEntries { StartEntries.pin(it, item.id) }
+
+    fun unpin(id: String) = updateEntries { StartEntries.unpin(it, id) }
+
+    fun resize(id: String) = updateEntries { StartEntries.resize(it, id) }
+
+    fun moveTo(draggedId: String, targetId: String) = updateEntries { StartEntries.moveTo(it, draggedId, targetId) }
+
+    fun merge(draggedId: String, ontoId: String) = updateEntries { StartEntries.merge(it, draggedId, ontoId) }
+
+    fun releaseFolder(folderId: String) = updateEntries { StartEntries.release(it, folderId) }
+
+    fun removeFromFolder(folderId: String, childId: String) =
+        updateEntries { StartEntries.removeFromFolder(it, folderId, childId) }
+
+    fun renameFolder(folderId: String, name: String) = updateEntries { StartEntries.rename(it, folderId, name) }
 
     /** Returns false (and tells the user) when the app could not be opened. */
     fun launch(item: AppItem, sourceBounds: Rect? = null): Boolean {
@@ -141,19 +200,19 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private fun syncTiles(items: List<AppItem>) {
         if (items.isEmpty()) return // never prune the Start screen on a failed or empty load
         val known = items.mapTo(HashSet()) { it.id }
-        val base = if (tilesReady) _tiles.value else store.loadTiles() ?: DefaultStart.build(items)
-        val kept = base.filter { it.id in known }
+        val base = if (tilesReady) _entries.value else store.loadTiles() ?: DefaultStart.build(items)
+        val kept = StartEntries.prune(base, known)
         tilesReady = true
-        if (kept != _tiles.value) {
-            _tiles.value = kept
+        if (kept != _entries.value) {
+            _entries.value = kept
             store.saveTiles(kept)
         }
     }
 
-    private inline fun updateTiles(change: (List<Tile>) -> List<Tile>) {
-        val updated = change(_tiles.value)
-        if (updated != _tiles.value) {
-            _tiles.value = updated
+    private inline fun updateEntries(change: (List<StartEntry>) -> List<StartEntry>) {
+        val updated = change(_entries.value)
+        if (updated != _entries.value) {
+            _entries.value = updated
             store.saveTiles(updated)
         }
     }

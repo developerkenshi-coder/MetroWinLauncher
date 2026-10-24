@@ -15,27 +15,38 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Process
 import android.os.UserHandle
+import android.os.UserManager
 import androidx.core.net.toUri
 import com.metrowin.launcher.R
 import com.metrowin.launcher.model.AppItem
+import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.model.Launch
 
 /**
- * Builds the app list: every launchable app of the device, with the Windows Phone stock apps
- * ([MetroCatalog]) standing in for the Android apps that play their role.
+ * Builds the app list: every launchable app of the device, in every profile (personal, work, clone),
+ * plus the Windows Phone stock apps ([MetroCatalog]) that the device can play.
+ *
+ * An app is always listed under its own name. When a stock entry maps onto it, the stock entry is
+ * added next to it ("Internet Explorer" beside "Chrome"); when both have the same name ("Calculator")
+ * they are one entry, which takes the Metro glyph.
  */
 class AppRepository(private val context: Context) {
     private val launcherApps = context.getSystemService(LauncherApps::class.java)
+    private val userManager = context.getSystemService(UserManager::class.java)
     private val pm = context.packageManager
-    private val user = Process.myUserHandle()
+    private val owner = Process.myUserHandle()
 
     /** Blocking, call it off the main thread. Returns the list in alphabetical order. */
     fun load(): List<AppItem> {
-        val activities = launcherApps.getActivityList(null, user)
-            .filter { it.componentName.packageName != context.packageName }
-        val byPackage = activities.groupBy { it.componentName.packageName }
+        val own = context.packageName
+        val ownerActivities = launcherApps.getActivityList(null, owner).filter { it.componentName.packageName != own }
+        val otherActivities = launcherApps.profiles.filter { it != owner }.flatMap { launcherApps.getActivityList(null, it) }
+
+        // Stock apps are matched against the owner's apps only.
+        val byPackage = ownerActivities.groupBy { it.componentName.packageName }
         val claimed = HashSet<ComponentName>()
-        val items = ArrayList<AppItem>(activities.size + MetroCatalog.apps.size)
+        val merged = HashSet<ComponentName>()
+        val items = ArrayList<AppItem>(ownerActivities.size + otherActivities.size + MetroCatalog.apps.size)
 
         for (stock in MetroCatalog.apps) {
             val id = MetroCatalog.idOf(stock)
@@ -49,10 +60,11 @@ class AppRepository(private val context: Context) {
             }
             val info = findLauncherActivity(stock, byPackage, claimed) ?: continue
             claimed += info.componentName
+            if (AppSections.fold(info.label?.toString().orEmpty()) == AppSections.fold(label)) merged += info.componentName
             items += AppItem(
                 id = id,
                 label = label,
-                launch = Launch.Activity(info.componentName),
+                launch = Launch.Activity(info.componentName, owner),
                 glyph = stock.glyph,
                 live = stock.live,
                 packageName = info.componentName.packageName,
@@ -60,36 +72,52 @@ class AppRepository(private val context: Context) {
             )
         }
 
-        activities.filterNot { it.componentName in claimed }.mapTo(items) { info ->
-            AppItem(
-                id = "app:${info.componentName.flattenToShortString()}",
-                label = info.label?.toString()?.takeIf { it.isNotBlank() } ?: info.componentName.packageName,
-                launch = Launch.Activity(info.componentName),
-                packageName = info.componentName.packageName,
-                removable = !info.isSystemApp(),
-            )
-        }
+        items += AppItem(
+            id = SETTINGS_ID,
+            label = context.getString(R.string.settings_start_theme),
+            launch = Launch.Internal(ROUTE_SETTINGS),
+            glyph = Glyph.Theme,
+        )
+
+        ownerActivities.filterNot { it.componentName in merged }.mapTo(items) { toItem(it, owner) }
+        otherActivities.mapTo(items) { toItem(it, it.user) }
         return AppSections.sort(items)
+    }
+
+    private fun toItem(info: LauncherActivityInfo, user: UserHandle): AppItem {
+        val isOwner = user == owner
+        val component = info.componentName
+        return AppItem(
+            id = "app:${component.flattenToShortString()}" +
+                if (isOwner) "" else "@${userManager.getSerialNumberForUser(user)}",
+            label = info.label?.toString()?.takeIf { it.isNotBlank() } ?: component.packageName,
+            launch = Launch.Activity(component, user),
+            packageName = component.packageName,
+            removable = isOwner && !info.isSystemApp(),
+            isWork = !isOwner,
+        )
     }
 
     fun launch(item: AppItem, sourceBounds: Rect?): Boolean {
         val options = ActivityOptions.makeCustomAnimation(context, R.anim.app_enter, R.anim.launcher_hold).toBundle()
         return runCatching {
             when (val target = item.launch) {
-                is Launch.Activity -> startActivity(target.component, sourceBounds, options)
+                is Launch.Activity -> startActivity(target, sourceBounds, options)
                 is Launch.Action ->
                     context.startActivity(Intent(target.action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), options)
+                is Launch.Internal -> Unit // handled by the UI, there is no activity to start
             }
         }.isSuccess
     }
 
-    private fun startActivity(component: ComponentName, sourceBounds: Rect?, options: android.os.Bundle) {
+    private fun startActivity(target: Launch.Activity, sourceBounds: Rect?, options: android.os.Bundle) {
         try {
-            launcherApps.startMainActivity(component, user, sourceBounds, options)
-        } catch (_: RuntimeException) {
+            launcherApps.startMainActivity(target.component, target.user, sourceBounds, options)
+        } catch (e: RuntimeException) {
+            if (target.user != owner) throw e
             val intent = Intent(Intent.ACTION_MAIN)
                 .addCategory(Intent.CATEGORY_LAUNCHER)
-                .setComponent(component)
+                .setComponent(target.component)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             context.startActivity(intent, options)
         }
@@ -178,4 +206,9 @@ class AppRepository(private val context: Context) {
     private fun LauncherActivityInfo.isSystemApp() = applicationInfo.isSystemApp()
 
     private fun ApplicationInfo.isSystemApp() = flags and ApplicationInfo.FLAG_SYSTEM != 0
+
+    companion object {
+        const val SETTINGS_ID = "launcher:settings"
+        const val ROUTE_SETTINGS = "settings"
+    }
 }

@@ -25,6 +25,14 @@ class AppSectionsTest {
     }
 
     @Test
+    fun foldMakesLabelsComparableAndSearchable() {
+        // The rule that merges a stock app with the Android app of the same name ("Calculator").
+        assertEquals(AppSections.fold("Calculator"), AppSections.fold("  calculator "))
+        assertEquals(AppSections.fold("Fotocamera"), AppSections.fold("FOTOCÁMERA"))
+        assertEquals("elan", AppSections.fold("Élan"))
+    }
+
+    @Test
     fun otherScriptsGetTheirOwnGroup() {
         assertEquals("Я", AppSections.keyOf("яндекс"))
     }

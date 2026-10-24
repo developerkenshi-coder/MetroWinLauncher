@@ -2,11 +2,17 @@ package com.metrowin.launcher.ui.start
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,13 +33,15 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.data.LiveEvent
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.model.AppItem
+import com.metrowin.launcher.model.Folder
 import com.metrowin.launcher.model.LiveKind
 import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.ui.anim.FlipContainer
 import com.metrowin.launcher.ui.components.AppArt
 import com.metrowin.launcher.ui.components.MetroText
-import com.metrowin.launcher.ui.theme.MetroBlack
-import com.metrowin.launcher.ui.theme.MetroWhite
+import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.TileWhite
+import com.metrowin.launcher.ui.theme.onTile
 import kotlinx.coroutines.delay
 import java.time.Instant
 import java.time.LocalDate
@@ -43,7 +51,11 @@ import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 
-/** What a tile looks like. Static for most apps, a flipping live tile for the ones in [LiveKind]. */
+/**
+ * What a tile looks like. Static for most apps, a flipping live tile for the ones in [LiveKind].
+ * The counter in the corner does not flip with the face: it is the number of missed calls on the
+ * Phone tile, and the number of notifications of the app on any tile.
+ */
 @Composable
 fun TileFace(
     item: AppItem,
@@ -52,38 +64,101 @@ fun TileFace(
     height: Dp,
     live: LiveTileData,
     seed: Int,
+    notifications: Int,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier.fillMaxSize()) {
-        when (item.live) {
-            LiveKind.Calendar -> CalendarFace(item, size, width, height, live.nextEvent, seed)
-            LiveKind.Photos -> PhotosFace(item, size, width, height, live, seed)
-            LiveKind.People -> PeopleFace(item, size, width, height, live, seed)
-            LiveKind.Phone -> StaticFace(item, size, width, height, badge = live.missedCalls.takeIf { it > 0 })
-            null -> StaticFace(item, size, width, height)
+    val count = if (item.live == LiveKind.Phone) maxOf(live.missedCalls, notifications) else notifications
+    // Whatever the theme, a tile is coloured: its text and glyphs are white.
+    CompositionLocalProvider(LocalMetroColors provides LocalMetroColors.current.onTile()) {
+        Box(modifier.fillMaxSize()) {
+            when (item.live) {
+                LiveKind.Calendar -> CalendarFace(item, size, width, height, live.nextEvent, seed)
+                LiveKind.Photos -> PhotosFace(item, size, width, height, live, seed)
+                LiveKind.People -> PeopleFace(item, size, width, height, live, seed)
+                LiveKind.Phone, null -> StaticFace(item, size, width, height)
+            }
+            CountBadge(count, size, Modifier.align(Alignment.TopEnd))
         }
+    }
+}
+
+/** The number in the top right corner of a tile. */
+@Composable
+fun CountBadge(count: Int, size: TileSize, modifier: Modifier = Modifier) {
+    if (count <= 0) return
+    MetroText(
+        text = if (count > 99) "99+" else count.toString(),
+        size = if (size == TileSize.Small) 16.sp else 30.sp,
+        modifier = modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+    )
+}
+
+/**
+ * A folder: the first apps it holds as small squares, its name in the corner. An open folder has a
+ * bar along the bottom, and the apps it holds follow it on Start.
+ */
+@Composable
+fun FolderFace(
+    folder: Folder,
+    items: List<AppItem>,
+    expanded: Boolean,
+    size: TileSize,
+    width: Dp,
+    height: Dp,
+    notifications: Int,
+    modifier: Modifier = Modifier,
+) {
+    CompositionLocalProvider(LocalMetroColors provides LocalMetroColors.current.onTile()) {
+        Box(modifier.fillMaxSize()) {
+            val shown = items.take(4)
+            val side = minOf(width, height)
+            when (size) {
+                TileSize.Wide -> Row(
+                    Modifier.align(Alignment.Center),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) { shown.forEach { MiniApp(it, side * 0.34f) } }
+                else -> {
+                    val mini = side * if (size == TileSize.Small) 0.34f else 0.3f
+                    Column(
+                        Modifier.align(Alignment.Center),
+                        verticalArrangement = Arrangement.spacedBy(if (size == TileSize.Small) 3.dp else 6.dp),
+                    ) {
+                        shown.chunked(2).forEach { pair ->
+                            Row(horizontalArrangement = Arrangement.spacedBy(if (size == TileSize.Small) 3.dp else 6.dp)) {
+                                pair.forEach { MiniApp(it, mini) }
+                            }
+                        }
+                    }
+                }
+            }
+            if (size != TileSize.Small) {
+                TileLabel(folder.name.ifBlank { stringResource(R.string.folder_default_name) }, Modifier.align(Alignment.BottomStart))
+            }
+            if (expanded) Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(4.dp).background(TileWhite))
+            CountBadge(notifications, size, Modifier.align(Alignment.TopEnd))
+        }
+    }
+}
+
+@Composable
+private fun MiniApp(item: AppItem, side: Dp) {
+    Box(Modifier.size(side).background(TileWhite.copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
+        AppArt(item, side * 0.74f)
     }
 }
 
 /** Glyph or icon in the middle, name in the bottom left corner, like every Windows Phone tile. */
 @Composable
-private fun StaticFace(item: AppItem, size: TileSize, width: Dp, height: Dp, badge: Int? = null) {
+private fun StaticFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
     Box(Modifier.fillMaxSize()) {
         val art = minOf(width, height) * if (size == TileSize.Small) 0.5f else 0.42f
         AppArt(item, art, Modifier.align(Alignment.Center))
         if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
-        if (badge != null) {
-            MetroText(
-                text = badge.toString(),
-                size = if (size == TileSize.Small) 16.sp else 30.sp,
-                modifier = Modifier.align(Alignment.TopEnd).padding(horizontal = 10.dp, vertical = 4.dp),
-            )
-        }
     }
 }
 
 @Composable
-private fun TileLabel(label: String, modifier: Modifier = Modifier, color: Color = MetroWhite) {
+private fun TileLabel(label: String, modifier: Modifier = Modifier, color: Color = TileWhite) {
     MetroText(
         text = label,
         size = 13.sp,
@@ -175,7 +250,7 @@ private fun PeopleFace(item: AppItem, size: TileSize, width: Dp, height: Dp, liv
 @Composable
 private fun PhotoLabel(text: String, modifier: Modifier = Modifier) {
     Box(
-        modifier.background(Brush.verticalGradient(listOf(Color.Transparent, MetroBlack.copy(alpha = 0.55f)))),
+        modifier.background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f)))),
     ) {
         TileLabel(text, Modifier.padding(top = 18.dp))
     }

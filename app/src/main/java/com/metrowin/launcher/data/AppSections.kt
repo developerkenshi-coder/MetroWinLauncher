@@ -18,6 +18,10 @@ object AppSections {
 
     private val combiningMarks = Regex("\\p{M}+")
 
+    /** Lower case, without accents or surrounding spaces: how labels are compared and searched. */
+    fun fold(text: String): String =
+        Normalizer.normalize(text.trim(), Normalizer.Form.NFD).replace(combiningMarks, "").lowercase(Locale.ROOT)
+
     fun keyOf(label: String): String {
         val folded = Normalizer.normalize(label.trim(), Normalizer.Form.NFD).replace(combiningMarks, "")
         if (folded.isEmpty()) return SYMBOLS

@@ -40,6 +40,27 @@
     <string name="stock_word">Word</string>
     <string name="stock_xbox">Xbox</string>
 
+    <!-- start+theme (the launcher's own settings) -->
+    <string name="settings_start_theme">start+theme</string>
+    <string name="settings_header">SETTINGS</string>
+    <string name="theme_background">background</string>
+    <string name="theme_dark">dark</string>
+    <string name="theme_light">light</string>
+    <string name="theme_accent">accent color</string>
+    <string name="theme_start_background">start background</string>
+    <string name="theme_choose_photo">choose photo</string>
+    <string name="theme_remove_photo">remove</string>
+    <string name="theme_start_background_hint">Tiles of the built-in apps show the photo through them.</string>
+    <string name="theme_more_tiles">show more tiles</string>
+    <string name="toggle_on">On</string>
+    <string name="toggle_off">Off</string>
+    <string name="photo_failed">Can\'t use this photo</string>
+
+    <string name="folder_default_name">folder</string>
+    <string name="folder_name">folder name</string>
+    <string name="action_ok">ok</string>
+    <string name="action_cancel">cancel</string>
+
     <!-- Live tiles -->
     <string name="live_today">today</string>
     <string name="live_tomorrow">tomorrow</string>

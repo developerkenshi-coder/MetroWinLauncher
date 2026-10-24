@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!--
         Everything below is optional for the launcher itself. The user is asked once, on a
@@ -14,6 +15,15 @@
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
+
+    <!--
+        A launcher has to see every installed app. LauncherApps and the <queries> below already cover the
+        apps that have a launcher icon; this makes the visibility complete (stock app lookups, work profile).
+        Google Play restricts this permission, a launcher is one of the cases it allows.
+    -->
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
 
     <!-- "uninstall" in the app list context menu. -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />

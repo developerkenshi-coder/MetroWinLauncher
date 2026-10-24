@@ -66,12 +66,39 @@ class TileGridTest {
     }
 
     @Test
-    fun noTilesOverlap() {
-        val sizes = listOf(Wide, Small, Medium, Small, Small, Wide, Medium, Small, Medium, Small, Small, Small)
-        val taken = HashSet<Pair<Int, Int>>()
-        TileGrid.place(sizes).placements.forEach { p ->
-            for (r in p.row until p.row + p.rows) for (c in p.col until p.col + p.cols) {
-                assertEquals("cell ($c,$r) used twice", true, taken.add(c to r))
+    fun threeColumnsFitThreeMediumTilesInARow() {
+        val layout = TileGrid.place(listOf(Medium, Medium, Medium, Medium), TileGrid.MORE_COLUMNS)
+        assertEquals(
+            listOf(Placement(0, 0, 2, 2), Placement(2, 0, 2, 2), Placement(4, 0, 2, 2), Placement(0, 2, 2, 2)),
+            layout.placements,
+        )
+    }
+
+    @Test
+    fun aWideTileLeavesRoomForAMediumTileInThreeColumns() {
+        val layout = TileGrid.place(listOf(Wide, Medium, Wide), TileGrid.MORE_COLUMNS)
+        assertEquals(Placement(0, 0, 4, 2), layout.placements[0])
+        assertEquals(Placement(4, 0, 2, 2), layout.placements[1])
+        // The next wide tile starts a new row: it needs two free blocks side by side.
+        assertEquals(Placement(0, 2, 4, 2), layout.placements[2])
+    }
+
+    @Test
+    fun aWideTileCanSitOnTheLastTwoBlocksOfARow() {
+        val layout = TileGrid.place(listOf(Medium, Wide), TileGrid.MORE_COLUMNS)
+        assertEquals(Placement(2, 0, 4, 2), layout.placements[1])
+    }
+
+    @Test
+    fun noTilesOverlapInEitherLayout() {
+        val sizes = listOf(Wide, Small, Medium, Small, Small, Wide, Medium, Small, Medium, Small, Small, Small, Wide, Wide)
+        for (columns in listOf(TileGrid.DEFAULT_COLUMNS, TileGrid.MORE_COLUMNS)) {
+            val taken = HashSet<Pair<Int, Int>>()
+            TileGrid.place(sizes, columns).placements.forEach { p ->
+                assertEquals("tile sticks out of the grid", true, p.col + p.cols <= columns)
+                for (r in p.row until p.row + p.rows) for (c in p.col until p.col + p.cols) {
+                    assertEquals("cell ($c,$r) used twice with $columns columns", true, taken.add(c to r))
+                }
             }
         }
     }

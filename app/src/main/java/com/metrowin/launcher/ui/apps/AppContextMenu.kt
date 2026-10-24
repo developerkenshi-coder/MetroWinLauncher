@@ -13,7 +13,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.stringResource
@@ -23,7 +22,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroText
-import com.metrowin.launcher.ui.theme.MetroSurface
+import com.metrowin.launcher.ui.theme.LocalMetroColors
 
 /** Where the long-pressed row was on screen (in pixels), so the menu can sit right next to it. */
 @Immutable
@@ -47,7 +46,7 @@ fun AppContextMenu(
     BoxWithConstraints(
         modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.72f))
+            .background(LocalMetroColors.current.background.copy(alpha = 0.78f))
             .pointerInput(Unit) { detectTapGestures { currentDismiss() } },
     ) {
         val rowBottom = state.top + state.height
@@ -77,7 +76,7 @@ fun AppContextMenu(
 
 @Composable
 private fun Menu(item: AppItem, pinned: Boolean, onPinToggle: () -> Unit, onUninstall: () -> Unit) {
-    Column(Modifier.fillMaxWidth().background(MetroSurface).padding(vertical = 6.dp)) {
+    Column(Modifier.fillMaxWidth().background(LocalMetroColors.current.surface).padding(vertical = 6.dp)) {
         MenuEntry(stringResource(if (pinned) R.string.menu_unpin else R.string.menu_pin), onPinToggle)
         if (item.removable) MenuEntry(stringResource(R.string.menu_uninstall), onUninstall)
     }

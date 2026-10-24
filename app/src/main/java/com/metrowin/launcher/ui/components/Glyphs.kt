@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.model.Glyph
-import com.metrowin.launcher.ui.theme.MetroWhite
+import com.metrowin.launcher.ui.theme.LocalMetroColors
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -32,7 +32,7 @@ import kotlin.math.sin
  * (the Phone handset is the one exception, on a 24x24 grid, see [PHONE]).
  */
 @Composable
-fun GlyphIcon(glyph: Glyph, size: Dp, modifier: Modifier = Modifier, color: Color = MetroWhite) {
+fun GlyphIcon(glyph: Glyph, size: Dp, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.foreground) {
     val spec = remember(glyph) { specOf(glyph) }
     val density = LocalDensity.current
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
@@ -183,5 +183,9 @@ private fun build(glyph: Glyph): Spec = when (glyph) {
     Glyph.Finance -> spec(stroke("M14 14V86H90", "M24 70L44 48L58 62L84 30", "M68 30H84V46"))
     Glyph.Battery -> spec(stroke(rect(10f, 32f, 72f, 36f, 4f)), fill(rect(84f, 44f, 6f, 12f), rect(17f, 39f, 30f, 22f)))
     Glyph.Data -> spec(stroke("M34 82V22", "M20 36L34 22L48 36", "M66 18V78", "M52 64L66 78L80 64"))
+    Glyph.Theme -> spec(
+        stroke("M50 12A38 38 0 1 0 50 88A9 9 0 0 0 55 72A9 9 0 0 1 64 62H74A14 14 0 0 0 88 48A38 36 0 0 0 50 12Z"),
+        fill(circle(30f, 48f, 5f), circle(40f, 29f, 5f), circle(61f, 28f, 5f), circle(74f, 42f, 5f)),
+    )
     Glyph.Storage -> spec(stroke("M18 26A32 12 0 1 0 82 26A32 12 0 1 0 18 26Z", "M18 26V74A32 12 0 0 0 82 74V26", "M18 50A32 12 0 0 0 82 50"))
 }

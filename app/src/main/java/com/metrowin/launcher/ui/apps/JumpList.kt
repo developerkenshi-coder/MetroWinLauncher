@@ -32,10 +32,8 @@ import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
-import com.metrowin.launcher.ui.theme.MetroBlack
-import com.metrowin.launcher.ui.theme.MetroInactive
-import com.metrowin.launcher.ui.theme.MetroSubtle
-import com.metrowin.launcher.ui.theme.MetroWhite
+import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.TileWhite
 import kotlinx.coroutines.delay
 
 private const val COLUMNS = 4
@@ -56,7 +54,7 @@ fun JumpList(
     Box(
         modifier
             .fillMaxSize()
-            .background(MetroBlack.copy(alpha = 0.94f))
+            .background(LocalMetroColors.current.background.copy(alpha = 0.94f))
             .pointerInput(Unit) { detectTapGestures { currentDismiss() } },
     ) {
         Column(
@@ -88,6 +86,7 @@ fun JumpList(
 
 @Composable
 private fun JumpCell(key: String, enabled: Boolean, order: Int, onPick: (String) -> Unit, modifier: Modifier = Modifier) {
+    val colors = LocalMetroColors.current
     val away = remember { Animatable(1f) }
     LaunchedEffect(Unit) {
         delay(order * 16L)
@@ -104,9 +103,9 @@ private fun JumpCell(key: String, enabled: Boolean, order: Int, onPick: (String)
                 alpha = 1f - away.value
             }
             .then(if (enabled) Modifier.metroPress(onClick = { onPick(key) }) else Modifier)
-            .background(if (enabled) LocalAccent.current else MetroInactive),
+            .background(if (enabled) LocalAccent.current else colors.inactive),
         contentAlignment = Alignment.Center,
     ) {
-        MetroText(key.lowercase(), size = 30.sp, color = if (enabled) MetroWhite else MetroSubtle.copy(alpha = 0.5f))
+        MetroText(key.lowercase(), size = 30.sp, color = if (enabled) TileWhite else colors.subtle.copy(alpha = 0.5f))
     }
 }
