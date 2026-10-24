@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MetroWin Launcher</string>
+
+    <string name="stock_alarms">Sveglie</string>
+    <string name="stock_batterysaver">Risparmio batteria</string>
+    <string name="stock_calculator">Calcolatrice</string>
+    <string name="stock_calendar">Calendario</string>
+    <string name="stock_camera">Fotocamera</string>
+    <string name="stock_cortana">Cortana</string>
+    <string name="stock_datasense">Data Sense</string>
+    <string name="stock_excel">Excel</string>
+    <string name="stock_files">File</string>
+    <string name="stock_finance">Finanza</string>
+    <string name="stock_games">Giochi</string>
+    <string name="stock_internetexplorer">Internet Explorer</string>
+    <string name="stock_mail">Posta</string>
+    <string name="stock_maps">Mappe</string>
+    <string name="stock_messaging">Messaggi</string>
+    <string name="stock_music">Musica</string>
+    <string name="stock_news">Notizie</string>
+    <string name="stock_office">Office</string>
+    <string name="stock_onedrive">OneDrive</string>
+    <string name="stock_onenote">OneNote</string>
+    <string name="stock_people">Persone</string>
+    <string name="stock_phone">Telefono</string>
+    <string name="stock_photos">Foto</string>
+    <string name="stock_podcasts">Podcast</string>
+    <string name="stock_powerpoint">PowerPoint</string>
+    <string name="stock_settings">Impostazioni</string>
+    <string name="stock_skype">Skype</string>
+    <string name="stock_sports">Sport</string>
+    <string name="stock_storagesense">Storage Sense</string>
+    <string name="stock_store">Store</string>
+    <string name="stock_video">Video</string>
+    <string name="stock_voicerecorder">Registratore vocale</string>
+    <string name="stock_wallet">Wallet</string>
+    <string name="stock_weather">Meteo</string>
+    <string name="stock_word">Word</string>
+    <string name="stock_xbox">Xbox</string>
+
+    <string name="live_today">oggi</string>
+    <string name="live_tomorrow">domani</string>
+
+    <string name="menu_pin">aggiungi a start</string>
+    <string name="menu_unpin">rimuovi da start</string>
+    <string name="menu_uninstall">disinstalla</string>
+    <string name="launch_failed">Impossibile aprire questa app</string>
+
+    <string name="perm_header">METROWIN LAUNCHER</string>
+    <string name="perm_title">consenti l\'accesso</string>
+    <string name="perm_intro">I riquadri possono mostrare informazioni dal telefono. Restano sul dispositivo e ogni permesso è facoltativo.</string>
+    <string name="perm_photos">foto</string>
+    <string name="perm_photos_why">Sfoglia le tue ultime foto sul riquadro Foto.</string>
+    <string name="perm_calendar">calendario</string>
+    <string name="perm_calendar_why">Mostra il prossimo appuntamento sul riquadro Calendario.</string>
+    <string name="perm_contacts">contatti</string>
+    <string name="perm_contacts_why">Mostra i volti dei tuoi contatti sul riquadro Persone.</string>
+    <string name="perm_calls">registro chiamate</string>
+    <string name="perm_calls_why">Conta le chiamate perse sul riquadro Telefono.</string>
+    <string name="perm_allow">consenti</string>
+    <string name="perm_skip">non ora</string>
+</resources>

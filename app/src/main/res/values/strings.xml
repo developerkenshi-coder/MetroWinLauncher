@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MetroWin Launcher</string>
+
+    <!-- Windows Phone stock apps, same names as on Windows Phone 8.1 -->
+    <string name="stock_alarms">Alarms</string>
+    <string name="stock_batterysaver">Battery Saver</string>
+    <string name="stock_calculator">Calculator</string>
+    <string name="stock_calendar">Calendar</string>
+    <string name="stock_camera">Camera</string>
+    <string name="stock_cortana">Cortana</string>
+    <string name="stock_datasense">Data Sense</string>
+    <string name="stock_excel">Excel</string>
+    <string name="stock_files">Files</string>
+    <string name="stock_finance">Finance</string>
+    <string name="stock_games">Games</string>
+    <string name="stock_internetexplorer">Internet Explorer</string>
+    <string name="stock_mail">Mail</string>
+    <string name="stock_maps">Maps</string>
+    <string name="stock_messaging">Messaging</string>
+    <string name="stock_music">Music</string>
+    <string name="stock_news">News</string>
+    <string name="stock_office">Office</string>
+    <string name="stock_onedrive">OneDrive</string>
+    <string name="stock_onenote">OneNote</string>
+    <string name="stock_people">People</string>
+    <string name="stock_phone">Phone</string>
+    <string name="stock_photos">Photos</string>
+    <string name="stock_podcasts">Podcasts</string>
+    <string name="stock_powerpoint">PowerPoint</string>
+    <string name="stock_settings">Settings</string>
+    <string name="stock_skype">Skype</string>
+    <string name="stock_sports">Sports</string>
+    <string name="stock_storagesense">Storage Sense</string>
+    <string name="stock_store">Store</string>
+    <string name="stock_video">Video</string>
+    <string name="stock_voicerecorder">Voice Recorder</string>
+    <string name="stock_wallet">Wallet</string>
+    <string name="stock_weather">Weather</string>
+    <string name="stock_word">Word</string>
+    <string name="stock_xbox">Xbox</string>
+
+    <!-- Live tiles -->
+    <string name="live_today">today</string>
+    <string name="live_tomorrow">tomorrow</string>
+
+    <!-- App list context menu -->
+    <string name="menu_pin">pin to start</string>
+    <string name="menu_unpin">unpin from start</string>
+    <string name="menu_uninstall">uninstall</string>
+    <string name="launch_failed">Can\'t open this app</string>
+
+    <!-- First run permissions page -->
+    <string name="perm_header">METROWIN LAUNCHER</string>
+    <string name="perm_title">allow access</string>
+    <string name="perm_intro">Tiles can show live information from your phone. It never leaves the device, and every permission is optional.</string>
+    <string name="perm_photos">photos</string>
+    <string name="perm_photos_why">Flip through your latest photos on the Photos tile.</string>
+    <string name="perm_calendar">calendar</string>
+    <string name="perm_calendar_why">Show your next appointment on the Calendar tile.</string>
+    <string name="perm_contacts">contacts</string>
+    <string name="perm_contacts_why">Show the faces of your contacts on the People tile.</string>
+    <string name="perm_calls">call history</string>
+    <string name="perm_calls_why">Count your missed calls on the Phone tile.</string>
+    <string name="perm_allow">allow</string>
+    <string name="perm_skip">not now</string>
+</resources>
