@@ -2,38 +2,35 @@ package com.metrowin.launcher
 
 import android.app.Activity
 import android.app.KeyguardManager
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Animatable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -59,6 +56,18 @@ import com.metrowin.launcher.ui.apps.JumpList
 import com.metrowin.launcher.ui.apps.MenuState
 import com.metrowin.launcher.ui.components.LocalIconLoader
 import com.metrowin.launcher.ui.components.TurnstileHost
+import com.metrowin.launcher.ui.gesture.BackGestureHandler
+import com.metrowin.launcher.ui.gesture.InstantBack
+import com.metrowin.launcher.ui.gesture.LauncherPager
+import com.metrowin.launcher.ui.gesture.PAGE_APPS
+import com.metrowin.launcher.ui.gesture.PAGE_START
+import com.metrowin.launcher.ui.gesture.PagerBack
+import com.metrowin.launcher.ui.gesture.PanelBack
+import com.metrowin.launcher.ui.gesture.TurnstileBack
+import com.metrowin.launcher.ui.gesture.pullDownConnection
+import com.metrowin.launcher.ui.gesture.pullDownFromTop
+import com.metrowin.launcher.ui.gesture.rememberPullPanel
+import com.metrowin.launcher.ui.gesture.returnToStart
 import com.metrowin.launcher.ui.kids.KidsHeader
 import com.metrowin.launcher.ui.permissions.PermissionsScreen
 import com.metrowin.launcher.ui.settings.SettingsScreen
@@ -75,9 +84,6 @@ import com.metrowin.launcher.ui.theme.MetroTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private const val PAGE_START = 0
-private const val PAGE_APPS = 1
-
 /** The Kid's Corner is the third page of the settings pivot. */
 private const val PAGE_KIDS_SETTINGS = 2
 
@@ -85,9 +91,8 @@ private const val PAGE_KIDS_SETTINGS = 2
 private const val START_EXIT_MS = 300L
 private const val LIST_EXIT_MS = 240L
 
-/** Pulled down further than this, the Action Center stays open when let go. */
-private const val PULL_OPENS_ABOVE = 0.3f
-private const val PULL_FLING_VELOCITY = 800f
+/** How far below the status bar a pull from the top edge may start, to open the Action Center from any page. */
+private val EDGE_PULL_ZONE = 28.dp
 
 /**
  * The launcher: a pager with the Start screen and the app list, plus the pages and overlays that sit
@@ -102,7 +107,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     val startBackground by vm.background.collectAsStateWithLifecycle()
     val permissionsHandled by vm.permissionsHandled.collectAsStateWithLifecycle()
-    val homePresses by vm.homePresses.collectAsStateWithLifecycle()
+    val homePress by vm.homePresses.collectAsStateWithLifecycle()
     val notifications by vm.notifications.collectAsStateWithLifecycle()
     val badges by vm.badges.collectAsStateWithLifecycle()
     val notificationAccess by vm.notificationAccess.collectAsStateWithLifecycle()
@@ -142,13 +147,12 @@ fun LauncherApp(vm: LauncherViewModel) {
     var settingsPage by remember { mutableIntStateOf(0) }
     val searchResults = remember(query, items) { AppSearch.filter(items, query) }
 
-    // The Action Center: 0 hidden, 1 fully pulled down. Pulling down from the top of Start moves it.
-    var actionCenter by remember { mutableFloatStateOf(0f) }
+    // The Action Center. The panel is one state that follows the finger, whatever starts the pull.
+    val panel = rememberPullPanel()
     var quickStates by remember { mutableStateOf<Map<QuickAction, Boolean?>>(emptyMap()) }
 
-    fun moveActionCenterTo(target: Float) {
-        scope.launch { animate(actionCenter, target, animationSpec = tween(durationMillis = 240)) { value, _ -> actionCenter = value } }
-    }
+    // The settings page swings in and out like a turnstile; the back gesture moves it with the finger.
+    val settingsAway = remember { Animatable(1f) }
 
     // Animation state. enterToken replays the tiles' entrance, listReplay the rows' entrance.
     var enterToken by remember { mutableIntStateOf(0) }
@@ -165,7 +169,7 @@ fun LauncherApp(vm: LauncherViewModel) {
         exitRequest = null
         listExiting = false
         query = ""
-        actionCenter = 0f
+        panel.snapTo(0f)
         enterToken++
         listReplay++
     }
@@ -187,21 +191,30 @@ fun LauncherApp(vm: LauncherViewModel) {
         if (openFolderId != null && entries.none { it.id == openFolderId }) openFolderId = null
     }
 
-    // Pressing Home while the launcher is open goes back to the top of Start.
-    LaunchedEffect(homePresses) {
-        if (homePresses == 0) return@LaunchedEffect
+    // Pressing Home goes back to the top of Start. From another app nothing is on screen yet, so everything
+    // jumps there before the tiles swing in; from inside the launcher the panel, the page and the scroll
+    // glide back together, and a finger on the screen takes over.
+    LaunchedEffect(homePress) {
+        if (homePress.count == 0) return@LaunchedEffect
+        val instant = homePress.fromBackground
         editingKey = null
         menu = null
         jumpOpen = false
         renamingFolderId = null
+        openFolderId = null
         query = ""
-        if (actionCenter > 0f) moveActionCenterTo(0f)
         if (settingsOpen) {
             settingsOpen = false
             comeBack()
         }
-        if (pagerState.currentPage != PAGE_START) pagerState.animateScrollToPage(PAGE_START)
-        startScroll.animateScrollTo(0)
+        if (instant) panel.snapTo(0f) else panel.close()
+        returnToStart(pagerState, startScroll, instant)
+    }
+
+    // Leaving the app list puts its keyboard away.
+    val focus = LocalFocusManager.current
+    LaunchedEffect(pagerState, focus) {
+        snapshotFlow { pagerState.currentPage }.collect { if (it != PAGE_APPS) focus.clearFocus() }
     }
 
     fun closeSettings() {
@@ -209,19 +222,24 @@ fun LauncherApp(vm: LauncherViewModel) {
         comeBack()
     }
 
-    BackHandler {
+    // Back follows the finger on the layers that can: the Action Center slides up, the settings swing away,
+    // the app list pans back to Start. The others just close when the gesture is done.
+    BackGestureHandler {
         when {
-            actionCenter > 0f -> moveActionCenterTo(0f)
-            renamingFolderId != null -> renamingFolderId = null
-            jumpOpen -> jumpOpen = false
-            menu != null -> menu = null
-            settingsOpen -> closeSettings()
-            kidsMode -> Unit // only a grown-up, with the screen lock, gets out of the Kid's Corner
-            editingKey != null -> editingKey = null
-            openFolderId != null -> openFolderId = null
-            query.isNotEmpty() -> query = ""
-            pagerState.currentPage == PAGE_APPS -> scope.launch { pagerState.animateScrollToPage(PAGE_START) }
-            // On Start, Back does nothing: a launcher has nowhere to go back to.
+            !permissionsHandled -> InstantBack { }
+            panel.isShown -> PanelBack(panel)
+            renamingFolderId != null -> InstantBack { renamingFolderId = null }
+            jumpOpen -> InstantBack { jumpOpen = false }
+            menu != null -> InstantBack { menu = null }
+            settingsOpen -> TurnstileBack(settingsAway, scope, ::closeSettings)
+            kidsMode -> InstantBack { } // only a grown-up, with the screen lock, gets out of the Kid's Corner
+            editingKey != null -> InstantBack { editingKey = null }
+            openFolderId != null -> InstantBack { openFolderId = null }
+            query.isNotEmpty() -> InstantBack { query = "" }
+            pagerState.currentPage == PAGE_APPS -> PagerBack(pagerState, scope, PAGE_START)
+            // On Start, Back has nowhere to go. A swipe from the right edge, which the system takes for Back,
+            // pans on to the app list instead.
+            else -> PagerBack(pagerState, scope, PAGE_APPS, onlyFromRight = true)
         }
     }
 
@@ -329,42 +347,17 @@ fun LauncherApp(vm: LauncherViewModel) {
         onOpenApps = { scope.launch { pagerState.animateScrollToPage(PAGE_APPS) } },
     )
 
-    // Pull down from the top of Start to open the Action Center. Dragging back up closes it again.
+    // Pull down from the top of Start, or from the top edge of any page, to open the Action Center.
     val pullBlocked = kidsMode || launching || settingsOpen || menu != null || jumpOpen || editingKey != null ||
-        renamingFolderId != null || !permissionsHandled || pagerState.currentPage != PAGE_START
+        renamingFolderId != null || !permissionsHandled
     val currentPullBlocked by rememberUpdatedState(pullBlocked)
-    val maxPullPx = with(density) { 320.dp.toPx() }
-    val pullConnection = remember(maxPullPx) {
-        object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                val progress = actionCenter
-                if (source == NestedScrollSource.UserInput && available.y < 0f && progress > 0f && progress < 1f) {
-                    val updated = (progress + available.y / maxPullPx).coerceAtLeast(0f)
-                    actionCenter = updated
-                    return Offset(0f, (updated - progress) * maxPullPx)
-                }
-                return Offset.Zero
-            }
-
-            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                if (source == NestedScrollSource.UserInput && available.y > 0f && !currentPullBlocked && startScroll.value == 0) {
-                    actionCenter = (actionCenter + available.y / maxPullPx).coerceAtMost(1f)
-                    return Offset(0f, available.y)
-                }
-                return Offset.Zero
-            }
-
-            override suspend fun onPreFling(available: Velocity): Velocity {
-                val progress = actionCenter
-                if (progress <= 0f || progress >= 1f) return Velocity.Zero
-                moveActionCenterTo(if (progress > PULL_OPENS_ABOVE || available.y > PULL_FLING_VELOCITY) 1f else 0f)
-                return available
-            }
-        }
+    val pullConnection = remember(panel) {
+        pullDownConnection(panel, startScroll) { currentPullBlocked || pagerState.currentPage != PAGE_START }
     }
+    val edgeZone = WindowInsets.statusBars.getTop(density) + with(density) { EDGE_PULL_ZONE.toPx() }
 
     // While the panel is up, the state of its buttons is read again every second.
-    val actionCenterShown = actionCenter > 0f
+    val actionCenterShown = panel.isShown
     LaunchedEffect(actionCenterShown, torchOn) {
         while (actionCenterShown) {
             quickStates = QuickAction.entries.associateWith(vm::quickActionState)
@@ -376,7 +369,13 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     CompositionLocalProvider(LocalIconLoader provides vm.icons) {
         MetroTheme(accent = accent, dark = settings.darkTheme) {
-            Box(Modifier.fillMaxSize().background(LocalMetroColors.current.background)) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(LocalMetroColors.current.background)
+                    .onSizeChanged { panel.travelPx = it.height.toFloat() }
+                    .pullDownFromTop(panel, edgeZone, enabled = !pullBlocked),
+            ) {
                 if (kidsMode) {
                     StartScreen(
                         cells = kidsCells,
@@ -392,14 +391,11 @@ fun LauncherApp(vm: LauncherViewModel) {
                         readOnly = true,
                         header = { KidsHeader(onExit = ::requestExitKidsCorner) },
                     )
-                } else HorizontalPager(
+                } else LauncherPager(
                     state = pagerState,
-                    modifier = Modifier.fillMaxSize(),
                     userScrollEnabled = !launching && menu == null && !jumpOpen && permissionsHandled,
-                    key = { it },
-                ) { page ->
-                    when (page) {
-                        PAGE_START -> StartScreen(
+                    start = {
+                        StartScreen(
                             cells = cells,
                             live = live,
                             badges = badges,
@@ -412,8 +408,9 @@ fun LauncherApp(vm: LauncherViewModel) {
                             actions = startActions,
                             pullConnection = pullConnection,
                         )
-
-                        else -> AppListScreen(
+                    },
+                    apps = {
+                        AppListScreen(
                             model = appList,
                             listState = listState,
                             replayToken = listReplay,
@@ -428,8 +425,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onQueryChange = { query = it },
                             results = searchResults,
                         )
-                    }
-                }
+                    },
+                )
 
                 menu?.let { state ->
                     AppContextMenu(
@@ -464,34 +461,34 @@ fun LauncherApp(vm: LauncherViewModel) {
                     )
                 }
 
-                if (actionCenter > 0f) {
+                if (panel.isShown) {
                     ActionCenter(
                         slots = QuickAction.slots(settings.quickActions),
                         states = quickStates,
                         notifications = notifications,
                         appsByPackage = appsByPackage,
                         hasNotificationAccess = notificationAccess,
-                        progress = actionCenter,
+                        panel = panel,
                         onAction = { action ->
                             vm.activateQuickAction(action)
-                            if (action != QuickAction.Flashlight) moveActionCenterTo(0f)
+                            if (action != QuickAction.Flashlight) panel.close()
                         },
                         onAllSettings = {
-                            moveActionCenterTo(0f)
+                            panel.close()
                             vm.openSystemSettings()
                         },
                         onOpenNotification = { entry ->
-                            moveActionCenterTo(0f)
+                            panel.close()
                             vm.openNotification(entry)
                         },
                         onDismissNotification = vm::dismissNotification,
                         onClearAll = vm::clearNotifications,
                         onTurnOnNotificationAccess = vm::openNotificationAccessSettings,
-                        onClose = { moveActionCenterTo(0f) },
+                        onClose = panel::close,
                     )
                 }
 
-                TurnstileHost(show = settingsOpen) {
+                TurnstileHost(show = settingsOpen, away = settingsAway) {
                     SettingsScreen(
                         settings = settings,
                         startBackground = startBackground,

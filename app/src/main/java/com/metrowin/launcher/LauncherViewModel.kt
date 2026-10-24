@@ -47,6 +47,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
 
+/** [count] only ever grows, so every press is a new value even when nothing else differs. */
+data class HomePress(val count: Int = 0, val fromBackground: Boolean = false)
+
 class LauncherViewModel(application: Application) : AndroidViewModel(application) {
     private val apps = AppRepository(application)
     private val store = TileStore(application)
@@ -93,9 +96,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val _permissionsHandled = MutableStateFlow(store.permissionsHandled)
     val permissionsHandled: StateFlow<Boolean> = _permissionsHandled.asStateFlow()
 
-    /** Counts presses of the Home button while the launcher is already on screen. */
-    private val _homePresses = MutableStateFlow(0)
-    val homePresses: StateFlow<Int> = _homePresses.asStateFlow()
+    /** The Home button pressed while the launcher is already running: how many times, and how the last one found us. */
+    private val _homePresses = MutableStateFlow(HomePress())
+    val homePresses: StateFlow<HomePress> = _homePresses.asStateFlow()
 
     private var tilesReady = false
     private var loadedLocale: Locale? = null
@@ -159,8 +162,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         runCatching { getApplication<Application>().startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
     }
 
-    fun onHomePressed() {
-        _homePresses.value++
+    /** [fromBackground] is true when the launcher was stopped, behind another app, when the button was pressed. */
+    fun onHomePressed(fromBackground: Boolean) {
+        _homePresses.value = HomePress(_homePresses.value.count + 1, fromBackground)
     }
 
     fun refreshLive() {

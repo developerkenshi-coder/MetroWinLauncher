@@ -12,6 +12,10 @@ che un launcher può davvero fare, come l'Action Center, le cartelle, lo sfondo 
 |---|---|---|
 | ![App](docs/screenshots/apps.png) | ![Impostazioni](docs/screenshots/settings_start_theme.png) | ![Kid's Corner](docs/screenshots/kids_corner.png) |
 
+Swipe tra Start e lista app, a metà gesto (le due pagine ruotano un poco e sfumano con il dito):
+
+<img src="docs/screenshots/pager_mid_swipe.png" alt="Swipe a metà" width="240">
+
 > Le immagini sono disegnate dai test di screenshot su JVM (vedi [Test](#test)), non catturate da un telefono.
 
 ## Cosa c'è
@@ -34,7 +38,8 @@ che un launcher può davvero fare, come l'Action Center, le cartelle, lo sfondo 
 - **notifiche+azioni**: scegli i quattro pulsanti in cima all'Action Center, e attiva l'accesso alle notifiche.
 - **Angolo bambini** (Kid's Corner): scegli le app e avvialo.
 
-**Action Center**: si tira giù dall'alto di Start. Quattro pulsanti rapidi (si aprono sugli altri otto), "tutte le
+**Action Center**: si tira giù dal bordo alto dello schermo, da qualsiasi pagina e a qualsiasi scorrimento di Start (o,
+come prima, trascinando Start verso il basso quando è in cima). Quattro pulsanti rapidi (si aprono sugli altri otto), "tutte le
 impostazioni", e le **notifiche**, che si scartano una a una trascinandole a destra o tutte con "cancella tutto".
 La **torcia** si accende davvero. Wi-Fi, Bluetooth, modalità aereo, ore silenziose, rotazione, posizione, hotspot,
 VPN, proietta schermo, luminosità e fotocamera mostrano lo stato (dove Android lo lascia leggere) e aprono la schermata
@@ -51,6 +56,27 @@ di sistema giusta: dalla versione 10 di Android un'app non può più accenderli 
 
 **Animazioni**: turnstile di tile e righe (a cascata, entrata e uscita), tilt alla pressione, flip dei live tile,
 scorrimento dei riquadri quando cambia la disposizione, jump list che si gira, transizione a turnstile tra le pagine.
+
+**Gesti e navigazione** (`ui/gesture/`)
+- **Il dito comanda, sempre.** L'Action Center segue il dito uno a uno (il bordo basso del pannello sta dove sta il
+  dito) ed è un unico valore che non fa ricomporre nulla mentre si muove. Al rilascio una molla porta avanti la velocità
+  del dito; se lo riafferri mentre si muove, la molla si ferma subito e non lotta con te. Si chiude trascinando su
+  ovunque nel pannello, anche oltre la fine delle notifiche. Le regole di rilascio (distanza, flick, da aperto o da
+  chiuso) sono funzioni pure con test (`PullRules`).
+- **Tirata dal bordo alto da ogni pagina**: il gesto è osservato prima del contenuto (passaggio *Initial*) e preso solo
+  quando il dito va chiaramente in giù più che di lato, quindi tocchi, pressioni lunghe e swipe laterali sotto non
+  cambiano. Lo spazio sotto la barra di stato è l'unico punto di partenza (la barra di stato è del sistema).
+- **Pagine**: la lista app è già composta prima del primo swipe (niente scatto a metà gesto), basta trascinare oltre il
+  30% per girare pagina, e durante lo swipe le due pagine ruotano un poco attorno al bordo sinistro e sfumano, legate
+  alla posizione del dito (si legge solo in fase di disegno, nessuna ricomposizione).
+- **Indietro predittivo**: il gesto di sistema riporta l'avanzamento, e lo schermo lo segue: l'Action Center sale con il
+  dito, le impostazioni si girano via, la lista app scorre verso Start; se annulli, tutto torna com'era. Con la barra a
+  tre pulsanti (nessun avanzamento) indietro chiude subito. Su Start, uno swipe dal **bordo destro**, che Android
+  riserva a Indietro, porta avanti alla lista app: è l'unico modo per un dito che parte proprio dal bordo.
+- **Ritorno alla home**: da un'altra app il launcher salta subito a Start in cima *prima* che i riquadri entrino, e i
+  riquadri nascono già girati per costruzione (ogni entrata crea un valore nuovo di partenza, invece di azzerarne uno
+  da un effetto che parte un frame dopo; su JVM quel frame non si riproduce, quindi non è provato su un telefono). Premendo Home dentro il
+  launcher, pagina e scorrimento tornano insieme (non uno dopo l'altro) e un dito sullo schermo prende il controllo.
 
 **Schermo a 120 Hz**: il launcher chiede la modalità con il refresh più alto alla risoluzione corrente, e su Android 15
 anche la categoria di frame rate alta. Sono richieste: l'ultima parola è del sistema, che può restare a una frequenza più bassa per risparmiare batteria. Le animazioni dipendono
@@ -119,6 +145,9 @@ lo Start di Windows Phone.
   **gesti veri** (trascinare un riquadro, crearne una cartella, scartare una notifica, tirare giù Start) e controlla i
   pixel (tema chiaro, foto in trasparenza, parallasse, entrata a cascata, tilt dal lato del dito). Salva ogni schermata in
   `app/build/screenshots/*.png`, anche a metà animazione.
+- Gesti di navigazione (`GesturesTest`): tirata dal bordo con Start scorso, pannello che segue il dito uno a uno,
+  pannello riafferrato in movimento, swipe laterale dal bordo, soglia del 30% delle pagine, e il **dispatcher di Indietro
+  vero** (avvio, avanzamento, conferma, annullamento) per Action Center e pagine.
 
 La prima esecuzione scarica da Maven le librerie di Robolectric (alcune centinaia di MB).
 
@@ -133,7 +162,8 @@ app/src/main/java/com/metrowin/launcher/
   notifications/  NotificationService e NotificationHub
   model/          Tile, Folder, TileSize, AppItem, Glyph
   ui/             start/ (Start, riquadri, cartelle), apps/ (lista, jump list, menu), actioncenter/, settings/,
-                  kids/, permissions/, anim/ (turnstile, tilt, flip), components/, theme/
+                  kids/, permissions/, anim/ (turnstile, tilt, flip), gesture/ (pannello a tirata, tirata dal bordo,
+                  pager, indietro predittivo, ritorno a Start), components/, theme/
 ```
 
 ## Note
@@ -146,7 +176,9 @@ app/src/main/java/com/metrowin/launcher/
   `MetroCatalog.kt` e in `strings.xml`, e si cambiano in un punto solo se vuoi pubblicare l'app.
 - **Non provato su un telefono**: la verifica è stata fatta compilando (debug e release con R8), con i test e con le
   schermate renderizzate su JVM. Vanno guardati su un dispositivo: i 120 Hz, il servizio delle notifiche, i profili di lavoro,
-  la conferma del blocco schermo, lo screen pinning, la torcia e i live tile con foto e contatti veri.
+  la conferma del blocco schermo, lo screen pinning, la torcia e i live tile con foto e contatti veri. Anche **come
+  si sentono i gesti**: i test verificano posizioni, soglie e che nulla lotti con il dito, non la sensazione a 120 Hz, e
+  il progresso di Indietro che dà il sistema (e quanto si adatta alla distanza del dito) cambia da produttore a produttore.
 - Versioni: AGP 8.13, Kotlin 2.3, Compose BOM 2025.10. Le librerie AndroidX più recenti chiedono AGP 9 e compileSdk 37.
 
 ## Fonti

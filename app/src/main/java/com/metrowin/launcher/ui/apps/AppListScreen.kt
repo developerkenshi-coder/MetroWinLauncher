@@ -46,6 +46,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +66,7 @@ import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.TileWhite
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filter
 
 sealed interface ListRow {
     val key: String
@@ -125,7 +127,9 @@ fun AppListScreen(
     }
     // Scrolling the list puts the keyboard away, and a new search starts from the top.
     val focus = LocalFocusManager.current
-    LaunchedEffect(listState.isScrollInProgress) { if (listState.isScrollInProgress) focus.clearFocus() }
+    LaunchedEffect(listState, focus) {
+        snapshotFlow { listState.isScrollInProgress }.filter { it }.collect { focus.clearFocus() }
+    }
     LaunchedEffect(query) { listState.scrollToItem(0) }
     // Rows composed within this window after the page opens animate in; rows that scroll into view later do not.
     val openedAt = remember(replayToken) { System.nanoTime() }
@@ -155,14 +159,14 @@ private const val ENTRY_WINDOW_NANOS = 700_000_000L
 /** 1 = turned away, 0 = facing the screen. Handles both the entrance and the exit of a row. */
 @Composable
 private fun rememberRowAway(index: Int, listState: LazyListState, openedAt: Long, exiting: Boolean): Animatable<Float, *> {
-    val away = remember { Animatable(if (isEntering(openedAt)) 1f else 0f) }
-    LaunchedEffect(openedAt) {
-        if (!isEntering(openedAt)) return@LaunchedEffect
-        away.snapTo(1f)
+    // A replay (openedAt changes) builds a new Animatable that starts turned away, so no frame shows the row in place.
+    val away = remember(openedAt) { Animatable(if (isEntering(openedAt)) 1f else 0f) }
+    LaunchedEffect(away) {
+        if (away.value < 1f) return@LaunchedEffect
         delay((index - listState.firstVisibleItemIndex).coerceIn(0, 14) * 26L)
         away.animateTo(0f, tween(durationMillis = 380, easing = Motion.Decelerate))
     }
-    LaunchedEffect(exiting) {
+    LaunchedEffect(exiting, away) {
         if (!exiting) return@LaunchedEffect
         delay((index - listState.firstVisibleItemIndex).coerceIn(0, 14) * 14L)
         away.animateTo(1f, tween(durationMillis = 220, easing = Motion.Accelerate))

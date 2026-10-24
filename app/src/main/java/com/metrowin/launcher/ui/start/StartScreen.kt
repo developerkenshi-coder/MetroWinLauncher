@@ -469,14 +469,14 @@ private fun PositionedTile(
         }
     }
 
-    // 1 = turned away, 0 = facing the screen.
-    val away = remember { Animatable(1f) }
-    LaunchedEffect(enterToken) {
-        away.snapTo(1f)
+    // 1 = turned away, 0 = facing the screen. A new token makes a new Animatable that starts turned away:
+    // resetting an existing one from an effect would only happen after the frame that shows the tiles in place.
+    val away = remember(enterToken) { Animatable(1f) }
+    LaunchedEffect(away) {
         delay(entryDelay(placement, index))
         away.animateTo(0f, tween(durationMillis = 420, easing = Motion.Decelerate))
     }
-    LaunchedEffect(exitRequest) {
+    LaunchedEffect(exitRequest, away) {
         if (exitRequest == null) return@LaunchedEffect
         delay(if (exitRequest.key == cell.key) TAPPED_EXIT_DELAY_MS else exitDelay(placement))
         away.animateTo(1f, tween(durationMillis = 240, easing = Motion.Accelerate))

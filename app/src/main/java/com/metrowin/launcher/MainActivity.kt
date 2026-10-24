@@ -11,6 +11,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
 import com.metrowin.launcher.data.DisplayModeInfo
 import com.metrowin.launcher.data.RefreshRate
 
@@ -53,9 +54,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** Home pressed while the launcher is already running (the activity is singleTask). */
+    /**
+     * Home pressed while the launcher is already running (the activity is singleTask). When another app was
+     * on screen we are still stopped at this point: onStart comes right after.
+     */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (intent.hasCategory(Intent.CATEGORY_HOME)) viewModel.onHomePressed()
+        if (intent.hasCategory(Intent.CATEGORY_HOME)) {
+            viewModel.onHomePressed(fromBackground = !lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED))
+        }
     }
 }

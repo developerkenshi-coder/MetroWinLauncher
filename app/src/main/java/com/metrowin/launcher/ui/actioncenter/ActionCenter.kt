@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
@@ -56,6 +57,8 @@ import com.metrowin.launcher.ui.components.AppSquare
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
+import com.metrowin.launcher.ui.gesture.PullPanel
+import com.metrowin.launcher.ui.gesture.pushUpConnection
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.TileWhite
@@ -66,7 +69,8 @@ import kotlin.math.abs
  * The Windows Phone Action Center, pulled down from the top of Start: four quick buttons that open out to
  * the rest, a link to all settings, and the notifications, each of which swipes away to the right.
  *
- * [progress] is how far the panel is pulled down, 0 hidden and 1 fully open.
+ * [panel] says how far it is pulled down (0 hidden, 1 fully open). It follows the finger one to one, and
+ * a drag up anywhere on it, including past the end of the notifications, pushes it back up.
  */
 @Composable
 fun ActionCenter(
@@ -75,7 +79,7 @@ fun ActionCenter(
     notifications: List<NotificationEntry>,
     appsByPackage: Map<String, AppItem>,
     hasNotificationAccess: Boolean,
-    progress: Float,
+    panel: PullPanel,
     onAction: (QuickAction) -> Unit,
     onAllSettings: () -> Unit,
     onOpenNotification: (NotificationEntry) -> Unit,
@@ -87,11 +91,20 @@ fun ActionCenter(
 ) {
     val colors = LocalMetroColors.current
     var expanded by remember { mutableStateOf(false) }
+    val pushUp = remember(panel) { pushUpConnection(panel) }
     Box(
         modifier
             .fillMaxSize()
-            .graphicsLayer { translationY = -(1f - progress.coerceIn(0f, 1f)) * size.height }
+            // The only place the progress is read, and in the draw phase: pulling never recomposes the panel.
+            .graphicsLayer { translationY = -(1f - panel.progress.coerceIn(0f, 1f)) * size.height }
             .background(colors.background)
+            .nestedScroll(pushUp)
+            // Dragging on the buttons and the headings, which do not scroll, moves the panel too.
+            .draggable(
+                orientation = Orientation.Vertical,
+                state = rememberDraggableState { delta -> panel.dragByPx(delta) },
+                onDragStopped = { velocity -> panel.release(velocity) },
+            )
             // Swallow touches so Start underneath does not react.
             .pointerInput(Unit) { detectTapGestures { } },
     ) {
@@ -200,7 +213,7 @@ private fun ExpandChevron(expanded: Boolean, onClick: () -> Unit) {
     }
 }
 
-/** The bar at the bottom of the panel: tap it or drag it up to put the panel away. */
+/** The bar at the bottom of the panel: tap it to put the panel away (dragging it is handled by the whole panel). */
 @Composable
 private fun PullUpHandle(onClose: () -> Unit) {
     val colors = LocalMetroColors.current
@@ -209,12 +222,7 @@ private fun PullUpHandle(onClose: () -> Unit) {
         Modifier
             .fillMaxWidth()
             .height(44.dp)
-            .pointerInput(Unit) { detectTapGestures { currentClose() } }
-            .draggable(
-                orientation = Orientation.Vertical,
-                state = rememberDraggableState { },
-                onDragStopped = { velocity -> if (velocity < -200f) currentClose() },
-            ),
+            .pointerInput(Unit) { detectTapGestures { currentClose() } },
         contentAlignment = Alignment.Center,
     ) {
         Box(Modifier.size(48.dp, 4.dp).background(colors.subtle))

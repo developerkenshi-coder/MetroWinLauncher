@@ -65,6 +65,7 @@ import com.metrowin.launcher.ui.apps.JumpList
 import com.metrowin.launcher.ui.apps.MenuState
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
+import com.metrowin.launcher.ui.gesture.rememberPullPanel
 import com.metrowin.launcher.ui.kids.KidsHeader
 import com.metrowin.launcher.ui.permissions.PermissionsScreen
 import com.metrowin.launcher.ui.settings.SettingsScreen
@@ -360,7 +361,7 @@ class ScreensTest : ScreenshotBase() {
             notifications = notifications,
             appsByPackage = sampleItems().filter { it.id == "stock:messaging" }.associateBy { "com.example.messages" },
             hasNotificationAccess = hasAccess,
-            progress = 1f,
+            panel = rememberPullPanel(initialProgress = 1f),
             onAction = {}, onAllSettings = {}, onOpenNotification = {}, onDismissNotification = onDismiss,
             onClearAll = {}, onTurnOnNotificationAccess = {}, onClose = {},
         )
