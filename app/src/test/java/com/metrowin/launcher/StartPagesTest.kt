@@ -154,4 +154,56 @@ class StartPagesTest {
         assertNull(TileCodec.decodePages("{nope"))
         assertNotNull(TileCodec.decodePages("[]"))
     }
+
+    // --- an app into a folder
+
+    @Test
+    fun anAppThatIsPinnedAsATileMovesIntoTheFolder() {
+        val result = StartPages.addToFolder(pages, "e", "f")
+        assertEquals(listOf("c", "d", "e"), (result[0].last() as Folder).children)
+        assertTrue("the tile it was is gone", result[1].isEmpty())
+    }
+
+    @Test
+    fun anAppThatIsNotOnStartIsPinnedInsideTheFolder() {
+        val result = StartPages.addToFolder(pages, "z", "f")
+        assertEquals(listOf("c", "d", "z"), (result[0].last() as Folder).children)
+        assertEquals(StartPages.pinnedIds(pages) + "z", StartPages.pinnedIds(result))
+    }
+
+    @Test
+    fun anAppFromAnotherFolderLeavesIt() {
+        val two = listOf<List<StartEntry>>(
+            listOf(Folder("f", "", TileSize.Medium, listOf("c", "d")), Folder("g", "", TileSize.Medium, listOf("p", "q", "r"))),
+        )
+        val result = StartPages.addToFolder(two, "q", "f")
+        val g = result[0].first { it.id == "g" } as Folder
+        assertEquals(listOf("p", "r"), g.children)
+        assertEquals(listOf("c", "d", "q"), (result[0].first { it.id == "f" } as Folder).children)
+    }
+
+    @Test
+    fun theFolderItLeavesBecomesATileWhenOnlyOneAppIsLeftInIt() {
+        val result = StartPages.addToFolder(pages, "c", "g")  // there is no folder g
+        assertSame(pages, result)
+        val two = listOf<List<StartEntry>>(listOf(Folder("f", "", TileSize.Medium, listOf("a", "b")), Folder("g", "", TileSize.Medium, listOf("x", "y"))))
+        val moved = StartPages.addToFolder(two, "a", "g")
+        assertEquals(listOf("b", "g"), ids(moved[0]))
+        assertTrue(moved[0].first() is Tile)
+    }
+
+    @Test
+    fun anAppAlreadyInTheFolderOrAMissingFolderChangeNothing() {
+        assertSame(pages, StartPages.addToFolder(pages, "c", "f"))
+        assertSame(pages, StartPages.addToFolder(pages, "a", "nope"))
+        // A tile is not a folder.
+        assertSame(pages, StartPages.addToFolder(pages, "a", "b"))
+    }
+
+    @Test
+    fun theFolderStaysOnItsScreenWhateverScreenTheAppCameFrom() {
+        val result = StartPages.addToFolder(pages, "e", "f")
+        assertEquals(StartPages.pageOf(pages, "f"), StartPages.pageOf(result, "f"))
+        assertEquals(0, StartPages.pageOf(result, "e"))
+    }
 }

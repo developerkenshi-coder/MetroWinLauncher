@@ -44,6 +44,8 @@ fun AppContextMenu(
     modifier: Modifier = Modifier,
     /** Null when the app cannot be hidden (the launcher's own settings). */
     onHide: (() -> Unit)? = null,
+    /** Null when there is no folder on Start to put the app in. */
+    onAddToFolder: (() -> Unit)? = null,
 ) {
     val currentDismiss by rememberUpdatedState(onDismiss)
     BoxWithConstraints(
@@ -67,20 +69,21 @@ fun AppContextMenu(
             },
         ) {
             if (openUp) {
-                Menu(state.item, pinned, onPinToggle, onUninstall, onHide)
+                Menu(state.item, pinned, onPinToggle, onUninstall, onHide, onAddToFolder)
                 AppRowContent(state.item)
             } else {
                 AppRowContent(state.item)
-                Menu(state.item, pinned, onPinToggle, onUninstall, onHide)
+                Menu(state.item, pinned, onPinToggle, onUninstall, onHide, onAddToFolder)
             }
         }
     }
 }
 
 @Composable
-private fun Menu(item: AppItem, pinned: Boolean, onPinToggle: () -> Unit, onUninstall: () -> Unit, onHide: (() -> Unit)?) {
+private fun Menu(item: AppItem, pinned: Boolean, onPinToggle: () -> Unit, onUninstall: () -> Unit, onHide: (() -> Unit)?, onAddToFolder: (() -> Unit)?) {
     Column(Modifier.fillMaxWidth().background(LocalMetroColors.current.surface).padding(vertical = 6.dp)) {
         MenuEntry(stringResource(if (pinned) R.string.menu_unpin else R.string.menu_pin), onPinToggle)
+        if (onAddToFolder != null) MenuEntry(stringResource(R.string.menu_add_to_folder), onAddToFolder, Modifier.testTag("menu:folder"))
         if (onHide != null) MenuEntry(stringResource(R.string.menu_hide), onHide, Modifier.testTag("menu:hide"))
         if (item.removable) MenuEntry(stringResource(R.string.menu_uninstall), onUninstall)
     }

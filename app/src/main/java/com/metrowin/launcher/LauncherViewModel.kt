@@ -98,6 +98,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import java.util.UUID
 
 /** [count] only ever grows, so every press is a new value even when nothing else differs. */
 data class HomePress(val count: Int = 0, val fromBackground: Boolean = false)
@@ -565,6 +566,23 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun moveTo(draggedId: String, targetId: String) =
         updatePages { StartPages.update(it, targetId) { page -> StartEntries.moveTo(page, draggedId, targetId) } }
+
+    /**
+     * Puts the tiles [ids] together in one folder (see [StartEntries.group]) and gives back the id of the folder that
+     * was made, or null when nothing was.
+     */
+    fun createFolder(ids: Set<String>): String? {
+        val id = UUID.randomUUID().toString()
+        var made = false
+        updatePages { pages ->
+            val anchor = ids.firstOrNull { StartPages.pageOf(pages, it) >= 0 } ?: return@updatePages pages
+            StartPages.update(pages, anchor) { page -> StartEntries.group(page, ids) { id }.also { made = it.any { entry -> entry.id == id } } }
+        }
+        return id.takeIf { made }
+    }
+
+    /** Puts an app in a folder, pinning it first if it is not on Start. */
+    fun addToFolder(appId: String, folderId: String) = updatePages { StartPages.addToFolder(it, appId, folderId) }
 
     fun merge(draggedId: String, ontoId: String) =
         updatePages { StartPages.update(it, ontoId) { page -> StartEntries.merge(page, draggedId, ontoId) } }

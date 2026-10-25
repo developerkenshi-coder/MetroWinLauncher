@@ -55,6 +55,10 @@ import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.QuickAction
 import com.metrowin.launcher.data.GestureAction
+import com.metrowin.launcher.ui.start.FolderChoice
+import com.metrowin.launcher.ui.start.FolderChooser
+import com.metrowin.launcher.ui.start.FolderPickBar
+import com.metrowin.launcher.data.StartEntries
 import com.metrowin.launcher.data.LaunchPlans
 import androidx.compose.ui.platform.LocalView
 import com.metrowin.launcher.data.TileGrid
@@ -120,6 +124,7 @@ import com.metrowin.launcher.ui.start.FolderCell
 import com.metrowin.launcher.ui.start.FolderNameDialog
 import com.metrowin.launcher.ui.start.SiteDialog
 import com.metrowin.launcher.ui.start.StartActions
+import com.metrowin.launcher.ui.start.StartCell
 import com.metrowin.launcher.ui.start.WidgetPicker
 import com.metrowin.launcher.ui.start.StartScreen
 import com.metrowin.launcher.ui.start.buildStartCells
@@ -189,6 +194,9 @@ fun LauncherApp(vm: LauncherViewModel) {
     var highlight by remember { mutableStateOf<ListHighlight?>(null) }
     val pinnedIds = remember(pages) { StartPages.pinnedIds(pages) }
     // The entry being edited, when it is one the edit bar can act on (a tile or a folder of the top level).
+    val folderChoices = remember(pages) {
+        StartPages.all(pages).filterIsInstance<Folder>().map { FolderChoice(it.id, it.name, it.children.size) }
+    }
     val selectedCell = remember(cellsByPage, editingKey) {
         editingKey?.let { key -> cellsByPage.flatten().firstOrNull { it.key == key && it.isTopLevel } }
     }
@@ -251,6 +259,9 @@ fun LauncherApp(vm: LauncherViewModel) {
     val voice = rememberVoiceSession()
     var lockServiceEnabled by remember { mutableStateOf(false) }
     var renamingFolderId by remember { mutableStateOf<String?>(null) }
+    // The tiles picked so far while several are chosen for a folder (null: not choosing), and the app being put in one.
+    var folderPick by remember { mutableStateOf<Set<String>?>(null) }
+    var folderChooserFor by remember { mutableStateOf<AppItem?>(null) }
     var query by remember { mutableStateOf("") }
     var settingsSection by remember { mutableStateOf<SettingsSection?>(null) }
     val searchResults = remember(query, listItems) { AppSearch.filter(listItems, query) }
@@ -391,6 +402,7 @@ fun LauncherApp(vm: LauncherViewModel) {
             siteDialogOpen -> InstantBack { siteDialogOpen = false }
             addMenuOpen -> InstantBack { addMenuOpen = false }
             renamingFolderId != null -> InstantBack { renamingFolderId = null }
+            folderChooserFor != null -> InstantBack { folderChooserFor = null }
             jumpOpen -> InstantBack { jumpOpen = false }
             menu != null -> InstantBack { menu = null }
             weatherOpen -> TurnstileBack(weatherAway, scope, ::closeWeather)
@@ -398,6 +410,7 @@ fun LauncherApp(vm: LauncherViewModel) {
             settingsOpen && settingsSection != null -> TurnstileBack(sectionAway, scope) { settingsSection = null }
             settingsOpen -> TurnstileBack(settingsAway, scope, ::closeSettings)
             kidsMode -> InstantBack { } // only a grown-up, with the screen lock, gets out of the Kid's Corner
+            folderPick != null -> InstantBack { folderPick = null }
             editingKey != null -> InstantBack { editingKey = null }
             openFolderId != null -> InstantBack { openFolderId = null }
             query.isNotEmpty() -> InstantBack { query = "" }
@@ -648,10 +661,24 @@ fun LauncherApp(vm: LauncherViewModel) {
         if (granted) voice.open() else micPermission.launch(Manifest.permission.RECORD_AUDIO)
     }
 
+    /** Adds the tile to the picked ones, or takes it out. A folder cannot go into a folder, so only one folder can be picked. */
+    fun togglePick(cell: StartCell) {
+        val picked = folderPick ?: return
+        if (!cell.isTopLevel) return
+        val id = cell.entryId
+        val folders = StartPages.all(pages).filterIsInstance<Folder>().mapTo(HashSet()) { it.id }
+        folderPick = when {
+            id in picked -> picked - id
+            id in folders && picked.any { it in folders } -> picked
+            else -> picked + id
+        }
+    }
+
     val startActions = StartActions(
         onClick = { cell ->
             when {
                 launching -> Unit
+                folderPick != null -> togglePick(cell)
                 editingKey != null -> editingKey = if (editingKey == cell.key) null else cell.key
                 cell is FolderCell -> {
                     tapFeedback()
@@ -661,7 +688,7 @@ fun LauncherApp(vm: LauncherViewModel) {
             }
         },
         onLongClick = { cell ->
-            if (!launching) {
+            if (!launching && folderPick == null) {
                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                 editingKey = cell.key
             }
@@ -681,7 +708,7 @@ fun LauncherApp(vm: LauncherViewModel) {
             vm.merge(dragged, onto)
             editingKey = null
         },
-        onBackgroundTap = { editingKey = null },
+        onBackgroundTap = { if (folderPick == null) editingKey = null },
         onTileBounds = { bounds ->
             tapBounds = android.graphics.Rect(bounds.left.toInt(), bounds.top.toInt(), bounds.right.toInt(), bounds.bottom.toInt())
         },
@@ -691,7 +718,7 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     // Pull down from the top of Start, or from the top edge of any page, to open the Action Center.
     val pullBlocked = kidsMode || voice.isOpen || lockPreviewOpen || launching || settingsOpen || weatherOpen || menu != null || jumpOpen || editingKey != null ||
-        renamingFolderId != null || tutorialVisible
+        folderPick != null || folderChooserFor != null || renamingFolderId != null || tutorialVisible
     val currentPullBlocked by rememberUpdatedState(pullBlocked)
     val pullConnections = List(LauncherSettings.MAX_START_PAGES) { page ->
         remember(panel, page) {
@@ -747,7 +774,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 } else LauncherPager(
                     state = pagerState,
                     startPages = pages.size,
-                    userScrollEnabled = !launching && menu == null && !jumpOpen && !tutorialVisible,
+                    userScrollEnabled = !launching && menu == null && !jumpOpen && !tutorialVisible && folderPick == null,
                     start = { page ->
                         StartScreen(
                             cells = cellsByPage.getOrElse(page) { emptyList() },
@@ -763,6 +790,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             actions = startActions,
                             pullConnection = pullConnections[page],
                             parallax = settings.parallax,
+                            pickedKeys = folderPick,
                             header = if (settings.showClock && page == 0) ({ ClockHeader() }) else null,
                         )
                     },
@@ -809,7 +837,44 @@ fun LauncherApp(vm: LauncherViewModel) {
                         } else {
                             null
                         },
+                        onAddToFolder = if (folderChoices.isNotEmpty()) {
+                            {
+                                menu = null
+                                folderChooserFor = state.item
+                            }
+                        } else {
+                            null
+                        },
                         onDismiss = { menu = null },
+                    )
+                }
+
+                folderPick?.let { picked ->
+                    val entries = StartPages.all(pages)
+                    FolderPickBar(
+                        picked = picked.size,
+                        canCreate = StartEntries.canGroup(entries, picked),
+                        joining = entries.any { it is Folder && it.id in picked },
+                        onCreate = {
+                            val made = vm.createFolder(picked)
+                            folderPick = null
+                            // A folder that was just made gets its name asked for, as on Windows Phone.
+                            if (made != null) renamingFolderId = made
+                        },
+                        onCancel = { folderPick = null },
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    )
+                }
+
+                folderChooserFor?.let { item ->
+                    FolderChooser(
+                        folders = folderChoices,
+                        onPick = { choice ->
+                            vm.addToFolder(item.id, choice.id)
+                            folderChooserFor = null
+                            Toast.makeText(appContext, R.string.folder_added, Toast.LENGTH_SHORT).show()
+                        },
+                        onCancel = { folderChooserFor = null },
                     )
                 }
 
@@ -859,6 +924,10 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onDone = { editingKey = null },
                             modifier = Modifier.align(Alignment.BottomCenter),
                             onAdd = { addMenuOpen = true },
+                            onFolder = {
+                                folderPick = setOf(cell.entryId)
+                                editingKey = null
+                            },
                             style = (cell as? AppCell)?.tile?.style,
                             onStyle = {
                                 val tile = cell as? AppCell ?: return@EditBar

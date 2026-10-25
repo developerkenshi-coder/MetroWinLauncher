@@ -94,6 +94,45 @@ object StartEntries {
         }
     }
 
+    /**
+     * Puts the tiles [ids] together at once. Among them there may be a folder: then the tiles join it. Without one
+     * they make a new folder where the first of them was. Folders do not go into folders, so two folders (or a
+     * lone tile) change nothing.
+     */
+    fun group(
+        entries: List<StartEntry>,
+        ids: Set<String>,
+        newFolderId: () -> String = { UUID.randomUUID().toString() },
+    ): List<StartEntry> {
+        val picked = entries.filter { it.id in ids }
+        val folders = picked.filterIsInstance<Folder>()
+        val tiles = picked.filterIsInstance<Tile>()
+        if (folders.size > 1) return entries
+        if (folders.size == 1) {
+            if (tiles.isEmpty()) return entries
+            val folder = folders.single()
+            val joining = tiles.mapTo(HashSet()) { it.id }
+            return entries.filterNot { it.id in joining }
+                .map { if (it.id == folder.id) folder.copy(children = folder.children + tiles.map(Tile::id)) else it }
+        }
+        if (tiles.size < 2) return entries
+        val folder = Folder(newFolderId(), name = "", size = TileSize.Medium, children = tiles.map(Tile::id))
+        val first = tiles.first().id
+        val others = tiles.drop(1).mapTo(HashSet()) { it.id }
+        return buildList {
+            for (entry in entries) {
+                when {
+                    entry.id == first -> add(folder)
+                    entry.id in others -> Unit
+                    else -> add(entry)
+                }
+            }
+        }
+    }
+
+    /** Whether [group] would change anything with these [ids]: enough tiles for a folder, or tiles for a folder. */
+    fun canGroup(entries: List<StartEntry>, ids: Set<String>): Boolean = group(entries, ids) { "" } != entries
+
     /** Takes an app out of a folder and puts it on Start right after it. */
     fun removeFromFolder(entries: List<StartEntry>, folderId: String, childId: String): List<StartEntry> =
         entries.flatMap { entry ->

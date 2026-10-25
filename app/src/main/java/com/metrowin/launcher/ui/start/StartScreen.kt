@@ -192,6 +192,8 @@ fun StartScreen(
     /** The photo moves slower than the tiles when Start scrolls. */
     parallax: Boolean = true,
     header: (@Composable () -> Unit)? = null,
+    /** The tiles picked so far while several are being chosen for a folder, or null when that is not going on. */
+    pickedKeys: Set<String>? = null,
 ) {
     val currentActions by rememberUpdatedState(actions)
     Box(modifier.fillMaxSize()) {
@@ -216,7 +218,7 @@ fun StartScreen(
             header?.invoke()
             TileGridView(
                 cells, live, badges, peeks, columns, background != null,
-                enterToken, exitRequest, editingKey, scrollState, actions, readOnly,
+                enterToken, exitRequest, editingKey, scrollState, actions, readOnly, pickedKeys,
             )
             Box(Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 18.dp), contentAlignment = Alignment.CenterEnd) {
                 if (!readOnly) NextPageArrow(actions.onNextPage)
@@ -297,6 +299,7 @@ private fun TileGridView(
     scrollState: ScrollState,
     actions: StartActions,
     readOnly: Boolean,
+    pickedKeys: Set<String>?,
 ) {
     val density = LocalDensity.current
     BoxWithConstraints(Modifier.fillMaxWidth()) {
@@ -422,7 +425,7 @@ private fun TileGridView(
                     PositionedTile(
                         cell, index, layout.placements[index], unit, live, badges, peeks, hasBackground,
                         enterToken, exitRequest, editingKey, drag, actions,
-                        onDragStart, onDragBy, onDragEnd, readOnly,
+                        onDragStart, onDragBy, onDragEnd, readOnly, pickedKeys,
                         previousId = topLevel.getOrNull(at - 1).takeIf { at > 0 },
                         nextId = topLevel.getOrNull(at + 1).takeIf { at >= 0 },
                     )
@@ -479,6 +482,7 @@ private fun PositionedTile(
     onDragBy: (Offset) -> Unit,
     onDragEnd: () -> Unit,
     readOnly: Boolean,
+    pickedKeys: Set<String>?,
     /** The tiles either side of this one, for the "move earlier" and "move later" actions of TalkBack. */
     previousId: String? = null,
     nextId: String? = null,
@@ -525,8 +529,11 @@ private fun PositionedTile(
     }
 
     val selected = editingKey == cell.key
+    // While tiles are being picked for a folder, the ones not picked step back a little and the picked ones stay.
+    val picking = pickedKeys != null && cell.isTopLevel
+    val picked = picking && cell.entryId in pickedKeys!!
     val editScale by animateFloatAsState(
-        targetValue = if (editingKey != null && !selected) 0.88f else 1f,
+        targetValue = if ((editingKey != null && !selected) || (picking && !picked)) 0.88f else 1f,
         animationSpec = spring(dampingRatio = 0.7f, stiffness = Spring.StiffnessMedium),
         label = "editScale",
     )
@@ -544,7 +551,7 @@ private fun PositionedTile(
             .size(width, height)
             // After the offset: the semantics (and so TalkBack and the tests) must be where the tile really is.
             .testTag("tile:${cell.key}")
-            .tileSemantics(cell, badges, actions, previousId, nextId, readOnly)
+            .tileSemantics(cell, badges, actions, previousId, nextId, readOnly, if (picking) picked else null)
             .onGloballyPositioned { coordinates = it }
             .graphicsLayer {
                 turnstile(away.value, reduced)
@@ -561,7 +568,7 @@ private fun PositionedTile(
                 enabled = exitRequest == null,
             )
             .then(
-                if (cell.isTopLevel && !readOnly) {
+                if (cell.isTopLevel && !readOnly && pickedKeys == null) {
                     Modifier.pointerInput(Unit) {
                         detectDragGesturesAfterLongPress(
                             onDragStart = {
@@ -597,6 +604,7 @@ private fun PositionedTile(
                 notifications = cell.items.sumOf { badges[it.packageName] ?: 0 },
             )
         }
+        if (picked) PickMark(Modifier.align(Alignment.TopEnd))
         if (selected) {
             EditButton(
                 EditButtonKind.Remove,
@@ -617,6 +625,23 @@ private fun PositionedTile(
                     modifier = Modifier.align(Alignment.TopStart).padding(6.dp),
                 )
             }
+        }
+    }
+}
+
+/** The mark of a tile that is picked for a folder: a white frame and a check in a circle in the corner. */
+@Composable
+private fun PickMark(modifier: Modifier = Modifier) {
+    Box(Modifier.fillMaxSize().border(3.dp, TileWhite).testTag("picked"))
+    Box(
+        modifier.padding(6.dp).size(30.dp).clip(CircleShape).background(TileWhite),
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(Modifier.size(16.dp)) {
+            val stroke = 3.dp.toPx()
+            val tint = Color(0xFF111111)
+            drawLine(tint, Offset(size.width * 0.12f, size.height * 0.55f), Offset(size.width * 0.4f, size.height * 0.85f), stroke, StrokeCap.Round)
+            drawLine(tint, Offset(size.width * 0.4f, size.height * 0.85f), Offset(size.width * 0.9f, size.height * 0.2f), stroke, StrokeCap.Round)
         }
     }
 }
@@ -647,11 +672,15 @@ private fun Modifier.tileSemantics(
     previousId: String?,
     nextId: String?,
     readOnly: Boolean,
+    /** While tiles are picked for a folder: whether this one is picked. Null when that is not going on. */
+    picked: Boolean?,
 ): Modifier {
     val currentActions by rememberUpdatedState(actions)
     val currentCell by rememberUpdatedState(cell)
     val notifications = (cell as? AppCell)?.let { badges[it.item.packageName] ?: 0 } ?: 0
+    val selectedState = picked?.let { stringResource(if (it) R.string.a11y_selected else R.string.a11y_not_selected) }
     val state = when {
+        selectedState != null -> selectedState
         cell is FolderCell -> pluralStringResource(R.plurals.a11y_folder, cell.items.size, cell.folder.name, cell.items.size)
         notifications > 0 -> pluralStringResource(R.plurals.a11y_tile_notifications, notifications, (cell as AppCell).item.label, notifications)
         else -> null

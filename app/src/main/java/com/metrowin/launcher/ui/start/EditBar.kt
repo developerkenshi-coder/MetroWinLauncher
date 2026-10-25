@@ -24,9 +24,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
+import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.model.TileStyle
 import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -51,6 +53,8 @@ fun EditBar(
     onStyle: () -> Unit = {},
     /** The button that adds a contact, a web page or a widget; null leaves it out. */
     onAdd: (() -> Unit)? = null,
+    /** The button that picks several tiles to put in a folder; null leaves it out. */
+    onFolder: (() -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
     Row(
@@ -65,6 +69,7 @@ fun EditBar(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (onAdd != null) AddButton(onAdd)
+        if (onFolder != null) FolderButton(onFolder)
         TileSize.entries.forEach { option ->
             SizeButton(option, selected = option == size, onClick = { onSize(option) })
         }
@@ -123,6 +128,22 @@ private fun AddButton(onClick: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         MetroText("+", size = 30.sp, weight = FontWeight.Normal)
+    }
+}
+
+@Composable
+private fun FolderButton(onClick: () -> Unit) {
+    val description = stringResource(R.string.edit_folder)
+    Box(
+        Modifier
+            .size(46.dp)
+            .testTag("edit:folder")
+            .semantics { contentDescription = description }
+            .metroPress(onClick = onClick)
+            .background(LocalMetroColors.current.inactive),
+        contentAlignment = Alignment.Center,
+    ) {
+        GlyphIcon(Glyph.Folder, 28.dp)
     }
 }
 

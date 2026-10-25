@@ -535,7 +535,7 @@
     <string name="tut_start_title">your start screen</string>
     <string name="tut_start_intro">Tiles are your apps and live information, laid out the way you like.</string>
     <string name="tut_start_tip1">Tap a tile to open it. Touch and hold to edit: remove it, change its size, or drag it somewhere else.</string>
-    <string name="tut_start_tip2">Drop a tile on the middle of another one to make a folder. A folder opens in place.</string>
+    <string name="tut_start_tip2">Drop a tile on the middle of another one to make a folder, or hold a tile, touch the folder button and pick several tiles at once. A folder opens in place.</string>
     <string name="tut_start_tip3">The arrow after the last tile goes to the next Start screen (you can have three), then to the app list.</string>
     <string name="tut_start_tip4">In edit mode, “+” adds a contact, a website or a widget to Start.</string>
     <string name="tut_live_label">LIVE TILES</string>
@@ -586,4 +586,24 @@
     <string name="tut_settings_tip9">about: the version, and this tour whenever you want it again.</string>
     <string name="qa_launcher_settings">Launcher</string>
     <string name="app_launcher_settings">Launcher settings</string>
+
+    <!-- folders with several apps -->
+    <string name="edit_folder">Make a folder with several tiles</string>
+    <string name="folder_pick_create">create folder</string>
+    <string name="folder_pick_cancel">cancel</string>
+    <string name="folder_pick_hint">Touch the tiles to put in the folder</string>
+    <string name="folder_pick_hint_folder">Touch more tiles to add them to the folder</string>
+    <string name="a11y_selected">selected</string>
+    <string name="a11y_not_selected">not selected</string>
+    <string name="menu_add_to_folder">add to folder</string>
+    <string name="folder_choose_title">Add to which folder?</string>
+    <string name="folder_added">Added to the folder</string>
+    <plurals name="folder_pick_count">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+    <plurals name="folder_apps_count">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d apps</item>
+    </plurals>
 </resources>

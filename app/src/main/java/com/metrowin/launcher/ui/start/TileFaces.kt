@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -161,21 +162,23 @@ fun FolderFace(
     CompositionLocalProvider(LocalMetroColors provides LocalMetroColors.current.onTile()) {
         Box(modifier.fillMaxSize()) {
             val shown = items.take(4)
+            // More than four apps: the fourth square says how many are in the folder beyond the three shown.
+            val more = (items.size - 3).takeIf { items.size > 4 }
             val side = minOf(width, height)
             when (size) {
                 TileSize.Wide -> Row(
                     Modifier.align(Alignment.Center),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) { shown.forEach { MiniApp(it, side * 0.34f) } }
+                ) { shown.forEachIndexed { index, app -> MiniApp(app, side * 0.34f, more.takeIf { index == 3 }) } }
                 else -> {
                     val mini = side * if (size == TileSize.Small) 0.34f else 0.3f
                     Column(
                         Modifier.align(Alignment.Center),
                         verticalArrangement = Arrangement.spacedBy(if (size == TileSize.Small) 3.dp else 6.dp),
                     ) {
-                        shown.chunked(2).forEach { pair ->
+                        shown.withIndex().chunked(2).forEach { pair ->
                             Row(horizontalArrangement = Arrangement.spacedBy(if (size == TileSize.Small) 3.dp else 6.dp)) {
-                                pair.forEach { MiniApp(it, mini) }
+                                pair.forEach { (index, app) -> MiniApp(app, mini, more.takeIf { index == 3 }) }
                             }
                         }
                     }
@@ -191,9 +194,13 @@ fun FolderFace(
 }
 
 @Composable
-private fun MiniApp(item: AppItem, side: Dp) {
+private fun MiniApp(item: AppItem, side: Dp, more: Int? = null) {
     Box(Modifier.size(side).background(TileWhite.copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
-        AppArt(item, side * 0.74f)
+        if (more != null) {
+            MetroText("+$more", size = with(LocalDensity.current) { (side * 0.42f).toSp() }, modifier = Modifier.testTag("folder:more"))
+        } else {
+            AppArt(item, side * 0.74f)
+        }
     }
 }
 

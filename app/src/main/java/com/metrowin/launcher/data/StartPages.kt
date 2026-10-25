@@ -62,6 +62,20 @@ object StartPages {
         }
     }
 
+    /**
+     * Puts the app [appId] in the folder [folderId], from wherever it is: pinned as a tile, inside another folder, or
+     * not on Start at all. Nothing changes when there is no such folder or the app is in it already.
+     */
+    fun addToFolder(pages: List<List<StartEntry>>, appId: String, folderId: String): List<List<StartEntry>> {
+        val target = pages.flatten().firstOrNull { it.id == folderId } as? Folder ?: return pages
+        if (appId in target.children) return pages
+        return pages.map { page ->
+            StartEntries.unpin(page, appId).map { entry ->
+                if (entry is Folder && entry.id == folderId) entry.copy(children = entry.children + appId) else entry
+            }
+        }
+    }
+
     fun prune(pages: List<List<StartEntry>>, known: Set<String>): List<List<StartEntry>> =
         pages.map { StartEntries.prune(it, known) }
 

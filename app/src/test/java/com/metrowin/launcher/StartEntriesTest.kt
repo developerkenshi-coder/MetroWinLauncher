@@ -128,4 +128,52 @@ class StartEntriesTest {
         val old = """[{"id":"stock:phone","size":"m"},{"id":"stock:photos","size":"w"}]"""
         assertEquals(listOf(tile("stock:phone"), tile("stock:photos", TileSize.Wide)), TileCodec.decode(old))
     }
+
+    // --- several tiles into one folder
+
+    @Test
+    fun severalTilesMakeOneFolderWhereTheFirstWas() {
+        val entries = listOf(tile("a"), tile("b"), tile("c"), tile("d"), tile("e"))
+        val grouped = StartEntries.group(entries, setOf("d", "b", "e")) { "f1" }
+        // The order of Start decides, not the order of the picking: b, d, e.
+        assertEquals(listOf("a", "f1", "c"), ids(grouped))
+        assertEquals(listOf("b", "d", "e"), (grouped[1] as Folder).children)
+    }
+
+    @Test
+    fun theNewFolderIsAMediumTileWithNoNameYet() {
+        val grouped = StartEntries.group(listOf(tile("a", TileSize.Wide), tile("b", TileSize.Small)), setOf("a", "b")) { "f" }
+        val made = grouped.single() as Folder
+        assertEquals(TileSize.Medium, made.size)
+        assertEquals("", made.name)
+    }
+
+    @Test
+    fun aLoneTileOrNothingChangesNothing() {
+        val entries = listOf(tile("a"), tile("b"))
+        assertEquals(entries, StartEntries.group(entries, setOf("a")))
+        assertEquals(entries, StartEntries.group(entries, emptySet()))
+        assertEquals(entries, StartEntries.group(entries, setOf("zzz", "yyy")))
+    }
+
+    @Test
+    fun tilesPickedWithAFolderJoinThatFolder() {
+        val entries = listOf(tile("a"), folder("f", "x", "y"), tile("b"), tile("c"))
+        val grouped = StartEntries.group(entries, setOf("a", "f", "c"))
+        assertEquals(listOf("f", "b"), ids(grouped))
+        assertEquals(listOf("x", "y", "a", "c"), (grouped[0] as Folder).children)
+    }
+
+    @Test
+    fun aFolderOnItsOrTwoFoldersChangeNothing() {
+        val entries = listOf(folder("f", "x", "y"), folder("g", "p", "q"), tile("a"))
+        assertEquals(entries, StartEntries.group(entries, setOf("f")))
+        assertEquals(entries, StartEntries.group(entries, setOf("f", "g", "a")))
+    }
+
+    @Test
+    fun groupingKeepsTheTileOrderOfEverythingElse() {
+        val entries = listOf(tile("a"), folder("f", "x", "y"), tile("b"), tile("c"), tile("d"))
+        assertEquals(listOf("a", "f", "g", "d"), ids(StartEntries.group(entries, setOf("b", "c")) { "g" }))
+    }
 }

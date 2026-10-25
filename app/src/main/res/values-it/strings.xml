@@ -531,7 +531,7 @@
     <string name="tut_start_title">la tua schermata start</string>
     <string name="tut_start_intro">I tile sono le tue app e le informazioni dal vivo, disposti come preferisci.</string>
     <string name="tut_start_tip1">Tocca un tile per aprirlo. Tieni premuto per modificare: toglierlo, cambiarne la dimensione o trascinarlo altrove.</string>
-    <string name="tut_start_tip2">Lascia un tile sul centro di un altro per fare una cartella. Una cartella si apre sul posto.</string>
+    <string name="tut_start_tip2">Lascia un tile sul centro di un altro per fare una cartella, oppure tieni premuto un tile, tocca il pulsante cartella e scegli più tile insieme. Una cartella si apre sul posto.</string>
     <string name="tut_start_tip3">La freccia dopo l\'ultimo tile porta alla schermata Start successiva (puoi averne tre), poi alla lista app.</string>
     <string name="tut_start_tip4">In modalità modifica, “+” aggiunge a Start un contatto, un sito o un widget.</string>
     <string name="tut_live_label">LIVE TILE</string>
@@ -582,4 +582,26 @@
     <string name="tut_settings_tip9">informazioni: la versione, e questo giro ogni volta che vuoi rivederlo.</string>
     <string name="qa_launcher_settings">Launcher</string>
     <string name="app_launcher_settings">Impostazioni Launcher</string>
+
+    <!-- folders with several apps -->
+    <string name="edit_folder">Crea una cartella con più tile</string>
+    <string name="folder_pick_create">crea cartella</string>
+    <string name="folder_pick_cancel">annulla</string>
+    <string name="folder_pick_hint">Tocca i tile da mettere nella cartella</string>
+    <string name="folder_pick_hint_folder">Tocca altri tile per aggiungerli alla cartella</string>
+    <string name="a11y_selected">selezionato</string>
+    <string name="a11y_not_selected">non selezionato</string>
+    <string name="menu_add_to_folder">aggiungi a cartella</string>
+    <string name="folder_choose_title">In quale cartella?</string>
+    <string name="folder_added">Aggiunta alla cartella</string>
+    <plurals name="folder_pick_count">
+        <item quantity="one">%1$d selezionato</item>
+        <item quantity="other">%1$d selezionati</item>
+        <item quantity="many">%1$d selezionati</item>
+    </plurals>
+    <plurals name="folder_apps_count">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d app</item>
+        <item quantity="many">%1$d app</item>
+    </plurals>
 </resources>
