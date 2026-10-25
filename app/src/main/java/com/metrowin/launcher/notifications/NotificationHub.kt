@@ -52,6 +52,34 @@ object NotificationHub {
     @Volatile
     internal var service: NotificationService? = null
 
+    private val _apps = MutableStateFlow<List<AppNotification>>(emptyList())
+
+    /** What the live tiles read from the notifications that are up (see [LiveCards]); empty while live content is off. */
+    val apps: StateFlow<List<AppNotification>> = _apps.asStateFlow()
+
+    /** Whether the live tiles use the notifications at all: the service reads them in detail only then. */
+    @Volatile
+    var liveContent = false
+        private set
+
+    /** Whether the pictures that come with them are read too. */
+    @Volatile
+    var livePictures = true
+        private set
+
+    /** Said by the settings: what the live tiles use. A change makes the service read the notifications again. */
+    fun useForLiveTiles(enabled: Boolean, pictures: Boolean) {
+        if (liveContent == enabled && livePictures == pictures) return
+        liveContent = enabled
+        livePictures = pictures
+        if (!enabled) _apps.value = emptyList()
+        service?.reload()
+    }
+
+    fun updateApps(apps: List<AppNotification>) {
+        _apps.value = apps
+    }
+
     fun update(entries: List<NotificationEntry>) {
         _entries.value = entries
     }

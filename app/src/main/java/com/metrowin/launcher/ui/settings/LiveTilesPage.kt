@@ -113,6 +113,54 @@ fun LiveTilesPage(env: SettingsEnv) {
             hint = stringResource(R.string.weather_hint),
             tag = "weather:fahrenheit",
         )
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            SettingHeading(stringResource(R.string.live_heading))
+            SettingHint(stringResource(R.string.live_intro))
+            val on = settings.notificationPeek && env.notificationAccess
+            if (!on) SettingHint(stringResource(R.string.live_off), Modifier.testTag("live:off"))
+            ToggleSetting(
+                stringResource(R.string.live_messages), settings.liveMessages,
+                onChange = { v -> env.onChange { it.copy(liveMessages = v) } },
+                hint = stringResource(R.string.live_messages_hint), enabled = on, tag = "live:messages",
+            )
+            ToggleSetting(
+                stringResource(R.string.live_hide_text), settings.liveHideText,
+                onChange = { v -> env.onChange { it.copy(liveHideText = v) } },
+                hint = stringResource(R.string.live_hide_text_hint), enabled = on, tag = "live:hidetext",
+            )
+            ToggleSetting(
+                stringResource(R.string.live_pictures), settings.livePictures,
+                onChange = { v -> env.onChange { it.copy(livePictures = v) } },
+                hint = stringResource(R.string.live_pictures_hint), enabled = on, tag = "live:pictures",
+            )
+            ToggleSetting(
+                stringResource(R.string.live_playing), settings.liveNowPlaying,
+                onChange = { v -> env.onChange { it.copy(liveNowPlaying = v) } },
+                hint = stringResource(R.string.live_playing_hint), enabled = on, tag = "live:playing",
+            )
+            ToggleSetting(
+                stringResource(R.string.live_progress), settings.liveProgress,
+                onChange = { v -> env.onChange { it.copy(liveProgress = v) } },
+                hint = stringResource(R.string.live_progress_hint), enabled = on, tag = "live:progress",
+            )
+            // The apps that show something now, and those that were switched off, each with a switch.
+            val labels = env.apps.associate { (it.packageName ?: it.id) to it.label }
+            val packages = (env.liveTilePackages + settings.liveOffApps).sortedBy { (labels[it] ?: it).lowercase() }
+            SettingLabel(stringResource(R.string.live_apps))
+            if (packages.isEmpty()) {
+                SettingHint(stringResource(R.string.live_apps_none), Modifier.testTag("live:none"))
+            } else {
+                packages.forEach { pkg ->
+                    ToggleSetting(
+                        label = labels[pkg] ?: pkg,
+                        checked = pkg !in settings.liveOffApps,
+                        onChange = { v -> env.onChange { it.copy(liveOffApps = if (v) it.liveOffApps - pkg else it.liveOffApps + pkg) } },
+                        tag = "live:app:$pkg",
+                    )
+                }
+                SettingHint(stringResource(R.string.live_apps_hint))
+            }
+        }
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.tp_heading))
             ToggleSetting(

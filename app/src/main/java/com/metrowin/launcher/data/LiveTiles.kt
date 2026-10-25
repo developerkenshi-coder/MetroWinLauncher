@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.content.ContextCompat
 import com.metrowin.launcher.model.LiveKind
+import com.metrowin.launcher.notifications.NowPlaying
 
 /** The runtime permissions behind the live tiles. All of them are optional. */
 object LivePermissions {
@@ -67,6 +68,8 @@ data class LiveTileData(
     val torchOn: Boolean = false,
     val battery: BatteryInfo? = null,
     val weather: WeatherData? = null,
+    /** The music playing in any media app, for the Music tile. */
+    val nowPlaying: NowPlaying? = null,
 )
 
 class LiveTileRepository(private val context: Context) {

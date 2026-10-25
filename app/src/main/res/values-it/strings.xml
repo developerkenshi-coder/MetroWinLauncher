@@ -188,8 +188,8 @@
     <string name="edit_style_short_standard">standard</string>
     <string name="edit_style_short_iconic">iconic</string>
     <string name="edit_style_short_cycle">cycle</string>
-    <string name="notif_peek">i riquadri mostrano l\'ultima notifica</string>
-    <string name="notif_peek_hint">Un riquadro con una notifica si gira per mostrarne il testo. Lo vede anche chi guarda il tuo schermo, quindi è spento finché non lo accendi.</string>
+    <string name="notif_peek">contenuti dal vivo delle altre app sui riquadri</string>
+    <string name="notif_peek_hint">Il riquadro di un\'app si gira per mostrare cosa dicono le sue notifiche: messaggi, immagini, la canzone che suona. Lo vede anche chi guarda il tuo schermo, quindi è spento finché non lo accendi. Cosa mostrare si sceglie nella pagina live tile.</string>
 
     <!-- weather and battery -->
     <string name="weather_clear">Sereno</string>
@@ -577,10 +577,10 @@
     <string name="tut_settings_label">IMPOSTAZIONI</string>
     <string name="tut_settings_title">rendilo tuo</string>
     <string name="tut_settings_intro">Apri Impostazioni Launcher nella lista app, o tocca il pulsante Launcher dell\'Action Center. Ogni sezione è una pagina, in due gruppi: launcher e strumenti.</string>
-    <string name="tut_settings_tip1">start+tema: scuro o chiaro, colori d\'accento, foto di Start, orologio, numero di schermate Start.</string>
-    <string name="tut_settings_tip2">schermo: rotazione e orizzontale, come si aprono le app, 120 Hz. accessibilità: TalkBack, meno movimento, più contrasto.</string>
+    <string name="tut_settings_tip1">start+tema: l\'aspetto (Classic, Modern Glass, Modern Droid), scuro o chiaro, nero OLED, colori d\'accento, foto di Start, orologio, numero di schermate Start.</string>
+    <string name="tut_settings_tip2">schermo: rotazione e orizzontale, come si aprono le app, 120 Hz. batteria: risparmio energetico. accessibilità: TalkBack, meno movimento, più contrasto.</string>
     <string name="tut_settings_tip3">icone e temi: icon pack e file tema da condividere.</string>
-    <string name="tut_settings_tip4">gesti, notifiche+azioni, live tile e app: cosa fa ogni gesto, l\'Action Center, la città del meteo, app nascoste e ricerca.</string>
+    <string name="tut_settings_tip4">gesti, notifiche+azioni, live tile e app: cosa fa ogni gesto (anche le app recenti), l\'Action Center, i live tile di WhatsApp, Telegram, Instagram e altre app, la città del meteo, app nascoste e ricerca.</string>
     <string name="tut_settings_tip5">blocco schermo: il blocco schermo Metro, come salvaschermo, con la sua foto.</string>
     <string name="tut_settings_tip6">voce e profili: parla al launcher, e metti in pausa o nascondi profilo di lavoro e spazio privato.</string>
     <string name="tut_settings_tip7">backup+sync: un file o una cartella, e una sincronizzazione cifrata tra i tuoi telefoni.</string>
@@ -658,4 +658,22 @@
     <string name="theme_oled">Nero OLED</string>
     <string name="theme_oled_hint">Per gli schermi OLED: nel tema scuro gli sfondi sono neri veri, quindi quei pixel sono spenti. Più contrasto e meno batteria. Nel tema chiaro non fa nulla.</string>
     <string name="tut_look_tip3">Hai uno schermo OLED? Attiva «Nero OLED» in start+tema per uno sfondo nero vero.</string>
+
+    <!-- live tiles of other apps -->
+    <string name="live_heading">live tile delle altre app</string>
+    <string name="live_intro">Con l\'accesso alle notifiche e l\'interruttore «contenuti dal vivo delle altre app» nella pagina notifiche, il tile di WhatsApp, Telegram, Instagram, Reddit o di qualsiasi altra app si gira per mostrare cosa succede: chi ha scritto e cosa, un\'immagine, la canzone che suona, un download. Tutto viene dalle notifiche; nulla esce dal telefono.</string>
+    <string name="live_off">Spento ora: attiva l\'accesso alle notifiche e l\'interruttore «contenuti dal vivo delle altre app» nella pagina notifiche.</string>
+    <string name="live_messages">conversazioni e notifiche</string>
+    <string name="live_messages_hint">Una faccia per ogni chat, con chi ha scritto, l\'ultima riga e la foto di chi scrive; le altre notifiche (un mi piace, una risposta) come titolo e riga. Il contatore somma i messaggi, uno per uno.</string>
+    <string name="live_hide_text">nascondi cosa c\'è scritto</string>
+    <string name="live_hide_text_hint">Solo chi ha scritto o da quale app arriva: il testo dei messaggi e delle notifiche resta fuori dai tile, per chiunque veda il tuo schermo.</string>
+    <string name="live_pictures">immagini</string>
+    <string name="live_pictures_hint">Una notifica con un\'immagine la mostra sul tile.</string>
+    <string name="live_playing">la musica che suona</string>
+    <string name="live_playing_hint">La canzone, l\'artista e la copertina, sul tile dell\'app che suona e sul tile Musica.</string>
+    <string name="live_progress">download e avanzamento</string>
+    <string name="live_progress_hint">Cosa un\'app sta scaricando, caricando o sincronizzando, con a che punto è.</string>
+    <string name="live_apps">app</string>
+    <string name="live_apps_none">Nessuna app ha contenuti dal vivo ora.</string>
+    <string name="live_apps_hint">Spegni un\'app e il suo tile resta com\'è. Le app compaiono qui quando hanno qualcosa da mostrare.</string>
 </resources>

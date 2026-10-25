@@ -3,6 +3,12 @@ package com.metrowin.launcher.ui.start
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import com.metrowin.launcher.notifications.LiveCards
+import com.metrowin.launcher.notifications.LiveCard
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -101,6 +107,8 @@ fun TileFace(
     style: TileStyle = TileStyle.Standard,
     /** The latest notification of the app, when the tile is allowed to flip to it. */
     peek: TilePeek? = null,
+    /** What is going on in the app (conversations, pictures, music, progress), one face each, when the tile may show it. */
+    cards: List<LiveCard> = emptyList(),
     /** False while tiles are being edited: a widget then lets the touch through to the tile instead of using it. */
     interactive: Boolean = true,
     /** A long press on a widget (which keeps the touches of its own area) selects the tile for editing. */
@@ -110,6 +118,7 @@ fun TileFace(
     // The Iconic template shows the counter big, in the middle; a small tile has no room for that.
     val iconic = style == TileStyle.Iconic && size != TileSize.Small && item.live != LiveKind.Torch
     val cycle = style == TileStyle.Cycle && item.live == LiveKind.Photos && size != TileSize.Small && live.photos.isNotEmpty()
+    val faces = cards.ifEmpty { peek?.let { listOf(LiveCard.Digest(it.title, it.text)) }.orEmpty() }
     // Whatever the theme, a tile is coloured: its text and glyphs are white.
     CompositionLocalProvider(LocalMetroColors provides LocalMetroColors.current.onTile()) {
         Box(modifier.fillMaxSize()) {
@@ -125,9 +134,16 @@ fun TileFace(
                     LiveKind.Torch -> TorchFace(item, size, width, height, live.torchOn)
                     LiveKind.Battery -> BatteryFace(item, size, width, height, live.battery, seed)
                     LiveKind.Weather -> WeatherFace(item, size, width, height, live.weather, seed)
+                    LiveKind.Music -> {
+                        // The music that plays in any app, then what is going on in the music app itself.
+                        val playing = live.nowPlaying?.let { listOf(LiveCard.Playing(it.title, it.artist, it.art, it.playing)) }.orEmpty()
+                        val shown = playing + faces.filter { it !is LiveCard.Playing }
+                        if (shown.isNotEmpty() && size != TileSize.Small) CardsFace(item, size, width, height, shown, seed)
+                        else StaticFace(item, size, width, height)
+                    }
                     LiveKind.Phone, LiveKind.Messages, null ->
                         if (item.photoPath != null) PhotoShortcutFace(item, size, width, height)
-                        else if (peek != null && size != TileSize.Small) PeekFace(item, size, width, height, peek, seed)
+                        else if (faces.isNotEmpty() && size != TileSize.Small) CardsFace(item, size, width, height, faces, seed)
                         else StaticFace(item, size, width, height)
                 }
             }
@@ -316,25 +332,151 @@ private fun PhotoShortcutFace(item: AppItem, size: TileSize, width: Dp, height: 
     }
 }
 
-/** The tile of an app with a notification: its usual face, flipping to the notification now and then. */
+/**
+ * The tile of an app with something going on: its usual face, then one face for each thing (a conversation, a picture, the
+ * song, a download), turning over one after the other.
+ */
 @Composable
-private fun PeekFace(item: AppItem, size: TileSize, width: Dp, height: Dp, peek: TilePeek, seed: Int) {
-    FlipContainer(2, seed) { face ->
+private fun CardsFace(item: AppItem, size: TileSize, width: Dp, height: Dp, cards: List<LiveCard>, seed: Int) {
+    val shown = cards.take(LiveCards.MAX_CARDS)
+    FlipContainer(1 + shown.size, seed) { face ->
         if (face == 0) {
             StaticFace(item, size, width, height)
         } else {
-            Box(Modifier.fillMaxSize()) {
-                Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 10.dp, end = 10.dp)) {
-                    if (peek.title.isNotBlank()) MetroText(peek.title, size = 20.sp, maxLines = 2, lineHeight = 24.sp)
-                    if (peek.text.isNotBlank()) {
-                        MetroText(
-                            peek.text, size = 15.sp, weight = FontWeight.Normal, maxLines = 3, lineHeight = 19.sp,
-                            color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f), modifier = Modifier.padding(top = 3.dp),
-                        )
-                    }
+            Box(Modifier.fillMaxSize().testTag("card:${shown[face - 1]::class.simpleName}")) {
+                when (val card = shown[face - 1]) {
+                    is LiveCard.Message -> MessageCard(card, size)
+                    is LiveCard.Digest -> DigestCard(card)
+                    is LiveCard.Picture -> PictureCard(card)
+                    is LiveCard.Progress -> ProgressCard(card, width)
+                    is LiveCard.Playing -> PlayingCard(card, size, height)
                 }
                 TileLabel(item.label, Modifier.align(Alignment.BottomStart))
             }
+        }
+    }
+}
+
+/** Someone wrote: their picture (when there is one), their name, the chat it came in, and the last line. */
+@Composable
+private fun MessageCard(card: LiveCard.Message, size: TileSize) {
+    val ink = LocalMetroColors.current.tileContent
+    Row(Modifier.fillMaxSize().padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 26.dp)) {
+        card.avatar?.let { avatar ->
+            val side = if (size == TileSize.Wide) 64.dp else 44.dp
+            Image(avatar, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(side).testTag("card:avatar"))
+            Spacer(Modifier.width(10.dp))
+        }
+        Column(Modifier.weight(1f)) {
+            MetroText(card.sender, size = 20.sp, maxLines = 1)
+            card.conversation?.let { chat ->
+                MetroText(chat, size = 13.sp, weight = FontWeight.Normal, maxLines = 1, color = ink.copy(alpha = 0.75f))
+            }
+            if (card.text.isNotBlank()) {
+                MetroText(
+                    card.text, size = 15.sp, weight = FontWeight.Normal, maxLines = 3, lineHeight = 19.sp,
+                    color = ink.copy(alpha = 0.9f), modifier = Modifier.padding(top = 3.dp),
+                )
+            }
+        }
+    }
+}
+
+/** A notification said in a title and a line, with the picture of who it is from. A dot says it is going on now. */
+@Composable
+private fun DigestCard(card: LiveCard.Digest) {
+    val ink = LocalMetroColors.current.tileContent
+    Box(Modifier.fillMaxSize()) {
+        Row(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 10.dp, end = 10.dp)) {
+            card.avatar?.let { avatar ->
+                Image(avatar, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(40.dp).testTag("card:avatar"))
+                Spacer(Modifier.width(10.dp))
+            }
+            Column(Modifier.weight(1f)) {
+                if (card.title.isNotBlank()) MetroText(card.title, size = 20.sp, maxLines = 2, lineHeight = 24.sp)
+                if (card.text.isNotBlank()) {
+                    MetroText(
+                        card.text, size = 15.sp, weight = FontWeight.Normal, maxLines = 3, lineHeight = 19.sp,
+                        color = ink.copy(alpha = 0.85f), modifier = Modifier.padding(top = 3.dp),
+                    )
+                }
+            }
+        }
+        if (card.live) Box(Modifier.align(Alignment.TopEnd).padding(10.dp).size(9.dp).background(ink, CircleShape).testTag("card:live"))
+    }
+}
+
+/** A notification with a picture: the picture fills the tile, with its words in a shade at the bottom. */
+@Composable
+private fun PictureCard(card: LiveCard.Picture) {
+    Box(Modifier.fillMaxSize()) {
+        Image(card.picture, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+        if (card.caption.isNotBlank()) {
+            // Its words sit in a shade over the picture, clear of the name of the app at the bottom.
+            Box(
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f))))
+                    .padding(start = 9.dp, end = 9.dp, top = 22.dp, bottom = 28.dp),
+            ) {
+                MetroText(card.caption, size = 14.sp, weight = FontWeight.Normal, maxLines = 2, lineHeight = 18.sp, color = Color.White)
+            }
+        }
+    }
+}
+
+/** A download, an upload: what it is and how far along, as a bar and a number. */
+@Composable
+private fun ProgressCard(card: LiveCard.Progress, width: Dp) {
+    val ink = LocalMetroColors.current.tileContent
+    Column(Modifier.fillMaxSize().padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 32.dp)) {
+        MetroText(card.title, size = 18.sp, maxLines = 2, lineHeight = 22.sp)
+        Spacer(Modifier.weight(1f))
+        if (card.percent != null) {
+            MetroText("${card.percent}%", size = 34.sp)
+            BatteryBar(card.percent, width * 0.7f)
+        } else {
+            MetroText("…", size = 34.sp, color = ink.copy(alpha = 0.85f))
+        }
+    }
+}
+
+/** The song: its cover (when there is one), its name and its artist, and whether it plays. */
+@Composable
+private fun PlayingCard(card: LiveCard.Playing, size: TileSize, height: Dp) {
+    val ink = LocalMetroColors.current.tileContent
+    Row(Modifier.fillMaxSize().padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 26.dp)) {
+        card.art?.let { art ->
+            val side = (height * 0.55f).coerceAtMost(if (size == TileSize.Wide) 96.dp else 72.dp)
+            Image(art, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(side).testTag("card:art"))
+            Spacer(Modifier.width(10.dp))
+        }
+        Column(Modifier.weight(1f)) {
+            MetroText(card.title, size = 20.sp, maxLines = 2, lineHeight = 24.sp)
+            if (card.artist.isNotBlank()) {
+                MetroText(card.artist, size = 15.sp, weight = FontWeight.Normal, maxLines = 1, color = ink.copy(alpha = 0.85f), modifier = Modifier.padding(top = 3.dp))
+            }
+        }
+        PlayMark(card.playing, ink)
+    }
+}
+
+/** A triangle when the music plays, two bars when it is paused. */
+@Composable
+private fun PlayMark(playing: Boolean, color: Color) {
+    Canvas(Modifier.size(18.dp).testTag(if (playing) "card:playing" else "card:paused")) {
+        if (playing) {
+            val path = androidx.compose.ui.graphics.Path().apply {
+                moveTo(size.width * 0.15f, size.height * 0.05f)
+                lineTo(size.width * 0.95f, size.height * 0.5f)
+                lineTo(size.width * 0.15f, size.height * 0.95f)
+                close()
+            }
+            drawPath(path, color)
+        } else {
+            drawRect(color, androidx.compose.ui.geometry.Offset(size.width * 0.12f, size.height * 0.05f), androidx.compose.ui.geometry.Size(size.width * 0.28f, size.height * 0.9f))
+            drawRect(color, androidx.compose.ui.geometry.Offset(size.width * 0.6f, size.height * 0.05f), androidx.compose.ui.geometry.Size(size.width * 0.28f, size.height * 0.9f))
         }
     }
 }

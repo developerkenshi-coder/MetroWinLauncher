@@ -90,6 +90,11 @@ import com.metrowin.launcher.notifications.NotificationEntry
 import com.metrowin.launcher.ui.theme.MetroAccents
 import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.notifications.NotificationService
+import com.metrowin.launcher.notifications.LiveCard
+import com.metrowin.launcher.notifications.LiveCardOptions
+import com.metrowin.launcher.notifications.LiveCards
+import com.metrowin.launcher.notifications.LiveTileInfo
+import com.metrowin.launcher.notifications.NowPlaying
 import com.metrowin.launcher.notifications.TilePeek
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -220,24 +225,60 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** Notifications for the Action Center. Empty until the user turns on notification access. */
     val notifications: StateFlow<List<NotificationEntry>> = NotificationHub.entries
 
+    /** What the user lets the live tiles of other apps show (see [LiveCards]). */
+    private val liveOptions = _settings
+        .map {
+            LiveCardOptions(
+                messages = it.liveMessages, pictures = it.livePictures, playing = it.liveNowPlaying, progress = it.liveProgress,
+                hideText = it.liveHideText, offApps = it.liveOffApps, ownPackage = application.packageName,
+            )
+        }
+        .distinctUntilChanged()
+
+    /**
+     * What the tiles of other apps show, read from their notifications: the faces and the number of unread messages of each
+     * app (see [LiveCards]). Empty unless live content is on in the settings.
+     */
+    val liveInfo: StateFlow<Map<String, LiveTileInfo>> =
+        combine(NotificationHub.apps, liveOptions, _settings.map { it.notificationPeek }.distinctUntilChanged()) { apps, options, on ->
+            if (on) LiveCards.build(apps, options) else emptyMap()
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+
     /** How many notifications each app has: the counters on the tiles. */
     val badges: StateFlow<Map<String, Int>> =
-        combine(NotificationHub.entries, TileFeed.tiles, _settings) { entries, published, settings ->
+        combine(NotificationHub.entries, TileFeed.tiles, _settings, liveInfo) { entries, published, settings, info ->
             val counts = NotificationHub.countsByPackage(entries)
+            // Messages are counted one by one: a chat with five waiting is five, not one.
+            val counted = counts.mapValues { (pkg, n) -> maxOf(n, info[pkg]?.unread ?: 0) } +
+                info.filter { (pkg, i) -> pkg !in counts && i.unread > 0 }.mapValues { it.value.unread }
             // The number an app published for its own tile wins over the count of its notifications.
-            if (settings.thirdPartyTiles) counts + ThirdPartyTiles.counts(published) else counts
+            if (settings.thirdPartyTiles) counted + ThirdPartyTiles.counts(published) else counted
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
     private val _notificationAccess = MutableStateFlow(hasNotificationAccess())
     val notificationAccess: StateFlow<Boolean> = _notificationAccess.asStateFlow()
 
-    /** The latest notification of each app, for the tiles that flip to show it. Empty unless the setting is on. */
-    val peeks: StateFlow<Map<String, TilePeek>> =
-        combine(NotificationHub.entries, TileFeed.tiles, _settings) { entries, published, settings ->
-            val fromNotifications = if (settings.notificationPeek) NotificationHub.latestByPackage(entries) else emptyMap()
+    /** The faces of the tiles that flip to show what is going on in their app. Empty unless the setting is on. */
+    val peeks: StateFlow<Map<String, List<LiveCard>>> =
+        combine(liveInfo, TileFeed.tiles, _settings) { info, published, settings ->
+            val fromNotifications = info.mapValues { it.value.cards }.filterValues { it.isNotEmpty() }
             // What an app published for its own tile is what it wants the tile to say.
-            if (settings.thirdPartyTiles) fromNotifications + ThirdPartyTiles.peeks(published) else fromNotifications
+            if (settings.thirdPartyTiles) {
+                fromNotifications + ThirdPartyTiles.peeks(published).mapValues { listOf(LiveCard.Digest(it.value.title, it.value.text)) }
+            } else {
+                fromNotifications
+            }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+
+    /** The music playing in any app, for the Music tile; null when nothing plays or the setting is off. */
+    val nowPlaying: StateFlow<NowPlaying?> =
+        combine(NotificationHub.apps, _settings) { apps, settings ->
+            if (settings.notificationPeek && settings.liveNowPlaying) {
+                LiveCards.nowPlaying(apps.filter { it.packageName !in settings.liveOffApps })
+            } else {
+                null
+            }
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     /** The tiles apps have published, most recent first, for the settings. */
     val publishedTiles: StateFlow<List<ThirdPartyTile>> =
@@ -266,6 +307,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         if (_settings.value.hasStartBackground) loadBackground()
         if (_settings.value.hasLockPhoto) loadLockPhoto()
         stopObservingPackages = apps.observe(::scheduleReload)
+        // The notification service reads the notifications in detail only while the live tiles use them.
+        viewModelScope.launch {
+            _settings.map { it.notificationPeek to it.livePictures }.distinctUntilChanged()
+                .collect { (on, pictures) -> NotificationHub.useForLiveTiles(on, pictures) }
+        }
         // What Start shows from the phone is read again when a tile of that kind is pinned.
         viewModelScope.launch {
             combine(_pages, _items) { pages, items -> LiveSources.wanted(pages, items) }.distinctUntilChanged().collect { if (listening) refreshLive() }

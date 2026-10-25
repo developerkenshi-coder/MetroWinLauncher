@@ -15,6 +15,8 @@ class NotificationService : NotificationListenerService() {
     override fun onListenerDisconnected() {
         if (NotificationHub.service === this) NotificationHub.service = null
         NotificationHub.update(emptyList())
+        NotificationHub.updateApps(emptyList())
+        seen.clear()
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) = refresh()
@@ -26,6 +28,38 @@ class NotificationService : NotificationListenerService() {
         NotificationHub.update(
             active.mapNotNull(::toEntry).sortedByDescending { it.postTime },
         )
+        refreshLive(active)
+    }
+
+    /** Reads the notifications again, after the settings changed what the live tiles use. */
+    fun reload() {
+        seen.clear()
+        refresh()
+    }
+
+    private val reader by lazy { NotificationReader(applicationContext) }
+
+    /** What the notifications said when last read, so a picture is decoded once and not at every notification. */
+    private val seen = HashMap<String, AppNotification>()
+
+    private fun refreshLive(active: Array<StatusBarNotification>) {
+        if (!NotificationHub.liveContent) {
+            seen.clear()
+            return
+        }
+        val apps = active.filter { it.packageName != packageName }.map { sbn ->
+            val before = seen[sbn.key]
+            // A media notification is read again whenever it changes, as the song does; the others only when they are new.
+            before?.takeIf { it.postTime == sbn.postTime && it.playing == null } ?: reader.read(
+                key = sbn.key, packageName = sbn.packageName, postTime = sbn.postTime, notification = sbn.notification,
+                ongoing = sbn.isOngoing || !sbn.isClearable,
+                groupSummary = sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY != 0,
+                withPictures = NotificationHub.livePictures,
+            )
+        }
+        seen.keys.retainAll(apps.map { it.key }.toSet())
+        apps.forEach { seen[it.key] = it }
+        NotificationHub.updateApps(apps)
     }
 
     private fun toEntry(sbn: StatusBarNotification): NotificationEntry? {

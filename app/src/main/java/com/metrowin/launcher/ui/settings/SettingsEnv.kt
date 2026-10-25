@@ -61,6 +61,8 @@ class SettingsEnv(
     /** The launcher is sparing the battery now (see PowerPolicy). */
     val powerSaving: Boolean = false,
     val notificationAccess: Boolean = false,
+    /** The apps whose tile shows live content now (see LiveCards), for the list of apps that can be switched off. */
+    val liveTilePackages: Set<String> = emptySet(),
     val onManageNotificationAccess: () -> Unit = {},
     /** Every app, including the hidden ones and the launcher's own entries. */
     val apps: List<AppItem> = emptyList(),

@@ -145,6 +145,18 @@ data class LauncherSettings(
     val notificationPeek: Boolean = false,
     val inlineReply: Boolean = true,
     val groupConversations: Boolean = true,
+    /** With [notificationPeek] on: the conversations of messaging apps (who wrote, and what), one face for each. */
+    val liveMessages: Boolean = true,
+    /** Say who wrote, not what: the text of messages and notifications is left off the tiles. */
+    val liveHideText: Boolean = false,
+    /** The pictures that come with notifications fill the tile. */
+    val livePictures: Boolean = true,
+    /** The music that plays in any media app, on its tile and on the Music tile. */
+    val liveNowPlaying: Boolean = true,
+    /** Downloads, uploads and the like, with their progress. */
+    val liveProgress: Boolean = true,
+    /** Apps (package names) whose tile never shows live content. */
+    val liveOffApps: Set<String> = emptySet(),
 
     // --- live tiles
     val weatherCity: String = "",

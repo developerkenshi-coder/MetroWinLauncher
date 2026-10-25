@@ -195,8 +195,8 @@
     <string name="edit_style_short_standard">standard</string>
     <string name="edit_style_short_iconic">iconic</string>
     <string name="edit_style_short_cycle">cycle</string>
-    <string name="notif_peek">tiles show the latest notification</string>
-    <string name="notif_peek_hint">A tile with a notification flips to show its text. Anyone who sees your screen sees it too, so it is off until you turn it on.</string>
+    <string name="notif_peek">live content of other apps on the tiles</string>
+    <string name="notif_peek_hint">The tile of an app turns over to show what its notifications say: messages, pictures, the song that plays. Anyone who sees your screen sees it too, so it is off until you turn it on. Choose what shows in the live tiles page.</string>
 
     <!-- weather and battery -->
     <string name="weather_clear">Clear</string>
@@ -581,10 +581,10 @@
     <string name="tut_settings_label">SETTINGS</string>
     <string name="tut_settings_title">make it yours</string>
     <string name="tut_settings_intro">Open Launcher settings in the app list, or tap the Launcher button of the Action Center. Each section is a page, in two groups: launcher and tools.</string>
-    <string name="tut_settings_tip1">start+theme: dark or light, accent colors, Start photo, clock, number of Start screens.</string>
-    <string name="tut_settings_tip2">screen: rotation and landscape, how apps open, 120 Hz. accessibility: TalkBack, less motion, more contrast.</string>
+    <string name="tut_settings_tip1">start+theme: the look (Classic, Modern Glass, Modern Droid), dark or light, OLED black, accent colors, Start photo, clock, number of Start screens.</string>
+    <string name="tut_settings_tip2">screen: rotation and landscape, how apps open, 120 Hz. battery: power saving. accessibility: TalkBack, less motion, more contrast.</string>
     <string name="tut_settings_tip3">icons &amp; themes: icon packs and theme files to share.</string>
-    <string name="tut_settings_tip4">gestures, notifications+actions, live tiles and apps: what each gesture does, the Action Center, the weather city, hidden apps and search.</string>
+    <string name="tut_settings_tip4">gestures, notifications+actions, live tiles and apps: what each gesture does (the recent apps too), the Action Center, the live tiles of WhatsApp, Telegram, Instagram and other apps, the weather city, hidden apps and search.</string>
     <string name="tut_settings_tip5">lock screen: the Metro lock screen, as a screen saver, with its photo.</string>
     <string name="tut_settings_tip6">voice and profiles: speak to the launcher, and pause or hide your work profile and private space.</string>
     <string name="tut_settings_tip7">backup+sync: a file or a folder, and an encrypted sync between your phones.</string>
@@ -660,4 +660,22 @@
     <string name="theme_oled">OLED black</string>
     <string name="theme_oled_hint">For OLED screens: in the dark theme the backgrounds are pure black, so those pixels are off. More contrast and less battery. It does nothing in the light theme.</string>
     <string name="tut_look_tip3">Have an OLED screen? Turn on “OLED black” in start+theme for a pure black background.</string>
+
+    <!-- live tiles of other apps -->
+    <string name="live_heading">live tiles of other apps</string>
+    <string name="live_intro">With notification access and the switch “live content of other apps” in the notifications page, the tile of WhatsApp, Telegram, Instagram, Reddit or any other app turns over to show what is going on in it: who wrote and what, a picture, the song that plays, a download. Everything comes from the notifications; nothing leaves the phone.</string>
+    <string name="live_off">Off now: turn on notification access and the switch “live content of other apps” in the notifications page.</string>
+    <string name="live_messages">conversations and notifications</string>
+    <string name="live_messages_hint">A face for each chat, with who wrote, the last line and the picture of the sender; the other notifications (a like, a reply) as a title and a line. The counter adds up the messages, one by one.</string>
+    <string name="live_hide_text">hide what is written</string>
+    <string name="live_hide_text_hint">Only who wrote or which app it is from: the text of messages and notifications stays off the tiles, for anyone who sees your screen.</string>
+    <string name="live_pictures">pictures</string>
+    <string name="live_pictures_hint">A notification with a picture shows it on the tile.</string>
+    <string name="live_playing">the music that plays</string>
+    <string name="live_playing_hint">The song, the artist and the cover, on the tile of the app that plays and on the Music tile.</string>
+    <string name="live_progress">downloads and progress</string>
+    <string name="live_progress_hint">What an app is downloading, uploading or syncing, with how far along it is.</string>
+    <string name="live_apps">apps</string>
+    <string name="live_apps_none">No app has live content now.</string>
+    <string name="live_apps_hint">Switch an app off and its tile stays as it is. The apps appear here once they have something to show.</string>
 </resources>

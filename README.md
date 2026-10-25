@@ -199,6 +199,29 @@ controlli (pulsanti, interruttori, campi, cursori), non la struttura: i gesti e 
   Modern Glass perde il fondale blu e tiene solo un bagliore leggero dei colori; Modern Droid passa dal grigio scuro al nero. Nel tema
   chiaro non fa nulla. Non so dire quanta batteria faccia risparmiare: dipende da quanto schermo è sfondo e non riquadri.
 
+### Live tile delle altre app
+
+Con l'accesso alle notifiche e l'interruttore *contenuti dal vivo delle altre app* (pagina *notifiche+azioni*, spento finché non lo
+accendi: metterebbe il testo dei messaggi su Start), il riquadro di **WhatsApp, Telegram, Instagram, Reddit** o di qualsiasi altra
+app si gira per mostrare cosa succede, **leggendo le sue notifiche** (nessuna rete, nessun permesso in più; non uso le API delle
+app, che non ci sono):
+
+- **Conversazioni**: una faccia per ogni chat, con chi ha scritto, l'ultima riga, il nome del gruppo e **la foto di chi scrive**
+  (i messaggi sono quelli che l'app scrive nella notifica a conversazione, `MessagingStyle`). Il contatore somma i messaggi uno per
+  uno: una chat con cinque in attesa fa 5, non 1.
+- **Altre notifiche** (un mi piace su Instagram, una risposta su Reddit, un'email): titolo e riga, con la foto di chi le manda se c'è.
+- **Immagini**: una notifica con un'immagine (`BigPicture`, o una foto in chat) riempie il riquadro, con le sue parole sotto.
+- **Musica che suona**: titolo, artista e copertina dalla sessione multimediale dell'app (Spotify, YouTube Music, qualsiasi
+  lettore), con un triangolo se suona e due barre se è in pausa; compare anche sul riquadro **Musica**, qualunque app suoni.
+- **Avanzamento**: un download, un upload, una sincronizzazione, con la percentuale e una barra.
+- **In corso adesso**: una navigazione, una chiamata, un cronometro, con un puntino che dice che è dal vivo.
+- Cosa mostrare e chi no, nella pagina *live tile*: conversazioni, immagini, musica, avanzamento, **nascondi cosa c'è scritto**
+  (resta solo chi ha scritto), e un interruttore **per ogni app** che ha qualcosa da mostrare. Ogni riquadro ha al massimo cinque
+  facce; i riquadri piccoli mostrano solo il contatore.
+- Costo: il servizio che già legge le notifiche le legge in dettaglio solo quando l'interruttore è acceso, e decodifica le foto
+  una volta sola (copie piccole: 96 px, 192 px, 320 px). Il resto del lavoro è sulle regole in `notifications/LiveCards.kt`, che sono
+  funzioni pure con test.
+
 ### Icone e temi
 
 **Icon pack** di ADW, Nova, Apex e Go Launcher (si legge l'`appfilter.xml`): sostituiscono le icone delle app per cui
@@ -363,7 +386,7 @@ solo se il launcher c'era già.
 ./gradlew assembleRelease        # con R8
 ```
 
-**628 test**, nessuno saltato; il lint non ha errori.
+**702 test**, nessuno saltato; il lint non ha errori.
 
 - Logica pura: griglia e colonne dalla larghezza, operazioni su Start, regole di trascinamento e di rilascio, ricerca,
   salvataggio e migrazione delle impostazioni, comandi vocali, pianificazione della sincronizzazione, **cifratura** (anche

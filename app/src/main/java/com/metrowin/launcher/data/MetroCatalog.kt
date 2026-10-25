@@ -93,6 +93,7 @@ object MetroCatalog {
             "music", R.string.stock_music, Glyph.Music,
             listOf(category(Intent.CATEGORY_APP_MUSIC)) +
                 pkg("com.google.android.apps.youtube.music", "com.spotify.music"),
+            live = LiveKind.Music,
         ),
         StockApp(
             "video", R.string.stock_video, Glyph.Video,

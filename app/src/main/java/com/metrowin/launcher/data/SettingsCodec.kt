@@ -48,6 +48,12 @@ object SettingsCodec {
         put("notificationPeek", s.notificationPeek)
         put("inlineReply", s.inlineReply)
         put("groupConversations", s.groupConversations)
+        put("liveMessages", s.liveMessages)
+        put("liveHideText", s.liveHideText)
+        put("livePictures", s.livePictures)
+        put("liveNowPlaying", s.liveNowPlaying)
+        put("liveProgress", s.liveProgress)
+        put("liveOffApps", JSONArray(s.liveOffApps.sorted()))
 
         put("weatherCity", s.weatherCity)
         put("weatherFahrenheit", s.weatherFahrenheit)
@@ -132,6 +138,12 @@ object SettingsCodec {
             notificationPeek = o.optBoolean("notificationPeek", base.notificationPeek),
             inlineReply = o.optBoolean("inlineReply", base.inlineReply),
             groupConversations = o.optBoolean("groupConversations", base.groupConversations),
+            liveMessages = o.optBoolean("liveMessages", base.liveMessages),
+            liveHideText = o.optBoolean("liveHideText", base.liveHideText),
+            livePictures = o.optBoolean("livePictures", base.livePictures),
+            liveNowPlaying = o.optBoolean("liveNowPlaying", base.liveNowPlaying),
+            liveProgress = o.optBoolean("liveProgress", base.liveProgress),
+            liveOffApps = strings("liveOffApps", base.liveOffApps).toSet(),
 
             weatherCity = o.optString("weatherCity", base.weatherCity),
             weatherLatitude = if (o.has("weatherLatitude")) o.optDouble("weatherLatitude") else base.weatherLatitude,

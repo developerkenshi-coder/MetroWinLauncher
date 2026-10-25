@@ -31,6 +31,8 @@ class SettingsCodecTest {
         kidsApps = setOf("stock:camera"), kidsMode = true,
         themeStyle = ThemeStyle.Droid, customAccent = 0xFF3366CC.toInt(), dynamicColor = false,
         batterySaving = BatterySaving.Always, oledMode = true,
+        liveMessages = false, liveHideText = true, livePictures = false, liveNowPlaying = false, liveProgress = false,
+        liveOffApps = setOf("com.whatsapp", "com.reddit.frontpage"),
     )
 
     @Test
@@ -80,6 +82,16 @@ class SettingsCodecTest {
         assertFalse(LauncherSettings().oledMode)
         assertTrue(SettingsCodec.decode("""{"oledMode":true}""")!!.oledMode)
         assertFalse(SettingsCodec.decode("""{"themeMode":"dark"}""")!!.oledMode)
+    }
+
+    @Test
+    fun theLiveTilesOfOtherAppsShowEverythingExceptTheTextIsNotHiddenByDefault() {
+        val d = LauncherSettings()
+        assertFalse("off until asked for: it puts the text of messages on Start", d.notificationPeek)
+        assertTrue(d.liveMessages && d.livePictures && d.liveNowPlaying && d.liveProgress)
+        assertFalse(d.liveHideText)
+        assertEquals(emptySet<String>(), d.liveOffApps)
+        assertEquals(setOf("a", "b"), SettingsCodec.decode("""{"liveOffApps":["b","a"]}""")!!.liveOffApps)
     }
 
     @Test

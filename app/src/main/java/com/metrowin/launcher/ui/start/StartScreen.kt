@@ -96,7 +96,7 @@ import com.metrowin.launcher.model.Folder
 import com.metrowin.launcher.model.StartEntry
 import com.metrowin.launcher.model.Tile
 import com.metrowin.launcher.model.TileSize
-import com.metrowin.launcher.notifications.TilePeek
+import com.metrowin.launcher.notifications.LiveCard
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.anim.turnstile
@@ -195,7 +195,7 @@ fun StartScreen(
     actions: StartActions,
     modifier: Modifier = Modifier,
     /** The latest notification of each app, for the tiles that flip to it. */
-    peeks: Map<String, TilePeek> = emptyMap(),
+    peeks: Map<String, List<LiveCard>> = emptyMap(),
     pullConnection: NestedScrollConnection? = null,
     /** Tiles that cannot be moved or edited, and no arrow to the app list: the Kid's Corner. */
     readOnly: Boolean = false,
@@ -300,7 +300,7 @@ private fun TileGridView(
     cells: List<StartCell>,
     live: LiveTileData,
     badges: Map<String, Int>,
-    peeks: Map<String, TilePeek>,
+    peeks: Map<String, List<LiveCard>>,
     columns: Int,
     hasBackground: Boolean,
     enterToken: Int,
@@ -534,7 +534,7 @@ private fun PositionedTile(
     unit: Dp,
     live: LiveTileData,
     badges: Map<String, Int>,
-    peeks: Map<String, TilePeek>,
+    peeks: Map<String, List<LiveCard>>,
     hasBackground: Boolean,
     enterToken: Int,
     exitRequest: ExitRequest?,
@@ -665,7 +665,7 @@ private fun PositionedTile(
                 is AppCell -> TileFace(
                     cell.item, cell.size, width, height, live,
                     seed = cell.key.hashCode(), notifications = badges[cell.item.packageName] ?: 0,
-                    style = cell.tile.style, peek = peeks[cell.item.packageName],
+                    style = cell.tile.style, cards = peeks[cell.item.packageName].orEmpty(),
                     interactive = editingKey == null, onLongClick = { currentActions.onLongClick(currentCell) },
                 )
                 is FolderCell -> FolderFace(

@@ -189,6 +189,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val notifications by vm.notifications.collectAsStateWithLifecycle()
     val badges by vm.badges.collectAsStateWithLifecycle()
     val peeks by vm.peeks.collectAsStateWithLifecycle()
+    val liveInfo by vm.liveInfo.collectAsStateWithLifecycle()
     val notificationAccess by vm.notificationAccess.collectAsStateWithLifecycle()
     val torchOn by vm.torchOn.collectAsStateWithLifecycle()
 
@@ -217,7 +218,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     val backupFolderName by vm.backupFolderName.collectAsStateWithLifecycle()
     val weather by vm.weather.collectAsStateWithLifecycle()
     val battery by vm.battery.collectAsStateWithLifecycle()
-    val liveNow = remember(live, torchOn, weather, battery) { live.copy(torchOn = torchOn, weather = weather, battery = battery) }
+    val nowPlaying by vm.nowPlaying.collectAsStateWithLifecycle()
+    val liveNow = remember(live, torchOn, weather, battery, nowPlaying) { live.copy(torchOn = torchOn, weather = weather, battery = battery, nowPlaying = nowPlaying) }
     val appContext = LocalContext.current
     val screenWidthDp = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp().value }
     val about = remember(appContext) { AboutInfo.of(appContext) }
@@ -1032,6 +1034,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onClearBackground = vm::clearStartBackground,
                             autoAccentIndex = autoAccentIndex,
                             notificationAccess = notificationAccess,
+                            liveTilePackages = liveInfo.keys,
                             onManageNotificationAccess = vm::openNotificationAccessSettings,
                             apps = items,
                             onStartKidsCorner = ::enterKidsCorner,

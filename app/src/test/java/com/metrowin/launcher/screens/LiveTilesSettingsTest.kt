@@ -1,0 +1,128 @@
+package com.metrowin.launcher.screens
+
+import androidx.compose.animation.core.Animatable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.model.AppItem
+import com.metrowin.launcher.model.Launch
+import com.metrowin.launcher.ui.settings.SettingsEnv
+import com.metrowin.launcher.ui.settings.SettingsScreen
+import com.metrowin.launcher.ui.settings.SettingsSection
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+
+/** What the user chooses for the live tiles of other apps. */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], qualifiers = "w360dp-h760dp-xxhdpi")
+class LiveTilesSettingsTest : ScreenshotBase() {
+    private var current = LauncherSettings()
+
+    private val apps = listOf(
+        AppItem("app:wa", "WhatsApp", Launch.Action("x"), packageName = "com.whatsapp"),
+        AppItem("app:ig", "Instagram", Launch.Action("x"), packageName = "com.instagram.android"),
+        AppItem("app:rd", "Reddit", Launch.Action("x"), packageName = "com.reddit.frontpage"),
+    )
+
+    @Composable
+    private fun Page(access: Boolean = true, live: Set<String> = emptySet()) {
+        var settings by remember { mutableStateOf(current) }
+        SettingsScreen(
+            env = SettingsEnv(
+                settings = settings,
+                onChange = { change -> settings = change(settings); current = settings },
+                notificationAccess = access,
+                apps = apps,
+                liveTilePackages = live,
+            ),
+            section = SettingsSection.LiveTiles,
+            onSectionChange = {},
+            sectionAway = remember { Animatable(0f) },
+        )
+    }
+
+    private fun open(settings: LauncherSettings, access: Boolean = true, live: Set<String> = emptySet()) {
+        current = settings
+        show { Page(access, live) }
+        advance(500)
+    }
+
+    private fun tap(tag: String) {
+        scrollIntoView(tag, topMargin = 0.2f)
+        compose.onNodeWithTag(tag).performClick()
+        compose.waitForIdle()
+        advance(100)
+    }
+
+    @Test
+    fun withTheMainSwitchOffThePageSaysSoAndNothingChanges() {
+        open(LauncherSettings(notificationPeek = false))
+        scrollIntoView("live:off", topMargin = 0.2f)
+        capture("settings_live_tiles_off")
+        compose.onNodeWithTag("live:off").assertExists()
+        tap("live:hidetext")
+        assertFalse("a switch that is off does nothing", current.liveHideText)
+    }
+
+    @Test
+    fun withoutNotificationAccessItIsOffToo() {
+        open(LauncherSettings(notificationPeek = true), access = false)
+        compose.onNodeWithTag("live:off").assertExists()
+    }
+
+    @Test
+    fun theSwitchesChooseWhatTheTilesShow() {
+        open(LauncherSettings(notificationPeek = true))
+        compose.onAllNodesWithTag("live:off").assertCountEquals(0)
+        tap("live:hidetext")
+        assertTrue(current.liveHideText)
+        tap("live:pictures")
+        assertFalse(current.livePictures)
+        tap("live:playing")
+        assertFalse(current.liveNowPlaying)
+        tap("live:progress")
+        assertFalse(current.liveProgress)
+        tap("live:messages")
+        assertFalse(current.liveMessages)
+    }
+
+    @Test
+    fun theAppsWithLiveContentCanBeSwitchedOffAndOnAgain() {
+        open(LauncherSettings(notificationPeek = true), live = setOf("com.whatsapp", "com.reddit.frontpage"))
+        scrollIntoView("live:app:com.whatsapp", topMargin = 0.2f)
+        capture("settings_live_tiles_apps")
+        compose.onAllNodesWithTag("live:app:com.instagram.android").assertCountEquals(0) // nothing to show: not listed
+        tap("live:app:com.whatsapp")
+        assertEquals(setOf("com.whatsapp"), current.liveOffApps)
+        tap("live:app:com.whatsapp")
+        assertEquals(emptySet<String>(), current.liveOffApps)
+    }
+
+    @Test
+    fun anAppSwitchedOffStaysInTheListEvenWhenItShowsNothingNow() {
+        open(LauncherSettings(notificationPeek = true, liveOffApps = setOf("com.instagram.android")))
+        scrollIntoView("live:app:com.instagram.android", topMargin = 0.2f)
+        compose.onNodeWithTag("live:app:com.instagram.android").assertExists()
+        tap("live:app:com.instagram.android")
+        assertEquals(emptySet<String>(), current.liveOffApps)
+    }
+
+    @Test
+    fun withNoAppThePageSaysThereIsNone() {
+        open(LauncherSettings(notificationPeek = true))
+        scrollIntoView("live:none", topMargin = 0.2f)
+        compose.onNodeWithTag("live:none").assertExists()
+    }
+}
