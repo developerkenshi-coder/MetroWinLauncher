@@ -150,8 +150,16 @@ class AppRepository(private val context: Context) {
                     context.startActivity(Intent(target.action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), options)
                 is Launch.Internal -> Unit // handled by the UI, there is no activity to start
                 is Launch.Widget -> Unit // a widget tile has nothing to open
-                is Launch.Link ->
-                    context.startActivity(Intent(Intent.ACTION_VIEW, target.uri.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), options)
+                is Launch.Link -> {
+                    val number = PhoneCalls.numberOf(target.uri)
+                    if (number != null) {
+                        // A speed dial tile: it calls at once when the phone permission was given, else it opens the dialer.
+                        val direct = LivePermissions.isGranted(context, PhoneCalls.permission)
+                        context.startActivity(PhoneCalls.intent(number, direct), options)
+                    } else {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, target.uri.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), options)
+                    }
+                }
             }
         }.isSuccess
     }
@@ -260,6 +268,9 @@ class AppRepository(private val context: Context) {
         const val ROUTE_KIDS = "kids"
         const val TORCH_ID = "launcher:torch"
         const val ROUTE_TORCH = "torch"
+        /** The tiles of a note and of a countdown open their editor; these routes tell them apart from the launcher's pages. */
+        const val ROUTE_NOTE = "note"
+        const val ROUTE_COUNTDOWN = "countdown"
         const val WEATHER_ID = "launcher:weather"
         const val ROUTE_WEATHER = "weather"
     }

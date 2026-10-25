@@ -750,4 +750,37 @@
     <string name="apps_remember_hint">The last searches are offered when you touch the search box. They stay on this phone and are not part of the backups.</string>
     <string name="apps_forget">forget the recent searches</string>
     <string name="apps_engine">web search with</string>
+
+    <!-- Start: color, undo, notes, countdowns, speed dial, settings -->
+    <string name="note_title">note</string>
+    <string name="note_default_label">Note</string>
+    <string name="countdown_title">countdown</string>
+    <string name="countdown_name_hint">what is it to? (a trip…)</string>
+    <string name="countdown_default_label">Countdown</string>
+    <string name="countdown_day">day</string>
+    <string name="countdown_month">month</string>
+    <string name="countdown_year">year</string>
+    <string name="cd_today">today</string>
+    <string name="add_speed_dial">speed dial</string>
+    <string name="add_setting">Android setting</string>
+    <string name="add_note">note</string>
+    <string name="add_countdown">countdown</string>
+    <string name="add_setting_title">put an Android setting on Start</string>
+    <string name="speed_dial_failed">No number to call was picked.</string>
+    <string name="tile_color_title">color of the tile</string>
+    <string name="tile_color_default">color of the theme</string>
+    <string name="edit_color">tile color</string>
+    <string name="undo">undo</string>
+    <string name="undo_removed">Tile removed</string>
+    <string name="undo_changed">Tile changed</string>
+    <string name="undo_moved">Tile moved</string>
+    <string name="undo_folder">Folder changed</string>
+    <plurals name="cd_to">
+        <item quantity="one">day to %2$s</item>
+        <item quantity="other">days to %2$s</item>
+    </plurals>
+    <plurals name="cd_since">
+        <item quantity="one">day since %2$s</item>
+        <item quantity="other">days since %2$s</item>
+    </plurals>
 </resources>

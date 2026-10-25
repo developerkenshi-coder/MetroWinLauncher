@@ -748,4 +748,37 @@
     <string name="apps_remember_hint">Le ultime ricerche compaiono quando tocchi la casella di ricerca. Restano su questo telefono e non entrano nei backup.</string>
     <string name="apps_forget">dimentica le ricerche recenti</string>
     <string name="apps_engine">ricerca web con</string>
+
+    <!-- Start: color, undo, notes, countdowns, speed dial, settings -->
+    <string name="note_title">nota</string>
+    <string name="note_default_label">Nota</string>
+    <string name="countdown_title">conto alla rovescia</string>
+    <string name="countdown_name_hint">a cosa manca? (un viaggio…)</string>
+    <string name="countdown_default_label">Conto alla rovescia</string>
+    <string name="countdown_day">giorno</string>
+    <string name="countdown_month">mese</string>
+    <string name="countdown_year">anno</string>
+    <string name="cd_today">oggi</string>
+    <string name="add_speed_dial">chiamata rapida</string>
+    <string name="add_setting">impostazione di Android</string>
+    <string name="add_note">nota</string>
+    <string name="add_countdown">conto alla rovescia</string>
+    <string name="add_setting_title">metti un\'impostazione di Android su Start</string>
+    <string name="speed_dial_failed">Non è stato scelto nessun numero da chiamare.</string>
+    <string name="tile_color_title">colore del riquadro</string>
+    <string name="tile_color_default">colore del tema</string>
+    <string name="edit_color">colore del riquadro</string>
+    <string name="undo">annulla</string>
+    <string name="undo_removed">Riquadro rimosso</string>
+    <string name="undo_changed">Riquadro modificato</string>
+    <string name="undo_moved">Riquadro spostato</string>
+    <string name="undo_folder">Cartella modificata</string>
+    <plurals name="cd_to">
+        <item quantity="one">giorno a %2$s</item>
+        <item quantity="other">giorni a %2$s</item>
+    </plurals>
+    <plurals name="cd_since">
+        <item quantity="one">giorno da %2$s</item>
+        <item quantity="other">giorni da %2$s</item>
+    </plurals>
 </resources>

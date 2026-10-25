@@ -40,6 +40,41 @@ class ContactReader(private val context: Context) {
         Picked(label, lookupUri.toString(), photo)
     }.getOrNull()
 
+    /** A number the user picked (a row of the phone table), with the name of its contact and its photo. */
+    class PickedNumber(val name: String, val number: String, val photoJpeg: ByteArray?)
+
+    /** Blocking, call it off the main thread, while the access that the picker gave is still valid. */
+    fun readNumber(uri: Uri): PickedNumber? = runCatching {
+        val resolver = context.contentResolver
+        var name: String? = null
+        var number: String? = null
+        var lookupKey: String? = null
+        var id = 0L
+        resolver.query(
+            uri,
+            arrayOf(
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER,
+                ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY, ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+            ),
+            null, null, null,
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                name = cursor.getString(0)
+                number = cursor.getString(1)
+                lookupKey = cursor.getString(2)
+                id = cursor.getLong(3)
+            }
+        }
+        val label = name?.takeIf { it.isNotBlank() } ?: return null
+        val clean = number?.let(PhoneCalls::clean)?.takeIf { it.isNotEmpty() } ?: return null
+        val photo = lookupKey?.let { key ->
+            ContactsContract.Contacts.openContactPhotoInputStream(resolver, ContactsContract.Contacts.getLookupUri(id, key), true)?.use { stream ->
+                BitmapFactory.decodeStream(stream)?.let(::shrinkToJpeg)
+            }
+        }
+        PickedNumber(label, clean, photo)
+    }.getOrNull()
+
     private fun shrinkToJpeg(bitmap: Bitmap): ByteArray {
         val longest = max(bitmap.width, bitmap.height)
         val scaled = if (longest > MAX_SIDE) {

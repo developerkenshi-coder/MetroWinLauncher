@@ -16,7 +16,19 @@ enum class ShortcutKind(val code: String) {
     Site("site"),
 
     /** An Android widget placed on Start. */
-    Widget("widget");
+    Widget("widget"),
+
+    /** A number that is called at a touch (speed dial). */
+    Call("call"),
+
+    /** A note written on the tile itself. */
+    Note("note"),
+
+    /** The days left to a date, or gone since it. */
+    Countdown("countdown"),
+
+    /** A screen of the Android settings (Wi-Fi, battery…). */
+    Setting("setting");
 
     companion object {
         fun fromCode(code: String?) = entries.firstOrNull { it.code == code }
@@ -37,19 +49,35 @@ data class ShortcutDef(
     val photoFile: String? = null,
     val widgetProvider: String = "",
     val widgetId: Int = -1,
+    /** The text of a note. */
+    val text: String = "",
+    /** The day a countdown counts to, as an epoch day. */
+    val epochDay: Long = 0L,
 ) {
     /** The tile's entry. Shortcuts only exist on Start ([AppItem.pinOnly]). */
     fun toItem(photoPath: String?): AppItem = AppItem(
         id = id,
         label = label,
-        launch = if (kind == ShortcutKind.Widget) Launch.Widget(widgetId) else Launch.Link(uri),
+        launch = when (kind) {
+            ShortcutKind.Widget -> Launch.Widget(widgetId)
+            ShortcutKind.Note -> Launch.Internal(AppRepository.ROUTE_NOTE)
+            ShortcutKind.Countdown -> Launch.Internal(AppRepository.ROUTE_COUNTDOWN)
+            ShortcutKind.Setting -> Launch.Action(uri)
+            else -> Launch.Link(uri)
+        },
         glyph = when (kind) {
             ShortcutKind.Contact -> Glyph.People
             ShortcutKind.Site -> Glyph.Globe
             ShortcutKind.Widget -> Glyph.Widget
+            ShortcutKind.Call -> Glyph.Phone
+            ShortcutKind.Note -> Glyph.OneNote
+            ShortcutKind.Countdown -> Glyph.Calendar
+            ShortcutKind.Setting -> GlobalSearch.systemSettings.firstOrNull { it.action == uri }?.glyph ?: Glyph.Settings
         },
         pinOnly = true,
         photoPath = photoPath,
+        note = text.takeIf { kind == ShortcutKind.Note },
+        targetDay = if (kind == ShortcutKind.Countdown) epochDay else 0L,
     )
 
     companion object {
@@ -72,6 +100,8 @@ object ShortcutCodec {
                         put("provider", s.widgetProvider)
                         put("widgetId", s.widgetId)
                     }
+                    if (s.text.isNotEmpty()) put("text", s.text)
+                    if (s.epochDay != 0L) put("day", s.epochDay)
                 },
             )
         }
@@ -93,6 +123,8 @@ object ShortcutCodec {
                         photoFile = o.optString("photo").ifEmpty { null },
                         widgetProvider = o.optString("provider"),
                         widgetId = o.optInt("widgetId", -1),
+                        text = o.optString("text"),
+                        epochDay = o.optLong("day", 0L),
                     ),
                 )
             }

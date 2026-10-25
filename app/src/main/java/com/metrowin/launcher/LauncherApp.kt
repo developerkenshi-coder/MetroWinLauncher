@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.KeyguardManager
 import android.content.pm.PackageManager
 import android.os.Build
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -82,6 +83,7 @@ import com.metrowin.launcher.ui.voice.rememberVoiceSession
 import androidx.core.content.ContextCompat
 import com.metrowin.launcher.data.GlobalResults
 import com.metrowin.launcher.data.GlobalSearch
+import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.data.PhoneCalls
 import com.metrowin.launcher.data.QuickAnswers
 import com.metrowin.launcher.data.LocalWidgetHost
@@ -132,6 +134,12 @@ import com.metrowin.launcher.ui.start.ClockHeader
 import com.metrowin.launcher.ui.start.EditBar
 import com.metrowin.launcher.ui.start.ExitRequest
 import com.metrowin.launcher.ui.start.FolderCell
+import com.metrowin.launcher.data.Countdown
+import com.metrowin.launcher.ui.start.CountdownDialog
+import com.metrowin.launcher.ui.start.NoteDialog
+import com.metrowin.launcher.ui.start.SettingPicker
+import com.metrowin.launcher.ui.start.TileColorSheet
+import com.metrowin.launcher.ui.start.UndoBar
 import com.metrowin.launcher.ui.start.FolderNameDialog
 import com.metrowin.launcher.ui.start.SiteDialog
 import com.metrowin.launcher.ui.start.StartActions
@@ -286,6 +294,13 @@ fun LauncherApp(vm: LauncherViewModel) {
     /** A widget that has an id and is waiting for the user: to allow it, or to set it up. */
     var pendingWidget by remember { mutableStateOf<Pair<Int, WidgetProvider>?>(null) }
     var siteDialogOpen by remember { mutableStateOf(false) }
+    var settingPickerOpen by remember { mutableStateOf(false) }
+    // The tile (entry id) whose color is being chosen, the note being written, and the countdown being made or changed.
+    var colorPickFor by remember { mutableStateOf<String?>(null) }
+    var noteEditingId by remember { mutableStateOf<String?>(null) }
+    var countdownEditingId by remember { mutableStateOf<String?>(null) }
+    var countdownNew by remember { mutableStateOf(false) }
+    val undoState by vm.undo.collectAsStateWithLifecycle()
     var weatherOpen by remember { mutableStateOf(false) }
     var searchFocus by remember { mutableIntStateOf(0) }
     var voiceRequest by remember { mutableIntStateOf(0) }
@@ -450,6 +465,13 @@ fun LauncherApp(vm: LauncherViewModel) {
             panel.isShown -> PanelBack(panel)
             widgetPickerOpen -> InstantBack { widgetPickerOpen = false }
             siteDialogOpen -> InstantBack { siteDialogOpen = false }
+            noteEditingId != null -> InstantBack { noteEditingId = null }
+            countdownEditingId != null || countdownNew -> InstantBack {
+                countdownEditingId = null
+                countdownNew = false
+            }
+            settingPickerOpen -> InstantBack { settingPickerOpen = false }
+            colorPickFor != null -> InstantBack { colorPickFor = null }
             addMenuOpen -> InstantBack { addMenuOpen = false }
             renamingFolderId != null -> InstantBack { renamingFolderId = null }
             folderChooserFor != null -> InstantBack { folderChooserFor = null }
@@ -550,6 +572,16 @@ fun LauncherApp(vm: LauncherViewModel) {
         if (uri != null) vm.pinContact(uri, lastStartPage.coerceIn(0, pages.size - 1))
     }
 
+    // A speed dial: the picker returns one number; the phone permission is asked once, and without it the tile opens the dialer.
+    val speedDialPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    val pickNumber = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val uri = result.data?.data
+        if (result.resultCode == Activity.RESULT_OK && uri != null) {
+            vm.pinSpeedDial(uri, lastStartPage.coerceIn(0, pages.size - 1))
+            if (!LivePermissions.isGranted(appContext, PhoneCalls.permission)) speedDialPermission.launch(PhoneCalls.permission)
+        }
+    }
+
     val confirmCredentials = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) exitKidsCorner()
     }
@@ -570,6 +602,17 @@ fun LauncherApp(vm: LauncherViewModel) {
         if ((item.launch as? Launch.Internal)?.route == AppRepository.ROUTE_TORCH) {
             vm.activateQuickAction(QuickAction.Flashlight)
             return
+        }
+        // A note and a countdown open their editor on the spot.
+        when ((item.launch as? Launch.Internal)?.route) {
+            AppRepository.ROUTE_NOTE -> {
+                noteEditingId = item.id
+                return
+            }
+            AppRepository.ROUTE_COUNTDOWN -> {
+                countdownEditingId = item.id
+                return
+            }
         }
         launching = true
         val plan = LaunchPlans.decide(settings.launchAnimation, reduceMotion, fromStart = startKey != null)
@@ -802,6 +845,7 @@ fun LauncherApp(vm: LauncherViewModel) {
             editingKey = null
         },
         onResize = { cell -> vm.resize(cell.entryId) },
+        onColor = { cell -> colorPickFor = cell.entryId },
         onRename = { cell -> renamingFolderId = cell.folder.id },
         onMove = vm::moveTo,
         onMoveAfter = vm::moveAfter,
@@ -1225,6 +1269,24 @@ fun LauncherApp(vm: LauncherViewModel) {
                     )
                 }
 
+                // What was just done to Start, with a way to take it back; it goes by itself after a few seconds.
+                if (!kidsMode && !tutorialVisible && !settingsOpen && !weatherOpen) {
+                    undoState?.let { state ->
+                        LaunchedEffect(state.token) {
+                            delay(UNDO_MS)
+                            vm.dismissUndo()
+                        }
+                        UndoBar(
+                            message = stringResource(state.message),
+                            onUndo = {
+                                vm.undoLast()
+                                editingKey = null
+                            },
+                            modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = if (selectedCell != null) 84.dp else 16.dp),
+                        )
+                    }
+                }
+
                 if (addMenuOpen) {
                     AddMenu(
                         onContact = {
@@ -1239,7 +1301,79 @@ fun LauncherApp(vm: LauncherViewModel) {
                             addMenuOpen = false
                             widgetPickerOpen = true
                         },
+                        onSpeedDial = {
+                            addMenuOpen = false
+                            pickNumber.launch(Intent(Intent.ACTION_PICK, android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI))
+                        },
+                        onSetting = {
+                            addMenuOpen = false
+                            settingPickerOpen = true
+                        },
+                        onNote = {
+                            addMenuOpen = false
+                            noteEditingId = vm.addNote(selectedPage)
+                        },
+                        onCountdown = {
+                            addMenuOpen = false
+                            countdownNew = true
+                        },
                         onDismiss = { addMenuOpen = false },
+                    )
+                }
+
+                if (settingPickerOpen) {
+                    val defs = remember { GlobalSearch.systemSettings.map { it to appContext.getString(it.label) }.sortedBy { it.second.lowercase() } }
+                    SettingPicker(
+                        settings = defs,
+                        onPick = { def ->
+                            settingPickerOpen = false
+                            vm.pinSetting(def, selectedPage)
+                        },
+                        onDismiss = { settingPickerOpen = false },
+                    )
+                }
+
+                colorPickFor?.let { id ->
+                    val current = StartPages.all(pages).firstOrNull { it.id == id }?.color ?: 0
+                    TileColorSheet(
+                        current = current,
+                        onPick = { color ->
+                            vm.setColor(id, color)
+                            colorPickFor = null
+                        },
+                        onDismiss = { colorPickFor = null },
+                    )
+                }
+
+                noteEditingId?.let { id ->
+                    val note = items.firstOrNull { it.id == id }
+                    if (note != null) {
+                        NoteDialog(
+                            initial = note.note.orEmpty(),
+                            onDone = { text ->
+                                vm.saveNote(id, text)
+                                noteEditingId = null
+                            },
+                            onCancel = { noteEditingId = null },
+                        )
+                    }
+                }
+
+                if (countdownNew || countdownEditingId != null) {
+                    val existing = countdownEditingId?.let { id -> items.firstOrNull { it.id == id } }
+                    CountdownDialog(
+                        initialTitle = existing?.label.orEmpty().takeIf { existing != null } ?: "",
+                        initialDay = existing?.targetDay ?: Countdown.defaultDay(java.time.LocalDate.now()),
+                        onDone = { title, day ->
+                            val editing = countdownEditingId
+                            if (editing != null) vm.saveCountdown(editing, title, day) else vm.addCountdown(title, day, selectedPage)
+                            countdownEditingId = null
+                            countdownNew = false
+                        },
+                        onCancel = {
+                            countdownEditingId = null
+                            countdownNew = false
+                        },
                     )
                 }
 
@@ -1332,3 +1466,6 @@ fun LauncherApp(vm: LauncherViewModel) {
         }
     }
 }
+
+/** How long the undo bar stays. */
+private const val UNDO_MS = 6_000L

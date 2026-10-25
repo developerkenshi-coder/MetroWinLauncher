@@ -81,6 +81,7 @@ import com.metrowin.launcher.data.ContactSearch
 import com.metrowin.launcher.data.ShortcutDef
 import com.metrowin.launcher.data.ShortcutKind
 import com.metrowin.launcher.data.SiteInput
+import com.metrowin.launcher.data.SystemSettingDef
 import com.metrowin.launcher.data.WidgetProvider
 import com.metrowin.launcher.data.WidgetService
 import com.metrowin.launcher.data.WidgetSizing
@@ -759,25 +760,29 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun unpin(id: String) {
         // A shortcut has no other life than its tile: taking it off Start deletes it.
-        if (_shortcuts.value.any { it.id == id }) removeShortcut(id) else updatePages { StartPages.unpin(it, id) }
+        if (_shortcuts.value.any { it.id == id }) removeShortcut(id) else updatePages(R.string.undo_removed) { StartPages.unpin(it, id) }
     }
 
-    fun resize(id: String) = updatePages { StartPages.update(it, id) { page -> StartEntries.resize(page, id) } }
+    fun resize(id: String) = updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.resize(page, id) } }
 
     fun setSize(id: String, size: TileSize) =
-        updatePages { StartPages.update(it, id) { page -> StartEntries.setSize(page, id, size) } }
+        updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.setSize(page, id, size) } }
 
     fun setStyle(id: String, style: TileStyle) =
-        updatePages { StartPages.update(it, id) { page -> StartEntries.setStyle(page, id, style) } }
+        updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.setStyle(page, id, style) } }
 
-    fun moveToPage(id: String, page: Int) = updatePages { StartPages.moveToPage(it, id, page) }
+    /** Gives a tile or folder one of the 20 colors (ARGB), or 0 to take the color of the theme back. */
+    fun setColor(id: String, color: Int) =
+        updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.setColor(page, id, color) } }
+
+    fun moveToPage(id: String, page: Int) = updatePages(R.string.undo_moved) { StartPages.moveToPage(it, id, page) }
 
     fun moveTo(draggedId: String, targetId: String) =
-        updatePages { StartPages.update(it, targetId) { page -> StartEntries.moveTo(page, draggedId, targetId) } }
+        updatePages(R.string.undo_moved) { StartPages.update(it, targetId) { page -> StartEntries.moveTo(page, draggedId, targetId) } }
 
     /** A small tile dropped in a free cell: it goes right after [afterId] (see [StartEntries.moveAfter]). */
     fun moveAfter(draggedId: String, afterId: String) =
-        updatePages { StartPages.update(it, afterId) { page -> StartEntries.moveAfter(page, draggedId, afterId) } }
+        updatePages(R.string.undo_moved) { StartPages.update(it, afterId) { page -> StartEntries.moveAfter(page, draggedId, afterId) } }
 
     /**
      * Puts the tiles [ids] together in one folder (see [StartEntries.group]) and gives back the id of the folder that
@@ -786,7 +791,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun createFolder(ids: Set<String>): String? {
         val id = UUID.randomUUID().toString()
         var made = false
-        updatePages { pages ->
+        updatePages(R.string.undo_folder) { pages ->
             val anchor = ids.firstOrNull { StartPages.pageOf(pages, it) >= 0 } ?: return@updatePages pages
             StartPages.update(pages, anchor) { page -> StartEntries.group(page, ids) { id }.also { made = it.any { entry -> entry.id == id } } }
         }
@@ -794,16 +799,16 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     /** Puts an app in a folder, pinning it first if it is not on Start. */
-    fun addToFolder(appId: String, folderId: String) = updatePages { StartPages.addToFolder(it, appId, folderId) }
+    fun addToFolder(appId: String, folderId: String) = updatePages(R.string.undo_folder) { StartPages.addToFolder(it, appId, folderId) }
 
     fun merge(draggedId: String, ontoId: String) =
-        updatePages { StartPages.update(it, ontoId) { page -> StartEntries.merge(page, draggedId, ontoId) } }
+        updatePages(R.string.undo_folder) { StartPages.update(it, ontoId) { page -> StartEntries.merge(page, draggedId, ontoId) } }
 
     fun releaseFolder(folderId: String) =
-        updatePages { StartPages.update(it, folderId) { page -> StartEntries.release(page, folderId) } }
+        updatePages(R.string.undo_folder) { StartPages.update(it, folderId) { page -> StartEntries.release(page, folderId) } }
 
     fun removeFromFolder(folderId: String, childId: String) =
-        updatePages { StartPages.update(it, folderId) { page -> StartEntries.removeFromFolder(page, folderId, childId) } }
+        updatePages(R.string.undo_folder) { StartPages.update(it, folderId) { page -> StartEntries.removeFromFolder(page, folderId, childId) } }
 
     fun renameFolder(folderId: String, name: String) =
         updatePages { StartPages.update(it, folderId) { page -> StartEntries.rename(page, folderId, name) } }
@@ -900,6 +905,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun removeShortcut(id: String) {
         val removed = _shortcuts.value.firstOrNull { it.id == id } ?: return
+        // A widget gives its place back to Android at once, so it cannot be put back; the others can.
+        if (removed.kind == ShortcutKind.Widget) dismissUndo() else rememberForUndo(R.string.undo_removed)
         _shortcuts.value = _shortcuts.value.filter { it.id != id }
         shortcutStore.save(_shortcuts.value)
         shortcutStore.deletePhoto(removed.photoFile)
@@ -920,6 +927,58 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             val photo = picked.photoJpeg?.let { shortcutStore.savePhoto(id, it) }
             addShortcut(ShortcutDef(id, ShortcutKind.Contact, picked.name, picked.lookupUri, photoFile = photo), page)
         }
+    }
+
+    /** Pins a speed dial: the number the picker returned (a row of the phone table), with the photo of its contact. */
+    fun pinSpeedDial(uri: Uri, page: Int) {
+        viewModelScope.launch {
+            val picked = withContext(Dispatchers.IO) { ContactReader(getApplication()).readNumber(uri) }
+            if (picked == null) {
+                tell(R.string.speed_dial_failed)
+                return@launch
+            }
+            val address = PhoneCalls.address(picked.number)
+            val id = ShortcutDef.newId(ShortcutKind.Call, picked.number)
+            val photo = picked.photoJpeg?.let { shortcutStore.savePhoto(id, it) }
+            addShortcut(ShortcutDef(id, ShortcutKind.Call, picked.name, address, photoFile = photo), page)
+        }
+    }
+
+    /** Pins a screen of the Android settings. */
+    fun pinSetting(def: SystemSettingDef, page: Int) {
+        val label = getApplication<Application>().getString(def.label)
+        addShortcut(ShortcutDef(ShortcutDef.newId(ShortcutKind.Setting, def.id), ShortcutKind.Setting, label, def.action), page)
+    }
+
+    /** Pins an empty note and gives back its id, so the editor can open on it. */
+    fun addNote(page: Int): String {
+        val id = ShortcutDef.newId(ShortcutKind.Note, "note")
+        addShortcut(
+            ShortcutDef(id, ShortcutKind.Note, getApplication<Application>().getString(R.string.note_default_label)),
+            page, TileSize.Medium,
+        )
+        return id
+    }
+
+    fun saveNote(id: String, text: String) = updateShortcut(id) { it.copy(text = text.trim()) }
+
+    /** Pins a countdown to [epochDay] and gives back its id. */
+    fun addCountdown(title: String, epochDay: Long, page: Int): String {
+        val id = ShortcutDef.newId(ShortcutKind.Countdown, title)
+        val label = title.trim().ifEmpty { getApplication<Application>().getString(R.string.countdown_default_label) }
+        addShortcut(ShortcutDef(id, ShortcutKind.Countdown, label, epochDay = epochDay), page, TileSize.Medium)
+        return id
+    }
+
+    fun saveCountdown(id: String, title: String, epochDay: Long) = updateShortcut(id) {
+        it.copy(label = title.trim().ifEmpty { getApplication<Application>().getString(R.string.countdown_default_label) }, epochDay = epochDay)
+    }
+
+    private fun updateShortcut(id: String, change: (ShortcutDef) -> ShortcutDef) {
+        if (_shortcuts.value.none { it.id == id }) return
+        _shortcuts.value = _shortcuts.value.map { if (it.id == id) change(it) else it }
+        shortcutStore.save(_shortcuts.value)
+        rebuildItems()
     }
 
     /** Pins a web page. False when [address] is not a web address. */
@@ -1139,12 +1198,41 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    private inline fun updatePages(change: (List<List<StartEntry>>) -> List<List<StartEntry>>) {
+    private inline fun updatePages(undo: Int? = null, change: (List<List<StartEntry>>) -> List<List<StartEntry>>) {
         val updated = change(_pages.value)
         if (updated != _pages.value) {
+            if (undo != null) rememberForUndo(undo)
             _pages.value = updated
             store.savePages(updated)
         }
+    }
+
+    /** The last change the user made to Start, kept to be undone: how it is told, and what Start was before. */
+    data class UndoState(val message: Int, val pages: List<List<StartEntry>>, val shortcuts: List<ShortcutDef>, val token: Int)
+
+    private val _undo = MutableStateFlow<UndoState?>(null)
+    val undo: StateFlow<UndoState?> = _undo.asStateFlow()
+    private var undoToken = 0
+
+    /** Keeps Start as it is now, to give back if the change that follows is undone. Only the last change is kept. */
+    private fun rememberForUndo(message: Int) {
+        _undo.value = UndoState(message, _pages.value, _shortcuts.value, ++undoToken)
+    }
+
+    fun dismissUndo() {
+        _undo.value = null
+    }
+
+    /** Gives back Start as it was before the last change. */
+    fun undoLast() {
+        val state = _undo.value ?: return
+        _undo.value = null
+        // A tile removed with its note, its date or its number comes back with it; a photo already deleted does not.
+        _shortcuts.value = state.shortcuts
+        shortcutStore.save(state.shortcuts)
+        rebuildItems()
+        _pages.value = state.pages
+        store.savePages(state.pages)
     }
 
     private companion object {

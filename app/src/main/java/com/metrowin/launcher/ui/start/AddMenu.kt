@@ -33,6 +33,11 @@ fun AddMenu(
     onWidget: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The entries that follow the three first ones; each is left out when null. */
+    onSpeedDial: (() -> Unit)? = null,
+    onSetting: (() -> Unit)? = null,
+    onNote: (() -> Unit)? = null,
+    onCountdown: (() -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
     val currentDismiss by rememberUpdatedState(onDismiss)
@@ -54,7 +59,11 @@ fun AddMenu(
             verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
             Entry(R.string.add_contact, "add:contact", onContact)
+            if (onSpeedDial != null) Entry(R.string.add_speed_dial, "add:speeddial", onSpeedDial)
             Entry(R.string.add_site, "add:site", onSite)
+            if (onSetting != null) Entry(R.string.add_setting, "add:setting", onSetting)
+            if (onNote != null) Entry(R.string.add_note, "add:note", onNote)
+            if (onCountdown != null) Entry(R.string.add_countdown, "add:countdown", onCountdown)
             Entry(R.string.add_widget, "add:widget", onWidget)
         }
     }

@@ -56,6 +56,17 @@ object StartEntries {
             }
         }
 
+    /** Gives a tile or folder its own color (ARGB), or 0 to take the theme's accent back. */
+    fun setColor(entries: List<StartEntry>, id: String, color: Int): List<StartEntry> =
+        entries.map { entry ->
+            when {
+                entry.id != id -> entry
+                entry is Tile -> entry.copy(color = color)
+                entry is Folder -> entry.copy(color = color)
+                else -> entry
+            }
+        }
+
     fun setStyle(entries: List<StartEntry>, id: String, style: TileStyle): List<StartEntry> =
         entries.map { if (it is Tile && it.id == id) it.copy(style = style) else it }
 

@@ -162,6 +162,8 @@ class StartActions(
     val onBackgroundTap: () -> Unit,
     /** The dragged tile dropped in a free place: it goes right after the tile [afterId]. */
     val onMoveAfter: (draggedId: String, afterId: String) -> Unit = { _, _ -> },
+    /** The color button of a selected tile. */
+    val onColor: (StartCell) -> Unit = {},
     /** A double tap on the empty part of Start, when the settings give it something to do. */
     val onDoubleTap: (() -> Unit)? = null,
     /** The arrow after the last tile: on to the next screen, or to the app list after the last one. */
@@ -607,8 +609,17 @@ private fun PositionedTile(
     val armedForFolder = drag.mergeTarget == cell.key
 
     // The built-in apps are transparent over a Start background photo, the others keep the accent.
-    val transparent = hasBackground && cell is AppCell && cell.item.glyph != null && !highContrast
-    val tileColor = if (transparent) Color.Black.copy(alpha = 0.12f) else colors.tileColor(index, LocalAccent.current)
+    // A tile the user gave a color keeps it, with white ink, over the photo too.
+    val ownColor = when (cell) {
+        is AppCell -> cell.tile.color
+        is FolderCell -> cell.folder.color
+    }
+    val transparent = hasBackground && cell is AppCell && cell.item.glyph != null && !highContrast && ownColor == 0
+    val tileColor = when {
+        ownColor != 0 -> Color(ownColor)
+        transparent -> Color.Black.copy(alpha = 0.12f)
+        else -> colors.tileColor(index, LocalAccent.current)
+    }
     val shape = style.tileShapeFor(cell.size)
 
     Box(
@@ -660,7 +671,15 @@ private fun PositionedTile(
             .clipToBounds(),
     ) {
         // In Modern Droid the tiles take the containers in turn, each with its own ink.
-        CompositionLocalProvider(LocalMetroColors provides colors.onTile(if (transparent) colors.tileContent else colors.tileInk(index))) {
+        CompositionLocalProvider(
+            LocalMetroColors provides colors.onTile(
+                when {
+                    ownColor != 0 -> TileWhite
+                    transparent -> colors.tileContent
+                    else -> colors.tileInk(index)
+                },
+            ),
+        ) {
             when (cell) {
                 is AppCell -> TileFace(
                     cell.item, cell.size, width, height, live,
@@ -686,6 +705,13 @@ private fun PositionedTile(
                     EditButtonKind.Resize,
                     onClick = { currentActions.onResize(currentCell) },
                     modifier = Modifier.align(Alignment.BottomEnd).padding(6.dp),
+                )
+            }
+            if (cell.isTopLevel) {
+                EditButton(
+                    EditButtonKind.Color,
+                    onClick = { currentActions.onColor(currentCell) },
+                    modifier = Modifier.align(Alignment.BottomStart).padding(6.dp).testTag("tile:color"),
                 )
             }
             if (cell is FolderCell) {
@@ -777,7 +803,7 @@ private fun Modifier.tileSemantics(
 }
 private const val TAPPED_EXIT_DELAY_MS = 140L
 
-private enum class EditButtonKind { Remove, Resize, Rename }
+private enum class EditButtonKind { Remove, Resize, Rename, Color }
 
 /** The round buttons of a selected tile: remove on the top right, resize at the bottom right, rename (folders) on the top left. */
 @Composable
@@ -803,6 +829,11 @@ private fun EditButton(kind: EditButtonKind, onClick: () -> Unit, modifier: Modi
                     line(0.1f, 0.1f, 0.9f, 0.9f, stroke)
                     line(0.9f, 0.4f, 0.9f, 0.9f, stroke)
                     line(0.4f, 0.9f, 0.9f, 0.9f, stroke)
+                }
+                EditButtonKind.Color -> {
+                    // A ring with a dot in it: the color of the tile.
+                    drawCircle(Color.Black, radius = size.minDimension * 0.46f, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke))
+                    drawCircle(Color.Black, radius = size.minDimension * 0.22f)
                 }
                 EditButtonKind.Rename -> {
                     // A pencil: the body, its tip, and the end that sits in the hand.

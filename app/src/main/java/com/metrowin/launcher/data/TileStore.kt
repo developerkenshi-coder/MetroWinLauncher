@@ -20,6 +20,7 @@ object TileCodec {
                     put("id", entry.id)
                     put("size", entry.size.code)
                     if (entry is Tile && entry.style != TileStyle.Standard) put("style", entry.style.code)
+                    if (entry.color != 0) put("color", entry.color)
                     if (entry is Folder) {
                         put("type", "folder")
                         put("name", entry.name)
@@ -38,12 +39,15 @@ object TileCodec {
             val size = TileSize.fromCode(obj.optString("size"))
             if (obj.optString("type") == "folder") {
                 val children = obj.getJSONArray("children")
-                Folder(obj.getString("id"), obj.optString("name"), size, List(children.length()) { children.getString(it) })
+                Folder(obj.getString("id"), obj.optString("name"), size, List(children.length()) { children.getString(it) }, colorOf(obj))
             } else {
-                Tile(obj.getString("id"), size, TileStyle.fromCode(obj.optString("style")))
+                Tile(obj.getString("id"), size, TileStyle.fromCode(obj.optString("style")), colorOf(obj))
             }
         }
     }.getOrNull()
+
+    /** The color kept for an entry, made opaque: a color saved with any transparency would show the page through the tile. */
+    private fun colorOf(obj: JSONObject): Int = obj.optInt("color", 0).let { if (it == 0) 0 else it or (0xFF shl 24) }
 
     /** Several Start screens: an array with one array of entries per screen. */
     fun encodePages(pages: List<List<StartEntry>>): String = JSONArray().apply {

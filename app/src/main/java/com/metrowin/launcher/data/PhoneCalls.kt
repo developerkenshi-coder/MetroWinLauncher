@@ -19,6 +19,9 @@ object PhoneCalls {
 
     fun uri(number: String): Uri = Uri.fromParts("tel", clean(number), null)
 
+    /** The address a speed dial tile keeps: `tel:` and the number, with the plus as it is written. */
+    fun address(number: String): String = "tel:" + clean(number)
+
     /** The intent that calls [number] at once ([direct], needs the permission) or opens the dialer with it. */
     fun intent(number: String, direct: Boolean): Intent =
         Intent(if (direct) Intent.ACTION_CALL else Intent.ACTION_DIAL, uri(number)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

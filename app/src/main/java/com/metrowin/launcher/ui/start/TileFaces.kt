@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -51,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.BatteryInfo
 import com.metrowin.launcher.data.BatteryState
+import com.metrowin.launcher.data.Countdown
 import com.metrowin.launcher.data.DayForecast
 import com.metrowin.launcher.data.LiveEvent
 import com.metrowin.launcher.data.LiveTileData
@@ -125,6 +127,8 @@ fun TileFace(
             val widget = item.launch as? Launch.Widget
             when {
                 widget != null -> WidgetFace(item, size, width, height, widget.appWidgetId, interactive, onLongClick)
+                item.note != null -> NoteFace(item, size, width, height)
+                item.targetDay != 0L -> CountdownFace(item, size, width, height)
                 iconic -> IconicFace(item, size, width, height, count)
                 cycle -> CycleFace(item, live.photos, seed)
                 else -> when (item.live) {
@@ -149,6 +153,55 @@ fun TileFace(
             }
             if (!iconic) CountBadge(count, size, Modifier.align(Alignment.TopEnd))
         }
+    }
+}
+
+/** A note: what was written on it, as much as fits. A small tile only has the mark of a note. */
+@Composable
+private fun NoteFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
+    val text = item.note.orEmpty()
+    Box(Modifier.fillMaxSize()) {
+        if (size == TileSize.Small || text.isBlank()) {
+            AppArt(item, minOf(width, height) * if (size == TileSize.Small) 0.5f else 0.42f, Modifier.align(Alignment.Center))
+        } else {
+            MetroText(
+                text, size = 17.sp, weight = FontWeight.Normal, maxLines = if (size == TileSize.Wide) 4 else 6, lineHeight = 22.sp,
+                modifier = Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 32.dp).testTag("note:text"),
+            )
+        }
+        if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+    }
+}
+
+/** The days left to a date in large light type, and what they are to: "62 days to Christmas". It counts up after the date. */
+@Composable
+private fun CountdownFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
+    var today by remember { mutableStateOf(LocalDate.now()) }
+    // Once a day, just after midnight, and only while the launcher is on screen.
+    LaunchedWhileStarted(Unit) {
+        while (true) {
+            val now = java.time.LocalDateTime.now()
+            today = now.toLocalDate()
+            delay(java.time.Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).toMillis() + 1_000L)
+        }
+    }
+    val days = Countdown.daysLeft(item.targetDay, today)
+    val number = kotlin.math.abs(days).coerceAtMost(99_999L).toInt()
+    Box(Modifier.fillMaxSize()) {
+        Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+            if (days == 0L) {
+                MetroText(stringResource(R.string.cd_today), size = if (size == TileSize.Small) 16.sp else 36.sp, modifier = Modifier.testTag("countdown:days"))
+            } else {
+                MetroText(number.toString(), size = if (size == TileSize.Small) 26.sp else 56.sp, modifier = Modifier.testTag("countdown:days"))
+                if (size != TileSize.Small) {
+                    MetroText(
+                        pluralStringResource(if (days > 0) R.plurals.cd_to else R.plurals.cd_since, number, number, item.label),
+                        size = 15.sp, weight = FontWeight.Normal, maxLines = 2, modifier = Modifier.padding(horizontal = 8.dp),
+                    )
+                }
+            }
+        }
+        if (days == 0L && size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
     }
 }
 

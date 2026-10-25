@@ -50,11 +50,19 @@ enum class TileStyle(val code: String) {
 sealed interface StartEntry {
     val id: String
     val size: TileSize
+
+    /** The color the user gave the tile (one of the 20 accents, as ARGB), or 0 for the accent of the theme. */
+    val color: Int
 }
 
 /** A tile pinned to Start. [id] is the [AppItem.id] it opens. */
 @Immutable
-data class Tile(override val id: String, override val size: TileSize, val style: TileStyle = TileStyle.Standard) : StartEntry
+data class Tile(
+    override val id: String,
+    override val size: TileSize,
+    val style: TileStyle = TileStyle.Standard,
+    override val color: Int = 0,
+) : StartEntry
 
 /** A Start folder: tiles dragged onto each other. [children] are [AppItem.id]s. */
 @Immutable
@@ -63,6 +71,7 @@ data class Folder(
     val name: String,
     override val size: TileSize,
     val children: List<String>,
+    override val color: Int = 0,
 ) : StartEntry
 
 sealed interface Launch {
@@ -111,6 +120,10 @@ data class AppItem(
     val category: AppCategory? = null,
     /** When the app was first installed (epoch milliseconds), or 0 when not known. */
     val installedAt: Long = 0L,
+    /** The text of a note tile, which shows it on its face; null for every other tile. */
+    val note: String? = null,
+    /** The day a countdown tile counts to (epoch day), or 0 for every other tile. */
+    val targetDay: Long = 0L,
 )
 
 /** The categories an app can declare (see `ApplicationInfo.category`), as the filter of the app list names them. */
