@@ -17,6 +17,9 @@ sealed interface VoiceCommand {
     /** [on] is null when the phrase did not say, and the light is simply switched. */
     data class Torch(val on: Boolean?) : VoiceCommand
 
+    /** A timer ("timer 10 minutes") or an alarm ("alarm at 7:30"), set in the clock app. */
+    data class Clock(val answer: QuickAnswer) : VoiceCommand
+
     data object LauncherSettings : VoiceCommand
     data object Weather : VoiceCommand
     data object LockScreen : VoiceCommand
@@ -126,6 +129,8 @@ object VoiceCommands {
     fun parse(heard: String, apps: List<AppItem>, settingLabel: (SystemSettingDef) -> String): VoiceCommand {
         val text = stripFillers(normalize(heard))
         if (text.isEmpty()) return VoiceCommand.Unclear
+
+        QuickAnswers.timerOrAlarm(text)?.let { return VoiceCommand.Clock(it) }
 
         afterAny(text, searchVerbs)?.let { rest ->
             val query = stripArticles(rest)

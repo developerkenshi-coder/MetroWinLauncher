@@ -34,6 +34,9 @@ class SettingsCodecTest {
         liveMessages = false, liveHideText = true, livePictures = false, liveNowPlaying = false, liveProgress = false,
         liveOffApps = setOf("com.whatsapp", "com.reddit.frontpage"),
         voiceCallDirect = true,
+        searchEngine = com.metrowin.launcher.data.SearchEngine.Brave, searchAnswers = false, rememberSearches = false,
+        showFrequentApps = false, showNewApps = false, showCategories = false,
+        appLabels = mapOf("app:a" to "Alfa"), lockedApps = setOf("app:b"),
     )
 
     @Test

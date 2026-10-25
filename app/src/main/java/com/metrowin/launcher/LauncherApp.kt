@@ -83,6 +83,7 @@ import androidx.core.content.ContextCompat
 import com.metrowin.launcher.data.GlobalResults
 import com.metrowin.launcher.data.GlobalSearch
 import com.metrowin.launcher.data.PhoneCalls
+import com.metrowin.launcher.data.QuickAnswers
 import com.metrowin.launcher.data.LocalWidgetHost
 import com.metrowin.launcher.data.RecentApps
 import com.metrowin.launcher.data.WidgetProvider
@@ -308,6 +309,11 @@ fun LauncherApp(vm: LauncherViewModel) {
     var query by remember { mutableStateOf("") }
     var settingsSection by remember { mutableStateOf<SettingsSection?>(null) }
     val searchResults = remember(query, listItems) { AppSearch.filter(listItems, query) }
+    val recentSearches by vm.recentSearches.collectAsStateWithLifecycle()
+    // What the search box answers by itself: a sum, a conversion, a number, a link, a timer or an alarm.
+    val answers = remember(query, settings.searchAnswers) {
+        if (settings.searchAnswers) QuickAnswers.of(query) else emptyList()
+    }
 
     // What the search finds besides apps. The settings and the web offer are known at once; the contacts follow
     // when the typing pauses, so each key does not query the contacts.
@@ -681,7 +687,7 @@ fun LauncherApp(vm: LauncherViewModel) {
             }
             is VoiceCommand.Web -> {
                 voice.close()
-                vm.launch(AppItem("search:web", command.query, Launch.Link(GlobalSearch.webUrl(command.query))))
+                vm.launch(AppItem("search:web", command.query, Launch.Link(GlobalSearch.webUrl(command.query, settings.searchEngine))))
             }
             is VoiceCommand.Call -> scope.launch {
                 val contact = vm.searchContacts(command.name).firstOrNull()
@@ -702,6 +708,10 @@ fun LauncherApp(vm: LauncherViewModel) {
                         }
                     }
                 }
+            }
+            is VoiceCommand.Clock -> {
+                voice.close()
+                vm.perform(command.answer)
             }
             is VoiceCommand.Torch -> {
                 voice.close()
@@ -901,7 +911,10 @@ fun LauncherApp(vm: LauncherViewModel) {
                             listState = listState,
                             replayToken = listReplay,
                             exiting = listExiting,
-                            onLaunch = { item -> open(item, null) },
+                            onLaunch = { item ->
+                                vm.rememberSearch(query)
+                                open(item, null)
+                            },
                             onLongPress = { item, top, height ->
                                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                                 menu = MenuState(item, top, height)
@@ -917,6 +930,15 @@ fun LauncherApp(vm: LauncherViewModel) {
                             categories = categories,
                             category = category,
                             onCategory = { category = it },
+                            answers = answers,
+                            onAnswer = { answer ->
+                                vm.rememberSearch(query)
+                                vm.perform(answer)
+                            },
+                            recentSearches = recentSearches.takeIf { settings.rememberSearches }.orEmpty(),
+                            onClearRecents = vm::clearSearches,
+                            engine = settings.searchEngine,
+                            onSearchSubmit = vm::rememberSearch,
                         )
                     },
                 )
@@ -1162,6 +1184,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onManageNotificationAccess = vm::openNotificationAccessSettings,
                             apps = items,
                             onStartKidsCorner = ::enterKidsCorner,
+                            onClearSearches = vm::clearSearches,
                             about = about,
                             onExportLayout = vm::exportLayout,
                             onImportLayout = vm::importLayout,
@@ -1289,7 +1312,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         onCancel = voice::close,
                         onSearchWeb = { query ->
                             voice.close()
-                            vm.launch(AppItem("search:web", query, Launch.Link(GlobalSearch.webUrl(query))))
+                            vm.launch(AppItem("search:web", query, Launch.Link(GlobalSearch.webUrl(query, settings.searchEngine))))
                         },
                     )
                 }

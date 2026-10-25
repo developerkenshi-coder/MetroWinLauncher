@@ -172,6 +172,12 @@ data class LauncherSettings(
     val searchContacts: Boolean = true,
     val searchSettings: Boolean = true,
     val searchWeb: Boolean = true,
+    /** The web search the search box offers. */
+    val searchEngine: SearchEngine = SearchEngine.DuckDuckGo,
+    /** Sums, conversions, phone numbers, links, timers and alarms answered in the search box. */
+    val searchAnswers: Boolean = true,
+    /** The last searches are kept on the phone and offered when the search box is touched. */
+    val rememberSearches: Boolean = true,
     /** Package of the icon pack in use, or empty for the apps' own icons. */
     val iconPack: String = "",
     /** The apps opened most often, in a group at the top of the list. */

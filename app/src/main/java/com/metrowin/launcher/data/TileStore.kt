@@ -121,6 +121,11 @@ class TileStore(context: Context) {
         get() = AppUsage.decode(prefs.getString(KEY_USAGE, null))
         set(value) = prefs.edit { putString(KEY_USAGE, AppUsage.encode(value)) }
 
+    /** What was searched for last (see [RecentSearches]), most recent first. */
+    var recentSearches: List<String>
+        get() = RecentSearches.decode(prefs.getString(KEY_SEARCHES, null))
+        set(value) = prefs.edit { putString(KEY_SEARCHES, RecentSearches.encode(value)) }
+
     var tutorialDone: Boolean
         get() = prefs.getBoolean(KEY_TUTORIAL_DONE, false)
         set(value) = prefs.edit { putBoolean(KEY_TUTORIAL_DONE, value) }
@@ -130,6 +135,7 @@ class TileStore(context: Context) {
         const val KEY_PAGES = "pages"
         const val KEY_RECENT = "recent_apps"
         const val KEY_USAGE = "app_usage"
+        const val KEY_SEARCHES = "recent_searches"
         const val KEY_TUTORIAL_DONE = "permissions_handled"
     }
 }

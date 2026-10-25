@@ -50,6 +50,9 @@ import com.metrowin.launcher.data.OpenMeteo
 import com.metrowin.launcher.data.IconPackInfo
 import com.metrowin.launcher.data.IconPackRepository
 import com.metrowin.launcher.data.PhoneCalls
+import com.metrowin.launcher.data.QuickAnswer
+import com.metrowin.launcher.data.QuickAnswerActions
+import com.metrowin.launcher.data.RecentSearches
 import com.metrowin.launcher.data.PlaceMatch
 import com.metrowin.launcher.data.ThirdPartyTile
 import com.metrowin.launcher.data.ThirdPartyTiles
@@ -181,6 +184,42 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** How many times each app was opened from the launcher, for the "most used" group of the app list. */
     private val _usage = MutableStateFlow(store.appUsage)
     val usage: StateFlow<Map<String, Int>> = _usage.asStateFlow()
+
+    /** What was searched for last, most recent first (see [RecentSearches]); empty while remembering is off. */
+    private val _searches = MutableStateFlow(store.recentSearches)
+    val recentSearches: StateFlow<List<String>> = _searches.asStateFlow()
+
+    fun rememberSearch(query: String) {
+        if (!_settings.value.rememberSearches) return
+        val updated = RecentSearches.record(_searches.value, query)
+        if (updated == _searches.value) return
+        _searches.value = updated
+        store.recentSearches = updated
+    }
+
+    fun clearSearches() {
+        _searches.value = emptyList()
+        store.recentSearches = emptyList()
+    }
+
+    /** Does what touching [answer] does: opens the dialer, a page, a message, sets the timer, or copies the result. */
+    fun perform(answer: QuickAnswer) {
+        val app = getApplication<Application>()
+        val copy = QuickAnswerActions.copyText(answer)
+        if (copy != null) {
+            app.getSystemService(android.content.ClipboardManager::class.java)
+                .setPrimaryClip(android.content.ClipData.newPlainText(app.getString(R.string.answer_clip_label), copy))
+            tell(R.string.answer_copied)
+            return
+        }
+        val intent = QuickAnswerActions.intent(answer) ?: return
+        val opened = runCatching { app.startActivity(intent) }.isSuccess
+        when {
+            !opened && (answer is QuickAnswer.Timer || answer is QuickAnswer.Alarm) -> tell(R.string.answer_no_clock)
+            !opened -> tell(R.string.launch_failed)
+            answer is QuickAnswer.Timer || answer is QuickAnswer.Alarm -> tell(R.string.answer_clock_set)
+        }
+    }
 
     /** The weather of the chosen city: the last fetched, shown at once and refreshed when it gets old. */
     private val _weather = MutableStateFlow(weatherRepository.cached())

@@ -254,7 +254,7 @@
     <string name="search_section_contacts">contacts</string>
     <string name="search_section_settings">settings</string>
     <string name="search_section_web">web</string>
-    <string name="search_web_for">Search the web for \"%1$s\"</string>
+    <string name="search_web_for">Search \"%1$s\" with %2$s</string>
     <string name="search_contact_subtitle">contact</string>
     <string name="search_setting_subtitle">android settings</string>
     <string name="apps_search_contacts">search contacts</string>
@@ -729,4 +729,25 @@
     <string name="apps_locked">apps behind the screen lock</string>
     <string name="apps_locked_none">No locked apps. Press and hold an app in the list and choose “ask for the screen lock”.</string>
     <string name="apps_locked_hint">Touch an app to stop asking. The lock is for opening from the launcher (list, tiles, search, voice): an app can still be opened from a notification, from the recent apps or from another app.</string>
+
+    <!-- Search: answers, recent searches, engine -->
+    <string name="search_section_recent">recent searches</string>
+    <string name="search_clear">clear</string>
+    <string name="answer_copy">touch to copy</string>
+    <string name="answer_copied">Copied</string>
+    <string name="answer_call">Call %1$s</string>
+    <string name="answer_message">Write to %1$s</string>
+    <string name="answer_open">Open %1$s</string>
+    <string name="answer_email">Write an email to %1$s</string>
+    <string name="answer_timer">Start a timer of %1$s</string>
+    <string name="answer_alarm">Set an alarm for %1$s</string>
+    <string name="answer_clip_label">result</string>
+    <string name="answer_clock_set">Done: look in the clock app</string>
+    <string name="answer_no_clock">No clock app can set it on this phone</string>
+    <string name="apps_answers">answers in the search box</string>
+    <string name="apps_answers_hint">Sums (12*3+4, 15% of 80), conversions (5 km in miles, 30 c in f), phone numbers, links and email addresses, and timers and alarms (“timer 10 minutes”, “alarm at 7:30”). All worked out on the phone.</string>
+    <string name="apps_remember">remember recent searches</string>
+    <string name="apps_remember_hint">The last searches are offered when you touch the search box. They stay on this phone and are not part of the backups.</string>
+    <string name="apps_forget">forget the recent searches</string>
+    <string name="apps_engine">web search with</string>
 </resources>

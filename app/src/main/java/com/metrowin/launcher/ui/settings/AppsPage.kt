@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.AppFilter
+import com.metrowin.launcher.data.SearchEngine
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppSquare
@@ -69,6 +70,24 @@ fun AppsPage(env: SettingsEnv) {
                 onChange = { value -> env.onChange { it.copy(searchWeb = value) } },
                 hint = stringResource(R.string.apps_search_hint), tag = "apps:search:web",
             )
+            DropdownSetting(
+                stringResource(R.string.apps_engine),
+                options = SearchEngine.entries.map { it.label },
+                selected = env.settings.searchEngine.ordinal,
+                onSelect = { index -> env.onChange { it.copy(searchEngine = SearchEngine.entries[index]) } },
+                tag = "apps:engine",
+            )
+            ToggleSetting(
+                stringResource(R.string.apps_answers), env.settings.searchAnswers,
+                onChange = { value -> env.onChange { it.copy(searchAnswers = value) } },
+                hint = stringResource(R.string.apps_answers_hint), tag = "apps:answers",
+            )
+            ToggleSetting(
+                stringResource(R.string.apps_remember), env.settings.rememberSearches,
+                onChange = { value -> env.onChange { it.copy(rememberSearches = value) } },
+                hint = stringResource(R.string.apps_remember_hint), tag = "apps:remember",
+            )
+            ActionSetting(stringResource(R.string.apps_forget), onClick = env.onClearSearches, tag = "apps:forget")
         }
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             SettingHeading(stringResource(R.string.apps_hidden))

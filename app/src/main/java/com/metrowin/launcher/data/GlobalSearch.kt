@@ -5,7 +5,6 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import com.metrowin.launcher.R
 import com.metrowin.launcher.model.Glyph
-import java.net.URLEncoder
 
 /** A screen of the Android settings that the search can take you to. */
 @Immutable
@@ -91,6 +90,6 @@ object GlobalSearch {
             .map { it.second }
     }
 
-    /** The address of a web search for [query]: DuckDuckGo, which needs no account and keeps no profile. */
-    fun webUrl(query: String): String = "https://duckduckgo.com/?q=" + URLEncoder.encode(query.trim(), "UTF-8")
+    /** The address of a web search for [query] with [engine]: DuckDuckGo until the user picks another one. */
+    fun webUrl(query: String, engine: SearchEngine = SearchEngine.DuckDuckGo): String = engine.url(query)
 }

@@ -29,6 +29,7 @@
         android:protectionLevel="normal" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
 
     <!--
         A launcher has to see every installed app. LauncherApps and the <queries> below already cover the

@@ -70,6 +70,8 @@ class SettingsEnv(
     /** Every app, including the hidden ones and the launcher's own entries. */
     val apps: List<AppItem> = emptyList(),
     val onStartKidsCorner: () -> Unit = {},
+    /** Forgets the recent searches of the search box. */
+    val onClearSearches: () -> Unit = {},
     val about: AboutInfo = AboutInfo("", 0L, "", 0, "", 0),
     /** Writes the layout to a file the user picked. */
     val onExportLayout: (Uri) -> Unit = {},

@@ -15,6 +15,10 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import com.metrowin.launcher.data.QuickAnswer
+import com.metrowin.launcher.data.QuickAnswerActions
+import com.metrowin.launcher.data.SearchEngine
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -111,6 +115,16 @@ sealed interface ListRow {
     /** An app. [group] is empty in the alphabetical list and names the group ("f" most used, "n" new) at the top. */
     data class App(val item: AppItem, val group: String = "") : ListRow {
         override val key = if (group.isEmpty()) "app:${item.id}" else "app:$group:${item.id}"
+    }
+
+    /** What the search box answers by itself: a sum, a conversion, a number to call, a link, a timer. */
+    data class Answer(val answer: QuickAnswer) : ListRow {
+        override val key = "answer:${answer::class.simpleName}:${answer.hashCode()}"
+    }
+
+    /** A search made before, offered while the search box is empty and touched. */
+    data class Recent(val query: String) : ListRow {
+        override val key = "recent:$query"
     }
 
     /** The chips under the search box that filter the list by category. */
@@ -214,18 +228,36 @@ fun AppListScreen(
     categories: List<AppCategory> = emptyList(),
     category: AppCategory? = null,
     onCategory: (AppCategory?) -> Unit = {},
+    /** What the search box answers by itself for the typed text, and what touching an answer does. */
+    answers: List<QuickAnswer> = emptyList(),
+    onAnswer: (QuickAnswer) -> Unit = {},
+    /** The searches made before, offered while the box is touched and empty; the way to forget them. */
+    recentSearches: List<String> = emptyList(),
+    onClearRecents: () -> Unit = {},
+    /** The web search engine the row that offers a web search uses. */
+    engine: SearchEngine = SearchEngine.DuckDuckGo,
+    /** The search was confirmed from the keyboard. */
+    onSearchSubmit: (String) -> Unit = {},
 ) {
     val insets = WindowInsets.systemBars.asPaddingValues()
     // In landscape the camera cutout sits on a side.
     val sides = WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal).asPaddingValues()
     val direction = LocalLayoutDirection.current
     // While searching the list is just the matches, without letter headers, followed by what else was found.
-    val rows = remember(model, query, results, global) {
+    var searchFocused by remember { mutableStateOf(false) }
+    val rows = remember(model, query, results, global, answers, recentSearches, searchFocused) {
         if (query.isBlank()) {
-            model.rows
+            if (searchFocused && recentSearches.isNotEmpty()) {
+                // The searches made before come right under the box; the list stays below them.
+                listOf<ListRow>(ListRow.Search, ListRow.Section(R.string.search_section_recent)) + recentSearches.map { ListRow.Recent(it) } +
+                    model.rows.drop(1)
+            } else {
+                model.rows
+            }
         } else {
             buildList {
                 add(ListRow.Search)
+                answers.forEach { add(ListRow.Answer(it)) }
                 results.forEach { add(ListRow.App(it)) }
                 if (global.contacts.isNotEmpty()) {
                     add(ListRow.Section(R.string.search_section_contacts))
@@ -263,14 +295,18 @@ fun AppListScreen(
     ) {
         itemsIndexed(rows, key = { _, row -> row.key }, contentType = { _, row -> row::class }) { index, row ->
             when (row) {
-                ListRow.Search -> SearchRow(query, onQueryChange, searchFocus, onVoice)
+                ListRow.Search -> SearchRow(query, onQueryChange, searchFocus, onVoice, onFocusChange = { searchFocused = it }, onSubmit = onSearchSubmit)
+                is ListRow.Answer -> AnswerRow(row.answer, index, listState, openedAt, exiting) { onAnswer(row.answer) }
+                is ListRow.Recent -> ResultRow(
+                    Glyph.Search, row.query, null, index, listState, openedAt, exiting, tag = "recent:${row.query}",
+                ) { onQueryChange(row.query) }
                 ListRow.Categories -> CategoryChips(categories, category, onCategory)
                 is ListRow.Header -> HeaderRow(row.letter, index, listState, openedAt, exiting, onHeaderClick)
                 is ListRow.App -> AppRow(
                     row.item, index, listState, openedAt, exiting, onLaunch, onLongPress,
                     highlight?.takeIf { it.appId == row.item.id && row.group.isEmpty() }, row.group,
                 )
-                is ListRow.Section -> SectionRow(row.title)
+                is ListRow.Section -> SectionRow(row.title, if (row.title == R.string.search_section_recent) onClearRecents else null)
                 is ListRow.Contact -> ResultRow(
                     Glyph.People, row.match.name, stringResource(R.string.search_contact_subtitle), index, listState, openedAt, exiting,
                     tag = "result:contact:${row.match.lookupUri}",
@@ -280,9 +316,9 @@ fun AppListScreen(
                     tag = "result:setting:${row.setting.id}", accent = true,
                 ) { onLaunch(AppItem("search:setting", row.setting.label, Launch.Action(row.setting.action))) }
                 is ListRow.Web -> ResultRow(
-                    Glyph.Globe, stringResource(R.string.search_web_for, row.query), null, index, listState, openedAt, exiting,
+                    Glyph.Globe, stringResource(R.string.search_web_for, row.query, engine.label), null, index, listState, openedAt, exiting,
                     tag = "result:web", accent = true,
-                ) { onLaunch(AppItem("search:web", row.query, Launch.Link(GlobalSearch.webUrl(row.query)))) }
+                ) { onLaunch(AppItem("search:web", row.query, Launch.Link(GlobalSearch.webUrl(row.query, engine)))) }
             }
         }
     }
@@ -315,7 +351,14 @@ private fun rememberRowAway(index: Int, listState: LazyListState, openedAt: Long
 
 /** The search box: a flat surface with a magnifier, the typed text and a button to clear it. */
 @Composable
-private fun SearchRow(query: String, onQueryChange: (String) -> Unit, focusToken: Int, onVoice: (() -> Unit)?) {
+private fun SearchRow(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    focusToken: Int,
+    onVoice: (() -> Unit)?,
+    onFocusChange: (Boolean) -> Unit = {},
+    onSubmit: (String) -> Unit = {},
+) {
     val colors = LocalMetroColors.current
     val focus = LocalFocusManager.current
     val requester = remember { FocusRequester() }
@@ -347,8 +390,11 @@ private fun SearchRow(query: String, onQueryChange: (String) -> Unit, focusToken
                 textStyle = fieldTextStyle(colors.foreground, 20.sp),
                 cursorBrush = SolidColor(LocalAccent.current),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
-                modifier = Modifier.fillMaxWidth().focusRequester(requester),
+                keyboardActions = KeyboardActions(onSearch = {
+                    onSubmit(query)
+                    focus.clearFocus()
+                }),
+                modifier = Modifier.fillMaxWidth().testTag("search:field").focusRequester(requester).onFocusChanged { onFocusChange(it.isFocused) },
             )
         }
         if (query.isNotEmpty()) {
@@ -467,11 +513,35 @@ private fun Chip(text: String, selected: Boolean, tag: String, onClick: () -> Un
 
 /** The heading of the results that are not apps (contacts, settings, web). */
 @Composable
-private fun SectionRow(@StringRes title: Int) {
-    MetroText(
-        stringResource(title), size = 20.sp, color = LocalMetroColors.current.subtle,
-        modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 12.dp, top = 18.dp, bottom = 4.dp),
-    )
+private fun SectionRow(@StringRes title: Int, onClear: (() -> Unit)? = null) {
+    Row(
+        Modifier.fillMaxWidth().padding(start = 24.dp, end = 12.dp, top = 18.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        MetroText(stringResource(title), size = 20.sp, color = LocalMetroColors.current.subtle, modifier = Modifier.weight(1f))
+        if (onClear != null) {
+            MetroText(
+                stringResource(R.string.search_clear), size = 16.sp, weight = FontWeight.Normal, color = LocalAccent.current,
+                modifier = Modifier.testTag("recent:clear").metroPress(onClick = onClear).padding(8.dp),
+            )
+        }
+    }
+}
+
+/** A sum, a conversion, a number, a link, a timer: what it says and what touching it does, in an accent square. */
+@Composable
+private fun AnswerRow(answer: QuickAnswer, index: Int, listState: LazyListState, openedAt: Long, exiting: Boolean, onClick: () -> Unit) {
+    val (glyph, title, subtitle) = when (answer) {
+        is QuickAnswer.Calculation -> Triple(Glyph.Calculator, answer.result, "${answer.expression} · ${stringResource(R.string.answer_copy)}")
+        is QuickAnswer.Conversion -> Triple(Glyph.Calculator, answer.text, stringResource(R.string.answer_copy))
+        is QuickAnswer.Call -> Triple(Glyph.Phone, stringResource(R.string.answer_call, answer.number), null)
+        is QuickAnswer.Message -> Triple(Glyph.Messaging, stringResource(R.string.answer_message, answer.number), null)
+        is QuickAnswer.Link -> Triple(Glyph.Globe, stringResource(R.string.answer_open, answer.shown), null)
+        is QuickAnswer.Email -> Triple(Glyph.Mail, stringResource(R.string.answer_email, answer.address), null)
+        is QuickAnswer.Timer -> Triple(Glyph.Alarm, stringResource(R.string.answer_timer, QuickAnswerActions.length(answer.seconds)), null)
+        is QuickAnswer.Alarm -> Triple(Glyph.Alarm, stringResource(R.string.answer_alarm, QuickAnswerActions.clock(answer.hour, answer.minute)), null)
+    }
+    ResultRow(glyph, title, subtitle, index, listState, openedAt, exiting, tag = "answer:${answer::class.simpleName}", accent = true, onClick = onClick)
 }
 
 /** A result that is not an app: a glyph in a square, its name, and what kind of result it is. */

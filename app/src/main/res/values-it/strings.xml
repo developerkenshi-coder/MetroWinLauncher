@@ -247,7 +247,7 @@
     <string name="search_section_contacts">contatti</string>
     <string name="search_section_settings">impostazioni</string>
     <string name="search_section_web">web</string>
-    <string name="search_web_for">Cerca sul web \"%1$s\"</string>
+    <string name="search_web_for">Cerca \"%1$s\" con %2$s</string>
     <string name="search_contact_subtitle">contatto</string>
     <string name="search_setting_subtitle">impostazioni di android</string>
     <string name="apps_search_contacts">cerca tra i contatti</string>
@@ -727,4 +727,25 @@
     <string name="apps_locked">app dietro il blocco schermo</string>
     <string name="apps_locked_none">Nessuna app bloccata. Tieni premuta un\'app nella lista e scegli “chiedi il blocco schermo”.</string>
     <string name="apps_locked_hint">Tocca un\'app per non chiedere più il blocco. Il blocco vale per aprire dal launcher (lista, riquadri, ricerca, voce): un\'app si può ancora aprire da una notifica, dalle app recenti o da un\'altra app.</string>
+
+    <!-- Search: answers, recent searches, engine -->
+    <string name="search_section_recent">ricerche recenti</string>
+    <string name="search_clear">cancella</string>
+    <string name="answer_copy">tocca per copiare</string>
+    <string name="answer_copied">Copiato</string>
+    <string name="answer_call">Chiama %1$s</string>
+    <string name="answer_message">Scrivi a %1$s</string>
+    <string name="answer_open">Apri %1$s</string>
+    <string name="answer_email">Scrivi una mail a %1$s</string>
+    <string name="answer_timer">Avvia un timer di %1$s</string>
+    <string name="answer_alarm">Imposta una sveglia alle %1$s</string>
+    <string name="answer_clip_label">risultato</string>
+    <string name="answer_clock_set">Fatto: guarda nell\'app Orologio</string>
+    <string name="answer_no_clock">Nessuna app Orologio può impostarlo su questo telefono</string>
+    <string name="apps_answers">risposte nella casella di ricerca</string>
+    <string name="apps_answers_hint">Calcoli (12*3+4, 15% di 80), conversioni (5 km in miglia, 30 c in f), numeri di telefono, link e indirizzi email, timer e sveglie (“timer 10 minuti”, “sveglia alle 7:30”). Tutto calcolato sul telefono.</string>
+    <string name="apps_remember">ricorda le ricerche recenti</string>
+    <string name="apps_remember_hint">Le ultime ricerche compaiono quando tocchi la casella di ricerca. Restano su questo telefono e non entrano nei backup.</string>
+    <string name="apps_forget">dimentica le ricerche recenti</string>
+    <string name="apps_engine">ricerca web con</string>
 </resources>
