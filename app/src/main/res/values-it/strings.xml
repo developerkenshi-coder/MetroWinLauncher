@@ -428,4 +428,10 @@
     <string name="lock_dream_hint">Android non permette a un launcher di sostituire il suo blocco schermo. Il blocco schermo Metro funziona invece come salvaschermo: scegli “Blocco schermo Metro” lì, e compare mentre il telefono si ricarica o sta su un dock. Scorri verso l\'alto per uscire.</string>
     <string name="lock_alarm_label">sveglia</string>
     <string name="lock_notifications_label">notifiche</string>
+
+    <!-- launch animation -->
+    <string name="screen_launch">apertura di un\'app</string>
+    <string name="launch_turnstile">tornello: i tile si girano</string>
+    <string name="launch_expand">espansione: il tile diventa l\'app</string>
+    <string name="screen_launch_hint">L\'espansione tiene ferma Start e fa crescere l\'app dal tile toccato (dalla lista, dal centro). “Riduci movimento” in Accessibilità li disattiva entrambi.</string>
 </resources>

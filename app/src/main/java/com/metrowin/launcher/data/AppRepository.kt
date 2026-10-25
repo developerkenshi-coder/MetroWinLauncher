@@ -1,6 +1,7 @@
 package com.metrowin.launcher.data
 
 import android.app.ActivityOptions
+import android.view.View
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -127,8 +128,16 @@ class AppRepository(private val context: Context) {
         )
     }
 
-    fun launch(item: AppItem, sourceBounds: Rect?): Boolean {
-        val options = ActivityOptions.makeCustomAnimation(context, R.anim.app_enter, R.anim.launcher_hold).toBundle()
+    /**
+     * [growFrom] is the place on screen (in the window of [anchor]) the app grows out of, for the expand animation;
+     * without it the app opens with the fade of the launcher.
+     */
+    fun launch(item: AppItem, sourceBounds: Rect?, growFrom: Rect? = null, anchor: View? = null): Boolean {
+        val options = if (growFrom != null && anchor != null) {
+            ActivityOptions.makeScaleUpAnimation(anchor, growFrom.left, growFrom.top, growFrom.width(), growFrom.height()).toBundle()
+        } else {
+            ActivityOptions.makeCustomAnimation(context, R.anim.app_enter, R.anim.launcher_hold).toBundle()
+        }
         return runCatching {
             when (val target = item.launch) {
                 is Launch.Activity -> startActivity(target, sourceBounds, options)

@@ -56,6 +56,8 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalConfiguration
@@ -143,6 +145,8 @@ class StartActions(
     val onDoubleTap: (() -> Unit)? = null,
     /** The arrow after the last tile: on to the next screen, or to the app list after the last one. */
     val onNextPage: () -> Unit,
+    /** Where a tile is on the screen, said just before [onClick] for it, for an app that grows out of the tile. */
+    val onTileBounds: (Rect) -> Unit = {},
 )
 
 /** The tile that was tapped; every tile turns away, that one last, before the app opens. */
@@ -472,6 +476,7 @@ private fun PositionedTile(
     val height by animateDpAsState(unit * placement.rows + TileGap * (placement.rows - 1), spring(stiffness = Spring.StiffnessLow), label = "tileHeight")
 
     val dragging = drag.draggedKey == cell.key
+    var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val position = remember { Animatable(slot, IntOffset.VectorConverter) }
     var wasDragging by remember { mutableStateOf(false) }
     LaunchedEffect(slot, dragging) {
@@ -516,9 +521,11 @@ private fun PositionedTile(
     Box(
         Modifier
             .zIndex(if (dragging) 1f else 0f)
-            .testTag("tile:${cell.key}")
             .offset { if (dragging) drag.position.round() else position.value }
             .size(width, height)
+            // After the offset: the semantics (and so TalkBack and the tests) must be where the tile really is.
+            .testTag("tile:${cell.key}")
+            .onGloballyPositioned { coordinates = it }
             .graphicsLayer {
                 turnstile(away.value)
                 val scale = editScale * lift * (if (armedForFolder) 1.06f else 1f)
@@ -526,7 +533,10 @@ private fun PositionedTile(
                 scaleY = scale
             }
             .metroPress(
-                onClick = { currentActions.onClick(currentCell) },
+                onClick = {
+                    coordinates?.takeIf { it.isAttached }?.let { currentActions.onTileBounds(it.boundsInWindow()) }
+                    currentActions.onClick(currentCell)
+                },
                 onLongClick = if (readOnly) null else ({ currentActions.onLongClick(currentCell) }),
                 enabled = exitRequest == null,
             )

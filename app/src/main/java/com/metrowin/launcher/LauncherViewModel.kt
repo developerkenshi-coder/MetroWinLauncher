@@ -550,8 +550,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         updatePages { StartPages.update(it, folderId) { page -> StartEntries.rename(page, folderId, name) } }
 
     /** Returns false (and tells the user) when the app could not be opened. */
-    fun launch(item: AppItem, sourceBounds: Rect? = null): Boolean {
-        val opened = apps.launch(item, sourceBounds)
+    fun launch(item: AppItem, sourceBounds: Rect? = null, growFrom: Rect? = null, anchor: android.view.View? = null): Boolean {
+        val opened = apps.launch(item, sourceBounds, growFrom, anchor)
         if (opened) {
             // A contact, a setting or a web search found by the search is not an app of the list.
             if (!item.id.startsWith("search:")) {

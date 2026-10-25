@@ -171,38 +171,23 @@ class LockScreenTest : ScreenshotBase() {
         )
     }
 
-    private fun tap(tag: String) {
-        val node = compose.onNodeWithTag(tag)
-        val screenHeight = compose.onRoot().fetchSemanticsNode().size.height
-        repeat(8) {
-            val semantics = node.fetchSemanticsNode()
-            val top = semantics.positionInRoot.y
-            if (top >= 0f && top + semantics.size.height <= screenHeight) return@repeat
-            compose.onAllNodes(androidx.compose.ui.test.hasScrollAction()).onLast().performTouchInput {
-                swipe(Offset(centerX, height * 0.85f), Offset(centerX, height * 0.15f), durationMillis = 200)
-            }
-            advance(2_500)
-        }
-        node.performClick()
-    }
-
     @Test
     fun theLockPageHasItsButtonsAndSwitches() {
         show { Page() }
         advance(500)
         capture("settings_lock")
-        tap("lock:preview")
-        tap("lock:alarm")
+        tapScrolled("lock:preview")
+        tapScrolled("lock:alarm")
         advance(100)
         assertFalse(current.lockShowAlarm)
-        tap("lock:notifications")
+        tapScrolled("lock:notifications")
         advance(100)
         assertFalse(current.lockShowNotifications)
-        tap("lock:battery")
+        tapScrolled("lock:battery")
         advance(100)
         assertFalse(current.lockShowBattery)
-        tap("lock:apply")
-        tap("lock:dream")
+        tapScrolled("lock:apply")
+        tapScrolled("lock:dream")
         assertEquals(listOf("preview", "apply", "dream"), calls)
     }
 

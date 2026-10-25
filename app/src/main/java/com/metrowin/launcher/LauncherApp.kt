@@ -54,6 +54,8 @@ import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.QuickAction
 import com.metrowin.launcher.data.GestureAction
+import com.metrowin.launcher.data.LaunchPlans
+import androidx.compose.ui.platform.LocalView
 import com.metrowin.launcher.data.TileGrid
 import androidx.compose.ui.platform.LocalConfiguration
 import com.metrowin.launcher.data.SystemSettingDef
@@ -129,8 +131,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /** Time for the tiles (or rows) to turn away before the app opens. */
-private const val START_EXIT_MS = 300L
-private const val LIST_EXIT_MS = 240L
+/** A small square in the middle of the screen: where an app grows from when it was not opened from a tile. */
+private fun screenCentre(view: android.view.View): android.graphics.Rect {
+    val cx = view.width / 2
+    val cy = view.height / 2
+    val half = (minOf(view.width, view.height) * CENTRE_FRACTION).toInt() / 2
+    return android.graphics.Rect(cx - half, cy - half, cx + half, cy + half)
+}
+
+private const val CENTRE_FRACTION = 0.15f
 
 /** How far below the status bar a pull from the top edge may start, to open the Action Center from any page. */
 private val EDGE_PULL_ZONE = 28.dp
@@ -224,6 +233,10 @@ fun LauncherApp(vm: LauncherViewModel) {
     var searchFocus by remember { mutableIntStateOf(0) }
     var voiceRequest by remember { mutableIntStateOf(0) }
     var lockPreviewOpen by remember { mutableStateOf(false) }
+    // Where the tile that was tapped is, said by Start just before the tap, for the app that grows out of it.
+    var tapBounds by remember { mutableStateOf<android.graphics.Rect?>(null) }
+    val decorView = LocalView.current
+    val reduceMotion = settings.reduceMotion
     val voice = rememberVoiceSession()
     var lockServiceEnabled by remember { mutableStateOf(false) }
     var renamingFolderId by remember { mutableStateOf<String?>(null) }
@@ -478,9 +491,15 @@ fun LauncherApp(vm: LauncherViewModel) {
             return
         }
         launching = true
-        if (startKey != null) exitRequest = ExitRequest(startKey) else listExiting = true
+        val plan = LaunchPlans.decide(settings.launchAnimation, reduceMotion, fromStart = startKey != null)
+        if (plan.tilesTurnAway) {
+            if (startKey != null) exitRequest = ExitRequest(startKey) else listExiting = true
+        }
+        // The app grows out of the tile that was touched; from the list, out of the middle of the screen.
+        val growFrom = if (plan.expand) tapBounds.takeIf { startKey != null } ?: screenCentre(decorView) else null
+        tapBounds = null
         scope.launch {
-            delay(if (startKey != null) START_EXIT_MS else LIST_EXIT_MS)
+            if (plan.waitMs > 0) delay(plan.waitMs)
             val internal = item.launch as? Launch.Internal
             when {
                 internal?.route == AppRepository.ROUTE_KIDS ->
@@ -495,7 +514,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                     settingsSection = null
                     settingsOpen = true
                 }
-                vm.launch(item) -> launched = true
+                vm.launch(item, growFrom = growFrom, anchor = decorView) -> launched = true
                 else -> comeBack()
             }
         }
@@ -645,6 +664,9 @@ fun LauncherApp(vm: LauncherViewModel) {
             editingKey = null
         },
         onBackgroundTap = { editingKey = null },
+        onTileBounds = { bounds ->
+            tapBounds = android.graphics.Rect(bounds.left.toInt(), bounds.top.toInt(), bounds.right.toInt(), bounds.bottom.toInt())
+        },
         onDoubleTap = if (settings.doubleTapAction != GestureAction.None) ({ perform(settings.doubleTapAction) }) else null,
         onNextPage = { scope.launch { pagerState.animateScrollToPage((pagerState.currentPage + 1).coerceAtMost(appsPage)) } },
     )

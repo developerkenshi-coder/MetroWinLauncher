@@ -56,9 +56,9 @@ enum class GestureAction(val code: String, @param:StringRes val label: Int) {
 }
 
 /** How an app opens: the Metro turnstile, or the tile growing into the window of the app. */
-enum class LaunchAnimation(val code: String) {
-    Turnstile("turnstile"),
-    Expand("expand");
+enum class LaunchAnimation(val code: String, @param:StringRes val label: Int) {
+    Turnstile("turnstile", R.string.launch_turnstile),
+    Expand("expand", R.string.launch_expand);
 
     companion object {
         fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: Turnstile

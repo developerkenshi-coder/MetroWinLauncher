@@ -9,6 +9,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.centerX
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.onLast
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipe
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -51,6 +60,27 @@ abstract class ScreenshotBase {
     }
 
     protected fun advance(ms: Long) = compose.mainClock.advanceTimeBy(ms)
+
+    /**
+     * Swipes the page up until the control is on screen, then taps it. (performScrollTo animates its scroll, which
+     * never finishes while the test clock is paused, so the page is scrolled with a finger instead.)
+     */
+    protected fun tapScrolled(tag: String) {
+        val node = compose.onNodeWithTag(tag)
+        val screenHeight = compose.onRoot().fetchSemanticsNode().size.height
+        repeat(8) {
+            // Position and size are not clipped to the screen, unlike boundsInRoot, which is empty off screen.
+            val semantics = node.fetchSemanticsNode()
+            val top = semantics.positionInRoot.y
+            if (top >= 0f && top + semantics.size.height <= screenHeight) return@repeat
+            compose.onAllNodes(hasScrollAction()).onLast().performTouchInput {
+                swipe(Offset(centerX, height * 0.85f), Offset(centerX, height * 0.15f), durationMillis = 200)
+            }
+            // A touch on a page that is still flinging only stops it: wait for it to settle.
+            advance(2_500)
+        }
+        node.performClick()
+    }
 
     protected fun capture(name: String): Bitmap {
         // Compose's own captureToImage waits for a real window draw, which Robolectric does not deliver

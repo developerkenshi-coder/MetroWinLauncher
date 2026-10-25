@@ -123,13 +123,13 @@ class LandscapeTest : ScreenshotBase() {
         }
         advance(500)
         capture("settings_screen")
-        compose.onNodeWithTag("screen:orientation:1").performClick()
+        tapScrolled("screen:orientation:1")
         advance(100)
         assertEquals(OrientationMode.Auto, current.orientation)
-        compose.onNodeWithTag("screen:orientation:2").performClick()
+        tapScrolled("screen:orientation:2")
         advance(100)
         assertEquals(OrientationMode.Landscape, current.orientation)
-        compose.onNodeWithTag("screen:refresh").performClick()
+        tapScrolled("screen:refresh")
         advance(100)
         assertEquals(false, current.highRefreshRate)
     }

@@ -435,4 +435,10 @@
     <string name="lock_dream_hint">Android does not let a launcher replace its lock screen. The Metro lock screen runs as the screen saver instead: pick “Metro lock screen” there, and it shows while the phone charges or rests on a dock. Swipe it up to leave.</string>
     <string name="lock_alarm_label">alarm</string>
     <string name="lock_notifications_label">notifications</string>
+
+    <!-- launch animation -->
+    <string name="screen_launch">opening an app</string>
+    <string name="launch_turnstile">turnstile: the tiles turn away</string>
+    <string name="launch_expand">expand: the tile grows into the app</string>
+    <string name="screen_launch_hint">Expand keeps the Start screen still and grows the app out of the tile you touched (on the list, out of the middle). Reduce motion in Accessibility turns both off.</string>
 </resources>
