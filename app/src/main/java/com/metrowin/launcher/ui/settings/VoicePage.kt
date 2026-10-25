@@ -38,6 +38,7 @@ fun VoicePage(env: SettingsEnv) {
             listOf(
                 R.string.voice_ex_open, R.string.voice_ex_call, R.string.voice_ex_search,
                 R.string.voice_ex_torch, R.string.voice_ex_launcher, R.string.voice_ex_settings,
+                R.string.voice_ex_levels, R.string.voice_ex_ringer, R.string.voice_ex_navigate, R.string.voice_ex_message, R.string.voice_ex_system,
             ).forEach { SettingHint(stringResource(it), Modifier.testTag("voice:example")) }
         }
     }

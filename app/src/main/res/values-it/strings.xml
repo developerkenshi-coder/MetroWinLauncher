@@ -932,4 +932,13 @@
         <item quantity="many">%1$d giorni fa</item>
         <item quantity="other">%1$d giorni fa</item>
     </plurals>
+
+    <!-- Second round: more voice commands -->
+    <string name="voice_brightness_denied">Per cambiare la luminosità consenti al launcher “modificare le impostazioni di sistema” nella schermata appena aperta.</string>
+    <string name="voice_silent_denied">La modalità silenziosa richiede l’accesso a “non disturbare”: consentilo al launcher nella schermata appena aperta.</string>
+    <string name="voice_ex_levels">“alza il volume”, “volume al 50 per cento”, “luminosità al massimo”</string>
+    <string name="voice_ex_ringer">“modalità silenziosa”, “vibrazione”, “attiva la suoneria”</string>
+    <string name="voice_ex_navigate">“portami a Roma”, “indicazioni per la stazione”</string>
+    <string name="voice_ex_message">“scrivi a Anna sono in ritardo” (apre il messaggio, lo invii tu), “manda un messaggio a Marco dicendo ciao”</string>
+    <string name="voice_ex_system">“screenshot”, “menu di spegnimento”, “app recenti”, “schermo diviso”</string>
 </resources>

@@ -52,10 +52,12 @@ import com.metrowin.launcher.data.IconPackInfo
 import com.metrowin.launcher.data.IconPackRepository
 import com.metrowin.launcher.data.PhoneCalls
 import com.metrowin.launcher.data.AppLinks
+import com.metrowin.launcher.data.VoiceActions
 import com.metrowin.launcher.data.CalendarSearch
 import com.metrowin.launcher.data.CurrencyRepository
 import com.metrowin.launcher.data.Currencies
 import com.metrowin.launcher.data.EventMatch
+import com.metrowin.launcher.data.LevelChange
 import com.metrowin.launcher.data.QuickAnswer
 import com.metrowin.launcher.data.QuickAnswerActions
 import com.metrowin.launcher.data.RecentSearches
@@ -228,6 +230,43 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         if (!sound.setRinger(mode)) startSettings(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
         _controls.value = _controls.value.copy(ringer = sound.ringer())
     }
+
+    /** A spoken change of the media volume. */
+    fun changeVolume(change: LevelChange) {
+        val now = sound.volume() ?: return
+        setVolume(change.apply(now))
+    }
+
+    /** A spoken change of the brightness. False without the "modify system settings" access, and the screen that gives it opens. */
+    fun changeBrightness(change: LevelChange): Boolean {
+        if (!brightnessControl.canWrite()) {
+            openBrightnessAccess()
+            return false
+        }
+        val now = brightnessControl.brightness() ?: return false
+        setBrightness(change.apply(now))
+        return true
+    }
+
+    /** Sets the sound mode; false when silent needs the "do not disturb" access that is not given (the screen that gives it opens). */
+    fun trySetRinger(mode: RingerMode): Boolean {
+        val done = sound.setRinger(mode)
+        if (!done) startSettings(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+        _controls.value = _controls.value.copy(ringer = sound.ringer())
+        return done
+    }
+
+    /** Directions to [destination] in the first maps app that takes them. */
+    fun navigate(destination: String) {
+        val app = getApplication<Application>()
+        val opened = VoiceActions.navigationUris(destination).any { uri ->
+            runCatching { app.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess
+        }
+        if (!opened) tell(R.string.launch_failed)
+    }
+
+    /** The messages app with a message to [number] written in. */
+    fun composeMessage(number: String, text: String) = startIntent(VoiceActions.smsIntent(number, text))
 
     /** The clock app (its alarms) for a touch on the time of Start. */
     fun openClock() = startIntent(Intent(android.provider.AlarmClock.ACTION_SHOW_ALARMS))

@@ -181,7 +181,7 @@ class VoiceScreenTest : ScreenshotBase() {
         assertFalse(current.voiceOffline)
         compose.onNodeWithTag("voice:try").performClick()
         assertEquals(1, tried)
-        compose.onAllNodesWithTag("voice:example").assertCountEquals(6)
+        compose.onAllNodesWithTag("voice:example").assertCountEquals(11)
         assertTrue(LauncherSettings().voiceButton && LauncherSettings().voiceOffline)
     }
 }

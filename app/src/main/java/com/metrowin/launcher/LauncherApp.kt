@@ -835,6 +835,34 @@ fun LauncherApp(vm: LauncherViewModel) {
                 voice.close()
                 vm.perform(command.answer)
             }
+            is VoiceCommand.Volume -> {
+                voice.close()
+                vm.changeVolume(command.change)
+            }
+            is VoiceCommand.Brightness -> if (vm.changeBrightness(command.change)) voice.close() else voice.problem(R.string.voice_brightness_denied)
+            is VoiceCommand.Ringer -> if (vm.trySetRinger(command.mode)) voice.close() else voice.problem(R.string.voice_silent_denied)
+            is VoiceCommand.Navigate -> {
+                voice.close()
+                vm.navigate(command.destination)
+            }
+            is VoiceCommand.Message -> scope.launch {
+                val contact = vm.searchContacts(command.name).firstOrNull()
+                if (contact == null) {
+                    voice.problem(R.string.voice_no_contact, command.name)
+                } else {
+                    val number = vm.phoneNumberOf(contact.lookupUri)
+                    voice.close()
+                    if (number == null) {
+                        vm.launch(AppItem("search:contact", contact.name, Launch.Link(contact.lookupUri)))
+                    } else {
+                        vm.composeMessage(number, command.text)
+                    }
+                }
+            }
+            is VoiceCommand.System -> {
+                voice.close()
+                perform(command.action)
+            }
             is VoiceCommand.Torch -> {
                 voice.close()
                 if (command.on == null || command.on != torchOn) vm.activateQuickAction(QuickAction.Flashlight)

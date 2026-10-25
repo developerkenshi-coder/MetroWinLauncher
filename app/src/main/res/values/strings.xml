@@ -928,4 +928,13 @@
         <item quantity="one">%1$d day ago</item>
         <item quantity="other">%1$d days ago</item>
     </plurals>
+
+    <!-- Second round: more voice commands -->
+    <string name="voice_brightness_denied">To change the brightness, allow “modify system settings” for the launcher in the screen that just opened.</string>
+    <string name="voice_silent_denied">Silent mode needs the “do not disturb” access: allow it for the launcher in the screen that just opened.</string>
+    <string name="voice_ex_levels">“turn up the volume”, “volume at 50 percent”, “brightness to the maximum”</string>
+    <string name="voice_ex_ringer">“silent mode”, “vibrate”, “turn on the ringer”</string>
+    <string name="voice_ex_navigate">“navigate to Rome”, “take me to the station”</string>
+    <string name="voice_ex_message">“text Anna I’m late” (it opens the message for you to send), “send a message to Marco saying hello”</string>
+    <string name="voice_ex_system">“screenshot”, “power menu”, “recent apps”, “split screen”</string>
 </resources>
