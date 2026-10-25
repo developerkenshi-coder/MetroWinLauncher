@@ -3,6 +3,8 @@ package com.metrowin.launcher.gestures
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 
@@ -42,6 +44,20 @@ class LockAccessibilityService : AccessibilityService() {
             val service = instance ?: return false
             return service.performGlobalAction(GLOBAL_ACTION_RECENTS)
         }
+
+        /**
+         * Opens the recent apps from the Quick Settings panel: the panel is closed first (Android 12 and later can do that
+         * from a service), then the recent apps open. False when the service is off.
+         */
+        fun recentsFromPanel(): Boolean {
+            val service = instance ?: return false
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return service.performGlobalAction(GLOBAL_ACTION_RECENTS)
+            service.performGlobalAction(GLOBAL_ACTION_DISMISS_NOTIFICATION_SHADE)
+            Handler(Looper.getMainLooper()).postDelayed({ service.performGlobalAction(GLOBAL_ACTION_RECENTS) }, PANEL_CLOSE_MS)
+            return true
+        }
+
+        private const val PANEL_CLOSE_MS = 250L
 
         /** Whether the user has turned the service on. */
         fun isEnabled(context: Context): Boolean {

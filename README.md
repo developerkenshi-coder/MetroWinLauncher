@@ -131,10 +131,11 @@ launcher, e il pulsante diventa "consentito". Un permesso che Android non chiede
 - **Gesti configurabili**: doppio tocco su Start, swipe a due dita in giù e in su; ognuno può bloccare lo schermo, aprire
   le impostazioni o l'Action Center, andare alla lista app, accendere la torcia, aprire la fotocamera, **parlare**,
   cercare o **aprire le app recenti**. **Suono e vibrazione** al tocco, facoltativi.
-- **App recenti subito**: l'azione *apri le app recenti* (come gesto, e come pulsante tra i toggle dell'Action Center) usa lo
-  stesso servizio di accessibilità del blocco schermo (`GLOBAL_ACTION_RECENTS`), che non legge nulla e non chiede eventi: si
-  apre al tocco, come il pulsante Recenti. **Lo swipe di Android** (su e tieni) **non è del launcher**: lo gestisce il sistema, e
-  con un launcher che non è quello del telefono può avere un'attesa che da qui non si può togliere (vedi *Note e limiti*).
+- **App recenti subito**: l'azione *apri le app recenti* (come gesto, come pulsante tra i toggle dell'Action Center e come
+  **tile delle Impostazioni rapide**, che si aggiunge dalla pagina *gesti* e funziona da qualsiasi app) usa lo stesso servizio
+  di accessibilità del blocco schermo (`GLOBAL_ACTION_RECENTS`), che non legge nulla e non chiede eventi: si apre al tocco, senza
+  gesto da tenere. **Lo swipe di Android** (su e tieni) **non è del launcher**: lo gestisce il sistema, e con un launcher che non
+  è quello del telefono può avere un'attesa che da qui non si può togliere (vedi *Note e limiti*).
 - **Animazione di apertura**: *turnstile* (i riquadri si girano, l'ultimo quello toccato) oppure **espansione** (Start
   resta fermo e l'app cresce dal riquadro toccato, o dal centro se tocchi dalla lista).
 
@@ -352,7 +353,7 @@ solo se il launcher c'era già.
 ./gradlew assembleRelease        # con R8
 ```
 
-**614 test**, nessuno saltato; il lint non ha errori.
+**617 test**, nessuno saltato; il lint non ha errori.
 
 - Logica pura: griglia e colonne dalla larghezza, operazioni su Start, regole di trascinamento e di rilascio, ricerca,
   salvataggio e migrazione delle impostazioni, comandi vocali, pianificazione della sincronizzazione, **cifratura** (anche
@@ -403,11 +404,14 @@ app/src/main/java/com/metrowin/launcher/
 - **Il tutorial su un telefono vero**: le richieste (dialoghi dei permessi, dialogo dell'app Home, pagine di Android per notifiche,
   accessibilità e batteria) sono collegate ma provate solo fin dove si arriva su JVM: i pulsanti chiamano la richiesta giusta e la
   pagina legge cosa è concesso; cosa mostra davvero Android, e se un produttore ha un'altra pagina per la batteria, va visto.
-- **Lo swipe delle app recenti di Android**: quando il launcher del telefono non è quello di fabbrica (o su alcuni produttori) il
-  sistema apre le Recenti con un componente suo, e il gesto può avere un'attesa di circa un secondo. Non dipende dal codice del
-  launcher e non si può correggere da qui; non l'ho misurato su un telefono. Il launcher non fa nulla di suo quando parte il
-  gesto (a quel punto è già fermo, vedi *Batteria*), e per averle subito c'è l'azione *app recenti* (gesto o pulsante), che
-  richiede di attivare il servizio di accessibilità del blocco schermo.
+- **Lo swipe delle app recenti di Android** (su e tieni) lo gestisce il sistema, non il launcher: i gesti e la schermata delle
+  Recenti stanno nel launcher di fabbrica, che con uno di terze parti ha meno privilegi. Su **Samsung** l'attesa è voluta: con un
+  launcher di terze parti bisogna tenere lo swipe circa un secondo ([lo dice Niagara Launcher](https://help.niagaralauncher.app/article/114-recent-apps-screen-issues),
+  che ha lo stesso problema), e altri produttori hanno ritardi simili ([Lawnchair](https://docs.lawnchair.app/troubleshooting/gesture-navigation-issues)); su un **vivo** con un launcher di terze parti c'è chi riferisce Recenti lente ([una segnalazione a Niagara](https://niagaralauncher.featurebase.app/p/recent-apps-navigation-is-slow-and-lagging)), e un riavvio la fa sparire per qualche ora. Con il launcher di fabbrica il ritardo non c'è perché è lui a gestire i gesti.
+  Non è nel codice di questo launcher e **non si può togliere da qui**; non l'ho misurato su un telefono. Il launcher non fa nulla
+  di suo quando parte il gesto (a quel punto è già fermo, vedi *Batteria*). Per averle subito ci sono l'azione *app recenti* (gesto,
+  pulsante o tile, richiedono il servizio di accessibilità del blocco schermo) e la navigazione a 3 pulsanti di Android, dove il
+  pulsante Recenti non ha attese (lo riferiscono utenti di launcher di terze parti; non l'ho provato).
 - **Font**: Windows Phone usa Segoe WP, proprietario. Qui c'è Open Sans (OFL). Vedi [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 - **Colori d'accento**: Microsoft ha pubblicato i 20 colori solo come immagine; i valori vengono da trascrizioni.
 - **Marchi**: i nomi delle app stock (Internet Explorer, Xbox, Skype…) sono quelli di Windows Phone. Stanno in `MetroCatalog.kt`

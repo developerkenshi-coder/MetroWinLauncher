@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.metrowin.launcher.data.AppFilter
+import com.metrowin.launcher.gestures.RecentsTileService
 import com.metrowin.launcher.data.AppRepository
 import com.metrowin.launcher.data.BatteryInfo
 import com.metrowin.launcher.data.AppSection
@@ -363,6 +364,20 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun openSystemSettings() = startSettings(Settings.ACTION_SETTINGS)
 
     fun openAccessibilitySettings() = startSettings(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+
+    /** Asks Android to add the Recent apps tile to the Quick Settings; the user is asked to confirm (Android 13 and later). */
+    fun requestRecentsTile() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        val app = getApplication<Application>()
+        runCatching {
+            app.getSystemService(android.app.StatusBarManager::class.java)?.requestAddTileService(
+                ComponentName(app, RecentsTileService::class.java),
+                app.getString(R.string.qa_recents),
+                android.graphics.drawable.Icon.createWithResource(app, R.drawable.ic_tile_recents),
+                app.mainExecutor,
+            ) { }
+        }
+    }
 
     private fun startSettings(action: String) {
         runCatching { getApplication<Application>().startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }

@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.app.KeyguardManager
 import android.content.pm.PackageManager
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -1066,6 +1067,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onSyncNow = { vm.syncNow() },
                             lockServiceEnabled = lockServiceEnabled,
                             onOpenAccessibilitySettings = vm::openAccessibilitySettings,
+                            onAddRecentsTile = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) vm::requestRecentsTile else null,
                         ),
                         section = settingsSection,
                         onSectionChange = { settingsSection = it },

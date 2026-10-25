@@ -31,6 +31,14 @@ fun GesturesPage(env: SettingsEnv) {
             SettingHint(stringResource(R.string.gest_actions_hint))
         }
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            SettingHeading(stringResource(R.string.gest_recents_title))
+            SettingHint(stringResource(R.string.gest_recents_why))
+            SettingHint(stringResource(R.string.gest_recents_options))
+            env.onAddRecentsTile?.let { add ->
+                ActionSetting(stringResource(R.string.gest_recents_tile), onClick = add, tag = "gestures:recentstile")
+            }
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.gest_lock_service))
             InfoSetting(
                 label = stringResource(R.string.gest_lock_service),

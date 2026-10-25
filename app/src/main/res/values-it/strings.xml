@@ -295,6 +295,10 @@
     <string name="gact_voice">avvia i comandi vocali</string>
     <string name="gact_search">cerca tra le app</string>
     <string name="gact_recents">apri le app recenti</string>
+    <string name="gest_recents_title">app recenti</string>
+    <string name="gest_recents_why">Lo swipe «su e tieni» della navigazione a gesti di Android è gestito dal sistema, non dal launcher. Con un launcher che non è quello del telefono molti telefoni ti fanno tenere lo swipe per un secondo o più, o aprono le app recenti con lentezza, e il launcher non può cambiarlo.</string>
+    <string name="gest_recents_options">Cosa le apre subito: il gesto «apri le app recenti» qui sopra, il pulsante App recenti tra i toggle dell\'Action Center, il tile delle Impostazioni rapide (tiri giù il pannello da qualsiasi app), oppure la navigazione a 3 pulsanti di Android, dove il pulsante Recenti non ha attesa. Tutti tranne l\'ultimo richiedono il servizio del blocco schermo qui sotto.</string>
+    <string name="gest_recents_tile">aggiungi il tile alle Impostazioni rapide</string>
     <string name="gest_lock_service">servizio per bloccare lo schermo</string>
     <string name="gest_lock_service_on">Attivo: il launcher può bloccare lo schermo e aprire le app recenti</string>
     <string name="gest_lock_service_off">Spento: per bloccare lo schermo e per il pulsante delle app recenti serve attivarlo</string>

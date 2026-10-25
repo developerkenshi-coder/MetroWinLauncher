@@ -77,6 +77,8 @@ class SettingsEnv(
     /** The service that lets the launcher lock the screen is turned on. */
     val lockServiceEnabled: Boolean = false,
     val onOpenAccessibilitySettings: () -> Unit = {},
+    /** Asks Android to add the Recent apps tile to the Quick Settings (Android 13 and later); null where it cannot be asked. */
+    val onAddRecentsTile: (() -> Unit)? = null,
     /** The name of the backup folder, or null when none is chosen. */
     val backupFolderName: String? = null,
     val onPickBackupFolder: (Uri) -> Unit = {},

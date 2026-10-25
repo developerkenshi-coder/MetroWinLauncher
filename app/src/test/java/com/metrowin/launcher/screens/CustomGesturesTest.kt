@@ -206,7 +206,7 @@ class CustomGesturesTest : ScreenshotBase() {
     private var current = LauncherSettings()
 
     @Composable
-    private fun GesturesSettings(lockEnabled: Boolean = false, onAccessibility: () -> Unit = {}) {
+    private fun GesturesSettings(lockEnabled: Boolean = false, onAccessibility: () -> Unit = {}, onAddTile: (() -> Unit)? = null) {
         var settings by remember { mutableStateOf(current) }
         SettingsScreen(
             env = SettingsEnv(
@@ -217,6 +217,7 @@ class CustomGesturesTest : ScreenshotBase() {
                 },
                 lockServiceEnabled = lockEnabled,
                 onOpenAccessibilitySettings = onAccessibility,
+                onAddRecentsTile = onAddTile,
             ),
             section = SettingsSection.Gestures,
             onSectionChange = {},
@@ -250,6 +251,27 @@ class CustomGesturesTest : ScreenshotBase() {
         compose.onNodeWithTag("gestures:twoup:${GestureAction.Recents.ordinal}").performClick()
         compose.waitForIdle()
         assertEquals(GestureAction.Recents, current.twoFingerUpAction)
+    }
+
+    @Test
+    fun theGesturesPageSaysWhyTheSwipeIsSlowAndOffersTheTileToAddIt() {
+        var asked = 0
+        current = LauncherSettings()
+        show { GesturesSettings(onAddTile = { asked++ }) }
+        advance(500)
+        scrollIntoView("gestures:recentstile", topMargin = 0.2f)
+        capture("settings_gestures_recents")
+        compose.onNodeWithTag("gestures:recentstile").performClick()
+        compose.waitForIdle()
+        assertEquals(1, asked)
+    }
+
+    @Test
+    fun withoutASystemThatCanAddTilesThereIsNoButtonForIt() {
+        current = LauncherSettings()
+        show { GesturesSettings(onAddTile = null) }
+        advance(500)
+        compose.onAllNodesWithTag("gestures:recentstile").assertCountEquals(0)
     }
 
     @Test

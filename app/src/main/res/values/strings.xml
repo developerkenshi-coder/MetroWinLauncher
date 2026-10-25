@@ -302,6 +302,10 @@
     <string name="gact_voice">start voice commands</string>
     <string name="gact_search">search the apps</string>
     <string name="gact_recents">open the recent apps</string>
+    <string name="gest_recents_title">recent apps</string>
+    <string name="gest_recents_why">The swipe up and hold of Android\'s gesture navigation is handled by the system, not by the launcher. With a launcher that is not the phone\'s own, many phones make you hold the swipe for a second or more, or are slow to open the recent apps, and the launcher cannot change that.</string>
+    <string name="gest_recents_options">What opens them at once: the gesture “open the recent apps” above, the Recent apps button among the Action Center toggles, the Quick Settings tile (pull down the panel from any app), or the 3-button navigation of Android, where the Recents button has no wait. All but the last need the screen lock service below.</string>
+    <string name="gest_recents_tile">add the tile to Quick Settings</string>
     <string name="gest_lock_service">screen lock service</string>
     <string name="gest_lock_service_on">On: the launcher can lock the screen and open the recent apps</string>
     <string name="gest_lock_service_off">Off: locking the screen and the recent apps button need it</string>

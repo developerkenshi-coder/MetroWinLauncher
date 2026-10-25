@@ -215,6 +215,18 @@
                 android:resource="@xml/lock_accessibility_service" />
         </service>
 
+        <!-- The Recent apps tile for the Quick Settings (see RecentsTileService). -->
+        <service
+            android:name=".gestures.RecentsTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_recents"
+            android:label="@string/qa_recents"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
         <!--
             Reads the notifications for the Action Center and the counters on the tiles. Android only
             binds it once the user turns on "notification access" for this app.

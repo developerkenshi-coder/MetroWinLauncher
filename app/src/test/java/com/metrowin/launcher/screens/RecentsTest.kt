@@ -4,6 +4,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.metrowin.launcher.data.QuickAction
 import com.metrowin.launcher.gestures.LockAccessibilityService
+import com.metrowin.launcher.gestures.RecentsTileService
 import com.metrowin.launcher.ui.actioncenter.ActionCenter
 import com.metrowin.launcher.ui.gesture.rememberPullPanel
 import org.junit.Assert.assertEquals
@@ -52,6 +53,18 @@ class RecentsTest : ScreenshotBase() {
     fun withoutTheServiceTheRecentAppsDoNotOpenAndSaySo() {
         // The launcher then asks the user to turn the service on; here there is no service to turn on.
         assertFalse(LockAccessibilityService.recents())
+        assertFalse(LockAccessibilityService.recentsFromPanel())
         assertFalse(LockAccessibilityService.lock())
+    }
+
+    @Test
+    fun theQuickSettingsTileIsDeclaredForAndroidToOfferIt() {
+        val pm = context.packageManager
+        val found = pm.queryIntentServices(android.content.Intent("android.service.quicksettings.action.QS_TILE").setPackage(context.packageName), 0)
+        val tile = found.singleOrNull { it.serviceInfo.name == RecentsTileService::class.java.name }
+        assertNotNull("the tile is declared", tile)
+        // Only the system may bind it, and it can be seen from the panel.
+        assertEquals("android.permission.BIND_QUICK_SETTINGS_TILE", tile!!.serviceInfo.permission)
+        assertTrue(tile.serviceInfo.exported)
     }
 }
