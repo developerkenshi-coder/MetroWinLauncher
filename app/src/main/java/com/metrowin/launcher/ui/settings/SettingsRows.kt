@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
@@ -81,7 +82,7 @@ fun ToggleSetting(
     enabled: Boolean = true,
     tag: String? = null,
 ) {
-    Column(modifier.alpha(if (enabled) 1f else 0.4f)) {
+    Column(modifier.alpha(if (enabled) 1f else 0.4f).semantics { if (!enabled) disabled() }) {
         MetroToggle(
             label, checked,
             onChange = { if (enabled) onChange(it) },
@@ -228,7 +229,12 @@ fun ActionSetting(
     Column(modifier) {
         MetroButton(
             text,
-            Modifier.fillMaxWidth().alpha(if (enabled) 1f else 0.4f).then(if (tag != null) Modifier.testTag(tag) else Modifier),
+            Modifier
+                .fillMaxWidth()
+                .alpha(if (enabled) 1f else 0.4f)
+                // TalkBack says "dimmed" for a button that does nothing.
+                .semantics { if (!enabled) disabled() }
+                .then(if (tag != null) Modifier.testTag(tag) else Modifier),
         ) { if (enabled) onClick() }
         if (hint != null) SettingHint(hint, Modifier.padding(top = 8.dp))
     }

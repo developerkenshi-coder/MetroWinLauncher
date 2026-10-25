@@ -79,6 +79,9 @@ object SettingsCodec {
             put("lastBackupAt", s.lastBackupAt)
             put("syncPassphrase", s.syncPassphrase)
             put("deviceId", s.deviceId)
+            put("syncLastHash", s.syncLastHash)
+            put("syncLastStamp", s.syncLastStamp)
+            put("syncLastAt", s.syncLastAt)
         }
     }.toString()
 
@@ -146,6 +149,9 @@ object SettingsCodec {
             syncEnabled = o.optBoolean("syncEnabled", base.syncEnabled),
             syncPassphrase = o.optString("syncPassphrase", base.syncPassphrase),
             deviceId = o.optString("deviceId", base.deviceId),
+            syncLastHash = o.optString("syncLastHash", base.syncLastHash),
+            syncLastStamp = o.optLong("syncLastStamp", base.syncLastStamp),
+            syncLastAt = o.optLong("syncLastAt", base.syncLastAt),
 
             kidsApps = strings("kidsApps", base.kidsApps).toSet(),
             kidsMode = o.optBoolean("kidsMode", base.kidsMode),

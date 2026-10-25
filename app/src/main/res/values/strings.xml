@@ -441,4 +441,23 @@
     <string name="launch_turnstile">turnstile: the tiles turn away</string>
     <string name="launch_expand">expand: the tile grows into the app</string>
     <string name="screen_launch_hint">Expand keeps the Start screen still and grows the app out of the tile you touched (on the list, out of the middle). Reduce motion in Accessibility turns both off.</string>
+
+    <!-- sync -->
+    <string name="sync_heading">sync between phones</string>
+    <string name="sync_enable">keep Start in sync</string>
+    <string name="sync_needs_folder">Choose a backup folder first: the sync file lives in it. A folder in a cloud app (Google Drive, for example) syncs your phones.</string>
+    <string name="sync_passphrase">passphrase</string>
+    <string name="sync_passphrase_hint">Use the same passphrase on every phone. The file is encrypted with it (AES-256) before it goes in the folder. The passphrase stays on this phone and is never written to the folder: if you lose it, the synced data cannot be read.</string>
+    <string name="sync_now">sync now</string>
+    <string name="sync_last">last sync</string>
+    <string name="sync_never">never</string>
+    <string name="sync_not_ready">Turn sync on, choose a folder and a passphrase first</string>
+    <string name="sync_up_to_date">Everything is in sync</string>
+    <string name="sync_uploaded">Synced: this phone\'s Start is in the folder</string>
+    <string name="sync_applied">Synced: Start updated from the folder</string>
+    <string name="sync_conflict">Both phones changed. This one was kept; the other one is saved in the folder as %1$s</string>
+    <string name="sync_wrong_passphrase">Wrong passphrase for the file in the folder</string>
+    <string name="sync_not_file">The sync file in the folder is damaged or is not ours</string>
+    <string name="sync_failed">Could not reach the folder</string>
+    <string name="sync_hint">The first sync of a phone that finds a file in the folder takes it, and keeps what it had as the backup file in the folder. After that, whatever changed since the last sync goes across; if both phones changed, this one wins and the other is kept as a separate file.</string>
 </resources>

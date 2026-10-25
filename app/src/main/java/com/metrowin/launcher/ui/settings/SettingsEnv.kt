@@ -78,6 +78,7 @@ class SettingsEnv(
     val onClearBackupFolder: () -> Unit = {},
     val onBackupNow: () -> Unit = {},
     val onRestoreBackup: () -> Unit = {},
+    val onSyncNow: () -> Unit = {},
     /** The work profile and the private space, when the phone has them. */
     val profiles: List<ProfileInfo> = emptyList(),
     val onSetProfilePaused: (serial: Long, paused: Boolean) -> Unit = { _, _ -> },

@@ -933,6 +933,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onClearBackupFolder = vm::clearBackupFolder,
                             onBackupNow = { vm.backupNow() },
                             onRestoreBackup = vm::restoreFromBackupFolder,
+                            onSyncNow = { vm.syncNow() },
                             lockServiceEnabled = lockServiceEnabled,
                             onOpenAccessibilitySettings = vm::openAccessibilitySettings,
                         ),

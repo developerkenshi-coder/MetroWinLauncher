@@ -434,4 +434,23 @@
     <string name="launch_turnstile">tornello: i tile si girano</string>
     <string name="launch_expand">espansione: il tile diventa l\'app</string>
     <string name="screen_launch_hint">L\'espansione tiene ferma Start e fa crescere l\'app dal tile toccato (dalla lista, dal centro). “Riduci movimento” in Accessibilità li disattiva entrambi.</string>
+
+    <!-- sync -->
+    <string name="sync_heading">sincronizza tra telefoni</string>
+    <string name="sync_enable">mantieni Start sincronizzato</string>
+    <string name="sync_needs_folder">Scegli prima una cartella di backup: il file di sync sta lì dentro. Una cartella di un\'app cloud (Google Drive, ad esempio) sincronizza i tuoi telefoni.</string>
+    <string name="sync_passphrase">passphrase</string>
+    <string name="sync_passphrase_hint">Usa la stessa passphrase su ogni telefono. Il file viene cifrato con essa (AES-256) prima di finire nella cartella. La passphrase resta su questo telefono e non viene mai scritta nella cartella: se la perdi, i dati sincronizzati non si possono leggere.</string>
+    <string name="sync_now">sincronizza ora</string>
+    <string name="sync_last">ultima sincronizzazione</string>
+    <string name="sync_never">mai</string>
+    <string name="sync_not_ready">Attiva la sync, scegli una cartella e una passphrase</string>
+    <string name="sync_up_to_date">Tutto è sincronizzato</string>
+    <string name="sync_uploaded">Sincronizzato: Start di questo telefono è nella cartella</string>
+    <string name="sync_applied">Sincronizzato: Start aggiornato dalla cartella</string>
+    <string name="sync_conflict">Entrambi i telefoni sono cambiati. Questo è stato mantenuto; l\'altro è salvato nella cartella come %1$s</string>
+    <string name="sync_wrong_passphrase">Passphrase sbagliata per il file nella cartella</string>
+    <string name="sync_not_file">Il file di sync nella cartella è danneggiato o non è nostro</string>
+    <string name="sync_failed">Impossibile raggiungere la cartella</string>
+    <string name="sync_hint">La prima sincronizzazione di un telefono che trova un file nella cartella lo prende, e salva ciò che aveva come file di backup nella cartella. Dopo, passa ciò che è cambiato dall\'ultima sincronizzazione; se sono cambiati entrambi, vince questo e l\'altro resta come file separato.</string>
 </resources>

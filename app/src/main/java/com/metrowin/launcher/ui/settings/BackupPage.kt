@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import com.metrowin.launcher.data.BackupSchedule
+import com.metrowin.launcher.ui.components.MetroTextField
 import androidx.compose.ui.res.stringResource
 import com.metrowin.launcher.R
 
@@ -59,6 +62,36 @@ fun BackupPage(env: SettingsEnv) {
                 ActionSetting(stringResource(R.string.backup_now), onClick = env.onBackupNow, tag = "backup:now")
                 ActionSetting(stringResource(R.string.backup_restore), onClick = env.onRestoreBackup, tag = "backup:restore")
                 ActionSetting(stringResource(R.string.backup_forget_folder), onClick = env.onClearBackupFolder, tag = "backup:forget")
+            }
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            SettingHeading(stringResource(R.string.sync_heading))
+            if (!hasFolder) {
+                SettingHint(stringResource(R.string.sync_needs_folder), Modifier.testTag("sync:needs_folder"))
+            } else {
+                ToggleSetting(
+                    stringResource(R.string.sync_enable), settings.syncEnabled,
+                    onChange = { value -> env.onChange { it.copy(syncEnabled = value) } }, tag = "sync:enable",
+                )
+                if (settings.syncEnabled) {
+                    MetroTextField(
+                        settings.syncPassphrase, { value -> env.onChange { it.copy(syncPassphrase = value) } },
+                        stringResource(R.string.sync_passphrase), Modifier.testTag("sync:passphrase"), password = true,
+                    )
+                    SettingHint(stringResource(R.string.sync_passphrase_hint))
+                    InfoSetting(
+                        stringResource(R.string.sync_last),
+                        if (settings.syncLastAt > 0L) {
+                            DateUtils.getRelativeTimeSpanString(settings.syncLastAt, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString()
+                        } else {
+                            stringResource(R.string.sync_never)
+                        },
+                    )
+                    ActionSetting(
+                        stringResource(R.string.sync_now), onClick = env.onSyncNow,
+                        enabled = settings.syncPassphrase.isNotEmpty(), hint = stringResource(R.string.sync_hint), tag = "sync:now",
+                    )
+                }
             }
         }
         SettingHeading(stringResource(R.string.backup_export))

@@ -182,6 +182,10 @@ data class LauncherSettings(
     val syncPassphrase: String = "",
     /** Tells this phone apart from the others that sync the same folder. */
     val deviceId: String = "",
+    /** The fingerprint of this phone's layout, and the stamp of the folder's file, at the last sync. */
+    val syncLastHash: String = "",
+    val syncLastStamp: Long = 0L,
+    val syncLastAt: Long = 0L,
 
     // --- kid's corner
     /** The apps of the Kid's Corner, as [com.metrowin.launcher.model.AppItem.id]s. */

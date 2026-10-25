@@ -39,6 +39,10 @@ import com.metrowin.launcher.data.OpenMeteo
 import com.metrowin.launcher.data.IconPackInfo
 import com.metrowin.launcher.data.IconPackRepository
 import com.metrowin.launcher.data.PlaceMatch
+import com.metrowin.launcher.data.SafSyncStorage
+import com.metrowin.launcher.data.SyncEngine
+import com.metrowin.launcher.data.SyncLocal
+import com.metrowin.launcher.data.SyncOutcome
 import com.metrowin.launcher.data.readAtMost
 import com.metrowin.launcher.data.ThemeCodec
 import com.metrowin.launcher.data.ProfileInfo
@@ -230,6 +234,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun onStart() {
         refreshProfiles()
         refreshIconPacks()
+        syncIfDue(SYNC_MIN_GAP_ON_START_MS)
         if (loadedLocale != null && loadedLocale != Locale.getDefault()) reloadApps()
         refreshLive()
         refreshWeather()
@@ -679,7 +684,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
             )
         }
-        updateSettings { it.copy(backupFolder = uri.toString(), lastBackupAt = 0L) }
+        // Another folder is another sync: what was known about the old one does not apply.
+        updateSettings { it.copy(backupFolder = uri.toString(), lastBackupAt = 0L, syncLastHash = "", syncLastStamp = 0L, syncLastAt = 0L) }
     }
 
     fun clearBackupFolder() {
@@ -691,7 +697,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 )
             }
         }
-        updateSettings { it.copy(backupFolder = "", backupEveryDays = 0, lastBackupAt = 0L, syncEnabled = false) }
+        updateSettings {
+            it.copy(backupFolder = "", backupEveryDays = 0, lastBackupAt = 0L, syncEnabled = false, syncLastHash = "", syncLastStamp = 0L, syncLastAt = 0L)
+        }
     }
 
     /** Saves the layout in the backup folder. [announce] says so on screen; an automatic backup does not. */
@@ -712,6 +720,82 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun backupIfDue() {
         val s = _settings.value
         if (BackupSchedule.isDue(s.backupEveryDays, s.backupFolder, s.lastBackupAt, System.currentTimeMillis())) backupNow(announce = false)
+        syncIfDue(SYNC_MIN_GAP_ON_LEAVE_MS)
+    }
+
+    private var syncing = false
+
+    /** An automatic sync, unless one ran a moment ago. */
+    fun syncIfDue(minGapMs: Long) {
+        val s = _settings.value
+        if (!s.syncEnabled || s.syncPassphrase.isEmpty() || s.backupFolder.isBlank()) return
+        if (System.currentTimeMillis() - s.syncLastAt < minGapMs) return
+        syncNow(announce = false)
+    }
+
+    /**
+     * Brings this phone and the sync file in the backup folder in line (see [SyncEngine]). [announce] says how it
+     * went on screen; an automatic sync only speaks when something needs the user.
+     */
+    fun syncNow(announce: Boolean = true) {
+        val s = _settings.value
+        if (!s.syncEnabled || s.backupFolder.isBlank() || s.syncPassphrase.isEmpty()) {
+            if (announce) tell(R.string.sync_not_ready)
+            return
+        }
+        if (syncing) return
+        syncing = true
+        viewModelScope.launch {
+            try {
+                if (s.deviceId.isEmpty()) updateSettings { it.copy(deviceId = java.util.UUID.randomUUID().toString()) }
+                val folder = SafFolder(getApplication(), s.backupFolder.toUri())
+                val layout = LayoutBackupCodec.encode(currentBackup(), 0L)
+                val local = SyncLocal(layout, s.syncPassphrase, _settings.value.deviceId, s.syncLastHash, s.syncLastStamp)
+                val outcome = withContext(Dispatchers.IO) { SyncEngine(SafSyncStorage(folder)).sync(local) }
+                applySyncOutcome(outcome, folder, announce)
+            } finally {
+                syncing = false
+            }
+        }
+    }
+
+    private suspend fun applySyncOutcome(outcome: SyncOutcome, folder: SafFolder, announce: Boolean) {
+        val now = System.currentTimeMillis()
+        when (outcome) {
+            SyncOutcome.Nothing -> {
+                updateSettings { it.copy(syncLastAt = now) }
+                if (announce) tell(R.string.sync_up_to_date)
+            }
+            is SyncOutcome.Uploaded -> {
+                updateSettings { it.copy(syncLastHash = outcome.hash, syncLastStamp = outcome.stamp, syncLastAt = now) }
+                if (outcome.keptTheOtherAs != null) {
+                    // Something the user should know: the other phone's layout did not win.
+                    Toast.makeText(getApplication(), getApplication<Application>().getString(R.string.sync_conflict, outcome.keptTheOtherAs), Toast.LENGTH_LONG).show()
+                } else if (announce) {
+                    tell(R.string.sync_uploaded)
+                }
+            }
+            is SyncOutcome.Applied -> {
+                val backup = LayoutBackupCodec.decode(outcome.layoutJson, _settings.value)
+                if (backup == null) {
+                    tell(R.string.sync_not_file)
+                    return
+                }
+                if (_settings.value.syncLastHash.isEmpty()) {
+                    // Joining a sync that already has data: what this phone had is kept as the backup file.
+                    withContext(Dispatchers.IO) {
+                        folder.write(SafFolder.BACKUP_FILE, "application/json", LayoutBackupCodec.encode(currentBackup(), now).toByteArray())
+                    }
+                }
+                restoreBackup(backup)
+                val hash = SyncEngine.hash(LayoutBackupCodec.encode(currentBackup(), 0L))
+                updateSettings { it.copy(syncLastHash = hash, syncLastStamp = outcome.stamp, syncLastAt = now) }
+                if (announce) tell(R.string.sync_applied)
+            }
+            SyncOutcome.WrongPassphrase -> tell(R.string.sync_wrong_passphrase)
+            SyncOutcome.NotASyncFile -> tell(R.string.sync_not_file)
+            SyncOutcome.Failed -> if (announce) tell(R.string.sync_failed)
+        }
     }
 
     /** Puts back the layout saved in the backup folder. */
@@ -790,6 +874,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         const val RELOAD_DEBOUNCE_MS = 400L
         const val SAMPLE_SIDE = 48
         const val PROFILE_REFRESH_MS = 800L
+        const val SYNC_MIN_GAP_ON_START_MS = 5 * 60_000L
+        const val SYNC_MIN_GAP_ON_LEAVE_MS = 60_000L
         const val MAX_LAYOUT_BYTES = 2 * 1024 * 1024
     }
 }

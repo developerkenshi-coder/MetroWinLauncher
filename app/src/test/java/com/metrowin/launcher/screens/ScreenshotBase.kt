@@ -80,6 +80,8 @@ abstract class ScreenshotBase {
             advance(2_500)
         }
         node.performClick()
+        // The state written by the click reaches the composition only once the test thread is idle.
+        compose.waitForIdle()
     }
 
     protected fun capture(name: String): Bitmap {

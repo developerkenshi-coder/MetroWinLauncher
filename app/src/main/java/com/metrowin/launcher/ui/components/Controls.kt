@@ -28,6 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -128,6 +131,8 @@ fun MetroTextField(
     placeholder: String,
     modifier: Modifier = Modifier,
     onSearch: (() -> Unit)? = null,
+    /** Shows dots instead of the letters, and tells the keyboard not to learn or suggest the text. */
+    password: Boolean = false,
 ) {
     val colors = LocalMetroColors.current
     Row(
@@ -142,7 +147,12 @@ fun MetroTextField(
                 singleLine = true,
                 textStyle = TextStyle(color = colors.foreground, fontSize = 20.sp, fontFamily = MetroFont, fontWeight = FontWeight.Light),
                 cursorBrush = SolidColor(LocalAccent.current),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Search,
+                    keyboardType = if (password) KeyboardType.Password else KeyboardType.Text,
+                    autoCorrectEnabled = !password,
+                ),
+                visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
                 keyboardActions = KeyboardActions(onSearch = { onSearch?.invoke() }),
                 modifier = Modifier.fillMaxWidth(),
             )

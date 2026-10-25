@@ -31,17 +31,7 @@ class SafFolder(private val context: Context, private val tree: Uri) {
     /** Blocking. The content of the file called [name], or null when there is none (or it is too big to be ours). */
     fun read(name: String, maxBytes: Int = MAX_BYTES): ByteArray? = runCatching {
         val file = find(name) ?: return null
-        resolver.openInputStream(file)!!.use { stream ->
-            val out = java.io.ByteArrayOutputStream()
-            val buffer = ByteArray(8 * 1024)
-            while (true) {
-                val read = stream.read(buffer)
-                if (read < 0) break
-                if (out.size() + read > maxBytes) return null
-                out.write(buffer, 0, read)
-            }
-            out.toByteArray()
-        }
+        resolver.openInputStream(file)!!.use { it.readAtMost(maxBytes) }
     }.getOrNull()
 
     /** When the file called [name] was last changed (epoch milliseconds), or null. */
@@ -70,4 +60,10 @@ class SafFolder(private val context: Context, private val tree: Uri) {
         const val MAX_BYTES = 4 * 1024 * 1024
         const val BACKUP_FILE = "metrowin-layout.json"
     }
+}
+
+/** The sync file in a [SafFolder]. */
+class SafSyncStorage(private val folder: SafFolder) : SyncStorage {
+    override fun read(name: String): ByteArray? = folder.read(name)
+    override fun write(name: String, bytes: ByteArray): Boolean = folder.write(name, "application/octet-stream", bytes)
 }
