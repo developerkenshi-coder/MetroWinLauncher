@@ -388,4 +388,21 @@
     <string name="screen_orient_hint">In orizzontale la schermata Start ha più colonne di tile. “Segui il telefono” rispetta il blocco della rotazione di Android.</string>
     <string name="screen_high_refresh">massima frequenza di aggiornamento</string>
     <string name="screen_high_refresh_hint">Chiede allo schermo la modalità più veloce (120 Hz e oltre) alla risoluzione attuale. Disattiva per lasciar decidere ad Android e risparmiare batteria.</string>
+
+    <!-- icons and themes -->
+    <string name="sec_icons">icone e temi</string>
+    <string name="sec_icons_desc">Icon pack e file tema da condividere</string>
+    <string name="icons_pack">icon pack</string>
+    <string name="icons_pack_default">le icone delle app</string>
+    <string name="icons_pack_none">Nessun icon pack installato. Funzionano quelli fatti per ADW, Nova, Apex o Go Launcher.</string>
+    <string name="icons_pack_hint">Un pack sostituisce le icone delle app per cui ha un\'icona. Le app Metro del telefono mantengono i loro glifi.</string>
+    <string name="theme_heading">file tema</string>
+    <string name="theme_export">esporta il tema</string>
+    <string name="theme_export_hint">Salva colori, modo scuro o chiaro, orologio, dimensione dei tile e icon pack in un piccolo file da condividere.</string>
+    <string name="theme_import">importa un tema</string>
+    <string name="theme_import_hint">Applica un file tema. I tuoi tile e le altre impostazioni restano come sono.</string>
+    <string name="theme_exported">Tema salvato</string>
+    <string name="theme_imported">Tema applicato</string>
+    <string name="theme_failed">Impossibile salvare il tema</string>
+    <string name="theme_not_theme">Quel file non è un tema di questo launcher</string>
 </resources>

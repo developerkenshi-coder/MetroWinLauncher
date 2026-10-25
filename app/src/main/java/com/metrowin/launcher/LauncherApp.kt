@@ -177,6 +177,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val appsPage = pages.size
 
     val profiles by vm.profiles.collectAsStateWithLifecycle()
+    val installedIconPacks by vm.installedIconPacks.collectAsStateWithLifecycle()
     val backupFolderName by vm.backupFolderName.collectAsStateWithLifecycle()
     val weather by vm.weather.collectAsStateWithLifecycle()
     val battery by vm.battery.collectAsStateWithLifecycle()
@@ -890,6 +891,9 @@ fun LauncherApp(vm: LauncherViewModel) {
                             profiles = profiles,
                             onSetProfilePaused = vm::setProfilePaused,
                             onTryVoice = { voiceRequest++ },
+                            iconPacks = installedIconPacks,
+                            onExportTheme = vm::exportTheme,
+                            onImportTheme = vm::importTheme,
                             backupFolderName = backupFolderName,
                             onPickBackupFolder = vm::setBackupFolder,
                             onClearBackupFolder = vm::clearBackupFolder,

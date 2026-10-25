@@ -10,6 +10,9 @@ import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
 import android.os.Process
 import android.util.LruCache
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.graphics.createBitmap
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Launch
@@ -28,6 +31,20 @@ class IconLoader(context: Context) {
 
     fun clear() = cache.evictAll()
 
+    /** The icon pack in use, or null for the icons of the apps. */
+    @Volatile
+    private var pack: IconPack? = null
+
+    /** Changes with the icon pack, so what shows icons loads them again. */
+    var revision by mutableIntStateOf(0)
+        private set
+
+    fun usePack(newPack: IconPack?) {
+        pack = newPack
+        cache.evictAll()
+        revision++
+    }
+
     /** Null for entries that have no icon of their own (stock apps drawn with a glyph). */
     suspend fun load(item: AppItem, sizePx: Int): Bitmap? {
         val activity = item.launch as? Launch.Activity ?: return null
@@ -35,9 +52,10 @@ class IconLoader(context: Context) {
         cache.get(key)?.let { return it }
         val bitmap = withContext(Dispatchers.IO) {
             runCatching {
-                render(iconOf(activity), sizePx).also {
-                    if (item.isWork) drawWorkBadge(it) else if (item.isPrivate) drawPrivateBadge(it)
-                }
+                val current = pack
+                val own = current?.iconFor(activity.component)?.let { render(it, sizePx) }
+                val icon = own ?: render(iconOf(activity), sizePx).let { original -> current?.dress(original, sizePx, activity.component.packageName) ?: original }
+                icon.also { if (item.isWork) drawWorkBadge(it) else if (item.isPrivate) drawPrivateBadge(it) }
             }.getOrNull()
         }
         if (bitmap != null) cache.put(key, bitmap)

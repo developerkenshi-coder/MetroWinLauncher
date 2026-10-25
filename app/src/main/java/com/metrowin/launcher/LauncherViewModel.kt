@@ -35,7 +35,11 @@ import com.metrowin.launcher.data.StartPages
 import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.OpenMeteo
+import com.metrowin.launcher.data.IconPackInfo
+import com.metrowin.launcher.data.IconPackRepository
 import com.metrowin.launcher.data.PlaceMatch
+import com.metrowin.launcher.data.readAtMost
+import com.metrowin.launcher.data.ThemeCodec
 import com.metrowin.launcher.data.ProfileInfo
 import com.metrowin.launcher.data.ProfilesController
 import com.metrowin.launcher.data.LauncherSettings
@@ -99,6 +103,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val shortcutStore = ShortcutStore(application)
     private val weatherRepository = WeatherRepository(application)
     private val profilesController = ProfilesController(application)
+    private val iconPacks = IconPackRepository(application)
 
     /** The widgets placed on Start. */
     val widgets = WidgetService(application)
@@ -107,6 +112,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     private val _settings = MutableStateFlow(settingsStore.load())
     val settings: StateFlow<LauncherSettings> = _settings.asStateFlow()
+
+    /** The icon packs installed on the phone. */
+    private val _iconPacks = MutableStateFlow<List<IconPackInfo>>(emptyList())
+    val installedIconPacks: StateFlow<List<IconPackInfo>> = _iconPacks.asStateFlow()
 
     /** The work profile and the private space, if the phone has them. */
     private val _profiles = MutableStateFlow<List<ProfileInfo>>(emptyList())
@@ -194,6 +203,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val stopObservingPackages: () -> Unit
 
     init {
+        applyIconPack(_settings.value.iconPack)
         reloadApps()
         if (_settings.value.hasStartBackground) loadBackground()
         stopObservingPackages = apps.observe(::scheduleReload)
@@ -211,6 +221,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** Called every time the launcher comes back on screen. */
     fun onStart() {
         refreshProfiles()
+        refreshIconPacks()
         if (loadedLocale != null && loadedLocale != Locale.getDefault()) reloadApps()
         refreshLive()
         refreshWeather()
@@ -273,6 +284,54 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         store.permissionsHandled = true
         _permissionsHandled.value = true
         refreshLive()
+    }
+
+    private fun refreshIconPacks() {
+        viewModelScope.launch {
+            val found = withContext(Dispatchers.IO) { runCatching { iconPacks.installed() }.getOrDefault(emptyList()) }
+            _iconPacks.value = found
+            // A pack that was uninstalled: back to the icons of the apps.
+            val chosen = _settings.value.iconPack
+            if (chosen.isNotEmpty() && found.none { it.packageName == chosen }) updateSettings { it.copy(iconPack = "") }
+        }
+    }
+
+    private fun applyIconPack(packageName: String) {
+        viewModelScope.launch {
+            val pack = if (packageName.isEmpty()) null else withContext(Dispatchers.IO) { iconPacks.load(packageName) }
+            icons.usePack(pack)
+        }
+    }
+
+    /** Writes the theme (see [ThemeCodec]) to [uri], a file the user chose. */
+    fun exportTheme(uri: Uri) {
+        viewModelScope.launch {
+            val written = withContext(Dispatchers.IO) {
+                runCatching {
+                    getApplication<Application>().contentResolver.openOutputStream(uri, "wt")!!
+                        .use { it.write(ThemeCodec.encode(_settings.value).toByteArray()) }
+                }.isSuccess
+            }
+            tell(if (written) R.string.theme_exported else R.string.theme_failed)
+        }
+    }
+
+    /** Applies the theme in [uri]. */
+    fun importTheme(uri: Uri) {
+        viewModelScope.launch {
+            val themed = withContext(Dispatchers.IO) {
+                runCatching {
+                    val bytes = getApplication<Application>().contentResolver.openInputStream(uri)!!.use { it.readAtMost(MAX_LAYOUT_BYTES) }!!
+                    ThemeCodec.decode(bytes.decodeToString(), _settings.value)
+                }.getOrNull()
+            }
+            if (themed == null) {
+                tell(R.string.theme_not_theme)
+            } else {
+                updateSettings { themed }
+                tell(R.string.theme_imported)
+            }
+        }
     }
 
     private fun refreshProfiles() {
@@ -361,6 +420,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 _weather.value = null
                 refreshWeather(force = true)
             }
+            if (updated.iconPack != previous.iconPack) applyIconPack(updated.iconPack)
             if (updated.startPages != previous.startPages && tilesReady) {
                 updatePages { StartPages.resize(it, updated.startPages) }
             }
@@ -642,8 +702,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             val backup = withContext(Dispatchers.IO) {
                 runCatching {
-                    val text = getApplication<Application>().contentResolver.openInputStream(uri)!!.use { it.readBytes() }
-                        .takeIf { it.size <= MAX_LAYOUT_BYTES }!!.decodeToString()
+                    val text = getApplication<Application>().contentResolver.openInputStream(uri)!!.use { it.readAtMost(MAX_LAYOUT_BYTES) }!!
+                        .decodeToString()
                     LayoutBackupCodec.decode(text, _settings.value)
                 }.getOrNull()
             }

@@ -59,6 +59,22 @@
         <intent>
             <action android:name="android.speech.RecognitionService" />
         </intent>
+        <!-- Icon packs announce themselves with the intents of the big launchers. -->
+        <intent>
+            <action android:name="org.adw.launcher.THEMES" />
+        </intent>
+        <intent>
+            <action android:name="com.novalauncher.THEME" />
+        </intent>
+        <intent>
+            <action android:name="com.anddoes.launcher.THEME" />
+        </intent>
+        <intent>
+            <action android:name="com.fede.launcher.THEME_ICONPACK" />
+        </intent>
+        <intent>
+            <action android:name="com.gau.go.launcherex.theme" />
+        </intent>
         <intent>
             <action android:name="android.intent.action.SHOW_ALARMS" />
         </intent>

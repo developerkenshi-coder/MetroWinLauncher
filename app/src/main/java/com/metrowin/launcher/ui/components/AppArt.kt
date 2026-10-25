@@ -27,7 +27,7 @@ val LocalIconLoader = staticCompositionLocalOf<IconLoader?> { null }
 fun AppIcon(item: AppItem, size: Dp, modifier: Modifier = Modifier) {
     val loader = LocalIconLoader.current
     val px = with(LocalDensity.current) { size.roundToPx() }
-    val bitmap by produceState<ImageBitmap?>(null, item.id, px, loader) {
+    val bitmap by produceState<ImageBitmap?>(null, item.id, px, loader, loader?.revision) {
         value = loader?.load(item, px)?.asImageBitmap()
     }
     bitmap?.let { Image(it, contentDescription = null, modifier = modifier.size(size)) }

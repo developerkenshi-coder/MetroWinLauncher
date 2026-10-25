@@ -395,4 +395,21 @@
     <string name="screen_orient_hint">In landscape the Start screen fits more columns of tiles. “Follow the phone” respects the rotation lock of Android.</string>
     <string name="screen_high_refresh">highest refresh rate</string>
     <string name="screen_high_refresh_hint">Asks the screen for its fastest mode (120 Hz and more) at the current resolution. Turn it off to let Android decide and save some battery.</string>
+
+    <!-- icons and themes -->
+    <string name="sec_icons">icons &amp; themes</string>
+    <string name="sec_icons_desc">Icon packs and theme files you can share</string>
+    <string name="icons_pack">icon pack</string>
+    <string name="icons_pack_default">the icons of the apps</string>
+    <string name="icons_pack_none">No icon pack is installed. Packs made for ADW, Nova, Apex or Go Launcher work here.</string>
+    <string name="icons_pack_hint">A pack replaces the icons of the apps it has an icon for. The Metro apps of the phone keep their glyphs.</string>
+    <string name="theme_heading">theme file</string>
+    <string name="theme_export">export the theme</string>
+    <string name="theme_export_hint">Saves the colours, the dark or light mode, the clock, the tile size and the icon pack in a small file to share.</string>
+    <string name="theme_import">import a theme</string>
+    <string name="theme_import_hint">Applies a theme file. Your tiles and your other settings stay as they are.</string>
+    <string name="theme_exported">Theme saved</string>
+    <string name="theme_imported">Theme applied</string>
+    <string name="theme_failed">Could not save the theme</string>
+    <string name="theme_not_theme">That file is not a theme of this launcher</string>
 </resources>

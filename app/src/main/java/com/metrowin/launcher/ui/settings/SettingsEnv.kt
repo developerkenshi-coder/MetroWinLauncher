@@ -6,6 +6,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.ImageBitmap
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.AboutInfo
+import com.metrowin.launcher.data.IconPackInfo
 import com.metrowin.launcher.data.PlaceMatch
 import com.metrowin.launcher.data.ProfileInfo
 import com.metrowin.launcher.data.LauncherSettings
@@ -28,6 +29,7 @@ enum class SettingsSection(
 ) {
     StartTheme(SettingsGroup.Launcher, R.string.settings_start_theme, R.string.sec_start_theme_desc),
     Screen(SettingsGroup.Launcher, R.string.sec_screen, R.string.sec_screen_desc),
+    Icons(SettingsGroup.Launcher, R.string.sec_icons, R.string.sec_icons_desc),
     Gestures(SettingsGroup.Launcher, R.string.sec_gestures, R.string.sec_gestures_desc),
     Actions(SettingsGroup.Launcher, R.string.settings_actions, R.string.sec_actions_desc),
     LiveTiles(SettingsGroup.Launcher, R.string.sec_live_tiles, R.string.sec_live_tiles_desc),
@@ -79,4 +81,7 @@ class SettingsEnv(
     val profiles: List<ProfileInfo> = emptyList(),
     val onSetProfilePaused: (serial: Long, paused: Boolean) -> Unit = { _, _ -> },
     val onTryVoice: () -> Unit = {},
+    val iconPacks: List<IconPackInfo> = emptyList(),
+    val onExportTheme: (Uri) -> Unit = {},
+    val onImportTheme: (Uri) -> Unit = {},
 )
