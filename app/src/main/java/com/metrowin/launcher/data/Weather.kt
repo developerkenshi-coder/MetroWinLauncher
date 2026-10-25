@@ -7,6 +7,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URLEncoder
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -40,7 +41,31 @@ enum class WeatherCondition(@param:StringRes val label: Int) {
 }
 
 @Immutable
-data class DayForecast(val date: LocalDate, val condition: WeatherCondition, val high: Int, val low: Int)
+data class DayForecast(
+    val date: LocalDate,
+    val condition: WeatherCondition,
+    val high: Int,
+    val low: Int,
+    /** The chance of rain that day, 0 to 100, when the forecast says. */
+    val rainChance: Int? = null,
+)
+
+/** What the weather is like now besides the temperature: every part is null when the forecast does not give it. */
+@Immutable
+data class WeatherDetails(
+    val feelsLike: Int? = null,
+    /** Relative humidity, percent. */
+    val humidity: Int? = null,
+    /** The wind, in km/h (mph for the Fahrenheit users: see [WeatherData.fahrenheit]). */
+    val wind: Int? = null,
+    /** The chance of rain today, 0 to 100. */
+    val rainChance: Int? = null,
+    val sunrise: LocalTime? = null,
+    val sunset: LocalTime? = null,
+    val uvIndex: Int? = null,
+) {
+    val isEmpty: Boolean get() = feelsLike == null && humidity == null && wind == null && rainChance == null && sunrise == null && sunset == null && uvIndex == null
+}
 
 /** What the weather is now and for the next days, in whole degrees of the unit it was asked in. */
 @Immutable
@@ -52,6 +77,7 @@ data class WeatherData(
     val fahrenheit: Boolean,
     /** When it was fetched (epoch milliseconds), to know when it is old. */
     val fetchedAt: Long,
+    val details: WeatherDetails = WeatherDetails(),
 )
 
 /** A place found by name, to pick the city of the weather tile. */
@@ -71,10 +97,11 @@ object OpenMeteo {
     fun forecastUrl(latitude: Double, longitude: Double, fahrenheit: Boolean): String =
         "https://api.open-meteo.com/v1/forecast" +
             "?latitude=${coordinate(latitude)}&longitude=${coordinate(longitude)}" +
-            "&current=temperature_2m,weather_code,is_day" +
-            "&daily=weather_code,temperature_2m_max,temperature_2m_min" +
+            "&current=temperature_2m,weather_code,is_day,apparent_temperature,relative_humidity_2m,wind_speed_10m" +
+            "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max" +
             "&timezone=auto&forecast_days=$FORECAST_DAYS" +
-            "&temperature_unit=${if (fahrenheit) "fahrenheit" else "celsius"}"
+            "&temperature_unit=${if (fahrenheit) "fahrenheit" else "celsius"}" +
+            "&wind_speed_unit=${if (fahrenheit) "mph" else "kmh"}"
 
     fun geocodingUrl(name: String, language: String, count: Int = 6): String =
         "https://geocoding-api.open-meteo.com/v1/search" +
@@ -95,14 +122,34 @@ object OpenMeteo {
             days = daily?.let(::parseDays).orEmpty(),
             fahrenheit = fahrenheit,
             fetchedAt = now,
+            details = parseDetails(current, daily),
         )
     }.getOrNull()
+
+    private fun JSONObject.intOrNull(key: String): Int? = if (has(key) && !isNull(key)) optDouble(key).takeIf { !it.isNaN() }?.roundToInt() else null
+
+    private fun org.json.JSONArray.firstTime(): LocalTime? =
+        if (length() > 0 && !isNull(0)) runCatching { java.time.LocalDateTime.parse(getString(0)).toLocalTime() }.getOrNull() else null
+
+    private fun org.json.JSONArray.firstInt(): Int? = if (length() > 0 && !isNull(0)) optDouble(0).takeIf { !it.isNaN() }?.roundToInt() else null
+
+    /** The details of today: what is felt, the humidity, the wind, the chance of rain, the sun and the UV index. */
+    private fun parseDetails(current: JSONObject, daily: JSONObject?) = WeatherDetails(
+        feelsLike = current.intOrNull("apparent_temperature"),
+        humidity = current.intOrNull("relative_humidity_2m")?.coerceIn(0, 100),
+        wind = current.intOrNull("wind_speed_10m")?.coerceAtLeast(0),
+        rainChance = daily?.optJSONArray("precipitation_probability_max")?.firstInt()?.coerceIn(0, 100),
+        sunrise = daily?.optJSONArray("sunrise")?.firstTime(),
+        sunset = daily?.optJSONArray("sunset")?.firstTime(),
+        uvIndex = daily?.optJSONArray("uv_index_max")?.firstInt()?.coerceAtLeast(0),
+    )
 
     private fun parseDays(daily: JSONObject): List<DayForecast> {
         val dates = daily.optJSONArray("time") ?: return emptyList()
         val codes = daily.optJSONArray("weather_code")
         val highs = daily.optJSONArray("temperature_2m_max")
         val lows = daily.optJSONArray("temperature_2m_min")
+        val rain = daily.optJSONArray("precipitation_probability_max")
         return buildList {
             for (i in 0 until dates.length()) {
                 val date = runCatching { LocalDate.parse(dates.getString(i)) }.getOrNull() ?: continue
@@ -113,6 +160,7 @@ object OpenMeteo {
                         condition = WeatherCondition.fromCode(codes?.optInt(i, -1) ?: -1),
                         high = highs.getDouble(i).roundToInt(),
                         low = lows.getDouble(i).roundToInt(),
+                        rainChance = rain?.takeIf { !it.isNull(i) }?.optDouble(i)?.takeIf { !it.isNaN() }?.roundToInt()?.coerceIn(0, 100),
                     ),
                 )
             }
@@ -154,10 +202,26 @@ object OpenMeteo {
         put("f", data.fahrenheit)
         put("at", data.fetchedAt)
         put(
+            "det",
+            JSONObject().apply {
+                val d = data.details
+                d.feelsLike?.let { put("feels", it) }
+                d.humidity?.let { put("hum", it) }
+                d.wind?.let { put("wind", it) }
+                d.rainChance?.let { put("rain", it) }
+                d.sunrise?.let { put("rise", it.toString()) }
+                d.sunset?.let { put("set", it.toString()) }
+                d.uvIndex?.let { put("uv", it) }
+            },
+        )
+        put(
             "days",
             JSONArray().apply {
                 data.days.forEach { day ->
-                    put(JSONObject().put("date", day.date.toString()).put("c", day.condition.name).put("hi", day.high).put("lo", day.low))
+                    put(
+                        JSONObject().put("date", day.date.toString()).put("c", day.condition.name).put("hi", day.high).put("lo", day.low)
+                            .also { o -> day.rainChance?.let { o.put("rain", it) } },
+                    )
                 }
             },
         )
@@ -174,8 +238,22 @@ object OpenMeteo {
             fetchedAt = o.getLong("at"),
             days = List(days.length()) {
                 val d = days.getJSONObject(it)
-                DayForecast(LocalDate.parse(d.getString("date")), WeatherCondition.valueOf(d.getString("c")), d.getInt("hi"), d.getInt("lo"))
+                DayForecast(
+                    LocalDate.parse(d.getString("date")), WeatherCondition.valueOf(d.getString("c")), d.getInt("hi"), d.getInt("lo"),
+                    rainChance = if (d.has("rain")) d.getInt("rain") else null,
+                )
             },
+            details = o.optJSONObject("det")?.let { det ->
+                WeatherDetails(
+                    feelsLike = if (det.has("feels")) det.getInt("feels") else null,
+                    humidity = if (det.has("hum")) det.getInt("hum") else null,
+                    wind = if (det.has("wind")) det.getInt("wind") else null,
+                    rainChance = if (det.has("rain")) det.getInt("rain") else null,
+                    sunrise = if (det.has("rise")) LocalTime.parse(det.getString("rise")) else null,
+                    sunset = if (det.has("set")) LocalTime.parse(det.getString("set")) else null,
+                    uvIndex = if (det.has("uv")) det.getInt("uv") else null,
+                )
+            } ?: WeatherDetails(),
         )
     }.getOrNull()
 }

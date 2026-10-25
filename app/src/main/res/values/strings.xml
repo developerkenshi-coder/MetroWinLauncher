@@ -783,4 +783,21 @@
         <item quantity="one">day since %2$s</item>
         <item quantity="other">days since %2$s</item>
     </plurals>
+
+    <!-- System live tiles and weather details -->
+    <string name="storage_free_of">free of %1$s</string>
+    <string name="weather_feels">feels like</string>
+    <string name="weather_wind">wind</string>
+    <string name="weather_humidity">humidity</string>
+    <string name="weather_rain_chance">chance of rain</string>
+    <string name="weather_sunrise">sunrise</string>
+    <string name="weather_sunset">sunset</string>
+    <string name="weather_uv">UV index</string>
+    <string name="weather_feels_like">feels like %1$d°</string>
+    <string name="weather_wind_line">wind %1$d %2$s</string>
+    <string name="weather_humidity_line">humidity %1$d%%</string>
+    <string name="weather_rain_line">rain %1$d%%</string>
+    <string name="weather_rain_short">rain %1$d%%</string>
+    <string name="unit_kmh">km/h</string>
+    <string name="unit_mph">mph</string>
 </resources>

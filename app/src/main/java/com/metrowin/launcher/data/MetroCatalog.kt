@@ -116,6 +116,7 @@ object MetroCatalog {
             // AlarmClock.ACTION_SHOW_ALARMS
             listOf(Target.Action("android.intent.action.SHOW_ALARMS")) +
                 pkg("com.google.android.deskclock", "com.android.deskclock", "com.sec.android.app.clockpackage"),
+            live = LiveKind.Alarm,
         ),
         StockApp(
             "calculator", R.string.stock_calculator, Glyph.Calculator,
@@ -178,6 +179,7 @@ object MetroCatalog {
         StockApp(
             "storagesense", R.string.stock_storagesense, Glyph.Storage,
             settingsAction = Settings.ACTION_INTERNAL_STORAGE_SETTINGS,
+            live = LiveKind.Storage,
         ),
     )
 

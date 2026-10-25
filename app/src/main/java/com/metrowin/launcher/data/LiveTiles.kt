@@ -70,6 +70,10 @@ data class LiveTileData(
     val weather: WeatherData? = null,
     /** The music playing in any media app, for the Music tile. */
     val nowPlaying: NowPlaying? = null,
+    /** The space left on the phone, for the Storage Sense tile. */
+    val storage: StorageInfo? = null,
+    /** When the next alarm rings (epoch milliseconds), or 0 when there is none, for the Alarms tile. */
+    val nextAlarm: Long = 0L,
 )
 
 class LiveTileRepository(private val context: Context) {
@@ -82,6 +86,8 @@ class LiveTileRepository(private val context: Context) {
         people = if (LiveKind.People in wanted) people() else emptyList(),
         nextEvent = if (LiveKind.Calendar in wanted) nextEvent() else null,
         missedCalls = if (LiveKind.Phone in wanted) missedCalls() else 0,
+        storage = if (LiveKind.Storage in wanted) StorageInfo.read() else null,
+        nextAlarm = if (LiveKind.Alarm in wanted) NextAlarm.read(context) else 0L,
     )
 
     private fun granted(permission: String) = LivePermissions.isGranted(context, permission)

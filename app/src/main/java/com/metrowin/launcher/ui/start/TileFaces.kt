@@ -52,6 +52,9 @@ import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.BatteryInfo
 import com.metrowin.launcher.data.BatteryState
+import com.metrowin.launcher.data.ClockFormat
+import com.metrowin.launcher.data.NextAlarm
+import com.metrowin.launcher.data.StorageInfo
 import com.metrowin.launcher.data.Countdown
 import com.metrowin.launcher.data.DayForecast
 import com.metrowin.launcher.data.LiveEvent
@@ -138,6 +141,8 @@ fun TileFace(
                     LiveKind.Torch -> TorchFace(item, size, width, height, live.torchOn)
                     LiveKind.Battery -> BatteryFace(item, size, width, height, live.battery, seed)
                     LiveKind.Weather -> WeatherFace(item, size, width, height, live.weather, seed)
+                    LiveKind.Storage -> StorageFace(item, size, width, height, live.storage)
+                    LiveKind.Alarm -> AlarmFace(item, size, width, height, live.nextAlarm)
                     LiveKind.Music -> {
                         // The music that plays in any app, then what is going on in the music app itself.
                         val playing = live.nowPlaying?.let { listOf(LiveCard.Playing(it.title, it.artist, it.art, it.playing)) }.orEmpty()
@@ -202,6 +207,22 @@ private fun CountdownFace(item: AppItem, size: TileSize, width: Dp, height: Dp) 
             }
         }
         if (days == 0L && size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+    }
+}
+
+/** What the weather is like now besides the temperature: what is felt, the wind and the humidity. */
+@Composable
+private fun WeatherDetailsFace(weather: WeatherData) {
+    val details = weather.details
+    val unit = stringResource(if (weather.fahrenheit) R.string.unit_mph else R.string.unit_kmh)
+    val lines = listOfNotNull(
+        details.feelsLike?.let { stringResource(R.string.weather_feels_like, it) },
+        details.wind?.let { stringResource(R.string.weather_wind_line, it, unit) },
+        details.humidity?.let { stringResource(R.string.weather_humidity_line, it) },
+        details.rainChance?.let { stringResource(R.string.weather_rain_line, it) },
+    ).take(3)
+    Column(Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        lines.forEach { MetroText(it, size = 19.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("weather:detail")) }
     }
 }
 
@@ -590,6 +611,66 @@ private fun BatteryBar(percent: Int, width: Dp) {
     }
 }
 
+/** Storage Sense: what is free on the phone in large type, and a bar with how much of it is used. */
+@Composable
+private fun StorageFace(item: AppItem, size: TileSize, width: Dp, height: Dp, storage: StorageInfo?) {
+    if (storage == null) {
+        StaticFace(item, size, width, height)
+        return
+    }
+    val locale = Locale.getDefault()
+    Box(Modifier.fillMaxSize()) {
+        val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.2f else 0.26f).toSp() }
+        Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+            MetroText(StorageInfo.format(storage.freeBytes, locale), size = digits, modifier = Modifier.testTag("storage:free"))
+            if (size != TileSize.Small) {
+                BatteryBar(storage.usedPercent, width * 0.5f)
+                MetroText(
+                    stringResource(R.string.storage_free_of, StorageInfo.format(storage.totalBytes, locale)),
+                    size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.padding(top = 6.dp),
+                )
+            }
+        }
+        if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+    }
+}
+
+/** The Alarms tile: when the next alarm rings, as a time in large type and the day under it. No alarm: just the mark. */
+@Composable
+private fun AlarmFace(item: AppItem, size: TileSize, width: Dp, height: Dp, triggerMillis: Long) {
+    val next = remember(triggerMillis) { NextAlarm.describe(triggerMillis, System.currentTimeMillis()) }
+    if (next == null) {
+        StaticFace(item, size, width, height)
+        return
+    }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val locale = Locale.getDefault()
+    val is24 = android.text.format.DateFormat.is24HourFormat(context)
+    Box(Modifier.fillMaxSize()) {
+        val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.26f else 0.3f).toSp() }
+        Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(verticalAlignment = Alignment.Bottom) {
+                MetroText(ClockFormat.time(next.time, is24, locale), size = digits, modifier = Modifier.testTag("alarm:time"))
+                val meridiem = ClockFormat.meridiem(next.time, is24, locale)
+                if (meridiem.isNotEmpty() && size != TileSize.Small) {
+                    MetroText(meridiem, size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.padding(start = 4.dp, bottom = 6.dp))
+                }
+            }
+            if (size != TileSize.Small) {
+                MetroText(
+                    when (val day = next.day) {
+                        NextAlarm.Day.Today -> stringResource(R.string.live_today)
+                        NextAlarm.Day.Tomorrow -> stringResource(R.string.live_tomorrow)
+                        is NextAlarm.Day.Weekday -> day.dayOfWeek.getDisplayName(TextStyle.FULL, locale)
+                    },
+                    size = 15.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("alarm:day"),
+                )
+            }
+        }
+        if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+    }
+}
+
 /** The weather tile: the temperature in large type with the weather under it, and on the other face the next days. */
 @Composable
 private fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, weather: WeatherData?, seed: Int) {
@@ -597,10 +678,14 @@ private fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, we
         StaticFace(item, size, width, height)
         return
     }
-    val faces = if (size == TileSize.Small || weather.days.size < 2) 1 else 2
+    val withDays = size != TileSize.Small && weather.days.size >= 2
+    val withDetails = size != TileSize.Small && !weather.details.isEmpty
+    val faces = 1 + (if (withDays) 1 else 0) + (if (withDetails) 1 else 0)
     FlipContainer(faces, seed) { face ->
         Box(Modifier.fillMaxSize()) {
-            if (face == 0) {
+            if (face == 2 || (face == 1 && !withDays)) {
+                WeatherDetailsFace(weather)
+            } else if (face == 0) {
                 val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.46f else 0.38f).toSp() }
                 Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 2.dp)) {
                     MetroText("${weather.temperature}°", size = digits)

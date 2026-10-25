@@ -781,4 +781,21 @@
         <item quantity="one">giorno da %2$s</item>
         <item quantity="other">giorni da %2$s</item>
     </plurals>
+
+    <!-- System live tiles and weather details -->
+    <string name="storage_free_of">liberi su %1$s</string>
+    <string name="weather_feels">percepita</string>
+    <string name="weather_wind">vento</string>
+    <string name="weather_humidity">umidità</string>
+    <string name="weather_rain_chance">probabilità di pioggia</string>
+    <string name="weather_sunrise">alba</string>
+    <string name="weather_sunset">tramonto</string>
+    <string name="weather_uv">indice UV</string>
+    <string name="weather_feels_like">percepita %1$d°</string>
+    <string name="weather_wind_line">vento %1$d %2$s</string>
+    <string name="weather_humidity_line">umidità %1$d%%</string>
+    <string name="weather_rain_line">pioggia %1$d%%</string>
+    <string name="weather_rain_short">pioggia %1$d%%</string>
+    <string name="unit_kmh">km/h</string>
+    <string name="unit_mph">mph</string>
 </resources>
