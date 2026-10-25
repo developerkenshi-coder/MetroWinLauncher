@@ -36,6 +36,12 @@ class ThemeCodecTest {
     }
 
     @Test
+    fun oledTravelsWithTheTheme() {
+        val applied = ThemeCodec.decode(ThemeCodec.encode(LauncherSettings(oledMode = true)), LauncherSettings())!!
+        assertTrue(applied.oledMode)
+    }
+
+    @Test
     fun theLookAndTheCustomColorTravelWithTheTheme() {
         val mine = LauncherSettings(themeStyle = ThemeStyle.Glass, customAccent = 0xFFAA3355.toInt(), dynamicColor = false)
         val applied = ThemeCodec.decode(ThemeCodec.encode(mine), LauncherSettings(autoAccent = true))!!

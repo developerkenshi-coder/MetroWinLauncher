@@ -766,7 +766,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val powerSaving by vm.powerSaving.collectAsStateWithLifecycle()
 
     CompositionLocalProvider(LocalIconLoader provides vm.icons, LocalWidgetHost provides vm.widgets, LocalPowerSaving provides powerSaving) {
-        MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid) {
+        MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode) {
             Box(
                 Modifier
                     .fillMaxSize()

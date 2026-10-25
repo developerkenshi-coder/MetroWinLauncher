@@ -78,6 +78,13 @@ fun StartThemePage(env: SettingsEnv) {
                 SettingHint(stringResource(R.string.theme_hours_hint))
             }
         }
+        ToggleSetting(
+            label = stringResource(R.string.theme_oled),
+            checked = settings.oledMode,
+            onChange = { value -> env.onChange { it.copy(oledMode = value) } },
+            hint = stringResource(R.string.theme_oled_hint),
+            tag = "theme:oled",
+        )
         if (settings.themeStyle == ThemeStyle.Droid) {
             ToggleSetting(
                 label = stringResource(R.string.style_dynamic),

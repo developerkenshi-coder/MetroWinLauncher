@@ -655,4 +655,7 @@
     <string name="battery_rest_2">Contatti, calendario, foto e chiamate vengono letti solo per i live tile fissati su Start, e non di nuovo entro un paio di minuti da quando esci e rientri.</string>
     <string name="battery_rest_3">Il servizio del blocco schermo non chiede eventi ad Android, quindi non sveglia mai il launcher quando cambi app.</string>
     <string name="tut_alive_tip3">Costa quasi nulla di batteria: fuori dallo schermo il launcher non fa nulla.</string>
+    <string name="theme_oled">Nero OLED</string>
+    <string name="theme_oled_hint">Per gli schermi OLED: nel tema scuro gli sfondi sono neri veri, quindi quei pixel sono spenti. Più contrasto e meno batteria. Nel tema chiaro non fa nulla.</string>
+    <string name="tut_look_tip3">Hai uno schermo OLED? Attiva «Nero OLED» in start+tema per uno sfondo nero vero.</string>
 </resources>

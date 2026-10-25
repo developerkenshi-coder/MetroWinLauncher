@@ -163,6 +163,35 @@ class PalettesTest {
     }
 
     @Test
+    fun oledMakesTheBackgroundOfEveryDarkLookPureBlack() {
+        val accent = Color(0xFF1BA1E2)
+        ThemeStyle.entries.forEach { style ->
+            val plain = Themes.resolve(style, true, accent, null).colors
+            val oled = Themes.resolve(style, true, accent, null, oled = true).colors
+            assertEquals("$style: black background", Color.Black, oled.background)
+            assertTrue("$style: the plain look was not black or this would test nothing", style == ThemeStyle.Classic || plain.background != Color.Black)
+            // What sits on it is as dark or darker, and the text is the same and reads on black.
+            assertTrue("$style: surfaces are darker", ColorMath.luminance(oled.surface.toArgbInt()) < ColorMath.luminance(plain.surface.toArgbInt()))
+            assertEquals(plain.foreground, oled.foreground)
+            assertTrue("$style: text on black", contrast(oled.foreground, oled.background) >= 7f)
+            assertTrue("$style: secondary text on black", contrast(oled.subtle, oled.background) >= 4.5f)
+            assertEquals("$style: the tiles are as they were", plain.containers, oled.containers)
+            assertEquals(plain.tileContent, oled.tileContent)
+        }
+    }
+
+    @Test
+    fun oledDoesNothingInTheLightTheme() {
+        val accent = Color(0xFFD80073)
+        ThemeStyle.entries.forEach { style ->
+            val plain = Themes.resolve(style, false, accent, null)
+            val oled = Themes.resolve(style, false, accent, null, oled = true)
+            assertEquals(plain.colors.background, oled.colors.background)
+            assertEquals(plain.colors.surface, oled.colors.surface)
+        }
+    }
+
+    @Test
     fun everyLookHasItsStyle() {
         ThemeStyle.entries.forEach { assertEquals(it, styleOf(it).kind) }
         assertTrue(ClassicStyle.isClassic)

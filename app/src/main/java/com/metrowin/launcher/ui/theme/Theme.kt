@@ -133,14 +133,17 @@ fun MetroTheme(
     style: ThemeStyle = ThemeStyle.Classic,
     /** For Modern Droid: the palette (the wallpaper's, or made from the accent). */
     droid: DroidPalette? = null,
+    /** OLED screens: pure black in the dark theme. */
+    oled: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     SystemBarIcons(dark)
-    val resolved = remember(style, dark, accent, droid) { Themes.resolve(style, dark, accent, droid) }
+    val resolved = remember(style, dark, accent, droid, oled) { Themes.resolve(style, dark, accent, droid, oled) }
     CompositionLocalProvider(
         LocalAccent provides resolved.accent,
         LocalMetroColors provides if (highContrast) resolved.colors.highContrast() else resolved.colors,
         LocalStyle provides resolved.style,
+        LocalOled provides (oled && dark),
         LocalReduceMotion provides reduceMotion,
         LocalHighContrast provides highContrast,
         content = content,

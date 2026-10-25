@@ -12,7 +12,7 @@ object ThemeCodec {
 
     /** The settings a theme carries; the rest of the settings are the user's and a theme never touches them. */
     private val keys = listOf(
-        "themeMode", "darkFromHour", "darkToHour", "accentIndex", "themeStyle", "customAccent", "dynamicColor", "moreTiles",
+        "themeMode", "darkFromHour", "darkToHour", "accentIndex", "themeStyle", "customAccent", "dynamicColor", "oledMode", "moreTiles",
         "parallax", "showClock", "iconPack", "highContrast", "launchAnimation",
     )
 

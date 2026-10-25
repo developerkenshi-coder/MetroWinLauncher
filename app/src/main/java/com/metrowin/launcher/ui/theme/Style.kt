@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -91,6 +92,9 @@ fun styleOf(kind: ThemeStyle): MetroStyle = when (kind) {
 }
 
 val LocalStyle = staticCompositionLocalOf { ClassicStyle }
+
+/** The dark theme is the OLED black (see [oled]). */
+val LocalOled = staticCompositionLocalOf { false }
 
 /** The color and the text color of tile number [index]: the accent and white, or in Modern Droid the containers in turn. */
 fun MetroColors.tileColor(index: Int, accent: Color): Color = if (containers.isEmpty()) accent else containers[index.mod(containers.size)]
@@ -203,9 +207,10 @@ fun Modifier.pageBackground(): Modifier {
     val style = LocalStyle.current
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
+    val oled = LocalOled.current
     return when (style.kind) {
         // The pools of light reach past the page that draws them, so the page clips them to itself.
-        ThemeStyle.Glass -> this.clipToBounds().drawBehind { drawAurora(accent, colors.dark) }
+        ThemeStyle.Glass -> this.clipToBounds().drawBehind { drawAurora(accent, colors.dark, oled && colors.dark) }
         else -> this.background(colors.background)
     }
 }
@@ -214,14 +219,16 @@ fun Modifier.pageBackground(): Modifier {
  * The backdrop of Modern Glass: a deep (or pale) base with soft pools of light, the accent color and two turns of its
  * hue. It is drawn the same way on every page, so a page laid over another looks like the same backdrop.
  */
-fun DrawScope.drawAurora(accent: Color, dark: Boolean) {
+fun DrawScope.drawAurora(accent: Color, dark: Boolean, oled: Boolean = false) {
     val w = size.width
     val h = size.height
     val reach = max(w, h)
-    drawRect(if (dark) Color(0xFF0B1022) else Color(0xFFEEF2FF))
+    // On an OLED screen the base is black and the light is a faint glow, so most of the pixels stay off.
+    drawRect(if (oled) Color.Black else if (dark) Color(0xFF0B1022) else Color(0xFFEEF2FF))
+    val glow = if (oled) 0.22f else 1f
     fun pool(x: Float, y: Float, radius: Float, color: Color, alpha: Float) {
         val center = Offset(w * x, h * y)
-        drawCircle(Brush.radialGradient(listOf(color.copy(alpha = alpha), Color.Transparent), center = center, radius = radius), radius, center)
+        drawCircle(Brush.radialGradient(listOf(color.copy(alpha = alpha * glow), Color.Transparent), center = center, radius = radius), radius, center)
     }
     pool(0.15f, 0.12f, reach * 0.75f, accent, if (dark) 0.55f else 0.45f)
     pool(0.95f, 0.35f, reach * 0.65f, ColorMath.rotateHue(accent, 70f), if (dark) 0.40f else 0.40f)
@@ -248,6 +255,23 @@ object GlassColors {
     )
 }
 
+/**
+ * The same colors for an OLED screen: the background is black (not the dark grey or navy of the look), and the surfaces
+ * that sit on it (menus, bars, the grey of a switched-off button) are half way to black, so that little more than the
+ * tiles and the text is lit.
+ */
+fun MetroColors.oled(): MetroColors = MetroColors(
+    dark = dark,
+    background = Color.Black,
+    foreground = foreground,
+    subtle = subtle,
+    surface = lerp(surface, Color.Black, 0.5f),
+    inactive = lerp(inactive, Color.Black, 0.35f),
+    tileContent = tileContent,
+    containers = containers,
+    onContainers = onContainers,
+)
+
 /** The colors and the main color of a look. */
 @Immutable
 class ResolvedTheme(val colors: MetroColors, val accent: Color, val style: MetroStyle)
@@ -257,13 +281,17 @@ object Themes {
      * [accent] is the color the user chose. In Modern Droid the main color comes from [droid] (the wallpaper's palette or
      * one made from the accent), so [droid] must be given for it.
      */
-    fun resolve(kind: ThemeStyle, dark: Boolean, accent: Color, droid: DroidPalette?): ResolvedTheme = when (kind) {
-        ThemeStyle.Classic -> ResolvedTheme(if (dark) DarkColors else LightColors, accent, ClassicStyle)
-        ThemeStyle.Glass -> ResolvedTheme(if (dark) GlassColors.dark else GlassColors.light, accent, GlassStyle)
-        ThemeStyle.Droid -> {
-            val palette = droid ?: Palettes.fromSeed(accent)
-            ResolvedTheme(Palettes.colors(palette, dark), Palettes.accent(palette, dark), DroidStyle)
+    fun resolve(kind: ThemeStyle, dark: Boolean, accent: Color, droid: DroidPalette?, oled: Boolean = false): ResolvedTheme {
+        val resolved = when (kind) {
+            ThemeStyle.Classic -> ResolvedTheme(if (dark) DarkColors else LightColors, accent, ClassicStyle)
+            ThemeStyle.Glass -> ResolvedTheme(if (dark) GlassColors.dark else GlassColors.light, accent, GlassStyle)
+            ThemeStyle.Droid -> {
+                val palette = droid ?: Palettes.fromSeed(accent)
+                ResolvedTheme(Palettes.colors(palette, dark), Palettes.accent(palette, dark), DroidStyle)
+            }
         }
+        // OLED black only exists in the dark: in the light theme there is nothing to switch off.
+        return if (oled && dark) ResolvedTheme(resolved.colors.oled(), resolved.accent, resolved.style) else resolved
     }
 }
 

@@ -657,4 +657,7 @@
     <string name="battery_rest_2">Contacts, calendar, photos and calls are read only for the live tiles you pinned to Start, and not again within a couple of minutes of leaving and coming back.</string>
     <string name="battery_rest_3">The lock screen service asks Android for no events, so it never wakes the launcher when you switch apps.</string>
     <string name="tut_alive_tip3">It costs almost no battery: off screen, the launcher does nothing.</string>
+    <string name="theme_oled">OLED black</string>
+    <string name="theme_oled_hint">For OLED screens: in the dark theme the backgrounds are pure black, so those pixels are off. More contrast and less battery. It does nothing in the light theme.</string>
+    <string name="tut_look_tip3">Have an OLED screen? Turn on “OLED black” in start+theme for a pure black background.</string>
 </resources>

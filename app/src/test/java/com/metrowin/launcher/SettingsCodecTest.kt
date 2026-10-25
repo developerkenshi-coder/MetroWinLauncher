@@ -30,7 +30,7 @@ class SettingsCodecTest {
         syncEnabled = true, syncPassphrase = "secret", deviceId = "phone-1",
         kidsApps = setOf("stock:camera"), kidsMode = true,
         themeStyle = ThemeStyle.Droid, customAccent = 0xFF3366CC.toInt(), dynamicColor = false,
-        batterySaving = BatterySaving.Always,
+        batterySaving = BatterySaving.Always, oledMode = true,
     )
 
     @Test
@@ -73,6 +73,13 @@ class SettingsCodecTest {
         assertEquals(GestureAction.entries.size, GestureAction.entries.map { it.code }.toSet().size)
         GestureAction.entries.forEach { assertEquals(it, GestureAction.fromCode(it.code)) }
         assertEquals(GestureAction.Recents, GestureAction.fromCode("recents"))
+    }
+
+    @Test
+    fun oledIsOffByDefaultAndOnlyOnWhenTheFileSaysSo() {
+        assertFalse(LauncherSettings().oledMode)
+        assertTrue(SettingsCodec.decode("""{"oledMode":true}""")!!.oledMode)
+        assertFalse(SettingsCodec.decode("""{"themeMode":"dark"}""")!!.oledMode)
     }
 
     @Test

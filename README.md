@@ -194,6 +194,11 @@ controlli (pulsanti, interruttori, campi, cursori), non la struttura: i gesti e 
   un'anteprima; "torna ai 20 colori" lo toglie. Vale per tutti e tre gli stili. Un colore d'accento dalla foto di Start è
   sempre quello dei 20 e il colore tuo lo spegne; il file tema porta con sé stile e colore tuo.
 
+- **Nero OLED** (*start+theme*, interruttore): per gli schermi OLED, nel tema scuro lo sfondo è nero vero in tutti e tre gli stili, quindi
+  quei pixel sono spenti (più contrasto, meno batteria). Classic era già nero: cambiano i menu e le barre, che si fanno più scuri.
+  Modern Glass perde il fondale blu e tiene solo un bagliore leggero dei colori; Modern Droid passa dal grigio scuro al nero. Nel tema
+  chiaro non fa nulla. Non so dire quanta batteria faccia risparmiare: dipende da quanto schermo è sfondo e non riquadri.
+
 ### Icone e temi
 
 **Icon pack** di ADW, Nova, Apex e Go Launcher (si legge l'`appfilter.xml`): sostituiscono le icone delle app per cui

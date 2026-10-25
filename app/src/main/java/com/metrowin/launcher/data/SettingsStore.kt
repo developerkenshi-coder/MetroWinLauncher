@@ -102,6 +102,8 @@ data class LauncherSettings(
     val themeStyle: ThemeStyle = ThemeStyle.Classic,
     /** A color made with the sliders (ARGB), instead of one of the 20; 0 when there is none. */
     val customAccent: Int = 0,
+    /** OLED screens: the dark theme is pure black, so the pixels of the background are off (see Themes.resolve). */
+    val oledMode: Boolean = false,
     /** In Modern Droid, take the colors of the wallpaper where Android gives them (12 and later). */
     val dynamicColor: Boolean = true,
     /** When the launcher spares the battery: by itself, always or never (see [PowerPolicy]). */

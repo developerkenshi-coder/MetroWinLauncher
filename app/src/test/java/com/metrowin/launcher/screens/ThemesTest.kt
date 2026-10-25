@@ -241,6 +241,48 @@ class ThemesTest : ScreenshotBase() {
     }
 
     @Test
+    fun theOledSwitchTurnsTheBlackBackgroundOnAndOff() {
+        showSettings()
+        scrollTo("theme:oled")
+        assertFalse(settings.oledMode)
+        compose.onNodeWithTag("theme:oled").performClick()
+        compose.waitForIdle()
+        assertTrue(settings.oledMode)
+        advance(100) // the switch now knows it is on
+        compose.onNodeWithTag("theme:oled").performClick()
+        compose.waitForIdle()
+        assertFalse(settings.oledMode)
+    }
+
+    private fun cornerOf(style: ThemeStyle, oled: Boolean): Int {
+        val items = sampleItems()
+        val entries = mutableStateOf<List<StartEntry>>(DefaultStart.build(items))
+        show(style = style, droid = if (style == ThemeStyle.Droid) Palettes.fromSeed(DefaultAccent) else null, oled = oled) { Start(entries, items) }
+        advance(3_000)
+        return capture("theme_${style.code}_start_oled_$oled").getPixel(2, 2) and 0xFFFFFF
+    }
+
+    @Test
+    fun glassOnAnOledScreenIsBlackWhereItWasNavy() {
+        assertTrue("it is navy without OLED", cornerOf(ThemeStyle.Glass, false) != 0)
+    }
+
+    @Test
+    fun glassOnAnOledScreenIsBlackAtTheCorner() {
+        assertTrue("black with a faint glow at most", cornerOf(ThemeStyle.Glass, true) < 0x0C0C0C)
+    }
+
+    @Test
+    fun modernDroidOnAnOledScreenIsExactlyBlack() {
+        assertEquals(0, cornerOf(ThemeStyle.Droid, true))
+    }
+
+    @Test
+    fun classicIsBlackAlreadyAndStaysSo() {
+        assertEquals(0, cornerOf(ThemeStyle.Classic, true))
+    }
+
+    @Test
     fun theWallpaperColorsSwitchIsOnlyForModernDroid() {
         showSettings(ThemeStyle.Classic)
         compose.onNodeWithTag("theme:dynamic").assertDoesNotExist()
@@ -248,6 +290,7 @@ class ThemesTest : ScreenshotBase() {
         advance(300)
         compose.onNodeWithTag("theme:dynamic").assertExists()
         assertTrue(settings.dynamicColor)
+        scrollTo("theme:dynamic")
         compose.onNodeWithTag("theme:dynamic").performClick()
         compose.waitForIdle()
         assertFalse(settings.dynamicColor)

@@ -24,6 +24,7 @@ object SettingsCodec {
         put("themeStyle", s.themeStyle.code)
         put("customAccent", s.customAccent)
         put("dynamicColor", s.dynamicColor)
+        put("oledMode", s.oledMode)
         put("batterySaving", s.batterySaving.code)
         put("autoAccent", s.autoAccent)
         put("moreTiles", s.moreTiles)
@@ -106,6 +107,7 @@ object SettingsCodec {
             // Always opaque; 0 means "no custom color".
             customAccent = o.optInt("customAccent", base.customAccent).let { if (it == 0) 0 else it or OPAQUE },
             dynamicColor = o.optBoolean("dynamicColor", base.dynamicColor),
+            oledMode = o.optBoolean("oledMode", base.oledMode),
             batterySaving = if (o.has("batterySaving")) BatterySaving.fromCode(o.optString("batterySaving")) else base.batterySaving,
             autoAccent = o.optBoolean("autoAccent", base.autoAccent),
             moreTiles = o.optBoolean("moreTiles", base.moreTiles),

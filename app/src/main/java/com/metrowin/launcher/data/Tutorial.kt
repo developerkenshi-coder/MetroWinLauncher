@@ -94,7 +94,7 @@ object Tutorial {
         ),
         TutorialStep(
             "look", Glyph.Theme, R.string.tut_look_label, R.string.tut_look_title, R.string.tut_look_intro,
-            listOf(R.string.tut_look_tip1, R.string.tut_look_tip2),
+            listOf(R.string.tut_look_tip1, R.string.tut_look_tip2, R.string.tut_look_tip3),
         ),
         TutorialStep(
             "gestures", Glyph.Gesture, R.string.tut_gestures_label, R.string.tut_gestures_title, R.string.tut_gestures_intro,

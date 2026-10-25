@@ -75,12 +75,12 @@ class ThemesGalleryTest {
 
     private val context get() = ApplicationProvider.getApplicationContext<android.content.Context>()
 
-    private fun showLooks(dark: Boolean = true, seed: Color = DefaultAccent, content: @Composable (ThemeStyle) -> Unit) {
+    private fun showLooks(dark: Boolean = true, seed: Color = DefaultAccent, oled: Boolean = false, content: @Composable (ThemeStyle) -> Unit) {
         compose.mainClock.autoAdvance = false
         compose.setContent {
             Row {
                 ThemeStyle.entries.forEach { style ->
-                    MetroTheme(seed, dark, style = style, droid = if (style == ThemeStyle.Droid) Palettes.fromSeed(seed) else null) {
+                    MetroTheme(seed, dark, style = style, droid = if (style == ThemeStyle.Droid) Palettes.fromSeed(seed) else null, oled = oled) {
                         Box(Modifier.size(360.dp, 760.dp).pageBackground()) { content(style) }
                     }
                 }
@@ -154,6 +154,21 @@ class ThemesGalleryTest {
         showLooks(dark = false, seed = Color(0xFFD80073)) { Start(items) }
         compose.mainClock.advanceTimeBy(3_000)
         assertLooksDiffer(capture("start_light"))
+    }
+
+    @Test
+    fun startOnAnOledScreen() {
+        val items = items()
+        showLooks(oled = true) { Start(items) }
+        compose.mainClock.advanceTimeBy(3_000)
+        val shot = capture("start_oled")
+        assertLooksDiffer(shot)
+        // Between the tiles, in the margin and above them, every look is black.
+        val third = shot.width / 3
+        for (look in 0..2) {
+            val corner = shot.getPixel(look * third + 2, 2)
+            assertTrue("look $look: the corner is black (${Integer.toHexString(corner)})", (corner and 0xFFFFFF) < 0x0A0A0A)
+        }
     }
 
     @Test
