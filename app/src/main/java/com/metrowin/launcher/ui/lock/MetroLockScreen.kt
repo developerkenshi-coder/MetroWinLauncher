@@ -39,6 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,14 +51,22 @@ import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.util.Locale
 
 /** What the lock screen shows besides the time and the date. */
-data class LockOptions(val showAlarm: Boolean = true, val showNotifications: Boolean = true, val showBattery: Boolean = true)
+data class LockOptions(
+    val showAlarm: Boolean = true,
+    val showNotifications: Boolean = true,
+    val showBattery: Boolean = true,
+    val showWeather: Boolean = true,
+    val showEvent: Boolean = true,
+)
 
 /** The lock screen's information, read now and again when the minute changes. The notifications follow the hub. */
 @Composable
@@ -67,7 +76,8 @@ fun rememberLockInfo(): LockInfo {
     var info by remember { mutableStateOf(source.read()) }
     LaunchedWhileStarted(source) {
         while (true) {
-            info = source.read()
+            // The calendar is a query: it is asked off the main thread.
+            info = withContext(Dispatchers.IO) { source.read(withEvent = true) }
             delay(LockText.untilNextMinute(info.nowMillis) + 50)
         }
     }
@@ -169,6 +179,14 @@ fun MetroLockScreen(
             }
             if (options.showNotifications && info.notifications > 0) {
                 LockLine(Glyph.Bell, info.notifications.toString(), "lock:notifications")
+            }
+            val weather = info.weather
+            if (options.showWeather && weather != null) {
+                LockLine(Glyph.Weather, "${weather.temperature}° · ${stringResource(weather.condition.label)}", "lock:weather")
+            }
+            val event = info.nextEvent
+            if (options.showEvent && event != null) {
+                LockLine(Glyph.Calendar, LockText.event(event, info.nowMillis, zone, is24Hour, locale), "lock:event")
             }
         }
     }

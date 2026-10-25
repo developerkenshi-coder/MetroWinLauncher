@@ -37,6 +37,10 @@ object SettingsCodec {
         put("clockWeek", s.clockWeek)
         put("textScale", s.textScale)
         put("showTileNames", s.showTileNames)
+        put("boldText", s.boldText)
+        put("systemFont", s.systemFont)
+        put("homeDoubleAction", s.homeDoubleAction.code)
+        put("homeDoubleApp", s.homeDoubleApp)
         put("tileSpacing", s.tileSpacing.code)
         put("hideStatusBar", s.hideStatusBar)
 
@@ -93,6 +97,8 @@ object SettingsCodec {
         put("lockShowAlarm", s.lockShowAlarm)
         put("lockShowNotifications", s.lockShowNotifications)
         put("lockShowBattery", s.lockShowBattery)
+        put("lockShowWeather", s.lockShowWeather)
+        put("lockShowEvent", s.lockShowEvent)
         put("voiceOffline", s.voiceOffline)
         put("voiceButton", s.voiceButton)
         put("voiceCallDirect", s.voiceCallDirect)
@@ -155,6 +161,10 @@ object SettingsCodec {
             textScale = o.optInt("textScale", base.textScale).let { v -> LauncherSettings.TEXT_SCALES.minByOrNull { kotlin.math.abs(it - v) } ?: 100 },
             hideStatusBar = o.optBoolean("hideStatusBar", base.hideStatusBar),
             showTileNames = o.optBoolean("showTileNames", base.showTileNames),
+            boldText = o.optBoolean("boldText", base.boldText),
+            systemFont = o.optBoolean("systemFont", base.systemFont),
+            homeDoubleAction = GestureAction.fromCode(o.optString("homeDoubleAction").ifEmpty { null }, base.homeDoubleAction),
+            homeDoubleApp = o.optString("homeDoubleApp", base.homeDoubleApp),
             tileSpacing = if (o.has("tileSpacing")) TileSpacing.fromCode(o.optString("tileSpacing")) else base.tileSpacing,
             startPhotoZoom = o.optInt("startPhotoZoom", base.startPhotoZoom).coerceIn(100, 300),
             startPhotoX = o.optInt("startPhotoX", base.startPhotoX).coerceIn(0, 100),
@@ -216,6 +226,8 @@ object SettingsCodec {
             lockShowAlarm = o.optBoolean("lockShowAlarm", base.lockShowAlarm),
             lockShowNotifications = o.optBoolean("lockShowNotifications", base.lockShowNotifications),
             lockShowBattery = o.optBoolean("lockShowBattery", base.lockShowBattery),
+            lockShowWeather = o.optBoolean("lockShowWeather", base.lockShowWeather),
+            lockShowEvent = o.optBoolean("lockShowEvent", base.lockShowEvent),
             voiceOffline = o.optBoolean("voiceOffline", base.voiceOffline),
             voiceButton = o.optBoolean("voiceButton", base.voiceButton),
             voiceCallDirect = o.optBoolean("voiceCallDirect", base.voiceCallDirect),

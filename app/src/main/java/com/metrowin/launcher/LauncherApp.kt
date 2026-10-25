@@ -193,6 +193,7 @@ private val TWO_FINGER_SWIPE = 96.dp
 /** The contacts are looked for once the typing has paused this long. */
 private const val CONTACT_SEARCH_DELAY_MS = 220L
 private const val CURRENCY_DELAY_MS = 350L
+private const val HOME_DOUBLE_DELAY_MS = 350L
 
 /**
  * The launcher: a pager with the Start screen and the app list, plus the pages and overlays that sit
@@ -314,6 +315,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     var noteEditingId by remember { mutableStateOf<String?>(null) }
     var countdownEditingId by remember { mutableStateOf<String?>(null) }
     var countdownNew by remember { mutableStateOf(false) }
+    // The language of the launcher chosen in the settings (Android 13 and later).
+    var language by remember { mutableStateOf(vm.appLanguage()) }
     var counterEditingId by remember { mutableStateOf<String?>(null) }
     var checklistEditingId by remember { mutableStateOf<String?>(null) }
     var cityPickerOpen by remember { mutableStateOf(false) }
@@ -789,6 +792,13 @@ fun LauncherApp(vm: LauncherViewModel) {
         }
     }
 
+    // Home pressed twice does what the settings say, once Start is back on top.
+    LaunchedEffect(homePress) {
+        if (!homePress.double || settings.homeDoubleAction == GestureAction.None) return@LaunchedEffect
+        delay(HOME_DOUBLE_DELAY_MS)
+        perform(settings.homeDoubleAction, settings.homeDoubleApp)
+    }
+
     // A spoken call that waits for the phone permission (asked once, and only when the user turned on "call at once").
     var pendingCall by remember { mutableStateOf<String?>(null) }
     val callPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -1015,7 +1025,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val autoAccentIndex by vm.autoAccentIndex.collectAsStateWithLifecycle()
     val accentIndex = if (settings.autoAccent) autoAccentIndex ?: settings.accentIndex else settings.accentIndex
     val accent = if (settings.customAccent != 0) Color(settings.customAccent) else MetroAccents[accentIndex.coerceIn(MetroAccents.indices)]
-    val dark = rememberIsDark(settings)
+    val dark = rememberIsDark(settings, weather?.details?.sunrise, weather?.details?.sunset)
     // Modern Droid takes the colors of the wallpaper (Android 12 and later), or builds its palette from the chosen color.
     val droid = if (settings.themeStyle == ThemeStyle.Droid) {
         remember(settings.dynamicColor, accent, context) {
@@ -1028,7 +1038,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val powerSaving by vm.powerSaving.collectAsStateWithLifecycle()
 
     CompositionLocalProvider(LocalIconLoader provides vm.icons, LocalWidgetHost provides vm.widgets, LocalPowerSaving provides powerSaving) {
-        MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode, textScale = settings.textScale / 100f) {
+        MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode, textScale = settings.textScale / 100f, boldText = settings.boldText, systemFont = settings.systemFont) {
             Box(
                 Modifier
                     .fillMaxSize()
@@ -1431,6 +1441,11 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onStartKidsCorner = ::enterKidsCorner,
                             onClearSearches = vm::clearSearches,
                             onResetStart = vm::resetStart,
+                            language = language,
+                            onLanguage = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) ({ tag ->
+                                language = tag
+                                vm.setAppLanguage(tag)
+                            }) else null,
                             about = about,
                             onExportLayout = vm::exportLayout,
                             onImportLayout = vm::importLayout,
@@ -1693,7 +1708,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                     MetroLockScreen(
                         info = rememberLockInfo(),
                         photo = lockPhoto ?: startBackground,
-                        options = LockOptions(settings.lockShowAlarm, settings.lockShowNotifications, settings.lockShowBattery),
+                        options = LockOptions(settings.lockShowAlarm, settings.lockShowNotifications, settings.lockShowBattery, settings.lockShowWeather, settings.lockShowEvent),
                         onUnlock = { lockPreviewOpen = false },
                     )
                 }

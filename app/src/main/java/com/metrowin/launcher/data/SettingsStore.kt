@@ -17,7 +17,10 @@ enum class ThemeMode(val code: String) {
     System("system"),
 
     /** Dark between two hours of the day, light the rest of it. */
-    Schedule("schedule");
+    Schedule("schedule"),
+
+    /** Dark from sunset to sunrise, as the weather of the chosen city says (the hours of [Schedule] when it does not know them). */
+    Sun("sun");
 
     companion object {
         fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: Dark
@@ -26,15 +29,33 @@ enum class ThemeMode(val code: String) {
          * Whether the launcher is dark right now. In [Schedule] mode it is dark from [fromHour] up to [toHour],
          * across midnight when [fromHour] is later than [toHour] (19 to 7 is the night); equal hours mean always dark.
          */
-        fun isDark(mode: ThemeMode, systemDark: Boolean, hour: Int, fromHour: Int, toHour: Int): Boolean = when (mode) {
+        fun isDark(
+            mode: ThemeMode,
+            systemDark: Boolean,
+            hour: Int,
+            fromHour: Int,
+            toHour: Int,
+            /** For [Sun]: the minute of the day now, and the minutes of today's sunrise and sunset (null when not known). */
+            minuteOfDay: Int = hour * 60,
+            sunriseMinute: Int? = null,
+            sunsetMinute: Int? = null,
+        ): Boolean = when (mode) {
             Dark -> true
             Light -> false
             System -> systemDark
-            Schedule -> when {
-                fromHour == toHour -> true
-                fromHour < toHour -> hour in fromHour until toHour
-                else -> hour >= fromHour || hour < toHour
+            Schedule -> byHours(hour, fromHour, toHour)
+            Sun -> if (sunriseMinute != null && sunsetMinute != null && sunriseMinute != sunsetMinute) {
+                if (sunriseMinute < sunsetMinute) minuteOfDay >= sunsetMinute || minuteOfDay < sunriseMinute
+                else minuteOfDay in sunsetMinute until sunriseMinute
+            } else {
+                byHours(hour, fromHour, toHour)
             }
+        }
+
+        private fun byHours(hour: Int, fromHour: Int, toHour: Int) = when {
+            fromHour == toHour -> true
+            fromHour < toHour -> hour in fromHour until toHour
+            else -> hour >= fromHour || hour < toHour
         }
     }
 }
@@ -180,6 +201,13 @@ data class LauncherSettings(
     val clockWeek: Boolean = false,
     /** The name of the app under its tile. */
     val showTileNames: Boolean = true,
+    /** Heavier text everywhere in the launcher. */
+    val boldText: Boolean = false,
+    /** The font of the phone instead of the one the look brings. */
+    val systemFont: Boolean = false,
+    /** What pressing Home twice does (once, on Start, it only goes back to the top). */
+    val homeDoubleAction: GestureAction = GestureAction.None,
+    val homeDoubleApp: String = "",
     val tileSpacing: TileSpacing = TileSpacing.Normal,
     /** The size of the text of the launcher, in percent (see [TEXT_SCALES]). */
     val textScale: Int = 100,
@@ -282,6 +310,9 @@ data class LauncherSettings(
     val lockShowAlarm: Boolean = true,
     val lockShowNotifications: Boolean = true,
     val lockShowBattery: Boolean = true,
+    val lockShowWeather: Boolean = true,
+    /** The next event's title on the lock screen: off until asked for, since anyone who sees the screen reads it. */
+    val lockShowEvent: Boolean = false,
 
     // --- voice
     val voiceOffline: Boolean = true,

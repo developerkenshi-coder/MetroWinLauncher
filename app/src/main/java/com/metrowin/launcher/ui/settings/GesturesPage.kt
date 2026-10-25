@@ -30,6 +30,16 @@ fun GesturesPage(env: SettingsEnv) {
                 )
             }
             DropdownSetting(
+                stringResource(R.string.gest_home_double), actionNames, actions.indexOf(settings.homeDoubleAction),
+                onSelect = { i -> env.onChange { it.copy(homeDoubleAction = actions[i]) } }, tag = "gestures:homedouble",
+            )
+            if (settings.homeDoubleAction == GestureAction.OpenApp) {
+                AppPickerSetting(
+                    stringResource(R.string.gest_app_for, stringResource(R.string.gest_home_double)), pickable, settings.homeDoubleApp,
+                    onSelect = { id -> env.onChange { it.copy(homeDoubleApp = id) } }, tag = "gestures:homedouble:app",
+                )
+            }
+            DropdownSetting(
                 stringResource(R.string.gest_two_down), actionNames, actions.indexOf(settings.twoFingerDownAction),
                 onSelect = { i -> env.onChange { it.copy(twoFingerDownAction = actions[i]) } }, tag = "gestures:twodown",
             )

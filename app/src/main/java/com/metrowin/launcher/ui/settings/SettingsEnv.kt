@@ -74,6 +74,9 @@ class SettingsEnv(
     val onClearSearches: () -> Unit = {},
     /** Puts Start back as it was at the start (see LauncherViewModel.resetStart). */
     val onResetStart: () -> Unit = {},
+    /** The language of the launcher (a tag of AppLanguages, empty for the phone's) and how to change it; null where it cannot be (before Android 13). */
+    val language: String = "",
+    val onLanguage: ((String) -> Unit)? = null,
     val about: AboutInfo = AboutInfo("", 0L, "", 0, "", 0),
     /** Writes the layout to a file the user picked. */
     val onExportLayout: (Uri) -> Unit = {},

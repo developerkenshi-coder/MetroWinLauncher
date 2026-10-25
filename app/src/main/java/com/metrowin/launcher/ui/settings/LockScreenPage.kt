@@ -16,10 +16,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.R
+import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.SettingLabel
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -32,6 +34,9 @@ import com.metrowin.launcher.ui.theme.LocalMetroColors
 @Composable
 fun LockScreenPage(env: SettingsEnv) {
     val settings = env.settings
+    val context = LocalContext.current
+    // The calendar is read with the calendar permission, asked once when the switch is turned on.
+    val calendarPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) env.onPickLockPhoto(uri)
     }
@@ -66,6 +71,19 @@ fun LockScreenPage(env: SettingsEnv) {
             ToggleSetting(
                 stringResource(R.string.lock_show_battery), settings.lockShowBattery,
                 onChange = { value -> env.onChange { it.copy(lockShowBattery = value) } }, tag = "lock:battery",
+            )
+            ToggleSetting(
+                stringResource(R.string.lock_show_weather), settings.lockShowWeather,
+                onChange = { value -> env.onChange { it.copy(lockShowWeather = value) } },
+                hint = stringResource(R.string.lock_show_weather_hint), tag = "lock:weather",
+            )
+            ToggleSetting(
+                stringResource(R.string.lock_show_event), settings.lockShowEvent,
+                onChange = { value ->
+                    env.onChange { it.copy(lockShowEvent = value) }
+                    if (value && !LivePermissions.isGranted(context, LivePermissions.calendar)) calendarPermission.launch(LivePermissions.calendar)
+                },
+                hint = stringResource(R.string.lock_show_event_hint), tag = "lock:event",
             )
         }
         ActionSetting(

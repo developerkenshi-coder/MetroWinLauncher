@@ -951,4 +951,22 @@
     <string name="snooze_3h">3 ore</string>
     <string name="snooze_morning">8:00</string>
     <string name="notif_app_settings">impostazioni notifiche dell’app</string>
+
+    <!-- Second round: look and system -->
+    <string name="theme_auto_sun">scuro dal tramonto all’alba</string>
+    <string name="theme_sun_hint">Segue l’alba e il tramonto della città del meteo (il meteo deve essersi caricato almeno una volta). Finché non li conosce usa le ore qui sotto.</string>
+    <string name="theme_bold">testo marcato</string>
+    <string name="theme_bold_hint">Rende più pesante tutto il testo del launcher. Si attiva anche con il testo in grassetto di Android.</string>
+    <string name="theme_system_font">carattere del telefono</string>
+    <string name="theme_system_font_hint">Usa il carattere di Android al posto di quello del tema.</string>
+    <string name="gest_home_double">Home premuto due volte</string>
+    <string name="screen_language">lingua del launcher</string>
+    <string name="screen_language_hint">Android 13 e successivi. La prima scelta segue la lingua del telefono.</string>
+    <string name="language_system">come il telefono</string>
+    <string name="language_en">English</string>
+    <string name="language_it">Italiano</string>
+    <string name="lock_show_weather">mostra il meteo</string>
+    <string name="lock_show_weather_hint">Il meteo preso per ultimo dal tile del meteo. La schermata di blocco non scarica nulla.</string>
+    <string name="lock_show_event">mostra il prossimo evento</string>
+    <string name="lock_show_event_hint">Il prossimo evento del calendario nelle prossime 24 ore. Serve il permesso del calendario. Chiunque veda lo schermo può leggerlo.</string>
 </resources>

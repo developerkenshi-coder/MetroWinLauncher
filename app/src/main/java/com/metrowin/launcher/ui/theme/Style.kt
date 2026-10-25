@@ -51,14 +51,30 @@ class MetroStyle(
     val sheetShape: Shape,
     val font: FontFamily,
     private val weights: Map<FontWeight, FontWeight>,
+    /** Every weight three steps heavier (the way the bold text of Android works). */
+    private val bold: Boolean = false,
 ) {
     val isClassic: Boolean get() = kind == ThemeStyle.Classic
 
     /** The weight to use where the Classic type asks for [requested]: Windows Phone's Light is a thin type, the others are not. */
-    fun weight(requested: FontWeight): FontWeight = weights[requested] ?: requested
+    fun weight(requested: FontWeight): FontWeight {
+        val base = weights[requested] ?: requested
+        return if (bold) FontWeight((base.weight + BOLD_STEP).coerceAtMost(MAX_WEIGHT)) else base
+    }
+
+    /** The same look with heavier text and/or the font of the phone. */
+    fun withType(bold: Boolean, systemFont: Boolean): MetroStyle =
+        if (!bold && !systemFont) this
+        else MetroStyle(
+            kind, tileShape, smallTileShape, tileGap, controlShape, cardShape, squareShape, sheetShape,
+            font = if (systemFont) FontFamily.Default else font, weights = weights, bold = bold || this.bold,
+        )
 
     fun tileShapeFor(size: TileSize): Shape = if (size == TileSize.Small) smallTileShape else tileShape
 }
+
+private const val BOLD_STEP = 300
+private const val MAX_WEIGHT = 900
 
 val ClassicStyle = MetroStyle(
     kind = ThemeStyle.Classic,

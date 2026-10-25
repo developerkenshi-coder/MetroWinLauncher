@@ -40,7 +40,31 @@ class CalendarSearch(private val context: Context) {
         }.getOrDefault(emptyList())
     }
 
+    /** Blocking, call it off the main thread. The next event that has not ended, within [windowMillis]; null without the permission. */
+    fun next(now: Long = System.currentTimeMillis(), windowMillis: Long = WEEK_MILLIS): LiveEvent? {
+        if (!LivePermissions.isGranted(context, LivePermissions.calendar)) return null
+        return runCatching {
+            val uri = CalendarContract.Instances.CONTENT_URI.buildUpon().also {
+                ContentUris.appendId(it, now)
+                ContentUris.appendId(it, now + windowMillis)
+            }.build()
+            var next: LiveEvent? = null
+            context.contentResolver.query(
+                uri,
+                arrayOf(CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN, CalendarContract.Instances.END, CalendarContract.Instances.ALL_DAY),
+                null, null, "${CalendarContract.Instances.BEGIN} ASC",
+            )?.use { cursor ->
+                while (next == null && cursor.moveToNext()) {
+                    if (cursor.getLong(2) <= now) continue
+                    next = LiveEvent(cursor.getString(0).orEmpty(), cursor.getLong(1), cursor.getInt(3) == 1)
+                }
+            }
+            next
+        }.getOrNull()
+    }
+
     companion object {
+        const val WEEK_MILLIS = 7L * 24 * 60 * 60 * 1000
         const val LIMIT = 5
         private const val MIN_QUERY = 2
         private const val DAY_MILLIS = 24 * 60 * 60 * 1000L

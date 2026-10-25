@@ -947,4 +947,22 @@
     <string name="snooze_3h">3 hours</string>
     <string name="snooze_morning">8:00</string>
     <string name="notif_app_settings">notification settings of the app</string>
+
+    <!-- Second round: look and system -->
+    <string name="theme_auto_sun">dark from sunset to sunrise</string>
+    <string name="theme_sun_hint">Follows the sunrise and sunset of the weather’s city (the weather has to have loaded once). Until then, and when it cannot know them, the hours below are used.</string>
+    <string name="theme_bold">bold text</string>
+    <string name="theme_bold_hint">Makes all the text of the launcher heavier. The bold text of Android turns it on too.</string>
+    <string name="theme_system_font">font of the phone</string>
+    <string name="theme_system_font_hint">Uses the font of Android instead of the one the look brings.</string>
+    <string name="gest_home_double">Home pressed twice</string>
+    <string name="screen_language">language of the launcher</string>
+    <string name="screen_language_hint">Android 13 and later. The first choice follows the language of the phone.</string>
+    <string name="language_system">as the phone</string>
+    <string name="language_en">English</string>
+    <string name="language_it">Italiano</string>
+    <string name="lock_show_weather">show the weather</string>
+    <string name="lock_show_weather_hint">The weather the weather tile fetched last. Nothing is fetched by the lock screen.</string>
+    <string name="lock_show_event">show the next event</string>
+    <string name="lock_show_event_hint">The next event of your calendar in the next 24 hours. Needs the calendar permission. Anyone who sees the screen can read it.</string>
 </resources>

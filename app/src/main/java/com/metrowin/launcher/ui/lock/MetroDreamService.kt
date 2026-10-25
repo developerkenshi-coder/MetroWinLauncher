@@ -56,7 +56,7 @@ class MetroDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwne
                     MetroLockScreen(
                         info = rememberLockInfo(),
                         photo = photo,
-                        options = LockOptions(settings.lockShowAlarm, settings.lockShowNotifications, settings.lockShowBattery),
+                        options = LockOptions(settings.lockShowAlarm, settings.lockShowNotifications, settings.lockShowBattery, settings.lockShowWeather, settings.lockShowEvent),
                         onUnlock = ::finish,
                     )
                 }

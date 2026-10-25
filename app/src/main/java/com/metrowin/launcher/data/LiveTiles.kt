@@ -147,32 +147,7 @@ class LiveTileRepository(private val context: Context) {
         }.getOrDefault(emptyList())
     }
 
-    private fun nextEvent(): LiveEvent? {
-        if (!granted(LivePermissions.calendar)) return null
-        return runCatching {
-            val now = System.currentTimeMillis()
-            val uri = CalendarContract.Instances.CONTENT_URI.buildUpon()
-                .also {
-                    ContentUris.appendId(it, now)
-                    ContentUris.appendId(it, now + WEEK_MILLIS)
-                }
-                .build()
-            val projection = arrayOf(
-                CalendarContract.Instances.TITLE,
-                CalendarContract.Instances.BEGIN,
-                CalendarContract.Instances.END,
-                CalendarContract.Instances.ALL_DAY,
-            )
-            var next: LiveEvent? = null
-            resolver.query(uri, projection, null, null, "${CalendarContract.Instances.BEGIN} ASC")?.use { cursor ->
-                while (next == null && cursor.moveToNext()) {
-                    if (cursor.getLong(2) <= now) continue
-                    next = LiveEvent(cursor.getString(0).orEmpty(), cursor.getLong(1), cursor.getInt(3) == 1)
-                }
-            }
-            next
-        }.getOrNull()
-    }
+    private fun nextEvent(): LiveEvent? = CalendarSearch(context).next()
 
     /** The birthdays of the contacts (needs the contacts permission): every contact with a date of birth. */
     private fun birthdays(): List<Birthday> {

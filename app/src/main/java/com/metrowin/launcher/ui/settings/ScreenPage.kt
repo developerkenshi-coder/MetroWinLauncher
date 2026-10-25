@@ -3,6 +3,8 @@ package com.metrowin.launcher.ui.settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.metrowin.launcher.R
+import androidx.annotation.StringRes
+import com.metrowin.launcher.data.AppLanguages
 import com.metrowin.launcher.data.LaunchAnimation
 import com.metrowin.launcher.data.OrientationMode
 
@@ -29,10 +31,28 @@ fun ScreenPage(env: SettingsEnv) {
             hint = stringResource(R.string.screen_launch_hint),
             tag = "screen:launch",
         )
+        env.onLanguage?.let { change ->
+            val tags = AppLanguages.tags
+            OptionList(
+                label = stringResource(R.string.screen_language),
+                options = tags.map { stringResource(languageName(it)) },
+                selected = tags.indexOf(AppLanguages.normalize(env.language)).coerceAtLeast(0),
+                onSelect = { i -> change(tags[i]) },
+                hint = stringResource(R.string.screen_language_hint),
+                tag = "screen:language",
+            )
+        }
         ToggleSetting(
             stringResource(R.string.screen_high_refresh), settings.highRefreshRate,
             onChange = { value -> env.onChange { it.copy(highRefreshRate = value) } },
             hint = stringResource(R.string.screen_high_refresh_hint), tag = "screen:refresh",
         )
     }
+}
+
+@StringRes
+private fun languageName(tag: String): Int = when (tag) {
+    "en" -> R.string.language_en
+    "it" -> R.string.language_it
+    else -> R.string.language_system
 }

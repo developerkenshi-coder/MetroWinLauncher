@@ -2,6 +2,8 @@ package com.metrowin.launcher.ui.theme
 
 import android.app.Activity
 import android.content.Context
+import android.content.res.Configuration
+import android.os.Build
 import android.content.ContextWrapper
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
@@ -15,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Density
@@ -139,15 +142,23 @@ fun MetroTheme(
     oled: Boolean = false,
     /** The size of the text of the launcher: 1 is the size of the phone, 1.3 is 30 percent bigger. */
     textScale: Float = 1f,
+    /** Heavier text; the bold text of Android (12 and later) counts too. */
+    boldText: Boolean = false,
+    /** The font of the phone instead of the one the look brings. */
+    systemFont: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     SystemBarIcons(dark)
+    val adjustment = if (Build.VERSION.SDK_INT >= 31) LocalConfiguration.current.fontWeightAdjustment else 0
+    // "Undefined" is a very large number, not a bold setting.
+    val systemBold = adjustment != Configuration.FONT_WEIGHT_ADJUSTMENT_UNDEFINED && adjustment >= SYSTEM_BOLD_ADJUSTMENT
     val resolved = remember(style, dark, accent, droid, oled) { Themes.resolve(style, dark, accent, droid, oled) }
+    val typed = remember(resolved.style, boldText, systemBold, systemFont) { resolved.style.withType(boldText || systemBold, systemFont) }
     val density = LocalDensity.current
     CompositionLocalProvider(
         LocalAccent provides resolved.accent,
         LocalMetroColors provides if (highContrast) resolved.colors.highContrast() else resolved.colors,
-        LocalStyle provides resolved.style,
+        LocalStyle provides typed,
         LocalOled provides (oled && dark),
         LocalReduceMotion provides reduceMotion,
         LocalHighContrast provides highContrast,
@@ -181,17 +192,23 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
  * clock, and it checks twice a minute, so the switch happens within seconds of the hour.
  */
 @Composable
-fun rememberIsDark(settings: LauncherSettings): Boolean {
+fun rememberIsDark(settings: LauncherSettings, sunrise: LocalTime? = null, sunset: LocalTime? = null): Boolean {
     val systemDark = isSystemInDarkTheme()
-    var hour by remember { mutableIntStateOf(LocalTime.now().hour) }
-    if (settings.themeMode == ThemeMode.Schedule) {
-        // Only while on screen: coming back after a night, the hour is read at once.
+    var minute by remember { mutableIntStateOf(LocalTime.now().let { it.hour * 60 + it.minute }) }
+    if (settings.themeMode == ThemeMode.Schedule || settings.themeMode == ThemeMode.Sun) {
+        // Only while on screen: coming back after a night, the time is read at once.
         LaunchedWhileStarted(Unit) {
             while (true) {
-                hour = LocalTime.now().hour
+                minute = LocalTime.now().let { it.hour * 60 + it.minute }
                 delay(30_000)
             }
         }
     }
-    return ThemeMode.isDark(settings.themeMode, systemDark, hour, settings.darkFromHour, settings.darkToHour)
+    return ThemeMode.isDark(
+        settings.themeMode, systemDark, minute / 60, settings.darkFromHour, settings.darkToHour,
+        minuteOfDay = minute, sunriseMinute = sunrise?.let { it.hour * 60 + it.minute }, sunsetMinute = sunset?.let { it.hour * 60 + it.minute },
+    )
 }
+
+/** The Android setting "bold text" adds 300 to the weights; a smaller adjustment is not that setting. */
+private const val SYSTEM_BOLD_ADJUSTMENT = 300

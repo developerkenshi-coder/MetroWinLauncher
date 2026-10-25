@@ -73,13 +73,15 @@ fun StartThemePage(env: SettingsEnv) {
                 stringResource(R.string.theme_light),
                 stringResource(R.string.theme_auto_system),
                 stringResource(R.string.theme_auto_hours),
+                stringResource(R.string.theme_auto_sun),
             ),
             selected = settings.themeMode.ordinal,
             onSelect = { index -> env.onChange { it.copy(themeMode = ThemeMode.entries[index]) } },
             tag = "theme:mode",
         )
-        if (settings.themeMode == ThemeMode.Schedule) {
+        if (settings.themeMode == ThemeMode.Schedule || settings.themeMode == ThemeMode.Sun) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (settings.themeMode == ThemeMode.Sun) SettingHint(stringResource(R.string.theme_sun_hint), Modifier.testTag("theme:sunhint"))
                 StepperSetting(
                     label = stringResource(R.string.theme_dark_from),
                     value = hourLabel(settings.darkFromHour),
@@ -238,6 +240,20 @@ fun StartThemePage(env: SettingsEnv) {
             canIncrement = settings.textScale < LauncherSettings.TEXT_SCALES.last(),
             hint = stringResource(R.string.text_size_hint),
             tag = "theme:textsize",
+        )
+        ToggleSetting(
+            label = stringResource(R.string.theme_bold),
+            checked = settings.boldText,
+            onChange = { value -> env.onChange { it.copy(boldText = value) } },
+            hint = stringResource(R.string.theme_bold_hint),
+            tag = "theme:bold",
+        )
+        ToggleSetting(
+            label = stringResource(R.string.theme_system_font),
+            checked = settings.systemFont,
+            onChange = { value -> env.onChange { it.copy(systemFont = value) } },
+            hint = stringResource(R.string.theme_system_font_hint),
+            tag = "theme:systemfont",
         )
         ToggleSetting(
             label = stringResource(R.string.theme_hide_status_bar),

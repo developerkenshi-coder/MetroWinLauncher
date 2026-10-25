@@ -57,6 +57,8 @@ import com.metrowin.launcher.data.CalendarSearch
 import com.metrowin.launcher.data.CurrencyRepository
 import com.metrowin.launcher.data.Currencies
 import com.metrowin.launcher.data.EventMatch
+import com.metrowin.launcher.data.AppLanguages
+import com.metrowin.launcher.data.HomePresses
 import com.metrowin.launcher.data.LevelChange
 import com.metrowin.launcher.data.QuickAnswer
 import com.metrowin.launcher.data.QuickAnswerActions
@@ -136,7 +138,7 @@ import java.util.Locale
 import java.util.UUID
 
 /** [count] only ever grows, so every press is a new value even when nothing else differs. */
-data class HomePress(val count: Int = 0, val fromBackground: Boolean = false)
+data class HomePress(val count: Int = 0, val fromBackground: Boolean = false, val double: Boolean = false)
 
 class LauncherViewModel(application: Application) : AndroidViewModel(application) {
     private val apps = AppRepository(application)
@@ -626,8 +628,27 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     /** [fromBackground] is true when the launcher was stopped, behind another app, when the button was pressed. */
-    fun onHomePressed(fromBackground: Boolean) {
-        _homePresses.value = HomePress(_homePresses.value.count + 1, fromBackground)
+    fun onHomePressed(fromBackground: Boolean, now: Long = android.os.SystemClock.uptimeMillis()) {
+        val double = HomePresses.isDouble(lastHomePress, now)
+        // A third press starts counting again instead of being a second double.
+        lastHomePress = if (double) 0L else now
+        _homePresses.value = HomePress(_homePresses.value.count + 1, fromBackground, double)
+    }
+
+    private var lastHomePress = 0L
+
+    /** The language the launcher was switched to, as a tag of [AppLanguages]; empty when it follows the phone or cannot be switched. */
+    fun appLanguage(): String {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return ""
+        val locales = getApplication<Application>().getSystemService(android.app.LocaleManager::class.java).applicationLocales
+        return if (locales.isEmpty) "" else AppLanguages.normalize(locales[0].language)
+    }
+
+    /** Switches the language of the launcher (Android 13 and later); the empty tag goes back to the phone's. */
+    fun setAppLanguage(tag: String) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        getApplication<Application>().getSystemService(android.app.LocaleManager::class.java).applicationLocales =
+            if (tag.isEmpty()) android.os.LocaleList.getEmptyLocaleList() else android.os.LocaleList.forLanguageTags(tag)
     }
 
     /**
