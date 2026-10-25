@@ -39,6 +39,7 @@ import com.metrowin.launcher.ui.components.MetroToggle
 import com.metrowin.launcher.ui.components.SettingLabel
 import com.metrowin.launcher.ui.kids.CheckSquare
 import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.frame
 
 /** A scrolling page of settings, with the spacing every page shares. */
 @Composable
@@ -145,7 +146,7 @@ fun DropdownSetting(
                 .fillMaxWidth()
                 .testTag("$tag:header")
                 .metroPress(onClick = { open = !open })
-                .border(2.dp, colors.foreground)
+                .frame(2.dp, colors.foreground)
                 .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -209,7 +210,7 @@ private fun StepButton(symbol: String, description: String, enabled: Boolean, on
             .then(if (tag != null) Modifier.testTag(tag) else Modifier)
             .alpha(if (enabled) 1f else 0.35f)
             .then(if (enabled) Modifier.metroPress(onClick = onClick) else Modifier)
-            .border(2.dp, LocalMetroColors.current.foreground),
+            .frame(2.dp, LocalMetroColors.current.foreground),
         contentAlignment = Alignment.Center,
     ) {
         MetroText(symbol, size = 24.sp, weight = FontWeight.Normal)

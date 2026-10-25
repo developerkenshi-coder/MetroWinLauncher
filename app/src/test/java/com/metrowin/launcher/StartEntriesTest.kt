@@ -176,4 +176,32 @@ class StartEntriesTest {
         val entries = listOf(tile("a"), folder("f", "x", "y"), tile("b"), tile("c"), tile("d"))
         assertEquals(listOf("a", "f", "g", "d"), ids(StartEntries.group(entries, setOf("b", "c")) { "g" }))
     }
+
+    // --- moveAfter
+
+    @Test
+    fun moveAfterPutsATileRightAfterAnother() {
+        val entries = listOf(tile("a"), tile("b"), tile("c"), tile("d"))
+        assertEquals(listOf("a", "c", "b", "d"), ids(StartEntries.moveAfter(entries, "c", "a")))
+        assertEquals(listOf("b", "c", "d", "a"), ids(StartEntries.moveAfter(entries, "a", "c").let { StartEntries.moveAfter(it, "a", "d") }))
+        assertEquals(listOf("a", "b", "d", "c"), ids(StartEntries.moveAfter(entries, "c", "d")))
+    }
+
+    @Test
+    fun moveAfterChangesNothingForTheSameTileAMissingOneOrWhenItIsThereAlready() {
+        val entries = listOf(tile("a"), tile("b"), tile("c"))
+        assertEquals(entries, StartEntries.moveAfter(entries, "a", "a"))
+        assertEquals(entries, StartEntries.moveAfter(entries, "x", "a"))
+        assertEquals(entries, StartEntries.moveAfter(entries, "a", "x"))
+        assertEquals("already right after it", entries, StartEntries.moveAfter(entries, "b", "a"))
+    }
+
+    @Test
+    fun moveAfterKeepsFoldersAndSizes() {
+        val entries = listOf(tile("a", TileSize.Small), folder("f", "x", "y"), tile("c", TileSize.Wide))
+        val moved = StartEntries.moveAfter(entries, "c", "a")
+        assertEquals(listOf("a", "c", "f"), ids(moved))
+        assertEquals(TileSize.Wide, moved[1].size)
+        assertEquals(entries[1], moved[2])
+    }
 }

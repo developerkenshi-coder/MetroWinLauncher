@@ -239,16 +239,36 @@ class CustomGesturesTest : ScreenshotBase() {
     }
 
     @Test
+    fun theRecentAppsAreOneOfTheActionsAGestureCanHave() {
+        current = LauncherSettings()
+        show { GesturesSettings() }
+        advance(500)
+        compose.onNodeWithTag("gestures:twoup:header").performClick()
+        advance(100)
+        // The list is longer than the screen: scroll to the option before touching it.
+        scrollIntoView("gestures:twoup:${GestureAction.Recents.ordinal}", topMargin = 0.2f)
+        compose.onNodeWithTag("gestures:twoup:${GestureAction.Recents.ordinal}").performClick()
+        compose.waitForIdle()
+        assertEquals(GestureAction.Recents, current.twoFingerUpAction)
+    }
+
+    @Test
     fun theThreeGesturesAreSetApart() {
         current = LauncherSettings()
         show { GesturesSettings() }
         advance(500)
         compose.onNodeWithTag("gestures:twodown:header").performClick()
         advance(100)
+        scrollIntoView("gestures:twodown:${GestureAction.ActionCenter.ordinal}", topMargin = 0.2f)
         compose.onNodeWithTag("gestures:twodown:${GestureAction.ActionCenter.ordinal}").performClick()
+        compose.waitForIdle()
+        advance(100)
+        scrollIntoView("gestures:twoup:header", topMargin = 0.2f)
         compose.onNodeWithTag("gestures:twoup:header").performClick()
         advance(100)
+        scrollIntoView("gestures:twoup:${GestureAction.AppList.ordinal}", topMargin = 0.2f)
         compose.onNodeWithTag("gestures:twoup:${GestureAction.AppList.ordinal}").performClick()
+        compose.waitForIdle()
         assertEquals(GestureAction.None, current.doubleTapAction)
         assertEquals(GestureAction.ActionCenter, current.twoFingerDownAction)
         assertEquals(GestureAction.AppList, current.twoFingerUpAction)

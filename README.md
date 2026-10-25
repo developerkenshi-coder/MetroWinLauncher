@@ -72,7 +72,7 @@ niente è obbligatorio. Si va avanti con il pulsante o con uno swipe, si esce co
 |---|---|---|
 | benvenuto | come si usa il giro | — |
 | rendilo la tua home | perché serve essere l'app Home | **app Home** (dialogo di Android 10+, altrimenti le impostazioni dell'app Home) |
-| la tua schermata start | tocca, tieni premuto, cartelle, più schermate, "+" | — |
+| la tua schermata start | tocca, tieni premuto, cartelle, tile piccoli affiancati, più schermate, "+" | — |
 | live tile | tile che girano e i loro stili | **foto**, **calendario**, **contatti**, **cronologia chiamate** (uno per uno) |
 | meteo | il tile del meteo e dove si sceglie la città | **posizione** |
 | tutte le tue app | jump list, ricerca, menu, voce | **microfono** |
@@ -98,6 +98,11 @@ launcher, e il pulsante diventa "consentito". Un permesso che Android non chiede
   larghezza dello schermo (`TileGrid.columnsFor`): 4 in verticale su un telefono, 6 con "mostra più riquadri", di più in
   orizzontale o su un tablet, così i riquadri restano grandi uguali invece di allargarsi.
 - **Fino a tre schermate Start**, con i puntini della pagina, e "sposta alla schermata" dalla barra di modifica.
+- **Riquadri piccoli affiancati**: quattro riquadri piccoli stanno in un blocco 2x2. Mentre ne trascini uno, le celle libere
+  accanto ad altri riquadri piccoli si mostrano come quadrati vuoti: lascialo lì e si affianca agli altri, con il vicino che
+  non si sposta. Così usi tutto lo spazio e fai gruppi **senza cartelle**. Sul bordo di un riquadro piccolo il trascinamento
+  riordina, solo il suo centro fa una cartella (più piccolo che sui riquadri grandi). Le celle libere sono sempre quelle di un
+  blocco che ha già riquadri piccoli: il layout resta un flusso in ordine, quindi non c'è un punto vuoto a piacere.
 - **Stili dei riquadri**: standard (con flip), **Iconic** (grande numero e icona) e **Cycle** (foto che si alternano).
 - **Live tile**: Calendario, Foto, Persone, Telefono, **Meteo** (Open-Meteo), **Batteria** (carica, tempo alla ricarica),
   **Torcia** (si accende davvero), e le **notifiche** che girano sul riquadro dell'app (*notification peek*).
@@ -124,8 +129,12 @@ launcher, e il pulsante diventa "consentito". Un permesso che Android non chiede
   funzioni pure con test (`PullRules`). Tirata dal bordo alto da ogni pagina, pagine che ruotano un poco con il dito,
   **Indietro predittivo** (il gesto di sistema muove lo schermo), ritorno alla home senza sfarfallii.
 - **Gesti configurabili**: doppio tocco su Start, swipe a due dita in giù e in su; ognuno può bloccare lo schermo, aprire
-  le impostazioni o l'Action Center, andare alla lista app, accendere la torcia, aprire la fotocamera, **parlare**
-  o cercare. **Suono e vibrazione** al tocco, facoltativi.
+  le impostazioni o l'Action Center, andare alla lista app, accendere la torcia, aprire la fotocamera, **parlare**,
+  cercare o **aprire le app recenti**. **Suono e vibrazione** al tocco, facoltativi.
+- **App recenti subito**: l'azione *apri le app recenti* (come gesto, e come pulsante tra i toggle dell'Action Center) usa lo
+  stesso servizio di accessibilità del blocco schermo (`GLOBAL_ACTION_RECENTS`), che non legge nulla e non chiede eventi: si
+  apre al tocco, come il pulsante Recenti. **Lo swipe di Android** (su e tieni) **non è del launcher**: lo gestisce il sistema, e
+  con un launcher che non è quello del telefono può avere un'attesa che da qui non si può togliere (vedi *Note e limiti*).
 - **Animazione di apertura**: *turnstile* (i riquadri si girano, l'ultimo quello toccato) oppure **espansione** (Start
   resta fermo e l'app cresce dal riquadro toccato, o dal centro se tocchi dalla lista).
 
@@ -256,7 +265,7 @@ sua pagina; tutto è salvato come un unico JSON (`SettingsCodec`) che legge anch
 | batteria | risparmio energetico (automatico, sempre, mai) e cosa cambia; cosa il launcher non fa quando non è sullo schermo |
 | accessibilità | riduci il movimento; alto contrasto; TalkBack e scorciatoia alle impostazioni di Android |
 | icone e temi | icon pack; esporta e importa un file tema |
-| gesti | tirata dal bordo, indietro dal bordo, doppio tocco, due dita in giù e in su, suono e vibrazione, servizio per bloccare lo schermo |
+| gesti | tirata dal bordo, indietro dal bordo, doppio tocco, due dita in giù e in su (anche *app recenti*), suono e vibrazione, servizio di accessibilità (blocco schermo e app recenti) |
 | notifiche+azioni | i quattro pulsanti dell'Action Center; accesso alle notifiche; mostra le notifiche sui riquadri; risposta rapida; raggruppamento |
 | live tile | città del meteo (ricerca o posizione) e gradi; lascia pubblicare i tile alle app, ed elenco di chi l'ha fatto |
 | app | cosa cerca la ricerca (contatti, impostazioni, web); app nascoste |
@@ -343,7 +352,7 @@ solo se il launcher c'era già.
 ./gradlew assembleRelease        # con R8
 ```
 
-**589 test**, nessuno saltato; il lint non ha errori.
+**614 test**, nessuno saltato; il lint non ha errori.
 
 - Logica pura: griglia e colonne dalla larghezza, operazioni su Start, regole di trascinamento e di rilascio, ricerca,
   salvataggio e migrazione delle impostazioni, comandi vocali, pianificazione della sincronizzazione, **cifratura** (anche
@@ -394,6 +403,11 @@ app/src/main/java/com/metrowin/launcher/
 - **Il tutorial su un telefono vero**: le richieste (dialoghi dei permessi, dialogo dell'app Home, pagine di Android per notifiche,
   accessibilità e batteria) sono collegate ma provate solo fin dove si arriva su JVM: i pulsanti chiamano la richiesta giusta e la
   pagina legge cosa è concesso; cosa mostra davvero Android, e se un produttore ha un'altra pagina per la batteria, va visto.
+- **Lo swipe delle app recenti di Android**: quando il launcher del telefono non è quello di fabbrica (o su alcuni produttori) il
+  sistema apre le Recenti con un componente suo, e il gesto può avere un'attesa di circa un secondo. Non dipende dal codice del
+  launcher e non si può correggere da qui; non l'ho misurato su un telefono. Il launcher non fa nulla di suo quando parte il
+  gesto (a quel punto è già fermo, vedi *Batteria*), e per averle subito c'è l'azione *app recenti* (gesto o pulsante), che
+  richiede di attivare il servizio di accessibilità del blocco schermo.
 - **Font**: Windows Phone usa Segoe WP, proprietario. Qui c'è Open Sans (OFL). Vedi [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 - **Colori d'accento**: Microsoft ha pubblicato i 20 colori solo come immagine; i valori vengono da trascrizioni.
 - **Marchi**: i nomi delle app stock (Internet Explorer, Xbox, Skype…) sono quelli di Windows Phone. Stanno in `MetroCatalog.kt`

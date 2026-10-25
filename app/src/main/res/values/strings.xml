@@ -301,14 +301,15 @@
     <string name="gact_camera">open the camera</string>
     <string name="gact_voice">start voice commands</string>
     <string name="gact_search">search the apps</string>
+    <string name="gact_recents">open the recent apps</string>
     <string name="gest_lock_service">screen lock service</string>
-    <string name="gest_lock_service_on">On: the launcher can lock the screen</string>
-    <string name="gest_lock_service_off">Off: locking the screen needs it</string>
+    <string name="gest_lock_service_on">On: the launcher can lock the screen and open the recent apps</string>
+    <string name="gest_lock_service_off">Off: locking the screen and the recent apps button need it</string>
     <string name="gest_lock_service_open">open accessibility settings</string>
-    <string name="gest_lock_service_hint">Android only lets an app lock the screen through an accessibility service. This one does nothing else: it reads nothing from the screen.</string>
+    <string name="gest_lock_service_hint">Android only lets an app lock the screen or open the recent apps through an accessibility service. This one does nothing else: it reads nothing from the screen and asks for no events. The recent apps open at once, without the wait that the swipe of Android\'s gesture navigation can have with a launcher that is not the phone\'s own.</string>
     <string name="gest_lock_needs_service">Turn on the screen lock service in the accessibility settings first</string>
     <string name="lock_service_label">MetroWin screen lock</string>
-    <string name="lock_service_description">Lets the MetroWin launcher lock the screen when you choose that for a gesture. It does not read or change anything on the screen.</string>
+    <string name="lock_service_description">Lets the MetroWin launcher lock the screen or open the recent apps when you choose that for a gesture or a button. It does not read or change anything on the screen.</string>
 
     <!-- scheduled backup -->
     <string name="backup_folder">backup folder</string>
@@ -538,6 +539,7 @@
     <string name="tut_start_tip2">Drop a tile on the middle of another one to make a folder, or hold a tile, touch the folder button and pick several tiles at once. A folder opens in place.</string>
     <string name="tut_start_tip3">The arrow after the last tile goes to the next Start screen (you can have three), then to the app list.</string>
     <string name="tut_start_tip4">In edit mode, “+” adds a contact, a website or a widget to Start.</string>
+    <string name="tut_start_tip5">Make a tile small and drag other small tiles to the empty squares beside it: that is a group, without a folder.</string>
     <string name="tut_live_label">LIVE TILES</string>
     <string name="tut_live_title">live tiles</string>
     <string name="tut_live_intro">Some tiles show what is happening: your latest photos, your next appointment, the faces of your contacts, your missed calls. The information never leaves your phone.</string>
@@ -585,6 +587,7 @@
     <string name="tut_settings_tip8">kid\'s corner: Start with only the apps you choose.</string>
     <string name="tut_settings_tip9">about: the version, and this tour whenever you want it again.</string>
     <string name="qa_launcher_settings">Launcher</string>
+    <string name="qa_recents">Recent apps</string>
     <string name="app_launcher_settings">Launcher settings</string>
 
     <!-- folders with several apps -->

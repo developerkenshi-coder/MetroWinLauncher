@@ -7,8 +7,10 @@ import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 
 /**
- * Locks the screen when the launcher asks. Android gives an app no other way to do it. The service reads nothing:
- * it asks for no window content, and ignores every event.
+ * Locks the screen, or opens the recent apps, when the launcher asks. Android gives an app no other way to do either.
+ * The service reads nothing: it asks for no window content and for no events, and ignores every one. The recent apps come at
+ * once, as with the Recents button, without the wait that the swipe of the system's gesture navigation has with a
+ * launcher that is not the one that came with the phone.
  */
 class LockAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
@@ -33,6 +35,12 @@ class LockAccessibilityService : AccessibilityService() {
             val service = instance ?: return false
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return false
             return service.performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
+        }
+
+        /** Opens the recent apps, at once. False when the service is off. */
+        fun recents(): Boolean {
+            val service = instance ?: return false
+            return service.performGlobalAction(GLOBAL_ACTION_RECENTS)
         }
 
         /** Whether the user has turned the service on. */

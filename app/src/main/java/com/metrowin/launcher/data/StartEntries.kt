@@ -71,6 +71,16 @@ object StartEntries {
         }
     }
 
+    /** [draggedId] goes right after [afterId]: the way a small tile is dropped in a free cell next to other small tiles. */
+    fun moveAfter(entries: List<StartEntry>, draggedId: String, afterId: String): List<StartEntry> {
+        if (draggedId == afterId) return entries
+        val moved = entries.firstOrNull { it.id == draggedId } ?: return entries
+        if (entries.none { it.id == afterId }) return entries
+        val without = entries.filterNot { it.id == draggedId }
+        val result = without.toMutableList().apply { add(indexOfFirst { it.id == afterId } + 1, moved) }
+        return if (result == entries) entries else result
+    }
+
     /**
      * Drops the tile [draggedId] on [ontoId]. On a tile that makes a folder holding both, where the
      * target was. On a folder it adds the tile to it. Folders cannot go into folders.

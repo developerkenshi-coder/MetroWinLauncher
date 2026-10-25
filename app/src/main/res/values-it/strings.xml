@@ -294,14 +294,15 @@
     <string name="gact_camera">apri la fotocamera</string>
     <string name="gact_voice">avvia i comandi vocali</string>
     <string name="gact_search">cerca tra le app</string>
+    <string name="gact_recents">apri le app recenti</string>
     <string name="gest_lock_service">servizio per bloccare lo schermo</string>
-    <string name="gest_lock_service_on">Attivo: il launcher può bloccare lo schermo</string>
-    <string name="gest_lock_service_off">Spento: per bloccare lo schermo serve attivarlo</string>
+    <string name="gest_lock_service_on">Attivo: il launcher può bloccare lo schermo e aprire le app recenti</string>
+    <string name="gest_lock_service_off">Spento: per bloccare lo schermo e per il pulsante delle app recenti serve attivarlo</string>
     <string name="gest_lock_service_open">apri le impostazioni di accessibilità</string>
-    <string name="gest_lock_service_hint">Android permette a un\'app di bloccare lo schermo solo tramite un servizio di accessibilità. Questo non fa altro: non legge nulla dallo schermo.</string>
+    <string name="gest_lock_service_hint">Android permette a un\'app di bloccare lo schermo o aprire le app recenti solo tramite un servizio di accessibilità. Questo non fa altro: non legge nulla dallo schermo e non chiede eventi. Le app recenti si aprono subito, senza l\'attesa che lo swipe della navigazione a gesti di Android può avere con un launcher che non è quello del telefono.</string>
     <string name="gest_lock_needs_service">Prima attiva il servizio per bloccare lo schermo nelle impostazioni di accessibilità</string>
     <string name="lock_service_label">Blocco schermo di MetroWin</string>
-    <string name="lock_service_description">Permette al launcher MetroWin di bloccare lo schermo quando lo scegli per un gesto. Non legge né modifica nulla sullo schermo.</string>
+    <string name="lock_service_description">Permette al launcher MetroWin di bloccare lo schermo o aprire le app recenti quando lo scegli per un gesto o un pulsante. Non legge né modifica nulla sullo schermo.</string>
 
     <!-- scheduled backup -->
     <string name="backup_folder">cartella di backup</string>
@@ -534,6 +535,7 @@
     <string name="tut_start_tip2">Lascia un tile sul centro di un altro per fare una cartella, oppure tieni premuto un tile, tocca il pulsante cartella e scegli più tile insieme. Una cartella si apre sul posto.</string>
     <string name="tut_start_tip3">La freccia dopo l\'ultimo tile porta alla schermata Start successiva (puoi averne tre), poi alla lista app.</string>
     <string name="tut_start_tip4">In modalità modifica, “+” aggiunge a Start un contatto, un sito o un widget.</string>
+    <string name="tut_start_tip5">Rendi piccolo un tile e trascina altri tile piccoli nei quadrati vuoti accanto: è un gruppo, senza cartella.</string>
     <string name="tut_live_label">LIVE TILE</string>
     <string name="tut_live_title">live tile</string>
     <string name="tut_live_intro">Alcuni tile mostrano cosa succede: le ultime foto, il prossimo appuntamento, i volti dei contatti, le chiamate perse. Le informazioni non escono dal telefono.</string>
@@ -581,6 +583,7 @@
     <string name="tut_settings_tip8">angolo bambini: Start con solo le app che scegli.</string>
     <string name="tut_settings_tip9">informazioni: la versione, e questo giro ogni volta che vuoi rivederlo.</string>
     <string name="qa_launcher_settings">Launcher</string>
+    <string name="qa_recents">App recenti</string>
     <string name="app_launcher_settings">Impostazioni Launcher</string>
 
     <!-- folders with several apps -->

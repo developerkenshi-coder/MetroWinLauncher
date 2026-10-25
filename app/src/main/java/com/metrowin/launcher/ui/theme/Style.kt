@@ -1,6 +1,7 @@
 package com.metrowin.launcher.ui.theme
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -155,6 +156,13 @@ fun Modifier.panel(shape: Shape? = null): Modifier {
         ThemeStyle.Glass -> this.glass(cardShape, veil = if (colors.dark) 0.14f else 0.62f)
         ThemeStyle.Droid -> this.clip(cardShape).background(colors.surface)
     }
+}
+
+/** A frame of [width] around the control, square in Classic and rounded in the other looks (or in [shape]). */
+@Composable
+fun Modifier.frame(width: Dp, color: Color, shape: Shape? = null): Modifier {
+    val s = shape ?: LocalStyle.current.squareShape
+    return this.clip(s).border(width, color, s)
 }
 
 /** A bar or menu that rises from the bottom edge, in the surface of the look. */

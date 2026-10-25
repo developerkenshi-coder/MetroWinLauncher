@@ -222,6 +222,7 @@ private fun build(glyph: Glyph): Spec = when (glyph) {
     Glyph.Star -> spec(stroke("M50 10L61 38L91 40L68 59L76 88L50 72L24 88L32 59L9 40L39 38Z"))
     Glyph.Folder -> spec(stroke("M10 26H40L48 36H90V80H10Z"), fill(rect(10f, 44f, 80f, 6f, 0f)))
     Glyph.Home -> spec(stroke("M10 48L50 14L90 48", "M22 42V86H78V42", "M42 86V60H58V86"))
+    Glyph.Recents -> spec(stroke(rect(18f, 18f, 64f, 64f, 10f)), fill(rect(36f, 36f, 28f, 28f, 5f)))
     Glyph.Gesture -> spec(stroke(circle(26f, 50f, 11f), "M42 50H90", "M76 36L90 50L76 64"))
     Glyph.Storage -> spec(stroke("M18 26A32 12 0 1 0 82 26A32 12 0 1 0 18 26Z", "M18 26V74A32 12 0 0 0 82 74V26", "M18 50A32 12 0 0 0 82 50"))
 }

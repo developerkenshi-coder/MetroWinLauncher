@@ -23,6 +23,8 @@ import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.SettingLabel
 import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.LocalStyle
+import com.metrowin.launcher.ui.theme.frame
 
 /** Which four buttons sit on top of the Action Center, and whether notifications can be read. */
 @Composable
@@ -39,7 +41,7 @@ fun ActionsPage(env: SettingsEnv) {
                         action, on = true, onClick = { selected = index },
                         modifier = Modifier
                             .weight(1f)
-                            .then(if (index == selected) Modifier.border(3.dp, colors.foreground) else Modifier),
+                            .then(if (index == selected) Modifier.frame(3.dp, colors.foreground, LocalStyle.current.cardShape) else Modifier),
                     )
                 }
             }

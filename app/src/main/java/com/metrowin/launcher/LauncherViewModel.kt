@@ -643,6 +643,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun moveTo(draggedId: String, targetId: String) =
         updatePages { StartPages.update(it, targetId) { page -> StartEntries.moveTo(page, draggedId, targetId) } }
 
+    /** A small tile dropped in a free cell: it goes right after [afterId] (see [StartEntries.moveAfter]). */
+    fun moveAfter(draggedId: String, afterId: String) =
+        updatePages { StartPages.update(it, afterId) { page -> StartEntries.moveAfter(page, draggedId, afterId) } }
+
     /**
      * Puts the tiles [ids] together in one folder (see [StartEntries.group]) and gives back the id of the folder that
      * was made, or null when nothing was.
@@ -867,9 +871,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             try {
                 if (s.deviceId.isEmpty()) updateSettings { it.copy(deviceId = java.util.UUID.randomUUID().toString()) }
                 val folder = SafFolder(getApplication(), s.backupFolder.toUri())
-                val layout = LayoutBackupCodec.encode(currentBackup(), 0L)
-                val local = SyncLocal(layout, s.syncPassphrase, _settings.value.deviceId, s.syncLastHash, s.syncLastStamp)
-                val outcome = withContext(Dispatchers.IO) { SyncEngine(SafSyncStorage(folder)).sync(local) }
+                val outcome = withContext(Dispatchers.IO) {
+                    val layout = LayoutBackupCodec.encode(currentBackup(), 0L)
+                    val local = SyncLocal(layout, s.syncPassphrase, _settings.value.deviceId, s.syncLastHash, s.syncLastStamp)
+                    SyncEngine(SafSyncStorage(folder)).sync(local)
+                }
                 applySyncOutcome(outcome, folder, announce)
             } finally {
                 syncing = false

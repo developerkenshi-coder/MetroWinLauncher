@@ -72,7 +72,7 @@ object Tutorial {
         ),
         TutorialStep(
             "start", Glyph.Widget, R.string.tut_start_label, R.string.tut_start_title, R.string.tut_start_intro,
-            listOf(R.string.tut_start_tip1, R.string.tut_start_tip2, R.string.tut_start_tip3, R.string.tut_start_tip4),
+            listOf(R.string.tut_start_tip1, R.string.tut_start_tip2, R.string.tut_start_tip3, R.string.tut_start_tip4, R.string.tut_start_tip5),
         ),
         TutorialStep(
             "live", Glyph.Calendar, R.string.tut_live_label, R.string.tut_live_title, R.string.tut_live_intro,

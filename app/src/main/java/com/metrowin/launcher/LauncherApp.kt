@@ -582,6 +582,11 @@ fun LauncherApp(vm: LauncherViewModel) {
                 Toast.makeText(appContext, R.string.gest_lock_needs_service, Toast.LENGTH_LONG).show()
                 vm.openAccessibilitySettings()
             }
+            GestureAction.Recents -> if (!LockAccessibilityService.recents()) {
+                // The same service that locks the screen opens the recent apps at once.
+                Toast.makeText(appContext, R.string.gest_lock_needs_service, Toast.LENGTH_LONG).show()
+                vm.openAccessibilitySettings()
+            }
             GestureAction.OpenSettings -> vm.openSystemSettings()
             GestureAction.ActionCenter -> panel.open()
             GestureAction.AppList -> scope.launch { pagerState.animateScrollToPage(appsPage) }
@@ -711,6 +716,7 @@ fun LauncherApp(vm: LauncherViewModel) {
         onResize = { cell -> vm.resize(cell.entryId) },
         onRename = { cell -> renamingFolderId = cell.folder.id },
         onMove = vm::moveTo,
+        onMoveAfter = vm::moveAfter,
         onMerge = { dragged, onto ->
             vm.merge(dragged, onto)
             editingKey = null
@@ -975,6 +981,10 @@ fun LauncherApp(vm: LauncherViewModel) {
                                 panel.close()
                                 settingsSection = null
                                 settingsOpen = true
+                            } else if (action == QuickAction.Recents) {
+                                // The panel goes first, so that the recent apps do not open behind it.
+                                panel.close()
+                                perform(GestureAction.Recents)
                             } else {
                                 vm.activateQuickAction(action)
                                 if (action != QuickAction.Flashlight) panel.close()

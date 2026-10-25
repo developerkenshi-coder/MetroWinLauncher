@@ -45,4 +45,30 @@ class DragOutcomeTest {
     fun theAppsOfAnOpenFolderAreNotTargets() {
         assertEquals(DragOutcome.Nothing, outcome(Offset(160f, 50f), topLevel = listOf(true, false, true)))
     }
+
+    // --- free cells, and small tiles
+
+    private val free = listOf(Rect(220f, 110f, 320f, 210f))
+
+    @Test
+    fun aFreeCellIsADropWhenNoTileIsThere() {
+        assertEquals(DragOutcome.Drop(0), dragOutcome(rects, allTopLevel, 0, Offset(270f, 160f), canMerge = true, drops = free))
+        assertEquals(DragOutcome.Nothing, dragOutcome(rects, allTopLevel, 0, Offset(400f, 160f), canMerge = true, drops = free))
+    }
+
+    @Test
+    fun aTileThatIsThereWinsOverAFreeCell() {
+        val overlapping = listOf(Rect(0f, 110f, 100f, 210f))
+        assertEquals(DragOutcome.Reorder(2), dragOutcome(rects, allTopLevel, 0, Offset(50f, 205f), canMerge = true, drops = overlapping))
+    }
+
+    @Test
+    fun theMiddleThatMakesAFolderIsSmallerOnASmallTile() {
+        // 25% from the left edge of tile 1: inside the folder core of a medium tile, outside the one of a small tile.
+        val point = Offset(110f + 25f, 50f)
+        assertEquals(DragOutcome.Hover(1), outcome(point))
+        assertEquals(DragOutcome.Reorder(1), dragOutcome(rects, allTopLevel, 0, point, canMerge = true, small = listOf(false, true, false)))
+        // The very middle still makes a folder.
+        assertEquals(DragOutcome.Hover(1), dragOutcome(rects, allTopLevel, 0, Offset(160f, 50f), canMerge = true, small = listOf(false, true, false)))
+    }
 }

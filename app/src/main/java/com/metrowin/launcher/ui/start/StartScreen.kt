@@ -82,6 +82,8 @@ import com.metrowin.launcher.ui.theme.LocalHighContrast
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.zIndex
@@ -158,6 +160,8 @@ class StartActions(
     val onMove: (draggedId: String, targetId: String) -> Unit,
     val onMerge: (draggedId: String, ontoId: String) -> Unit,
     val onBackgroundTap: () -> Unit,
+    /** The dragged small tile dropped in a free cell next to small tiles: it goes right after the tile [afterId]. */
+    val onMoveAfter: (draggedId: String, afterId: String) -> Unit = { _, _ -> },
     /** A double tap on the empty part of Start, when the settings give it something to do. */
     val onDoubleTap: (() -> Unit)? = null,
     /** The arrow after the last tile: on to the next screen, or to the app list after the last one. */
@@ -327,6 +331,13 @@ private fun TileGridView(
         val currentActions by rememberUpdatedState(actions)
         val currentMetrics by rememberUpdatedState(unitPx to gapPx)
 
+        // The free cells next to small tiles where a dragged small tile can be dropped, worked out again whenever the layout or the dragged tile changes.
+        val draggedIndex = cells.indexOfFirst { it.key == drag.draggedKey }
+        val dropTargets = remember(sizes, columns, draggedIndex) {
+            if (draggedIndex < 0) emptyList() else TileGrid.dropTargets(sizes, columns, draggedIndex)
+        }
+        val currentDropTargets by rememberUpdatedState(dropTargets)
+
         fun rectOf(index: Int) = placementRect(currentLayout.placements[index], currentMetrics.first, currentMetrics.second)
 
         val onDragStart: (StartCell, Offset) -> Unit = { cell, at -> drag.start(cell.key, at) }
@@ -347,6 +358,8 @@ private fun TileGridView(
                 dragged = draggedIndex,
                 center = center,
                 canMerge = dragged is AppCell,
+                drops = currentDropTargets.map { t -> placementRect(Placement(t.col, t.row, 1, 1), currentMetrics.first, currentMetrics.second) },
+                small = list.map { it.size == TileSize.Small },
             )
             when (outcome) {
                 DragOutcome.Nothing -> {
@@ -368,6 +381,18 @@ private fun TileGridView(
                     if (drag.justMovedOver != target.key) {
                         drag.justMovedOver = target.key
                         currentActions.onMove(dragged.entryId, target.entryId)
+                    }
+                }
+                is DragOutcome.Drop -> {
+                    // Over a free cell next to small tiles: the tile joins them, right after the last of them in the order.
+                    drag.pendingMerge = null
+                    drag.mergeTarget = null
+                    val place = currentDropTargets[outcome.target]
+                    val after = list[place.after]
+                    val marker = "drop:${after.key}"
+                    if (drag.justMovedOver != marker) {
+                        drag.justMovedOver = marker
+                        currentActions.onMoveAfter(dragged.entryId, after.entryId)
                     }
                 }
             }
@@ -426,6 +451,19 @@ private fun TileGridView(
                 .onGloballyPositioned { gridTop = it.positionInRoot().y },
         ) {
             val topLevel = cells.filter { it.isTopLevel }.map { it.entryId }
+            // While a small tile is being dragged, the free cells next to other small tiles show as empty outlines.
+            val outline = LocalMetroColors.current.foreground.copy(alpha = 0.35f)
+            val dropShape = LocalStyle.current.smallTileShape
+            dropTargets.forEach { t ->
+                val r = placementRect(Placement(t.col, t.row, 1, 1), unitPx, gapPx)
+                Box(
+                    Modifier
+                        .offset { IntOffset(r.left.roundToInt(), r.top.roundToInt()) }
+                        .size(with(density) { r.width.toDp() }, with(density) { r.height.toDp() })
+                        .testTag("drop:${t.col}:${t.row}")
+                        .border(2.dp, outline, dropShape),
+                )
+            }
             cells.forEachIndexed { index, cell ->
                 key(cell.key) {
                     val at = topLevel.indexOf(cell.entryId).takeIf { cell.isTopLevel } ?: -1
@@ -451,22 +489,39 @@ internal sealed interface DragOutcome {
 
     /** On the middle of tile [target]: held there for a moment, a drop makes a folder. */
     data class Hover(val target: Int) : DragOutcome
+
+    /** In the free cell [target] (an index into the cells given): the tile goes there. */
+    data class Drop(val target: Int) : DragOutcome
 }
 
 /**
  * [rects] are the tiles' rectangles, [topLevel] says which of them can be a target (the apps of an
  * open folder cannot), [dragged] is the index of the tile being dragged and [center] its centre.
  */
-internal fun dragOutcome(rects: List<Rect>, topLevel: List<Boolean>, dragged: Int, center: Offset, canMerge: Boolean): DragOutcome {
+internal fun dragOutcome(
+    rects: List<Rect>,
+    topLevel: List<Boolean>,
+    dragged: Int,
+    center: Offset,
+    canMerge: Boolean,
+    /** The free cells the small tile can be dropped on, as rectangles. */
+    drops: List<Rect> = emptyList(),
+    /** Which tiles are small: their middle is a smaller target for a folder, so small tiles can be put side by side. */
+    small: List<Boolean> = emptyList(),
+): DragOutcome {
     val target = rects.indices.firstOrNull { it != dragged && topLevel[it] && rects[it].contains(center) }
-        ?: return DragOutcome.Nothing
+        ?: return drops.indexOfFirst { it.contains(center) }.takeIf { it >= 0 }?.let { DragOutcome.Drop(it) } ?: DragOutcome.Nothing
     val rect = rects[target]
-    val core = rect.deflate(min(rect.width, rect.height) * MERGE_CORE_INSET)
+    val inset = if (small.getOrNull(target) == true) SMALL_CORE_INSET else MERGE_CORE_INSET
+    val core = rect.deflate(min(rect.width, rect.height) * inset)
     return if (canMerge && core.contains(center)) DragOutcome.Hover(target) else DragOutcome.Reorder(target)
 }
 
 /** How much of each side of a tile is the edge, where a drag reorders, as opposed to the core, where it makes a folder. */
 private const val MERGE_CORE_INSET = 0.22f
+
+/** On a small tile the middle that makes a folder is smaller: the rest reorders, so small tiles go side by side without a folder. */
+private const val SMALL_CORE_INSET = 0.32f
 private const val MERGE_HOVER_MS = 320L
 
 /** Slides to its place in the grid when tiles are resized, pinned, unpinned or moved around it. */

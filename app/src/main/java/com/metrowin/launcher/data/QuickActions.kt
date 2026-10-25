@@ -38,7 +38,10 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
     Camera("camera", R.string.qa_camera, Glyph.Camera),
 
     /** Opens the settings of the launcher itself, which are otherwise only an entry in the app list. */
-    LauncherSettings("launcher", R.string.qa_launcher_settings, Glyph.Settings);
+    LauncherSettings("launcher", R.string.qa_launcher_settings, Glyph.Settings),
+
+    /** Opens the recent apps at once, through the accessibility service (the same one that locks the screen). */
+    Recents("recents", R.string.qa_recents, Glyph.Recents);
 
     companion object {
         /** The four buttons on top until the user chooses others. */
@@ -146,8 +149,8 @@ class QuickActionsController(private val context: Context) {
             QuickAction.Vpn -> Settings.ACTION_VPN_SETTINGS
             QuickAction.Cast -> Settings.ACTION_CAST_SETTINGS
             QuickAction.Camera -> MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA
-            // Not a screen of Android: the launcher opens its own settings (see LauncherApp).
-            QuickAction.LauncherSettings -> return
+            // Not screens of Android: the launcher opens its own settings and the recent apps itself (see LauncherApp).
+            QuickAction.LauncherSettings, QuickAction.Recents -> return
         }
         if (!start(intentAction)) start(Settings.ACTION_SETTINGS)
     }

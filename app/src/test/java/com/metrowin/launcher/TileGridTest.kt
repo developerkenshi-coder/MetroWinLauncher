@@ -1,7 +1,11 @@
 package com.metrowin.launcher
 
+import com.metrowin.launcher.data.DropTarget
 import com.metrowin.launcher.data.Placement
+import com.metrowin.launcher.data.StartEntries
 import com.metrowin.launcher.data.TileGrid
+import com.metrowin.launcher.model.StartEntry
+import com.metrowin.launcher.model.Tile
 import com.metrowin.launcher.model.TileSize.Medium
 import com.metrowin.launcher.model.TileSize.Small
 import com.metrowin.launcher.model.TileSize.Wide
@@ -133,5 +137,89 @@ class TileGridTest {
             assertEquals("$width dp", true, columns >= previous)
             previous = columns
         }
+    }
+
+    // --- free cells next to small tiles
+
+    @Test
+    fun aLoneSmallTileLeavesThreeCellsThatAnotherSmallTileCanTake() {
+        // A small tile, a medium one after it, and a small one beyond: the first block has three free cells.
+        val sizes = listOf(Small, Medium, Small)
+        val targets = TileGrid.dropTargets(sizes, 4, dragged = 2)
+        assertEquals(listOf(DropTarget(1, 0, 0), DropTarget(0, 1, 0), DropTarget(1, 1, 0)), targets)
+    }
+
+    @Test
+    fun theBlockTheTileIsInIsNotATargetAndNeitherIsAFullBlock() {
+        assertEquals("only its own block has room", emptyList<DropTarget>(), TileGrid.dropTargets(listOf(Small, Small), 4, dragged = 1))
+        assertEquals("the first block is full", emptyList<DropTarget>(), TileGrid.dropTargets(List(5) { Small }, 4, dragged = 4))
+    }
+
+    @Test
+    fun everyPartlyFilledBlockOffersItsFreeCellsInOrder() {
+        // Small, Medium, Small, Medium, then the tile being dragged: blocks 0 and 2 each hold one small tile.
+        val sizes = listOf(Small, Medium, Small, Medium, Small)
+        val targets = TileGrid.dropTargets(sizes, 4, dragged = 4)
+        assertEquals(
+            listOf(
+                DropTarget(1, 0, 0), DropTarget(0, 1, 0), DropTarget(1, 1, 0),
+                DropTarget(1, 2, 2), DropTarget(0, 3, 2), DropTarget(1, 3, 2),
+            ),
+            targets,
+        )
+    }
+
+    @Test
+    fun aBlockWithTwoSmallTilesHasTwoFreeCells() {
+        val targets = TileGrid.dropTargets(listOf(Small, Small, Medium, Small), 4, dragged = 3)
+        assertEquals(listOf(DropTarget(0, 1, 1), DropTarget(1, 1, 1)), targets)
+    }
+
+    @Test
+    fun onlySmallTilesAreDroppedInFreeCellsAndABadIndexHasNoTargets() {
+        val sizes = listOf(Small, Medium, Medium)
+        assertEquals(emptyList<DropTarget>(), TileGrid.dropTargets(sizes, 4, dragged = 1))
+        assertEquals(emptyList<DropTarget>(), TileGrid.dropTargets(sizes, 4, dragged = 7))
+        assertEquals(emptyList<DropTarget>(), TileGrid.dropTargets(emptyList(), 4, dragged = 0))
+    }
+
+    @Test
+    fun withMoreColumnsTheBlocksStayTwoByTwo() {
+        // Six columns: three blocks across. The fourth tile (a medium) fills the third block, the small one the fourth.
+        val sizes = listOf(Small, Medium, Medium, Small)
+        val targets = TileGrid.dropTargets(sizes, 6, dragged = 3)
+        assertEquals(listOf(DropTarget(1, 0, 0), DropTarget(0, 1, 0), DropTarget(1, 1, 0)), targets)
+    }
+
+    @Test
+    fun aSmallTileDroppedThereReallyEndsUpInThatCell() {
+        // The target says "after tile 0"; moving the dragged tile there must put it in the free cell that was shown.
+        val entries = listOf<StartEntry>(Tile("a", Small), Tile("b", Medium), Tile("c", Small))
+        val sizes = entries.map { it.size }
+        val target = TileGrid.dropTargets(sizes, 4, dragged = 2).first()
+        val moved = StartEntries.moveAfter(entries, "c", entries[target.after].id)
+        assertEquals(listOf("a", "c", "b"), moved.map { it.id })
+        val layout = TileGrid.place(moved.map { it.size }, 4)
+        assertEquals(Placement(target.col, target.row, 1, 1), layout.placements[1])
+        // Next to the first one, in the same block, and the medium tile did not move.
+        assertEquals(Placement(0, 0, 1, 1), layout.placements[0])
+        assertEquals(Placement(2, 0, 2, 2), layout.placements[2])
+    }
+
+    @Test
+    fun afterTheDropTheBlockIsFullOnlyWhenFourSmallTilesAreInIt() {
+        var entries = listOf<StartEntry>(Tile("a", Small), Tile("b", Medium), Tile("c", Small), Tile("d", Small), Tile("e", Small))
+        // c, d and e each go next to a.
+        for (id in listOf("c", "d", "e")) {
+            val index = entries.indexOfFirst { it.id == id }
+            val target = TileGrid.dropTargets(entries.map { it.size }, 4, index).firstOrNull() ?: break
+            entries = StartEntries.moveAfter(entries, id, entries[target.after].id)
+        }
+        assertEquals(listOf("a", "e", "d", "c", "b").sorted(), entries.map { it.id }.sorted())
+        val layout = TileGrid.place(entries.map { it.size }, 4)
+        // The four small tiles share the first block, and the medium tile is after them.
+        val smalls = entries.indices.filter { entries[it].size == Small }
+        assertEquals(setOf(Placement(0, 0, 1, 1), Placement(1, 0, 1, 1), Placement(0, 1, 1, 1), Placement(1, 1, 1, 1)), smalls.map { layout.placements[it] }.toSet())
+        assertEquals(emptyList<DropTarget>(), TileGrid.dropTargets(entries.map { it.size }, 4, smalls.last()))
     }
 }

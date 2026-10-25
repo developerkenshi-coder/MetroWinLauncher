@@ -48,7 +48,10 @@ enum class GestureAction(val code: String, @param:StringRes val label: Int) {
     Torch("torch", R.string.gact_torch),
     Camera("camera", R.string.gact_camera),
     Voice("voice", R.string.gact_voice),
-    Search("search", R.string.gact_search);
+    Search("search", R.string.gact_search),
+
+    /** The recent apps, at once (through the screen lock accessibility service). */
+    Recents("recents", R.string.gact_recents);
 
     companion object {
         fun fromCode(code: String?, default: GestureAction = None) = entries.firstOrNull { it.code == code } ?: default

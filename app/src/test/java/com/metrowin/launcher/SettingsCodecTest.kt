@@ -20,6 +20,7 @@ class SettingsCodecTest {
         moreTiles = true, backgroundRevision = 3, parallax = false, startPages = 3, showClock = true,
         orientation = OrientationMode.Auto, highRefreshRate = false, launchAnimation = LaunchAnimation.Expand,
         edgePull = false, doubleTapAction = GestureAction.LockScreen, twoFingerDownAction = GestureAction.OpenSettings,
+        twoFingerUpAction = GestureAction.Recents,
         tapSound = true, quickActions = listOf("wifi", "camera", "vpn", "quiet"), notificationPeek = false,
         weatherCity = "Torino", weatherLatitude = 45.07, weatherLongitude = 7.69, weatherFahrenheit = true,
         hiddenApps = setOf("app:b", "app:a"), searchWeb = false, iconPack = "com.example.pack",
@@ -65,6 +66,13 @@ class SettingsCodecTest {
         assertEquals(BatterySaving.Auto, LauncherSettings().batterySaving)
         assertEquals(BatterySaving.Auto, SettingsCodec.decode("""{"batterySaving":"turbo"}""")!!.batterySaving)
         assertEquals(BatterySaving.Never, SettingsCodec.decode("""{"batterySaving":"never"}""")!!.batterySaving)
+    }
+
+    @Test
+    fun everyGestureActionHasItsOwnCodeAndComesBackFromIt() {
+        assertEquals(GestureAction.entries.size, GestureAction.entries.map { it.code }.toSet().size)
+        GestureAction.entries.forEach { assertEquals(it, GestureAction.fromCode(it.code)) }
+        assertEquals(GestureAction.Recents, GestureAction.fromCode("recents"))
     }
 
     @Test
