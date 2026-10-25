@@ -306,7 +306,7 @@
     <string name="gest_lock_service_hint">Android permette a un\'app di bloccare lo schermo o aprire le app recenti solo tramite un servizio di accessibilità. Questo non fa altro: non legge nulla dallo schermo e non chiede eventi. Le app recenti si aprono subito, senza l\'attesa che lo swipe della navigazione a gesti di Android può avere con un launcher che non è quello del telefono.</string>
     <string name="gest_lock_needs_service">Prima attiva il servizio per bloccare lo schermo nelle impostazioni di accessibilità</string>
     <string name="lock_service_label">Blocco schermo di MetroWin</string>
-    <string name="lock_service_description">Permette al launcher MetroWin di bloccare lo schermo o aprire le app recenti quando lo scegli per un gesto o un pulsante. Non legge né modifica nulla sullo schermo.</string>
+    <string name="lock_service_description">Permette al launcher MetroWin di bloccare lo schermo, aprire le app recenti, fare uno screenshot, aprire il menu di spegnimento o dividere lo schermo quando lo scegli per un gesto o un pulsante. Non legge né modifica nulla sullo schermo.</string>
 
     <!-- scheduled backup -->
     <string name="backup_folder">cartella di backup</string>
@@ -798,4 +798,26 @@
     <string name="weather_rain_short">pioggia %1$d%%</string>
     <string name="unit_kmh">km/h</string>
     <string name="unit_mph">mph</string>
+
+    <!-- Gestures, Action Center controls and clock taps -->
+    <string name="gact_app">apri un\'app</string>
+    <string name="gact_screenshot">fai uno screenshot</string>
+    <string name="gact_power">apri il menu di spegnimento</string>
+    <string name="gact_split">dividi lo schermo</string>
+    <string name="gact_android_notifications">tira giù le notifiche di Android</string>
+    <string name="gact_android_quick">tira giù le impostazioni rapide di Android</string>
+    <string name="gest_app_for">app per “%1$s”</string>
+    <string name="gest_app_choose">scegli un\'app</string>
+    <string name="gest_app_none">Nessuna app scelta per questo gesto: sceglila nella pagina dei gesti.</string>
+    <string name="ac_volume">volume dei contenuti</string>
+    <string name="ac_brightness">luminosità</string>
+    <string name="ac_brightness_allow">Consenti il cursore della luminosità (Android lo chiede in una sua schermata)</string>
+    <string name="ringer_sound">suoneria</string>
+    <string name="ringer_vibrate">vibrazione</string>
+    <string name="ringer_silent">silenzioso</string>
+    <string name="ac_sliders">volume e luminosità nell\'Action Center</string>
+    <string name="ac_sliders_hint">Due cursori e i pulsanti suoneria, vibrazione e silenzioso. Il volume non chiede permessi; la luminosità chiede l\'accesso «modifica le impostazioni di sistema», che dai in una schermata di Android.</string>
+    <string name="theme_clock_taps">tocca l\'orologio</string>
+    <string name="theme_clock_taps_hint">Un tocco sull\'ora di Start apre l\'orologio, sulla data il calendario.</string>
+    <string name="qa_screenshot">Screenshot</string>
 </resources>

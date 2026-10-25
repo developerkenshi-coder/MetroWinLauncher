@@ -66,7 +66,10 @@ import com.metrowin.launcher.data.ThemeCodec
 import com.metrowin.launcher.data.ProfileInfo
 import com.metrowin.launcher.data.ProfilesController
 import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.data.BrightnessController
 import com.metrowin.launcher.data.QuickAction
+import com.metrowin.launcher.data.RingerMode
+import com.metrowin.launcher.data.SoundController
 import com.metrowin.launcher.data.RecentApps
 import com.metrowin.launcher.data.QuickActionsController
 import com.metrowin.launcher.data.LayoutBackup
@@ -139,6 +142,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val profilesController = ProfilesController(application)
     private val iconPacks = IconPackRepository(application)
     private val appShortcuts = AppShortcuts(application)
+    private val sound = SoundController(application)
+    private val brightnessControl = BrightnessController(application)
 
     /** The widgets placed on Start. */
     val widgets = WidgetService(application)
@@ -185,6 +190,59 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** How many times each app was opened from the launcher, for the "most used" group of the app list. */
     private val _usage = MutableStateFlow(store.appUsage)
     val usage: StateFlow<Map<String, Int>> = _usage.asStateFlow()
+
+    /** What the sliders and the sound buttons of the Action Center show: read when the panel opens, then kept as they are moved. */
+    data class PanelControls(
+        val volume: Float? = null,
+        val ringer: RingerMode? = null,
+        val brightness: Float? = null,
+        /** The "modify system settings" access that the brightness needs has been given. */
+        val canSetBrightness: Boolean = false,
+    )
+
+    private val _controls = MutableStateFlow(PanelControls())
+    val controls: StateFlow<PanelControls> = _controls.asStateFlow()
+
+    fun refreshControls() {
+        _controls.value = PanelControls(sound.volume(), sound.ringer(), brightnessControl.brightness(), brightnessControl.canWrite())
+    }
+
+    fun setVolume(fraction: Float) {
+        sound.setVolume(fraction)
+        _controls.value = _controls.value.copy(volume = fraction)
+    }
+
+    fun setBrightness(fraction: Float) {
+        if (brightnessControl.set(fraction)) _controls.value = _controls.value.copy(brightness = fraction)
+    }
+
+    /** Changes the sound mode; silent needs the "do not disturb" access, and without it the screen that gives it opens. */
+    fun setRinger(mode: RingerMode) {
+        if (!sound.setRinger(mode)) startSettings(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+        _controls.value = _controls.value.copy(ringer = sound.ringer())
+    }
+
+    /** The clock app (its alarms) for a touch on the time of Start. */
+    fun openClock() = startIntent(Intent(android.provider.AlarmClock.ACTION_SHOW_ALARMS))
+
+    /** The calendar app for a touch on the date of Start. */
+    fun openCalendar() = startIntent(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_CALENDAR))
+
+    private fun startIntent(intent: Intent) {
+        val opened = runCatching { getApplication<Application>().startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess
+        if (!opened) tell(R.string.launch_failed)
+    }
+
+    /** The screen of Android where the user lets the launcher change the brightness. */
+    fun openBrightnessAccess() {
+        val opened = runCatching {
+            getApplication<Application>().startActivity(
+                Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.fromParts("package", getApplication<Application>().packageName, null))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+        }.isSuccess
+        if (!opened) tell(R.string.launch_failed)
+    }
 
     /** What was searched for last, most recent first (see [RecentSearches]); empty while remembering is off. */
     private val _searches = MutableStateFlow(store.recentSearches)

@@ -140,6 +140,14 @@ fun StartThemePage(env: SettingsEnv) {
             tag = "theme:clock",
         )
         ToggleSetting(
+            label = stringResource(R.string.theme_clock_taps),
+            checked = settings.clockTaps,
+            onChange = { value -> env.onChange { it.copy(clockTaps = value) } },
+            hint = stringResource(R.string.theme_clock_taps_hint),
+            enabled = settings.showClock,
+            tag = "theme:clocktaps",
+        )
+        ToggleSetting(
             label = stringResource(R.string.theme_more_tiles),
             checked = settings.moreTiles,
             onChange = { value -> env.onChange { it.copy(moreTiles = value) } },

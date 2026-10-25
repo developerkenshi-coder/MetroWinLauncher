@@ -5,6 +5,7 @@ import android.content.pm.ActivityInfo
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import com.metrowin.launcher.R
+import com.metrowin.launcher.gestures.SystemAction
 import androidx.core.content.edit
 
 /** Light, dark, or one of the two automatic modes. */
@@ -50,8 +51,29 @@ enum class GestureAction(val code: String, @param:StringRes val label: Int) {
     Voice("voice", R.string.gact_voice),
     Search("search", R.string.gact_search),
 
+    /** An app the user chose for that gesture. */
+    OpenApp("app", R.string.gact_app),
+
     /** The recent apps, at once (through the screen lock accessibility service). */
-    Recents("recents", R.string.gact_recents);
+    Recents("recents", R.string.gact_recents),
+
+    /** What the accessibility service can do besides: see [SystemAction]. */
+    Screenshot("screenshot", R.string.gact_screenshot),
+    PowerMenu("power", R.string.gact_power),
+    SplitScreen("split", R.string.gact_split),
+    AndroidNotifications("android_notifications", R.string.gact_android_notifications),
+    AndroidQuickSettings("android_quick", R.string.gact_android_quick);
+
+    /** The service action behind this gesture, or null for the others. */
+    val system: SystemAction?
+        get() = when (this) {
+            Screenshot -> SystemAction.Screenshot
+            PowerMenu -> SystemAction.PowerMenu
+            SplitScreen -> SystemAction.SplitScreen
+            AndroidNotifications -> SystemAction.Notifications
+            AndroidQuickSettings -> SystemAction.QuickSettings
+            else -> null
+        }
 
     companion object {
         fun fromCode(code: String?, default: GestureAction = None) = entries.firstOrNull { it.code == code } ?: default
@@ -120,6 +142,8 @@ data class LauncherSettings(
     val startPages: Int = 1,
     /** The time and date above the tiles. */
     val showClock: Boolean = false,
+    /** A touch on the time opens the clock, on the date the calendar. */
+    val clockTaps: Boolean = true,
 
     // --- display
     val orientation: OrientationMode = OrientationMode.Portrait,
@@ -135,6 +159,10 @@ data class LauncherSettings(
     val doubleTapAction: GestureAction = GestureAction.None,
     val twoFingerDownAction: GestureAction = GestureAction.None,
     val twoFingerUpAction: GestureAction = GestureAction.None,
+    /** The apps ([com.metrowin.launcher.model.AppItem.id]) that the gestures open when they are set to "open an app". */
+    val doubleTapApp: String = "",
+    val twoFingerDownApp: String = "",
+    val twoFingerUpApp: String = "",
     val tapSound: Boolean = false,
     val tapHaptics: Boolean = false,
 
@@ -145,6 +173,8 @@ data class LauncherSettings(
     val notificationPeek: Boolean = false,
     val inlineReply: Boolean = true,
     val groupConversations: Boolean = true,
+    /** The volume and the brightness sliders and the sound mode buttons in the Action Center. */
+    val actionSliders: Boolean = true,
     /** With [notificationPeek] on: the conversations of messaging apps (who wrote, and what), one face for each. */
     val liveMessages: Boolean = true,
     /** Say who wrote, not what: the text of messages and notifications is left off the tiles. */

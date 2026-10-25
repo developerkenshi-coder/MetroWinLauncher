@@ -31,6 +31,7 @@ object SettingsCodec {
         put("parallax", s.parallax)
         put("startPages", s.startPages)
         put("showClock", s.showClock)
+        put("clockTaps", s.clockTaps)
 
         put("orientation", s.orientation.code)
         put("highRefreshRate", s.highRefreshRate)
@@ -41,6 +42,9 @@ object SettingsCodec {
         put("doubleTapAction", s.doubleTapAction.code)
         put("twoFingerDownAction", s.twoFingerDownAction.code)
         put("twoFingerUpAction", s.twoFingerUpAction.code)
+        put("doubleTapApp", s.doubleTapApp)
+        put("twoFingerDownApp", s.twoFingerDownApp)
+        put("twoFingerUpApp", s.twoFingerUpApp)
         put("tapSound", s.tapSound)
         put("tapHaptics", s.tapHaptics)
 
@@ -48,6 +52,7 @@ object SettingsCodec {
         put("notificationPeek", s.notificationPeek)
         put("inlineReply", s.inlineReply)
         put("groupConversations", s.groupConversations)
+        put("actionSliders", s.actionSliders)
         put("liveMessages", s.liveMessages)
         put("liveHideText", s.liveHideText)
         put("livePictures", s.livePictures)
@@ -130,6 +135,7 @@ object SettingsCodec {
             parallax = o.optBoolean("parallax", base.parallax),
             startPages = o.optInt("startPages", base.startPages).coerceIn(1, LauncherSettings.MAX_START_PAGES),
             showClock = o.optBoolean("showClock", base.showClock),
+            clockTaps = o.optBoolean("clockTaps", base.clockTaps),
 
             orientation = if (o.has("orientation")) OrientationMode.fromCode(o.optString("orientation")) else base.orientation,
             highRefreshRate = o.optBoolean("highRefreshRate", base.highRefreshRate),
@@ -140,6 +146,9 @@ object SettingsCodec {
             doubleTapAction = GestureAction.fromCode(o.optString("doubleTapAction").ifEmpty { null }, base.doubleTapAction),
             twoFingerDownAction = GestureAction.fromCode(o.optString("twoFingerDownAction").ifEmpty { null }, base.twoFingerDownAction),
             twoFingerUpAction = GestureAction.fromCode(o.optString("twoFingerUpAction").ifEmpty { null }, base.twoFingerUpAction),
+            doubleTapApp = o.optString("doubleTapApp", base.doubleTapApp),
+            twoFingerDownApp = o.optString("twoFingerDownApp", base.twoFingerDownApp),
+            twoFingerUpApp = o.optString("twoFingerUpApp", base.twoFingerUpApp),
             tapSound = o.optBoolean("tapSound", base.tapSound),
             tapHaptics = o.optBoolean("tapHaptics", base.tapHaptics),
 
@@ -147,6 +156,7 @@ object SettingsCodec {
             notificationPeek = o.optBoolean("notificationPeek", base.notificationPeek),
             inlineReply = o.optBoolean("inlineReply", base.inlineReply),
             groupConversations = o.optBoolean("groupConversations", base.groupConversations),
+            actionSliders = o.optBoolean("actionSliders", base.actionSliders),
             liveMessages = o.optBoolean("liveMessages", base.liveMessages),
             liveHideText = o.optBoolean("liveHideText", base.liveHideText),
             livePictures = o.optBoolean("livePictures", base.livePictures),

@@ -97,6 +97,7 @@ import com.metrowin.launcher.model.LiveKind
 import com.metrowin.launcher.model.Tile
 import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.ui.actioncenter.ActionCenter
+import com.metrowin.launcher.ui.actioncenter.ActionControls
 import com.metrowin.launcher.ui.apps.AppContextMenu
 import com.metrowin.launcher.ui.apps.AppListModel
 import com.metrowin.launcher.ui.apps.AppListScreen
@@ -207,6 +208,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val peeks by vm.peeks.collectAsStateWithLifecycle()
     val liveInfo by vm.liveInfo.collectAsStateWithLifecycle()
     val liveReport by vm.liveReport.collectAsStateWithLifecycle()
+    val panelControls by vm.controls.collectAsStateWithLifecycle()
     val notificationAccess by vm.notificationAccess.collectAsStateWithLifecycle()
     val torchOn by vm.torchOn.collectAsStateWithLifecycle()
 
@@ -354,6 +356,8 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     // The Action Center. The panel is one state that follows the finger, whatever starts the pull.
     val panel = rememberPullPanel()
+    // The sliders show how things are when the Action Center opens.
+    LaunchedEffect(panel.isShown) { if (panel.isShown) vm.refreshControls() }
     var quickStates by remember { mutableStateOf<Map<QuickAction, Boolean?>>(emptyMap()) }
 
     // The settings page, and the section on top of it, swing in and out like a turnstile; the back gesture
@@ -683,7 +687,15 @@ fun LauncherApp(vm: LauncherViewModel) {
     }
 
     /** What a gesture does, as the settings chose. */
-    fun perform(action: GestureAction) {
+    fun perform(action: GestureAction, appId: String = "") {
+        // Screenshot, power menu, split screen and Android's own panels: the accessibility service does them.
+        action.system?.let { system ->
+            if (!LockAccessibilityService.perform(system)) {
+                Toast.makeText(appContext, R.string.gest_lock_needs_service, Toast.LENGTH_LONG).show()
+                vm.openAccessibilitySettings()
+            }
+            return
+        }
         when (action) {
             GestureAction.None -> Unit
             GestureAction.LockScreen -> if (!LockAccessibilityService.lock()) {
@@ -706,6 +718,13 @@ fun LauncherApp(vm: LauncherViewModel) {
                 scope.launch { pagerState.animateScrollToPage(appsPage) }
                 searchFocus++
             }
+            GestureAction.OpenApp -> {
+                val app = items.firstOrNull { it.id == appId }
+                if (app != null) open(app, null) else Toast.makeText(appContext, R.string.gest_app_none, Toast.LENGTH_LONG).show()
+            }
+            // Done by the service above.
+            GestureAction.Screenshot, GestureAction.PowerMenu, GestureAction.SplitScreen,
+            GestureAction.AndroidNotifications, GestureAction.AndroidQuickSettings -> Unit
         }
     }
 
@@ -857,7 +876,7 @@ fun LauncherApp(vm: LauncherViewModel) {
         onTileBounds = { bounds ->
             tapBounds = android.graphics.Rect(bounds.left.toInt(), bounds.top.toInt(), bounds.right.toInt(), bounds.bottom.toInt())
         },
-        onDoubleTap = if (settings.doubleTapAction != GestureAction.None) ({ perform(settings.doubleTapAction) }) else null,
+        onDoubleTap = if (settings.doubleTapAction != GestureAction.None) ({ perform(settings.doubleTapAction, settings.doubleTapApp) }) else null,
         onNextPage = { scope.launch { pagerState.animateScrollToPage((pagerState.currentPage + 1).coerceAtMost(appsPage)) } },
     )
 
@@ -907,8 +926,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                     .twoFingerSwipe(
                         enabled = !pullBlocked && (settings.twoFingerDownAction != GestureAction.None || settings.twoFingerUpAction != GestureAction.None),
                         thresholdPx = with(density) { TWO_FINGER_SWIPE.toPx() },
-                        onDown = { perform(settings.twoFingerDownAction) },
-                        onUp = { perform(settings.twoFingerUpAction) },
+                        onDown = { perform(settings.twoFingerDownAction, settings.twoFingerDownApp) },
+                        onUp = { perform(settings.twoFingerUpAction, settings.twoFingerUpApp) },
                     ),
             ) {
                 if (kidsMode) {
@@ -946,7 +965,16 @@ fun LauncherApp(vm: LauncherViewModel) {
                             pullConnection = pullConnections[page],
                             parallax = settings.parallax,
                             pickedKeys = folderPick,
-                            header = if (settings.showClock && page == 0) ({ ClockHeader() }) else null,
+                            header = if (settings.showClock && page == 0) {
+                                {
+                                    ClockHeader(
+                                        onTimeClick = if (settings.clockTaps) ({ vm.openClock() }) else null,
+                                        onDateClick = if (settings.clockTaps) ({ vm.openCalendar() }) else null,
+                                    )
+                                }
+                            } else {
+                                null
+                            },
                         )
                     },
                     apps = {
@@ -1173,6 +1201,13 @@ fun LauncherApp(vm: LauncherViewModel) {
                                 panel.close()
                                 settingsSection = null
                                 settingsOpen = true
+                            } else if (action == QuickAction.Screenshot) {
+                                // The panel goes first, so that it is not in the picture.
+                                panel.close()
+                                scope.launch {
+                                    delay(SCREENSHOT_DELAY_MS)
+                                    perform(GestureAction.Screenshot)
+                                }
                             } else if (action == QuickAction.Recents) {
                                 // The panel goes first, so that the recent apps do not open behind it.
                                 panel.close()
@@ -1193,6 +1228,19 @@ fun LauncherApp(vm: LauncherViewModel) {
                         onDismissNotification = vm::dismissNotification,
                         onReply = if (settings.inlineReply) vm::replyToNotification else null,
                         groupConversations = settings.groupConversations,
+                        controls = if (settings.actionSliders) {
+                            ActionControls(
+                                volume = panelControls.volume, ringer = panelControls.ringer, brightness = panelControls.brightness,
+                                canSetBrightness = panelControls.canSetBrightness,
+                                onVolume = vm::setVolume, onRinger = vm::setRinger, onBrightness = vm::setBrightness,
+                                onAllowBrightness = {
+                                    panel.close()
+                                    vm.openBrightnessAccess()
+                                },
+                            )
+                        } else {
+                            null
+                        },
                         onClearAll = vm::clearNotifications,
                         onTurnOnNotificationAccess = vm::openNotificationAccessSettings,
                         onClose = panel::close,
@@ -1469,3 +1517,6 @@ fun LauncherApp(vm: LauncherViewModel) {
 
 /** How long the undo bar stays. */
 private const val UNDO_MS = 6_000L
+
+/** Long enough for the Action Center to slide away before the screenshot is taken. */
+private const val SCREENSHOT_DELAY_MS = 450L

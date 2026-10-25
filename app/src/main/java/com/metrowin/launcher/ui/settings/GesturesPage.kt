@@ -3,7 +3,9 @@ package com.metrowin.launcher.ui.settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
+import com.metrowin.launcher.data.AppFilter
 import com.metrowin.launcher.data.GestureAction
 import androidx.compose.ui.res.stringResource
 import com.metrowin.launcher.R
@@ -14,20 +16,39 @@ fun GesturesPage(env: SettingsEnv) {
     val settings = env.settings
     val actions = GestureAction.entries
     val actionNames = actions.map { stringResource(it.label) }
+    val pickable = remember(env.apps, settings) { AppFilter.visible(env.apps, settings) }
     SettingsPage {
         Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
             DropdownSetting(
                 stringResource(R.string.gest_double_tap), actionNames, actions.indexOf(settings.doubleTapAction),
                 onSelect = { i -> env.onChange { it.copy(doubleTapAction = actions[i]) } }, tag = "gestures:doubletap",
             )
+            if (settings.doubleTapAction == GestureAction.OpenApp) {
+                AppPickerSetting(
+                    stringResource(R.string.gest_app_for, stringResource(R.string.gest_double_tap)), pickable, settings.doubleTapApp,
+                    onSelect = { id -> env.onChange { it.copy(doubleTapApp = id) } }, tag = "gestures:doubletap:app",
+                )
+            }
             DropdownSetting(
                 stringResource(R.string.gest_two_down), actionNames, actions.indexOf(settings.twoFingerDownAction),
                 onSelect = { i -> env.onChange { it.copy(twoFingerDownAction = actions[i]) } }, tag = "gestures:twodown",
             )
+            if (settings.twoFingerDownAction == GestureAction.OpenApp) {
+                AppPickerSetting(
+                    stringResource(R.string.gest_app_for, stringResource(R.string.gest_two_down)), pickable, settings.twoFingerDownApp,
+                    onSelect = { id -> env.onChange { it.copy(twoFingerDownApp = id) } }, tag = "gestures:twodown:app",
+                )
+            }
             DropdownSetting(
                 stringResource(R.string.gest_two_up), actionNames, actions.indexOf(settings.twoFingerUpAction),
                 onSelect = { i -> env.onChange { it.copy(twoFingerUpAction = actions[i]) } }, tag = "gestures:twoup",
             )
+            if (settings.twoFingerUpAction == GestureAction.OpenApp) {
+                AppPickerSetting(
+                    stringResource(R.string.gest_app_for, stringResource(R.string.gest_two_up)), pickable, settings.twoFingerUpApp,
+                    onSelect = { id -> env.onChange { it.copy(twoFingerUpApp = id) } }, tag = "gestures:twoup:app",
+                )
+            }
             SettingHint(stringResource(R.string.gest_actions_hint))
         }
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {

@@ -65,6 +65,13 @@ fun ActionsPage(env: SettingsEnv) {
             }
         }
         ToggleSetting(
+            label = stringResource(R.string.ac_sliders),
+            checked = env.settings.actionSliders,
+            onChange = { value -> env.onChange { it.copy(actionSliders = value) } },
+            hint = stringResource(R.string.ac_sliders_hint),
+            tag = "actions:sliders",
+        )
+        ToggleSetting(
             label = stringResource(R.string.notif_peek),
             checked = env.settings.notificationPeek,
             onChange = { value -> env.onChange { it.copy(notificationPeek = value) } },

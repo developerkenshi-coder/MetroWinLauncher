@@ -249,3 +249,68 @@ fun InfoSetting(label: String, value: String, modifier: Modifier = Modifier) {
         MetroText(value, size = 18.sp, weight = FontWeight.Normal)
     }
 }
+
+/**
+ * Choosing an app: what is chosen now, and a touch opens a short list with a search box on top (at most [LIMIT] shown, the
+ * rest found by typing), so that a phone with hundreds of apps does not put them all on the page.
+ */
+@Composable
+fun AppPickerSetting(
+    label: String,
+    apps: List<com.metrowin.launcher.model.AppItem>,
+    selectedId: String,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    tag: String = "apppicker",
+) {
+    var open by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    val colors = LocalMetroColors.current
+    val chosen = apps.firstOrNull { it.id == selectedId }
+    Column(modifier) {
+        SettingLabel(label)
+        Row(
+            Modifier.fillMaxWidth().testTag("$tag:header").metroPress(onClick = { open = !open }).frame(2.dp, colors.foreground).padding(horizontal = 14.dp, vertical = 11.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (chosen != null) {
+                com.metrowin.launcher.ui.components.AppSquare(chosen, 30.dp)
+                Spacer(Modifier.width(12.dp))
+            }
+            MetroText(
+                chosen?.label ?: stringResource(R.string.gest_app_choose), size = 19.sp, weight = FontWeight.Normal,
+                color = if (chosen == null) colors.subtle else colors.foreground, modifier = Modifier.weight(1f),
+            )
+            MetroText(if (open) "−" else "+", size = 24.sp, weight = FontWeight.Normal, color = colors.subtle)
+        }
+        if (open) {
+            Column(Modifier.padding(top = 8.dp)) {
+                com.metrowin.launcher.ui.components.MetroTextField(
+                    value = query, onValueChange = { query = it }, placeholder = stringResource(R.string.search_apps),
+                    modifier = Modifier.testTag("$tag:query"),
+                )
+                val shown = remember(apps, query) { com.metrowin.launcher.data.AppSearch.filter(apps, query).take(LIMIT) }
+                shown.forEach { app ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .testTag("$tag:${app.id}")
+                            .metroPress(onClick = {
+                                onSelect(app.id)
+                                open = false
+                                query = ""
+                            })
+                            .padding(vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        com.metrowin.launcher.ui.components.AppSquare(app, 36.dp)
+                        Spacer(Modifier.width(14.dp))
+                        MetroText(app.label, size = 19.sp, modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+    }
+}
+
+private const val LIMIT = 30

@@ -313,7 +313,7 @@
     <string name="gest_lock_service_hint">Android only lets an app lock the screen or open the recent apps through an accessibility service. This one does nothing else: it reads nothing from the screen and asks for no events. The recent apps open at once, without the wait that the swipe of Android\'s gesture navigation can have with a launcher that is not the phone\'s own.</string>
     <string name="gest_lock_needs_service">Turn on the screen lock service in the accessibility settings first</string>
     <string name="lock_service_label">MetroWin screen lock</string>
-    <string name="lock_service_description">Lets the MetroWin launcher lock the screen or open the recent apps when you choose that for a gesture or a button. It does not read or change anything on the screen.</string>
+    <string name="lock_service_description">Lets the MetroWin launcher lock the screen, open the recent apps, take a screenshot, open the power menu or split the screen when you choose that for a gesture or a button. It does not read or change anything on the screen.</string>
 
     <!-- scheduled backup -->
     <string name="backup_folder">backup folder</string>
@@ -800,4 +800,26 @@
     <string name="weather_rain_short">rain %1$d%%</string>
     <string name="unit_kmh">km/h</string>
     <string name="unit_mph">mph</string>
+
+    <!-- Gestures, Action Center controls and clock taps -->
+    <string name="gact_app">open an app</string>
+    <string name="gact_screenshot">take a screenshot</string>
+    <string name="gact_power">open the power menu</string>
+    <string name="gact_split">split the screen</string>
+    <string name="gact_android_notifications">pull down the Android notifications</string>
+    <string name="gact_android_quick">pull down the Android quick settings</string>
+    <string name="gest_app_for">app for “%1$s”</string>
+    <string name="gest_app_choose">choose an app</string>
+    <string name="gest_app_none">No app chosen for this gesture: choose one in the gestures page.</string>
+    <string name="ac_volume">media volume</string>
+    <string name="ac_brightness">brightness</string>
+    <string name="ac_brightness_allow">Allow the brightness slider (Android asks in its own screen)</string>
+    <string name="ringer_sound">sound</string>
+    <string name="ringer_vibrate">vibration</string>
+    <string name="ringer_silent">silent</string>
+    <string name="ac_sliders">volume and brightness in the Action Center</string>
+    <string name="ac_sliders_hint">Two sliders and the sound, vibration and silent buttons. The volume needs no permission; the brightness needs the “modify system settings” access, which you give in a screen of Android.</string>
+    <string name="theme_clock_taps">touch the clock</string>
+    <string name="theme_clock_taps_hint">A touch on the time of Start opens the clock, on the date the calendar.</string>
+    <string name="qa_screenshot">Screenshot</string>
 </resources>

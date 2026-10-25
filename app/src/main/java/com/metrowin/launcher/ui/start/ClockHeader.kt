@@ -13,6 +13,8 @@ import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import com.metrowin.launcher.ui.anim.metroPress
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,7 +27,12 @@ import java.util.Locale
 
 /** The time in large light type with the date under it, above the tiles. Redrawn when the minute changes. */
 @Composable
-fun ClockHeader(modifier: Modifier = Modifier) {
+fun ClockHeader(
+    modifier: Modifier = Modifier,
+    /** A touch on the time and on the date; null makes that part plain text. */
+    onTimeClick: (() -> Unit)? = null,
+    onDateClick: (() -> Unit)? = null,
+) {
     val context = LocalContext.current
     var now by remember { mutableStateOf(LocalDateTime.now()) }
     LaunchedWhileStarted(Unit) {
@@ -39,7 +46,10 @@ fun ClockHeader(modifier: Modifier = Modifier) {
     val locale = Locale.getDefault()
     val is24 = DateFormat.is24HourFormat(context)
     Column(modifier.padding(bottom = 14.dp, start = 2.dp)) {
-        Row(verticalAlignment = Alignment.Bottom) {
+        Row(
+            Modifier.then(if (onTimeClick != null) Modifier.testTag("clock:time").metroPress(onClick = onTimeClick) else Modifier),
+            verticalAlignment = Alignment.Bottom,
+        ) {
             MetroText(ClockFormat.time(now.toLocalTime(), is24, locale), size = 52.sp)
             val meridiem = ClockFormat.meridiem(now.toLocalTime(), is24, locale)
             if (meridiem.isNotEmpty()) {
@@ -49,6 +59,7 @@ fun ClockHeader(modifier: Modifier = Modifier) {
         MetroText(
             ClockFormat.date(now.toLocalDate(), locale),
             size = 18.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+            modifier = if (onDateClick != null) Modifier.testTag("clock:date").metroPress(onClick = onDateClick) else Modifier,
         )
     }
 }

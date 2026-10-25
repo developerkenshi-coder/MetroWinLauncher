@@ -56,6 +56,8 @@ import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.QuickAction
+import com.metrowin.launcher.data.RingerMode
+import com.metrowin.launcher.ui.components.MetroSlider
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.notifications.NotificationEntry
@@ -101,6 +103,8 @@ fun ActionCenter(
     onReply: ((NotificationEntry, String) -> Boolean)? = null,
     /** The notifications of an app with several show as one line that opens. */
     groupConversations: Boolean = false,
+    /** The volume, the brightness and the sound mode under the buttons; null leaves them out. */
+    controls: ActionControls? = null,
 ) {
     val colors = LocalMetroColors.current
     var expanded by remember { mutableStateOf(false) }
@@ -130,6 +134,7 @@ fun ActionCenter(
                     val others = QuickAction.entries.filter { it !in slots }
                     others.chunked(QuickAction.SLOTS).forEach { row -> QuickRow(row, states, onAction) }
                 }
+                if (controls != null) ControlsBlock(controls)
                 Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     ExpandChevron(expanded) { expanded = !expanded }
                     Spacer(Modifier.weight(1f))
@@ -197,6 +202,70 @@ fun ActionCenter(
             }
 
             PullUpHandle(onClose)
+        }
+    }
+}
+
+/** What the sliders and the sound buttons of the panel show, and what they do. */
+class ActionControls(
+    /** 0 to 1, or null when the phone has no volume to read. */
+    val volume: Float?,
+    val ringer: RingerMode?,
+    val brightness: Float?,
+    /** False until the user gives the access that changing the brightness needs. */
+    val canSetBrightness: Boolean,
+    val onVolume: (Float) -> Unit,
+    val onRinger: (RingerMode) -> Unit,
+    val onBrightness: (Float) -> Unit,
+    val onAllowBrightness: () -> Unit,
+)
+
+/** The volume and the brightness as sliders, and the three sound modes as buttons. */
+@Composable
+private fun ControlsBlock(controls: ActionControls) {
+    val colors = LocalMetroColors.current
+    Column(Modifier.padding(top = 6.dp).testTag("ac:controls"), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        controls.volume?.let { volume ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                GlyphIcon(Glyph.Bell, 26.dp, color = colors.subtle)
+                Box(Modifier.weight(1f).padding(start = 12.dp).testTag("ac:volume")) {
+                    MetroSlider(volume, controls.onVolume, stringResource(R.string.ac_volume))
+                }
+            }
+        }
+        controls.brightness?.let { brightness ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                GlyphIcon(Glyph.Brightness, 26.dp, color = colors.subtle)
+                if (controls.canSetBrightness) {
+                    Box(Modifier.weight(1f).padding(start = 12.dp).testTag("ac:brightness")) {
+                        MetroSlider(brightness, controls.onBrightness, stringResource(R.string.ac_brightness))
+                    }
+                } else {
+                    Box(
+                        Modifier.weight(1f).testTag("ac:brightness:allow").metroPress(onClick = controls.onAllowBrightness).padding(start = 12.dp, top = 10.dp, bottom = 10.dp),
+                    ) {
+                        MetroText(stringResource(R.string.ac_brightness_allow), size = 16.sp, weight = FontWeight.Normal, color = LocalAccent.current)
+                    }
+                }
+            }
+        }
+        controls.ringer?.let { ringer ->
+            Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                RingerMode.entries.forEach { mode ->
+                    val lit = mode == ringer
+                    Box(
+                        Modifier
+                            .weight(1f)
+                            .height(40.dp)
+                            .testTag("ac:ringer:${mode.name}")
+                            .metroPress(onClick = { controls.onRinger(mode) })
+                            .litFill(lit, LocalStyle.current.cardShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        MetroText(stringResource(mode.label), size = 15.sp, weight = FontWeight.Normal, color = if (lit) onAccent() else colors.foreground)
+                    }
+                }
+            }
         }
     }
 }

@@ -59,6 +59,17 @@ class LockAccessibilityService : AccessibilityService() {
 
         private const val PANEL_CLOSE_MS = 250L
 
+        /**
+         * What the service does for a gesture besides locking and the recent apps: the screenshot, the power menu, the split
+         * screen and Android's own notification shade and quick settings. False when the service is off or the version of
+         * Android does not have it.
+         */
+        fun perform(action: SystemAction): Boolean {
+            val service = instance ?: return false
+            if (Build.VERSION.SDK_INT < action.minSdk) return false
+            return service.performGlobalAction(action.global)
+        }
+
         /** Whether the user has turned the service on. */
         fun isEnabled(context: Context): Boolean {
             val enabled = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES).orEmpty()
@@ -78,4 +89,13 @@ class LockAccessibilityService : AccessibilityService() {
                 listedPackage == packageName && listedClass == className
             }
     }
+}
+
+/** The things the accessibility service can do for a gesture, with the version of Android that has each. */
+enum class SystemAction(val global: Int, val minSdk: Int) {
+    Screenshot(AccessibilityService.GLOBAL_ACTION_TAKE_SCREENSHOT, Build.VERSION_CODES.P),
+    PowerMenu(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG, Build.VERSION_CODES.LOLLIPOP),
+    SplitScreen(AccessibilityService.GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN, Build.VERSION_CODES.N),
+    Notifications(AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS, Build.VERSION_CODES.JELLY_BEAN),
+    QuickSettings(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS, Build.VERSION_CODES.JELLY_BEAN_MR2),
 }
