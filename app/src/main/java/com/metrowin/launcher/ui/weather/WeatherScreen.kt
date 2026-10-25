@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.WeatherData
 import com.metrowin.launcher.ui.components.MetroButton
@@ -51,6 +52,7 @@ fun WeatherScreen(
             .pointerInput(Unit) { detectTapGestures { } }
             .statusBarsPadding()
             .navigationBarsPadding()
+            .cutoutSidesPadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp),
     ) {

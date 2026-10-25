@@ -102,4 +102,36 @@ class TileGridTest {
             }
         }
     }
+
+    @Test
+    fun aPortraitPhoneKeepsItsFourOrSixColumns() {
+        assertEquals(4, TileGrid.columnsFor(360f, more = false))
+        assertEquals(4, TileGrid.columnsFor(320f, more = false))
+        assertEquals(4, TileGrid.columnsFor(411f, more = false))
+        assertEquals(6, TileGrid.columnsFor(360f, more = true))
+    }
+
+    @Test
+    fun aWiderScreenGetsMoreColumnsInWholeBlocksInsteadOfBiggerTiles() {
+        assertEquals(10, TileGrid.columnsFor(800f, more = false))
+        assertEquals(12, TileGrid.columnsFor(800f, more = true))
+        for (width in 320..1600 step 40) {
+            for (more in listOf(false, true)) {
+                val columns = TileGrid.columnsFor(width.toFloat(), more)
+                assertEquals("$width dp: whole blocks", 0, columns % 2)
+                assertEquals("$width dp: not too many", true, columns in 4..12)
+            }
+        }
+    }
+
+    @Test
+    fun theGridNeverNeedsLessThanTheWidthItIsGiven() {
+        // A wider screen never gets fewer columns than a narrower one.
+        var previous = 0
+        for (width in 300..1600 step 10) {
+            val columns = TileGrid.columnsFor(width.toFloat(), more = false)
+            assertEquals("$width dp", true, columns >= previous)
+            previous = columns
+        }
+    }
 }

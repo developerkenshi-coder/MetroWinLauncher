@@ -12,6 +12,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.metrowin.launcher.data.LauncherSettings
+import kotlinx.coroutines.launch
 import com.metrowin.launcher.data.DisplayModeInfo
 import com.metrowin.launcher.data.RefreshRate
 
@@ -25,8 +29,20 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
         )
         super.onCreate(savedInstanceState)
-        requestHighestRefreshRate()
+        applyDisplaySettings(viewModel.settings.value)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) { viewModel.settings.collect(::applyDisplaySettings) }
+        }
         setContent { LauncherApp(viewModel) }
+    }
+
+    private var wantsHighRefresh = true
+
+    /** The manifest starts in portrait; the settings may free the rotation or fix landscape, and turn the 120 Hz request off. */
+    private fun applyDisplaySettings(settings: LauncherSettings) {
+        if (requestedOrientation != settings.orientation.requested) requestedOrientation = settings.orientation.requested
+        wantsHighRefresh = settings.highRefreshRate
+        requestHighestRefreshRate()
     }
 
     /** Called with the result of a widget's own setup screen (see [com.metrowin.launcher.data.WidgetService.configure]). */
@@ -50,6 +66,14 @@ class MainActivity : ComponentActivity() {
      * animations are time based, so they run the same at any rate, only smoother.
      */
     private fun requestHighestRefreshRate() {
+        if (!wantsHighRefresh) {
+            // No preference: Android picks the rate by what is on screen.
+            if (window.attributes.preferredDisplayModeId != 0) {
+                window.attributes = window.attributes.also { it.preferredDisplayModeId = 0 }
+            }
+            if (Build.VERSION.SDK_INT >= 35) window.decorView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_NO_PREFERENCE)
+            return
+        }
         @Suppress("DEPRECATION")
         val screen = (if (Build.VERSION.SDK_INT >= 30) display else windowManager.defaultDisplay) ?: return
         fun Display.Mode.info() = DisplayModeInfo(modeId, physicalWidth, physicalHeight, refreshRate)

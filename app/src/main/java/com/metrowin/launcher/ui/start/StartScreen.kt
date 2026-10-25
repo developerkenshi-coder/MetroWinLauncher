@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.zIndex
+import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.Placement
 import com.metrowin.launcher.data.TileGrid
@@ -195,6 +196,7 @@ fun StartScreen(
                 }
                 .verticalScroll(scrollState)
                 .statusBarsPadding()
+                .cutoutSidesPadding()
                 .padding(horizontal = 12.dp),
         ) {
             Spacer(Modifier.height(16.dp))

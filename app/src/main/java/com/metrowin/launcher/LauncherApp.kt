@@ -54,6 +54,8 @@ import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.QuickAction
 import com.metrowin.launcher.data.GestureAction
+import com.metrowin.launcher.data.TileGrid
+import androidx.compose.ui.platform.LocalConfiguration
 import com.metrowin.launcher.data.SystemSettingDef
 import com.metrowin.launcher.data.VoiceCommand
 import com.metrowin.launcher.data.VoiceCommands
@@ -180,6 +182,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val battery by vm.battery.collectAsStateWithLifecycle()
     val liveNow = remember(live, torchOn, weather, battery) { live.copy(torchOn = torchOn, weather = weather, battery = battery) }
     val appContext = LocalContext.current
+    val screenWidthDp = LocalConfiguration.current.screenWidthDp.toFloat()
     val about = remember(appContext) { AboutInfo.of(appContext) }
     val kidsMode = settings.kidsMode
     val kidsCells = remember(settings.kidsApps, items) {
@@ -684,7 +687,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         cells = kidsCells,
                         live = LiveTileData(),
                         badges = emptyMap(),
-                        columns = LauncherSettings.DEFAULT_COLUMNS,
+                        columns = TileGrid.columnsFor(screenWidthDp, more = false),
                         background = null,
                         enterToken = enterToken,
                         exitRequest = exitRequest,
@@ -704,7 +707,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             live = liveNow,
                             badges = badges,
                             peeks = peeks,
-                            columns = settings.columns,
+                            columns = TileGrid.columnsFor(screenWidthDp, settings.moreTiles),
                             background = startBackground,
                             enterToken = enterToken,
                             exitRequest = exitRequest,

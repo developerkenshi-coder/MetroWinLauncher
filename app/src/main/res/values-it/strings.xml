@@ -377,4 +377,15 @@
     <string name="voice_ex_launcher">“meteo”, “blocca lo schermo”, “centro notifiche”, “tutte le app”, “impostazioni del launcher”</string>
     <string name="voice_ex_settings">“apri Wi-Fi”, “Bluetooth”, “batteria”… le impostazioni di Android</string>
     <string name="voice_gesture_hint">Puoi avviarla anche con un doppio tocco o uno swipe a due dita: scegli “voce” in Gesti.</string>
+
+    <!-- screen settings -->
+    <string name="sec_screen">schermo</string>
+    <string name="sec_screen_desc">Rotazione, orizzontale e frequenza di aggiornamento</string>
+    <string name="screen_orientation">rotazione</string>
+    <string name="screen_orient_portrait">solo verticale</string>
+    <string name="screen_orient_auto">segui la rotazione del telefono</string>
+    <string name="screen_orient_landscape">solo orizzontale</string>
+    <string name="screen_orient_hint">In orizzontale la schermata Start ha più colonne di tile. “Segui il telefono” rispetta il blocco della rotazione di Android.</string>
+    <string name="screen_high_refresh">massima frequenza di aggiornamento</string>
+    <string name="screen_high_refresh_hint">Chiede allo schermo la modalità più veloce (120 Hz e oltre) alla risoluzione attuale. Disattiva per lasciar decidere ad Android e risparmiare batteria.</string>
 </resources>

@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroText
@@ -64,7 +65,8 @@ fun SettingsScreen(
             // Swallow touches so nothing underneath reacts while this page is up.
             .pointerInput(Unit) { detectTapGestures { } }
             .statusBarsPadding()
-            .navigationBarsPadding(),
+            .navigationBarsPadding()
+            .cutoutSidesPadding(),
     ) {
         Column(Modifier.fillMaxSize()) {
             SettingsHeader()
@@ -131,6 +133,7 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, modifier: Mo
                 SettingsSection.Actions -> ActionsPage(env)
                 SettingsSection.LiveTiles -> LiveTilesPage(env)
                 SettingsSection.Apps -> AppsPage(env)
+                SettingsSection.Screen -> ScreenPage(env)
                 SettingsSection.Voice -> VoicePage(env)
                 SettingsSection.Profiles -> ProfilesPage(env)
                 SettingsSection.Backup -> BackupPage(env)

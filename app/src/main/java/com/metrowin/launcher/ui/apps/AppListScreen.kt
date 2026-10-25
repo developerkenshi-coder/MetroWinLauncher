@@ -31,6 +31,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.only
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -164,6 +170,9 @@ fun AppListScreen(
     onVoice: (() -> Unit)? = null,
 ) {
     val insets = WindowInsets.systemBars.asPaddingValues()
+    // In landscape the camera cutout sits on a side.
+    val sides = WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal).asPaddingValues()
+    val direction = LocalLayoutDirection.current
     // While searching the list is just the matches, without letter headers, followed by what else was found.
     val rows = remember(model, query, results, global) {
         if (query.isBlank()) {
@@ -200,6 +209,8 @@ fun AppListScreen(
         state = listState,
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(
+            start = sides.calculateStartPadding(direction),
+            end = sides.calculateEndPadding(direction),
             top = insets.calculateTopPadding() + 12.dp,
             bottom = insets.calculateBottomPadding() + 12.dp,
         ),

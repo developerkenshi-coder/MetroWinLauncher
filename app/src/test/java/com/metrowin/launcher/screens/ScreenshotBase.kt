@@ -17,6 +17,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.metrowin.launcher.ui.theme.DefaultAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.MetroTheme
+import androidx.compose.ui.unit.DpSize
 import org.junit.Rule
 import org.robolectric.annotation.GraphicsMode
 import java.io.File
@@ -35,11 +36,16 @@ abstract class ScreenshotBase {
     protected val context: Context get() = ApplicationProvider.getApplicationContext()
 
     /** The test clock is paused, so animations only move when the test calls [advance]. */
-    protected fun show(dark: Boolean = true, accent: Color = DefaultAccent, content: @Composable () -> Unit) {
+    protected fun show(
+        dark: Boolean = true,
+        accent: Color = DefaultAccent,
+        size: DpSize = DpSize(360.dp, 760.dp),
+        content: @Composable () -> Unit,
+    ) {
         compose.mainClock.autoAdvance = false
         compose.setContent {
             MetroTheme(accent, dark) {
-                Box(Modifier.size(360.dp, 760.dp).background(LocalMetroColors.current.background)) { content() }
+                Box(Modifier.size(size).background(LocalMetroColors.current.background)) { content() }
             }
         }
     }

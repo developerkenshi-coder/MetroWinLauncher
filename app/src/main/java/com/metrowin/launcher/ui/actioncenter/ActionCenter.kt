@@ -47,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.QuickAction
 import com.metrowin.launcher.model.AppItem
@@ -108,7 +109,7 @@ fun ActionCenter(
             // Swallow touches so Start underneath does not react.
             .pointerInput(Unit) { detectTapGestures { } },
     ) {
-        Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
+        Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().cutoutSidesPadding()) {
             Column(Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 QuickRow(slots, states, onAction)
                 if (expanded) {

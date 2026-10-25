@@ -1,6 +1,7 @@
 package com.metrowin.launcher.data
 
 import android.content.Context
+import android.content.pm.ActivityInfo
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import com.metrowin.launcher.R
@@ -64,11 +65,20 @@ enum class LaunchAnimation(val code: String) {
     }
 }
 
-enum class OrientationMode(val code: String) {
-    Portrait("portrait"),
+enum class OrientationMode(val code: String, @param:StringRes val label: Int) {
+    Portrait("portrait", R.string.screen_orient_portrait),
 
-    /** Follows the sensor, so the launcher can be used in landscape. */
-    Auto("auto");
+    /** Follows the rotation of the phone, and its rotation lock, so the launcher can be used in landscape. */
+    Auto("auto", R.string.screen_orient_auto),
+    Landscape("landscape", R.string.screen_orient_landscape);
+
+    /** The value for [android.app.Activity.setRequestedOrientation]. */
+    val requested: Int
+        get() = when (this) {
+            Portrait -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            Auto -> ActivityInfo.SCREEN_ORIENTATION_FULL_USER
+            Landscape -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        }
 
     companion object {
         fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: Portrait
@@ -175,9 +185,6 @@ data class LauncherSettings(
     val kidsMode: Boolean = false,
 ) {
     val hasStartBackground: Boolean get() = backgroundRevision > 0
-
-    /** Columns of small tiles on the Start grid. */
-    val columns: Int get() = if (moreTiles) 6 else DEFAULT_COLUMNS
 
     companion object {
         const val DEFAULT_ACCENT = 4

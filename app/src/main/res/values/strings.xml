@@ -384,4 +384,15 @@
     <string name="voice_ex_launcher">“weather”, “lock the screen”, “action center”, “all apps”, “launcher settings”</string>
     <string name="voice_ex_settings">“open Wi-Fi”, “Bluetooth”, “battery”… the Android settings</string>
     <string name="voice_gesture_hint">You can also start it with a double tap or a two-finger swipe: choose “voice” in Gestures.</string>
+
+    <!-- screen settings -->
+    <string name="sec_screen">screen</string>
+    <string name="sec_screen_desc">Rotation, landscape and refresh rate</string>
+    <string name="screen_orientation">rotation</string>
+    <string name="screen_orient_portrait">portrait only</string>
+    <string name="screen_orient_auto">follow the phone\'s rotation</string>
+    <string name="screen_orient_landscape">landscape only</string>
+    <string name="screen_orient_hint">In landscape the Start screen fits more columns of tiles. “Follow the phone” respects the rotation lock of Android.</string>
+    <string name="screen_high_refresh">highest refresh rate</string>
+    <string name="screen_high_refresh_hint">Asks the screen for its fastest mode (120 Hz and more) at the current resolution. Turn it off to let Android decide and save some battery.</string>
 </resources>

@@ -27,6 +27,7 @@ enum class SettingsSection(
     @param:StringRes val description: Int,
 ) {
     StartTheme(SettingsGroup.Launcher, R.string.settings_start_theme, R.string.sec_start_theme_desc),
+    Screen(SettingsGroup.Launcher, R.string.sec_screen, R.string.sec_screen_desc),
     Gestures(SettingsGroup.Launcher, R.string.sec_gestures, R.string.sec_gestures_desc),
     Actions(SettingsGroup.Launcher, R.string.settings_actions, R.string.sec_actions_desc),
     LiveTiles(SettingsGroup.Launcher, R.string.sec_live_tiles, R.string.sec_live_tiles_desc),

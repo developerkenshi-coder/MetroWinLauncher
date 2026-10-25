@@ -19,6 +19,24 @@ object TileGrid {
     const val DEFAULT_COLUMNS = 4
     const val MORE_COLUMNS = 6
     private const val BLOCK = 2
+    private const val MAX_COLUMNS = 12
+
+    /** Width of a small tile, in dp, that the portrait phone grid has: four columns on 360 dp, six with "more tiles". */
+    private const val UNIT_DP = 79.5f
+    private const val MORE_UNIT_DP = 51f
+    private const val GAP_DP = 6f
+    private const val SIDES_DP = 24f
+
+    /**
+     * How many columns of small tiles fit a screen [widthDp] wide, in whole blocks, so the tiles keep the size they
+     * have on a portrait phone (4 columns, 6 with [more]) and a wider screen, such as a phone in landscape, gets more
+     * of them instead of bigger ones.
+     */
+    fun columnsFor(widthDp: Float, more: Boolean): Int {
+        val unit = if (more) MORE_UNIT_DP else UNIT_DP
+        val fit = (widthDp - SIDES_DP + GAP_DP) / (unit + GAP_DP)
+        return (BLOCK * Math.round(fit / BLOCK)).coerceIn(if (more) MORE_COLUMNS else DEFAULT_COLUMNS, MAX_COLUMNS)
+    }
 
     fun place(sizes: List<TileSize>, columns: Int = DEFAULT_COLUMNS): GridLayout {
         require(columns % BLOCK == 0) { "columns must be a whole number of blocks" }

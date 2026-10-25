@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.WidgetProvider
 import com.metrowin.launcher.model.Glyph
@@ -44,7 +45,8 @@ fun WidgetPicker(providers: List<WidgetProvider>, onPick: (WidgetProvider) -> Un
             .background(colors.background)
             .pointerInput(Unit) { detectTapGestures { } }
             .statusBarsPadding()
-            .navigationBarsPadding(),
+            .navigationBarsPadding()
+            .cutoutSidesPadding(),
     ) {
         MetroText(
             stringResource(R.string.widgets_header), size = 14.sp, weight = FontWeight.SemiBold,
