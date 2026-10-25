@@ -884,8 +884,15 @@ fun LauncherApp(vm: LauncherViewModel) {
                         hasNotificationAccess = notificationAccess,
                         panel = panel,
                         onAction = { action ->
-                            vm.activateQuickAction(action)
-                            if (action != QuickAction.Flashlight) panel.close()
+                            if (action == QuickAction.LauncherSettings) {
+                                // The settings of the launcher itself: a shortcut to what is also an entry in the app list.
+                                panel.close()
+                                settingsSection = null
+                                settingsOpen = true
+                            } else {
+                                vm.activateQuickAction(action)
+                                if (action != QuickAction.Flashlight) panel.close()
+                            }
                         },
                         onAllSettings = {
                             panel.close()

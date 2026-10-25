@@ -80,9 +80,9 @@ class AppRepository(private val context: Context) {
 
         items += AppItem(
             id = SETTINGS_ID,
-            label = context.getString(R.string.settings_start_theme),
+            label = context.getString(R.string.app_launcher_settings),
             launch = Launch.Internal(ROUTE_SETTINGS),
-            glyph = Glyph.Theme,
+            glyph = Glyph.Settings,
         )
         items += AppItem(
             id = WEATHER_ID,

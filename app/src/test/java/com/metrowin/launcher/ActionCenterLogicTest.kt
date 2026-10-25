@@ -53,4 +53,22 @@ class ActionCenterLogicTest {
             QuickAction.assign(slots, 0, QuickAction.Flashlight),
         )
     }
+
+    @Test
+    fun theLaunchersSettingsAreOneOfTheFourDefaultButtons() {
+        assertTrue(QuickAction.LauncherSettings in QuickAction.defaults)
+        assertEquals(QuickAction.defaults, QuickAction.slots(emptyList()))
+        assertEquals(QuickAction.LauncherSettings, QuickAction.fromId("launcher"))
+    }
+
+    @Test
+    fun theUntouchedOldDefaultMovesOnButAChoiceIsKept() {
+        val old = listOf("wifi", "bluetooth", "airplane", "flashlight")
+        assertEquals(QuickAction.defaults.map { it.id }, QuickAction.migrate(old))
+        val chosen = listOf("vpn", "cast", "wifi", "camera")
+        assertEquals(chosen, QuickAction.migrate(chosen))
+        // The same four in another order were put there by the user.
+        val reordered = listOf("flashlight", "airplane", "bluetooth", "wifi")
+        assertEquals(reordered, QuickAction.migrate(reordered))
+    }
 }

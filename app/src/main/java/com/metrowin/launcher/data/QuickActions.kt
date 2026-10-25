@@ -35,11 +35,20 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
     Vpn("vpn", R.string.qa_vpn, Glyph.Vpn),
     Cast("cast", R.string.qa_cast, Glyph.Cast),
     Brightness("brightness", R.string.qa_brightness, Glyph.Brightness),
-    Camera("camera", R.string.qa_camera, Glyph.Camera);
+    Camera("camera", R.string.qa_camera, Glyph.Camera),
+
+    /** Opens the settings of the launcher itself, which are otherwise only an entry in the app list. */
+    LauncherSettings("launcher", R.string.qa_launcher_settings, Glyph.Settings);
 
     companion object {
         /** The four buttons on top until the user chooses others. */
-        val defaults = listOf(Wifi, Bluetooth, Airplane, Flashlight)
+        val defaults = listOf(Wifi, Bluetooth, Flashlight, LauncherSettings)
+
+        /** What the four buttons were before the launcher's settings joined them: nobody chose that, so it is replaced. */
+        private val previousDefaults = listOf("wifi", "bluetooth", "airplane", "flashlight")
+
+        /** The saved buttons, with the first version's untouched default moved on to the current one. */
+        fun migrate(saved: List<String>): List<String> = if (saved == previousDefaults) defaults.map { it.id } else saved
 
         fun fromId(id: String): QuickAction? = entries.firstOrNull { it.id == id }
 
@@ -125,6 +134,8 @@ class QuickActionsController(private val context: Context) {
             QuickAction.Vpn -> Settings.ACTION_VPN_SETTINGS
             QuickAction.Cast -> Settings.ACTION_CAST_SETTINGS
             QuickAction.Camera -> MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA
+            // Not a screen of Android: the launcher opens its own settings (see LauncherApp).
+            QuickAction.LauncherSettings -> return
         }
         if (!start(intentAction)) start(Settings.ACTION_SETTINGS)
     }

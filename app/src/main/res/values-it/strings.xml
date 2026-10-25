@@ -521,7 +521,7 @@
     <string name="tut_welcome_title">benvenuto</string>
     <string name="tut_welcome_intro">MetroWin Launcher trasforma il telefono in una schermata Start di Windows Phone. Questo breve giro mostra come usarlo e chiede qualche permesso alla volta, solo quando una funzione ne ha bisogno. Ognuno è facoltativo.</string>
     <string name="tut_welcome_tip1">Scorri verso sinistra, o usa i pulsanti qui sotto, per andare avanti.</string>
-    <string name="tut_welcome_tip2">Esci quando vuoi con “salta”. Puoi rivedere il giro da start+tema → strumenti → informazioni.</string>
+    <string name="tut_welcome_tip2">Esci quando vuoi con “salta”. Puoi rivedere il giro da Impostazioni Launcher → strumenti → informazioni.</string>
     <string name="tut_home_label">APP HOME</string>
     <string name="tut_home_title">rendilo la tua home</string>
     <string name="tut_home_intro">Android apre la sua app Home ogni volta che premi Home. Perché tu veda MetroWin, deve essere quell\'app.</string>
@@ -542,7 +542,7 @@
     <string name="tut_weather_label">METEO</string>
     <string name="tut_weather_title">meteo</string>
     <string name="tut_weather_intro">Il tile Meteo mostra le previsioni di una città. Le chiede a Open-Meteo, un servizio aperto, via internet. Nient\'altro esce dal telefono.</string>
-    <string name="tut_weather_tip1">Scegli la città in start+tema → live tile: per nome, o con la tua posizione.</string>
+    <string name="tut_weather_tip1">Scegli la città in Impostazioni Launcher → live tile: per nome, o con la tua posizione.</string>
     <string name="tut_weather_tip2">Tocca il tile per le previsioni dei prossimi giorni.</string>
     <string name="tut_apps_label">LISTA APP</string>
     <string name="tut_apps_title">tutte le tue app</string>
@@ -559,7 +559,7 @@
     <string name="tut_action_tip3">Trascina il pannello di nuovo in su, o premi Indietro, per chiuderlo.</string>
     <string name="tut_gestures_label">GESTI</string>
     <string name="tut_gestures_title">gesti</string>
-    <string name="tut_gestures_intro">Tutto segue il dito. Alcuni gesti fanno quello che scegli in start+tema → gesti.</string>
+    <string name="tut_gestures_intro">Tutto segue il dito. Alcuni gesti fanno quello che scegli in Impostazioni Launcher → gesti.</string>
     <string name="tut_gestures_tip1">Su Start, scorri dal bordo destro per andare alla lista app e dal bordo sinistro per tornare indietro.</string>
     <string name="tut_gestures_tip2">Tocca due volte lo sfondo di Start, o scorri in giù o in su con due dita, per bloccare lo schermo, accendere la torcia, parlare, cercare…</string>
     <string name="tut_gestures_tip3">Indietro torna indietro di un livello alla volta, e il gesto di sistema muove lo schermo con il dito.</string>
@@ -570,7 +570,7 @@
     <string name="tut_alive_tip2">Alcuni telefoni (Xiaomi, Huawei, Oppo, Samsung…) hanno anche un proprio elenco “avvio automatico” o “app protette” nelle impostazioni: aggiungi lì anche MetroWin Launcher.</string>
     <string name="tut_settings_label">IMPOSTAZIONI</string>
     <string name="tut_settings_title">rendilo tuo</string>
-    <string name="tut_settings_intro">Apri start+tema nella lista app. Ogni sezione è una pagina, in due gruppi: launcher e strumenti.</string>
+    <string name="tut_settings_intro">Apri Impostazioni Launcher nella lista app, o tocca il pulsante Launcher dell\'Action Center. Ogni sezione è una pagina, in due gruppi: launcher e strumenti.</string>
     <string name="tut_settings_tip1">start+tema: scuro o chiaro, colori d\'accento, foto di Start, orologio, numero di schermate Start.</string>
     <string name="tut_settings_tip2">schermo: rotazione e orizzontale, come si aprono le app, 120 Hz. accessibilità: TalkBack, meno movimento, più contrasto.</string>
     <string name="tut_settings_tip3">icone e temi: icon pack e file tema da condividere.</string>
@@ -580,4 +580,6 @@
     <string name="tut_settings_tip7">backup+sync: un file o una cartella, e una sincronizzazione cifrata tra i tuoi telefoni.</string>
     <string name="tut_settings_tip8">angolo bambini: Start con solo le app che scegli.</string>
     <string name="tut_settings_tip9">informazioni: la versione, e questo giro ogni volta che vuoi rivederlo.</string>
+    <string name="qa_launcher_settings">Launcher</string>
+    <string name="app_launcher_settings">Impostazioni Launcher</string>
 </resources>

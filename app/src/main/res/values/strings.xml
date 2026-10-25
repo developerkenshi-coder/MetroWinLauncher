@@ -525,7 +525,7 @@
     <string name="tut_welcome_title">welcome</string>
     <string name="tut_welcome_intro">MetroWin Launcher turns your phone into a Windows Phone Start screen. This short tour shows how to use it, and asks for a few permissions one at a time, only when a feature needs them. Every one of them is optional.</string>
     <string name="tut_welcome_tip1">Swipe left, or use the buttons below, to go on.</string>
-    <string name="tut_welcome_tip2">Leave at any time with “skip”. You can see the tour again from start+theme → tools → about.</string>
+    <string name="tut_welcome_tip2">Leave at any time with “skip”. You can see the tour again from Launcher settings → tools → about.</string>
     <string name="tut_home_label">HOME APP</string>
     <string name="tut_home_title">make it your home</string>
     <string name="tut_home_intro">Android opens its Home app every time you press Home. For MetroWin to be what you see, it has to be that app.</string>
@@ -546,7 +546,7 @@
     <string name="tut_weather_label">WEATHER</string>
     <string name="tut_weather_title">weather</string>
     <string name="tut_weather_intro">The Weather tile shows the forecast of a city. It asks Open-Meteo, an open service, over the internet. Nothing else leaves your phone.</string>
-    <string name="tut_weather_tip1">Choose the city in start+theme → live tiles: by name, or with your location.</string>
+    <string name="tut_weather_tip1">Choose the city in Launcher settings → live tiles: by name, or with your location.</string>
     <string name="tut_weather_tip2">Tap the tile for the forecast of the next days.</string>
     <string name="tut_apps_label">APP LIST</string>
     <string name="tut_apps_title">all your apps</string>
@@ -563,7 +563,7 @@
     <string name="tut_action_tip3">Drag the panel back up, or press Back, to close it.</string>
     <string name="tut_gestures_label">GESTURES</string>
     <string name="tut_gestures_title">gestures</string>
-    <string name="tut_gestures_intro">Everything follows your finger. A few gestures can do what you choose in start+theme → gestures.</string>
+    <string name="tut_gestures_intro">Everything follows your finger. A few gestures can do what you choose in Launcher settings → gestures.</string>
     <string name="tut_gestures_tip1">On Start, swipe from the right edge to go on to the app list, and from the left edge to go back.</string>
     <string name="tut_gestures_tip2">Double tap the background of Start, or swipe down or up with two fingers, to lock the screen, switch on the torch, speak, search…</string>
     <string name="tut_gestures_tip3">Back goes back one layer at a time, and the system gesture moves the screen with your finger.</string>
@@ -574,7 +574,7 @@
     <string name="tut_alive_tip2">Some phones (Xiaomi, Huawei, Oppo, Samsung…) also have their own “autostart” or “protected apps” list in their settings: add MetroWin Launcher there too.</string>
     <string name="tut_settings_label">SETTINGS</string>
     <string name="tut_settings_title">make it yours</string>
-    <string name="tut_settings_intro">Open start+theme in the app list. Each section is a page, in two groups: launcher and tools.</string>
+    <string name="tut_settings_intro">Open Launcher settings in the app list, or tap the Launcher button of the Action Center. Each section is a page, in two groups: launcher and tools.</string>
     <string name="tut_settings_tip1">start+theme: dark or light, accent colors, Start photo, clock, number of Start screens.</string>
     <string name="tut_settings_tip2">screen: rotation and landscape, how apps open, 120 Hz. accessibility: TalkBack, less motion, more contrast.</string>
     <string name="tut_settings_tip3">icons &amp; themes: icon packs and theme files to share.</string>
@@ -584,4 +584,6 @@
     <string name="tut_settings_tip7">backup+sync: a file or a folder, and an encrypted sync between your phones.</string>
     <string name="tut_settings_tip8">kid\'s corner: Start with only the apps you choose.</string>
     <string name="tut_settings_tip9">about: the version, and this tour whenever you want it again.</string>
+    <string name="qa_launcher_settings">Launcher</string>
+    <string name="app_launcher_settings">Launcher settings</string>
 </resources>

@@ -115,7 +115,7 @@ object SettingsCodec {
             tapSound = o.optBoolean("tapSound", base.tapSound),
             tapHaptics = o.optBoolean("tapHaptics", base.tapHaptics),
 
-            quickActions = QuickAction.slots(strings("quickActions", base.quickActions)).map { it.id },
+            quickActions = QuickAction.slots(QuickAction.migrate(strings("quickActions", base.quickActions))).map { it.id },
             notificationPeek = o.optBoolean("notificationPeek", base.notificationPeek),
             inlineReply = o.optBoolean("inlineReply", base.inlineReply),
             groupConversations = o.optBoolean("groupConversations", base.groupConversations),
