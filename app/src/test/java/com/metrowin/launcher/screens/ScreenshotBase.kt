@@ -55,11 +55,12 @@ abstract class ScreenshotBase {
         style: ThemeStyle = ThemeStyle.Classic,
         droid: DroidPalette? = null,
         oled: Boolean = false,
+        textScale: Float = 1f,
         content: @Composable () -> Unit,
     ) {
         compose.mainClock.autoAdvance = false
         compose.setContent {
-            MetroTheme(accent, dark, reduceMotion, highContrast, style, droid, oled) {
+            MetroTheme(accent, dark, reduceMotion, highContrast, style, droid, oled, textScale) {
                 Box(Modifier.size(size).pageBackground()) { content() }
             }
         }

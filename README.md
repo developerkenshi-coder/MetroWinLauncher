@@ -156,7 +156,8 @@ un'app non può più accenderli da sola); la torcia si accende davvero.
 Il microfono nella casella di ricerca (o un gesto a scelta) apre una schermata di ascolto in stile Metro. Il
 riconoscimento è quello del telefono (`SpeechRecognizer`), con preferenza per il modello **sul telefono** se esiste per la
 tua lingua; il launcher capisce i comandi da solo (`data/VoiceCommands.kt`, italiano e inglese, nessuna rete):
-*apri Mappe*, *chiama Anna* (apre la scheda del contatto: Android non lascia chiamare a un launcher senza altri permessi),
+*apri Mappe*, *chiama Anna* (trova il numero e apre il tastierino con il numero già scritto, a un tocco dalla chiamata; con l'interruttore
+*chiama subito* e il permesso del telefono, che Android chiede la prima volta, la chiamata parte da sola), *timer 10 minuti*, *sveglia alle 7 e 30*,
 *accendi / spegni la torcia*, *cerca ricette di pizza* (o una frase qualsiasi, che va alla ricerca web), *meteo*,
 *blocca lo schermo*, *centro notifiche*, *tutte le app*, *impostazioni del launcher*, *apri Wi-Fi* (le impostazioni di Android).
 Tra le alternative del riconoscitore sceglie la prima che è un comando vero.
@@ -245,6 +246,65 @@ pack in un piccolo file JSON da condividere, che applica solo quelle chiavi e no
 Un'app può mettere un titolo, una riga di testo e un numero sul **proprio** tile, come un live tile di Windows Phone
 (vedi [più sotto](#per-chi-sviluppa-unapp-un-tile-tuo-su-start)).
 
+### Altre trenta funzioni
+
+Tutte si spengono o si scelgono nelle impostazioni (pagine *app*, *gesti*, *notifiche+azioni*, *start+theme*); quelle che toccano
+dati dell'app (conteggi, ricerche recenti) restano sul telefono e **non entrano nei backup**.
+
+**Lista app**
+1. **Scorciatoie delle app**: tenendo premuta un'app, il menu elenca quelle che l'app offre (*nuovo messaggio*, *scheda in incognito*…).
+   Android le dà **solo al launcher che è l'app Home del telefono**: finché non lo è, il menu non ne ha (non si rompe niente).
+2. **Più usate**: un gruppo in cima alla lista con le (al massimo quattro) app aperte dal launcher almeno tre volte.
+3. **Nuove**: le app installate nell'ultima settimana (al massimo tre). Subito dopo aver configurato o ripristinato un telefono non
+   se ne indica nessuna, perché sarebbero tutte.
+4. **Categorie**: pastiglie sotto la casella di ricerca che mostrano solo le app di un tipo (giochi, social, musica…). Ci sono solo le
+   app che **dichiarano** cosa sono: molte non lo fanno e restano fuori dai filtri.
+5. **Rinomina**: dal menu di un'app; il nome nuovo vale ovunque (lista, riquadri, ricerca, voce). *Nome originale* lo toglie. Il menu ha anche
+   *informazioni sull'app* (la schermata di Android).
+6. **Blocco app**: un'app può chiedere il blocco schermo (PIN, sequenza, impronta) prima di aprirsi **dal launcher** (lista, riquadri,
+   ricerca, voce). Non è una cassaforte: l'app si apre ancora da una notifica, dalle recenti o da un'altra app. Serve un blocco schermo
+   impostato in Android.
+
+**Ricerca**
+7. **Calcolatrice**: `12*3+4`, `(2+3)^2`, `15% di 80`, `100+10%`, `radice(16)`, la virgola decimale. Tocchi la risposta e il risultato si copia.
+8. **Conversioni**: `5 km in miglia`, `30 c in f`, `70 kg in lb`, `100 km/h in mph`, `2 gb in mb`: lunghezze, pesi, temperature, volumi, velocità,
+   dati (a 1000, come le impostazioni di Android) e tempo, in italiano e in inglese. Niente valute: servirebbe la rete.
+9. **Numeri, link, indirizzi mail**: un numero offre *chiama* e *scrivi*, un indirizzo web *apri*, una mail *scrivi a*.
+10. **Motore di ricerca web**: DuckDuckGo (predefinito), Google, Bing, Brave, Startpage, Ecosia o Qwant. Si apre nel browser solo quando tocchi la riga.
+11. **Ricerche recenti**: le ultime sei compaiono toccando la casella, con *cancella*.
+12. **Timer e sveglie**: `timer 10 minuti`, `timer 1h30`, `sveglia alle 7 e 30`, `sveglia 7:30`, anche a voce. Parte nell'app Orologio del telefono.
+
+**Start**
+13. **Colore del riquadro**: il pulsante sul riquadro selezionato apre i 20 colori (o il colore del tema).
+14. **Annulla**: dopo aver tolto, ridimensionato, colorato o spostato un riquadro, o cambiato una cartella, una barra per sei secondi offre di
+    annullare l'ultima modifica (un riquadro tolto con la sua nota o il suo numero torna com'era; un widget no: libera subito il suo posto).
+15. **Impostazioni di Android su Start**: dal **+** della barra di modifica, ad esempio *Wi-Fi* o *Batteria*, come riquadri.
+16. **Chiamata rapida**: dal **+**, un numero scelto dai contatti (con la sua foto) che si chiama con un tocco. Senza il permesso del telefono apre il tastierino.
+17. **Nota**: un riquadro su cui scrivi; il testo si vede sulla faccia, un tocco lo modifica.
+18. **Conto alla rovescia**: un nome e una data; il riquadro dice i giorni che mancano (e li conta in su dopo la data).
+
+**Live tile di sistema**
+19. **Spazio**: il riquadro *Storage Sense* dice quanto è libero e quanto è pieno il telefono.
+20. **Sveglia**: il riquadro *Sveglie* dice quando suona la prossima.
+21. **Dettagli del meteo**: temperatura percepita, vento, umidità, probabilità di pioggia, alba, tramonto e indice UV, su una terza faccia del
+    riquadro e nella pagina del meteo, con la probabilità di pioggia di ogni giorno.
+
+**Gesti e Action Center**
+22. **Altre azioni per i gesti**: screenshot, menu di spegnimento, schermo diviso, e le notifiche e le impostazioni rapide **di Android** (tramite il
+    servizio di accessibilità che già blocca lo schermo). C'è anche il pulsante *Screenshot* tra quelli dell'Action Center.
+23. **Un'app su un gesto**: doppio tocco e i due swipe a due dita possono aprire l'app che scegli.
+24. **Volume e suoneria** nell'Action Center: cursore del volume dei contenuti e i pulsanti suoneria, vibrazione, silenzioso (il silenzioso chiede l'accesso a
+    *non disturbare*, e senza porta alla schermata che lo dà).
+25. **Luminosità**: un cursore, con l'accesso *modifica le impostazioni di sistema* che dai in una schermata di Android (finché non c'è, il cursore lo dice).
+26. **Tocca l'orologio**: l'ora di Start apre l'orologio, la data il calendario.
+
+**Aspetto**
+27. **Dimensione del testo**: dall'85% al 130% per tutto il launcher.
+28. **Orologio**: ore a 12 o 24 a scelta, prossima sveglia sotto la data, numero della settimana.
+29. **Barra di stato nascosta** su Start. Con la barra nascosta lo swipe dal bordo alto è del sistema (la fa riapparire): l'Action Center si apre con
+    un gesto della pagina gesti.
+30. **Inquadratura della foto di Start**: zoom da 100% a 300% e due cursori per il punto che resta in vista, con anteprima.
+
 ### Orizzontale
 
 Si sceglie in *schermo*: **solo verticale** (come prima), **segui la rotazione del telefono** (rispetta il blocco di Android)
@@ -294,22 +354,22 @@ sua pagina; tutto è salvato come un unico JSON (`SettingsCodec`) che legge anch
 
 | Sezione | Cosa c'è |
 |---|---|
-| start+theme | **tema** (Classic, Modern Glass, Modern Droid) e, per Droid, i colori dello sfondo; scuro / chiaro / come il telefono / a orario; colore d'accento (20), **colore tuo con i cursori** o dalla foto; foto di Start e parallasse; più riquadri; numero di schermate Start; orologio |
+| start+theme | **tema** (Classic, Modern Glass, Modern Droid) e, per Droid, i colori dello sfondo; scuro / chiaro / come il telefono / a orario; colore d'accento (20), **colore tuo con i cursori** o dalla foto; foto di Start, **inquadratura** e parallasse; più riquadri; numero di schermate Start; orologio (ore, sveglia, settimana, tocchi); **dimensione del testo**; barra di stato nascosta; nero OLED |
 | schermo | rotazione (verticale, segui il telefono, orizzontale); animazione di apertura; massima frequenza di aggiornamento (120 Hz, tolta mentre si risparmia batteria) |
 | batteria | risparmio energetico (automatico, sempre, mai) e cosa cambia; cosa il launcher non fa quando non è sullo schermo |
 | accessibilità | riduci il movimento; alto contrasto; TalkBack e scorciatoia alle impostazioni di Android |
 | icone e temi | icon pack; esporta e importa un file tema |
-| gesti | tirata dal bordo, indietro dal bordo, doppio tocco, due dita in giù e in su (anche *app recenti*), suono e vibrazione, servizio di accessibilità (blocco schermo e app recenti) |
-| notifiche+azioni | i quattro pulsanti dell'Action Center; accesso alle notifiche; mostra le notifiche sui riquadri; risposta rapida; raggruppamento |
-| live tile | città del meteo (ricerca o posizione) e gradi; lascia pubblicare i tile alle app, ed elenco di chi l'ha fatto |
-| app | cosa cerca la ricerca (contatti, impostazioni, web); app nascoste |
+| gesti | tirata dal bordo, indietro dal bordo, doppio tocco, due dita in giù e in su (*app recenti*, screenshot, menu di spegnimento, schermo diviso, pannelli di Android, **un'app a scelta**), suono e vibrazione, servizio di accessibilità |
+| notifiche+azioni | i quattro pulsanti dell'Action Center; **volume, luminosità e suoneria** nel pannello; accesso alle notifiche; mostra le notifiche sui riquadri; risposta rapida; raggruppamento |
+| live tile | città del meteo (ricerca o posizione) e gradi; **contenuti dal vivo delle altre app** (interruttore, accesso alle notifiche, cosa mostrare, app per app) e **cosa legge ora il launcher**; lascia pubblicare i tile alle app, ed elenco di chi l'ha fatto |
+| app | gruppi in cima alla lista (più usate, nuove), filtro per categoria; cosa cerca la ricerca (contatti, impostazioni, web), **motore**, risposte, ricerche recenti; app nascoste, rinominate e bloccate |
 
 **tools**
 
 | Sezione | Cosa c'è |
 |---|---|
 | blocco schermo | anteprima, foto, cosa mostrare, foto nella schermata di blocco di Android, impostazioni del salvaschermo |
-| voce | microfono nella ricerca; riconoscimento sul telefono; prova; cosa si può dire |
+| voce | microfono nella ricerca; riconoscimento sul telefono; *chiama subito*; prova; cosa si può dire |
 | profili | lavoro e spazio privato: pausa e riattiva; mostra le loro app |
 | backup | file o cartella, ogni quanto, ripristina; sincronizzazione con passphrase; esporta e importa |
 | angolo bambini | app e avvio |
@@ -321,10 +381,10 @@ sua pagina; tutto è salvato come un unico JSON (`SettingsCodec`) che legge anch
 |---|---|
 | Schermata di blocco al posto di quella di Android | Non si può: la sostituisce solo il sistema. C'è come **salvaschermo** e come foto del blocco (vedi sopra) |
 | Accendere Wi-Fi / Bluetooth / aereo dall'Action Center | Android non lo permette più alle app: i pulsanti aprono la schermata giusta |
-| Chiamare un contatto a voce | Si apre la sua scheda: chiamare direttamente servirebbe un altro permesso |
+| Chiamare un contatto a voce | Fatto: tastierino con il numero (un tocco), oppure chiamata diretta se la attivi e dai il permesso del telefono |
 | Cortana, Word Flow (tastiera), Driving Mode, Wi-Fi Sense, task switcher | Funzioni di sistema o app a parte |
 | Start e lista app affiancati in orizzontale | Non fatto: in orizzontale sono due pagine come in verticale, con più colonne |
-| Ritaglio con pizzico della foto di sfondo | Non fatto: la foto si centra da sola |
+| Ritaglio con pizzico della foto di sfondo | Fatto in altro modo: **zoom e due cursori di posizione** con anteprima (non il pizzico) |
 | Sincronizzare la foto di Start e quella del blocco | Non fatto: le foto sono file di questo telefono |
 
 ## Permessi
@@ -340,12 +400,15 @@ si possono dare anche dopo, quando serve la funzione.
 | `INTERNET` | il meteo (solo Open-Meteo, solo https, risposta limitata a 256 KB) e la ricerca di una città |
 | `ACCESS_COARSE_LOCATION` | "usa la mia posizione" del meteo (l'ultima nota, una volta) |
 | `RECORD_AUDIO` | la voce, quando la usi la prima volta |
+| `CALL_PHONE` | chiamare **subito** (riquadro chiamata rapida, voce con *chiama subito*). Si chiede quando metti un riquadro di chiamata rapida o accendi l'interruttore; senza, si apre il tastierino con il numero |
+| `com.android.alarm.permission.SET_ALARM` | timer e sveglie dalla ricerca e dalla voce (permesso normale, concesso all'installazione) |
+| `WRITE_SETTINGS` (accesso speciale) | solo il cursore della **luminosità** dell'Action Center: lo dai tu, in una schermata di Android, e il cursore lo dice finché non c'è |
 | `SET_WALLPAPER` | la foto nella schermata di blocco di Android, quando lo chiedi |
 | `ACCESS_WIFI_STATE`, `REQUEST_DELETE_PACKAGES` | stato del Wi-Fi, *disinstalla* nel menu |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | solo per chiedere, nel tutorial, che Android non chiuda il launcher in background. **Google Play lo consente solo ad alcuni tipi di app**: per una build non pubblicata sullo store va bene, per pubblicarla va giustificato o tolto (basta rimuovere la pagina "tienilo attivo") |
 | `com.metrowin.launcher.permission.PUBLISH_TILE` | **dichiarato dal launcher**, lo chiedono le app che vogliono un tile (vedi sotto) |
 | Accesso alle notifiche (nelle impostazioni di Android) | Action Center, contatori, risposta rapida, raggruppamento |
-| Servizio di accessibilità del launcher (facoltativo) | solo per **bloccare lo schermo** con un gesto; non legge nulla dello schermo |
+| Servizio di accessibilità del launcher (facoltativo) | **blocco schermo, app recenti, screenshot, menu di spegnimento, schermo diviso**, pannelli di Android: azioni che solo un servizio può fare; non legge nulla dello schermo |
 | Cartella scelta con il selettore di file | backup e sincronizzazione: il launcher raggiunge solo quella cartella |
 
 Il backup automatico di Android è disattivato (`allowBackup=false`, e regole esplicite per Android 12): le impostazioni
@@ -386,7 +449,7 @@ solo se il launcher c'era già.
 ./gradlew assembleRelease        # con R8
 ```
 
-**702 test**, nessuno saltato; il lint non ha errori.
+**TESTCOUNT test**, nessuno saltato; il lint non ha errori.
 
 - Logica pura: griglia e colonne dalla larghezza, operazioni su Start, regole di trascinamento e di rilascio, ricerca,
   salvataggio e migrazione delle impostazioni, comandi vocali, pianificazione della sincronizzazione, **cifratura** (anche
@@ -411,10 +474,11 @@ app/src/main/java/com/metrowin/launcher/
                   impostazioni (SettingsStore, SettingsCodec, ThemeCodec, LayoutBackup), live tile (LiveTiles, Weather*,
                   BatteryInfo), voce (VoiceCommands, VoiceRecognizer), sync (SyncCrypto, SyncEngine, SafFolder),
                   icone (IconLoader, IconPacks), tile di terzi (ThirdPartyTiles, TilePublishProvider), ricerca,
-                  scorciatoie, LaunchPlan, LockInfo, Tutorial (passi, bisogni, controllo di cosa è già concesso)
+                  scorciatoie, LaunchPlan, LockInfo, Tutorial (passi, bisogni, controllo di cosa è già concesso),
+                  risposte della ricerca (Calculator, UnitConverter, QuickAnswers), AppShortcuts, AppUsage, SoundAndBrightness
   notifications/  NotificationService, NotificationHub (anche risposta), NotificationGroups
   model/          Tile, Folder, TileSize, AppItem, Glyph
-  gestures/       servizio per bloccare lo schermo
+  gestures/       servizio di accessibilità (blocco schermo, recenti, screenshot…), tile delle Impostazioni rapide
   ui/             start/, apps/, actioncenter/, settings/ (una pagina per sezione), voice/, lock/ (schermata e salvaschermo),
                   weather/, kids/, tutorial/ (giro iniziale e richieste), anim/, gesture/, components/, theme/ (compreso Accessibility)
 ```
@@ -433,7 +497,13 @@ app/src/main/java/com/metrowin/launcher/
   - gli **icon pack** reali (il formato è quello condiviso da ADW, Nova, Apex e Go, ma ogni pack è a sé);
   - la **risposta rapida** con le app vere (la consegna è provata con un `PendingIntent` vero, non con ogni app di messaggi);
   - **TalkBack** vero (le proprietà e le azioni sono provate, non il parlato) e l'**espansione** dell'app dal riquadro;
-  - le chiamate di rete del **meteo** (Open-Meteo), il servizio di **notifiche**, lo screen pinning e il servizio per bloccare lo schermo.
+  - le chiamate di rete del **meteo** (Open-Meteo), il servizio di **notifiche**, lo screen pinning e il servizio per bloccare lo schermo;
+  - le **scorciatoie delle app** (Android le dà solo all'app Home), la **chiamata diretta**, **screenshot, menu di spegnimento e schermo
+    diviso** (dipendono dal servizio di accessibilità e dalla versione di Android), il **cursore della luminosità** (accesso speciale),
+    la **barra di stato nascosta** (cosa fa lo swipe dal bordo alto dipende dal produttore), la **dimensione del testo** (su Android 14 il
+    sistema scala il testo con una tabella che i test non hanno: i test provano che il tema la imposta, non la misura sullo schermo);
+  - i **live tile delle altre app**: foto, copertine e testi veri dipendono da cosa scrive ogni app nelle sue notifiche. La pagina *live tile*
+    elenca cosa il launcher legge da ognuna: se un riquadro non mostra niente, si guarda lì.
 - **Il tutorial su un telefono vero**: le richieste (dialoghi dei permessi, dialogo dell'app Home, pagine di Android per notifiche,
   accessibilità e batteria) sono collegate ma provate solo fin dove si arriva su JVM: i pulsanti chiamano la richiesta giusta e la
   pagina legge cosa è concesso; cosa mostra davvero Android, e se un produttore ha un'altra pagina per la batteria, va visto.

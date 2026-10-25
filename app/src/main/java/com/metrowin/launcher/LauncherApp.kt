@@ -47,6 +47,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.metrowin.launcher.data.AboutInfo
 import com.metrowin.launcher.data.AppFilter
@@ -138,6 +141,7 @@ import com.metrowin.launcher.ui.start.FolderCell
 import com.metrowin.launcher.data.Countdown
 import com.metrowin.launcher.ui.start.CountdownDialog
 import com.metrowin.launcher.ui.start.NoteDialog
+import com.metrowin.launcher.ui.start.PhotoFrame
 import com.metrowin.launcher.ui.start.SettingPicker
 import com.metrowin.launcher.ui.start.TileColorSheet
 import com.metrowin.launcher.ui.start.UndoBar
@@ -356,6 +360,17 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     // The Action Center. The panel is one state that follows the finger, whatever starts the pull.
     val panel = rememberPullPanel()
+    // The status bar of Android out of the way on Start; a swipe from the top edge brings it back for a moment.
+    val hostView = LocalView.current
+    DisposableEffect(settings.hideStatusBar) {
+        val window = (appContext as? Activity)?.window
+        if (window != null) {
+            val controller = WindowCompat.getInsetsController(window, hostView)
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            if (settings.hideStatusBar) controller.hide(WindowInsetsCompat.Type.statusBars()) else controller.show(WindowInsetsCompat.Type.statusBars())
+        }
+        onDispose { }
+    }
     // The sliders show how things are when the Action Center opens.
     LaunchedEffect(panel.isShown) { if (panel.isShown) vm.refreshControls() }
     var quickStates by remember { mutableStateOf<Map<QuickAction, Boolean?>>(emptyMap()) }
@@ -916,7 +931,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val powerSaving by vm.powerSaving.collectAsStateWithLifecycle()
 
     CompositionLocalProvider(LocalIconLoader provides vm.icons, LocalWidgetHost provides vm.widgets, LocalPowerSaving provides powerSaving) {
-        MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode) {
+        MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode, textScale = settings.textScale / 100f) {
             Box(
                 Modifier
                     .fillMaxSize()
@@ -965,9 +980,11 @@ fun LauncherApp(vm: LauncherViewModel) {
                             pullConnection = pullConnections[page],
                             parallax = settings.parallax,
                             pickedKeys = folderPick,
+                            framing = PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY),
                             header = if (settings.showClock && page == 0) {
                                 {
                                     ClockHeader(
+                                        hours = settings.clockHours, showAlarm = settings.clockAlarm, showWeek = settings.clockWeek,
                                         onTimeClick = if (settings.clockTaps) ({ vm.openClock() }) else null,
                                         onDateClick = if (settings.clockTaps) ({ vm.openCalendar() }) else null,
                                     )

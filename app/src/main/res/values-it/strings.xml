@@ -820,4 +820,23 @@
     <string name="theme_clock_taps">tocca l\'orologio</string>
     <string name="theme_clock_taps_hint">Un tocco sull\'ora di Start apre l\'orologio, sulla data il calendario.</string>
     <string name="qa_screenshot">Screenshot</string>
+
+    <!-- Text size, clock options, status bar, photo framing -->
+    <string name="clock_hours">ore dell\'orologio</string>
+    <string name="clock_hours_system">come il telefono</string>
+    <string name="clock_hours_12">12 ore (AM/PM)</string>
+    <string name="clock_hours_24">24 ore</string>
+    <string name="clock_show_alarm">prossima sveglia sotto la data</string>
+    <string name="clock_show_week">numero della settimana accanto alla data</string>
+    <string name="clock_week">settimana %1$d</string>
+    <string name="text_size">dimensione del testo</string>
+    <string name="text_size_hint">Rende il testo di tutto il launcher più piccolo o più grande, dall\'85% al 130%.</string>
+    <string name="theme_hide_status_bar">nascondi la barra di stato</string>
+    <string name="theme_hide_status_bar_hint">Più spazio per Start. Uno scorrimento dal bordo alto mostra la barra per un momento; con la barra nascosta quello scorrimento è del sistema, quindi apri l\'Action Center con uno dei gesti della pagina gesti.</string>
+    <string name="photo_framing">inquadratura della foto</string>
+    <string name="photo_zoom">zoom</string>
+    <string name="photo_x">da sinistra a destra</string>
+    <string name="photo_y">dall\'alto in basso</string>
+    <string name="photo_reset">ripristina</string>
+    <string name="photo_framing_hint">Ingrandisci la parte della foto che ti piace: il punto che scegli con i due cursori di posizione resta in vista.</string>
 </resources>

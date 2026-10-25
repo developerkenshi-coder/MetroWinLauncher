@@ -50,6 +50,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
@@ -59,6 +60,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -89,6 +91,7 @@ import androidx.compose.ui.unit.round
 import androidx.compose.ui.zIndex
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.data.LiveTileData
+import com.metrowin.launcher.data.PhotoFraming
 import com.metrowin.launcher.data.Placement
 import com.metrowin.launcher.data.TileGrid
 import com.metrowin.launcher.model.AppItem
@@ -206,10 +209,12 @@ fun StartScreen(
     header: (@Composable () -> Unit)? = null,
     /** The tiles picked so far while several are being chosen for a folder, or null when that is not going on. */
     pickedKeys: Set<String>? = null,
+    /** How the photo is framed (see [PhotoFrame]). */
+    framing: PhotoFrame = PhotoFrame(),
 ) {
     val currentActions by rememberUpdatedState(actions)
     Box(modifier.fillMaxSize()) {
-        if (background != null) ParallaxBackground(background, scrollState, parallax)
+        if (background != null) ParallaxBackground(background, scrollState, parallax, framing)
         Column(
             Modifier
                 .fillMaxSize()
@@ -240,9 +245,13 @@ fun StartScreen(
     }
 }
 
+/** How the Start photo is framed: zoom in percent, and the point that stays in view in percent. */
+@Immutable
+data class PhotoFrame(val zoom: Int = 100, val x: Int = 50, val y: Int = 50)
+
 /** The photo, drawn taller than the screen and moved up slower than the tiles. */
 @Composable
-private fun ParallaxBackground(image: ImageBitmap, scrollState: ScrollState, parallax: Boolean) {
+private fun ParallaxBackground(image: ImageBitmap, scrollState: ScrollState, parallax: Boolean, framing: PhotoFrame) {
     val travel = if (parallax) 120.dp else 0.dp
     BoxWithConstraints(Modifier.fillMaxSize().clipToBounds()) {
         val travelPx = with(LocalDensity.current) { travel.toPx() }
@@ -250,10 +259,18 @@ private fun ParallaxBackground(image: ImageBitmap, scrollState: ScrollState, par
             bitmap = image,
             contentDescription = null,
             contentScale = ContentScale.Crop,
+            alignment = BiasAlignment(PhotoFraming.bias(framing.x), PhotoFraming.bias(framing.y)),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(maxHeight + travel)
-                .graphicsLayer { translationY = -(scrollState.value * PARALLAX).coerceAtMost(travelPx) },
+                .graphicsLayer {
+                    translationY = -(scrollState.value * PARALLAX).coerceAtMost(travelPx)
+                    // Zoomed in around the point the user chose, so that point stays where it is.
+                    val zoom = framing.zoom / 100f
+                    scaleX = zoom
+                    scaleY = zoom
+                    transformOrigin = TransformOrigin(framing.x / 100f, framing.y / 100f)
+                },
         )
         // A light shade keeps the white glyphs readable on a bright photo.
         Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.12f)))

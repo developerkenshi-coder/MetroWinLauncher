@@ -822,4 +822,23 @@
     <string name="theme_clock_taps">touch the clock</string>
     <string name="theme_clock_taps_hint">A touch on the time of Start opens the clock, on the date the calendar.</string>
     <string name="qa_screenshot">Screenshot</string>
+
+    <!-- Text size, clock options, status bar, photo framing -->
+    <string name="clock_hours">hours of the clock</string>
+    <string name="clock_hours_system">as the phone</string>
+    <string name="clock_hours_12">12 hours (AM/PM)</string>
+    <string name="clock_hours_24">24 hours</string>
+    <string name="clock_show_alarm">next alarm under the date</string>
+    <string name="clock_show_week">week number next to the date</string>
+    <string name="clock_week">week %1$d</string>
+    <string name="text_size">text size</string>
+    <string name="text_size_hint">Makes the text of the whole launcher smaller or bigger, from 85% to 130%.</string>
+    <string name="theme_hide_status_bar">hide the status bar</string>
+    <string name="theme_hide_status_bar_hint">More room for Start. A swipe from the top edge shows the bar for a moment; with the bar hidden, that swipe is the system\'s, so open the Action Center with a gesture of the gestures page instead.</string>
+    <string name="photo_framing">framing of the photo</string>
+    <string name="photo_zoom">zoom</string>
+    <string name="photo_x">left to right</string>
+    <string name="photo_y">top to bottom</string>
+    <string name="photo_reset">reset</string>
+    <string name="photo_framing_hint">Zoom in on the part of the photo you like: the point you choose with the two position sliders stays in view.</string>
 </resources>

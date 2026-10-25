@@ -80,6 +80,24 @@ enum class GestureAction(val code: String, @param:StringRes val label: Int) {
     }
 }
 
+/** How the Start clock writes the hours: as the phone does, or on a 12 or 24 hour clock whatever the phone says. */
+enum class ClockHours(val code: String, @param:StringRes val label: Int) {
+    System("system", R.string.clock_hours_system),
+    H12("12", R.string.clock_hours_12),
+    H24("24", R.string.clock_hours_24);
+
+    /** Whether the clock shows 24 hours, given what the phone uses ([system]). */
+    fun is24(system: Boolean): Boolean = when (this) {
+        System -> system
+        H12 -> false
+        H24 -> true
+    }
+
+    companion object {
+        fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: System
+    }
+}
+
 /** How an app opens: the Metro turnstile, or the tile growing into the window of the app. */
 enum class LaunchAnimation(val code: String, @param:StringRes val label: Int) {
     Turnstile("turnstile", R.string.launch_turnstile),
@@ -144,6 +162,19 @@ data class LauncherSettings(
     val showClock: Boolean = false,
     /** A touch on the time opens the clock, on the date the calendar. */
     val clockTaps: Boolean = true,
+    val clockHours: ClockHours = ClockHours.System,
+    /** The next alarm under the date. */
+    val clockAlarm: Boolean = false,
+    /** The number of the week next to the date. */
+    val clockWeek: Boolean = false,
+    /** The size of the text of the launcher, in percent (see [TEXT_SCALES]). */
+    val textScale: Int = 100,
+    /** The status bar of Android is out of the way on Start; a swipe from the top edge brings it back for a moment. */
+    val hideStatusBar: Boolean = false,
+    /** How the Start photo is framed: zoom in percent (100 to 300), and the point of the photo that stays in view, in percent. */
+    val startPhotoZoom: Int = 100,
+    val startPhotoX: Int = 50,
+    val startPhotoY: Int = 50,
 
     // --- display
     val orientation: OrientationMode = OrientationMode.Portrait,
@@ -273,6 +304,9 @@ data class LauncherSettings(
         const val DEFAULT_ACCENT = 4
         const val DEFAULT_COLUMNS = 4
         const val MAX_START_PAGES = 3
+
+        /** The sizes of text to choose from, in percent. */
+        val TEXT_SCALES = listOf(85, 90, 100, 110, 120, 130)
     }
 }
 

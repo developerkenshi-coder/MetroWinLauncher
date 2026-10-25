@@ -32,6 +32,11 @@ object SettingsCodec {
         put("startPages", s.startPages)
         put("showClock", s.showClock)
         put("clockTaps", s.clockTaps)
+        put("clockHours", s.clockHours.code)
+        put("clockAlarm", s.clockAlarm)
+        put("clockWeek", s.clockWeek)
+        put("textScale", s.textScale)
+        put("hideStatusBar", s.hideStatusBar)
 
         put("orientation", s.orientation.code)
         put("highRefreshRate", s.highRefreshRate)
@@ -99,6 +104,9 @@ object SettingsCodec {
             put("kidsMode", s.kidsMode)
             // The photos are files of this phone: a copy would point at pictures that are not there.
             put("backgroundRevision", s.backgroundRevision)
+            put("startPhotoZoom", s.startPhotoZoom)
+            put("startPhotoX", s.startPhotoX)
+            put("startPhotoY", s.startPhotoY)
             put("lockPhotoRevision", s.lockPhotoRevision)
             if (!s.weatherLatitude.isNaN()) put("weatherLatitude", s.weatherLatitude)
             if (!s.weatherLongitude.isNaN()) put("weatherLongitude", s.weatherLongitude)
@@ -136,6 +144,14 @@ object SettingsCodec {
             startPages = o.optInt("startPages", base.startPages).coerceIn(1, LauncherSettings.MAX_START_PAGES),
             showClock = o.optBoolean("showClock", base.showClock),
             clockTaps = o.optBoolean("clockTaps", base.clockTaps),
+            clockHours = if (o.has("clockHours")) ClockHours.fromCode(o.optString("clockHours")) else base.clockHours,
+            clockAlarm = o.optBoolean("clockAlarm", base.clockAlarm),
+            clockWeek = o.optBoolean("clockWeek", base.clockWeek),
+            textScale = o.optInt("textScale", base.textScale).let { v -> LauncherSettings.TEXT_SCALES.minByOrNull { kotlin.math.abs(it - v) } ?: 100 },
+            hideStatusBar = o.optBoolean("hideStatusBar", base.hideStatusBar),
+            startPhotoZoom = o.optInt("startPhotoZoom", base.startPhotoZoom).coerceIn(100, 300),
+            startPhotoX = o.optInt("startPhotoX", base.startPhotoX).coerceIn(0, 100),
+            startPhotoY = o.optInt("startPhotoY", base.startPhotoY).coerceIn(0, 100),
 
             orientation = if (o.has("orientation")) OrientationMode.fromCode(o.optString("orientation")) else base.orientation,
             highRefreshRate = o.optBoolean("highRefreshRate", base.highRefreshRate),

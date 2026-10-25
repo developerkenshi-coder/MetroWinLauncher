@@ -6,6 +6,7 @@ import java.time.chrono.IsoChronology
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.time.format.FormatStyle
+import java.time.temporal.WeekFields
 import java.util.Locale
 
 /** How the Start clock writes the time and the date. Pure, so it can be tested in any language. */
@@ -17,6 +18,9 @@ object ClockFormat {
     /** "PM" on a 12 hour clock, empty on a 24 hour one. */
     fun meridiem(time: LocalTime, is24Hour: Boolean, locale: Locale): String =
         if (is24Hour) "" else DateTimeFormatter.ofPattern("a", locale).format(time)
+
+    /** The number of the week of [date] in the calendar of [locale] (weeks start on Monday in Italy, on Sunday in the US). */
+    fun week(date: LocalDate, locale: Locale): Int = date.get(WeekFields.of(locale).weekOfWeekBasedYear())
 
     /** The weekday, then the day and the month in the order of the language, without the year: "giovedì 5 marzo". */
     fun date(date: LocalDate, locale: Locale): String {

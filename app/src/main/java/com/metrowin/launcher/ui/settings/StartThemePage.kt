@@ -1,5 +1,19 @@
 package com.metrowin.launcher.ui.settings
 
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.metrowin.launcher.ui.components.MetroText
+import androidx.compose.ui.platform.testTag
+import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.ui.start.PhotoFrame
+import com.metrowin.launcher.ui.components.MetroSlider
+import com.metrowin.launcher.data.PhotoFraming
+import com.metrowin.launcher.data.ClockHours
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.BiasAlignment
+import androidx.annotation.StringRes
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -126,6 +140,29 @@ fun StartThemePage(env: SettingsEnv) {
                 }
             }
         }
+        if (settings.hasStartBackground) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                SettingLabel(stringResource(R.string.photo_framing))
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    BackgroundPreview(env.startBackground, PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY))
+                    Column(Modifier.weight(1f)) {
+                        FramingSlider(R.string.photo_zoom, PhotoFraming.fractionOfZoom(settings.startPhotoZoom), "theme:photozoom") { f ->
+                            env.onChange { it.copy(startPhotoZoom = PhotoFraming.zoomOf(f)) }
+                        }
+                        FramingSlider(R.string.photo_x, PhotoFraming.fractionOf(settings.startPhotoX), "theme:photox") { f ->
+                            env.onChange { it.copy(startPhotoX = PhotoFraming.percentOf(f)) }
+                        }
+                        FramingSlider(R.string.photo_y, PhotoFraming.fractionOf(settings.startPhotoY), "theme:photoy") { f ->
+                            env.onChange { it.copy(startPhotoY = PhotoFraming.percentOf(f)) }
+                        }
+                        MetroButton(stringResource(R.string.photo_reset), Modifier.fillMaxWidth().testTag("theme:photoreset")) {
+                            env.onChange { it.copy(startPhotoZoom = 100, startPhotoX = 50, startPhotoY = 50) }
+                        }
+                    }
+                }
+                SettingHint(stringResource(R.string.photo_framing_hint))
+            }
+        }
         ToggleSetting(
             label = stringResource(R.string.theme_parallax),
             checked = settings.parallax,
@@ -139,6 +176,27 @@ fun StartThemePage(env: SettingsEnv) {
             onChange = { value -> env.onChange { it.copy(showClock = value) } },
             tag = "theme:clock",
         )
+        DropdownSetting(
+            stringResource(R.string.clock_hours),
+            options = ClockHours.entries.map { stringResource(it.label) },
+            selected = ClockHours.entries.indexOf(settings.clockHours),
+            onSelect = { i -> env.onChange { it.copy(clockHours = ClockHours.entries[i]) } },
+            tag = "theme:hours",
+        )
+        ToggleSetting(
+            label = stringResource(R.string.clock_show_alarm),
+            checked = settings.clockAlarm,
+            onChange = { value -> env.onChange { it.copy(clockAlarm = value) } },
+            enabled = settings.showClock,
+            tag = "theme:clockalarm",
+        )
+        ToggleSetting(
+            label = stringResource(R.string.clock_show_week),
+            checked = settings.clockWeek,
+            onChange = { value -> env.onChange { it.copy(clockWeek = value) } },
+            enabled = settings.showClock,
+            tag = "theme:clockweek",
+        )
         ToggleSetting(
             label = stringResource(R.string.theme_clock_taps),
             checked = settings.clockTaps,
@@ -151,6 +209,23 @@ fun StartThemePage(env: SettingsEnv) {
             label = stringResource(R.string.theme_more_tiles),
             checked = settings.moreTiles,
             onChange = { value -> env.onChange { it.copy(moreTiles = value) } },
+        )
+        StepperSetting(
+            label = stringResource(R.string.text_size),
+            value = "${settings.textScale}%",
+            onDecrement = { env.onChange { s -> s.copy(textScale = LauncherSettings.TEXT_SCALES.getOrElse(LauncherSettings.TEXT_SCALES.indexOf(s.textScale) - 1) { s.textScale }) } },
+            onIncrement = { env.onChange { s -> s.copy(textScale = LauncherSettings.TEXT_SCALES.getOrElse(LauncherSettings.TEXT_SCALES.indexOf(s.textScale) + 1) { s.textScale }) } },
+            canDecrement = settings.textScale > LauncherSettings.TEXT_SCALES.first(),
+            canIncrement = settings.textScale < LauncherSettings.TEXT_SCALES.last(),
+            hint = stringResource(R.string.text_size_hint),
+            tag = "theme:textsize",
+        )
+        ToggleSetting(
+            label = stringResource(R.string.theme_hide_status_bar),
+            checked = settings.hideStatusBar,
+            onChange = { value -> env.onChange { it.copy(hideStatusBar = value) } },
+            hint = stringResource(R.string.theme_hide_status_bar_hint),
+            tag = "theme:hidestatus",
         )
         StepperSetting(
             label = stringResource(R.string.theme_start_pages),
@@ -169,11 +244,32 @@ fun StartThemePage(env: SettingsEnv) {
 internal fun hourLabel(hour: Int): String = String.format(Locale.getDefault(), "%02d:00", hour)
 
 @Composable
-private fun BackgroundPreview(image: ImageBitmap?) {
+private fun BackgroundPreview(image: ImageBitmap?, framing: PhotoFrame = PhotoFrame()) {
     val colors = LocalMetroColors.current
-    Box(Modifier.size(90.dp, 160.dp).background(colors.surface)) {
+    Box(Modifier.size(90.dp, 160.dp).background(colors.surface).clipToBounds()) {
         if (image != null) {
-            Image(image, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+            Image(
+                image, contentDescription = null, contentScale = ContentScale.Crop,
+                alignment = BiasAlignment(PhotoFraming.bias(framing.x), PhotoFraming.bias(framing.y)),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("theme:photopreview")
+                    .graphicsLayer {
+                        scaleX = framing.zoom / 100f
+                        scaleY = framing.zoom / 100f
+                        transformOrigin = TransformOrigin(framing.x / 100f, framing.y / 100f)
+                    },
+            )
         }
+    }
+}
+
+/** A slider with its name above it, for the framing of the photo. */
+@Composable
+private fun FramingSlider(@StringRes label: Int, value: Float, tag: String, onChange: (Float) -> Unit) {
+    val name = stringResource(label)
+    Column(Modifier.testTag(tag)) {
+        MetroText(name, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+        MetroSlider(value, onChange, name)
     }
 }

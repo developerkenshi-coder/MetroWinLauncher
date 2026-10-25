@@ -15,7 +15,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -135,10 +137,13 @@ fun MetroTheme(
     droid: DroidPalette? = null,
     /** OLED screens: pure black in the dark theme. */
     oled: Boolean = false,
+    /** The size of the text of the launcher: 1 is the size of the phone, 1.3 is 30 percent bigger. */
+    textScale: Float = 1f,
     content: @Composable () -> Unit,
 ) {
     SystemBarIcons(dark)
     val resolved = remember(style, dark, accent, droid, oled) { Themes.resolve(style, dark, accent, droid, oled) }
+    val density = LocalDensity.current
     CompositionLocalProvider(
         LocalAccent provides resolved.accent,
         LocalMetroColors provides if (highContrast) resolved.colors.highContrast() else resolved.colors,
@@ -146,6 +151,7 @@ fun MetroTheme(
         LocalOled provides (oled && dark),
         LocalReduceMotion provides reduceMotion,
         LocalHighContrast provides highContrast,
+        LocalDensity provides density.let { Density(it.density, it.fontScale * textScale) },
         content = content,
     )
 }
