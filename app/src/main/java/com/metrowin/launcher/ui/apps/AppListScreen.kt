@@ -12,6 +12,9 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -155,6 +158,8 @@ fun AppListScreen(
     highlight: ListHighlight? = null,
     /** What the search finds besides apps: contacts, screens of the Android settings, a web search. */
     global: GlobalResults = GlobalResults.Empty,
+    /** Bumped to put the cursor in the search box (and show the keyboard), as the "search the apps" gesture asks. */
+    searchFocus: Int = 0,
 ) {
     val insets = WindowInsets.systemBars.asPaddingValues()
     // While searching the list is just the matches, without letter headers, followed by what else was found.
@@ -199,7 +204,7 @@ fun AppListScreen(
     ) {
         itemsIndexed(rows, key = { _, row -> row.key }, contentType = { _, row -> row::class }) { index, row ->
             when (row) {
-                ListRow.Search -> SearchRow(query, onQueryChange)
+                ListRow.Search -> SearchRow(query, onQueryChange, searchFocus)
                 is ListRow.Header -> HeaderRow(row.letter, index, listState, openedAt, exiting, onHeaderClick)
                 is ListRow.App -> AppRow(
                     row.item, index, listState, openedAt, exiting, onLaunch, onLongPress,
@@ -250,9 +255,17 @@ private fun rememberRowAway(index: Int, listState: LazyListState, openedAt: Long
 
 /** The search box: a flat surface with a magnifier, the typed text and a button to clear it. */
 @Composable
-private fun SearchRow(query: String, onQueryChange: (String) -> Unit) {
+private fun SearchRow(query: String, onQueryChange: (String) -> Unit, focusToken: Int) {
     val colors = LocalMetroColors.current
     val focus = LocalFocusManager.current
+    val requester = remember { FocusRequester() }
+    val keyboard = LocalSoftwareKeyboardController.current
+    LaunchedEffect(focusToken) {
+        if (focusToken > 0) {
+            requester.requestFocus()
+            keyboard?.show()
+        }
+    }
     val currentChange by rememberUpdatedState(onQueryChange)
     Row(
         Modifier
@@ -275,7 +288,7 @@ private fun SearchRow(query: String, onQueryChange: (String) -> Unit) {
                 cursorBrush = SolidColor(LocalAccent.current),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().focusRequester(requester),
             )
         }
         if (query.isNotEmpty()) {

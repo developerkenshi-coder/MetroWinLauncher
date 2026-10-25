@@ -62,4 +62,13 @@ class SettingsEnv(
     val searchPlaces: suspend (String) -> List<PlaceMatch>? = { emptyList() },
     val onChoosePlace: (PlaceMatch) -> Unit = {},
     val onUseLocation: () -> Unit = {},
+    /** The service that lets the launcher lock the screen is turned on. */
+    val lockServiceEnabled: Boolean = false,
+    val onOpenAccessibilitySettings: () -> Unit = {},
+    /** The name of the backup folder, or null when none is chosen. */
+    val backupFolderName: String? = null,
+    val onPickBackupFolder: (Uri) -> Unit = {},
+    val onClearBackupFolder: () -> Unit = {},
+    val onBackupNow: () -> Unit = {},
+    val onRestoreBackup: () -> Unit = {},
 )

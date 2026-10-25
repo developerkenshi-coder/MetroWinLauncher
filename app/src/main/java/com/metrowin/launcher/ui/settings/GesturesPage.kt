@@ -1,6 +1,10 @@
 package com.metrowin.launcher.ui.settings
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
+import com.metrowin.launcher.data.GestureAction
 import androidx.compose.ui.res.stringResource
 import com.metrowin.launcher.R
 
@@ -8,7 +12,36 @@ import com.metrowin.launcher.R
 @Composable
 fun GesturesPage(env: SettingsEnv) {
     val settings = env.settings
+    val actions = GestureAction.entries
+    val actionNames = actions.map { stringResource(it.label) }
     SettingsPage {
+        Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            DropdownSetting(
+                stringResource(R.string.gest_double_tap), actionNames, actions.indexOf(settings.doubleTapAction),
+                onSelect = { i -> env.onChange { it.copy(doubleTapAction = actions[i]) } }, tag = "gestures:doubletap",
+            )
+            DropdownSetting(
+                stringResource(R.string.gest_two_down), actionNames, actions.indexOf(settings.twoFingerDownAction),
+                onSelect = { i -> env.onChange { it.copy(twoFingerDownAction = actions[i]) } }, tag = "gestures:twodown",
+            )
+            DropdownSetting(
+                stringResource(R.string.gest_two_up), actionNames, actions.indexOf(settings.twoFingerUpAction),
+                onSelect = { i -> env.onChange { it.copy(twoFingerUpAction = actions[i]) } }, tag = "gestures:twoup",
+            )
+            SettingHint(stringResource(R.string.gest_actions_hint))
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            SettingHeading(stringResource(R.string.gest_lock_service))
+            InfoSetting(
+                label = stringResource(R.string.gest_lock_service),
+                value = stringResource(if (env.lockServiceEnabled) R.string.toggle_on else R.string.toggle_off),
+            )
+            SettingHint(stringResource(if (env.lockServiceEnabled) R.string.gest_lock_service_on else R.string.gest_lock_service_off))
+            ActionSetting(
+                stringResource(R.string.gest_lock_service_open), onClick = env.onOpenAccessibilitySettings,
+                hint = stringResource(R.string.gest_lock_service_hint), tag = "gestures:lockservice",
+            )
+        }
         ToggleSetting(
             label = stringResource(R.string.gest_edge_pull),
             checked = settings.edgePull,

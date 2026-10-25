@@ -1,7 +1,9 @@
 package com.metrowin.launcher.data
 
 import android.content.Context
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
+import com.metrowin.launcher.R
 import androidx.core.content.edit
 
 /** Light, dark, or one of the two automatic modes. */
@@ -36,16 +38,16 @@ enum class ThemeMode(val code: String) {
 }
 
 /** What a gesture does, chosen in the settings. */
-enum class GestureAction(val code: String) {
-    None("none"),
-    LockScreen("lock"),
-    OpenSettings("settings"),
-    ActionCenter("action_center"),
-    AppList("apps"),
-    Torch("torch"),
-    Camera("camera"),
-    Voice("voice"),
-    Search("search");
+enum class GestureAction(val code: String, @param:StringRes val label: Int) {
+    None("none", R.string.gact_none),
+    LockScreen("lock", R.string.gact_lock),
+    OpenSettings("settings", R.string.gact_settings),
+    ActionCenter("action_center", R.string.gact_action_center),
+    AppList("apps", R.string.gact_apps),
+    Torch("torch", R.string.gact_torch),
+    Camera("camera", R.string.gact_camera),
+    Voice("voice", R.string.gact_voice),
+    Search("search", R.string.gact_search);
 
     companion object {
         fun fromCode(code: String?, default: GestureAction = None) = entries.firstOrNull { it.code == code } ?: default

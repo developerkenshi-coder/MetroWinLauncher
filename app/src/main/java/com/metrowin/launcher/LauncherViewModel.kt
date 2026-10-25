@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.IntentFilter
 import android.location.LocationManager
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import android.content.ComponentName
 import android.content.Intent
 import android.os.Build
@@ -42,7 +43,9 @@ import com.metrowin.launcher.data.QuickActionsController
 import com.metrowin.launcher.data.LayoutBackup
 import com.metrowin.launcher.data.LayoutBackupCodec
 import com.metrowin.launcher.data.LiveTileRepository
+import com.metrowin.launcher.data.SafFolder
 import com.metrowin.launcher.data.SettingsStore
+import com.metrowin.launcher.data.BackupSchedule
 import com.metrowin.launcher.data.ContactMatch
 import com.metrowin.launcher.data.ContactReader
 import com.metrowin.launcher.data.ContactSearch
@@ -74,6 +77,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -239,6 +243,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun openNotificationAccessSettings() = startSettings(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
 
     fun openSystemSettings() = startSettings(Settings.ACTION_SETTINGS)
+
+    fun openAccessibilitySettings() = startSettings(Settings.ACTION_ACCESSIBILITY_SETTINGS)
 
     private fun startSettings(action: String) {
         runCatching { getApplication<Application>().startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
@@ -527,6 +533,73 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val pages = StartPages.prune(StartPages.resize(backup.pages, backup.settings.startPages), known)
         _pages.value = pages
         store.savePages(pages)
+    }
+
+    /** The name of the backup folder, for the settings; null while none is chosen or it cannot be read. */
+    val backupFolderName: StateFlow<String?> = _settings
+        .map { it.backupFolder }
+        .distinctUntilChanged()
+        .map { uri -> if (uri.isBlank()) null else withContext(Dispatchers.IO) { SafFolder(getApplication(), uri.toUri()).displayName() } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    /** Keeps [uri] (a folder the user picked) for the backups: the permission is kept past a restart of the phone. */
+    fun setBackupFolder(uri: Uri) {
+        runCatching {
+            getApplication<Application>().contentResolver.takePersistableUriPermission(
+                uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+            )
+        }
+        updateSettings { it.copy(backupFolder = uri.toString(), lastBackupAt = 0L) }
+    }
+
+    fun clearBackupFolder() {
+        val old = _settings.value.backupFolder
+        if (old.isNotBlank()) {
+            runCatching {
+                getApplication<Application>().contentResolver.releasePersistableUriPermission(
+                    old.toUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                )
+            }
+        }
+        updateSettings { it.copy(backupFolder = "", backupEveryDays = 0, lastBackupAt = 0L, syncEnabled = false) }
+    }
+
+    /** Saves the layout in the backup folder. [announce] says so on screen; an automatic backup does not. */
+    fun backupNow(announce: Boolean = true) {
+        val folder = _settings.value.backupFolder
+        if (folder.isBlank()) return
+        viewModelScope.launch {
+            val saved = withContext(Dispatchers.IO) {
+                val text = LayoutBackupCodec.encode(currentBackup(), System.currentTimeMillis())
+                SafFolder(getApplication(), folder.toUri()).write(SafFolder.BACKUP_FILE, "application/json", text.toByteArray())
+            }
+            if (saved) updateSettings { it.copy(lastBackupAt = System.currentTimeMillis()) }
+            if (announce) tell(if (saved) R.string.backup_saved else R.string.backup_failed)
+        }
+    }
+
+    /** Called when the launcher goes to the background: makes the automatic backup if it is time. */
+    fun backupIfDue() {
+        val s = _settings.value
+        if (BackupSchedule.isDue(s.backupEveryDays, s.backupFolder, s.lastBackupAt, System.currentTimeMillis())) backupNow(announce = false)
+    }
+
+    /** Puts back the layout saved in the backup folder. */
+    fun restoreFromBackupFolder() {
+        val folder = _settings.value.backupFolder
+        if (folder.isBlank()) return
+        viewModelScope.launch {
+            val bytes = withContext(Dispatchers.IO) { SafFolder(getApplication(), folder.toUri()).read(SafFolder.BACKUP_FILE) }
+            val backup = bytes?.let { LayoutBackupCodec.decode(it.decodeToString(), _settings.value) }
+            when {
+                bytes == null -> tell(R.string.backup_no_file)
+                backup == null -> tell(R.string.backup_not_layout)
+                else -> {
+                    restoreBackup(backup)
+                    tell(R.string.backup_imported)
+                }
+            }
+        }
     }
 
     /** Writes the layout to [uri] (a file the user chose). */

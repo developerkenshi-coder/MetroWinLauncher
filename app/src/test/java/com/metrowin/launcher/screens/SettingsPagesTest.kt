@@ -224,6 +224,52 @@ class SettingsPagesTest : ScreenshotBase() {
     }
 
     @Test
+    fun withNoBackupFolderTheOnlyThingToDoIsToChooseOne() {
+        open(SettingsSection.Backup)
+        compose.onNodeWithTag("backup:folder").assertExists()
+        compose.onAllNodesWithTag("backup:now").assertCountEquals(0)
+        compose.onAllNodesWithTag("backup:every:header").assertCountEquals(0)
+    }
+
+    @Test
+    fun withAFolderTheBackupCanBeScheduledMadeNowAndRestored() {
+        var now = 0
+        var restore = 0
+        var forget = 0
+        current = LauncherSettings(backupFolder = "content://tree/backup")
+        show {
+            var settings by remember { mutableStateOf(current) }
+            SettingsScreen(
+                env = SettingsEnv(
+                    settings = settings,
+                    onChange = { change ->
+                        settings = change(settings)
+                        current = settings
+                    },
+                    backupFolderName = "Backups",
+                    onBackupNow = { now++ },
+                    onRestoreBackup = { restore++ },
+                    onClearBackupFolder = { forget++ },
+                ),
+                section = SettingsSection.Backup,
+                onSectionChange = {},
+                sectionAway = remember { Animatable(0f) },
+            )
+        }
+        advance(500)
+        capture("settings_backup_folder")
+        compose.onNodeWithText("Backups").assertExists()
+        tap("backup:every:header")
+        advance(100)
+        tap("backup:every:2") // every week
+        assertEquals(7, current.backupEveryDays)
+        tap("backup:now")
+        tap("backup:restore")
+        tap("backup:forget")
+        assertEquals(listOf(1, 1, 1), listOf(now, restore, forget))
+    }
+
+    @Test
     fun theAboutPageShowsTheVersionAndThePhone() {
         open(SettingsSection.About, about = AboutInfo("1.2.3", 45L, "14", 34, "Fairphone FP5", 120))
         capture("settings_about")

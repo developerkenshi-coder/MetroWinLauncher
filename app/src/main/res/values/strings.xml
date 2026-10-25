@@ -295,4 +295,45 @@
     <string name="ss_defaults">Default apps</string>
     <string name="ss_developer">Developer options</string>
     <string name="ss_about">About the phone</string>
+
+    <!-- custom gestures -->
+    <string name="gest_double_tap">double tap on Start</string>
+    <string name="gest_two_down">two fingers swipe down</string>
+    <string name="gest_two_up">two fingers swipe up</string>
+    <string name="gest_actions_hint">Choose what each gesture does. A double tap waits a moment before a single tap is understood, only while one is set.</string>
+    <string name="gact_none">nothing</string>
+    <string name="gact_lock">lock the screen</string>
+    <string name="gact_settings">open the Android settings</string>
+    <string name="gact_action_center">open the Action Center</string>
+    <string name="gact_apps">open the app list</string>
+    <string name="gact_torch">switch the flashlight</string>
+    <string name="gact_camera">open the camera</string>
+    <string name="gact_voice">start voice commands</string>
+    <string name="gact_search">search the apps</string>
+    <string name="gest_lock_service">screen lock service</string>
+    <string name="gest_lock_service_on">On: the launcher can lock the screen</string>
+    <string name="gest_lock_service_off">Off: locking the screen needs it</string>
+    <string name="gest_lock_service_open">open accessibility settings</string>
+    <string name="gest_lock_service_hint">Android only lets an app lock the screen through an accessibility service. This one does nothing else: it reads nothing from the screen.</string>
+    <string name="gest_lock_needs_service">Turn on the screen lock service in the accessibility settings first</string>
+    <string name="lock_service_label">MetroWin screen lock</string>
+    <string name="lock_service_description">Lets the MetroWin launcher lock the screen when you choose that for a gesture. It does not read or change anything on the screen.</string>
+
+    <!-- scheduled backup -->
+    <string name="backup_folder">backup folder</string>
+    <string name="backup_folder_none">not chosen</string>
+    <string name="backup_choose_folder">choose a folder</string>
+    <string name="backup_forget_folder">stop using this folder</string>
+    <string name="backup_every">back up by itself</string>
+    <string name="backup_every_off">never</string>
+    <string name="backup_every_day">every day</string>
+    <string name="backup_every_week">every week</string>
+    <string name="backup_every_month">every month</string>
+    <string name="backup_now">back up now</string>
+    <string name="backup_restore">restore from the backup</string>
+    <string name="backup_last">last backup</string>
+    <string name="backup_never">never</string>
+    <string name="backup_folder_hint">Choose any folder, also one of Google Drive or another cloud app that shows in the file picker. The layout is saved there as metrowin-layout.json when the launcher goes to the background, no more often than you choose.</string>
+    <string name="backup_saved">Backup saved</string>
+    <string name="backup_no_file">There is no backup in that folder</string>
 </resources>

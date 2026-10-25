@@ -138,6 +138,8 @@ class StartActions(
     val onMove: (draggedId: String, targetId: String) -> Unit,
     val onMerge: (draggedId: String, ontoId: String) -> Unit,
     val onBackgroundTap: () -> Unit,
+    /** A double tap on the empty part of Start, when the settings give it something to do. */
+    val onDoubleTap: (() -> Unit)? = null,
     /** The arrow after the last tile: on to the next screen, or to the app list after the last one. */
     val onNextPage: () -> Unit,
 )
@@ -184,7 +186,13 @@ fun StartScreen(
             Modifier
                 .fillMaxSize()
                 .then(if (pullConnection != null) Modifier.nestedScroll(pullConnection) else Modifier)
-                .pointerInput(Unit) { detectTapGestures { currentActions.onBackgroundTap() } }
+                // A double tap is only waited for when it has something to do: it delays the single tap a little.
+                .pointerInput(actions.onDoubleTap != null) {
+                    detectTapGestures(
+                        onDoubleTap = if (actions.onDoubleTap != null) ({ currentActions.onDoubleTap?.invoke() }) else null,
+                        onTap = { currentActions.onBackgroundTap() },
+                    )
+                }
                 .verticalScroll(scrollState)
                 .statusBarsPadding()
                 .padding(horizontal = 12.dp),

@@ -288,4 +288,45 @@
     <string name="ss_defaults">App predefinite</string>
     <string name="ss_developer">Opzioni sviluppatore</string>
     <string name="ss_about">Info sul telefono</string>
+
+    <!-- custom gestures -->
+    <string name="gest_double_tap">doppio tocco su Start</string>
+    <string name="gest_two_down">swipe a due dita verso il basso</string>
+    <string name="gest_two_up">swipe a due dita verso l\'alto</string>
+    <string name="gest_actions_hint">Scegli cosa fa ogni gesto. Con il doppio tocco attivo, un tocco singolo viene riconosciuto con un attimo di ritardo.</string>
+    <string name="gact_none">niente</string>
+    <string name="gact_lock">blocca lo schermo</string>
+    <string name="gact_settings">apri le impostazioni di Android</string>
+    <string name="gact_action_center">apri l\'Action Center</string>
+    <string name="gact_apps">apri la lista app</string>
+    <string name="gact_torch">accendi o spegni la torcia</string>
+    <string name="gact_camera">apri la fotocamera</string>
+    <string name="gact_voice">avvia i comandi vocali</string>
+    <string name="gact_search">cerca tra le app</string>
+    <string name="gest_lock_service">servizio per bloccare lo schermo</string>
+    <string name="gest_lock_service_on">Attivo: il launcher può bloccare lo schermo</string>
+    <string name="gest_lock_service_off">Spento: per bloccare lo schermo serve attivarlo</string>
+    <string name="gest_lock_service_open">apri le impostazioni di accessibilità</string>
+    <string name="gest_lock_service_hint">Android permette a un\'app di bloccare lo schermo solo tramite un servizio di accessibilità. Questo non fa altro: non legge nulla dallo schermo.</string>
+    <string name="gest_lock_needs_service">Prima attiva il servizio per bloccare lo schermo nelle impostazioni di accessibilità</string>
+    <string name="lock_service_label">Blocco schermo di MetroWin</string>
+    <string name="lock_service_description">Permette al launcher MetroWin di bloccare lo schermo quando lo scegli per un gesto. Non legge né modifica nulla sullo schermo.</string>
+
+    <!-- scheduled backup -->
+    <string name="backup_folder">cartella di backup</string>
+    <string name="backup_folder_none">non scelta</string>
+    <string name="backup_choose_folder">scegli una cartella</string>
+    <string name="backup_forget_folder">non usare più questa cartella</string>
+    <string name="backup_every">backup automatico</string>
+    <string name="backup_every_off">mai</string>
+    <string name="backup_every_day">ogni giorno</string>
+    <string name="backup_every_week">ogni settimana</string>
+    <string name="backup_every_month">ogni mese</string>
+    <string name="backup_now">salva il backup ora</string>
+    <string name="backup_restore">ripristina dal backup</string>
+    <string name="backup_last">ultimo backup</string>
+    <string name="backup_never">mai</string>
+    <string name="backup_folder_hint">Scegli una cartella qualsiasi, anche di Google Drive o di un\'altra app cloud che compare nel selettore di file. Il layout viene salvato lì come metrowin-layout.json quando il launcher va in background, non più spesso di quanto scegli.</string>
+    <string name="backup_saved">Backup salvato</string>
+    <string name="backup_no_file">In quella cartella non c\'è nessun backup</string>
 </resources>

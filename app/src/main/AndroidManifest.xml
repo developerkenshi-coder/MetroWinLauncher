@@ -151,6 +151,23 @@
             Reads the notifications for the Action Center and the counters on the tiles. Android only
             binds it once the user turns on "notification access" for this app.
         -->
+        <!--
+            Lets the launcher lock the screen for a gesture. Turned on by the user in the accessibility settings;
+            it reads nothing from the screen (see res/xml/lock_accessibility_service.xml).
+        -->
+        <service
+            android:name=".gestures.LockAccessibilityService"
+            android:exported="true"
+            android:label="@string/lock_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/lock_accessibility_service" />
+        </service>
+
         <service
             android:name=".notifications.NotificationService"
             android:exported="true"

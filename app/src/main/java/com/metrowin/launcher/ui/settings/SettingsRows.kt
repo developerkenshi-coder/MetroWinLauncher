@@ -16,6 +16,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -115,6 +119,59 @@ fun OptionList(
             }
         }
         if (hint != null) SettingHint(hint, Modifier.padding(top = 4.dp))
+    }
+}
+
+/**
+ * A choice that shows only what is chosen until it is touched, then unfolds the options one under the other. For
+ * choices with many options, where [OptionList] would take the whole page.
+ */
+@Composable
+fun DropdownSetting(
+    label: String,
+    options: List<String>,
+    selected: Int,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    tag: String = "dropdown",
+) {
+    var open by remember { mutableStateOf(false) }
+    val colors = LocalMetroColors.current
+    Column(modifier) {
+        SettingLabel(label)
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .testTag("$tag:header")
+                .metroPress(onClick = { open = !open })
+                .border(2.dp, colors.foreground)
+                .padding(horizontal = 14.dp, vertical = 11.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            MetroText(options.getOrElse(selected) { "" }, size = 19.sp, weight = FontWeight.Normal, modifier = Modifier.weight(1f))
+            MetroText(if (open) "−" else "+", size = 24.sp, weight = FontWeight.Normal, color = colors.subtle)
+        }
+        if (open) {
+            Column(Modifier.padding(top = 6.dp)) {
+                options.forEachIndexed { index, text ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .testTag("$tag:$index")
+                            .metroPress(onClick = {
+                                onSelect(index)
+                                open = false
+                            })
+                            .padding(vertical = 7.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        CheckSquare(index == selected)
+                        Spacer(Modifier.width(14.dp))
+                        MetroText(text, size = 18.sp, modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+        }
     }
 }
 

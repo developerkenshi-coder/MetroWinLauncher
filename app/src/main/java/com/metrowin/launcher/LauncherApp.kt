@@ -2,6 +2,7 @@ package com.metrowin.launcher
 
 import android.app.Activity
 import android.app.KeyguardManager
+import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -49,6 +50,7 @@ import com.metrowin.launcher.data.AppRepository
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.QuickAction
+import com.metrowin.launcher.data.GestureAction
 import com.metrowin.launcher.data.GlobalResults
 import com.metrowin.launcher.data.GlobalSearch
 import com.metrowin.launcher.data.LocalWidgetHost
@@ -79,7 +81,9 @@ import com.metrowin.launcher.ui.gesture.PageDots
 import com.metrowin.launcher.ui.gesture.PagerBack
 import com.metrowin.launcher.ui.gesture.PanelBack
 import com.metrowin.launcher.ui.gesture.TurnstileBack
+import com.metrowin.launcher.gestures.LockAccessibilityService
 import com.metrowin.launcher.ui.gesture.pullDownConnection
+import com.metrowin.launcher.ui.gesture.twoFingerSwipe
 import com.metrowin.launcher.ui.gesture.pullDownFromTop
 import com.metrowin.launcher.ui.gesture.rememberPullPanel
 import com.metrowin.launcher.ui.gesture.returnToStart
@@ -115,6 +119,9 @@ private const val LIST_EXIT_MS = 240L
 
 /** How far below the status bar a pull from the top edge may start, to open the Action Center from any page. */
 private val EDGE_PULL_ZONE = 28.dp
+
+/** How far two fingers move together for the swipe to count. */
+private val TWO_FINGER_SWIPE = 96.dp
 
 /** The contacts are looked for once the typing has paused this long. */
 private const val CONTACT_SEARCH_DELAY_MS = 220L
@@ -157,6 +164,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     /** The Start screens come first and the app list is the page after the last of them. */
     val appsPage = pages.size
 
+    val backupFolderName by vm.backupFolderName.collectAsStateWithLifecycle()
     val weather by vm.weather.collectAsStateWithLifecycle()
     val battery by vm.battery.collectAsStateWithLifecycle()
     val liveNow = remember(live, torchOn, weather, battery) { live.copy(torchOn = torchOn, weather = weather, battery = battery) }
@@ -194,6 +202,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     var pendingWidget by remember { mutableStateOf<Pair<Int, WidgetProvider>?>(null) }
     var siteDialogOpen by remember { mutableStateOf(false) }
     var weatherOpen by remember { mutableStateOf(false) }
+    var searchFocus by remember { mutableIntStateOf(0) }
+    var lockServiceEnabled by remember { mutableStateOf(false) }
     var renamingFolderId by remember { mutableStateOf<String?>(null) }
     var query by remember { mutableStateOf("") }
     var settingsSection by remember { mutableStateOf<SettingsSection?>(null) }
@@ -252,9 +262,13 @@ fun LauncherApp(vm: LauncherViewModel) {
     }
 
     // Returning from an app: everything swings back in, as on Windows Phone.
-    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { cameBackFromBackground = true }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+        cameBackFromBackground = true
+        vm.backupIfDue()
+    }
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
         vm.onStart()
+        lockServiceEnabled = LockAccessibilityService.isEnabled(appContext)
         if (cameBackFromBackground) {
             cameBackFromBackground = false
             comeBack()
@@ -478,6 +492,28 @@ fun LauncherApp(vm: LauncherViewModel) {
         }
     }
 
+    /** What a gesture does, as the settings chose. */
+    fun perform(action: GestureAction) {
+        when (action) {
+            GestureAction.None -> Unit
+            GestureAction.LockScreen -> if (!LockAccessibilityService.lock()) {
+                // Locking needs the accessibility service: say so, and take the user to where it is turned on.
+                Toast.makeText(appContext, R.string.gest_lock_needs_service, Toast.LENGTH_LONG).show()
+                vm.openAccessibilitySettings()
+            }
+            GestureAction.OpenSettings -> vm.openSystemSettings()
+            GestureAction.ActionCenter -> panel.open()
+            GestureAction.AppList -> scope.launch { pagerState.animateScrollToPage(appsPage) }
+            GestureAction.Torch -> vm.activateQuickAction(QuickAction.Flashlight)
+            GestureAction.Camera -> vm.activateQuickAction(QuickAction.Camera)
+            GestureAction.Voice -> Unit // set below once the voice screen exists
+            GestureAction.Search -> {
+                scope.launch { pagerState.animateScrollToPage(appsPage) }
+                searchFocus++
+            }
+        }
+    }
+
     val startActions = StartActions(
         onClick = { cell ->
             when {
@@ -512,6 +548,7 @@ fun LauncherApp(vm: LauncherViewModel) {
             editingKey = null
         },
         onBackgroundTap = { editingKey = null },
+        onDoubleTap = if (settings.doubleTapAction != GestureAction.None) ({ perform(settings.doubleTapAction) }) else null,
         onNextPage = { scope.launch { pagerState.animateScrollToPage((pagerState.currentPage + 1).coerceAtMost(appsPage)) } },
     )
 
@@ -547,7 +584,13 @@ fun LauncherApp(vm: LauncherViewModel) {
                     .fillMaxSize()
                     .background(LocalMetroColors.current.background)
                     .onSizeChanged { panel.travelPx = it.height.toFloat() }
-                    .pullDownFromTop(panel, edgeZone, enabled = !pullBlocked && settings.edgePull),
+                    .pullDownFromTop(panel, edgeZone, enabled = !pullBlocked && settings.edgePull)
+                    .twoFingerSwipe(
+                        enabled = !pullBlocked && (settings.twoFingerDownAction != GestureAction.None || settings.twoFingerUpAction != GestureAction.None),
+                        thresholdPx = with(density) { TWO_FINGER_SWIPE.toPx() },
+                        onDown = { perform(settings.twoFingerDownAction) },
+                        onUp = { perform(settings.twoFingerUpAction) },
+                    ),
             ) {
                 if (kidsMode) {
                     StartScreen(
@@ -603,6 +646,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             results = searchResults,
                             highlight = highlight,
                             global = globalResults,
+                            searchFocus = searchFocus,
                         )
                     },
                 )
@@ -752,6 +796,13 @@ fun LauncherApp(vm: LauncherViewModel) {
                             searchPlaces = vm::searchPlaces,
                             onChoosePlace = vm::choosePlace,
                             onUseLocation = vm::useMyLocation,
+                            backupFolderName = backupFolderName,
+                            onPickBackupFolder = vm::setBackupFolder,
+                            onClearBackupFolder = vm::clearBackupFolder,
+                            onBackupNow = { vm.backupNow() },
+                            onRestoreBackup = vm::restoreFromBackupFolder,
+                            lockServiceEnabled = lockServiceEnabled,
+                            onOpenAccessibilitySettings = vm::openAccessibilitySettings,
                         ),
                         section = settingsSection,
                         onSectionChange = { settingsSection = it },
