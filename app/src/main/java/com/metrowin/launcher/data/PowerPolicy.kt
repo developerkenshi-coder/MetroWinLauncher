@@ -33,11 +33,27 @@ object PowerPolicy {
             androidBatterySaver || (battery != null && battery.state == BatteryState.Discharging && battery.percent <= LOW_BATTERY_PERCENT)
     }
 
-    /** What the contacts, calendar, photos and call log say is read again after this long when the launcher comes back. */
-    fun liveMaxAgeMs(saving: Boolean): Long = if (saving) 15 * MINUTE else 2 * MINUTE
+    /**
+     * What the contacts, calendar, photos and call log say is read again after this long when the launcher comes back, kind by
+     * kind: the next event and the missed calls change within minutes, the photos and the faces seldom, the birthdays almost never
+     * (and reading them goes through every contact).
+     */
+    fun liveMaxAgeMs(kind: LiveKind, saving: Boolean): Long {
+        val base = when (kind) {
+            LiveKind.Photos -> 15 * MINUTE
+            LiveKind.People -> 30 * MINUTE
+            LiveKind.Storage -> 10 * MINUTE
+            LiveKind.Birthdays -> 12 * HOUR
+            else -> 2 * MINUTE
+        }
+        return if (saving) minOf(base * 6, 24 * HOUR) else base
+    }
 
     /** The weather is fetched again when older than this. */
     fun weatherMaxAgeMs(saving: Boolean): Long = if (saving) 2 * HOUR else OpenMeteo.MAX_AGE_MILLIS
+
+    /** A weather fetch is not tried again sooner than this, whether the last one worked or not: no connection must not mean a try at every return. */
+    fun weatherRetryMs(saving: Boolean): Long = if (saving) 30 * MINUTE else 10 * MINUTE
 
     /** The icon packs (a search through every installed app) are looked for again after this long. */
     fun packagesMaxAgeMs(saving: Boolean): Long = if (saving) 30 * MINUTE else 5 * MINUTE

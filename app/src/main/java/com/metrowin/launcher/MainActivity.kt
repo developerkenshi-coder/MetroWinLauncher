@@ -4,7 +4,11 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 import android.view.Display
+import android.view.MotionEvent
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -49,6 +53,11 @@ class MainActivity : ComponentActivity() {
     private var wantsHighRefresh = true
     private var saving = false
 
+    /** When the screen was last touched, or the launcher came on screen (uptime), for the high refresh rate. */
+    private var lastTouchAt = 0L
+    private val handler = Handler(Looper.getMainLooper())
+    private val idleCheck = Runnable { requestHighestRefreshRate() }
+
     /** The manifest starts in portrait; the settings may free the rotation or fix landscape, and turn the 120 Hz request off. */
     private fun applyDisplaySettings(settings: LauncherSettings) {
         if (requestedOrientation != settings.orientation.requested) requestedOrientation = settings.orientation.requested
@@ -67,39 +76,83 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // The display can change under us (a foldable opened, an external screen).
-        requestHighestRefreshRate()
+        // Coming on screen is the time of the entry animations: the same as a touch. The display can also change under us
+        // (a foldable opened, an external screen).
+        touched()
+    }
+
+    override fun onStop() {
+        handler.removeCallbacks(idleCheck)
+        super.onStop()
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> touched()
+            // The finger lifts: the rate is kept for the fling and the settling after it, then let go.
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                lastTouchAt = SystemClock.uptimeMillis()
+                scheduleIdleCheck()
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
+    private fun touched() {
+        val wasIdle = !RefreshRate.wantsHigh(true, false, lastTouchAt, SystemClock.uptimeMillis())
+        lastTouchAt = SystemClock.uptimeMillis()
+        if (wasIdle) requestHighestRefreshRate()
+        scheduleIdleCheck()
+    }
+
+    private fun scheduleIdleCheck() {
+        handler.removeCallbacks(idleCheck)
+        handler.postDelayed(idleCheck, RefreshRate.IDLE_MS + IDLE_SLACK_MS)
     }
 
     /**
-     * Asks for the fastest refresh rate the screen has (120 Hz and more) at its current resolution.
-     * Without the request Android keeps many phones at 60 Hz for apps that do not ask. The tile
-     * animations are time based, so they run the same at any rate, only smoother.
+     * Asks for the fastest refresh rate the screen has (120 Hz and more) at its current resolution, while the screen is being
+     * used, and takes the request away when it is not (see [RefreshRate.wantsHigh]). Without the request Android keeps many
+     * phones at 60 Hz for apps that do not ask. The tile animations are time based, so they run the same at any rate, only
+     * smoother. Where the phone cannot go between the rates without a flash, the rate is simply kept as asked.
      */
     private fun requestHighestRefreshRate() {
-        if (!PowerPolicy.highRefreshRate(wantsHighRefresh, saving)) {
-            // No preference: Android picks the rate by what is on screen.
-            if (window.attributes.preferredDisplayModeId != 0) {
-                window.attributes = window.attributes.also { it.preferredDisplayModeId = 0 }
-            }
-            if (Build.VERSION.SDK_INT >= 35) window.decorView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_NO_PREFERENCE)
+        val wants = RefreshRate.wantsHigh(wantsHighRefresh, saving, lastTouchAt, SystemClock.uptimeMillis())
+        if (!wantsHighRefresh || saving) {
+            releaseRefreshRequest()
             return
         }
         @Suppress("DEPRECATION")
         val screen = (if (Build.VERSION.SDK_INT >= 30) display else windowManager.defaultDisplay) ?: return
-        fun Display.Mode.info() = DisplayModeInfo(modeId, physicalWidth, physicalHeight, refreshRate)
-        val best = RefreshRate.best(screen.mode.info(), screen.supportedModes.map { it.info() }) ?: return
-        if (window.attributes.preferredDisplayModeId != best.id) {
-            window.attributes = window.attributes.also { it.preferredDisplayModeId = best.id }
+        fun Display.Mode.info() = DisplayModeInfo(
+            modeId, physicalWidth, physicalHeight, refreshRate,
+            if (Build.VERSION.SDK_INT >= 31) alternativeRefreshRates.toList() else emptyList(),
+        )
+        val current = screen.mode.info()
+        val best = RefreshRate.best(current, screen.supportedModes.map { it.info() }) ?: return
+        if (wants || !RefreshRate.canLeave(current)) {
+            if (window.attributes.preferredDisplayModeId != best.id) {
+                window.attributes = window.attributes.also { it.preferredDisplayModeId = best.id }
+            }
+            if (Build.VERSION.SDK_INT >= 35) window.decorView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_HIGH)
+        } else {
+            // Nobody is touching it, and the screen can change rate cleanly: the phone decides, and goes as low as the content allows.
+            releaseRefreshRequest()
         }
-        if (Build.VERSION.SDK_INT >= 35) {
-            // Adaptive refresh rate: keep the rate high while something animates, drop it when idle.
-            window.decorView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_HIGH)
+    }
+
+    private fun releaseRefreshRequest() {
+        if (window.attributes.preferredDisplayModeId != 0) {
+            window.attributes = window.attributes.also { it.preferredDisplayModeId = 0 }
         }
+        if (Build.VERSION.SDK_INT >= 35) window.decorView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_NO_PREFERENCE)
     }
 
     companion object {
         const val REQUEST_CONFIGURE_WIDGET = 0x4D58
+
+        /** The check for an idle screen comes a moment after the rate would run out. */
+        private const val IDLE_SLACK_MS = 100L
     }
 
     /**

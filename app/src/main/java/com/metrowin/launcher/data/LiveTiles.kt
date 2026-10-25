@@ -78,6 +78,28 @@ data class LiveTileData(
     val birthdays: List<Birthday> = emptyList(),
 )
 
+/** Keeps what the tiles of [kinds] show and lets the rest go: a tile that is not on Start any more has no use for its data. */
+fun LiveTileData.keeping(kinds: Set<LiveKind>) = copy(
+    photos = if (LiveKind.Photos in kinds) photos else emptyList(),
+    people = if (LiveKind.People in kinds) people else emptyList(),
+    nextEvent = if (LiveKind.Calendar in kinds) nextEvent else null,
+    missedCalls = if (LiveKind.Phone in kinds) missedCalls else 0,
+    storage = if (LiveKind.Storage in kinds) storage else null,
+    nextAlarm = if (LiveKind.Alarm in kinds) nextAlarm else 0L,
+    birthdays = if (LiveKind.Birthdays in kinds) birthdays else emptyList(),
+)
+
+/** What the tiles of [kinds] show, taken from [fresh]; the rest stays as it was. */
+fun LiveTileData.updatedWith(fresh: LiveTileData, kinds: Set<LiveKind>) = copy(
+    photos = if (LiveKind.Photos in kinds) fresh.photos else photos,
+    people = if (LiveKind.People in kinds) fresh.people else people,
+    nextEvent = if (LiveKind.Calendar in kinds) fresh.nextEvent else nextEvent,
+    missedCalls = if (LiveKind.Phone in kinds) fresh.missedCalls else missedCalls,
+    storage = if (LiveKind.Storage in kinds) fresh.storage else storage,
+    nextAlarm = if (LiveKind.Alarm in kinds) fresh.nextAlarm else nextAlarm,
+    birthdays = if (LiveKind.Birthdays in kinds) fresh.birthdays else birthdays,
+)
+
 class LiveTileRepository(private val context: Context) {
     private val resolver: ContentResolver = context.contentResolver
 
@@ -95,6 +117,11 @@ class LiveTileRepository(private val context: Context) {
 
     private fun granted(permission: String) = LivePermissions.isGranted(context, permission)
 
+    /** The photos and faces already decoded, by where they come from: a read finds the same ones most times and decodes none. */
+    private val photoCache = LinkedHashMap<Uri, ImageBitmap>()
+    private val faceCache = HashMap<Uri, ImageBitmap>()
+
+    @Synchronized
     private fun photos(limit: Int = 8): List<ImageBitmap> {
         if (!LivePermissions.canReadPhotos(context)) return emptyList()
         return runCatching {
@@ -108,10 +135,13 @@ class LiveTileRepository(private val context: Context) {
             resolver.query(collection, arrayOf(MediaStore.Images.Media._ID), args, null)?.use { cursor ->
                 while (cursor.moveToNext()) uris += ContentUris.withAppendedId(collection, cursor.getLong(0))
             }
-            uris.mapNotNull { thumbnail(it, PHOTO_PX)?.asImageBitmap() }
+            val found = uris.mapNotNull { uri -> photoCache[uri] ?: thumbnail(uri, PHOTO_PX)?.asImageBitmap()?.also { photoCache[uri] = it } }
+            photoCache.keys.retainAll(uris.toSet())
+            found
         }.getOrDefault(emptyList())
     }
 
+    @Synchronized
     private fun people(limit: Int = 8): List<LivePerson> {
         if (!granted(LivePermissions.contacts)) return emptyList()
         return runCatching {
@@ -140,9 +170,12 @@ class LiveTileRepository(private val context: Context) {
                     (if (cursor.getInt(2) == 1) starred else others) += name to photo
                 }
             }
+            if (faceCache.size > MAX_FACES) faceCache.clear()
             (starred.shuffled() + others.shuffled()).take(limit).mapNotNull { (name, uri) ->
-                val bitmap = resolver.openInputStream(uri)?.use(BitmapFactory::decodeStream) ?: return@mapNotNull null
-                LivePerson(name, bitmap.asImageBitmap())
+                val face = faceCache[uri]
+                    ?: resolver.openInputStream(uri)?.use(BitmapFactory::decodeStream)?.asImageBitmap()?.also { faceCache[uri] = it }
+                    ?: return@mapNotNull null
+                LivePerson(name, face)
             }
         }.getOrDefault(emptyList())
     }
@@ -200,6 +233,7 @@ class LiveTileRepository(private val context: Context) {
     private companion object {
         const val PHOTO_PX = 512
         const val MAX_BIRTHDAYS = 2_000
+        const val MAX_FACES = 40
         const val WEEK_MILLIS = 7L * 24 * 60 * 60 * 1000
     }
 }

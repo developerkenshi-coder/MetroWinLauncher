@@ -369,6 +369,13 @@ class SettingsStore(context: Context) {
 
     fun save(settings: LauncherSettings) = prefs.edit { putString(KEY_JSON, SettingsCodec.encode(settings)) }
 
+    /** Only the switch of the tiles that apps publish: other apps call the provider that asks, and the whole settings are not decoded for each call. */
+    fun thirdPartyTilesOn(): Boolean {
+        val json = prefs.getString(KEY_JSON, null) ?: return LauncherSettings().thirdPartyTiles
+        return runCatching { org.json.JSONObject(json).optBoolean("thirdPartyTiles", LauncherSettings().thirdPartyTiles) }
+            .getOrDefault(LauncherSettings().thirdPartyTiles)
+    }
+
     /** The settings of the first versions, one key each. */
     private fun legacy() = LauncherSettings(
         themeMode = if (prefs.getBoolean("dark_theme", true)) ThemeMode.Dark else ThemeMode.Light,

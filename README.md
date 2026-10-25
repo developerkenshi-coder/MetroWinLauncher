@@ -58,6 +58,18 @@ Da terminale:
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
+**Per usarlo tutti i giorni, meglio la build ottimizzata**: è la release (R8, nessun codice di debug, profilo per la compilazione
+anticipata di tutto il codice del launcher in `app/src/main/baseline-prof.txt`) firmata con la chiave di debug, quindi si installa sopra
+la debug senza perdere i dati. La debug è più lenta e consuma di più: è fatta per sviluppare.
+
+```sh
+./gradlew assembleOptimized      # app/build/outputs/apk/optimized/app-optimized.apk
+adb install -r app/build/outputs/apk/optimized/app-optimized.apk
+```
+
+La `assembleRelease` resta non firmata, per la chiave di chi pubblica. Il profilo di compilazione lo applica Android da solo, di solito
+nella prima notte di manutenzione (a telefono in carica e spento): prima l'avvio è più lento.
+
 Poi premi Home: Android chiede quale launcher usare, scegli **MetroWin Launcher** (o *Impostazioni → App → App
 predefinite → App Home*). Alla prima apertura parte il [tutorial](#il-tutorial-iniziale).
 
@@ -397,9 +409,22 @@ quanta batteria faccia risparmiare in ore **non è stato misurato** (servirebbe 
   eventi, e a ognuno il launcher rileggeva *tutte* le app e svuotava la cache delle icone. Ora (`DeferWhileAway`) si ricorda che qualcosa
   è cambiato e si rilegge una volta al ritorno. Anche la sincronizzazione all'uscita, se accesa, non parte più di una volta ogni 15
   minuti (prima ogni minuto).
-- **Si legge solo quello che serve**: contatti, calendario, foto e chiamate solo per i live tile fissati su Start, e al massimo
-  ogni due minuti; meteo ogni mezz'ora al massimo; la ricerca degli icon pack ogni cinque minuti. Un permesso dato o tolto, o un tile
-  nuovo, fanno rileggere subito.
+- **Si legge solo quello che serve**: contatti, calendario, foto e chiamate solo per i live tile fissati su Start, e **ognuno col suo
+  passo** (`PowerPolicy.liveMaxAgeMs`): prossimo evento, chiamate perse e sveglia ogni due minuti al massimo, spazio ogni dieci,
+  foto ogni quarto d'ora, volti ogni mezz'ora, compleanni (che scorrono tutti i contatti) ogni dodici ore; con il risparmio sei volte
+  più rado, mai oltre un giorno. Le foto e i volti già decodificati si riusano: una lettura che trova le stesse non ne decodifica
+  nessuna. Meteo ogni mezz'ora al massimo, e dopo un tentativo, riuscito o no, si aspettano dieci minuti (senza rete prima si riprovava
+  a ogni ritorno su Start); la ricerca degli icon pack ogni cinque minuti; la sincronizzazione all'avvio ogni quindici. Un permesso dato
+  o tolto, o un tile nuovo, fanno rileggere subito.
+- **I 120 Hz solo mentre usi lo schermo.** Prima la richiesta restava fissa, e Start è la schermata che resta accesa più a lungo: a
+  120 Hz anche quando nessuno la tocca. Ora (`RefreshRate.wantsHigh`) la frequenza alta si chiede al tocco e quando il launcher torna
+  sullo schermo, e tre secondi dopo l'ultimo tocco si toglie e decide il telefono (clock e giri dei riquadri sono basati sul tempo:
+  a 60 Hz si vedono uguali). Si toglie solo se lo schermo dice di poter cambiare frequenza senza lampeggi (`alternativeRefreshRates`,
+  Android 12 e oltre); altrimenti resta come prima. Non l'ho provato su un telefono vero: se su un telefono la frequenza non risale
+  al tocco, l'impostazione *massima frequenza di aggiornamento* si può spegnere.
+- **Schermata di blocco e salvaschermo**: l'orologio si aggiorna ogni minuto, ma il calendario (una query) si interroga ogni cinque
+  minuti, o subito quando l'evento è iniziato. Un'app che pubblica sul proprio tile le stesse parole non fa scrivere nulla su disco né
+  ridisegnare il tile, e il provider non decodifica più tutte le impostazioni a ogni chiamata.
 - **Risparmio energetico** (pagina *batteria*): *automatico* (quando c'è il risparmio di Android, o la batteria è al 20% o meno e
   non è in carica), *sempre* o *mai*. Mentre risparmia: i riquadri non girano da soli, le foto non si alternano, la richiesta dei
   120 Hz viene tolta, e tutto si legge meno spesso (meteo 2 ore, dati dei tile 15 minuti, sync quattro volte più rada).
@@ -516,7 +541,7 @@ solo se il launcher c'era già.
 ./gradlew assembleRelease        # con R8
 ```
 
-**1468 test**, nessuno saltato; il lint non ha errori.
+**1480 test**, nessuno saltato; il lint non ha errori.
 
 - Logica pura: griglia e colonne dalla larghezza, operazioni su Start, regole di trascinamento e di rilascio, ricerca,
   salvataggio e migrazione delle impostazioni, comandi vocali, pianificazione della sincronizzazione, **cifratura** (anche

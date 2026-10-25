@@ -47,10 +47,17 @@ object LockText {
     fun untilNextMinute(nowMillis: Long): Long = 60_000L - nowMillis.mod(60_000L)
 }
 
-class LockInfoSource(private val context: Context) {
+class LockInfoSource(
+    private val context: Context,
+    /** Asks the calendar for the next event after the given time; a query. */
+    private val findEvent: (Long) -> LiveEvent? = { now -> CalendarSearch(context).next(now, DAY_MILLIS) },
+) {
     private val alarms = context.getSystemService(AlarmManager::class.java)
 
     private val weatherRepository = WeatherRepository(context)
+
+    private var eventAskedAt = Long.MIN_VALUE
+    private var event: LiveEvent? = null
 
     /**
      * The alarm and the battery, read now; the notification count comes from the notification hub. The weather is the one kept
@@ -61,10 +68,27 @@ class LockInfoSource(private val context: Context) {
         nextAlarmMillis = runCatching { alarms.nextAlarmClock?.triggerTime }.getOrNull(),
         battery = runCatching { BatteryInfo.read(context) }.getOrNull(),
         weather = runCatching { weatherRepository.cached() }.getOrNull(),
-        nextEvent = if (withEvent) CalendarSearch(context).next(nowMillis, DAY_MILLIS) else null,
+        nextEvent = if (withEvent) nextEvent(nowMillis) else null,
     )
 
-    private companion object {
-        const val DAY_MILLIS = 24L * 60 * 60 * 1000
+    /**
+     * The clock is read every minute, and the calendar, a query through a content provider, is not asked that often: the event
+     * is kept for [EVENT_KEPT_MS], and asked again at once when it has started (the next one takes its place).
+     */
+    private fun nextEvent(nowMillis: Long): LiveEvent? {
+        val kept = event
+        val fresh = nowMillis - eventAskedAt in 0 until EVENT_KEPT_MS && (kept == null || kept.allDay || nowMillis < kept.startMillis)
+        if (!fresh) {
+            event = runCatching { findEvent(nowMillis) }.getOrNull()
+            eventAskedAt = nowMillis
+        }
+        return event
+    }
+
+    companion object {
+        private const val DAY_MILLIS = 24L * 60 * 60 * 1000
+
+        /** How long the next event of the calendar is kept on the lock screen before the calendar is asked again. */
+        const val EVENT_KEPT_MS = 5L * 60 * 1000
     }
 }

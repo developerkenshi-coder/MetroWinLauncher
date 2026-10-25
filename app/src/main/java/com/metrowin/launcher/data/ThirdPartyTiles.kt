@@ -42,6 +42,9 @@ object ThirdPartyTiles {
 
     fun publish(current: Map<String, ThirdPartyTile>, packageName: String, title: String?, text: String?, count: Int, now: Long): Map<String, ThirdPartyTile> {
         val tile = ThirdPartyTile(packageName, clean(title, MAX_TITLE), clean(text, MAX_TEXT), count.coerceIn(0, MAX_COUNT), now)
+        // The same words again change nothing, and an app that says them every few seconds must not make the launcher write them
+        // to the disk and redraw its tile every time.
+        current[packageName]?.let { if (it.title == tile.title && it.text == tile.text && it.count == tile.count) return current }
         val updated = LinkedHashMap(current)
         updated.remove(packageName)
         updated[packageName] = tile
@@ -104,6 +107,7 @@ object TileFeed {
         load(context)
         synchronized(this) {
             val updated = change(_tiles.value)
+            if (updated == _tiles.value) return
             _tiles.value = updated
             prefs(context).edit { putString("tiles", ThirdPartyTiles.encode(updated)) }
         }

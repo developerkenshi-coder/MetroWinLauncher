@@ -1,0 +1,4 @@
+# What Android compiles ahead of time for MetroWin Launcher, so that it does not interpret and compile it while the user waits
+# (and burns the battery doing so): all the classes and methods of the app. The libraries (Compose, AndroidX) bring their own.
+HSPLcom/metrowin/launcher/**;->**(**)**
+Lcom/metrowin/launcher/**;

@@ -48,6 +48,9 @@ import com.metrowin.launcher.data.StartEntries
 import com.metrowin.launcher.data.StartPages
 import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.data.LiveTileData
+import kotlinx.coroutines.flow.update
+import com.metrowin.launcher.data.updatedWith
+import com.metrowin.launcher.data.keeping
 import com.metrowin.launcher.data.OpenMeteo
 import com.metrowin.launcher.data.IconPackInfo
 import com.metrowin.launcher.data.IconPackRepository
@@ -675,14 +678,17 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val wanted = LiveSources.wanted(_pages.value, _items.value)
         // A permission given or taken away since the last read changes what there is to show at once.
         val grants = LivePermissions.all.count { LivePermissions.isGranted(getApplication(), it) }
-        val due = throttle.due("live", PowerPolicy.liveMaxAgeMs(powerSaving.value))
-        val changed = force || wanted != loadedLive || grants != loadedGrants
-        if (!changed && !due) return
-        if (!changed && wanted.isEmpty()) return
+        val everything = force || wanted != loadedLive || grants != loadedGrants
+        // Every kind has its own age (see PowerPolicy.liveMaxAgeMs): the birthdays are not read again at every return to Start.
+        val saving = powerSaving.value
+        val stale = wanted.filterTo(HashSet()) { throttle.due("live:${it.name}", PowerPolicy.liveMaxAgeMs(it, saving)) }
+        val toRead = if (everything) wanted else stale
+        if (toRead.isEmpty() && !everything) return
         loadedLive = wanted
         loadedGrants = grants
         viewModelScope.launch {
-            _live.value = withContext(Dispatchers.IO) { liveTiles.load(wanted) }
+            val fresh = if (toRead.isEmpty()) LiveTileData() else withContext(Dispatchers.IO) { liveTiles.load(toRead) }
+            _live.update { it.keeping(wanted).updatedWith(fresh, toRead) }
         }
     }
 
@@ -764,8 +770,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             return
         }
         val current = _weather.value
-        val maxAge = PowerPolicy.weatherMaxAgeMs(powerSaving.value)
-        if (!force && current != null && current.fahrenheit == s.weatherFahrenheit && !OpenMeteo.isStale(current, System.currentTimeMillis(), maxAge)) return
+        val saving = powerSaving.value
+        val unitChanged = current != null && current.fahrenheit != s.weatherFahrenheit
+        val stale = current == null || OpenMeteo.isStale(current, System.currentTimeMillis(), PowerPolicy.weatherMaxAgeMs(saving))
+        if (!force && !unitChanged && !stale) return
+        // Done or not, the next try waits: with no connection every return to Start would otherwise go to the network again.
+        if (!force && !unitChanged && !throttle.due("weather", PowerPolicy.weatherRetryMs(saving))) return
         weatherJob?.cancel()
         weatherJob = viewModelScope.launch {
             val fetched = withContext(Dispatchers.IO) {
@@ -1518,7 +1528,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         const val RELOAD_DEBOUNCE_MS = 400L
         const val SAMPLE_SIDE = 48
         const val PROFILE_REFRESH_MS = 800L
-        const val SYNC_MIN_GAP_ON_START_MS = 5 * 60_000L
+        const val SYNC_MIN_GAP_ON_START_MS = 15 * 60_000L
         const val SYNC_MIN_GAP_ON_LEAVE_MS = 15 * 60_000L
         const val MAX_LAYOUT_BYTES = 2 * 1024 * 1024
     }

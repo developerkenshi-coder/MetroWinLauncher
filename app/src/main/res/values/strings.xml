@@ -391,7 +391,7 @@
     <string name="screen_orient_landscape">landscape only</string>
     <string name="screen_orient_hint">In landscape the Start screen fits more columns of tiles. “Follow the phone” respects the rotation lock of Android.</string>
     <string name="screen_high_refresh">highest refresh rate</string>
-    <string name="screen_high_refresh_hint">Asks the screen for its fastest mode (120 Hz and more) at the current resolution. Turn it off to let Android decide and save some battery.</string>
+    <string name="screen_high_refresh_hint">Asks the screen for its fastest mode (120 Hz and more) at the current resolution, but only while you use it: three seconds after the last touch the phone is free to go lower. Turn it off to let Android decide always and save more battery.</string>
 
     <!-- icons and themes -->
     <string name="sec_icons">icons &amp; themes</string>
@@ -656,7 +656,7 @@
     <string name="saving_while_3">Weather, contacts, calendar and photos are read less often, and the sync waits longer.</string>
     <string name="battery_rest_title">at rest</string>
     <string name="battery_rest_1">With another app on screen, or with the screen off, the launcher does nothing: no timers, no listeners, no refresh. What changed in the meantime is read once, when you come back.</string>
-    <string name="battery_rest_2">Contacts, calendar, photos and calls are read only for the live tiles you pinned to Start, and not again within a couple of minutes of leaving and coming back.</string>
+    <string name="battery_rest_2">Contacts, calendar, photos and calls are read only for the live tiles you pinned to Start, each at its own pace: the next event and the missed calls every two minutes at most, photos every quarter of an hour, faces every half hour, birthdays every twelve hours. The weather waits ten minutes after a try, with or without a connection.</string>
     <string name="battery_rest_3">The lock screen service asks Android for no events, so it never wakes the launcher when you switch apps.</string>
     <string name="battery_rest_4">Notifications: Android still tells the service when one arrives, but the launcher reads none of them until it is on screen, however many come. The same goes for the list of apps when they are updated. Everything is read once when you come back; with the launcher open, a burst is read no more than twice a second.</string>
     <string name="tut_alive_tip3">It costs almost no battery: off screen, or with another app in front, the launcher reads nothing and runs no timers.</string>

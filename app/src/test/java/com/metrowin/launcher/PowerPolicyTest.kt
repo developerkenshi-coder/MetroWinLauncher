@@ -56,7 +56,8 @@ class PowerPolicyTest {
 
     @Test
     fun savingRefreshesLessOften() {
-        assertTrue(PowerPolicy.liveMaxAgeMs(true) > PowerPolicy.liveMaxAgeMs(false))
+        LiveKind.entries.forEach { assertTrue("$it", PowerPolicy.liveMaxAgeMs(it, true) > PowerPolicy.liveMaxAgeMs(it, false)) }
+        assertTrue(PowerPolicy.weatherRetryMs(true) > PowerPolicy.weatherRetryMs(false))
         assertTrue(PowerPolicy.weatherMaxAgeMs(true) > PowerPolicy.weatherMaxAgeMs(false))
         assertTrue(PowerPolicy.packagesMaxAgeMs(true) > PowerPolicy.packagesMaxAgeMs(false))
         assertEquals(240_000L, PowerPolicy.syncGapMs(60_000L, true))

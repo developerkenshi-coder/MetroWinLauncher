@@ -24,6 +24,14 @@ android {
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
+        // The release build (shrunk and optimized, nothing of the debugging in it: the one to live with, it draws less battery than the
+        // debug build) signed with the debug key, so that it installs over the debug build without losing anything. The release build
+        // itself stays unsigned, for the key of whoever publishes it.
+        create("optimized") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += "release"
+        }
     }
 
     compileOptions {
