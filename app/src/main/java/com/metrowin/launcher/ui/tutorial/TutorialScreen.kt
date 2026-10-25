@@ -161,12 +161,11 @@ private fun Tip(text: String) {
 @Composable
 private fun NeedRow(need: Need, met: Boolean, denied: Boolean, onRequest: (Need) -> Unit) {
     val colors = LocalMetroColors.current
-    Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 12.dp).testTag("tutorial:need:${need.name}"), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-            MetroText(stringResource(need.title), size = 22.sp, maxLines = 2)
-            MetroText(stringResource(need.why), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE, lineHeight = 21.sp)
-        }
-        Spacer(Modifier.width(14.dp))
+    // The words have the whole width; the button, or "allowed", is under them.
+    Column(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 12.dp).testTag("tutorial:need:${need.name}")) {
+        MetroText(stringResource(need.title), size = 22.sp)
+        MetroText(stringResource(need.why), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, lineHeight = 21.sp)
+        Spacer(Modifier.height(10.dp))
         if (met) {
             MetroText(stringResource(R.string.need_allowed), size = 18.sp, color = LocalAccent.current, modifier = Modifier.testTag("tutorial:allowed:${need.name}"))
         } else {

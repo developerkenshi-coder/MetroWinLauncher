@@ -384,6 +384,19 @@ quanta batteria faccia risparmiare in ore **non è stato misurato** (servirebbe 
   (`LaunchedWhileStarted`, `repeatOnLifecycle(STARTED)`): partono da capo quando si torna, e quello che è cambiato nel frattempo
   si legge una volta sola.
 - **Il servizio di blocco non chiede eventi** (prima chiedeva i cambi di finestra, e quindi svegliava il processo a ogni cambio di app).
+- **Le notifiche non si leggono a launcher chiuso.** Il servizio delle notifiche Android lo tiene vivo tutto il giorno, e prima a
+  ogni notifica, anche con un'altra app davanti, chiedeva ad Android *tutte* le notifiche attive, le ricopiava, decodificava le
+  immagini e interrogava la sessione multimediale: un telefono che ne riceve di continuo (un download, la musica, un contapassi)
+  teneva il processo sveglio per ore. Era la causa più probabile del tempo "in background" segnalato da Android. Ora (`NotificationPacer`,
+  `NotificationHub.startWatching`): con il launcher fuori dallo schermo una notifica che arriva è solo ricordata, senza nessuna
+  lettura; si legge **una volta** quando lo schermo torna; a launcher aperto una raffica si legge al massimo due volte al secondo; e
+  la musica non viene riletta a ogni notifica delle altre app. Android continua a consegnare le notifiche al servizio (non si può
+  evitare senza perderle): quello è lavoro del sistema, non più nostro. Lo stesso per il salvaschermo (conta come schermo acceso finché
+  è visibile).
+- **La lista delle app non si ricarica a launcher chiuso.** Gli aggiornamenti delle app arrivano tutto il giorno, ognuno con più
+  eventi, e a ognuno il launcher rileggeva *tutte* le app e svuotava la cache delle icone. Ora (`DeferWhileAway`) si ricorda che qualcosa
+  è cambiato e si rilegge una volta al ritorno. Anche la sincronizzazione all'uscita, se accesa, non parte più di una volta ogni 15
+  minuti (prima ogni minuto).
 - **Si legge solo quello che serve**: contatti, calendario, foto e chiamate solo per i live tile fissati su Start, e al massimo
   ogni due minuti; meteo ogni mezz'ora al massimo; la ricerca degli icon pack ogni cinque minuti. Un permesso dato o tolto, o un tile
   nuovo, fanno rileggere subito.
@@ -503,7 +516,7 @@ solo se il launcher c'era già.
 ./gradlew assembleRelease        # con R8
 ```
 
-**1057 test**, nessuno saltato; il lint non ha errori.
+**1468 test**, nessuno saltato; il lint non ha errori.
 
 - Logica pura: griglia e colonne dalla larghezza, operazioni su Start, regole di trascinamento e di rilascio, ricerca,
   salvataggio e migrazione delle impostazioni, comandi vocali, pianificazione della sincronizzazione, **cifratura** (anche
@@ -513,6 +526,15 @@ solo se il launcher c'era già.
   **gesti veri** e controlla i pixel; salva ogni schermata in `app/build/screenshots/*.png`. Esempi: tile in orizzontale con
   le dimensioni giuste, risposta rapida che arriva all'app come risultato del `RemoteInput` (con un `PendingIntent` vero),
   swipe del blocco schermo con rimbalzo, azioni di TalkBack che fanno quello che dicono.
+
+- **Testi che entrano sempre** (`TextFit*`, `screens/TextFitTest.kt`): ogni schermata, menu, finestra, barra e riquadro viene disegnato
+  nei casi peggiori (italiano, che ha le parole lunghe; testo al 130% e al 170%; schermo largo 320 dp; schermo in orizzontale;
+  i tre aspetti Classic, Glass e Droid; inglese) e a ogni testo si chiede com'è stato disposto: un testo tagliato ("…"), una
+  parola spezzata a metà, un testo fuori dallo schermo o sopra un altro è un errore del test. `MetroText` va a capo, e se lo spazio è
+  troppo stretto per la parola più lunga, o troppo basso per le righe, disegna il testo più piccolo (fino a metà) invece di tagliarlo;
+  i riquadri e i pulsanti dell'Action Center non crescono oltre il 130% del testo; le finestre e i pannelli scorrono invece di
+  uscire dallo schermo. Quello che scrive l'utente (il nome di un'app, una nota) può finire con "…" in una lista, e lì i test usano nomi brevi.
+  Provato su JVM con font di prova: non l'ho visto su un telefono.
 
 I test hanno trovato anche difetti veri, poi corretti: la semantica dei riquadri stava prima dello `offset`, quindi per un
 servizio di accessibilità stavano tutti nell'angolo della griglia; i pulsanti usavano solo il tocco e non erano attivabili da TalkBack.

@@ -113,8 +113,9 @@ class TutorialScreenTest : ScreenshotBase() {
         goTo("live")
         capture("tutorial_live")
         listOf(Need.Photos, Need.Calendar, Need.Contacts, Need.CallLog).forEach { compose.onNodeWithTag("tutorial:need:${it.name}").assertExists() }
-        compose.onNodeWithTag("tutorial:allow:Contacts").performClick()
-        compose.onNodeWithTag("tutorial:allow:Photos").performClick()
+        // The buttons are under the words of each request: the page is scrolled to each of them.
+        tapScrolled("tutorial:allow:Contacts")
+        tapScrolled("tutorial:allow:Photos")
         assertEquals(listOf(Need.Contacts, Need.Photos), requested)
     }
 
@@ -152,6 +153,10 @@ class TutorialScreenTest : ScreenshotBase() {
         goTo("alive")
         capture("tutorial_alive")
         compose.onNodeWithTag("tutorial:allow:Battery").assertTextEquals("allow")
+        // The page scrolls, and the pager keeps the next one ready beside it: scroll this page, not the last one found.
+        compose.onNodeWithTag("tutorial:step:alive").performTouchInput { swipe(Offset(centerX, height * 0.85f), Offset(centerX, height * 0.15f), durationMillis = 300) }
+        advance(1_500)
+        compose.waitForIdle()
         compose.onNodeWithTag("tutorial:allow:Battery").performClick()
         assertEquals(listOf(Need.Battery), requested)
     }

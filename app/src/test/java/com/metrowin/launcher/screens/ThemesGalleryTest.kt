@@ -100,7 +100,8 @@ class ThemesGalleryTest {
     /** The three looks are columns of the picture: they must not be the same picture three times. */
     private fun assertLooksDiffer(shot: Bitmap) {
         val third = shot.width / 3
-        fun sample(column: Int) = (0 until 400).map { i -> shot.getPixel(column * third + 8 + (i % 20) * (third - 16) / 20, 8 + (i / 20) * (shot.height - 16) / 20) }
+        // A grid of 60 by 60 points: a screen that is mostly empty (a menu on a dark page) still has a few on its words.
+        fun sample(column: Int) = (0 until 3600).map { i -> shot.getPixel(column * third + 8 + (i % 60) * (third - 16) / 60, 8 + (i / 60) * (shot.height - 16) / 60) }
         val classic = sample(0)
         val glass = sample(1)
         val droid = sample(2)

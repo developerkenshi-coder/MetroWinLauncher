@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.compose.runtime.Immutable
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -66,6 +67,24 @@ object NotificationHub {
     @Volatile
     var livePictures = true
         private set
+
+    private val watchers = AtomicInteger(0)
+
+    /**
+     * Whether a screen of the launcher is on (see [startWatching]). The service reads the notifications only then: it stays
+     * alive all day, and what it reads is for the screens, which have nothing to show while they are off.
+     */
+    val watched: Boolean get() = watchers.get() > 0
+
+    /** A screen that shows the notifications came on (the launcher, the screen saver). Pair it with [stopWatching]. */
+    fun startWatching() {
+        if (watchers.getAndIncrement() == 0) service?.screenOn()
+    }
+
+    /** That screen went off. */
+    fun stopWatching() {
+        if (watchers.updateAndGet { (it - 1).coerceAtLeast(0) } == 0) service?.screenOff()
+    }
 
     /** Said by the settings: what the live tiles use. A change makes the service read the notifications again. */
     fun useForLiveTiles(enabled: Boolean, pictures: Boolean) {

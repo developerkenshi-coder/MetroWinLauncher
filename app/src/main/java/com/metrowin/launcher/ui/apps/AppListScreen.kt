@@ -45,6 +45,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -650,11 +651,12 @@ private fun ResultRow(
     Row(
         Modifier
             .fillMaxWidth()
-            .height(RowHeight)
+            // A result that says more than a line grows taller instead of being cut.
+            .heightIn(min = RowHeight)
             .testTag(tag)
             .graphicsLayer { turnstile(away.value, reduced) }
             .metroPress(onClick = onClick, enabled = !exiting)
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = 12.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -681,7 +683,7 @@ fun AppRowContent(item: AppItem, modifier: Modifier = Modifier, compact: Boolean
         ) {
             AppSquare(item, SquareSize)
             Spacer(Modifier.width(14.dp))
-            MetroText(item.label, size = if (compact) 19.sp else 22.sp, modifier = Modifier.weight(1f))
+            MetroText(item.label, size = if (compact) 19.sp else 22.sp, maxLines = 2, modifier = Modifier.weight(1f))
         }
     }
 }

@@ -46,6 +46,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -143,8 +144,13 @@ fun TileFace(
     val iconic = style == TileStyle.Iconic && size != TileSize.Small && item.live != LiveKind.Torch
     val cycle = style == TileStyle.Cycle && item.live == LiveKind.Photos && size != TileSize.Small && live.photos.isNotEmpty()
     val faces = cards.ifEmpty { peek?.let { listOf(LiveCard.Digest(it.title, it.text)) }.orEmpty() }
-    // Whatever the theme, a tile is coloured: its text and glyphs are white.
-    CompositionLocalProvider(LocalMetroColors provides LocalMetroColors.current.onTile()) {
+    // Whatever the theme, a tile is coloured: its text and glyphs are white. A tile has a size of its own, so the text on it
+    // grows with the text size of the phone only as far as the tile has room for it.
+    val density = LocalDensity.current
+    CompositionLocalProvider(
+        LocalMetroColors provides LocalMetroColors.current.onTile(),
+        LocalDensity provides Density(density.density, minOf(density.fontScale, MAX_TILE_FONT_SCALE)),
+    ) {
         Box(modifier.fillMaxSize()) {
             val widget = item.launch as? Launch.Widget
             when {
@@ -327,7 +333,7 @@ private fun WorldClockFace(item: AppItem, size: TileSize, width: Dp, height: Dp,
         Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
             val meridiem = ClockFormat.meridiem(there.time, is24, locale)
             Row(verticalAlignment = Alignment.Bottom) {
-                MetroText(ClockFormat.time(there.time, is24, locale), size = digits, maxLines = 1, modifier = Modifier.testTag("worldclock:time"))
+                MetroText(ClockFormat.time(there.time, is24, locale), size = digits, maxLines = 1, modifier = Modifier.weight(1f, fill = false).testTag("worldclock:time"))
                 // "AM" and "PM" are small, next to the digits: the time never wraps or gets cut on a narrow tile.
                 if (meridiem.isNotEmpty()) MetroText(meridiem, size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.padding(start = 3.dp, bottom = 6.dp))
             }
@@ -765,7 +771,8 @@ private fun BatteryFace(item: AppItem, size: TileSize, width: Dp, height: Dp, ba
                     if (size != TileSize.Small) BatteryBar(battery.percent, width * 0.46f)
                 }
             } else {
-                Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 10.dp, end = 10.dp)) {
+                // Above the name of the tile, which sits at the bottom.
+                Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 30.dp)) {
                     MetroText(
                         stringResource(
                             when (battery.state) {
@@ -779,7 +786,7 @@ private fun BatteryFace(item: AppItem, size: TileSize, width: Dp, height: Dp, ba
                     battery.minutesToFull?.let {
                         MetroText(
                             stringResource(R.string.battery_until_full, BatteryInfo.duration(it)),
-                            size = 15.sp, weight = FontWeight.Normal, modifier = Modifier.padding(top = 4.dp), maxLines = 2,
+                            size = 15.sp, weight = FontWeight.Normal, modifier = Modifier.padding(top = 4.dp),
                         )
                     }
                 }
@@ -836,7 +843,7 @@ private fun AlarmFace(item: AppItem, size: TileSize, width: Dp, height: Dp, trig
         val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.26f else 0.3f).toSp() }
         Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(verticalAlignment = Alignment.Bottom) {
-                MetroText(ClockFormat.time(next.time, is24, locale), size = digits, modifier = Modifier.testTag("alarm:time"))
+                MetroText(ClockFormat.time(next.time, is24, locale), size = digits, maxLines = 1, modifier = Modifier.weight(1f, fill = false).testTag("alarm:time"))
                 val meridiem = ClockFormat.meridiem(next.time, is24, locale)
                 if (meridiem.isNotEmpty() && size != TileSize.Small) {
                     MetroText(meridiem, size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.padding(start = 4.dp, bottom = 6.dp))
@@ -883,7 +890,15 @@ private fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, we
                     }
                 }
             } else {
-                val shown = weather.days.drop(1).take(if (size == TileSize.Wide) 3 else 2)
+                // As many days as fit at the size of the text the user chose: a day is two lines tall and about 70 dp wide.
+                val fontScale = LocalDensity.current.fontScale
+                val shown = weather.days.drop(1).take(
+                    if (size == TileSize.Wide) {
+                        ((width - 20.dp) / (70.dp * fontScale + 18.dp)).toInt().coerceIn(1, 3)
+                    } else {
+                        ((height - NAME_ROOM - 8.dp) / (46.dp * fontScale)).toInt().coerceIn(1, 2)
+                    },
+                )
                 val rows: @Composable (DayForecast) -> Unit = { day ->
                     Column(Modifier.padding(end = 18.dp)) {
                         MetroText(
@@ -893,16 +908,23 @@ private fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, we
                         MetroText("${day.high}° ${day.low}°", size = 20.sp)
                     }
                 }
+                // Above the name of the tile, in the room that is left: what does not fit gets smaller, it never runs over the name.
                 if (size == TileSize.Wide) {
-                    Row(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 12.dp)) { shown.forEach { rows(it) } }
+                    Row(Modifier.align(Alignment.TopStart).fillMaxHeight().padding(start = 10.dp, top = 12.dp, bottom = NAME_ROOM)) { shown.forEach { rows(it) } }
                 } else {
-                    Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 8.dp)) { shown.forEach { rows(it) } }
+                    Column(Modifier.align(Alignment.TopStart).fillMaxHeight().padding(start = 10.dp, top = 8.dp, bottom = NAME_ROOM)) { shown.forEach { rows(it) } }
                 }
             }
             if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
         }
     }
 }
+
+/** The text of a tile is never drawn bigger than this times its size: past that it does not fit in a small tile. */
+private const val MAX_TILE_FONT_SCALE = 1.3f
+
+/** The room the name of a tile takes along the bottom edge. */
+private val NAME_ROOM = 26.dp
 
 /** The torch tile: the glyph on the accent colour while the light is off, black on white while it is on. */
 @Composable
@@ -935,6 +957,8 @@ private fun TileLabel(label: String, modifier: Modifier = Modifier, color: Color
         size = 13.sp,
         weight = FontWeight.Normal,
         color = color,
+        // The name of an app: one line (smaller if it must be, then cut: it may be any length).
+        maxLines = 1,
         modifier = modifier.padding(start = 9.dp, end = 9.dp, bottom = 7.dp),
     )
 }

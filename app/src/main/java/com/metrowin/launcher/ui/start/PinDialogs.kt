@@ -84,6 +84,8 @@ private fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, con
                 .padding(horizontal = 24.dp)
                 .panel()
                 .pointerInput(Unit) { detectTapGestures { } }
+                // On a short screen or with big text the panel scrolls: its last button can always be reached.
+                .verticalScroll(rememberScrollState())
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) { content() }
@@ -347,6 +349,7 @@ fun TileColorSheet(current: Int, onPick: (Int) -> Unit, onDismiss: () -> Unit, m
                 .sheet()
                 .pointerInput(Unit) { detectTapGestures { } }
                 .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
                 .padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 76.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {

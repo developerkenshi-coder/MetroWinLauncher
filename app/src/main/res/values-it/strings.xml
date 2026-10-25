@@ -656,7 +656,8 @@
     <string name="battery_rest_1">Con un\'altra app sullo schermo, o con lo schermo spento, il launcher non fa nulla: niente timer, niente ascolti, niente aggiornamenti. Quello che è cambiato nel frattempo viene letto una volta sola, quando torni.</string>
     <string name="battery_rest_2">Contatti, calendario, foto e chiamate vengono letti solo per i live tile fissati su Start, e non di nuovo entro un paio di minuti da quando esci e rientri.</string>
     <string name="battery_rest_3">Il servizio del blocco schermo non chiede eventi ad Android, quindi non sveglia mai il launcher quando cambi app.</string>
-    <string name="tut_alive_tip3">Costa quasi nulla di batteria: fuori dallo schermo il launcher non fa nulla.</string>
+    <string name="battery_rest_4">Notifiche: Android avvisa comunque il servizio quando ne arriva una, ma il launcher non ne legge nessuna finché non è sullo schermo, per quante ne arrivino. Lo stesso vale per la lista delle app quando vengono aggiornate. Tutto si legge una volta sola quando torni; con il launcher aperto, una raffica si legge non più di due volte al secondo.</string>
+    <string name="tut_alive_tip3">Costa quasi nulla di batteria: a schermo spento, o con un\'altra app davanti, il launcher non legge niente e non ha timer.</string>
     <string name="theme_oled">Nero OLED</string>
     <string name="theme_oled_hint">Per gli schermi OLED: nel tema scuro gli sfondi sono neri veri, quindi quei pixel sono spenti. Più contrasto e meno batteria. Nel tema chiaro non fa nulla.</string>
     <string name="tut_look_tip3">Hai uno schermo OLED? Attiva «Nero OLED» in start+tema per uno sfondo nero vero.</string>

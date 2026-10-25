@@ -110,7 +110,7 @@ private fun SectionList(sections: List<SettingsSection>, onOpen: (SettingsSectio
                 MetroText(stringResource(section.title), size = 28.sp)
                 MetroText(
                     stringResource(section.description),
-                    size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 2, lineHeight = 19.sp,
+                    size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, lineHeight = 19.sp,
                 )
             }
         }

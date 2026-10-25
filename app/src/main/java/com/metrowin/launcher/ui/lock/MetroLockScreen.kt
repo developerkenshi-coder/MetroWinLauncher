@@ -13,6 +13,8 @@ import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -90,6 +92,7 @@ fun rememberLockInfo(): LockInfo {
  * alarm, the notifications and the battery in small lines. Swiping up (with [onUnlock]) lifts it off the screen and
  * leaves; let go early and it drops back with a bounce.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MetroLockScreen(
     info: LockInfo,
@@ -158,10 +161,11 @@ fun MetroLockScreen(
             Modifier.align(Alignment.BottomStart).navigationBarsPadding().padding(start = 24.dp, end = 24.dp, bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            Row(verticalAlignment = Alignment.Bottom) {
+            // Last to be given room: on a short screen the big time gets smaller instead of pushing the lines under it off the screen.
+            Row(Modifier.weight(1f, fill = false), verticalAlignment = Alignment.Bottom) {
                 MetroText(
-                    ClockFormat.time(time.toLocalTime(), is24Hour, locale), size = 104.sp, color = Color.White,
-                    modifier = Modifier.testTag("lock:time"),
+                    ClockFormat.time(time.toLocalTime(), is24Hour, locale), size = 104.sp, color = Color.White, maxLines = 1,
+                    modifier = Modifier.weight(1f, fill = false).testTag("lock:time"),
                 )
                 val meridiem = ClockFormat.meridiem(time.toLocalTime(), is24Hour, locale)
                 if (meridiem.isNotEmpty()) {
@@ -173,20 +177,24 @@ fun MetroLockScreen(
                 modifier = Modifier.testTag("lock:date"),
             )
             Spacer(Modifier.height(18.dp))
-            val alarm = info.nextAlarmMillis
-            if (options.showAlarm && alarm != null) {
-                LockLine(Glyph.Alarm, LockText.alarm(alarm, info.nowMillis, zone, is24Hour, locale), "lock:alarm")
-            }
-            if (options.showNotifications && info.notifications > 0) {
-                LockLine(Glyph.Bell, info.notifications.toString(), "lock:notifications")
-            }
-            val weather = info.weather
-            if (options.showWeather && weather != null) {
-                LockLine(Glyph.Weather, "${weather.temperature}° · ${stringResource(weather.condition.label)}", "lock:weather")
-            }
-            val event = info.nextEvent
-            if (options.showEvent && event != null) {
-                LockLine(Glyph.Calendar, LockText.event(event, info.nowMillis, zone, is24Hour, locale), "lock:event")
+            // The lines go side by side when the screen is wide and short, and one under the other when it is narrow.
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
+                val alarm = info.nextAlarmMillis
+                if (options.showAlarm && alarm != null) {
+                    LockLine(Glyph.Alarm, LockText.alarm(alarm, info.nowMillis, zone, is24Hour, locale), "lock:alarm")
+                }
+                if (options.showNotifications && info.notifications > 0) {
+                    LockLine(Glyph.Bell, info.notifications.toString(), "lock:notifications")
+                }
+                val weather = info.weather
+                if (options.showWeather && weather != null) {
+                    LockLine(Glyph.Weather, "${weather.temperature}° · ${stringResource(weather.condition.label)}", "lock:weather")
+                }
+                val event = info.nextEvent
+                if (options.showEvent && event != null) {
+                    LockLine(Glyph.Calendar, LockText.event(event, info.nowMillis, zone, is24Hour, locale), "lock:event")
+                }
+
             }
         }
     }

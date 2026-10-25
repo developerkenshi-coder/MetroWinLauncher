@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -48,10 +47,15 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.notifications.NotificationGroups
 import com.metrowin.launcher.notifications.NotificationItem
+import com.metrowin.launcher.ui.components.FontScaleAtMost
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.R
@@ -133,69 +137,75 @@ fun ActionCenter(
             .pointerInput(Unit) { detectTapGestures { } },
     ) {
         Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().cutoutSidesPadding()) {
-            Column(Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                QuickRow(slots, states, onAction)
-                if (expanded) {
-                    val others = QuickAction.entries.filter { it !in slots }
-                    others.chunked(QuickAction.SLOTS).forEach { row -> QuickRow(row, states, onAction) }
-                }
-                if (controls != null) ControlsBlock(controls)
-                Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    ExpandChevron(expanded) { expanded = !expanded }
-                    Spacer(Modifier.weight(1f))
-                    Box(Modifier.metroPress(onClick = onAllSettings).padding(horizontal = 8.dp, vertical = 8.dp)) {
-                        MetroText(stringResource(R.string.ac_all_settings), size = 17.sp, weight = FontWeight.Normal, color = LocalAccent.current)
+            // The buttons, the sliders and the notifications are one list that scrolls together: on a short screen or with big
+            // text the notifications are reached by scrolling, not squeezed out of the panel.
+            LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
+                item(key = "quick") {
+                    Column(Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        QuickRow(slots, states, onAction)
+                        if (expanded) {
+                            val others = QuickAction.entries.filter { it !in slots }
+                            others.chunked(QuickAction.SLOTS).forEach { row -> QuickRow(row, states, onAction) }
+                        }
+                        if (controls != null) ControlsBlock(controls)
+                        Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            ExpandChevron(expanded) { expanded = !expanded }
+                            Spacer(Modifier.weight(1f))
+                            Box(Modifier.metroPress(onClick = onAllSettings).padding(horizontal = 8.dp, vertical = 8.dp)) {
+                                MetroText(stringResource(R.string.ac_all_settings), size = 17.sp, weight = FontWeight.Normal, color = LocalAccent.current)
+                            }
+                        }
                     }
                 }
-            }
-
-            Row(
-                Modifier.fillMaxWidth().padding(start = 24.dp, end = 12.dp, top = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                MetroText(stringResource(R.string.ac_notifications), size = 26.sp, modifier = Modifier.weight(1f))
-                if (notifications.isNotEmpty()) {
-                    Box(Modifier.metroPress(onClick = onClearAll).padding(8.dp)) {
-                        MetroText(stringResource(R.string.ac_clear_all), size = 17.sp, weight = FontWeight.Normal, color = LocalAccent.current)
-                    }
-                }
-            }
-
-            Box(Modifier.weight(1f).fillMaxWidth()) {
-                when {
-                    !hasNotificationAccess -> Column(
-                        Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                item(key = "heading") {
+                    Row(
+                        Modifier.fillMaxWidth().padding(start = 24.dp, end = 12.dp, top = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        MetroText(
-                            stringResource(R.string.ac_access_needed),
-                            size = 16.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE, lineHeight = 22.sp,
-                        )
-                        MetroButton(stringResource(R.string.ac_turn_on), onClick = onTurnOnNotificationAccess)
+                        MetroText(stringResource(R.string.ac_notifications), size = 26.sp, modifier = Modifier.weight(1f))
+                        if (notifications.isNotEmpty()) {
+                            Box(Modifier.metroPress(onClick = onClearAll).padding(8.dp)) {
+                                MetroText(stringResource(R.string.ac_clear_all), size = 17.sp, weight = FontWeight.Normal, color = LocalAccent.current)
+                            }
+                        }
                     }
-                    notifications.isEmpty() -> MetroText(
-                        stringResource(R.string.ac_empty),
-                        size = 17.sp, weight = FontWeight.Normal, color = colors.subtle,
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
-                    )
-                    else -> LazyColumn(Modifier.fillMaxSize()) {
-                        items(listed, key = { it.key }) { item ->
-                            when (item) {
-                                is NotificationItem.Single ->
-                                    NotificationRow(item.entry, appsByPackage[item.entry.packageName], onOpenNotification, onDismissNotification, onReply, onSnooze, onAppNotificationSettings)
-                                is NotificationItem.Group -> {
-                                    val open = item.packageName in openGroups
-                                    Column {
-                                        GroupRow(
-                                            item, appsByPackage[item.packageName], open,
-                                            onToggle = { openGroups = if (open) openGroups - item.packageName else openGroups + item.packageName },
-                                            onDismiss = { item.entries.forEach(onDismissNotification) },
-                                        )
-                                        if (open) {
-                                            item.entries.forEach { entry ->
-                                                Box(Modifier.padding(start = 24.dp)) {
-                                                    NotificationRow(entry, null, onOpenNotification, onDismissNotification, onReply, onSnooze, onAppNotificationSettings)
-                                                }
+                }
+                when {
+                    !hasNotificationAccess -> item(key = "access") {
+                        Column(
+                            Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            MetroText(
+                                stringResource(R.string.ac_access_needed),
+                                size = 16.sp, weight = FontWeight.Normal, color = colors.subtle, lineHeight = 22.sp,
+                            )
+                            MetroButton(stringResource(R.string.ac_turn_on), onClick = onTurnOnNotificationAccess)
+                        }
+                    }
+                    notifications.isEmpty() -> item(key = "empty") {
+                        MetroText(
+                            stringResource(R.string.ac_empty),
+                            size = 17.sp, weight = FontWeight.Normal, color = colors.subtle,
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                        )
+                    }
+                    else -> items(listed, key = { it.key }) { item ->
+                        when (item) {
+                            is NotificationItem.Single ->
+                                NotificationRow(item.entry, appsByPackage[item.entry.packageName], onOpenNotification, onDismissNotification, onReply, onSnooze, onAppNotificationSettings)
+                            is NotificationItem.Group -> {
+                                val open = item.packageName in openGroups
+                                Column {
+                                    GroupRow(
+                                        item, appsByPackage[item.packageName], open,
+                                        onToggle = { openGroups = if (open) openGroups - item.packageName else openGroups + item.packageName },
+                                        onDismiss = { item.entries.forEach(onDismissNotification) },
+                                    )
+                                    if (open) {
+                                        item.entries.forEach { entry ->
+                                            Box(Modifier.padding(start = 24.dp)) {
+                                                NotificationRow(entry, null, onOpenNotification, onDismissNotification, onReply, onSnooze, onAppNotificationSettings)
                                             }
                                         }
                                     }
@@ -301,22 +311,41 @@ private fun QuickRow(actions: List<QuickAction>, states: Map<QuickAction, Boolea
 fun QuickButton(action: QuickAction, on: Boolean?, onClick: (QuickAction) -> Unit, modifier: Modifier = Modifier) {
     val colors = LocalMetroColors.current
     val lit = on == true
-    Box(
-        modifier
-            .aspectRatio(1f)
-            .testTag("quick:${action.id}")
-            .metroPress(onClick = { onClick(action) })
-            .litFill(lit, LocalStyle.current.cardShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        GlyphIcon(action.glyph, 40.dp, color = if (lit) onAccent() else colors.foreground)
-        MetroText(
-            stringResource(action.label),
-            size = 11.sp, weight = FontWeight.Normal,
-            color = if (lit) onAccent() else colors.subtle,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 4.dp, vertical = 5.dp),
-        )
+    // The picture and the name one under the other, in a square: the name gets the room that is left and is made smaller to fit it.
+    FontScaleAtMost(QUICK_FONT_SCALE) {
+        Column(
+            modifier
+                .squareUpTo(QUICK_MAX_SIDE)
+                .testTag("quick:${action.id}")
+                .metroPress(onClick = { onClick(action) })
+                .litFill(lit, LocalStyle.current.cardShape)
+                .padding(horizontal = 3.dp, vertical = 5.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            GlyphIcon(action.glyph, 32.dp, color = if (lit) onAccent() else colors.foreground)
+            MetroText(
+                stringResource(action.label),
+                size = 11.sp, weight = FontWeight.Normal, textAlign = TextAlign.Center, minScale = 0.55f,
+                color = if (lit) onAccent() else colors.subtle,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+        }
     }
+}
+
+/** The names of the buttons are not drawn bigger than this, however big the text is: they would not fit the square. */
+private const val QUICK_FONT_SCALE = 1.3f
+
+/** A square button is not taller than this: on a wide screen, a phone on its side, the buttons stay buttons and do not become slabs. */
+private val QUICK_MAX_SIDE = 96.dp
+
+/** As wide as it is given, and as tall as it is wide, but never taller than [max]. */
+private fun Modifier.squareUpTo(max: Dp): Modifier = layout { measurable, constraints ->
+    val width = constraints.maxWidth
+    val side = minOf(width, max.roundToPx())
+    val placeable = measurable.measure(Constraints.fixed(width, side))
+    layout(width, side) { placeable.place(0, 0) }
 }
 
 @Composable

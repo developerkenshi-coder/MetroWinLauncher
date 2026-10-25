@@ -46,6 +46,7 @@ fun BatteryPage(env: SettingsEnv) {
             SettingHint(stringResource(R.string.battery_rest_1))
             SettingHint(stringResource(R.string.battery_rest_2))
             SettingHint(stringResource(R.string.battery_rest_3))
+            SettingHint(stringResource(R.string.battery_rest_4))
         }
     }
 }

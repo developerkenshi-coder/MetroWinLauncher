@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -41,6 +43,7 @@ import com.metrowin.launcher.ui.theme.sheet
  * cycling through them with the arrow), which Start screen the tile is on, and the button that ends editing.
  * [page] is the screen of the selected entry, 0 based, out of [pageCount].
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun EditBar(
     size: TileSize,
@@ -59,7 +62,8 @@ fun EditBar(
     onFolder: (() -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
-    Row(
+    // The controls go on as many lines as the width needs: nothing is squeezed, cut or pushed off the screen.
+    FlowRow(
         modifier
             .fillMaxWidth()
             .sheet()
@@ -67,8 +71,9 @@ fun EditBar(
             .pointerInput(Unit) { detectTapGestures { } }
             .navigationBarsPadding()
             .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        itemVerticalAlignment = Alignment.CenterVertically,
     ) {
         if (onAdd != null) AddButton(onAdd)
         if (onFolder != null) FolderButton(onFolder)
@@ -102,13 +107,15 @@ fun EditBar(
             }
         }
         if (pageCount > 1) {
-            Box(Modifier.size(width = 1.dp, height = 28.dp).background(colors.subtle.copy(alpha = 0.4f)))
-            ArrowButton("‹", stringResource(R.string.edit_page_previous), page > 0, "edit:page:previous") { onMovePage(-1) }
-            MetroText(
-                stringResource(R.string.edit_page, page + 1),
-                size = 15.sp, weight = FontWeight.Normal, color = colors.subtle,
-            )
-            ArrowButton("›", stringResource(R.string.edit_page_next), page < pageCount - 1, "edit:page:next") { onMovePage(1) }
+            // The arrows and the number of the screen stay together.
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ArrowButton(true, stringResource(R.string.edit_page_previous), page > 0, "edit:page:previous") { onMovePage(-1) }
+                MetroText(
+                    stringResource(R.string.edit_page, page + 1),
+                    size = 15.sp, weight = FontWeight.Normal, color = colors.subtle,
+                )
+                ArrowButton(false, stringResource(R.string.edit_page_next), page < pageCount - 1, "edit:page:next") { onMovePage(1) }
+            }
         }
         Box(Modifier.weight(1f))
         Box(Modifier.testTag("edit:done").metroPress(onClick = onDone).padding(horizontal = 10.dp, vertical = 10.dp)) {
@@ -183,7 +190,8 @@ private fun SizeButton(size: TileSize, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun ArrowButton(symbol: String, description: String, enabled: Boolean, tag: String, onClick: () -> Unit) {
+private fun ArrowButton(left: Boolean, description: String, enabled: Boolean, tag: String, onClick: () -> Unit) {
+    val color = if (enabled) LocalMetroColors.current.foreground else LocalMetroColors.current.inactive
     Box(
         Modifier
             .size(40.dp)
@@ -192,9 +200,13 @@ private fun ArrowButton(symbol: String, description: String, enabled: Boolean, t
             .then(if (enabled) Modifier.metroPress(onClick = onClick) else Modifier),
         contentAlignment = Alignment.Center,
     ) {
-        MetroText(
-            symbol, size = 30.sp, weight = FontWeight.Normal,
-            color = if (enabled) LocalMetroColors.current.foreground else LocalMetroColors.current.inactive,
-        )
+        // A chevron drawn, not typed: it does not depend on the font and has no line of text to be cut.
+        Canvas(Modifier.size(width = 10.dp, height = 18.dp)) {
+            val x = if (left) this.size.width else 0f
+            val tip = if (left) 0f else this.size.width
+            val stroke = 2.5.dp.toPx()
+            drawLine(color, Offset(x, 0f), Offset(tip, this.size.height / 2f), strokeWidth = stroke)
+            drawLine(color, Offset(tip, this.size.height / 2f), Offset(x, this.size.height), strokeWidth = stroke)
+        }
     }
 }

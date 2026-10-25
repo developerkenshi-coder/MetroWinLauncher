@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -49,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -81,7 +83,7 @@ fun MetroButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit
         surface.padding(horizontal = wide, vertical = if (style.isClassic) 11.dp else 12.dp),
         contentAlignment = Alignment.Center,
     ) {
-        MetroText(text, size = 19.sp, weight = FontWeight.Normal, color = ink)
+        MetroText(text, size = 19.sp, weight = FontWeight.Normal, color = ink, textAlign = TextAlign.Center)
     }
 }
 
@@ -118,7 +120,7 @@ fun ChoiceRow(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
                 else -> colors.foreground
             }
             Box(surface.padding(vertical = 11.dp), contentAlignment = Alignment.Center) {
-                MetroText(label, size = 19.sp, weight = FontWeight.Normal, color = ink)
+                MetroText(label, size = 19.sp, weight = FontWeight.Normal, color = ink, textAlign = TextAlign.Center)
             }
         }
     }
@@ -145,11 +147,14 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
         when (style.kind) {
             ThemeStyle.Classic -> {
                 val thumbX by animateDpAsState(if (checked) TRACK_WIDTH - THUMB_WIDTH - 4.dp else 0.dp, tween(160), label = "toggleThumb")
-                MetroText(
-                    stringResource(if (checked) R.string.toggle_on else R.string.toggle_off),
-                    size = 15.sp, weight = FontWeight.Normal, color = colors.subtle,
-                    modifier = Modifier.padding(end = 12.dp),
-                )
+                // The word beside the switch only repeats what the switch shows: at the biggest text it must not take the room of the label.
+                FontScaleAtMost(1f) {
+                    MetroText(
+                        stringResource(if (checked) R.string.toggle_on else R.string.toggle_off),
+                        size = 15.sp, weight = FontWeight.Normal, color = colors.subtle,
+                        modifier = Modifier.padding(end = 12.dp),
+                    )
+                }
                 Box(
                     Modifier
                         .size(TRACK_WIDTH, 26.dp)
@@ -284,12 +289,12 @@ fun MetroTextField(
     val style = LocalStyle.current
     val field = RoundedCornerShape(16.dp)
     val surface = when (style.kind) {
-        ThemeStyle.Classic -> modifier.fillMaxWidth().height(52.dp).background(colors.surface)
-        ThemeStyle.Glass -> modifier.fillMaxWidth().height(52.dp).glass(field, veil = if (colors.dark) 0.12f else 0.55f)
-        ThemeStyle.Droid -> modifier.fillMaxWidth().height(52.dp).clip(field).background(colors.surface)
+        ThemeStyle.Classic -> modifier.fillMaxWidth().heightIn(min = 52.dp).background(colors.surface)
+        ThemeStyle.Glass -> modifier.fillMaxWidth().heightIn(min = 52.dp).glass(field, veil = if (colors.dark) 0.12f else 0.55f)
+        ThemeStyle.Droid -> modifier.fillMaxWidth().heightIn(min = 52.dp).clip(field).background(colors.surface)
     }
     Row(
-        surface.padding(horizontal = 14.dp),
+        surface.padding(horizontal = 14.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.weight(1f)) {

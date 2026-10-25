@@ -65,25 +65,25 @@ fun VoiceScreen(
             when (state) {
                 is VoiceUiState.Listening -> {
                     MetroText(
-                        stringResource(R.string.voice_listening), size = 40.sp, maxLines = 2,
+                        stringResource(R.string.voice_listening), size = 40.sp,
                         modifier = Modifier.testTag("voice:title"),
                     )
                     if (state.heard.isEmpty()) {
                         MetroText(
-                            stringResource(R.string.voice_hint), size = 18.sp, color = colors.subtle, maxLines = 4,
+                            stringResource(R.string.voice_hint), size = 18.sp, color = colors.subtle,
                             modifier = Modifier.testTag("voice:hint"),
                         )
                     } else {
-                        MetroText(state.heard, size = 30.sp, color = accent, maxLines = 4, modifier = Modifier.testTag("voice:heard"))
+                        MetroText(state.heard, size = 30.sp, color = accent, modifier = Modifier.testTag("voice:heard"))
                     }
                 }
                 is VoiceUiState.Understood -> {
                     MetroText(stringResource(R.string.voice_heard), size = 18.sp, color = colors.subtle)
-                    MetroText(state.heard, size = 30.sp, color = accent, maxLines = 4, modifier = Modifier.testTag("voice:heard"))
+                    MetroText(state.heard, size = 30.sp, color = accent, modifier = Modifier.testTag("voice:heard"))
                 }
                 is VoiceUiState.Problem -> {
                     val text = if (state.argument != null) stringResource(state.message, state.argument) else stringResource(state.message)
-                    MetroText(text, size = 28.sp, maxLines = 5, modifier = Modifier.testTag("voice:message"))
+                    MetroText(text, size = 28.sp, modifier = Modifier.testTag("voice:message"))
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         MetroButton(stringResource(R.string.voice_try_again), Modifier.testTag("voice:retry"), onRetry)

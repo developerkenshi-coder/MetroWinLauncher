@@ -6,6 +6,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -35,6 +37,7 @@ import com.metrowin.launcher.ui.theme.LocalMetroColors
  * button that makes the folder (once there are enough), and the one that gives up. [joining] is true when one of the
  * picked entries is already a folder, and the others will be added to it.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FolderPickBar(
     picked: Int,
@@ -60,7 +63,10 @@ fun FolderPickBar(
             size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 2,
             modifier = Modifier.testTag("folderpick:hint"),
         )
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp),
+            itemVerticalAlignment = Alignment.CenterVertically,
+        ) {
             MetroText(
                 pluralStringResource(R.plurals.folder_pick_count, picked, picked), size = 20.sp, color = LocalAccent.current,
                 modifier = Modifier.weight(1f).testTag("folderpick:count"),

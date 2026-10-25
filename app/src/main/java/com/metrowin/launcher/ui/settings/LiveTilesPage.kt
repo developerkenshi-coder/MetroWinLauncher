@@ -182,7 +182,7 @@ fun LiveTilesPage(env: SettingsEnv) {
                         MetroText(labels[line.packageName] ?: line.packageName, size = 20.sp)
                         MetroText(
                             reportText(line), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
-                            maxLines = 3, lineHeight = 19.sp,
+                            lineHeight = 19.sp,
                         )
                     }
                 }

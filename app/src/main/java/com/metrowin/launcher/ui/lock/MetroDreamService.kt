@@ -17,6 +17,7 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.metrowin.launcher.data.SettingsStore
+import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.ui.theme.MetroTheme
 import java.io.File
 
@@ -64,9 +65,18 @@ class MetroDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwne
         }
         setContentView(view)
         registry.currentState = Lifecycle.State.RESUMED
+        // The notification service reads the notifications only while a screen shows them.
+        NotificationHub.startWatching()
+        watching = true
     }
 
+    private var watching = false
+
     override fun onDetachedFromWindow() {
+        if (watching) {
+            watching = false
+            NotificationHub.stopWatching()
+        }
         registry.currentState = Lifecycle.State.DESTROYED
         super.onDetachedFromWindow()
     }

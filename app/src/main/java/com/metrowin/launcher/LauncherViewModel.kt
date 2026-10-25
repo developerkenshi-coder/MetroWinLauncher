@@ -1,5 +1,6 @@
 package com.metrowin.launcher
 
+import com.metrowin.launcher.data.DeferWhileAway
 import com.metrowin.launcher.data.Throttle
 import com.metrowin.launcher.data.PowerPolicy
 import com.metrowin.launcher.data.LiveSources
@@ -366,6 +367,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private var loadedGrants = -1
     private var listening = false
 
+    /** Apps installed, updated or removed while the launcher was off screen: the list is read once when it comes back. */
+    private val packageEvents = DeferWhileAway()
+
+    /** Whether this screen is counted as one that shows the notifications (see [NotificationHub.startWatching]). */
+    private var watchingNotifications = false
+
     private val _live = MutableStateFlow(LiveTileData())
     val live: StateFlow<LiveTileData> = _live.asStateFlow()
 
@@ -506,6 +513,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         ContextCompat.registerReceiver(app, batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(app, powerSaveReceiver, IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
         quickActions.start()
+        if (!watchingNotifications) {
+            watchingNotifications = true
+            NotificationHub.startWatching()
+        }
         // What changed while the receivers were off.
         BatteryInfo.read(app)?.let { _battery.value = it }
         _androidBatterySaver.value = powerManager?.isPowerSaveMode == true
@@ -518,6 +529,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         runCatching { app.unregisterReceiver(batteryReceiver) }
         runCatching { app.unregisterReceiver(powerSaveReceiver) }
         quickActions.stop()
+        if (watchingNotifications) {
+            watchingNotifications = false
+            NotificationHub.stopWatching()
+        }
     }
 
     /** Called every time the launcher goes off screen: behind another app, or the screen turned off. */
@@ -532,7 +547,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         refreshProfiles()
         if (throttle.due("iconpacks", PowerPolicy.packagesMaxAgeMs(saving))) refreshIconPacks()
         syncIfDue(PowerPolicy.syncGapMs(SYNC_MIN_GAP_ON_START_MS, saving))
-        if (loadedLocale != null && loadedLocale != Locale.getDefault()) reloadApps()
+        val changedMeanwhile = packageEvents.takePending()
+        if (changedMeanwhile || (loadedLocale != null && loadedLocale != Locale.getDefault())) reloadApps()
         refreshLive()
         refreshWeather()
         val access = hasNotificationAccess()
@@ -1004,6 +1020,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     private fun scheduleReload() {
+        // Apps update all day, each with a handful of events; the whole list is not read again at every one of them
+        // with another app in front or the screen off, only once when the launcher is back.
+        if (!packageEvents.request(onScreen = listening)) return
         reloadJob?.cancel()
         reloadJob = viewModelScope.launch {
             delay(RELOAD_DEBOUNCE_MS) // an install fires several package events in a row
@@ -1500,7 +1519,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         const val SAMPLE_SIDE = 48
         const val PROFILE_REFRESH_MS = 800L
         const val SYNC_MIN_GAP_ON_START_MS = 5 * 60_000L
-        const val SYNC_MIN_GAP_ON_LEAVE_MS = 60_000L
+        const val SYNC_MIN_GAP_ON_LEAVE_MS = 15 * 60_000L
         const val MAX_LAYOUT_BYTES = 2 * 1024 * 1024
     }
 }
