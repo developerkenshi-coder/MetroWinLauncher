@@ -22,6 +22,7 @@ class SettingsCodecTest {
         weatherCity = "Torino", weatherLatitude = 45.07, weatherLongitude = 7.69, weatherFahrenheit = true,
         hiddenApps = setOf("app:b", "app:a"), searchWeb = false, iconPack = "com.example.pack",
         showPrivateApps = false, voiceButton = false, voiceOffline = false, reduceMotion = true, highContrast = true,
+        lockPhotoRevision = 2, lockShowAlarm = false, lockShowNotifications = false, lockShowBattery = false,
         backupFolder = "content://tree/backup", backupEveryDays = 7, lastBackupAt = 123L,
         syncEnabled = true, syncPassphrase = "secret", deviceId = "phone-1",
         kidsApps = setOf("stock:camera"), kidsMode = true,
@@ -40,11 +41,16 @@ class SettingsCodecTest {
     @Test
     fun aPortableFileLeavesOutWhatBelongsToThisPhone() {
         val json = SettingsCodec.encode(custom, portable = true)
-        for (key in listOf("backupFolder", "syncPassphrase", "deviceId", "lastBackupAt", "weatherLatitude", "weatherLongitude")) {
+        for (key in listOf("backupFolder", "syncPassphrase", "deviceId", "lastBackupAt", "weatherLatitude", "weatherLongitude", "backgroundRevision", "lockPhotoRevision")) {
             assertFalse("$key must not travel", json.contains("\"$key\""))
         }
         // Restoring it keeps this phone's own values.
-        val restored = SettingsCodec.decode(json, base = custom.copy(backupFolder = "content://mine", syncPassphrase = "mine", deviceId = "me"))!!
+        val restored = SettingsCodec.decode(
+            json,
+            base = custom.copy(backupFolder = "content://mine", syncPassphrase = "mine", deviceId = "me", backgroundRevision = 7, lockPhotoRevision = 5),
+        )!!
+        assertEquals("the photos are files of this phone", 7, restored.backgroundRevision)
+        assertEquals(5, restored.lockPhotoRevision)
         assertEquals("content://mine", restored.backupFolder)
         assertEquals("mine", restored.syncPassphrase)
         assertEquals("me", restored.deviceId)

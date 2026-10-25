@@ -113,8 +113,6 @@ data class LauncherSettings(
     /** Ask Android for the fastest refresh rate of the screen. */
     val highRefreshRate: Boolean = true,
     val launchAnimation: LaunchAnimation = LaunchAnimation.Turnstile,
-    /** In landscape, Start and the app list sit side by side instead of being two pages. */
-    val landscapeSplit: Boolean = true,
 
     // --- gestures
     /** Pulling down from the top edge opens the Action Center from any page. */
@@ -156,6 +154,13 @@ data class LauncherSettings(
     val showWorkApps: Boolean = true,
     val showPrivateApps: Boolean = true,
 
+    // --- lock screen
+    /** Counts the photos picked for the lock screen; 0 when there is none. */
+    val lockPhotoRevision: Int = 0,
+    val lockShowAlarm: Boolean = true,
+    val lockShowNotifications: Boolean = true,
+    val lockShowBattery: Boolean = true,
+
     // --- voice
     val voiceOffline: Boolean = true,
     /** A microphone next to the search box of the app list. */
@@ -185,6 +190,7 @@ data class LauncherSettings(
     val kidsMode: Boolean = false,
 ) {
     val hasStartBackground: Boolean get() = backgroundRevision > 0
+    val hasLockPhoto: Boolean get() = lockPhotoRevision > 0
 
     companion object {
         const val DEFAULT_ACCENT = 4

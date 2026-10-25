@@ -1,6 +1,7 @@
 package com.metrowin.launcher
 
 import android.app.ActivityOptions
+import android.app.WallpaperManager
 import android.app.Application
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -99,6 +100,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val liveTiles = LiveTileRepository(application)
     private val settingsStore = SettingsStore(application)
     private val backgroundStore = StartBackgroundStore(application)
+    private val lockStore = StartBackgroundStore(application, "lock_background.jpg")
     private val quickActions = QuickActionsController(application)
     private val shortcutStore = ShortcutStore(application)
     private val weatherRepository = WeatherRepository(application)
@@ -165,6 +167,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
 
     /** The photo behind the Start tiles, if the user picked one. */
+    private val _lockPhoto = MutableStateFlow<ImageBitmap?>(null)
+
+    /** The photo of the Metro lock screen, or null when it has none of its own. */
+    val lockPhoto: StateFlow<ImageBitmap?> = _lockPhoto.asStateFlow()
+
     private val _background = MutableStateFlow<ImageBitmap?>(null)
     val background: StateFlow<ImageBitmap?> = _background.asStateFlow()
 
@@ -206,6 +213,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         applyIconPack(_settings.value.iconPack)
         reloadApps()
         if (_settings.value.hasStartBackground) loadBackground()
+        if (_settings.value.hasLockPhoto) loadLockPhoto()
         stopObservingPackages = apps.observe(::scheduleReload)
         ContextCompat.registerReceiver(
             application, batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED,
@@ -448,6 +456,46 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             updateSettings { it.copy(backgroundRevision = 0) }
         }
     }
+
+    fun setLockPhoto(uri: Uri) {
+        viewModelScope.launch {
+            val saved = withContext(Dispatchers.IO) { lockStore.save(uri) }
+            if (saved) {
+                updateSettings { it.copy(lockPhotoRevision = it.lockPhotoRevision + 1) }
+                loadLockPhoto()
+            } else {
+                tell(R.string.photo_failed)
+            }
+        }
+    }
+
+    fun clearLockPhoto() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { lockStore.clear() }
+            _lockPhoto.value = null
+            updateSettings { it.copy(lockPhotoRevision = 0) }
+        }
+    }
+
+    private fun loadLockPhoto() {
+        viewModelScope.launch { _lockPhoto.value = withContext(Dispatchers.IO) { lockStore.load() }?.asImageBitmap() }
+    }
+
+    /** Sets the lock screen photo (or the Start photo) as the wallpaper of the lock screen of Android. */
+    fun applyLockPhotoToSystem() {
+        viewModelScope.launch {
+            val outcome = withContext(Dispatchers.IO) {
+                val photo = lockStore.load() ?: backgroundStore.load() ?: return@withContext R.string.lock_no_photo
+                val done = runCatching {
+                    WallpaperManager.getInstance(getApplication()).setBitmap(photo, null, true, WallpaperManager.FLAG_LOCK)
+                }.isSuccess
+                if (done) R.string.lock_applied else R.string.lock_apply_failed
+            }
+            tell(outcome)
+        }
+    }
+
+    fun openDreamSettings() = startSettings(Settings.ACTION_DREAM_SETTINGS)
 
     private fun loadBackground() {
         viewModelScope.launch {

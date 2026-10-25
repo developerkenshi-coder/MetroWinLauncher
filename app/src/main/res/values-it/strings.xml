@@ -405,4 +405,27 @@
     <string name="theme_imported">Tema applicato</string>
     <string name="theme_failed">Impossibile salvare il tema</string>
     <string name="theme_not_theme">Quel file non è un tema di questo launcher</string>
+
+    <!-- lock screen -->
+    <string name="sec_lock">blocco schermo</string>
+    <string name="sec_lock_desc">Il blocco schermo Metro: foto, orologio, sveglia, notifiche</string>
+    <string name="lock_dream_label">Blocco schermo Metro</string>
+    <string name="lock_preview">anteprima</string>
+    <string name="lock_photo">foto del blocco schermo</string>
+    <string name="lock_choose_photo">scegli una foto</string>
+    <string name="lock_remove_photo">rimuovi la foto</string>
+    <string name="lock_photo_hint">Senza una foto propria il blocco schermo usa la foto di Start, e il nero senza quella.</string>
+    <string name="lock_show_alarm">mostra la prossima sveglia</string>
+    <string name="lock_show_notifications">mostra il numero di notifiche</string>
+    <string name="lock_show_battery">mostra la batteria</string>
+    <string name="lock_apply">usa la foto nel blocco schermo del telefono</string>
+    <string name="lock_apply_hint">Imposta la foto come sfondo del blocco schermo di Android.</string>
+    <string name="lock_applied">Foto del blocco schermo impostata</string>
+    <string name="lock_apply_failed">Impossibile impostare la foto del blocco schermo</string>
+    <string name="lock_no_photo">Scegli prima una foto, o imposta una foto per Start</string>
+    <string name="lock_dream">salvaschermo</string>
+    <string name="lock_dream_button">apri le impostazioni del salvaschermo</string>
+    <string name="lock_dream_hint">Android non permette a un launcher di sostituire il suo blocco schermo. Il blocco schermo Metro funziona invece come salvaschermo: scegli “Blocco schermo Metro” lì, e compare mentre il telefono si ricarica o sta su un dock. Scorri verso l\'alto per uscire.</string>
+    <string name="lock_alarm_label">sveglia</string>
+    <string name="lock_notifications_label">notifiche</string>
 </resources>

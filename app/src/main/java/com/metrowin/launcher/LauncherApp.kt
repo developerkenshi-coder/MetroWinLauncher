@@ -60,6 +60,9 @@ import com.metrowin.launcher.data.SystemSettingDef
 import com.metrowin.launcher.data.VoiceCommand
 import com.metrowin.launcher.data.VoiceCommands
 import com.metrowin.launcher.data.VoiceError
+import com.metrowin.launcher.ui.lock.LockOptions
+import com.metrowin.launcher.ui.lock.MetroLockScreen
+import com.metrowin.launcher.ui.lock.rememberLockInfo
 import com.metrowin.launcher.ui.voice.VoiceScreen
 import com.metrowin.launcher.ui.voice.rememberVoiceSession
 import androidx.core.content.ContextCompat
@@ -152,6 +155,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val live by vm.live.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
     val startBackground by vm.background.collectAsStateWithLifecycle()
+    val lockPhoto by vm.lockPhoto.collectAsStateWithLifecycle()
     val permissionsHandled by vm.permissionsHandled.collectAsStateWithLifecycle()
     val homePress by vm.homePresses.collectAsStateWithLifecycle()
     val notifications by vm.notifications.collectAsStateWithLifecycle()
@@ -219,6 +223,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     var weatherOpen by remember { mutableStateOf(false) }
     var searchFocus by remember { mutableIntStateOf(0) }
     var voiceRequest by remember { mutableIntStateOf(0) }
+    var lockPreviewOpen by remember { mutableStateOf(false) }
     val voice = rememberVoiceSession()
     var lockServiceEnabled by remember { mutableStateOf(false) }
     var renamingFolderId by remember { mutableStateOf<String?>(null) }
@@ -349,6 +354,7 @@ fun LauncherApp(vm: LauncherViewModel) {
         when {
             !permissionsHandled -> InstantBack { }
             voice.isOpen -> InstantBack { voice.close() }
+            lockPreviewOpen -> InstantBack { lockPreviewOpen = false }
             panel.isShown -> PanelBack(panel)
             widgetPickerOpen -> InstantBack { widgetPickerOpen = false }
             siteDialogOpen -> InstantBack { siteDialogOpen = false }
@@ -644,7 +650,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     )
 
     // Pull down from the top of Start, or from the top edge of any page, to open the Action Center.
-    val pullBlocked = kidsMode || voice.isOpen || launching || settingsOpen || weatherOpen || menu != null || jumpOpen || editingKey != null ||
+    val pullBlocked = kidsMode || voice.isOpen || lockPreviewOpen || launching || settingsOpen || weatherOpen || menu != null || jumpOpen || editingKey != null ||
         renamingFolderId != null || !permissionsHandled
     val currentPullBlocked by rememberUpdatedState(pullBlocked)
     val pullConnections = List(LauncherSettings.MAX_START_PAGES) { page ->
@@ -891,6 +897,12 @@ fun LauncherApp(vm: LauncherViewModel) {
                             profiles = profiles,
                             onSetProfilePaused = vm::setProfilePaused,
                             onTryVoice = { voiceRequest++ },
+                            lockPhoto = lockPhoto,
+                            onPickLockPhoto = vm::setLockPhoto,
+                            onClearLockPhoto = vm::clearLockPhoto,
+                            onApplyLockPhoto = vm::applyLockPhotoToSystem,
+                            onOpenDreamSettings = vm::openDreamSettings,
+                            onPreviewLock = { lockPreviewOpen = true },
                             iconPacks = installedIconPacks,
                             onExportTheme = vm::exportTheme,
                             onImportTheme = vm::importTheme,
@@ -959,6 +971,15 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onCancel = { renamingFolderId = null },
                         )
                     }
+                }
+
+                if (lockPreviewOpen) {
+                    MetroLockScreen(
+                        info = rememberLockInfo(),
+                        photo = lockPhoto ?: startBackground,
+                        options = LockOptions(settings.lockShowAlarm, settings.lockShowNotifications, settings.lockShowBattery),
+                        onUnlock = { lockPreviewOpen = false },
+                    )
                 }
 
                 voice.state?.let { state ->

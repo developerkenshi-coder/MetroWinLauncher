@@ -21,7 +21,6 @@ object SettingsCodec {
         put("accentIndex", s.accentIndex)
         put("autoAccent", s.autoAccent)
         put("moreTiles", s.moreTiles)
-        put("backgroundRevision", s.backgroundRevision)
         put("parallax", s.parallax)
         put("startPages", s.startPages)
         put("showClock", s.showClock)
@@ -29,7 +28,6 @@ object SettingsCodec {
         put("orientation", s.orientation.code)
         put("highRefreshRate", s.highRefreshRate)
         put("launchAnimation", s.launchAnimation.code)
-        put("landscapeSplit", s.landscapeSplit)
 
         put("edgePull", s.edgePull)
         put("edgeBackPan", s.edgeBackPan)
@@ -56,6 +54,9 @@ object SettingsCodec {
 
         put("showWorkApps", s.showWorkApps)
         put("showPrivateApps", s.showPrivateApps)
+        put("lockShowAlarm", s.lockShowAlarm)
+        put("lockShowNotifications", s.lockShowNotifications)
+        put("lockShowBattery", s.lockShowBattery)
         put("voiceOffline", s.voiceOffline)
         put("voiceButton", s.voiceButton)
         put("reduceMotion", s.reduceMotion)
@@ -69,6 +70,9 @@ object SettingsCodec {
         if (!portable) {
             // Whether the Kid's Corner is on is a state of this phone, not a preference to carry over.
             put("kidsMode", s.kidsMode)
+            // The photos are files of this phone: a copy would point at pictures that are not there.
+            put("backgroundRevision", s.backgroundRevision)
+            put("lockPhotoRevision", s.lockPhotoRevision)
             if (!s.weatherLatitude.isNaN()) put("weatherLatitude", s.weatherLatitude)
             if (!s.weatherLongitude.isNaN()) put("weatherLongitude", s.weatherLongitude)
             put("backupFolder", s.backupFolder)
@@ -99,7 +103,6 @@ object SettingsCodec {
             orientation = if (o.has("orientation")) OrientationMode.fromCode(o.optString("orientation")) else base.orientation,
             highRefreshRate = o.optBoolean("highRefreshRate", base.highRefreshRate),
             launchAnimation = if (o.has("launchAnimation")) LaunchAnimation.fromCode(o.optString("launchAnimation")) else base.launchAnimation,
-            landscapeSplit = o.optBoolean("landscapeSplit", base.landscapeSplit),
 
             edgePull = o.optBoolean("edgePull", base.edgePull),
             edgeBackPan = o.optBoolean("edgeBackPan", base.edgeBackPan),
@@ -128,6 +131,10 @@ object SettingsCodec {
 
             showWorkApps = o.optBoolean("showWorkApps", base.showWorkApps),
             showPrivateApps = o.optBoolean("showPrivateApps", base.showPrivateApps),
+            lockPhotoRevision = o.optInt("lockPhotoRevision", base.lockPhotoRevision).coerceAtLeast(0),
+            lockShowAlarm = o.optBoolean("lockShowAlarm", base.lockShowAlarm),
+            lockShowNotifications = o.optBoolean("lockShowNotifications", base.lockShowNotifications),
+            lockShowBattery = o.optBoolean("lockShowBattery", base.lockShowBattery),
             voiceOffline = o.optBoolean("voiceOffline", base.voiceOffline),
             voiceButton = o.optBoolean("voiceButton", base.voiceButton),
             reduceMotion = o.optBoolean("reduceMotion", base.reduceMotion),

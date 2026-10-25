@@ -135,6 +135,7 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, modifier: Mo
                 SettingsSection.Apps -> AppsPage(env)
                 SettingsSection.Screen -> ScreenPage(env)
                 SettingsSection.Icons -> IconsPage(env)
+                SettingsSection.Lock -> LockScreenPage(env)
                 SettingsSection.Voice -> VoicePage(env)
                 SettingsSection.Profiles -> ProfilesPage(env)
                 SettingsSection.Backup -> BackupPage(env)

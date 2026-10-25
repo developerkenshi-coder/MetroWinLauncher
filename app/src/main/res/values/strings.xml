@@ -412,4 +412,27 @@
     <string name="theme_imported">Theme applied</string>
     <string name="theme_failed">Could not save the theme</string>
     <string name="theme_not_theme">That file is not a theme of this launcher</string>
+
+    <!-- lock screen -->
+    <string name="sec_lock">lock screen</string>
+    <string name="sec_lock_desc">The Metro lock screen: photo, clock, alarm, notifications</string>
+    <string name="lock_dream_label">Metro lock screen</string>
+    <string name="lock_preview">preview</string>
+    <string name="lock_photo">lock screen photo</string>
+    <string name="lock_choose_photo">choose a photo</string>
+    <string name="lock_remove_photo">remove the photo</string>
+    <string name="lock_photo_hint">Without its own photo the lock screen uses the Start photo, and black without that.</string>
+    <string name="lock_show_alarm">show the next alarm</string>
+    <string name="lock_show_notifications">show the number of notifications</string>
+    <string name="lock_show_battery">show the battery</string>
+    <string name="lock_apply">use the photo on the phone\'s lock screen</string>
+    <string name="lock_apply_hint">Sets the photo as the wallpaper of the Android lock screen.</string>
+    <string name="lock_applied">Lock screen photo set</string>
+    <string name="lock_apply_failed">Could not set the lock screen photo</string>
+    <string name="lock_no_photo">Choose a photo first, or set a Start photo</string>
+    <string name="lock_dream">screen saver</string>
+    <string name="lock_dream_button">open the screen saver settings</string>
+    <string name="lock_dream_hint">Android does not let a launcher replace its lock screen. The Metro lock screen runs as the screen saver instead: pick “Metro lock screen” there, and it shows while the phone charges or rests on a dock. Swipe it up to leave.</string>
+    <string name="lock_alarm_label">alarm</string>
+    <string name="lock_notifications_label">notifications</string>
 </resources>

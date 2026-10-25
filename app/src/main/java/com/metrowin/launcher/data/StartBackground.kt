@@ -16,8 +16,8 @@ import kotlin.math.max
  * The photo behind the Start tiles. The picked photo is shrunk and copied into the app's own storage,
  * so it keeps working when the original is moved or deleted and no storage permission is needed.
  */
-class StartBackgroundStore(private val context: Context) {
-    private val file = File(context.filesDir, "start_background.jpg")
+class StartBackgroundStore(private val context: Context, fileName: String = "start_background.jpg") {
+    private val file = File(context.filesDir, fileName)
 
     /** Blocking, call it off the main thread. Returns false when the photo could not be read. */
     fun save(uri: Uri): Boolean = runCatching {
