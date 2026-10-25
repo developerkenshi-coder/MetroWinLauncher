@@ -61,6 +61,7 @@ import com.metrowin.launcher.ui.components.MetroSlider
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.notifications.NotificationEntry
+import com.metrowin.launcher.notifications.Snooze
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppSquare
 import com.metrowin.launcher.ui.components.GlyphIcon
@@ -105,6 +106,10 @@ fun ActionCenter(
     groupConversations: Boolean = false,
     /** The volume, the brightness and the sound mode under the buttons; null leaves them out. */
     controls: ActionControls? = null,
+    /** Puts a notification away for a while (a long press on it shows the way); null leaves the choice out. */
+    onSnooze: ((NotificationEntry, Snooze.Option) -> Unit)? = null,
+    /** Opens the notification settings of the app a notification came from. */
+    onAppNotificationSettings: ((NotificationEntry) -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
     var expanded by remember { mutableStateOf(false) }
@@ -177,7 +182,7 @@ fun ActionCenter(
                         items(listed, key = { it.key }) { item ->
                             when (item) {
                                 is NotificationItem.Single ->
-                                    NotificationRow(item.entry, appsByPackage[item.entry.packageName], onOpenNotification, onDismissNotification, onReply)
+                                    NotificationRow(item.entry, appsByPackage[item.entry.packageName], onOpenNotification, onDismissNotification, onReply, onSnooze, onAppNotificationSettings)
                                 is NotificationItem.Group -> {
                                     val open = item.packageName in openGroups
                                     Column {
@@ -189,7 +194,7 @@ fun ActionCenter(
                                         if (open) {
                                             item.entries.forEach { entry ->
                                                 Box(Modifier.padding(start = 24.dp)) {
-                                                    NotificationRow(entry, null, onOpenNotification, onDismissNotification, onReply)
+                                                    NotificationRow(entry, null, onOpenNotification, onDismissNotification, onReply, onSnooze, onAppNotificationSettings)
                                                 }
                                             }
                                         }
@@ -218,6 +223,9 @@ class ActionControls(
     val onRinger: (RingerMode) -> Unit,
     val onBrightness: (Float) -> Unit,
     val onAllowBrightness: () -> Unit,
+    /** How strong the flashlight shines, 0 to 1; null while it is off or has only one strength. */
+    val torch: Float? = null,
+    val onTorch: (Float) -> Unit = {},
 )
 
 /** The volume and the brightness as sliders, and the three sound modes as buttons. */
@@ -246,6 +254,14 @@ private fun ControlsBlock(controls: ActionControls) {
                     ) {
                         MetroText(stringResource(R.string.ac_brightness_allow), size = 16.sp, weight = FontWeight.Normal, color = LocalAccent.current)
                     }
+                }
+            }
+        }
+        controls.torch?.let { torch ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                GlyphIcon(Glyph.Flashlight, 26.dp, color = colors.subtle)
+                Box(Modifier.weight(1f).padding(start = 12.dp).testTag("ac:torch")) {
+                    MetroSlider(torch, controls.onTorch, stringResource(R.string.ac_torch))
                 }
             }
         }
@@ -376,8 +392,13 @@ private fun NotificationRow(
     onOpen: (NotificationEntry) -> Unit,
     onDismiss: (NotificationEntry) -> Unit,
     onReply: ((NotificationEntry, String) -> Boolean)? = null,
+    onSnooze: ((NotificationEntry, Snooze.Option) -> Unit)? = null,
+    onAppSettings: ((NotificationEntry) -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
+    // A long press shows what else can be done with it: put it away for a while, or open the settings of its app.
+    var more by remember { mutableStateOf(false) }
+    val hasMore = onSnooze != null || onAppSettings != null
     // The part that opens the notification is one button for TalkBack; the reply, which has controls of its own, is
     // below it and not inside it, so that those controls can be reached.
     Column(
@@ -389,7 +410,11 @@ private fun NotificationRow(
         Row(
             Modifier
                 .fillMaxWidth()
-                .metroPress(onClick = { onOpen(entry) })
+                .metroPress(
+                    onClick = { onOpen(entry) },
+                    onLongClick = if (hasMore) ({ more = !more }) else null,
+                    longClickLabel = if (hasMore) stringResource(R.string.a11y_more_options) else null,
+                )
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.Top,
         ) {
@@ -417,6 +442,30 @@ private fun NotificationRow(
         }
         if (entry.reply != null && onReply != null) {
             Box(Modifier.padding(start = 12.dp + 44.dp + 14.dp, end = 12.dp, bottom = 6.dp)) { ReplyBox(entry, onReply) }
+        }
+        if (more && hasMore) {
+            Column(Modifier.padding(start = 12.dp + 44.dp + 14.dp, end = 12.dp, bottom = 6.dp).testTag("notification:more:${entry.key}")) {
+                if (onSnooze != null) {
+                    MetroText(stringResource(R.string.notif_snooze), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle)
+                    Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Snooze.Option.entries.forEach { option ->
+                            Box(
+                                Modifier
+                                    .testTag("notification:snooze:${option.name}:${entry.key}")
+                                    .metroPress(onClick = { onSnooze(entry, option) })
+                                    .litFill(false, LocalStyle.current.cardShape)
+                                    .padding(horizontal = 9.dp, vertical = 8.dp),
+                                contentAlignment = Alignment.Center,
+                            ) { MetroText(stringResource(option.label), size = 14.sp, weight = FontWeight.Normal, maxLines = 1) }
+                        }
+                    }
+                }
+                if (onAppSettings != null) {
+                    Box(Modifier.testTag("notification:appsettings:${entry.key}").metroPress(onClick = { onAppSettings(entry) }).padding(vertical = 10.dp)) {
+                        MetroText(stringResource(R.string.notif_app_settings), size = 16.sp, weight = FontWeight.Normal, color = LocalAccent.current)
+                    }
+                }
+            }
         }
     }
 }

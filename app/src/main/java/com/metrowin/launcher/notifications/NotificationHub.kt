@@ -118,6 +118,12 @@ object NotificationHub {
         service?.cancelNotification(key)
     }
 
+    /** Puts the notification [key] away for [millis]; the system brings it back after that. False when the service is not running. */
+    fun snooze(key: String, millis: Long): Boolean {
+        val service = service ?: return false
+        return runCatching { service.snoozeNotification(key, millis) }.isSuccess
+    }
+
     fun dismissAll() {
         service?.cancelAllNotifications()
     }

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
@@ -134,12 +135,49 @@ class QuickActionsController(private val context: Context) {
         }
     }.getOrNull()
 
-    /** Switches the flashlight, or opens the system screen of the button. */
-    fun activate(action: QuickAction) {
+    /** How many strengths the flashlight has (1 when it only goes on and off, and before Android 13). */
+    private val torchLevels: Int = torchId
+        ?.takeIf { Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU }
+        ?.let { id -> runCatching { cameras.getCameraCharacteristics(id).get(CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL) }.getOrNull() }
+        ?: 1
+
+    /** The strength of the lit flashlight as a fraction, or null when it is off or has only one strength. */
+    fun torchStrength(): Float? {
+        val torch = torchId ?: return null
+        if (torchLevels <= 1 || !_torchOn.value || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return null
+        return runCatching { Levels.fraction(cameras.getTorchStrengthLevel(torch), torchLevels) }.getOrNull()
+    }
+
+    /** Lights the flashlight at [fraction] of its strength (never off: the lowest strength is the first). */
+    fun setTorchStrength(fraction: Float) {
+        val torch = torchId ?: return
+        if (torchLevels <= 1 || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        runCatching { cameras.turnOnTorchWithStrengthLevel(torch, Levels.level(fraction, torchLevels, min = 1)) }
+    }
+
+    /**
+     * Switches the flashlight or the quiet hours on the spot, or opens the system screen of the button. True when it was
+     * done on the spot. Quiet hours need the "do not disturb" access: without it the screen that gives it opens.
+     */
+    fun activate(action: QuickAction): Boolean {
         val torch = torchId
         if (action == QuickAction.Flashlight && torch != null) {
             runCatching { cameras.setTorchMode(torch, !_torchOn.value) }
-            return
+            return true
+        }
+        if (action == QuickAction.QuietHours) {
+            val manager = context.getSystemService(android.app.NotificationManager::class.java)
+            if (manager.isNotificationPolicyAccessGranted) {
+                val on = manager.currentInterruptionFilter != android.app.NotificationManager.INTERRUPTION_FILTER_ALL
+                // Quiet hours on lets the calls and alarms the user allowed through; off lets everything through.
+                runCatching {
+                    manager.setInterruptionFilter(
+                        if (on) android.app.NotificationManager.INTERRUPTION_FILTER_ALL else android.app.NotificationManager.INTERRUPTION_FILTER_PRIORITY,
+                    )
+                }
+                return true
+            }
+            return start(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS).let { false }
         }
         val intentAction = when (action) {
             QuickAction.Wifi -> Settings.ACTION_WIFI_SETTINGS
@@ -153,9 +191,10 @@ class QuickActionsController(private val context: Context) {
             QuickAction.Cast -> Settings.ACTION_CAST_SETTINGS
             QuickAction.Camera -> MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA
             // Not screens of Android: the launcher opens its own settings and the recent apps itself (see LauncherApp).
-            QuickAction.LauncherSettings, QuickAction.Recents, QuickAction.Screenshot -> return
+            QuickAction.LauncherSettings, QuickAction.Recents, QuickAction.Screenshot -> return false
         }
         if (!start(intentAction)) start(Settings.ACTION_SETTINGS)
+        return false
     }
 
     private fun start(intentAction: String): Boolean =

@@ -402,7 +402,8 @@ fun LauncherApp(vm: LauncherViewModel) {
         onDispose { }
     }
     // The sliders show how things are when the Action Center opens.
-    LaunchedEffect(panel.isShown) { if (panel.isShown) vm.refreshControls() }
+    // The flashlight lighting or going out shows or takes away its strength slider.
+    LaunchedEffect(panel.isShown, torchOn) { if (panel.isShown) vm.refreshControls() }
     var quickStates by remember { mutableStateOf<Map<QuickAction, Boolean?>>(emptyMap()) }
 
     // The settings page, and the section on top of it, swing in and out like a turnstile; the back gesture
@@ -1357,8 +1358,9 @@ fun LauncherApp(vm: LauncherViewModel) {
                                 panel.close()
                                 perform(GestureAction.Recents)
                             } else {
-                                vm.activateQuickAction(action)
-                                if (action != QuickAction.Flashlight) panel.close()
+                                // The flashlight and the quiet hours switch on the spot and the panel stays; anything else opens a screen.
+                                val inPlace = vm.activateQuickAction(action)
+                                if (inPlace) quickStates = quickStates + (action to vm.quickActionState(action)) else panel.close()
                             }
                         },
                         onAllSettings = {
@@ -1381,9 +1383,16 @@ fun LauncherApp(vm: LauncherViewModel) {
                                     panel.close()
                                     vm.openBrightnessAccess()
                                 },
+                                torch = panelControls.torch.takeIf { torchOn },
+                                onTorch = vm::setTorchStrength,
                             )
                         } else {
                             null
+                        },
+                        onSnooze = vm::snoozeNotification,
+                        onAppNotificationSettings = { entry ->
+                            panel.close()
+                            vm.openAppNotificationSettings(entry)
                         },
                         onClearAll = vm::clearNotifications,
                         onTurnOnNotificationAccess = vm::openNotificationAccessSettings,

@@ -109,6 +109,7 @@ import com.metrowin.launcher.model.TileStyle
 import com.metrowin.launcher.notifications.NotificationEntry
 import com.metrowin.launcher.ui.theme.MetroAccents
 import com.metrowin.launcher.notifications.NotificationHub
+import com.metrowin.launcher.notifications.Snooze
 import com.metrowin.launcher.notifications.NotificationService
 import com.metrowin.launcher.notifications.LiveCard
 import com.metrowin.launcher.notifications.LiveCardOptions
@@ -207,13 +208,15 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val brightness: Float? = null,
         /** The "modify system settings" access that the brightness needs has been given. */
         val canSetBrightness: Boolean = false,
+        /** How strong the flashlight shines, 0 to 1: only while it is on and the phone can change it. */
+        val torch: Float? = null,
     )
 
     private val _controls = MutableStateFlow(PanelControls())
     val controls: StateFlow<PanelControls> = _controls.asStateFlow()
 
     fun refreshControls() {
-        _controls.value = PanelControls(sound.volume(), sound.ringer(), brightnessControl.brightness(), brightnessControl.canWrite())
+        _controls.value = PanelControls(sound.volume(), sound.ringer(), brightnessControl.brightness(), brightnessControl.canWrite(), quickActions.torchStrength())
     }
 
     fun setVolume(fraction: Float) {
@@ -543,7 +546,34 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun quickActionState(action: QuickAction): Boolean? = quickActions.isOn(action)
 
-    fun activateQuickAction(action: QuickAction) = quickActions.activate(action)
+    /**
+     * Does what the button does. True when that was done on the spot (the flashlight, the quiet hours), false when a screen
+     * of Android opened for it. Quiet hours without the "do not disturb" access ask for that access first.
+     */
+    fun activateQuickAction(action: QuickAction): Boolean {
+        val inPlace = quickActions.activate(action)
+        if (action == QuickAction.QuietHours && !inPlace) tell(R.string.qa_quiet_allow)
+        return inPlace
+    }
+
+    /** The strength of the flashlight, 0 to 1, when the phone can change it (Android 13 and later) and the light is on. */
+    fun torchStrength(): Float? = quickActions.torchStrength()
+
+    fun setTorchStrength(fraction: Float) {
+        quickActions.setTorchStrength(fraction)
+        _controls.value = _controls.value.copy(torch = fraction)
+    }
+
+    /** Puts a notification away for a while. */
+    fun snoozeNotification(entry: NotificationEntry, option: Snooze.Option) {
+        val millis = Snooze.millis(option, java.time.Instant.now(), java.time.ZoneId.systemDefault())
+        if (!NotificationHub.snooze(entry.key, millis)) tell(R.string.launch_failed)
+    }
+
+    /** The notification settings of the app a notification came from. */
+    fun openAppNotificationSettings(entry: NotificationEntry) = startIntent(
+        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, entry.packageName),
+    )
 
     /** Runs what the notification does when tapped, then removes it if the app asked for that. */
     fun openNotification(entry: NotificationEntry) {

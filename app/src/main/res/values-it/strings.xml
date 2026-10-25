@@ -941,4 +941,14 @@
     <string name="voice_ex_navigate">“portami a Roma”, “indicazioni per la stazione”</string>
     <string name="voice_ex_message">“scrivi a Anna sono in ritardo” (apre il messaggio, lo invii tu), “manda un messaggio a Marco dicendo ciao”</string>
     <string name="voice_ex_system">“screenshot”, “menu di spegnimento”, “app recenti”, “schermo diviso”</string>
+
+    <!-- Second round: Action Center and notifications -->
+    <string name="qa_quiet_allow">Consenti il launcher in questa schermata e il pulsante attiverà subito le ore silenziose.</string>
+    <string name="ac_torch">Intensità della torcia</string>
+    <string name="notif_snooze">posticipa</string>
+    <string name="snooze_15">15 min</string>
+    <string name="snooze_hour">1 ora</string>
+    <string name="snooze_3h">3 ore</string>
+    <string name="snooze_morning">8:00</string>
+    <string name="notif_app_settings">impostazioni notifiche dell’app</string>
 </resources>

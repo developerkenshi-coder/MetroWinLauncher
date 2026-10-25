@@ -937,4 +937,14 @@
     <string name="voice_ex_navigate">“navigate to Rome”, “take me to the station”</string>
     <string name="voice_ex_message">“text Anna I’m late” (it opens the message for you to send), “send a message to Marco saying hello”</string>
     <string name="voice_ex_system">“screenshot”, “power menu”, “recent apps”, “split screen”</string>
+
+    <!-- Second round: Action Center and notifications -->
+    <string name="qa_quiet_allow">Allow the launcher in this screen and the button switches quiet hours at once.</string>
+    <string name="ac_torch">Flashlight strength</string>
+    <string name="notif_snooze">snooze</string>
+    <string name="snooze_15">15 min</string>
+    <string name="snooze_hour">1 hour</string>
+    <string name="snooze_3h">3 hours</string>
+    <string name="snooze_morning">8:00</string>
+    <string name="notif_app_settings">notification settings of the app</string>
 </resources>
