@@ -590,7 +590,7 @@
     <!-- folders with several apps -->
     <string name="edit_folder">Make a folder with several tiles</string>
     <string name="folder_pick_create">create folder</string>
-    <string name="folder_pick_cancel">cancel</string>
+    <string name="folder_pick_cancel" tools:ignore="ButtonCase">cancel</string>
     <string name="folder_pick_hint">Touch the tiles to put in the folder</string>
     <string name="folder_pick_hint_folder">Touch more tiles to add them to the folder</string>
     <string name="a11y_selected">selected</string>
@@ -628,4 +628,26 @@
     <string name="tut_look_intro">Three themes and any color. Open Launcher settings → start+theme to choose.</string>
     <string name="tut_look_tip1">Classic is the flat Windows Phone look. Modern Glass is frosted glass over a glowing backdrop. Modern Droid follows Material You.</string>
     <string name="tut_look_tip2">Pick one of the 20 accent colors, or make your own with the three sliders. Dark, light, or by the hour, in every theme.</string>
+
+    <!-- battery -->
+    <string name="sec_battery">battery</string>
+    <string name="sec_battery_desc">Power saving, and what the launcher does when it is not on screen</string>
+    <string name="saving_title">power saving</string>
+    <string name="saving_auto">automatic</string>
+    <string name="saving_auto_desc">Saves when Android\'s battery saver is on, or when the battery is at 20% or less and the phone is not charging.</string>
+    <string name="saving_always">always</string>
+    <string name="saving_always_desc">Always saves, whatever the charge.</string>
+    <string name="saving_never">never</string>
+    <string name="saving_never_desc">Never saves: tiles keep flipping and the screen is asked for its fastest refresh rate.</string>
+    <string name="saving_now_on">Saving battery now.</string>
+    <string name="saving_now_off">Not saving now.</string>
+    <string name="saving_while_title">while it saves</string>
+    <string name="saving_while_1">Tiles stop flipping by themselves and photos stop cycling.</string>
+    <string name="saving_while_2">The 120 Hz request is dropped: the phone picks its own refresh rate.</string>
+    <string name="saving_while_3">Weather, contacts, calendar and photos are read less often, and the sync waits longer.</string>
+    <string name="battery_rest_title">at rest</string>
+    <string name="battery_rest_1">With another app on screen, or with the screen off, the launcher does nothing: no timers, no listeners, no refresh. What changed in the meantime is read once, when you come back.</string>
+    <string name="battery_rest_2">Contacts, calendar, photos and calls are read only for the live tiles you pinned to Start, and not again within a couple of minutes of leaving and coming back.</string>
+    <string name="battery_rest_3">The lock screen service asks Android for no events, so it never wakes the launcher when you switch apps.</string>
+    <string name="tut_alive_tip3">It costs almost no battery: off screen, the launcher does nothing.</string>
 </resources>

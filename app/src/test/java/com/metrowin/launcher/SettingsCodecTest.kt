@@ -1,5 +1,6 @@
 package com.metrowin.launcher
 
+import com.metrowin.launcher.data.BatterySaving
 import com.metrowin.launcher.data.GestureAction
 import com.metrowin.launcher.data.LaunchAnimation
 import com.metrowin.launcher.data.LauncherSettings
@@ -28,6 +29,7 @@ class SettingsCodecTest {
         syncEnabled = true, syncPassphrase = "secret", deviceId = "phone-1",
         kidsApps = setOf("stock:camera"), kidsMode = true,
         themeStyle = ThemeStyle.Droid, customAccent = 0xFF3366CC.toInt(), dynamicColor = false,
+        batterySaving = BatterySaving.Always,
     )
 
     @Test
@@ -56,6 +58,13 @@ class SettingsCodecTest {
         // A file with no alpha would otherwise paint everything transparent.
         assertEquals(0xFF112233.toInt(), SettingsCodec.decode("""{"customAccent":${0x00112233}}""")!!.customAccent)
         assertEquals(0, SettingsCodec.decode("""{"customAccent":0}""")!!.customAccent)
+    }
+
+    @Test
+    fun batterySavingIsAutomaticByDefaultAndAnUnknownModeIsToo() {
+        assertEquals(BatterySaving.Auto, LauncherSettings().batterySaving)
+        assertEquals(BatterySaving.Auto, SettingsCodec.decode("""{"batterySaving":"turbo"}""")!!.batterySaving)
+        assertEquals(BatterySaving.Never, SettingsCodec.decode("""{"batterySaving":"never"}""")!!.batterySaving)
     }
 
     @Test

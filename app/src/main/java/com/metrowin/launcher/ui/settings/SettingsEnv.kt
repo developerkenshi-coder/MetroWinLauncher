@@ -30,6 +30,7 @@ enum class SettingsSection(
 ) {
     StartTheme(SettingsGroup.Launcher, R.string.settings_start_theme, R.string.sec_start_theme_desc),
     Screen(SettingsGroup.Launcher, R.string.sec_screen, R.string.sec_screen_desc),
+    Battery(SettingsGroup.Launcher, R.string.sec_battery, R.string.sec_battery_desc),
     Accessibility(SettingsGroup.Launcher, R.string.sec_access, R.string.sec_access_desc),
     Icons(SettingsGroup.Launcher, R.string.sec_icons, R.string.sec_icons_desc),
     Gestures(SettingsGroup.Launcher, R.string.sec_gestures, R.string.sec_gestures_desc),
@@ -57,6 +58,8 @@ class SettingsEnv(
     val onClearBackground: () -> Unit = {},
     /** The accent that suits the Start photo, when there is one. */
     val autoAccentIndex: Int? = null,
+    /** The launcher is sparing the battery now (see PowerPolicy). */
+    val powerSaving: Boolean = false,
     val notificationAccess: Boolean = false,
     val onManageNotificationAccess: () -> Unit = {},
     /** Every app, including the hidden ones and the launcher's own entries. */

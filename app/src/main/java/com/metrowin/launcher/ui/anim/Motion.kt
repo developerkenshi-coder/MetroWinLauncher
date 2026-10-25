@@ -159,9 +159,13 @@ fun FlipContainer(
     val showingNext by remember { derivedStateOf { angle.value >= 90f } }
 
     val reduced = LocalReduceMotion.current
-    LaunchedEffect(faces, reduced) {
-        // With reduced motion the tile keeps its first face: nothing flips by itself.
-        if (faces <= 1 || reduced) return@LaunchedEffect
+    val saving = LocalPowerSaving.current
+    LaunchedWhileStarted(faces to (reduced || saving)) {
+        // With reduced motion, or while saving battery, the tile keeps its face: nothing flips by itself.
+        if (faces <= 1 || reduced || saving) return@LaunchedWhileStarted
+        // Coming back after being off screen in the middle of a flip: settle on the face that was turning in.
+        if (angle.value >= 90f) index = (index + 1) % faces
+        angle.snapTo(0f)
         delay(1_500L + (seed.mod(6)) * 800L)
         while (true) {
             angle.animateTo(180f, tween(durationMillis = 700, easing = FastOutSlowInEasing))

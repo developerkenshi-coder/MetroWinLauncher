@@ -24,6 +24,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.ThemeMode
 import com.metrowin.launcher.data.ThemeStyle
+import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
 import kotlinx.coroutines.delay
 import java.time.LocalTime
 
@@ -175,7 +176,8 @@ fun rememberIsDark(settings: LauncherSettings): Boolean {
     val systemDark = isSystemInDarkTheme()
     var hour by remember { mutableIntStateOf(LocalTime.now().hour) }
     if (settings.themeMode == ThemeMode.Schedule) {
-        LaunchedEffect(Unit) {
+        // Only while on screen: coming back after a night, the hour is read at once.
+        LaunchedWhileStarted(Unit) {
             while (true) {
                 hour = LocalTime.now().hour
                 delay(30_000)

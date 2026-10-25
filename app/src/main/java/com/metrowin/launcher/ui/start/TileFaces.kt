@@ -59,6 +59,8 @@ import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.model.TileStyle
 import com.metrowin.launcher.notifications.TilePeek
 import com.metrowin.launcher.ui.anim.FlipContainer
+import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
+import com.metrowin.launcher.ui.anim.LocalPowerSaving
 import com.metrowin.launcher.ui.components.AppArt
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
@@ -231,9 +233,10 @@ private fun IconicFace(item: AppItem, size: TileSize, width: Dp, height: Dp, cou
 private fun CycleFace(item: AppItem, photos: List<ImageBitmap>, seed: Int) {
     var index by remember { mutableIntStateOf(0) }
     val reduced = LocalReduceMotion.current
-    LaunchedEffect(photos.size, reduced) {
-        // With reduced motion the tile keeps its first photo.
-        if (photos.size < 2 || reduced) return@LaunchedEffect
+    val saving = LocalPowerSaving.current
+    LaunchedWhileStarted(photos.size to (reduced || saving)) {
+        // With reduced motion, or while saving battery, the tile keeps its photo.
+        if (photos.size < 2 || reduced || saving) return@LaunchedWhileStarted
         // Tiles start at different moments, so the whole screen does not change at once.
         delay(1_000L + seed.mod(5) * 700L)
         while (true) {
@@ -553,10 +556,11 @@ private fun PhotoLabel(text: String, modifier: Modifier = Modifier) {
 @Composable
 private fun rememberToday(): LocalDate {
     var today by remember { mutableStateOf(LocalDate.now()) }
-    LaunchedEffect(Unit) {
+    LaunchedWhileStarted(Unit) {
         while (true) {
-            delay(60_000)
+            // Coming back after a night off screen, the date is right at once.
             LocalDate.now().let { if (it != today) today = it }
+            delay(60_000)
         }
     }
     return today

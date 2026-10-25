@@ -15,6 +15,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.data.PowerPolicy
 import kotlinx.coroutines.launch
 import com.metrowin.launcher.data.DisplayModeInfo
 import com.metrowin.launcher.data.RefreshRate
@@ -31,12 +32,22 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         applyDisplaySettings(viewModel.settings.value)
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) { viewModel.settings.collect(::applyDisplaySettings) }
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch { viewModel.settings.collect(::applyDisplaySettings) }
+                // Saving battery gives the 120 Hz up, and the phone's own rate takes over.
+                launch {
+                    viewModel.powerSaving.collect {
+                        saving = it
+                        requestHighestRefreshRate()
+                    }
+                }
+            }
         }
         setContent { LauncherApp(viewModel) }
     }
 
     private var wantsHighRefresh = true
+    private var saving = false
 
     /** The manifest starts in portrait; the settings may free the rotation or fix landscape, and turn the 120 Hz request off. */
     private fun applyDisplaySettings(settings: LauncherSettings) {
@@ -66,7 +77,7 @@ class MainActivity : ComponentActivity() {
      * animations are time based, so they run the same at any rate, only smoother.
      */
     private fun requestHighestRefreshRate() {
-        if (!wantsHighRefresh) {
+        if (!PowerPolicy.highRefreshRate(wantsHighRefresh, saving)) {
             // No preference: Android picks the rate by what is on screen.
             if (window.attributes.preferredDisplayModeId != 0) {
                 window.attributes = window.attributes.also { it.preferredDisplayModeId = 0 }

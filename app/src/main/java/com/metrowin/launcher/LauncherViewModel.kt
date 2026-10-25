@@ -1,5 +1,9 @@
 package com.metrowin.launcher
 
+import com.metrowin.launcher.data.Throttle
+import com.metrowin.launcher.data.PowerPolicy
+import com.metrowin.launcher.data.LiveSources
+import com.metrowin.launcher.data.LivePermissions
 import android.app.ActivityOptions
 import android.app.WallpaperManager
 import android.app.Application
@@ -12,6 +16,7 @@ import androidx.core.net.toUri
 import android.content.ComponentName
 import android.content.Intent
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import android.service.notification.NotificationListenerService
 import androidx.core.app.NotificationManagerCompat
@@ -76,6 +81,7 @@ import com.metrowin.launcher.data.TileStore
 import com.metrowin.launcher.data.WeatherData
 import com.metrowin.launcher.data.WeatherRepository
 import com.metrowin.launcher.model.AppItem
+import com.metrowin.launcher.model.LiveKind
 import com.metrowin.launcher.model.StartEntry
 import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.model.TileStyle
@@ -171,6 +177,28 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    private val powerManager = application.getSystemService(PowerManager::class.java)
+    private val _androidBatterySaver = MutableStateFlow(powerManager?.isPowerSaveMode == true)
+    private val powerSaveReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            _androidBatterySaver.value = powerManager?.isPowerSaveMode == true
+        }
+    }
+
+    /**
+     * Whether the launcher is sparing the battery now (see [PowerPolicy]): the screens stop what moves by itself, the
+     * 120 Hz request is dropped and the data is refreshed less often.
+     */
+    val powerSaving: StateFlow<Boolean> =
+        combine(_settings.map { it.batterySaving }.distinctUntilChanged(), _androidBatterySaver, _battery) { mode, saver, battery ->
+            PowerPolicy.saving(mode, saver, battery)
+        }.distinctUntilChanged().stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    private val throttle = Throttle()
+    private var loadedLive: Set<LiveKind>? = null
+    private var loadedGrants = -1
+    private var listening = false
+
     private val _live = MutableStateFlow(LiveTileData())
     val live: StateFlow<LiveTileData> = _live.asStateFlow()
 
@@ -237,22 +265,55 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         if (_settings.value.hasStartBackground) loadBackground()
         if (_settings.value.hasLockPhoto) loadLockPhoto()
         stopObservingPackages = apps.observe(::scheduleReload)
-        ContextCompat.registerReceiver(
-            application, batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED,
-        )
+        // What Start shows from the phone is read again when a tile of that kind is pinned.
+        viewModelScope.launch {
+            combine(_pages, _items) { pages, items -> LiveSources.wanted(pages, items) }.distinctUntilChanged().collect { if (listening) refreshLive() }
+        }
     }
 
     override fun onCleared() {
-        runCatching { getApplication<Application>().unregisterReceiver(batteryReceiver) }
+        stopListening()
         stopObservingPackages()
         quickActions.close()
     }
 
+    /**
+     * The receivers wake the process, so they are on only while the launcher is on screen: with another app in front
+     * or the screen off the launcher is asleep, and what changed meanwhile is read once when it comes back.
+     */
+    private fun startListening() {
+        if (listening) return
+        listening = true
+        val app = getApplication<Application>()
+        ContextCompat.registerReceiver(app, batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
+        ContextCompat.registerReceiver(app, powerSaveReceiver, IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
+        quickActions.start()
+        // What changed while the receivers were off.
+        BatteryInfo.read(app)?.let { _battery.value = it }
+        _androidBatterySaver.value = powerManager?.isPowerSaveMode == true
+    }
+
+    private fun stopListening() {
+        if (!listening) return
+        listening = false
+        val app = getApplication<Application>()
+        runCatching { app.unregisterReceiver(batteryReceiver) }
+        runCatching { app.unregisterReceiver(powerSaveReceiver) }
+        quickActions.stop()
+    }
+
+    /** Called every time the launcher goes off screen: behind another app, or the screen turned off. */
+    fun onStop() = stopListening()
+
     /** Called every time the launcher comes back on screen. */
     fun onStart() {
+        startListening()
+        val saving = powerSaving.value
+        // The profiles are a cheap question and show whether work apps are paused, so they are always asked; the icon packs
+        // (a search through every installed app) only now and then.
         refreshProfiles()
-        refreshIconPacks()
-        syncIfDue(SYNC_MIN_GAP_ON_START_MS)
+        if (throttle.due("iconpacks", PowerPolicy.packagesMaxAgeMs(saving))) refreshIconPacks()
+        syncIfDue(PowerPolicy.syncGapMs(SYNC_MIN_GAP_ON_START_MS, saving))
         if (loadedLocale != null && loadedLocale != Locale.getDefault()) reloadApps()
         refreshLive()
         refreshWeather()
@@ -312,16 +373,30 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         _homePresses.value = HomePress(_homePresses.value.count + 1, fromBackground)
     }
 
-    fun refreshLive() {
+    /**
+     * Reads what the live tiles on Start show, unless that was read lately and Start asks for nothing new. Only the
+     * data of the tiles that are pinned is read, and not at all while none of them is. [force] reads in any case.
+     */
+    fun refreshLive(force: Boolean = false) {
+        val wanted = LiveSources.wanted(_pages.value, _items.value)
+        // A permission given or taken away since the last read changes what there is to show at once.
+        val grants = LivePermissions.all.count { LivePermissions.isGranted(getApplication(), it) }
+        val due = throttle.due("live", PowerPolicy.liveMaxAgeMs(powerSaving.value))
+        val changed = force || wanted != loadedLive || grants != loadedGrants
+        if (!changed && !due) return
+        if (!changed && wanted.isEmpty()) return
+        loadedLive = wanted
+        loadedGrants = grants
         viewModelScope.launch {
-            _live.value = withContext(Dispatchers.IO) { liveTiles.load() }
+            _live.value = withContext(Dispatchers.IO) { liveTiles.load(wanted) }
         }
     }
 
     fun onTutorialFinished() {
         store.tutorialDone = true
         _tutorialDone.value = true
-        refreshLive()
+        // The tutorial may have granted permissions the tiles were waiting for.
+        refreshLive(force = true)
     }
 
     private fun refreshIconPacks() {
@@ -395,7 +470,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             return
         }
         val current = _weather.value
-        if (!force && current != null && current.fahrenheit == s.weatherFahrenheit && !OpenMeteo.isStale(current, System.currentTimeMillis())) return
+        val maxAge = PowerPolicy.weatherMaxAgeMs(powerSaving.value)
+        if (!force && current != null && current.fahrenheit == s.weatherFahrenheit && !OpenMeteo.isStale(current, System.currentTimeMillis(), maxAge)) return
         weatherJob?.cancel()
         weatherJob = viewModelScope.launch {
             val fetched = withContext(Dispatchers.IO) {

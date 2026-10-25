@@ -93,6 +93,8 @@ import com.metrowin.launcher.ui.apps.JumpList
 import com.metrowin.launcher.ui.apps.ListHighlight
 import com.metrowin.launcher.ui.apps.MenuState
 import com.metrowin.launcher.ui.components.LocalIconLoader
+import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
+import com.metrowin.launcher.ui.anim.LocalPowerSaving
 import com.metrowin.launcher.ui.anim.rememberTapFeedback
 import com.metrowin.launcher.ui.components.TurnstileHost
 import com.metrowin.launcher.ui.gesture.BackGestureHandler
@@ -325,6 +327,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     // Returning from an app: everything swings back in, as on Windows Phone.
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
         cameBackFromBackground = true
+        vm.onStop()
         vm.backupIfDue()
     }
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
@@ -733,7 +736,7 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     // While the panel is up, the state of its buttons is read again every second.
     val actionCenterShown = panel.isShown
-    LaunchedEffect(actionCenterShown, torchOn) {
+    LaunchedWhileStarted(actionCenterShown to torchOn) {
         while (actionCenterShown) {
             quickStates = QuickAction.entries.associateWith(vm::quickActionState)
             delay(1_000)
@@ -753,7 +756,9 @@ fun LauncherApp(vm: LauncherViewModel) {
         null
     }
 
-    CompositionLocalProvider(LocalIconLoader provides vm.icons, LocalWidgetHost provides vm.widgets) {
+    val powerSaving by vm.powerSaving.collectAsStateWithLifecycle()
+
+    CompositionLocalProvider(LocalIconLoader provides vm.icons, LocalWidgetHost provides vm.widgets, LocalPowerSaving provides powerSaving) {
         MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid) {
             Box(
                 Modifier
@@ -1008,6 +1013,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 TurnstileHost(show = settingsOpen, away = settingsAway) {
                     SettingsScreen(
                         env = SettingsEnv(
+                            powerSaving = powerSaving,
                             settings = settings,
                             onChange = vm::updateSettings,
                             startBackground = startBackground,

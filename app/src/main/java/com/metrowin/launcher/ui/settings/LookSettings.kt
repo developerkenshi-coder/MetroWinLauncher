@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -151,9 +152,9 @@ fun AccentPicker(
 private fun CustomColor(argb: Int, active: Boolean, onChange: (Int) -> Unit, onUsePreset: () -> Unit) {
     val hsv = remember(argb) { ColorMath.argbToHsv(argb) }
     // Keep the hue the user is dragging even when the strength drops to zero, where the color alone cannot remember it.
-    var hue by remember { mutableStateOf(hsv[0]) }
-    var saturation by remember { mutableStateOf(hsv[1]) }
-    var brightness by remember { mutableStateOf(hsv[2]) }
+    var hue by remember { mutableFloatStateOf(hsv[0]) }
+    var saturation by remember { mutableFloatStateOf(hsv[1]) }
+    var brightness by remember { mutableFloatStateOf(hsv[2]) }
     fun publish() = onChange(ColorMath.hsvToArgb(hue, saturation, brightness))
     val current = Color(ColorMath.hsvToArgb(hue, saturation, brightness))
     val hues = remember { Brush.horizontalGradient((0..6).map { Color(ColorMath.hsvToArgb(it * 60f, 1f, 1f)) }) }

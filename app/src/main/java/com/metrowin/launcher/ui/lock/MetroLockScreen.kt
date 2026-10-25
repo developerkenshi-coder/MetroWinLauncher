@@ -21,8 +21,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -65,7 +65,7 @@ fun rememberLockInfo(): LockInfo {
     val context = LocalContext.current.applicationContext
     val source = remember { LockInfoSource(context) }
     var info by remember { mutableStateOf(source.read()) }
-    LaunchedEffect(source) {
+    LaunchedWhileStarted(source) {
         while (true) {
             info = source.read()
             delay(LockText.untilNextMinute(info.nowMillis) + 50)

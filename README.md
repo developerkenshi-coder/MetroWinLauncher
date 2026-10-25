@@ -2,7 +2,8 @@
 
 Un launcher Android che riproduce la schermata Start di **Windows Phone** (Metro, 8/8.1): riquadri piatti con live
 tile che girano, lista app alfabetica, turnstile e tilt, più le funzioni di sistema che un launcher può davvero fare:
-Action Center, cartelle, più schermate Start, widget, ricerca, voce, sincronizzazione cifrata, accessibilità.
+Action Center, cartelle, più schermate Start, widget, ricerca, voce, sincronizzazione cifrata, accessibilità. Ha **tre temi**
+(*Classic*, *Modern Glass*, *Modern Droid*) con colori personalizzabili, e **non fa nulla quando non è sullo schermo**.
 
 | Start | Cartella aperta | Action Center |
 |---|---|---|
@@ -15,6 +16,12 @@ Action Center, cartelle, più schermate Start, widget, ricerca, voce, sincronizz
 | Voce | Notifiche raggruppate | Sincronizzazione |
 |---|---|---|
 | ![Voce](docs/screenshots/voice_heard.png) | ![Notifiche](docs/screenshots/notification_group_open.png) | ![Sync](docs/screenshots/settings_sync.png) |
+
+I tre temi (Classic, Modern Glass, Modern Droid) sulla stessa schermata Start, e sulle impostazioni:
+
+| Start | Controlli | Impostazioni del tema |
+|---|---|---|
+| ![Temi: Start](docs/screenshots/themes_start.png) | ![Temi: controlli](docs/screenshots/themes_controls.png) | ![Temi: impostazioni](docs/screenshots/themes_settings.png) |
 
 Start in orizzontale, con più colonne e riquadri della stessa dimensione che in verticale:
 
@@ -56,7 +63,7 @@ predefinite → App Home*). Alla prima apertura parte il [tutorial](#il-tutorial
 
 ## Il tutorial iniziale
 
-Alla prima apertura il launcher mostra un giro di **10 pagine**, nello stile di Windows Phone (titolo piccolo in maiuscolo, titolo
+Alla prima apertura il launcher mostra un giro di **11 pagine**, nello stile di Windows Phone (titolo piccolo in maiuscolo, titolo
 grande in minuscolo con il colore d'accento, un quadrato con il glifo). Ogni pagina spiega una parte del launcher e, se la sua
 funzione ha bisogno di un permesso, lo chiede **lì**, con un pulsante, e dice "consentito" quando c'è: niente viene chiesto in anticipo e
 niente è obbligatorio. Si va avanti con il pulsante o con uno swipe, si esce con "salta", Indietro torna alla pagina prima.
@@ -70,8 +77,9 @@ niente è obbligatorio. Si va avanti con il pulsante o con uno swipe, si esce co
 | meteo | il tile del meteo e dove si sceglie la città | **posizione** |
 | tutte le tue app | jump list, ricerca, menu, voce | **microfono** |
 | action center | tirata dal bordo, pulsanti, notifiche, risposta e gruppi | **accesso alle notifiche** (pagina di Android) |
+| il tuo aspetto | i tre temi e i colori | — |
 | gesti | bordi, doppio tocco, due dita, Indietro | **servizio di blocco** (accessibilità, facoltativo) |
-| tienilo attivo | perché Android chiude le app e come evitarlo | **nessuna ottimizzazione della batteria**; e, sui telefoni che hanno un elenco "avvio automatico", di aggiungerci il launcher |
+| tienilo attivo | perché Android chiude le app e come evitarlo; che stare attivo non costa batteria | **nessuna ottimizzazione della batteria**; e, sui telefoni che hanno un elenco "avvio automatico", di aggiungerci il launcher |
 | rendilo tuo | tutte le sezioni delle impostazioni | — |
 
 | Benvenuto | Live tile e permessi | Tienilo attivo |
@@ -93,8 +101,14 @@ launcher, e il pulsante diventa "consentito". Un permesso che Android non chiede
 - **Stili dei riquadri**: standard (con flip), **Iconic** (grande numero e icona) e **Cycle** (foto che si alternano).
 - **Live tile**: Calendario, Foto, Persone, Telefono, **Meteo** (Open-Meteo), **Batteria** (carica, tempo alla ricarica),
   **Torcia** (si accende davvero), e le **notifiche** che girano sul riquadro dell'app (*notification peek*).
-- **Trascina per riordinare**, **cartelle** (un riquadro tenuto sul centro di un altro), modifica con rimuovi,
-  ridimensiona, rinomina, e la barra di modifica con il pulsante *aggiungi*.
+- **Trascina per riordinare**, modifica con rimuovi, ridimensiona, rinomina, e la barra di modifica con il pulsante *aggiungi*.
+- **Cartelle con più app**: tre modi. Un riquadro tenuto sul centro di un altro; il pulsante cartella della barra di modifica,
+  che apre la **selezione multipla** (tocchi i riquadri, vedi la spunta e "N selezionati", e *crea cartella*: se tra loro c'è
+  già una cartella, gli altri entrano lì); oppure **"aggiungi a cartella"** dal menu di un'app nella lista, che sceglie tra le
+  cartelle che hai. Sul riquadro della cartella le prime app sono quadratini e, se sono più di quattro, l'ultimo dice **+N**.
+- **Impostazioni Launcher** è un'app della lista (con il glifo dell'ingranaggio, in ordine alfabetico) e un pulsante tra i
+  quattro toggle dell'Action Center (chi aveva i quattro toggle di prima ha il nuovo al posto dell'ultimo; chi li aveva scelti
+  a mano non li vede cambiare).
 - **Aggiungere a Start**: un **contatto** (con la foto), un **sito web**, un **widget** di Android (ospitato dal
   launcher, con la dimensione che segue il riquadro).
 - **Orologio e data** sopra i riquadri; **sfondo di Start** con una tua foto (riquadri trasparenti, parallasse) e
@@ -146,6 +160,25 @@ Android non lascia a un launcher la sostituzione della schermata di blocco. Quel
 - una **anteprima** nel launcher;
 - la **foto** del blocco schermo, che si può impostare anche come sfondo della schermata di blocco di Android.
 
+### Temi e colori
+
+Tre aspetti, da *start+theme*, scuri o chiari (o a orario) tutti e tre. Lo stile cambia forme, superfici, tipo di lettere e
+controlli (pulsanti, interruttori, campi, cursori), non la struttura: i gesti e la disposizione sono gli stessi.
+
+- **Classic**: il launcher come era, riquadri piatti e quadrati, lettere sottili, interruttore con "On/Off", tilt alla pressione.
+- **Modern Glass**: vetro smerigliato **disegnato da zero** su uno sfondo che brilla (macchie di luce nel colore d'accento e
+  in due sue variazioni di tonalità): riquadri e pannelli arrotondati, trasparenti, con riflesso in alto a sinistra, ombra
+  sotto e bordo luminoso; pulsanti a capsula, interruttore tondo bianco, campi arrotondati. Il vetro è un'illusione
+  (velo trasparente, riflesso, bordo): non sfoca davvero quello che sta dietro, perché un launcher non può sfocare altre finestre.
+- **Modern Droid**: Material You. I riquadri prendono a turno tre **contenitori tonali** (come le schede di Android), angoli
+  grandi, pulsanti a pillola, interruttore con il cursore grande che cresce da acceso. I colori sono quelli dello **sfondo del
+  telefono** da Android 12 (`system_accent1…neutral2`, mappati sui toni di Material), oppure, se lo spegni o il telefono è
+  più vecchio, costruiti dal colore d'accento scelto: toni che hanno la stessa *luminosità percepita* (L\* di Lab) per ogni tinta, così il
+  testo si legge per tutti i 20 colori (lo controlla un test).
+- **Colori**: i **20 di Windows Phone**, oppure un **colore tuo** con tre cursori (tonalità, intensità, luminosità) e
+  un'anteprima; "torna ai 20 colori" lo toglie. Vale per tutti e tre gli stili. Un colore d'accento dalla foto di Start è
+  sempre quello dei 20 e il colore tuo lo spegne; il file tema porta con sé stile e colore tuo.
+
 ### Icone e temi
 
 **Icon pack** di ADW, Nova, Apex e Go Launcher (si legge l'`appfilter.xml`): sostituiscono le icone delle app per cui
@@ -184,6 +217,26 @@ o **solo orizzontale**. In orizzontale Start e le altre pagine tengono fuori dai
   i riquadri entrano tutti insieme, non si inclinano alla pressione, i live tile non girano e le foto non si alternano da sole.
 - **Alto contrasto**: cornice bianca sui riquadri, pieni anche sopra la foto di Start, testo grigio a colore pieno.
 
+### Batteria
+
+Il launcher fa lavorare il telefono il meno possibile. Quello che segue è ciò che il codice fa e che i test controllano;
+quanta batteria faccia risparmiare in ore **non è stato misurato** (servirebbe un telefono e una settimana di uso).
+
+- **A riposo non fa nulla.** Quando un'altra app è davanti, o lo schermo è spento, il launcher non ha timer, non ascolta la batteria
+  né il risparmio energetico di Android, non segue la torcia, non aggiorna l'orologio. Gli orologi, i giri dei riquadri, il
+  controllo dell'ora del tema a orario e l'aggiornamento dell'Action Center sono sospesi dal ciclo di vita dello schermo
+  (`LaunchedWhileStarted`, `repeatOnLifecycle(STARTED)`): partono da capo quando si torna, e quello che è cambiato nel frattempo
+  si legge una volta sola.
+- **Il servizio di blocco non chiede eventi** (prima chiedeva i cambi di finestra, e quindi svegliava il processo a ogni cambio di app).
+- **Si legge solo quello che serve**: contatti, calendario, foto e chiamate solo per i live tile fissati su Start, e al massimo
+  ogni due minuti; meteo ogni mezz'ora al massimo; la ricerca degli icon pack ogni cinque minuti. Un permesso dato o tolto, o un tile
+  nuovo, fanno rileggere subito.
+- **Risparmio energetico** (pagina *batteria*): *automatico* (quando c'è il risparmio di Android, o la batteria è al 20% o meno e
+  non è in carica), *sempre* o *mai*. Mentre risparmia: i riquadri non girano da soli, le foto non si alternano, la richiesta dei
+  120 Hz viene tolta, e tutto si legge meno spesso (meteo 2 ore, dati dei tile 15 minuti, sync quattro volte più rada).
+
+<img src="docs/screenshots/settings_battery.png" alt="La pagina batteria" width="260">
+
 ### Angolo bambini
 
 Start ristretto alle app che scegli, senza lista app, Action Center né impostazioni. Per uscire si conferma con il blocco
@@ -198,8 +251,9 @@ sua pagina; tutto è salvato come un unico JSON (`SettingsCodec`) che legge anch
 
 | Sezione | Cosa c'è |
 |---|---|
-| start+theme | scuro / chiaro / come il telefono / a orario; colore d'accento (20) o dalla foto; foto di Start e parallasse; più riquadri; numero di schermate Start; orologio |
-| schermo | rotazione (verticale, segui il telefono, orizzontale); animazione di apertura; massima frequenza di aggiornamento (120 Hz) |
+| start+theme | **tema** (Classic, Modern Glass, Modern Droid) e, per Droid, i colori dello sfondo; scuro / chiaro / come il telefono / a orario; colore d'accento (20), **colore tuo con i cursori** o dalla foto; foto di Start e parallasse; più riquadri; numero di schermate Start; orologio |
+| schermo | rotazione (verticale, segui il telefono, orizzontale); animazione di apertura; massima frequenza di aggiornamento (120 Hz, tolta mentre si risparmia batteria) |
+| batteria | risparmio energetico (automatico, sempre, mai) e cosa cambia; cosa il launcher non fa quando non è sullo schermo |
 | accessibilità | riduci il movimento; alto contrasto; TalkBack e scorciatoia alle impostazioni di Android |
 | icone e temi | icon pack; esporta e importa un file tema |
 | gesti | tirata dal bordo, indietro dal bordo, doppio tocco, due dita in giù e in su, suono e vibrazione, servizio per bloccare lo schermo |
@@ -289,7 +343,7 @@ solo se il launcher c'era già.
 ./gradlew assembleRelease        # con R8
 ```
 
-**500 test**, nessuno saltato; il lint è pulito.
+**589 test**, nessuno saltato; il lint non ha errori.
 
 - Logica pura: griglia e colonne dalla larghezza, operazioni su Start, regole di trascinamento e di rilascio, ricerca,
   salvataggio e migrazione delle impostazioni, comandi vocali, pianificazione della sincronizzazione, **cifratura** (anche

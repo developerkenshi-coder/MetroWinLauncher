@@ -102,7 +102,7 @@ object Tutorial {
         ),
         TutorialStep(
             "alive", Glyph.Battery, R.string.tut_alive_label, R.string.tut_alive_title, R.string.tut_alive_intro,
-            listOf(R.string.tut_alive_tip1, R.string.tut_alive_tip2), listOf(Need.Battery),
+            listOf(R.string.tut_alive_tip1, R.string.tut_alive_tip2, R.string.tut_alive_tip3), listOf(Need.Battery),
         ),
         TutorialStep(
             "settings", Glyph.Settings, R.string.tut_settings_label, R.string.tut_settings_title, R.string.tut_settings_intro,

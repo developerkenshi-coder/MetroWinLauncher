@@ -626,4 +626,26 @@
     <string name="tut_look_intro">Tre temi e qualsiasi colore. Apri Impostazioni Launcher → start+tema per sceglierli.</string>
     <string name="tut_look_tip1">Classic è l\'aspetto piatto di Windows Phone. Modern Glass è vetro smerigliato su uno sfondo luminoso. Modern Droid segue Material You.</string>
     <string name="tut_look_tip2">Scegli uno dei 20 colori d\'accento, o creane uno tuo con i tre cursori. Scuro, chiaro o a orario, in ogni tema.</string>
+
+    <!-- battery -->
+    <string name="sec_battery">batteria</string>
+    <string name="sec_battery_desc">Risparmio energetico, e cosa fa il launcher quando non è sullo schermo</string>
+    <string name="saving_title">risparmio energetico</string>
+    <string name="saving_auto">automatico</string>
+    <string name="saving_auto_desc">Risparmia quando il risparmio energetico di Android è attivo, o quando la batteria è al 20% o meno e il telefono non è in carica.</string>
+    <string name="saving_always">sempre</string>
+    <string name="saving_always_desc">Risparmia sempre, qualunque sia la carica.</string>
+    <string name="saving_never">mai</string>
+    <string name="saving_never_desc">Non risparmia mai: i tile continuano a girare e allo schermo si chiede la frequenza più alta.</string>
+    <string name="saving_now_on">Risparmio batteria attivo ora.</string>
+    <string name="saving_now_off">Risparmio non attivo ora.</string>
+    <string name="saving_while_title">quando risparmia</string>
+    <string name="saving_while_1">I tile smettono di girare da soli e le foto di scorrere.</string>
+    <string name="saving_while_2">La richiesta dei 120 Hz viene tolta: il telefono sceglie la sua frequenza.</string>
+    <string name="saving_while_3">Meteo, contatti, calendario e foto vengono letti meno spesso, e la sync aspetta di più.</string>
+    <string name="battery_rest_title">a riposo</string>
+    <string name="battery_rest_1">Con un\'altra app sullo schermo, o con lo schermo spento, il launcher non fa nulla: niente timer, niente ascolti, niente aggiornamenti. Quello che è cambiato nel frattempo viene letto una volta sola, quando torni.</string>
+    <string name="battery_rest_2">Contatti, calendario, foto e chiamate vengono letti solo per i live tile fissati su Start, e non di nuovo entro un paio di minuti da quando esci e rientri.</string>
+    <string name="battery_rest_3">Il servizio del blocco schermo non chiede eventi ad Android, quindi non sveglia mai il launcher quando cambi app.</string>
+    <string name="tut_alive_tip3">Costa quasi nulla di batteria: fuori dallo schermo il launcher non fa nulla.</string>
 </resources>

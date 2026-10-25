@@ -90,13 +90,25 @@ class QuickActionsController(private val context: Context) {
         }
     }
 
-    init {
-        if (torchId != null) cameras.registerTorchCallback(torchCallback, Handler(Looper.getMainLooper()))
+    private var listening = false
+
+    /**
+     * Follows the flashlight (the callback also fires whenever a camera app opens or closes, which wakes the process),
+     * so it is only registered while the launcher is on screen. Android reports the current state right away.
+     */
+    fun start() {
+        if (listening || torchId == null) return
+        listening = true
+        cameras.registerTorchCallback(torchCallback, Handler(Looper.getMainLooper()))
     }
 
-    fun close() {
-        if (torchId != null) cameras.unregisterTorchCallback(torchCallback)
+    fun stop() {
+        if (!listening) return
+        listening = false
+        cameras.unregisterTorchCallback(torchCallback)
     }
+
+    fun close() = stop()
 
     /** On or off, or null for the buttons that have no state to show. */
     fun isOn(action: QuickAction): Boolean? = runCatching {

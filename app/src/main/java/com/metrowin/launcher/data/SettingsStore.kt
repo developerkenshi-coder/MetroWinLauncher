@@ -101,6 +101,8 @@ data class LauncherSettings(
     val customAccent: Int = 0,
     /** In Modern Droid, take the colors of the wallpaper where Android gives them (12 and later). */
     val dynamicColor: Boolean = true,
+    /** When the launcher spares the battery: by itself, always or never (see [PowerPolicy]). */
+    val batterySaving: BatterySaving = BatterySaving.Auto,
     /** The accent is taken from the Start photo, when there is one. */
     val autoAccent: Boolean = false,
     /** Three columns of medium tiles instead of two ("show more tiles"). */

@@ -125,6 +125,7 @@ object Palettes {
     /** The main color of Modern Droid: bright enough on a dark surface, deep enough on a light one. */
     fun accent(palette: DroidPalette, dark: Boolean): Color = palette.accent1.tone(if (dark) 80 else 40)
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun accent1(shade: Int): Int = when (shade) {
         0 -> android.R.color.system_accent1_0
         10 -> android.R.color.system_accent1_10
@@ -142,6 +143,7 @@ object Palettes {
         else -> android.R.color.system_accent1_500
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun accent2(shade: Int): Int = when (shade) {
         0 -> android.R.color.system_accent2_0
         10 -> android.R.color.system_accent2_10
@@ -159,6 +161,7 @@ object Palettes {
         else -> android.R.color.system_accent2_500
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun accent3(shade: Int): Int = when (shade) {
         0 -> android.R.color.system_accent3_0
         10 -> android.R.color.system_accent3_10
@@ -176,6 +179,7 @@ object Palettes {
         else -> android.R.color.system_accent3_500
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun neutral1(shade: Int): Int = when (shade) {
         0 -> android.R.color.system_neutral1_0
         10 -> android.R.color.system_neutral1_10
@@ -193,6 +197,7 @@ object Palettes {
         else -> android.R.color.system_neutral1_500
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun neutral2(shade: Int): Int = when (shade) {
         0 -> android.R.color.system_neutral2_0
         10 -> android.R.color.system_neutral2_10

@@ -19,6 +19,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.content.ContextCompat
+import com.metrowin.launcher.model.LiveKind
 
 /** The runtime permissions behind the live tiles. All of them are optional. */
 object LivePermissions {
@@ -72,11 +73,12 @@ class LiveTileRepository(private val context: Context) {
     private val resolver: ContentResolver = context.contentResolver
 
     /** Blocking, call it off the main thread. */
-    fun load() = LiveTileData(
-        photos = photos(),
-        people = people(),
-        nextEvent = nextEvent(),
-        missedCalls = missedCalls(),
+    /** Reads the data of the kinds in [wanted] only: a Start with no photo tile has no use for the photos. */
+    fun load(wanted: Set<LiveKind> = LiveSources.all) = LiveTileData(
+        photos = if (LiveKind.Photos in wanted) photos() else emptyList(),
+        people = if (LiveKind.People in wanted) people() else emptyList(),
+        nextEvent = if (LiveKind.Calendar in wanted) nextEvent() else null,
+        missedCalls = if (LiveKind.Phone in wanted) missedCalls() else 0,
     )
 
     private fun granted(permission: String) = LivePermissions.isGranted(context, permission)

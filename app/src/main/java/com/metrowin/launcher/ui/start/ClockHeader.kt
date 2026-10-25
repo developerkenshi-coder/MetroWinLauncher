@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,10 +27,11 @@ import java.util.Locale
 @Composable
 fun ClockHeader(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val now by produceState(LocalDateTime.now()) {
+    var now by remember { mutableStateOf(LocalDateTime.now()) }
+    LaunchedWhileStarted(Unit) {
         while (true) {
             val current = LocalDateTime.now()
-            value = current
+            now = current
             // Wake up just after the next minute starts.
             delay((60 - current.second) * 1_000L - current.nano / 1_000_000 + 50)
         }

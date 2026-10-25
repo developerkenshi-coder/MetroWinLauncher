@@ -135,6 +135,7 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, modifier: Mo
                 SettingsSection.LiveTiles -> LiveTilesPage(env)
                 SettingsSection.Apps -> AppsPage(env)
                 SettingsSection.Screen -> ScreenPage(env)
+                SettingsSection.Battery -> BatteryPage(env)
                 SettingsSection.Accessibility -> AccessibilityPage(env)
                 SettingsSection.Icons -> IconsPage(env)
                 SettingsSection.Lock -> LockScreenPage(env)

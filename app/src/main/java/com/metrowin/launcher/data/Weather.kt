@@ -142,7 +142,8 @@ object OpenMeteo {
     /** Weather older than this is fetched again. */
     const val MAX_AGE_MILLIS = 30L * 60_000
 
-    fun isStale(data: WeatherData?, now: Long): Boolean = data == null || now - data.fetchedAt > MAX_AGE_MILLIS || now < data.fetchedAt
+    fun isStale(data: WeatherData?, now: Long, maxAgeMillis: Long = MAX_AGE_MILLIS): Boolean =
+        data == null || now - data.fetchedAt > maxAgeMillis || now < data.fetchedAt
 
     // --- the copy kept on the phone, so the tile shows something with no network
 
