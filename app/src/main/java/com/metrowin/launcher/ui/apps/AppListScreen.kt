@@ -85,6 +85,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.data.AppSection
 import com.metrowin.launcher.data.ContactMatch
+import com.metrowin.launcher.data.LauncherSettingMatch
+import com.metrowin.launcher.data.TileMatch
 import com.metrowin.launcher.data.GlobalResults
 import com.metrowin.launcher.data.GlobalSearch
 import com.metrowin.launcher.data.SystemSetting
@@ -160,6 +162,16 @@ sealed interface ListRow {
 
     data class Event(val match: EventMatch) : ListRow {
         override val key = "event:${match.eventId}:${match.startMillis}"
+    }
+
+    /** A setting of the launcher itself (or a whole section of them): touching it opens the settings where it is. */
+    data class LauncherSetting(val match: LauncherSettingMatch) : ListRow {
+        override val key = "lsetting:${match.id ?: "section:${match.section}"}"
+    }
+
+    /** A note, a list, a countdown or a site pinned to Start. */
+    data class Tile(val match: TileMatch) : ListRow {
+        override val key = "tile:${match.item.id}"
     }
 }
 
@@ -247,6 +259,8 @@ fun AppListScreen(
     /** What the search box answers by itself for the typed text, and what touching an answer does. */
     answers: List<QuickAnswer> = emptyList(),
     onAnswer: (QuickAnswer) -> Unit = {},
+    /** What touching a setting of the launcher found by the search does: the caller opens the settings there. */
+    onOpenSetting: (LauncherSettingMatch) -> Unit = {},
     /** The searches made before, offered while the box is touched and empty; the way to forget them. */
     recentSearches: List<String> = emptyList(),
     onClearRecents: () -> Unit = {},
@@ -277,6 +291,14 @@ fun AppListScreen(
                 add(ListRow.Search)
                 answers.forEach { add(ListRow.Answer(it)) }
                 results.forEach { add(ListRow.App(it)) }
+                if (global.launcherSettings.isNotEmpty()) {
+                    add(ListRow.Section(R.string.search_section_launcher))
+                    global.launcherSettings.forEach { add(ListRow.LauncherSetting(it)) }
+                }
+                if (global.tiles.isNotEmpty()) {
+                    add(ListRow.Section(R.string.search_section_tiles))
+                    global.tiles.forEach { add(ListRow.Tile(it)) }
+                }
                 if (global.contacts.isNotEmpty()) {
                     add(ListRow.Section(R.string.search_section_contacts))
                     global.contacts.forEach { add(ListRow.Contact(it)) }
@@ -342,6 +364,14 @@ fun AppListScreen(
                     Glyph.Globe, stringResource(R.string.search_web_for, row.query, engine.label), null, index, listState, openedAt, exiting,
                     tag = "result:web", accent = true,
                 ) { onLaunch(AppItem("search:web", row.query, Launch.Link(GlobalSearch.webUrl(row.query, engine)))) }
+                is ListRow.LauncherSetting -> ResultRow(
+                    Glyph.Settings, row.match.title, row.match.where, index, listState, openedAt, exiting,
+                    tag = "result:lsetting:${row.match.id ?: "section:${row.match.section}"}", accent = true,
+                ) { onOpenSetting(row.match) }
+                is ListRow.Tile -> ResultRow(
+                    row.match.item.glyph ?: Glyph.Star, row.match.item.label, row.match.snippet ?: stringResource(R.string.search_tile_subtitle),
+                    index, listState, openedAt, exiting, tag = "result:tile:${row.match.item.id}",
+                ) { onLaunch(row.match.item) }
                 is ListRow.Event -> ResultRow(
                     Glyph.Calendar, row.match.title, eventWhen(row.match), index, listState, openedAt, exiting,
                     tag = "result:event:${row.match.eventId}",

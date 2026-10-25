@@ -21,7 +21,7 @@ fun GesturesPage(env: SettingsEnv) {
         Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
             DropdownSetting(
                 stringResource(R.string.gest_double_tap), actionNames, actions.indexOf(settings.doubleTapAction),
-                onSelect = { i -> env.onChange { it.copy(doubleTapAction = actions[i]) } }, tag = "gestures:doubletap",
+                onSelect = { i -> env.onChange { it.copy(doubleTapAction = actions[i]) } }, tag = "gestures:doubletap", id = "gest.doubletap",
             )
             if (settings.doubleTapAction == GestureAction.OpenApp) {
                 AppPickerSetting(
@@ -31,7 +31,7 @@ fun GesturesPage(env: SettingsEnv) {
             }
             DropdownSetting(
                 stringResource(R.string.gest_home_double), actionNames, actions.indexOf(settings.homeDoubleAction),
-                onSelect = { i -> env.onChange { it.copy(homeDoubleAction = actions[i]) } }, tag = "gestures:homedouble",
+                onSelect = { i -> env.onChange { it.copy(homeDoubleAction = actions[i]) } }, tag = "gestures:homedouble", id = "gest.homedouble",
             )
             if (settings.homeDoubleAction == GestureAction.OpenApp) {
                 AppPickerSetting(
@@ -41,7 +41,7 @@ fun GesturesPage(env: SettingsEnv) {
             }
             DropdownSetting(
                 stringResource(R.string.gest_two_down), actionNames, actions.indexOf(settings.twoFingerDownAction),
-                onSelect = { i -> env.onChange { it.copy(twoFingerDownAction = actions[i]) } }, tag = "gestures:twodown",
+                onSelect = { i -> env.onChange { it.copy(twoFingerDownAction = actions[i]) } }, tag = "gestures:twodown", id = "gest.twodown",
             )
             if (settings.twoFingerDownAction == GestureAction.OpenApp) {
                 AppPickerSetting(
@@ -51,7 +51,7 @@ fun GesturesPage(env: SettingsEnv) {
             }
             DropdownSetting(
                 stringResource(R.string.gest_two_up), actionNames, actions.indexOf(settings.twoFingerUpAction),
-                onSelect = { i -> env.onChange { it.copy(twoFingerUpAction = actions[i]) } }, tag = "gestures:twoup",
+                onSelect = { i -> env.onChange { it.copy(twoFingerUpAction = actions[i]) } }, tag = "gestures:twoup", id = "gest.twoup",
             )
             if (settings.twoFingerUpAction == GestureAction.OpenApp) {
                 AppPickerSetting(
@@ -66,7 +66,7 @@ fun GesturesPage(env: SettingsEnv) {
             SettingHint(stringResource(R.string.gest_recents_why))
             SettingHint(stringResource(R.string.gest_recents_options))
             env.onAddRecentsTile?.let { add ->
-                ActionSetting(stringResource(R.string.gest_recents_tile), onClick = add, tag = "gestures:recentstile")
+                ActionSetting(stringResource(R.string.gest_recents_tile), onClick = add, tag = "gestures:recentstile", id = "gest.recents")
             }
         }
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -78,7 +78,7 @@ fun GesturesPage(env: SettingsEnv) {
             SettingHint(stringResource(if (env.lockServiceEnabled) R.string.gest_lock_service_on else R.string.gest_lock_service_off))
             ActionSetting(
                 stringResource(R.string.gest_lock_service_open), onClick = env.onOpenAccessibilitySettings,
-                hint = stringResource(R.string.gest_lock_service_hint), tag = "gestures:lockservice",
+                hint = stringResource(R.string.gest_lock_service_hint), tag = "gestures:lockservice", id = "gest.lockservice",
             )
         }
         ToggleSetting(
@@ -86,27 +86,27 @@ fun GesturesPage(env: SettingsEnv) {
             checked = settings.edgePull,
             onChange = { value -> env.onChange { it.copy(edgePull = value) } },
             hint = stringResource(R.string.gest_edge_pull_hint),
-            tag = "gestures:edgepull",
+            tag = "gestures:edgepull", id = "gest.edgepull",
         )
         ToggleSetting(
             label = stringResource(R.string.gest_edge_back_pan),
             checked = settings.edgeBackPan,
             onChange = { value -> env.onChange { it.copy(edgeBackPan = value) } },
             hint = stringResource(R.string.gest_edge_back_pan_hint),
-            tag = "gestures:edgepan",
+            tag = "gestures:edgepan", id = "gest.edgeback",
         )
         ToggleSetting(
             label = stringResource(R.string.gest_tap_sound),
             checked = settings.tapSound,
             onChange = { value -> env.onChange { it.copy(tapSound = value) } },
-            tag = "gestures:sound",
+            tag = "gestures:sound", id = "gest.tapsound",
         )
         ToggleSetting(
             label = stringResource(R.string.gest_tap_haptics),
             checked = settings.tapHaptics,
             onChange = { value -> env.onChange { it.copy(tapHaptics = value) } },
             hint = stringResource(R.string.gest_tap_hint),
-            tag = "gestures:haptics",
+            tag = "gestures:haptics", id = "gest.taphaptics",
         )
     }
 }

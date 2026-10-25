@@ -199,6 +199,8 @@ abstract class TextFitBase(private val scale: Float, private val style: ThemeSty
 
     @Test fun settingsList() = fit("settings_list", overlaps = false) { SettingsPage(null) }
     @Test fun settingsStartTheme() = fit("settings_start_theme", overlaps = false) { SettingsPage(SettingsSection.StartTheme) }
+    @Test fun settingsStartPage() = fit("settings_start_screen", overlaps = false) { SettingsPage(SettingsSection.Start) }
+    @Test fun settingsSearchPage() = fit("settings_search_page", overlaps = false) { SettingsPage(SettingsSection.Search) }
     @Test fun settingsScreenPage() = fit("settings_screen", overlaps = false) { SettingsPage(SettingsSection.Screen) }
     @Test fun settingsBattery() = fit("settings_battery", overlaps = false) { SettingsPage(SettingsSection.Battery) }
     @Test fun settingsAccessibility() = fit("settings_accessibility", overlaps = false) { SettingsPage(SettingsSection.Accessibility) }

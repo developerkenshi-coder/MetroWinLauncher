@@ -42,6 +42,7 @@ private fun ProfileSection(profile: ProfileInfo, env: SettingsEnv) {
             ),
             onClick = { env.onSetProfilePaused(profile.serial, !profile.paused) },
             tag = "profiles:toggle:${profile.serial}",
+            id = "profile.pause",
         )
         // Work and private apps each have a switch; any other profile follows the work one.
         val private = profile.type == ProfileType.Private
@@ -52,6 +53,7 @@ private fun ProfileSection(profile: ProfileInfo, env: SettingsEnv) {
                 env.onChange { if (private) it.copy(showPrivateApps = value) else it.copy(showWorkApps = value) }
             },
             tag = "profiles:show:${profile.serial}",
+            id = "profile.showapps",
         )
     }
 }

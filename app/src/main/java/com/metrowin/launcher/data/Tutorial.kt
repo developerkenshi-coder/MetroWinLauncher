@@ -108,8 +108,7 @@ object Tutorial {
             "settings", Glyph.Settings, R.string.tut_settings_label, R.string.tut_settings_title, R.string.tut_settings_intro,
             listOf(
                 R.string.tut_settings_tip1, R.string.tut_settings_tip2, R.string.tut_settings_tip3, R.string.tut_settings_tip4,
-                R.string.tut_settings_tip5, R.string.tut_settings_tip6, R.string.tut_settings_tip7, R.string.tut_settings_tip8,
-                R.string.tut_settings_tip9,
+                R.string.tut_settings_tip5,
             ),
         ),
     )

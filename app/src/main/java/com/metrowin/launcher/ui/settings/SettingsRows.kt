@@ -17,6 +17,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,20 +46,30 @@ import com.metrowin.launcher.ui.kids.CheckSquare
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.frame
 
-/** A scrolling page of settings, with the spacing every page shares. */
+/**
+ * A scrolling page of settings, with the spacing every page shares. When the page was opened for one setting (see
+ * [LocalSettingsTarget]) it scrolls to it and lights it for a moment.
+ */
 @Composable
 fun SettingsPage(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Column(
-        modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(26.dp),
-        content = {
-            content()
-            Spacer(Modifier.height(24.dp))
-        },
-    )
+    val scroll = rememberScrollState()
+    val focus = rememberSettingsFocus(scroll)
+    val margin = with(LocalDensity.current) { 16.dp.roundToPx() }
+    LaunchedEffect(focus) { if (focus.target != null) focus.reveal(margin) }
+    CompositionLocalProvider(LocalSettingsFocus provides focus) {
+        Column(
+            modifier
+                .fillMaxSize()
+                .onGloballyPositioned { focus.viewport(it) }
+                .verticalScroll(scroll)
+                .padding(horizontal = 24.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(26.dp),
+            content = {
+                content()
+                Spacer(Modifier.height(24.dp))
+            },
+        )
+    }
 }
 
 /** A line under a setting that says what it does. */
@@ -83,8 +97,10 @@ fun ToggleSetting(
     hint: String? = null,
     enabled: Boolean = true,
     tag: String? = null,
+    /** The id of this setting in the [SettingsIndex], when it has one. */
+    id: String? = null,
 ) {
-    Column(modifier.alpha(if (enabled) 1f else 0.4f).semantics { if (!enabled) disabled() }) {
+    Column(modifier.settingAnchor(id).alpha(if (enabled) 1f else 0.4f).semantics { if (!enabled) disabled() }) {
         MetroToggle(
             label, checked,
             onChange = { if (enabled) onChange(it) },
@@ -104,8 +120,9 @@ fun OptionList(
     modifier: Modifier = Modifier,
     hint: String? = null,
     tag: String? = null,
+    id: String? = null,
 ) {
-    Column(modifier.then(if (tag != null) Modifier.testTag(tag) else Modifier)) {
+    Column(modifier.settingAnchor(id).then(if (tag != null) Modifier.testTag(tag) else Modifier)) {
         SettingLabel(label)
         options.forEachIndexed { index, text ->
             Row(
@@ -137,10 +154,11 @@ fun DropdownSetting(
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
     tag: String = "dropdown",
+    id: String? = null,
 ) {
     var open by remember { mutableStateOf(false) }
     val colors = LocalMetroColors.current
-    Column(modifier) {
+    Column(modifier.settingAnchor(id)) {
         SettingLabel(label)
         Row(
             Modifier
@@ -190,8 +208,9 @@ fun StepperSetting(
     canIncrement: Boolean = true,
     hint: String? = null,
     tag: String? = null,
+    id: String? = null,
 ) {
-    Column(modifier.then(if (tag != null) Modifier.testTag(tag) else Modifier)) {
+    Column(modifier.settingAnchor(id).then(if (tag != null) Modifier.testTag(tag) else Modifier)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             MetroText(label, size = 20.sp, modifier = Modifier.weight(1f))
             StepButton("−", stringResource(R.string.stepper_minus), canDecrement, onDecrement, tag?.let { "$it:minus" })
@@ -228,8 +247,9 @@ fun ActionSetting(
     hint: String? = null,
     enabled: Boolean = true,
     tag: String? = null,
+    id: String? = null,
 ) {
-    Column(modifier) {
+    Column(modifier.settingAnchor(id)) {
         MetroButton(
             text,
             Modifier

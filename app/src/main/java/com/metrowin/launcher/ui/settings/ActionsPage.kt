@@ -33,80 +33,86 @@ fun ActionsPage(env: SettingsEnv) {
     val slots = QuickAction.slots(env.settings.quickActions)
     var selected by remember { mutableIntStateOf(0) }
     SettingsPage {
-        Column {
-            SettingLabel(stringResource(R.string.settings_quick_actions))
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                slots.forEachIndexed { index, action ->
-                    QuickButton(
-                        action, on = true, onClick = { selected = index },
-                        modifier = Modifier
-                            .weight(1f)
-                            .then(if (index == selected) Modifier.frame(3.dp, colors.foreground, LocalStyle.current.cardShape) else Modifier),
-                    )
-                }
-            }
-            MetroText(
-                stringResource(R.string.settings_pick_action),
-                size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE,
-                modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
-            )
-            QuickAction.entries.chunked(QuickAction.SLOTS).forEach { row ->
-                Row(Modifier.padding(bottom = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    row.forEach { action ->
+        Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            SettingHeading(stringResource(R.string.actions_center_title))
+            Column(Modifier.settingAnchor("ac.buttons")) {
+                SettingLabel(stringResource(R.string.settings_quick_actions))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    slots.forEachIndexed { index, action ->
                         QuickButton(
-                            action, on = action in slots,
-                            onClick = {
-                                env.onChange { s -> s.copy(quickActions = QuickAction.assign(slots, selected, action).map { it.id }) }
-                            },
-                            modifier = Modifier.weight(1f),
+                            action, on = true, onClick = { selected = index },
+                            modifier = Modifier
+                                .weight(1f)
+                                .then(if (index == selected) Modifier.frame(3.dp, colors.foreground, LocalStyle.current.cardShape) else Modifier),
                         )
                     }
                 }
-            }
-        }
-        ToggleSetting(
-            label = stringResource(R.string.ac_sliders),
-            checked = env.settings.actionSliders,
-            onChange = { value -> env.onChange { it.copy(actionSliders = value) } },
-            hint = stringResource(R.string.ac_sliders_hint),
-            tag = "actions:sliders",
-        )
-        ToggleSetting(
-            label = stringResource(R.string.notif_peek),
-            checked = env.settings.notificationPeek,
-            onChange = { value -> env.onChange { it.copy(notificationPeek = value) } },
-            hint = stringResource(R.string.notif_peek_hint),
-            enabled = env.notificationAccess,
-            tag = "notifications:peek",
-        )
-        ToggleSetting(
-            label = stringResource(R.string.notif_inline_reply),
-            checked = env.settings.inlineReply,
-            onChange = { value -> env.onChange { it.copy(inlineReply = value) } },
-            hint = stringResource(R.string.notif_inline_reply_hint),
-            enabled = env.notificationAccess,
-            tag = "notifications:reply",
-        )
-        ToggleSetting(
-            label = stringResource(R.string.notif_group),
-            checked = env.settings.groupConversations,
-            onChange = { value -> env.onChange { it.copy(groupConversations = value) } },
-            hint = stringResource(R.string.notif_group_hint),
-            enabled = env.notificationAccess,
-            tag = "notifications:group",
-        )
-        Column {
-            SettingLabel(stringResource(R.string.settings_notification_access))
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 MetroText(
-                    stringResource(if (env.notificationAccess) R.string.toggle_on else R.string.toggle_off),
-                    size = 22.sp, modifier = Modifier.weight(1f),
+                    stringResource(R.string.settings_pick_action),
+                    size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE,
+                    modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
                 )
-                MetroButton(
-                    stringResource(if (env.notificationAccess) R.string.settings_manage else R.string.ac_turn_on),
-                    onClick = env.onManageNotificationAccess,
-                )
+                QuickAction.entries.chunked(QuickAction.SLOTS).forEach { row ->
+                    Row(Modifier.padding(bottom = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        row.forEach { action ->
+                            QuickButton(
+                                action, on = action in slots,
+                                onClick = {
+                                    env.onChange { s -> s.copy(quickActions = QuickAction.assign(slots, selected, action).map { it.id }) }
+                                },
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                    }
+                }
             }
+            ToggleSetting(
+                label = stringResource(R.string.ac_sliders),
+                checked = env.settings.actionSliders,
+                onChange = { value -> env.onChange { it.copy(actionSliders = value) } },
+                hint = stringResource(R.string.ac_sliders_hint),
+                tag = "actions:sliders", id = "ac.sliders",
+            )
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            SettingHeading(stringResource(R.string.actions_notifications_title))
+            Column(Modifier.settingAnchor("ac.access")) {
+                SettingLabel(stringResource(R.string.settings_notification_access))
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    MetroText(
+                        stringResource(if (env.notificationAccess) R.string.toggle_on else R.string.toggle_off),
+                        size = 22.sp, modifier = Modifier.weight(1f),
+                    )
+                    MetroButton(
+                        stringResource(if (env.notificationAccess) R.string.settings_manage else R.string.ac_turn_on),
+                        onClick = env.onManageNotificationAccess,
+                    )
+                }
+            }
+            ToggleSetting(
+                label = stringResource(R.string.notif_peek),
+                checked = env.settings.notificationPeek,
+                onChange = { value -> env.onChange { it.copy(notificationPeek = value) } },
+                hint = stringResource(R.string.notif_peek_hint),
+                enabled = env.notificationAccess,
+                tag = "notifications:peek", id = "ac.peek",
+            )
+            ToggleSetting(
+                label = stringResource(R.string.notif_inline_reply),
+                checked = env.settings.inlineReply,
+                onChange = { value -> env.onChange { it.copy(inlineReply = value) } },
+                hint = stringResource(R.string.notif_inline_reply_hint),
+                enabled = env.notificationAccess,
+                tag = "notifications:reply", id = "ac.reply",
+            )
+            ToggleSetting(
+                label = stringResource(R.string.notif_group),
+                checked = env.settings.groupConversations,
+                onChange = { value -> env.onChange { it.copy(groupConversations = value) } },
+                hint = stringResource(R.string.notif_group_hint),
+                enabled = env.notificationAccess,
+                tag = "notifications:group", id = "ac.group",
+            )
         }
     }
 }

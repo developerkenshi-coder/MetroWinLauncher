@@ -17,12 +17,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +36,7 @@ import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroText
+import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.components.TurnstileHost
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -39,10 +44,13 @@ import com.metrowin.launcher.ui.theme.LocalMetroColors
 /**
  * The launcher's settings, laid out like the Windows Phone settings: a pivot whose pages list the
  * sections (title and a line about what is in it), and a page for each section that swings in over the list.
+ * A search box on top finds any setting by name or by what it is for (see [SettingsIndex]) and takes you to it.
  *
  * [section] is the open section, or null for the list. It is held by the caller so that Back can close it
  * before it closes the settings; [sectionAway] is how far the section page is turned away, which the
- * caller also moves while the back swipe is under the finger.
+ * caller also moves while the back swipe is under the finger. [target] is the setting the open section was opened
+ * for (an id of the [SettingsIndex]): the page scrolls to it and lights it. It is held by the caller, which can open the
+ * settings on a setting from anywhere (the search of the app list does).
  */
 @Composable
 fun SettingsScreen(
@@ -51,6 +59,8 @@ fun SettingsScreen(
     onSectionChange: (SettingsSection?) -> Unit,
     sectionAway: Animatable<Float, AnimationVector1D>,
     modifier: Modifier = Modifier,
+    target: String? = null,
+    onTargetChange: (String?) -> Unit = {},
 ) {
     val colors = LocalMetroColors.current
     val groups = remember { SettingsGroup.entries.filter { group -> SettingsSection.entries.any { it.group == group } } }
@@ -58,6 +68,13 @@ fun SettingsScreen(
     // The page keeps its content while it swings away, after the caller has already set the section to null.
     var shown by remember { mutableStateOf(section) }
     if (section != null) shown = section
+    // Closing the section is the end of the visit to a setting.
+    LaunchedEffect(section) { if (section == null) onTargetChange(null) }
+    val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val index = remember(configuration) { SettingsIndex.searchIndex(context) }
+    var query by remember { mutableStateOf("") }
+    val hits = remember(query, index) { index.search(query) }
 
     Box(
         modifier
@@ -71,16 +88,61 @@ fun SettingsScreen(
     ) {
         Column(Modifier.fillMaxSize()) {
             SettingsHeader()
-            PivotHeader(
-                groups.map { stringResource(it.title) }, pagerState,
-                Modifier.padding(start = 24.dp, top = 2.dp, bottom = 8.dp),
+            MetroTextField(
+                value = query, onValueChange = { query = it },
+                placeholder = stringResource(R.string.settings_search_hint),
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 10.dp, bottom = 6.dp).testTag("settings:search"),
             )
-            HorizontalPager(pagerState, Modifier.weight(1f)) { page ->
-                SectionList(SettingsSection.entries.filter { it.group == groups[page] }, onSectionChange)
+            if (query.isBlank()) {
+                PivotHeader(
+                    groups.map { stringResource(it.title) }, pagerState,
+                    Modifier.padding(start = 24.dp, top = 2.dp, bottom = 8.dp),
+                )
+                HorizontalPager(pagerState, Modifier.weight(1f)) { page ->
+                    SectionList(SettingsSection.entries.filter { it.group == groups[page] }, onSectionChange)
+                }
+            } else {
+                SearchResults(query, hits, Modifier.weight(1f)) { hit ->
+                    onTargetChange(hit.setting?.id)
+                    onSectionChange(hit.section)
+                }
             }
         }
         TurnstileHost(show = section != null, away = sectionAway) {
-            shown?.let { SectionPage(it, env) }
+            shown?.let { opened ->
+                CompositionLocalProvider(LocalSettingsTarget provides target?.takeIf { SettingsIndex.get(it)?.section == opened }) {
+                    SectionPage(opened, env)
+                }
+            }
+        }
+    }
+}
+
+/** What the search of the settings found: each a setting (or a whole section) with the place it is in. */
+@Composable
+private fun SearchResults(query: String, hits: List<SettingHit>, modifier: Modifier = Modifier, onOpen: (SettingHit) -> Unit) {
+    val colors = LocalMetroColors.current
+    if (hits.isEmpty()) {
+        MetroText(
+            stringResource(R.string.settings_search_none, query.trim()),
+            size = 16.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE, lineHeight = 22.sp,
+            modifier = modifier.padding(horizontal = 24.dp, vertical = 14.dp).testTag("settings:search:none"),
+        )
+        return
+    }
+    LazyColumn(modifier.fillMaxSize()) {
+        items(hits, key = { it.setting?.id ?: "section:${it.section.name}" }) { hit ->
+            val where = if (hit.setting == null) stringResource(hit.section.description) else stringResource(R.string.settings_search_in, stringResource(hit.section.title))
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .testTag("settings:result:${hit.setting?.id ?: hit.section.name}")
+                    .metroPress(onClick = { onOpen(hit) })
+                    .padding(horizontal = 24.dp, vertical = 8.dp),
+            ) {
+                MetroText(stringResource(hit.setting?.title ?: hit.section.title), size = 24.sp)
+                MetroText(where, size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, lineHeight = 19.sp)
+            }
         }
     }
 }
@@ -130,6 +192,8 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, modifier: Mo
         Box(Modifier.weight(1f)) {
             when (section) {
                 SettingsSection.StartTheme -> StartThemePage(env)
+                SettingsSection.Start -> StartPage(env)
+                SettingsSection.Search -> SearchPage(env)
                 SettingsSection.Gestures -> GesturesPage(env)
                 SettingsSection.Actions -> ActionsPage(env)
                 SettingsSection.LiveTiles -> LiveTilesPage(env)

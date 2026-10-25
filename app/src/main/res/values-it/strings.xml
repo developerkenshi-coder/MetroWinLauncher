@@ -108,9 +108,8 @@
     <string name="perm_allow">consenti</string>
 
     <!-- settings: structure -->
-    <string name="settings_group_launcher">launcher</string>
     <string name="settings_group_tools">strumenti</string>
-    <string name="sec_start_theme_desc">Tema e colore d\'accento, foto di Start, orologio, numero di schermate Start</string>
+    <string name="sec_start_theme_desc">Chiaro o scuro, tema, colore d\'accento, la foto dietro Start</string>
     <string name="sec_actions_desc">Pulsanti rapidi dell\'Action Center, accesso alle notifiche, risposte e gruppi</string>
     <string name="sec_kids_desc">Condividi il telefono con un bambino, solo con le app che scegli</string>
     <string name="theme_mode">chiaro o scuro</string>
@@ -149,8 +148,8 @@
     <string name="gest_tap_hint">Seguono gli interruttori di Android per i suoni e la vibrazione al tocco.</string>
 
     <!-- apps section -->
-    <string name="sec_apps">app</string>
-    <string name="sec_apps_desc">App nascoste, dove cerca la ricerca, pacchetti di icone</string>
+    <string name="sec_apps">lista app</string>
+    <string name="sec_apps_desc">Cosa mostra la lista in alto, app nascoste, rinominate e bloccate</string>
     <string name="menu_hide">nascondi dalla lista</string>
     <string name="apps_hidden">app nascoste</string>
     <string name="apps_hidden_none">Nessuna app nascosta. Tieni premuta un\'app nella lista e scegli \"nascondi dalla lista\".</string>
@@ -254,7 +253,6 @@
     <string name="apps_search_settings">cerca tra le impostazioni di Android</string>
     <string name="apps_search_web">proponi la ricerca sul web</string>
     <string name="apps_search_hint">Quello che scrivi nella lista app viene cercato anche qui. La ricerca web apre DuckDuckGo nel browser; non viene inviato nulla finché non la tocchi.</string>
-    <string name="apps_search_title">ricerca</string>
     <string name="ss_wifi">Wi-Fi</string>
     <string name="ss_bluetooth">Bluetooth</string>
     <string name="ss_airplane">Modalità aereo</string>
@@ -376,8 +374,8 @@
     <string name="voice_gesture_hint">Puoi avviarla anche con un doppio tocco o uno swipe a due dita: scegli “voce” in Gesti.</string>
 
     <!-- screen settings -->
-    <string name="sec_screen">schermo</string>
-    <string name="sec_screen_desc">Rotazione, orizzontale e frequenza di aggiornamento</string>
+    <string name="sec_screen">schermo+lingua</string>
+    <string name="sec_screen_desc">Rotazione, come si aprono le app, frequenza di aggiornamento, lingua del launcher</string>
     <string name="screen_orientation">rotazione</string>
     <string name="screen_orient_portrait">solo verticale</string>
     <string name="screen_orient_auto">segui la rotazione del telefono</string>
@@ -470,7 +468,7 @@
 
     <!-- accessibility -->
     <string name="sec_access">accessibilità</string>
-    <string name="sec_access_desc">TalkBack, meno movimento, contrasto più forte</string>
+    <string name="sec_access_desc">Dimensione e peso del testo, meno movimento, contrasto più forte, TalkBack</string>
     <string name="access_reduce_motion">riduci il movimento</string>
     <string name="access_reduce_motion_hint">Le schermate sfumano invece di girare, i tile smettono di ruotare e inclinarsi, e le app si aprono senza animazione. È attivo anche quando le animazioni di Android sono rimosse.</string>
     <string name="access_high_contrast">contrasto elevato</string>
@@ -578,16 +576,12 @@
     <string name="tut_alive_tip2">Alcuni telefoni (Xiaomi, Huawei, Oppo, Samsung…) hanno anche un proprio elenco “avvio automatico” o “app protette” nelle impostazioni: aggiungi lì anche MetroWin Launcher.</string>
     <string name="tut_settings_label">IMPOSTAZIONI</string>
     <string name="tut_settings_title">rendilo tuo</string>
-    <string name="tut_settings_intro">Apri Impostazioni Launcher nella lista app, o tocca il pulsante Launcher dell\'Action Center. Ogni sezione è una pagina, in due gruppi: launcher e strumenti.</string>
-    <string name="tut_settings_tip1">start+tema: l\'aspetto (Classic, Modern Glass, Modern Droid), scuro o chiaro, nero OLED, colori d\'accento, foto di Start, orologio, numero di schermate Start.</string>
-    <string name="tut_settings_tip2">schermo: rotazione e orizzontale, come si aprono le app, 120 Hz. batteria: risparmio energetico. accessibilità: TalkBack, meno movimento, più contrasto.</string>
-    <string name="tut_settings_tip3">icone e temi: icon pack e file tema da condividere.</string>
-    <string name="tut_settings_tip4">gesti, notifiche+azioni, live tile e app: cosa fa ogni gesto (anche le app recenti), l\'Action Center, i live tile di WhatsApp, Telegram, Instagram e altre app, la città del meteo, app nascoste e ricerca.</string>
-    <string name="tut_settings_tip5">blocco schermo: il blocco schermo Metro, come salvaschermo, con la sua foto.</string>
-    <string name="tut_settings_tip6">voce e profili: parla al launcher, e metti in pausa o nascondi profilo di lavoro e spazio privato.</string>
-    <string name="tut_settings_tip7">backup+sync: un file o una cartella, e una sincronizzazione cifrata tra i tuoi telefoni.</string>
-    <string name="tut_settings_tip8">angolo bambini: Start con solo le app che scegli.</string>
-    <string name="tut_settings_tip9">informazioni: la versione, e questo giro ogni volta che vuoi rivederlo.</string>
+    <string name="tut_settings_intro">Apri Impostazioni Launcher nella lista app, o tocca il pulsante Launcher dell\'Action Center. Ogni sezione è una pagina, in quattro gruppi: aspetto, uso, app e strumenti. La casella di ricerca in alto trova ogni impostazione e ti ci porta.</string>
+    <string name="tut_settings_tip1">aspetto: start+tema (tema, chiaro o scuro, nero OLED, colori d\'accento, foto di Start), schermata start (riquadri, orologio, numero di schermate Start), icone e temi, accessibilità (dimensione del testo, testo marcato, meno movimento, più contrasto, TalkBack) e blocco schermo.</string>
+    <string name="tut_settings_tip2">uso: schermo+lingua (rotazione, come si aprono le app, 120 Hz, lingua), gesti (ogni swipe, tocco e tirata dal bordo, anche le app recenti), notifiche+azioni (l\'Action Center), voce e batteria.</string>
+    <string name="tut_settings_tip3">app: la lista app (i gruppi in alto, app nascoste, rinominate e bloccate), la ricerca (dove cerca la casella, cosa risponde, il motore web), i live tile (la città del meteo, WhatsApp, Telegram, Instagram…) e i profili (lavoro, spazio privato).</string>
+    <string name="tut_settings_tip4">strumenti: backup+sync (un file o una cartella, e una sincronizzazione cifrata tra i tuoi telefoni), angolo bambini (Start con solo le app che scegli) e informazioni (la versione, e questo giro ogni volta che vuoi rivederlo).</string>
+    <string name="tut_settings_tip5">Ti sei perso? La casella in cima alle impostazioni trova ogni impostazione per nome o per ciò a cui serve, e ti ci porta. La ricerca della lista app le trova anch\'essa.</string>
     <string name="qa_launcher_settings">Launcher</string>
     <string name="qa_recents">App recenti</string>
     <string name="app_launcher_settings">Impostazioni Launcher</string>
@@ -967,4 +961,33 @@
     <string name="lock_show_weather_hint">Il meteo preso per ultimo dal tile del meteo. La schermata di blocco non scarica nulla.</string>
     <string name="lock_show_event">mostra il prossimo evento</string>
     <string name="lock_show_event_hint">Il prossimo evento del calendario nelle prossime 24 ore. Serve il permesso del calendario. Chiunque veda lo schermo può leggerlo.</string>
+    <string name="sec_start">schermata start</string>
+    <string name="sec_start_desc">Riquadri, orologio e data, numero di schermate Start, barra di stato</string>
+    <string name="sec_search">ricerca</string>
+    <string name="sec_search_desc">Dove cerca la casella di ricerca, cosa risponde e cosa ricorda</string>
+    <string name="settings_group_look">aspetto</string>
+    <string name="settings_group_behavior">uso</string>
+    <string name="settings_group_apps">app</string>
+    <string name="start_tiles_title">riquadri</string>
+    <string name="start_clock_title">orologio e data</string>
+    <string name="access_text_title">testo</string>
+    <string name="access_motion_title">movimento e contrasto</string>
+    <string name="actions_center_title">action center</string>
+    <string name="actions_notifications_title">notifiche</string>
+    <string name="lock_show_title">cosa mostrare nel blocco schermo</string>
+    <string name="search_where_title">dove cercare</string>
+    <string name="search_web_title">web</string>
+    <string name="search_answers_title">risposte</string>
+    <string name="search_history_title">cronologia</string>
+    <string name="apps_search_launcher">cerca in queste impostazioni</string>
+    <string name="apps_search_launcher_hint">Trova le impostazioni del launcher per nome o per ciò a cui servono, e apre la pagina dove si trova ognuna.</string>
+    <string name="apps_search_tiles">cerca ciò che c\'è su Start</string>
+    <string name="apps_search_tiles_hint">Le parole di note e liste, i conti alla rovescia, i contatori e i nomi dei siti fissati su Start.</string>
+    <string name="search_section_launcher">impostazioni del launcher</string>
+    <string name="search_section_tiles">su Start</string>
+    <string name="search_launcher_setting_where">Impostazioni del launcher › %1$s</string>
+    <string name="search_tile_subtitle">su Start</string>
+    <string name="settings_search_hint">cerca nelle impostazioni</string>
+    <string name="settings_search_none">Nessuna impostazione corrisponde a “%1$s”.</string>
+    <string name="settings_search_in">in %1$s</string>
 </resources>

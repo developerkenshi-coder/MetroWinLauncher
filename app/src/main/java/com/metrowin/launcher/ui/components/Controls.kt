@@ -1,6 +1,15 @@
 package com.metrowin.launcher.ui.components
 
+import androidx.annotation.StringRes
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import kotlin.math.roundToInt
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.semantics
@@ -126,6 +135,37 @@ fun ChoiceRow(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
     }
 }
 
+/** What the tests look for to measure the switch: the track, and the block that slides in it. */
+const val TOGGLE_TRACK_TAG = "toggle:track"
+const val TOGGLE_THUMB_TAG = "toggle:thumb"
+
+/**
+ * Where the pieces of the Windows Phone toggle sit, in dp. The thumb is placed from these numbers alone, so that it has the
+ * same space around it at both ends of its travel and above and below: [gap] between the thumb and the inside of the border.
+ * (A `border` takes no room of its own, so the padding that holds the thumb has to count it: [inset].)
+ */
+internal object ToggleGeometry {
+    const val TRACK_WIDTH = 56f
+    const val TRACK_HEIGHT = 26f
+    const val BORDER = 2f
+    const val GAP = 3f
+    const val THUMB_WIDTH = 14f
+
+    /** From the outer edge of the track to where the thumb may sit. */
+    const val INSET = BORDER + GAP
+
+    /** The room the thumb has inside the track. */
+    const val INNER_WIDTH = TRACK_WIDTH - 2 * INSET
+    const val INNER_HEIGHT = TRACK_HEIGHT - 2 * INSET
+    const val THUMB_HEIGHT = INNER_HEIGHT
+
+    /** How far the thumb moves from "off" (left) to "on" (right). */
+    const val TRAVEL = INNER_WIDTH - THUMB_WIDTH
+
+    /** The thumb's left edge from the outer left edge of the track. */
+    fun thumbLeft(checked: Boolean): Float = INSET + if (checked) TRAVEL else 0f
+}
+
 /**
  * The Windows Phone toggle: a rectangular track with a sliding block and the word "On" or "Off" beside it. Modern Glass
  * has the round switch of iOS, Modern Droid the Material switch with its large thumb.
@@ -139,6 +179,15 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
     Row(
         modifier
             .fillMaxWidth()
+            // One switch for TalkBack: it says the label and its state, and can be flipped without touching the screen.
+            .semantics(mergeDescendants = true) {
+                role = Role.Switch
+                toggleableState = if (checked) ToggleableState.On else ToggleableState.Off
+                onClick(label = null) {
+                    currentChange(!checked)
+                    true
+                }
+            }
             .pointerInput(checked) { detectTapGestures { currentChange(!checked) } }
             .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -146,26 +195,30 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
         MetroText(label, size = 20.sp, modifier = Modifier.weight(1f))
         when (style.kind) {
             ThemeStyle.Classic -> {
-                val thumbX by animateDpAsState(if (checked) TRACK_WIDTH - THUMB_WIDTH - 4.dp else 0.dp, tween(160), label = "toggleThumb")
+                val thumbX by animateDpAsState(
+                    (ToggleGeometry.thumbLeft(checked) - ToggleGeometry.INSET).dp, tween(160), label = "toggleThumb",
+                )
                 // The word beside the switch only repeats what the switch shows: at the biggest text it must not take the room of the label.
+                // Both words take their room whatever the state, so the label does not wrap differently when the switch flips.
                 FontScaleAtMost(1f) {
-                    MetroText(
-                        stringResource(if (checked) R.string.toggle_on else R.string.toggle_off),
-                        size = 15.sp, weight = FontWeight.Normal, color = colors.subtle,
-                        modifier = Modifier.padding(end = 12.dp),
-                    )
+                    Box(Modifier.padding(end = 12.dp), contentAlignment = Alignment.CenterEnd) {
+                        ToggleWord(R.string.toggle_on, visible = checked)
+                        ToggleWord(R.string.toggle_off, visible = !checked)
+                    }
                 }
                 Box(
                     Modifier
-                        .size(TRACK_WIDTH, 26.dp)
-                        .border(2.dp, if (checked) accent else colors.foreground)
+                        .testTag(TOGGLE_TRACK_TAG)
+                        .size(ToggleGeometry.TRACK_WIDTH.dp, ToggleGeometry.TRACK_HEIGHT.dp)
+                        .border(ToggleGeometry.BORDER.dp, if (checked) accent else colors.foreground)
                         .background(if (checked) accent else Color.Transparent)
-                        .padding(2.dp),
+                        .padding(ToggleGeometry.INSET.dp),
                 ) {
                     Box(
                         Modifier
                             .offset { IntOffset(thumbX.roundToPx(), 0) }
-                            .size(THUMB_WIDTH, 18.dp)
+                            .testTag(TOGGLE_THUMB_TAG)
+                            .size(ToggleGeometry.THUMB_WIDTH.dp, ToggleGeometry.THUMB_HEIGHT.dp)
                             .background(if (checked) TileWhite else colors.foreground),
                     )
                 }
@@ -175,6 +228,7 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
                 val thumbX by animateDpAsState(if (checked) 20.dp else 0.dp, tween(180), label = "switchThumb")
                 Box(
                     Modifier
+                        .testTag(TOGGLE_TRACK_TAG)
                         .size(51.dp, 31.dp)
                         .clip(CircleShape)
                         .background(if (checked) accent else colors.inactive)
@@ -183,6 +237,7 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
                     Box(
                         Modifier
                             .offset { IntOffset(thumbX.roundToPx(), 0) }
+                            .testTag(TOGGLE_THUMB_TAG)
                             .size(27.dp)
                             .clip(CircleShape)
                             .background(Color.White)
@@ -196,6 +251,7 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
                 val x by animateDpAsState(if (checked) 24.dp else 4.dp, tween(180), label = "switchThumbX")
                 Box(
                     Modifier
+                        .testTag(TOGGLE_TRACK_TAG)
                         .size(52.dp, 32.dp)
                         .clip(CircleShape)
                         .background(if (checked) accent else colors.inactive)
@@ -205,6 +261,7 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
                     Box(
                         Modifier
                             .offset { IntOffset(x.roundToPx(), 0) }
+                            .testTag(TOGGLE_THUMB_TAG)
                             .size(thumb)
                             .clip(CircleShape)
                             .background(if (checked) (if (colors.dark) colors.background else Color.White) else colors.subtle),
@@ -213,6 +270,16 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
             }
         }
     }
+}
+
+/** "On" or "Off" beside the Classic switch. The one that is not [visible] is only there to hold its room. Neither is read out: the switch says its state. */
+@Composable
+private fun ToggleWord(@StringRes text: Int, visible: Boolean) {
+    MetroText(
+        stringResource(text),
+        size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+        modifier = Modifier.alpha(if (visible) 1f else 0f).clearAndSetSemantics { },
+    )
 }
 
 /**
@@ -270,9 +337,6 @@ fun MetroSlider(
         )
     }
 }
-
-private val TRACK_WIDTH = 56.dp
-private val THUMB_WIDTH = 14.dp
 
 /** A single line of text to type in, on a flat surface, with a hint while it is empty. */
 @Composable

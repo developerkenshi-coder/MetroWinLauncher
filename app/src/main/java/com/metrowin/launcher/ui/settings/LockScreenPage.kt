@@ -41,8 +41,8 @@ fun LockScreenPage(env: SettingsEnv) {
         if (uri != null) env.onPickLockPhoto(uri)
     }
     SettingsPage {
-        ActionSetting(stringResource(R.string.lock_preview), onClick = env.onPreviewLock, tag = "lock:preview")
-        Column {
+        ActionSetting(stringResource(R.string.lock_preview), onClick = env.onPreviewLock, tag = "lock:preview", id = "lock.preview")
+        Column(Modifier.settingAnchor("lock.photo")) {
             SettingLabel(stringResource(R.string.lock_photo))
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top) {
                 Box(Modifier.size(90.dp, 160.dp).background(LocalMetroColors.current.surface)) {
@@ -59,23 +59,28 @@ fun LockScreenPage(env: SettingsEnv) {
                 }
             }
         }
+        ActionSetting(
+            stringResource(R.string.lock_apply), onClick = env.onApplyLockPhoto,
+            hint = stringResource(R.string.lock_apply_hint), tag = "lock:apply", id = "lock.apply",
+        )
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            SettingHeading(stringResource(R.string.lock_show_title))
             ToggleSetting(
                 stringResource(R.string.lock_show_alarm), settings.lockShowAlarm,
-                onChange = { value -> env.onChange { it.copy(lockShowAlarm = value) } }, tag = "lock:alarm",
+                onChange = { value -> env.onChange { it.copy(lockShowAlarm = value) } }, tag = "lock:alarm", id = "lock.alarm",
             )
             ToggleSetting(
                 stringResource(R.string.lock_show_notifications), settings.lockShowNotifications,
-                onChange = { value -> env.onChange { it.copy(lockShowNotifications = value) } }, tag = "lock:notifications",
+                onChange = { value -> env.onChange { it.copy(lockShowNotifications = value) } }, tag = "lock:notifications", id = "lock.notifications",
             )
             ToggleSetting(
                 stringResource(R.string.lock_show_battery), settings.lockShowBattery,
-                onChange = { value -> env.onChange { it.copy(lockShowBattery = value) } }, tag = "lock:battery",
+                onChange = { value -> env.onChange { it.copy(lockShowBattery = value) } }, tag = "lock:battery", id = "lock.battery",
             )
             ToggleSetting(
                 stringResource(R.string.lock_show_weather), settings.lockShowWeather,
                 onChange = { value -> env.onChange { it.copy(lockShowWeather = value) } },
-                hint = stringResource(R.string.lock_show_weather_hint), tag = "lock:weather",
+                hint = stringResource(R.string.lock_show_weather_hint), tag = "lock:weather", id = "lock.weather",
             )
             ToggleSetting(
                 stringResource(R.string.lock_show_event), settings.lockShowEvent,
@@ -83,18 +88,14 @@ fun LockScreenPage(env: SettingsEnv) {
                     env.onChange { it.copy(lockShowEvent = value) }
                     if (value && !LivePermissions.isGranted(context, LivePermissions.calendar)) calendarPermission.launch(LivePermissions.calendar)
                 },
-                hint = stringResource(R.string.lock_show_event_hint), tag = "lock:event",
+                hint = stringResource(R.string.lock_show_event_hint), tag = "lock:event", id = "lock.event",
             )
         }
-        ActionSetting(
-            stringResource(R.string.lock_apply), onClick = env.onApplyLockPhoto,
-            hint = stringResource(R.string.lock_apply_hint), tag = "lock:apply",
-        )
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.lock_dream))
             ActionSetting(
                 stringResource(R.string.lock_dream_button), onClick = env.onOpenDreamSettings,
-                hint = stringResource(R.string.lock_dream_hint), tag = "lock:dream",
+                hint = stringResource(R.string.lock_dream_hint), tag = "lock:dream", id = "lock.dream",
             )
         }
     }

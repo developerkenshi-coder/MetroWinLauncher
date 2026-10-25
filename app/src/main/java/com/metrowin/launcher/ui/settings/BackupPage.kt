@@ -42,14 +42,14 @@ fun BackupPage(env: SettingsEnv) {
             )
             ActionSetting(
                 stringResource(R.string.backup_choose_folder), onClick = { folderPicker.launch(null) },
-                hint = stringResource(R.string.backup_folder_hint), tag = "backup:folder",
+                hint = stringResource(R.string.backup_folder_hint), tag = "backup:folder", id = "backup.folder",
             )
             if (hasFolder) {
                 DropdownSetting(
                     stringResource(R.string.backup_every), intervalNames,
                     selected = intervals.indexOf(settings.backupEveryDays).coerceAtLeast(0),
                     onSelect = { i -> env.onChange { it.copy(backupEveryDays = intervals[i]) } },
-                    tag = "backup:every",
+                    tag = "backup:every", id = "backup.every",
                 )
                 InfoSetting(
                     stringResource(R.string.backup_last),
@@ -59,9 +59,9 @@ fun BackupPage(env: SettingsEnv) {
                         stringResource(R.string.backup_never)
                     },
                 )
-                ActionSetting(stringResource(R.string.backup_now), onClick = env.onBackupNow, tag = "backup:now")
-                ActionSetting(stringResource(R.string.backup_restore), onClick = env.onRestoreBackup, tag = "backup:restore")
-                ActionSetting(stringResource(R.string.backup_forget_folder), onClick = env.onClearBackupFolder, tag = "backup:forget")
+                ActionSetting(stringResource(R.string.backup_now), onClick = env.onBackupNow, tag = "backup:now", id = "backup.now")
+                ActionSetting(stringResource(R.string.backup_restore), onClick = env.onRestoreBackup, tag = "backup:restore", id = "backup.restore")
+                ActionSetting(stringResource(R.string.backup_forget_folder), onClick = env.onClearBackupFolder, tag = "backup:forget", id = "backup.forget")
             }
         }
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -71,12 +71,12 @@ fun BackupPage(env: SettingsEnv) {
             } else {
                 ToggleSetting(
                     stringResource(R.string.sync_enable), settings.syncEnabled,
-                    onChange = { value -> env.onChange { it.copy(syncEnabled = value) } }, tag = "sync:enable",
+                    onChange = { value -> env.onChange { it.copy(syncEnabled = value) } }, tag = "sync:enable", id = "sync.enable",
                 )
                 if (settings.syncEnabled) {
                     MetroTextField(
                         settings.syncPassphrase, { value -> env.onChange { it.copy(syncPassphrase = value) } },
-                        stringResource(R.string.sync_passphrase), Modifier.testTag("sync:passphrase"), password = true,
+                        stringResource(R.string.sync_passphrase), Modifier.testTag("sync:passphrase").settingAnchor("sync.passphrase"), password = true,
                     )
                     SettingHint(stringResource(R.string.sync_passphrase_hint))
                     InfoSetting(
@@ -89,7 +89,7 @@ fun BackupPage(env: SettingsEnv) {
                     )
                     ActionSetting(
                         stringResource(R.string.sync_now), onClick = env.onSyncNow,
-                        enabled = settings.syncPassphrase.isNotEmpty(), hint = stringResource(R.string.sync_hint), tag = "sync:now",
+                        enabled = settings.syncPassphrase.isNotEmpty(), hint = stringResource(R.string.sync_hint), tag = "sync:now", id = "sync.now",
                     )
                 }
             }
@@ -99,13 +99,13 @@ fun BackupPage(env: SettingsEnv) {
             text = stringResource(R.string.backup_export),
             onClick = { export.launch("metrowin-layout.json") },
             hint = stringResource(R.string.backup_export_hint),
-            tag = "backup:export",
+            tag = "backup:export", id = "backup.export",
         )
         ActionSetting(
             text = stringResource(R.string.backup_import),
             onClick = { import.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
             hint = stringResource(R.string.backup_import_hint),
-            tag = "backup:import",
+            tag = "backup:import", id = "backup.import",
         )
     }
 }

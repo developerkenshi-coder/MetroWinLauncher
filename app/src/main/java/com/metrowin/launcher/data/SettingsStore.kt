@@ -274,6 +274,10 @@ data class LauncherSettings(
     val hiddenApps: Set<String> = emptySet(),
     val searchContacts: Boolean = true,
     val searchSettings: Boolean = true,
+    /** The settings of the launcher itself (found by name, opened where they are). */
+    val searchLauncherSettings: Boolean = true,
+    /** What is written on the tiles of Start: notes, lists, countdowns, the names of sites. */
+    val searchTiles: Boolean = true,
     val searchWeb: Boolean = true,
     /** The web search the search box offers. */
     val searchEngine: SearchEngine = SearchEngine.DuckDuckGo,

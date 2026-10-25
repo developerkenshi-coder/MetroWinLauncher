@@ -3,6 +3,7 @@ package com.metrowin.launcher.ui.settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.R
@@ -12,7 +13,7 @@ import com.metrowin.launcher.R
 fun AboutPage(env: SettingsEnv) {
     val about = env.about
     SettingsPage {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.settingAnchor("about.version"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             InfoSetting(stringResource(R.string.about_version), "${about.versionName} (${about.versionCode})")
             InfoSetting(stringResource(R.string.about_android), "${about.androidRelease} (API ${about.sdk})")
             InfoSetting(stringResource(R.string.about_device), about.device)
@@ -20,9 +21,9 @@ fun AboutPage(env: SettingsEnv) {
         }
         ActionSetting(
             stringResource(R.string.tut_replay), onClick = env.onShowTutorial,
-            hint = stringResource(R.string.tut_replay_hint), tag = "about:tutorial",
+            hint = stringResource(R.string.tut_replay_hint), tag = "about:tutorial", id = "about.tutorial",
         )
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.settingAnchor("about.credits"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SettingHeading(stringResource(R.string.about_credits))
             SettingHint(stringResource(R.string.about_inspired))
             SettingHint(stringResource(R.string.about_font))

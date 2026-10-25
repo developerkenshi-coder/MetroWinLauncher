@@ -147,7 +147,7 @@ class SearchAnswersUiTest : ScreenshotBase() {
                 settings = settings, onChange = { change -> settings = change(settings); current = settings },
                 onClearSearches = { forgotten++ },
             ),
-            section = SettingsSection.Apps, onSectionChange = {}, sectionAway = remember { Animatable(0f) },
+            section = SettingsSection.Search, onSectionChange = {}, sectionAway = remember { Animatable(0f) },
         )
     }
 
@@ -165,14 +165,14 @@ class SearchAnswersUiTest : ScreenshotBase() {
         show { AppsPage() }
         advance(500)
         capture("settings_search")
-        tap("apps:answers")
+        tap("search:answers")
         assertFalse(current.searchAnswers)
-        tap("apps:remember")
+        tap("search:remember")
         assertFalse(current.rememberSearches)
-        tap("apps:engine:header")
-        tap("apps:engine:1")
+        tap("search:engine:header")
+        tap("search:engine:1")
         assertEquals(SearchEngine.Google, current.searchEngine)
-        tap("apps:forget")
+        tap("search:forget")
         assertEquals(1, forgotten)
         assertTrue(LauncherSettings().searchAnswers && LauncherSettings().rememberSearches)
     }

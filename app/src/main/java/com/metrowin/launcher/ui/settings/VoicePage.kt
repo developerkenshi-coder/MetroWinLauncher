@@ -18,19 +18,19 @@ fun VoicePage(env: SettingsEnv) {
             ToggleSetting(
                 stringResource(R.string.voice_set_button), settings.voiceButton,
                 onChange = { value -> env.onChange { it.copy(voiceButton = value) } },
-                hint = stringResource(R.string.voice_set_button_hint), tag = "voice:button",
+                hint = stringResource(R.string.voice_set_button_hint), tag = "voice:button", id = "voice.button",
             )
             ToggleSetting(
                 stringResource(R.string.voice_set_offline), settings.voiceOffline,
                 onChange = { value -> env.onChange { it.copy(voiceOffline = value) } },
-                hint = stringResource(R.string.voice_set_offline_hint), tag = "voice:offline",
+                hint = stringResource(R.string.voice_set_offline_hint), tag = "voice:offline", id = "voice.offline",
             )
             ToggleSetting(
                 stringResource(R.string.voice_set_call), settings.voiceCallDirect,
                 onChange = { value -> env.onChange { it.copy(voiceCallDirect = value) } },
-                hint = stringResource(R.string.voice_set_call_hint), tag = "voice:calldirect",
+                hint = stringResource(R.string.voice_set_call_hint), tag = "voice:calldirect", id = "voice.call",
             )
-            ActionSetting(stringResource(R.string.voice_try), onClick = env.onTryVoice, tag = "voice:try")
+            ActionSetting(stringResource(R.string.voice_try), onClick = env.onTryVoice, tag = "voice:try", id = "voice.try")
             SettingHint(stringResource(R.string.voice_gesture_hint))
         }
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {

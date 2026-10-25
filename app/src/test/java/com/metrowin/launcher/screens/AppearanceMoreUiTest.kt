@@ -89,13 +89,13 @@ class AppearanceMoreUiTest : ScreenshotBase() {
     @Test
     fun theSettingsSwitchBoldTextAndTheFont() {
         current = LauncherSettings()
-        show { Page(SettingsSection.StartTheme) }
+        show { Page(SettingsSection.Accessibility) }
         advance(500)
-        tap("theme:bold")
+        tap("access:bold")
         assertTrue(current.boldText)
-        tap("theme:systemfont")
+        tap("access:systemfont")
         assertTrue(current.systemFont)
-        tap("theme:bold")
+        tap("access:bold")
         assertFalse(current.boldText)
     }
 

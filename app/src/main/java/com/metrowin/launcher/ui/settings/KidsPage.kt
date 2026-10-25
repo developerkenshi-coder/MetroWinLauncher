@@ -50,7 +50,7 @@ fun KidsPage(env: SettingsEnv) {
             Spacer(Modifier.height(18.dp))
             MetroButton(
                 stringResource(R.string.kids_start),
-                Modifier.fillMaxWidth().testTag("kids:start").alpha(if (ready) 1f else 0.4f),
+                Modifier.fillMaxWidth().testTag("kids:start").settingAnchor("kids.start").alpha(if (ready) 1f else 0.4f),
             ) { if (ready) env.onStartKidsCorner() }
             MetroText(
                 stringResource(R.string.kids_pin_hint),
@@ -58,7 +58,7 @@ fun KidsPage(env: SettingsEnv) {
                 modifier = Modifier.padding(top = 10.dp),
             )
             Spacer(Modifier.height(22.dp))
-            SettingLabel(stringResource(R.string.kids_apps))
+            SettingLabel(stringResource(R.string.kids_apps), Modifier.settingAnchor("kids.apps"))
         }
         items(choosable, key = { it.id }) { app ->
             val checked = app.id in settings.kidsApps

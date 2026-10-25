@@ -86,6 +86,9 @@ import com.metrowin.launcher.ui.voice.rememberVoiceSession
 import androidx.core.content.ContextCompat
 import com.metrowin.launcher.data.GlobalResults
 import com.metrowin.launcher.data.GlobalSearch
+import com.metrowin.launcher.data.LauncherSettingMatch
+import com.metrowin.launcher.data.TileMatch
+import com.metrowin.launcher.data.TileSearch
 import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.data.PhoneCalls
 import com.metrowin.launcher.data.AppLinks
@@ -133,6 +136,7 @@ import com.metrowin.launcher.ui.kids.KidsHeader
 import com.metrowin.launcher.ui.tutorial.TutorialHost
 import com.metrowin.launcher.data.Tutorial
 import com.metrowin.launcher.ui.settings.SettingsEnv
+import com.metrowin.launcher.ui.settings.SettingsIndex
 import com.metrowin.launcher.ui.settings.SettingsScreen
 import com.metrowin.launcher.ui.settings.SettingsSection
 import com.metrowin.launcher.ui.start.AppCell
@@ -192,6 +196,10 @@ private val TWO_FINGER_SWIPE = 96.dp
 
 /** The contacts are looked for once the typing has paused this long. */
 private const val CONTACT_SEARCH_DELAY_MS = 220L
+
+/** How many settings of Android, settings of the launcher and tiles of Start the search lists, at most: the best ones. */
+private const val MAX_SETTING_RESULTS = 6
+private const val MAX_TILE_RESULTS = 5
 private const val CURRENCY_DELAY_MS = 350L
 private const val HOME_DOUBLE_DELAY_MS = 350L
 
@@ -345,7 +353,19 @@ fun LauncherApp(vm: LauncherViewModel) {
     var folderChooserFor by remember { mutableStateOf<AppItem?>(null) }
     var query by remember { mutableStateOf("") }
     var settingsSection by remember { mutableStateOf<SettingsSection?>(null) }
-    val searchResults = remember(query, listItems) { AppSearch.filter(listItems, query) }
+    // The setting the open section was opened for, when the search took the user there.
+    var settingsTarget by remember { mutableStateOf<String?>(null) }
+    // The apps are indexed once (and again when they or the counts of the opens change), not read again for every key.
+    val appIndex = remember(listItems, usage) {
+        AppSearch.index(
+            listItems, usage,
+            categoryLabel = { appContext.getString(it.label) },
+            profileWords = AppSearch.ProfileWords(appContext.getString(R.string.profile_work), appContext.getString(R.string.profile_private)),
+        )
+    }
+    val searchResults = remember(query, appIndex, listItems) { if (query.isBlank()) listItems else appIndex.search(query) }
+    val launcherSettingsIndex = remember { SettingsIndex.searchIndex(appContext) }
+    val tileIndex = remember(items) { TileSearch.index(items) }
     val recentSearches by vm.recentSearches.collectAsStateWithLifecycle()
     // What the search box answers by itself: a sum, a conversion, a number, a link, a timer or an alarm.
     // A throw of dice or a coin is made again when it is touched.
@@ -368,14 +388,35 @@ fun LauncherApp(vm: LauncherViewModel) {
     // What the search finds besides apps. The settings and the web offer are known at once; the contacts follow
     // when the typing pauses, so each key does not query the contacts.
     var globalResults by remember { mutableStateOf(GlobalResults.Empty) }
-    LaunchedEffect(query, settings.searchContacts, settings.searchSettings, settings.searchWeb, settings.searchCalendar) {
+    LaunchedEffect(
+        query, settings.searchContacts, settings.searchSettings, settings.searchWeb, settings.searchCalendar,
+        settings.searchLauncherSettings, settings.searchTiles, tileIndex,
+    ) {
         if (query.isBlank()) {
             globalResults = GlobalResults.Empty
             return@LaunchedEffect
         }
         globalResults = GlobalResults(
             settings = if (settings.searchSettings) {
-                GlobalSearch.matchSettings(query) { def -> appContext.getString(def.label) }
+                GlobalSearch.matchSettings(query) { def -> appContext.getString(def.label) }.take(MAX_SETTING_RESULTS)
+            } else {
+                emptyList()
+            },
+            launcherSettings = if (settings.searchLauncherSettings) {
+                launcherSettingsIndex.search(query).take(MAX_SETTING_RESULTS).map { hit ->
+                    val place = appContext.getString(hit.section.title)
+                    LauncherSettingMatch(
+                        id = hit.setting?.id,
+                        section = hit.section.name,
+                        title = appContext.getString(hit.setting?.title ?: hit.section.title),
+                        where = if (hit.setting == null) appContext.getString(hit.section.description) else appContext.getString(R.string.search_launcher_setting_where, place),
+                    )
+                }
+            } else {
+                emptyList()
+            },
+            tiles = if (settings.searchTiles) {
+                tileIndex.search(query).take(MAX_TILE_RESULTS).map { TileMatch(it, TileSearch.snippet(it, query)) }
             } else {
                 emptyList()
             },
@@ -1137,6 +1178,12 @@ fun LauncherApp(vm: LauncherViewModel) {
                                     vm.perform(answer)
                                 }
                             },
+                            onOpenSetting = { match ->
+                                vm.rememberSearch(query)
+                                settingsTarget = match.id
+                                settingsSection = SettingsSection.valueOf(match.section)
+                                settingsOpen = true
+                            },
                             recentSearches = recentSearches.takeIf { settings.rememberSearches }.orEmpty(),
                             onClearRecents = vm::clearSearches,
                             engine = settings.searchEngine,
@@ -1483,6 +1530,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                         section = settingsSection,
                         onSectionChange = { settingsSection = it },
                         sectionAway = sectionAway,
+                        target = settingsTarget,
+                        onTargetChange = { settingsTarget = it },
                     )
                 }
 

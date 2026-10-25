@@ -30,7 +30,7 @@ fun IconsPage(env: SettingsEnv) {
                 selected = chosen,
                 onSelect = { i -> env.onChange { it.copy(iconPack = if (i == 0) "" else packs[i - 1].packageName) } },
                 hint = stringResource(R.string.icons_pack_hint),
-                tag = "icons:pack",
+                tag = "icons:pack", id = "icons.pack",
             )
         }
         SettingHeading(stringResource(R.string.theme_heading))
@@ -38,13 +38,13 @@ fun IconsPage(env: SettingsEnv) {
             text = stringResource(R.string.theme_export),
             onClick = { export.launch("metrowin-theme.json") },
             hint = stringResource(R.string.theme_export_hint),
-            tag = "theme:export",
+            tag = "theme:export", id = "icons.export",
         )
         ActionSetting(
             text = stringResource(R.string.theme_import),
             onClick = { import.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
             hint = stringResource(R.string.theme_import_hint),
-            tag = "theme:import",
+            tag = "theme:import", id = "icons.import",
         )
     }
 }

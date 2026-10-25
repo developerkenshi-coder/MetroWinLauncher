@@ -525,7 +525,7 @@ class StartMoreUiTest : ScreenshotBase() {
         var settings by remember { mutableStateOf(current) }
         SettingsScreen(
             env = SettingsEnv(settings = settings, onChange = { change -> settings = change(settings); current = settings }, onResetStart = { resets++ }),
-            section = SettingsSection.StartTheme, onSectionChange = {}, sectionAway = remember { Animatable(0f) },
+            section = SettingsSection.Start, onSectionChange = {}, sectionAway = remember { Animatable(0f) },
         )
     }
 
@@ -541,12 +541,12 @@ class StartMoreUiTest : ScreenshotBase() {
         current = LauncherSettings()
         show { Page() }
         advance(500)
-        tap("theme:tilenames")
+        tap("start:tilenames")
         assertFalse(current.showTileNames)
-        tap("theme:tilenames")
+        tap("start:tilenames")
         assertTrue(current.showTileNames)
-        tap("theme:spacing:header")
-        tap("theme:spacing:${TileSpacing.entries.indexOf(TileSpacing.Wide)}")
+        tap("start:spacing:header")
+        tap("start:spacing:${TileSpacing.entries.indexOf(TileSpacing.Wide)}")
         assertEquals(TileSpacing.Wide, current.tileSpacing)
     }
 
@@ -556,11 +556,11 @@ class StartMoreUiTest : ScreenshotBase() {
         resets = 0
         show { Page() }
         advance(500)
-        tap("theme:resetstart")
+        tap("start:resetstart")
         assertEquals("the first touch only asks", 0, resets)
         compose.onAllNodesWithText("Touch again to restore Start").assertCountEquals(1)
         capture("settings_reset_start")
-        tap("theme:resetstart")
+        tap("start:resetstart")
         assertEquals(1, resets)
         compose.onAllNodesWithText("Touch again to restore Start").assertCountEquals(0)
     }

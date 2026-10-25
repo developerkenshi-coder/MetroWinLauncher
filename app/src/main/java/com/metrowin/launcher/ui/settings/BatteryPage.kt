@@ -26,7 +26,7 @@ fun BatteryPage(env: SettingsEnv) {
                 selected = modes.indexOf(settings.batterySaving),
                 onSelect = { i -> env.onChange { it.copy(batterySaving = modes[i]) } },
                 hint = stringResource(settings.batterySaving.description),
-                tag = "battery:saving",
+                tag = "battery:saving", id = "battery.saving",
             )
             MetroText(
                 stringResource(if (env.powerSaving) R.string.saving_now_on else R.string.saving_now_off),

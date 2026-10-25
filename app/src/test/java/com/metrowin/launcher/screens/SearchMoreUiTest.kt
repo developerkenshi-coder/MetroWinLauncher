@@ -270,11 +270,11 @@ class SearchMoreUiTest : ScreenshotBase() {
     private var current = LauncherSettings()
 
     @Composable
-    private fun AppsPage() {
+    private fun AppsPage(section: SettingsSection = SettingsSection.Search) {
         var settings by remember { mutableStateOf(current) }
         SettingsScreen(
             env = SettingsEnv(settings = settings, onChange = { change -> settings = change(settings); current = settings }),
-            section = SettingsSection.Apps, onSectionChange = {}, sectionAway = remember { Animatable(0f) },
+            section = section, onSectionChange = {}, sectionAway = remember { Animatable(0f) },
         )
     }
 
@@ -286,18 +286,25 @@ class SearchMoreUiTest : ScreenshotBase() {
     }
 
     @Test
-    fun theCompactListTheCurrencyAndTheCalendarAreSwitchedInTheSettings() {
+    fun theCompactListIsSwitchedInTheSettings() {
+        current = LauncherSettings()
+        show { AppsPage(SettingsSection.Apps) }
+        advance(500)
+        tap("apps:compact")
+        assertTrue(current.compactList)
+    }
+
+    @Test
+    fun theCurrencyAndTheCalendarAreSwitchedInTheSettings() {
         current = LauncherSettings()
         show { AppsPage() }
         advance(500)
         capture("settings_search_more")
-        tap("apps:compact")
-        assertTrue(current.compactList)
-        tap("apps:currency")
+        tap("search:currency")
         assertTrue(current.searchCurrency)
-        tap("apps:calendar")
+        tap("search:calendar")
         assertTrue(current.searchCalendar)
-        tap("apps:currency")
+        tap("search:currency")
         assertFalse(current.searchCurrency)
     }
 
@@ -306,7 +313,7 @@ class SearchMoreUiTest : ScreenshotBase() {
         current = LauncherSettings(searchAnswers = false)
         show { AppsPage() }
         advance(500)
-        tap("apps:currency")
+        tap("search:currency")
         assertFalse("the switch is disabled while the answers are off", current.searchCurrency)
     }
 }

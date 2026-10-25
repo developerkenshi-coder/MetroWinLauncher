@@ -9,7 +9,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -78,7 +80,7 @@ class SyncPageTest : ScreenshotBase() {
     @Test
     fun typingAPassphraseEnablesTheButtonAndTheButtonSyncs() {
         open(LauncherSettings(backupFolder = "content://tree/drive", syncEnabled = true))
-        compose.onNode(hasSetTextAction()).performTextInput("correct horse")
+        compose.onNode(hasSetTextAction() and hasAnyAncestor(hasTestTag("sync:passphrase"))).performTextInput("correct horse")
         advance(100)
         assertEquals("correct horse", current.syncPassphrase)
         tapScrolled("sync:now")

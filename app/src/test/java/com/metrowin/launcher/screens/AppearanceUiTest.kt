@@ -75,11 +75,11 @@ class AppearanceUiTest : ScreenshotBase() {
     private var photo: ImageBitmap? = null
 
     @Composable
-    private fun Page() {
+    private fun Page(section: SettingsSection = SettingsSection.StartTheme) {
         var settings by remember { mutableStateOf(current) }
         SettingsScreen(
             env = SettingsEnv(settings = settings, onChange = { change -> settings = change(settings); current = settings }, startBackground = photo),
-            section = SettingsSection.StartTheme, onSectionChange = {}, sectionAway = remember { Animatable(0f) },
+            section = section, onSectionChange = {}, sectionAway = remember { Animatable(0f) },
         )
     }
 
@@ -93,39 +93,39 @@ class AppearanceUiTest : ScreenshotBase() {
     @Test
     fun theTextSizeStepsThroughTheListAndStopsAtTheEnds() {
         current = LauncherSettings(textScale = 120)
-        show { Page() }
+        show { Page(SettingsSection.Accessibility) }
         advance(500)
-        tap("theme:textsize:plus")
+        tap("access:textsize:plus")
         assertEquals(130, current.textScale)
-        tap("theme:textsize:plus")
+        tap("access:textsize:plus")
         assertEquals("the end of the list", 130, current.textScale)
-        tap("theme:textsize:minus")
-        tap("theme:textsize:minus")
+        tap("access:textsize:minus")
+        tap("access:textsize:minus")
         assertEquals(110, current.textScale)
     }
 
     @Test
     fun theClockOptionsAndTheStatusBarSwitchInTheSettings() {
         current = LauncherSettings(showClock = true)
-        show { Page() }
+        show { Page(SettingsSection.Start) }
         advance(500)
-        tap("theme:clockalarm")
+        tap("start:clockalarm")
         assertTrue(current.clockAlarm)
-        tap("theme:clockweek")
+        tap("start:clockweek")
         assertTrue(current.clockWeek)
-        tap("theme:hidestatus")
+        tap("start:hidestatus")
         assertTrue(current.hideStatusBar)
-        tap("theme:hours:header")
-        tap("theme:hours:${ClockHours.entries.indexOf(ClockHours.H12)}")
+        tap("start:hours:header")
+        tap("start:hours:${ClockHours.entries.indexOf(ClockHours.H12)}")
         assertEquals(ClockHours.H12, current.clockHours)
     }
 
     @Test
     fun theClockOptionsAreOffWhileThereIsNoClock() {
         current = LauncherSettings(showClock = false)
-        show { Page() }
+        show { Page(SettingsSection.Start) }
         advance(500)
-        tap("theme:clockalarm")
+        tap("start:clockalarm")
         assertFalse("a switch that is off does nothing", current.clockAlarm)
     }
 

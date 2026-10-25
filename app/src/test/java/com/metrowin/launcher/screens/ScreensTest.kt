@@ -447,14 +447,25 @@ class ScreensTest : ScreenshotBase() {
     }
 
     @Test
-    fun theSettingsListTheSectionsUnderTwoPivotPagesAndOpenTheOneYouTouch() {
+    fun theSettingsListTheSectionsUnderFourPivotPagesAndOpenTheOneYouTouch() {
         show { Settings(SettingsEnv(LauncherSettings(), onChange = {})) }
         advance(500)
         capture("settings_home")
+        // How it looks is the first page, with the search box over the pivot.
+        compose.onNodeWithTag("settings:search").assertExists()
         compose.onNodeWithTag("settings:section:StartTheme").assertExists()
-        compose.onNodeWithTag("settings:section:Actions").assertExists()
-        // The tools are on the second page of the pivot.
+        compose.onNodeWithTag("settings:section:Start").assertExists()
+        compose.onNodeWithTag("settings:section:Actions").assertDoesNotExist()
         compose.onNodeWithTag("settings:section:Kids").assertDoesNotExist()
+        // How it behaves is the second, the apps the third, the tools the last.
+        compose.onRoot().performTouchInput { swipeLeft() }
+        advance(800)
+        compose.onNodeWithTag("settings:section:Actions").assertExists()
+        compose.onNodeWithTag("settings:section:Gestures").assertExists()
+        compose.onRoot().performTouchInput { swipeLeft() }
+        advance(800)
+        compose.onNodeWithTag("settings:section:Search").assertExists()
+        compose.onNodeWithTag("settings:section:Apps").assertExists()
         compose.onRoot().performTouchInput { swipeLeft() }
         advance(800)
         compose.onNodeWithTag("settings:section:Kids").performClick()

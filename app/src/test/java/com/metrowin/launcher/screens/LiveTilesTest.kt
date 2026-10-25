@@ -13,7 +13,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -222,7 +224,7 @@ class LiveTilesTest : ScreenshotBase() {
     private val turinCanada = PlaceMatch("Turin", "", "Canada", 43.0, -79.0)
 
     private fun typeAndSearch(text: String) {
-        compose.onNode(hasSetTextAction()).performTextInput(text)
+        compose.onNode(hasSetTextAction() and hasAnyAncestor(hasTestTag("weather:query"))).performTextInput(text)
         compose.onNodeWithTag("weather:search").performClick()
         advance(300)
     }

@@ -115,9 +115,8 @@
     <string name="perm_allow">allow</string>
 
     <!-- settings: structure -->
-    <string name="settings_group_launcher">launcher</string>
     <string name="settings_group_tools">tools</string>
-    <string name="sec_start_theme_desc">Theme and accent color, Start photo, clock, number of Start screens</string>
+    <string name="sec_start_theme_desc">Light or dark, theme, accent color, the photo behind Start</string>
     <string name="sec_actions_desc">Quick buttons of the Action Center, notification access, replies and groups</string>
     <string name="sec_kids_desc">Share the phone with a child, with only the apps you choose</string>
     <string name="theme_mode">light or dark</string>
@@ -156,8 +155,8 @@
     <string name="gest_tap_hint">They follow the touch sounds and the vibration on touch switches of Android.</string>
 
     <!-- apps section -->
-    <string name="sec_apps">apps</string>
-    <string name="sec_apps_desc">Hidden apps, what the search looks in, icon packs</string>
+    <string name="sec_apps">app list</string>
+    <string name="sec_apps_desc">What the list shows at the top, hidden, renamed and locked apps</string>
     <string name="menu_hide">hide from list</string>
     <string name="apps_hidden">hidden apps</string>
     <string name="apps_hidden_none">No hidden apps. Press and hold an app in the list and choose \"hide from list\".</string>
@@ -261,7 +260,6 @@
     <string name="apps_search_settings">search Android settings</string>
     <string name="apps_search_web">offer a web search</string>
     <string name="apps_search_hint">What you type in the app list is also looked for in these. The web search opens DuckDuckGo in your browser; nothing is sent until you touch it.</string>
-    <string name="apps_search_title">search</string>
     <string name="ss_wifi">Wi-Fi</string>
     <string name="ss_bluetooth">Bluetooth</string>
     <string name="ss_airplane">Airplane mode</string>
@@ -383,8 +381,8 @@
     <string name="voice_gesture_hint">You can also start it with a double tap or a two-finger swipe: choose “voice” in Gestures.</string>
 
     <!-- screen settings -->
-    <string name="sec_screen">screen</string>
-    <string name="sec_screen_desc">Rotation, landscape and refresh rate</string>
+    <string name="sec_screen">screen+language</string>
+    <string name="sec_screen_desc">Rotation, how apps open, refresh rate, language of the launcher</string>
     <string name="screen_orientation">rotation</string>
     <string name="screen_orient_portrait">portrait only</string>
     <string name="screen_orient_auto">follow the phone\'s rotation</string>
@@ -477,7 +475,7 @@
 
     <!-- accessibility -->
     <string name="sec_access">accessibility</string>
-    <string name="sec_access_desc">TalkBack, less motion, stronger contrast</string>
+    <string name="sec_access_desc">Text size and weight, less motion, stronger contrast, TalkBack</string>
     <string name="access_reduce_motion">reduce motion</string>
     <string name="access_reduce_motion_hint">Screens fade instead of swinging, tiles stop flipping and tilting, and apps open without an animation. It is also on whenever Android\'s animations are removed.</string>
     <string name="access_high_contrast">high contrast</string>
@@ -582,16 +580,12 @@
     <string name="tut_alive_tip2">Some phones (Xiaomi, Huawei, Oppo, Samsung…) also have their own “autostart” or “protected apps” list in their settings: add MetroWin Launcher there too.</string>
     <string name="tut_settings_label">SETTINGS</string>
     <string name="tut_settings_title">make it yours</string>
-    <string name="tut_settings_intro">Open Launcher settings in the app list, or tap the Launcher button of the Action Center. Each section is a page, in two groups: launcher and tools.</string>
-    <string name="tut_settings_tip1">start+theme: the look (Classic, Modern Glass, Modern Droid), dark or light, OLED black, accent colors, Start photo, clock, number of Start screens.</string>
-    <string name="tut_settings_tip2">screen: rotation and landscape, how apps open, 120 Hz. battery: power saving. accessibility: TalkBack, less motion, more contrast.</string>
-    <string name="tut_settings_tip3">icons &amp; themes: icon packs and theme files to share.</string>
-    <string name="tut_settings_tip4">gestures, notifications+actions, live tiles and apps: what each gesture does (the recent apps too), the Action Center, the live tiles of WhatsApp, Telegram, Instagram and other apps, the weather city, hidden apps and search.</string>
-    <string name="tut_settings_tip5">lock screen: the Metro lock screen, as a screen saver, with its photo.</string>
-    <string name="tut_settings_tip6">voice and profiles: speak to the launcher, and pause or hide your work profile and private space.</string>
-    <string name="tut_settings_tip7">backup+sync: a file or a folder, and an encrypted sync between your phones.</string>
-    <string name="tut_settings_tip8">kid\'s corner: Start with only the apps you choose.</string>
-    <string name="tut_settings_tip9">about: the version, and this tour whenever you want it again.</string>
+    <string name="tut_settings_intro">Open Launcher settings in the app list, or tap the Launcher button of the Action Center. Each section is a page, in four groups: look, behavior, apps and tools. The search box on top finds any setting and takes you to it.</string>
+    <string name="tut_settings_tip1">look: start+theme (theme, light or dark, OLED black, accent colors, Start photo), start screen (tiles, clock, number of Start screens), icons &amp; themes, accessibility (text size, bold text, less motion, more contrast, TalkBack) and the lock screen.</string>
+    <string name="tut_settings_tip2">behavior: screen+language (rotation, how apps open, 120 Hz, language), gestures (every swipe, tap and edge pull, the recent apps too), notifications+actions (the Action Center), voice and battery.</string>
+    <string name="tut_settings_tip3">apps: the app list (the groups at the top, hidden, renamed and locked apps), search (what the box looks in, what it answers, the web engine), live tiles (the weather city, WhatsApp, Telegram, Instagram…) and profiles (work, private space).</string>
+    <string name="tut_settings_tip4">tools: backup+sync (a file or a folder, and an encrypted sync between your phones), kid\'s corner (Start with only the apps you choose) and about (the version, and this tour whenever you want it again).</string>
+    <string name="tut_settings_tip5">Lost? The box at the top of the settings finds any setting by its name or by what it is for, and takes you to it. The search of the app list finds them too.</string>
     <string name="qa_launcher_settings">Launcher</string>
     <string name="qa_recents">Recent apps</string>
     <string name="app_launcher_settings">Launcher settings</string>
@@ -963,4 +957,33 @@
     <string name="lock_show_weather_hint">The weather the weather tile fetched last. Nothing is fetched by the lock screen.</string>
     <string name="lock_show_event">show the next event</string>
     <string name="lock_show_event_hint">The next event of your calendar in the next 24 hours. Needs the calendar permission. Anyone who sees the screen can read it.</string>
+    <string name="sec_start">start screen</string>
+    <string name="sec_start_desc">Tiles, clock and date, number of Start screens, status bar</string>
+    <string name="sec_search">search</string>
+    <string name="sec_search_desc">What the search box looks in, answers and remembers</string>
+    <string name="settings_group_look">look</string>
+    <string name="settings_group_behavior">behavior</string>
+    <string name="settings_group_apps">apps</string>
+    <string name="start_tiles_title">tiles</string>
+    <string name="start_clock_title">clock and date</string>
+    <string name="access_text_title">text</string>
+    <string name="access_motion_title">motion and contrast</string>
+    <string name="actions_center_title">action center</string>
+    <string name="actions_notifications_title">notifications</string>
+    <string name="lock_show_title">show on the lock screen</string>
+    <string name="search_where_title">look in</string>
+    <string name="search_web_title">web</string>
+    <string name="search_answers_title">answers</string>
+    <string name="search_history_title">history</string>
+    <string name="apps_search_launcher">search these settings</string>
+    <string name="apps_search_launcher_hint">Finds the settings of the launcher by name or by what they are for, and opens the page where each one is.</string>
+    <string name="apps_search_tiles">search what is on Start</string>
+    <string name="apps_search_tiles_hint">The words of notes and lists, countdowns, counters and the names of sites pinned to Start.</string>
+    <string name="search_section_launcher">launcher settings</string>
+    <string name="search_section_tiles">on Start</string>
+    <string name="search_launcher_setting_where">Launcher settings › %1$s</string>
+    <string name="search_tile_subtitle">on Start</string>
+    <string name="settings_search_hint">search the settings</string>
+    <string name="settings_search_none">No setting matches “%1$s”.</string>
+    <string name="settings_search_in">in %1$s</string>
 </resources>

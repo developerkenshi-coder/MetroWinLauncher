@@ -20,7 +20,7 @@ fun ScreenPage(env: SettingsEnv) {
             selected = modes.indexOf(settings.orientation),
             onSelect = { i -> env.onChange { it.copy(orientation = modes[i]) } },
             hint = stringResource(R.string.screen_orient_hint),
-            tag = "screen:orientation",
+            tag = "screen:orientation", id = "screen.orientation",
         )
         val animations = LaunchAnimation.entries
         OptionList(
@@ -29,7 +29,7 @@ fun ScreenPage(env: SettingsEnv) {
             selected = animations.indexOf(settings.launchAnimation),
             onSelect = { i -> env.onChange { it.copy(launchAnimation = animations[i]) } },
             hint = stringResource(R.string.screen_launch_hint),
-            tag = "screen:launch",
+            tag = "screen:launch", id = "screen.launch",
         )
         env.onLanguage?.let { change ->
             val tags = AppLanguages.tags
@@ -39,13 +39,13 @@ fun ScreenPage(env: SettingsEnv) {
                 selected = tags.indexOf(AppLanguages.normalize(env.language)).coerceAtLeast(0),
                 onSelect = { i -> change(tags[i]) },
                 hint = stringResource(R.string.screen_language_hint),
-                tag = "screen:language",
+                tag = "screen:language", id = "screen.language",
             )
         }
         ToggleSetting(
             stringResource(R.string.screen_high_refresh), settings.highRefreshRate,
             onChange = { value -> env.onChange { it.copy(highRefreshRate = value) } },
-            hint = stringResource(R.string.screen_high_refresh_hint), tag = "screen:refresh",
+            hint = stringResource(R.string.screen_high_refresh_hint), tag = "screen:refresh", id = "screen.refresh",
         )
     }
 }

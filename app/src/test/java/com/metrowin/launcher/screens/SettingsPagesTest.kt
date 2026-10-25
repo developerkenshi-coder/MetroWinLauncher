@@ -86,7 +86,7 @@ class SettingsPagesTest : ScreenshotBase() {
         advance(500)
     }
 
-    // --- start+theme
+    // --- start+theme and the start screen
 
     @Test
     fun theThemeCanBeFixedOrAutomatic() {
@@ -123,13 +123,13 @@ class SettingsPagesTest : ScreenshotBase() {
 
     @Test
     fun theNumberOfStartScreensStaysBetweenOneAndThree() {
-        open(SettingsSection.StartTheme)
-        tap("theme:pages:minus")
+        open(SettingsSection.Start)
+        tap("start:pages:minus")
         assertEquals("one is the least", 1, current.startPages)
-        tap("theme:pages:plus")
-        tap("theme:pages:plus")
+        tap("start:pages:plus")
+        tap("start:pages:plus")
         assertEquals(3, current.startPages)
-        tap("theme:pages:plus")
+        tap("start:pages:plus")
         assertEquals("three is the most", 3, current.startPages)
     }
 
@@ -153,8 +153,8 @@ class SettingsPagesTest : ScreenshotBase() {
 
     @Test
     fun theClockIsASwitch() {
-        open(SettingsSection.StartTheme)
-        tap("theme:clock")
+        open(SettingsSection.Start)
+        tap("start:clock")
         assertTrue(current.showClock)
     }
 

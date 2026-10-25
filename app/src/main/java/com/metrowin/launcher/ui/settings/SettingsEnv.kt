@@ -14,33 +14,47 @@ import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.notifications.LiveReportLine
 
-/** The two pivot pages of the settings home: what the launcher looks and acts like, and the tools around it. */
+/**
+ * The pivot pages of the settings home, in the order of what you reach for: how the launcher looks, how it behaves and reacts to
+ * you, what it does with your apps, and the tools around it.
+ */
 enum class SettingsGroup(@param:StringRes val title: Int) {
-    Launcher(R.string.settings_group_launcher),
+    Look(R.string.settings_group_look),
+    Behavior(R.string.settings_group_behavior),
+    Apps(R.string.settings_group_apps),
     Tools(R.string.settings_group_tools),
 }
 
 /**
  * The sections of the settings. Each is a page of its own, listed on the home of the settings under its
- * [group] with its title and a line saying what is in it.
+ * [group] with its title and a line saying what is in it. What is on each page is listed in the [SettingsIndex].
  */
 enum class SettingsSection(
     val group: SettingsGroup,
     @param:StringRes val title: Int,
     @param:StringRes val description: Int,
 ) {
-    StartTheme(SettingsGroup.Launcher, R.string.settings_start_theme, R.string.sec_start_theme_desc),
-    Screen(SettingsGroup.Launcher, R.string.sec_screen, R.string.sec_screen_desc),
-    Battery(SettingsGroup.Launcher, R.string.sec_battery, R.string.sec_battery_desc),
-    Accessibility(SettingsGroup.Launcher, R.string.sec_access, R.string.sec_access_desc),
-    Icons(SettingsGroup.Launcher, R.string.sec_icons, R.string.sec_icons_desc),
-    Gestures(SettingsGroup.Launcher, R.string.sec_gestures, R.string.sec_gestures_desc),
-    Actions(SettingsGroup.Launcher, R.string.settings_actions, R.string.sec_actions_desc),
-    LiveTiles(SettingsGroup.Launcher, R.string.sec_live_tiles, R.string.sec_live_tiles_desc),
-    Apps(SettingsGroup.Launcher, R.string.sec_apps, R.string.sec_apps_desc),
-    Lock(SettingsGroup.Tools, R.string.sec_lock, R.string.sec_lock_desc),
-    Voice(SettingsGroup.Tools, R.string.sec_voice, R.string.sec_voice_desc),
-    Profiles(SettingsGroup.Tools, R.string.sec_profiles, R.string.sec_profiles_desc),
+    // look: what you see
+    StartTheme(SettingsGroup.Look, R.string.settings_start_theme, R.string.sec_start_theme_desc),
+    Start(SettingsGroup.Look, R.string.sec_start, R.string.sec_start_desc),
+    Icons(SettingsGroup.Look, R.string.sec_icons, R.string.sec_icons_desc),
+    Accessibility(SettingsGroup.Look, R.string.sec_access, R.string.sec_access_desc),
+    Lock(SettingsGroup.Look, R.string.sec_lock, R.string.sec_lock_desc),
+
+    // behavior: how it moves and answers
+    Screen(SettingsGroup.Behavior, R.string.sec_screen, R.string.sec_screen_desc),
+    Gestures(SettingsGroup.Behavior, R.string.sec_gestures, R.string.sec_gestures_desc),
+    Actions(SettingsGroup.Behavior, R.string.settings_actions, R.string.sec_actions_desc),
+    Voice(SettingsGroup.Behavior, R.string.sec_voice, R.string.sec_voice_desc),
+    Battery(SettingsGroup.Behavior, R.string.sec_battery, R.string.sec_battery_desc),
+
+    // apps: the list, the search, the live content and the profiles they come from
+    Apps(SettingsGroup.Apps, R.string.sec_apps, R.string.sec_apps_desc),
+    Search(SettingsGroup.Apps, R.string.sec_search, R.string.sec_search_desc),
+    LiveTiles(SettingsGroup.Apps, R.string.sec_live_tiles, R.string.sec_live_tiles_desc),
+    Profiles(SettingsGroup.Apps, R.string.sec_profiles, R.string.sec_profiles_desc),
+
+    // tools
     Backup(SettingsGroup.Tools, R.string.sec_backup, R.string.sec_backup_desc),
     Kids(SettingsGroup.Tools, R.string.kids_title, R.string.sec_kids_desc),
     About(SettingsGroup.Tools, R.string.sec_about, R.string.sec_about_desc),

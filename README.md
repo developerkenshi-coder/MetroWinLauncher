@@ -103,7 +103,7 @@ niente è obbligatorio. Si va avanti con il pulsante o con uno swipe, si esce co
 
 Quello che si concede nelle impostazioni di Android (home, notifiche, accessibilità, batteria) viene riletto quando si torna al
 launcher, e il pulsante diventa "consentito". Un permesso che Android non chiede più (negato due volte) fa diventare il pulsante
-"apri impostazioni", che porta alla pagina dell'app. Il giro si rivede da *start+theme → tools → about → rivedi il tutorial*.
+"apri impostazioni", che porta alla pagina dell'app. Il giro si rivede da *impostazioni → strumenti → informazioni → rivedi il tutorial* (o cercando "tutorial" nella casella delle impostazioni).
 
 ## Cosa c'è
 
@@ -138,10 +138,30 @@ launcher, e il pulsante diventa "consentito". Un permesso che Android non chiede
   launcher, con la dimensione che segue il riquadro).
 - **Orologio e data** sopra i riquadri; **sfondo di Start** con una tua foto (riquadri trasparenti, parallasse) e
   **colore d'accento dalla foto** (il colore dominante, tra i 20 di Windows Phone).
-- **Lista app**: tutte le app di tutti i profili, ordine alfabetico, jump list con la **★ delle app recenti**, **ricerca**
-  che ignora maiuscole e accenti e che trova anche **contatti**, **schermate delle impostazioni di Android** e, in
-  fondo, una **ricerca sul web** (DuckDuckGo). **Nascondi app** dal menu (si riportano indietro dalle impostazioni).
+- **Lista app**: tutte le app di tutti i profili, ordine alfabetico, jump list con la **★ delle app recenti**, **ricerca
+  indicizzata** (vedi sotto) che trova app, impostazioni del launcher, ciò che c'è su Start, contatti, impostazioni di Android,
+  eventi e, in fondo, una **ricerca sul web** (DuckDuckGo). **Nascondi app** dal menu (si riportano indietro dalle impostazioni).
 - Le **36 app stock di Windows Phone 8.1** compaiono accanto all'app vera che ne fa le veci (con il glifo Metro).
+
+### La ricerca
+
+La casella in cima alla lista app non scorre più i nomi uno per uno: le app (e le impostazioni, e i tile di Start) sono in un
+**indice** costruito una volta (`data/SearchIndex.kt`), un vocabolario ordinato delle parole che rimanda a chi le ha, che si
+rifà solo quando cambiano le app o i conteggi di apertura. Cosa trova, dal meglio al peggio:
+
+1. la **parola uguale**, poi una che **comincia** così, poi le **iniziali** dei nomi (`gm` trova *Google Maps*, `ytm` *YouTube Music*:
+   conta anche la maiuscola in mezzo), poi una parola che ce l'ha **dentro**;
+2. **più parole, in qualunque ordine**: `google ma` trova *Google Maps* e non ogni app di Google, `maps google` pure;
+3. le **parole che dicono a cosa serve** un'app, in italiano e in inglese (`email` trova *Posta*, `navigatore` *Mappe*, `chiamate` *Telefono*), le
+   parole del **pacchetto** (`chrome` trova l'app a cui *Internet* fa da stock; `google` le app di Google), la **categoria** e il **profilo**
+   (`lavoro`). Contano meno del nome, e da quattro lettere in su (con `cal` non esce il *Telefono* per *call*);
+4. a parità, le app **che apri più spesso** vengono prima (il conteggio resta sul telefono; non scavalca mai una corrispondenza migliore);
+5. se **niente** corrisponde, si perdonano gli **errori di battitura** (`calnedar` trova *Calendario*, `parallx` trova *parallasse*).
+
+Oltre alle app, la ricerca globale elenca (ognuno si spegne nella pagina *ricerca* delle impostazioni): le **impostazioni del
+launcher** (si trovano per nome, per ciò a cui servono o per sezione, e un tocco apre la pagina **scorrendo fino a quella impostazione e
+illuminandola**), ciò che c'è **su Start** (le parole delle note e delle liste, i conti alla rovescia, i siti; i contatori e gli orologi no: un
+tocco li cambierebbe), i contatti, le impostazioni di Android (anche in italiano), gli eventi e il web. Le risposte (calcoli, conversioni, timer…) restano in cima.
 
 ### Gesti e navigazione
 
@@ -196,7 +216,7 @@ Android non lascia a un launcher la sostituzione della schermata di blocco. Quel
 Tre aspetti, da *start+theme*, scuri o chiari (o a orario) tutti e tre. Lo stile cambia forme, superfici, tipo di lettere e
 controlli (pulsanti, interruttori, campi, cursori), non la struttura: i gesti e la disposizione sono gli stessi.
 
-- **Classic**: il launcher come era, riquadri piatti e quadrati, lettere sottili, interruttore con "On/Off", tilt alla pressione.
+- **Classic**: il launcher come era, riquadri piatti e quadrati, lettere sottili, interruttore con "On/Off" (il cursore ha lo stesso margine su ogni lato del binario, da spento e da acceso; le due parole occupano sempre lo stesso spazio, così l'etichetta non va a capo in modo diverso quando lo giri; TalkBack lo legge come un interruttore e lo può girare senza toccare lo schermo), tilt alla pressione.
 - **Modern Glass**: vetro smerigliato **disegnato da zero** su uno sfondo che brilla (macchie di luce nel colore d'accento e
   in due sue variazioni di tonalità): riquadri e pannelli arrotondati, trasparenti, con riflesso in alto a sinistra, ombra
   sotto e bordo luminoso; pulsanti a capsula, interruttore tondo bianco, campi arrotondati. Il vetro è un'illusione
@@ -217,7 +237,7 @@ controlli (pulsanti, interruttori, campi, cursori), non la struttura: i gesti e 
 
 ### Live tile delle altre app
 
-Con l'accesso alle notifiche e l'interruttore *contenuti dal vivo delle altre app* (pagina *notifiche+azioni*, spento finché non lo
+Con l'accesso alle notifiche e l'interruttore *contenuti dal vivo delle altre app* (pagina *live tile*, spento finché non lo
 accendi: metterebbe il testo dei messaggi su Start), il riquadro di **WhatsApp, Telegram, Instagram, Reddit** o di qualsiasi altra
 app si gira per mostrare cosa succede, **leggendo le sue notifiche** (nessuna rete, nessun permesso in più; non uso le API delle
 app, che non ci sono):
@@ -263,7 +283,7 @@ Un'app può mettere un titolo, una riga di testo e un numero sul **proprio** til
 
 ### Altre trenta funzioni
 
-Tutte si spengono o si scelgono nelle impostazioni (pagine *app*, *gesti*, *notifiche+azioni*, *start+theme*); quelle che toccano
+Tutte si spengono o si scelgono nelle impostazioni (pagine *lista app*, *ricerca*, *gesti*, *notifiche+azioni*, *schermata start*, *accessibilità*); quelle che toccano
 dati dell'app (conteggi, ricerche recenti) restano sul telefono e **non entrano nei backup**.
 
 **Lista app**
@@ -375,7 +395,7 @@ entrano nel backup del layout (la lista, il contatore e le città sì, i complea
 
 ### Orizzontale
 
-Si sceglie in *schermo*: **solo verticale** (come prima), **segui la rotazione del telefono** (rispetta il blocco di Android)
+Si sceglie in *schermo+lingua*: **solo verticale** (come prima), **segui la rotazione del telefono** (rispetta il blocco di Android)
 o **solo orizzontale**. In orizzontale Start e le altre pagine tengono fuori dai bordi laterali il ritaglio della fotocamera.
 
 ### Accessibilità
@@ -448,33 +468,52 @@ schermo. Lo stato "acceso" non viaggia nei backup, così un file non può mai ac
 
 ## Le impostazioni, sezione per sezione
 
-Si aprono dalla voce *Settings* nella lista app. Sono due pagine di un pivot (come in Windows Phone), ogni sezione ha la
-sua pagina; tutto è salvato come un unico JSON (`SettingsCodec`) che legge anche le versioni vecchie.
+Si aprono dalla voce *Settings* nella lista app. Sono **quattro pagine di un pivot** (come in Windows Phone) raggruppate per ciò che stai
+cercando: **come appare**, **come si comporta**, **cosa fa con le app** e **gli strumenti**; ogni sezione ha la sua pagina. Tutto è
+salvato come un unico JSON (`SettingsCodec`) che legge anche le versioni vecchie.
 
-**launcher**
+In cima c'è una **casella di ricerca**: scrivi cosa cerchi (*nero*, *dimensione testo*, `orologio`, `backup`, anche in inglese o con un
+errore) e vedi le impostazioni, e le sezioni, che corrispondono; un tocco apre la pagina e **ti porta all'impostazione**. Tutte le
+impostazioni sono in un solo elenco, l'**indice** (`ui/settings/SettingsIndex.kt`): ognuna ha un id, la sezione, il nome e le parole che
+la trovano. Un test (`SettingsIndexTest`) disegna ogni pagina e controlla che le impostazioni che ha siano **esattamente** quelle
+dell'indice: una impostazione nuova non indicizzata, o spostata senza aggiornarlo, fa fallire i test.
+
+**aspetto**
 
 | Sezione | Cosa c'è |
 |---|---|
-| start+theme | **tema** (Classic, Modern Glass, Modern Droid) e, per Droid, i colori dello sfondo; scuro / chiaro / come il telefono / a orario / **dal tramonto all'alba**; colore d'accento (20), **colore tuo con i cursori** o dalla foto; foto di Start, **inquadratura** e parallasse; più riquadri; **nomi e spaziatura dei riquadri**; numero di schermate Start; **ripristina Start**; orologio (ore, sveglia, settimana, tocchi); **dimensione del testo**; **testo marcato**; **carattere del telefono**; barra di stato nascosta; nero OLED |
-| schermo | rotazione (verticale, segui il telefono, orizzontale); **lingua del launcher**; animazione di apertura; massima frequenza di aggiornamento (120 Hz, tolta mentre si risparmia batteria) |
-| batteria | risparmio energetico (automatico, sempre, mai) e cosa cambia; cosa il launcher non fa quando non è sullo schermo |
-| accessibilità | riduci il movimento; alto contrasto; TalkBack e scorciatoia alle impostazioni di Android |
+| start+theme | **tema** (Classic, Modern Glass, Modern Droid) e, per Droid, i colori dello sfondo; scuro / chiaro / come il telefono / a orario / **dal tramonto all'alba**; nero OLED; colore d'accento (20), **colore tuo con i cursori** o dalla foto; foto di Start, **inquadratura** e parallasse |
+| schermata start | **riquadri** (più riquadri, nomi, spaziatura, numero di schermate Start); **orologio e data** (ore, sveglia, settimana, tocchi); barra di stato nascosta; **ripristina Start** |
 | icone e temi | icon pack; esporta e importa un file tema |
-| gesti | tirata dal bordo, indietro dal bordo, doppio tocco, **Home premuto due volte**, due dita in giù e in su (*app recenti*, screenshot, menu di spegnimento, schermo diviso, pannelli di Android, **un'app a scelta**), suono e vibrazione, servizio di accessibilità |
-| notifiche+azioni | i quattro pulsanti dell'Action Center; **volume, luminosità, suoneria e torcia** nel pannello, **ore silenziose subito**, posticipa notifiche; accesso alle notifiche; mostra le notifiche sui riquadri; risposta rapida; raggruppamento |
-| live tile | città del meteo (ricerca o posizione) e gradi; **contenuti dal vivo delle altre app** (interruttore, accesso alle notifiche, cosa mostrare, app per app) e **cosa legge ora il launcher**; lascia pubblicare i tile alle app, ed elenco di chi l'ha fatto |
-| app | gruppi in cima alla lista (più usate, nuove), filtro per categoria, **elenco compatto**; cosa cerca la ricerca (contatti, impostazioni, **calendario**, web), **motore**, risposte, **valute**, ricerche recenti; app nascoste, rinominate e bloccate |
+| accessibilità | **dimensione, peso e carattere del testo**; riduci il movimento; alto contrasto; TalkBack e scorciatoia alle impostazioni di Android |
+| blocco schermo | anteprima, foto (anche nel blocco schermo di Android), cosa mostrare (anche **meteo** e **prossimo evento**), impostazioni del salvaschermo |
 
-**tools**
+**uso**
 
 | Sezione | Cosa c'è |
 |---|---|
-| blocco schermo | anteprima, foto, cosa mostrare (anche **meteo** e **prossimo evento**), foto nella schermata di blocco di Android, impostazioni del salvaschermo |
+| schermo+lingua | rotazione (verticale, segui il telefono, orizzontale); animazione di apertura; massima frequenza di aggiornamento (120 Hz, tolta mentre si risparmia batteria); **lingua del launcher** |
+| gesti | tirata dal bordo, indietro dal bordo, doppio tocco, **Home premuto due volte**, due dita in giù e in su (*app recenti*, screenshot, menu di spegnimento, schermo diviso, pannelli di Android, **un'app a scelta**), app recenti, servizio di accessibilità, suono e vibrazione al tocco |
+| notifiche+azioni | **Action Center**: i quattro pulsanti, **volume, luminosità, suoneria e torcia** nel pannello; **notifiche**: accesso, mostrale sui riquadri, risposta rapida, raggruppamento |
 | voce | microfono nella ricerca; riconoscimento sul telefono; *chiama subito*; prova; cosa si può dire |
+| batteria | risparmio energetico (automatico, sempre, mai) e cosa cambia; cosa il launcher non fa quando non è sullo schermo |
+
+**app**
+
+| Sezione | Cosa c'è |
+|---|---|
+| lista app | gruppi in cima alla lista (più usate, nuove), filtro per categoria, **elenco compatto**; app nascoste, rinominate e bloccate |
+| ricerca | **dove cerca** (contatti, impostazioni di Android, **impostazioni del launcher**, **ciò che c'è su Start**, **calendario**); **web** e motore; **risposte** e **valute**; **cronologia** delle ricerche |
+| live tile | città del meteo (ricerca o posizione) e gradi; **contenuti dal vivo delle altre app** (interruttore, accesso alle notifiche, cosa mostrare, app per app) e **cosa legge ora il launcher**; lascia pubblicare i tile alle app, ed elenco di chi l'ha fatto |
 | profili | lavoro e spazio privato: pausa e riattiva; mostra le loro app |
-| backup | file o cartella, ogni quanto, ripristina; sincronizzazione con passphrase; esporta e importa |
+
+**strumenti**
+
+| Sezione | Cosa c'è |
+|---|---|
+| backup+sync | file o cartella, ogni quanto, ripristina; sincronizzazione con passphrase; esporta e importa |
 | angolo bambini | app e avvio |
-| informazioni | versione e dettagli del launcher |
+| informazioni | versione e dettagli del launcher; rivedi il tutorial; crediti |
 
 ## Cosa non si può fare da un launcher, e come l'ho aggirato
 
@@ -551,7 +590,7 @@ solo se il launcher c'era già.
 ./gradlew assembleRelease        # con R8
 ```
 
-**1480 test**, nessuno saltato; il lint non ha errori.
+**1582 test**, nessuno saltato; il lint non ha errori.
 
 - Logica pura: griglia e colonne dalla larghezza, operazioni su Start, regole di trascinamento e di rilascio, ricerca,
   salvataggio e migrazione delle impostazioni, comandi vocali, pianificazione della sincronizzazione, **cifratura** (anche
@@ -588,10 +627,11 @@ app/src/main/java/com/metrowin/launcher/
                   scorciatoie, LaunchPlan, LockInfo, Tutorial (passi, bisogni, controllo di cosa è già concesso),
                   risposte della ricerca (Calculator, UnitConverter, QuickAnswers, Currencies, DateAnswers, Rolls, WorldCities), AppShortcuts, AppUsage, SoundAndBrightness,
                   riquadri nuovi (Checklist, MoonPhase, Birthdays), CalendarSearch, SafeHttp (l'unica via verso la rete)
+                  ricerca (SearchIndex: l'indice, AppSearch: app e alias, TileSearch: note e liste su Start, GlobalSearch: impostazioni di Android)
   notifications/  NotificationService, NotificationHub (anche risposta), NotificationGroups
   model/          Tile, Folder, TileSize, AppItem, Glyph
   gestures/       servizio di accessibilità (blocco schermo, recenti, screenshot…), tile delle Impostazioni rapide
-  ui/             start/, apps/, actioncenter/, settings/ (una pagina per sezione), voice/, lock/ (schermata e salvaschermo),
+  ui/             start/, apps/, actioncenter/, settings/ (una pagina per sezione, SettingsIndex: l'elenco di tutte le impostazioni, SettingsFocus: scorri fino a una impostazione), voice/, lock/ (schermata e salvaschermo),
                   weather/, kids/, tutorial/ (giro iniziale e richieste), anim/, gesture/, components/, theme/ (compreso Accessibility)
 ```
 

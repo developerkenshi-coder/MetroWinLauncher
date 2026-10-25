@@ -37,11 +37,23 @@ class SettingsCodecTest {
         searchEngine = com.metrowin.launcher.data.SearchEngine.Brave, searchAnswers = false, rememberSearches = false,
         showFrequentApps = false, showNewApps = false, showCategories = false,
         appLabels = mapOf("app:a" to "Alfa"), lockedApps = setOf("app:b"),
+        searchLauncherSettings = false, searchTiles = false,
     )
 
     @Test
     fun everySettingSurvivesAnEncodeAndDecode() {
         assertEquals(custom, SettingsCodec.decode(SettingsCodec.encode(custom)))
+    }
+
+    @Test
+    fun theSearchLooksInTheSettingsOfTheLauncherAndAtStartUnlessTold() {
+        val defaults = LauncherSettings()
+        assertTrue(defaults.searchLauncherSettings && defaults.searchTiles)
+        // A file written before these switches existed leaves them on; the file says when they are off.
+        val old = SettingsCodec.decode("""{"searchWeb":false}""")!!
+        assertTrue(old.searchLauncherSettings && old.searchTiles)
+        val off = SettingsCodec.decode("""{"searchLauncherSettings":false,"searchTiles":false}""")!!
+        assertFalse(off.searchLauncherSettings || off.searchTiles)
     }
 
     @Test

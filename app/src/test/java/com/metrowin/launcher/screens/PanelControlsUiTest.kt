@@ -139,7 +139,9 @@ class PanelControlsUiTest : ScreenshotBase() {
         show { Gestures() }
         advance(500)
         tap("gestures:twoup:app:header")
-        compose.onNode(androidx.compose.ui.test.hasSetTextAction()).performTextInput("char")
+        compose.onNode(
+            androidx.compose.ui.test.hasSetTextAction() and androidx.compose.ui.test.hasAnyAncestor(androidx.compose.ui.test.hasTestTag("gestures:twoup:app:query")),
+        ).performTextInput("char")
         compose.waitForIdle()
         advance(200)
         compose.onNodeWithTag("gestures:twoup:app:app:Charlie").assertExists()

@@ -78,6 +78,8 @@ object SettingsCodec {
         put("hiddenApps", JSONArray(s.hiddenApps.sorted()))
         put("searchContacts", s.searchContacts)
         put("searchSettings", s.searchSettings)
+        put("searchLauncherSettings", s.searchLauncherSettings)
+        put("searchTiles", s.searchTiles)
         put("searchWeb", s.searchWeb)
         put("searchEngine", s.searchEngine.code)
         put("searchAnswers", s.searchAnswers)
@@ -206,6 +208,8 @@ object SettingsCodec {
             hiddenApps = strings("hiddenApps", base.hiddenApps).toSet(),
             searchContacts = o.optBoolean("searchContacts", base.searchContacts),
             searchSettings = o.optBoolean("searchSettings", base.searchSettings),
+            searchLauncherSettings = o.optBoolean("searchLauncherSettings", base.searchLauncherSettings),
+            searchTiles = o.optBoolean("searchTiles", base.searchTiles),
             searchWeb = o.optBoolean("searchWeb", base.searchWeb),
             searchEngine = if (o.has("searchEngine")) SearchEngine.fromCode(o.optString("searchEngine")) else base.searchEngine,
             searchAnswers = o.optBoolean("searchAnswers", base.searchAnswers),
