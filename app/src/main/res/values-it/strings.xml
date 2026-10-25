@@ -464,4 +464,13 @@
     <string name="notif_inline_reply_hint">Mostra un link “rispondi” sui messaggi a cui si può rispondere, e manda la risposta all\'app che l\'ha pubblicato.</string>
     <string name="notif_group">raggruppa le notifiche per app</string>
     <string name="notif_group_hint">Un\'app con più notifiche appare come una riga che si può aprire. Scorrerla via le cancella tutte.</string>
+
+    <!-- third-party tiles -->
+    <string name="tp_heading">tile pubblicati dalle app</string>
+    <string name="tp_toggle">lascia che le app pubblichino il testo del loro tile</string>
+    <string name="tp_hint">Un\'app che chiede il permesso può mettere un titolo, una riga di testo e un numero sul proprio tile, come un live tile di Windows Phone. Solo sul proprio tile: il launcher sa chi sta chiedendo.</string>
+    <string name="tp_none">Nessuna app ha ancora pubblicato un tile.</string>
+    <string name="tp_clear">cancella</string>
+    <string name="permission_publish_tile_label">mettere contenuti dal vivo sul proprio tile in MetroWin Launcher</string>
+    <string name="permission_publish_tile_description">Permette all\'app di mostrare un titolo, una riga di testo e un numero sul proprio tile nella schermata Start.</string>
 </resources>

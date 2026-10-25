@@ -471,4 +471,13 @@
     <string name="notif_inline_reply_hint">Shows a “reply” link on messages that can be answered, and sends your answer to the app that posted it.</string>
     <string name="notif_group">group notifications by app</string>
     <string name="notif_group_hint">An app with several notifications shows as one line you can open. Swiping it away clears them all.</string>
+
+    <!-- third-party tiles -->
+    <string name="tp_heading">tiles published by apps</string>
+    <string name="tp_toggle">let apps publish their own tile text</string>
+    <string name="tp_hint">An app that asks for the permission can put a title, a line of text and a number on its own tile, like a Windows Phone live tile. Only its own tile: the launcher knows who is asking.</string>
+    <string name="tp_none">No app has published a tile yet.</string>
+    <string name="tp_clear">clear</string>
+    <string name="permission_publish_tile_label">put live content on its own tile in MetroWin Launcher</string>
+    <string name="permission_publish_tile_description">Lets the app show a title, a line of text and a number on its own tile on the Start screen.</string>
 </resources>

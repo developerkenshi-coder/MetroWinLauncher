@@ -8,6 +8,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.data.AboutInfo
 import com.metrowin.launcher.data.IconPackInfo
 import com.metrowin.launcher.data.PlaceMatch
+import com.metrowin.launcher.data.ThirdPartyTile
 import com.metrowin.launcher.data.ProfileInfo
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.model.AppItem
@@ -83,6 +84,9 @@ class SettingsEnv(
     val profiles: List<ProfileInfo> = emptyList(),
     val onSetProfilePaused: (serial: Long, paused: Boolean) -> Unit = { _, _ -> },
     val onTryVoice: () -> Unit = {},
+    /** The tiles apps have published, and a way to clear one. */
+    val publishedTiles: List<ThirdPartyTile> = emptyList(),
+    val onClearPublishedTile: (String) -> Unit = {},
     /** The photo of the lock screen, when it has its own. */
     val lockPhoto: ImageBitmap? = null,
     val onPickLockPhoto: (Uri) -> Unit = {},

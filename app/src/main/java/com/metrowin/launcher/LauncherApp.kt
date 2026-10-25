@@ -190,6 +190,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val appsPage = pages.size
 
     val profiles by vm.profiles.collectAsStateWithLifecycle()
+    val publishedTiles by vm.publishedTiles.collectAsStateWithLifecycle()
     val installedIconPacks by vm.installedIconPacks.collectAsStateWithLifecycle()
     val backupFolderName by vm.backupFolderName.collectAsStateWithLifecycle()
     val weather by vm.weather.collectAsStateWithLifecycle()
@@ -921,6 +922,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                             profiles = profiles,
                             onSetProfilePaused = vm::setProfilePaused,
                             onTryVoice = { voiceRequest++ },
+                            publishedTiles = publishedTiles,
+                            onClearPublishedTile = vm::clearPublishedTile,
                             lockPhoto = lockPhoto,
                             onPickLockPhoto = vm::setLockPhoto,
                             onClearLockPhoto = vm::clearLockPhoto,

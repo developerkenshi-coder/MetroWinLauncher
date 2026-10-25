@@ -39,6 +39,9 @@ import com.metrowin.launcher.data.OpenMeteo
 import com.metrowin.launcher.data.IconPackInfo
 import com.metrowin.launcher.data.IconPackRepository
 import com.metrowin.launcher.data.PlaceMatch
+import com.metrowin.launcher.data.ThirdPartyTile
+import com.metrowin.launcher.data.ThirdPartyTiles
+import com.metrowin.launcher.data.TileFeed
 import com.metrowin.launcher.data.SafSyncStorage
 import com.metrowin.launcher.data.SyncEngine
 import com.metrowin.launcher.data.SyncLocal
@@ -188,16 +191,28 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     /** How many notifications each app has: the counters on the tiles. */
     val badges: StateFlow<Map<String, Int>> =
-        NotificationHub.entries.map(NotificationHub::countsByPackage).stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+        combine(NotificationHub.entries, TileFeed.tiles, _settings) { entries, published, settings ->
+            val counts = NotificationHub.countsByPackage(entries)
+            // The number an app published for its own tile wins over the count of its notifications.
+            if (settings.thirdPartyTiles) counts + ThirdPartyTiles.counts(published) else counts
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
     private val _notificationAccess = MutableStateFlow(hasNotificationAccess())
     val notificationAccess: StateFlow<Boolean> = _notificationAccess.asStateFlow()
 
     /** The latest notification of each app, for the tiles that flip to show it. Empty unless the setting is on. */
     val peeks: StateFlow<Map<String, TilePeek>> =
-        combine(NotificationHub.entries, _settings) { entries, settings ->
-            if (settings.notificationPeek) NotificationHub.latestByPackage(entries) else emptyMap()
+        combine(NotificationHub.entries, TileFeed.tiles, _settings) { entries, published, settings ->
+            val fromNotifications = if (settings.notificationPeek) NotificationHub.latestByPackage(entries) else emptyMap()
+            // What an app published for its own tile is what it wants the tile to say.
+            if (settings.thirdPartyTiles) fromNotifications + ThirdPartyTiles.peeks(published) else fromNotifications
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+
+    /** The tiles apps have published, most recent first, for the settings. */
+    val publishedTiles: StateFlow<List<ThirdPartyTile>> =
+        TileFeed.tiles.map { it.values.sortedByDescending(ThirdPartyTile::updatedAt) }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    fun clearPublishedTile(packageName: String) = TileFeed.clear(getApplication(), packageName)
 
     val torchOn: StateFlow<Boolean> = quickActions.torchOn
 
@@ -214,6 +229,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val stopObservingPackages: () -> Unit
 
     init {
+        TileFeed.load(application)
         applyIconPack(_settings.value.iconPack)
         reloadApps()
         if (_settings.value.hasStartBackground) loadBackground()

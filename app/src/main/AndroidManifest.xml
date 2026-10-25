@@ -16,6 +16,13 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
+
+    <!-- What an app asks for to put its own live content on its tile (see TilePublishProvider). -->
+    <permission
+        android:name="com.metrowin.launcher.permission.PUBLISH_TILE"
+        android:description="@string/permission_publish_tile_description"
+        android:label="@string/permission_publish_tile_label"
+        android:protectionLevel="normal" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
 
     <!--
@@ -167,6 +174,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <provider
+            android:name=".data.TilePublishProvider"
+            android:authorities="${applicationId}.tiles"
+            android:exported="true"
+            android:permission="com.metrowin.launcher.permission.PUBLISH_TILE" />
 
         <!-- The Metro lock screen, offered to Android as a screen saver. -->
         <service

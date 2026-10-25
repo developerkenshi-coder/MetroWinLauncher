@@ -6,6 +6,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import com.metrowin.launcher.ui.theme.LocalAccent
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -109,5 +113,34 @@ fun LiveTilesPage(env: SettingsEnv) {
             hint = stringResource(R.string.weather_hint),
             tag = "weather:fahrenheit",
         )
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            SettingHeading(stringResource(R.string.tp_heading))
+            ToggleSetting(
+                label = stringResource(R.string.tp_toggle),
+                checked = settings.thirdPartyTiles,
+                onChange = { value -> env.onChange { it.copy(thirdPartyTiles = value) } },
+                hint = stringResource(R.string.tp_hint),
+                tag = "tiles:thirdparty",
+            )
+            if (env.publishedTiles.isEmpty()) {
+                SettingHint(stringResource(R.string.tp_none), Modifier.testTag("tiles:none"))
+            } else {
+                env.publishedTiles.forEach { tile ->
+                    val label = env.apps.firstOrNull { it.packageName == tile.packageName }?.label ?: tile.packageName
+                    Row(Modifier.fillMaxWidth().testTag("tiles:published:${tile.packageName}"), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            MetroText(label, size = 20.sp)
+                            MetroText(
+                                listOf(tile.title, tile.text, if (tile.count > 0) "(${tile.count})" else "").filter { it.isNotBlank() }.joinToString(" "),
+                                size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+                            )
+                        }
+                        Box(Modifier.metroPress(onClick = { env.onClearPublishedTile(tile.packageName) }).padding(8.dp).testTag("tiles:clear:${tile.packageName}")) {
+                            MetroText(stringResource(R.string.tp_clear), size = 17.sp, weight = FontWeight.Normal, color = LocalAccent.current)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
