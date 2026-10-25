@@ -2,13 +2,16 @@
 # Raccoglie dal telefono (collegato con il debug USB) quello che serve per capire quanto lavora MetroWin Launcher.
 # Si esegue sul computer a cui il telefono è collegato, con adb installato.
 #
-#   tools/battery-report.sh reset      all'inizio: azzera le statistiche della batteria, dei processi e del log
-#   (usa il telefono come sempre per qualche ora, staccato dal cavo)
-#   tools/battery-report.sh collect    alla fine: scrive battery-report-<data>.tar.gz da mandare indietro
+#   tools/battery-report.sh collect    legge e scrive battery-report-<data>.tar.gz da mandare indietro
 #
-# Si legge soltanto: nessun comando cambia impostazioni. "reset" cancella solo le statistiche di consumo di Android (che
-# ricominciano da zero) e il log. Non si raccoglie il contenuto delle notifiche, delle foto o dei contatti; ci sono i nomi dei
-# pacchetti delle app (le statistiche di Android li elencano) e le righe di log del launcher. Non serve il "bugreport" completo.
+# "collect" SOLO LEGGE: dumpsys, getprop, logcat -d. Non installa nulla, non cambia impostazioni, non azzera niente. Android tiene
+# già le statistiche dall'ultima carica completa (batterystats) e delle ultime 24 ore (procstats): basta dopo qualche ora di uso
+# normale staccato dal cavo. Non si raccoglie il contenuto delle notifiche, delle foto o dei contatti; ci sono i nomi dei pacchetti
+# delle app (le statistiche di Android li elencano) e le righe di log del launcher. Non serve il "bugreport" completo.
+#
+#   tools/battery-report.sh reset      FACOLTATIVO, e l'unico comando che cambia qualcosa: azzera le statistiche di consumo di
+#                                      Android e il log, per misurare da un momento preciso. Se il telefono è quello di tutti i giorni
+#                                      non serve: salta questo passo.
 #
 # Con più dispositivi collegati: ANDROID_SERIAL=<numero di serie> tools/battery-report.sh collect
 
@@ -34,7 +37,6 @@ run() { "$ADB" shell "$@" 2>&1; }
 case "$1" in
 reset)
     run dumpsys batterystats --reset >/dev/null
-    run dumpsys batterystats --enable full-wake-history >/dev/null
     run dumpsys procstats --clear >/dev/null
     "$ADB" logcat -c
     echo "Fatto: statistiche azzerate. Usa il telefono come sempre, staccato dal cavo, per almeno 3-4 ore (meglio una giornata),"
