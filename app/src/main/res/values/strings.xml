@@ -391,7 +391,7 @@
     <string name="screen_orient_landscape">landscape only</string>
     <string name="screen_orient_hint">In landscape the Start screen fits more columns of tiles. “Follow the phone” respects the rotation lock of Android.</string>
     <string name="screen_high_refresh">highest refresh rate</string>
-    <string name="screen_high_refresh_hint">Asks the screen for its fastest mode (120 Hz and more) at the current resolution, but only while you use it: three seconds after the last touch the phone is free to go lower. Turn it off to let Android decide always and save more battery.</string>
+    <string name="screen_high_refresh_hint">Asks the screen for its fastest mode (120 Hz and more) at the current resolution, but only while you use it: three seconds after the last touch it asks for 60 Hz, the slowest rate that still looks smooth. Turn it off to let Android decide always.</string>
 
     <!-- icons and themes -->
     <string name="sec_icons">icons &amp; themes</string>
