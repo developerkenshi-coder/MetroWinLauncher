@@ -2,6 +2,7 @@ package com.metrowin.launcher.data
 
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.core.graphics.scale
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.ContactsContract
@@ -43,7 +44,7 @@ class ContactReader(private val context: Context) {
         val longest = max(bitmap.width, bitmap.height)
         val scaled = if (longest > MAX_SIDE) {
             val factor = MAX_SIDE.toFloat() / longest
-            Bitmap.createScaledBitmap(bitmap, (bitmap.width * factor).toInt(), (bitmap.height * factor).toInt(), true)
+            bitmap.scale((bitmap.width * factor).toInt(), (bitmap.height * factor).toInt())
         } else {
             bitmap
         }

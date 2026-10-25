@@ -43,6 +43,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -283,7 +284,7 @@ private fun GroupRow(group: NotificationItem.Group, app: AppItem?, open: Boolean
         Column(Modifier.weight(1f)) {
             MetroText(app?.label ?: group.latest.title, size = 18.sp, weight = FontWeight.Normal)
             MetroText(
-                stringResource(R.string.notif_group_count, group.entries.size),
+                pluralStringResource(R.plurals.notif_group_count, group.entries.size, group.entries.size),
                 size = 15.sp, color = LocalAccent.current,
                 modifier = Modifier.testTag("notification:group:count:${group.packageName}"),
             )

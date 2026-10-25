@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">MetroWin Launcher</string>
 
     <!-- Windows Phone stock apps, same names as on Windows Phone 8.1 -->
@@ -43,7 +43,6 @@
     <!-- start+theme (the launcher's own settings) -->
     <string name="settings_start_theme">start+theme</string>
     <string name="settings_header">SETTINGS</string>
-    <string name="theme_background">background</string>
     <string name="theme_dark">dark</string>
     <string name="theme_light">light</string>
     <string name="theme_accent">accent color</string>
@@ -125,7 +124,6 @@
     <string name="sec_start_theme_desc">Theme and accent color, Start photo, clock, number of Start screens</string>
     <string name="sec_actions_desc">Quick buttons of the Action Center, notification access, replies and groups</string>
     <string name="sec_kids_desc">Share the phone with a child, with only the apps you choose</string>
-    <string name="settings_back">back</string>
     <string name="theme_mode">theme</string>
     <string name="theme_auto_system">as Android</string>
     <string name="theme_auto_hours">by the hour</string>
@@ -168,7 +166,6 @@
     <string name="apps_hidden">hidden apps</string>
     <string name="apps_hidden_none">No hidden apps. Press and hold an app in the list and choose \"hide from list\".</string>
     <string name="apps_hidden_hint">Touch an app to show it in the list again. Hidden apps still open from their tile on Start.</string>
-    <string name="jump_recent">last opened app</string>
 
     <!-- torch tile, layout backup and about -->
     <string name="torch_title">Torch</string>
@@ -199,7 +196,6 @@
     <string name="edit_style_standard">standard tile</string>
     <string name="edit_style_iconic">iconic tile: icon and a big counter</string>
     <string name="edit_style_cycle">cycle tile: photos fading into one another</string>
-    <string name="peek_label">latest notification</string>
     <string name="edit_style_short_standard">standard</string>
     <string name="edit_style_short_iconic">iconic</string>
     <string name="edit_style_short_cycle">cycle</string>
@@ -256,7 +252,6 @@
     <string name="widgets_header">WIDGETS</string>
     <string name="widgets_title">widgets</string>
     <string name="widgets_none">This phone has no widgets to add.</string>
-    <string name="widgets_failed">That widget could not be added</string>
     <string name="widget_unavailable">widget not available</string>
 
     <!-- global search -->
@@ -365,8 +360,7 @@
     <string name="voice_permission">Allow the microphone to talk to the launcher.</string>
     <string name="voice_network">Speech recognition needs a connection for this language.</string>
     <string name="voice_busy">Speech recognition is busy. Try again in a moment.</string>
-    <string name="voice_mic">voice</string>
-    <string name="voice_cancel">cancel</string>
+    <string name="voice_cancel" tools:ignore="ButtonCase">cancel</string>
 
     <!-- voice settings -->
     <string name="sec_voice">voice</string>
@@ -433,8 +427,6 @@
     <string name="lock_dream">screen saver</string>
     <string name="lock_dream_button">open the screen saver settings</string>
     <string name="lock_dream_hint">Android does not let a launcher replace its lock screen. The Metro lock screen runs as the screen saver instead: pick “Metro lock screen” there, and it shows while the phone charges or rests on a dock. Swipe it up to leave.</string>
-    <string name="lock_alarm_label">alarm</string>
-    <string name="lock_notifications_label">notifications</string>
 
     <!-- launch animation -->
     <string name="screen_launch">opening an app</string>
@@ -466,7 +458,6 @@
     <string name="notif_reply_hint">your reply</string>
     <string name="notif_send">send</string>
     <string name="notif_reply_failed">Could not send the reply</string>
-    <string name="notif_group_count">%1$d notifications</string>
     <string name="notif_inline_reply">reply from the Action Center</string>
     <string name="notif_inline_reply_hint">Shows a “reply” link on messages that can be answered, and sends your answer to the app that posted it.</string>
     <string name="notif_group">group notifications by app</string>
@@ -498,7 +489,18 @@
     <string name="a11y_rename">Rename folder</string>
     <string name="a11y_release">Take the folder apart</string>
     <string name="a11y_more_options">More options</string>
-    <string name="a11y_tile_notifications">%1$s, %2$d notifications</string>
-    <string name="a11y_folder">%1$s, folder with %2$d apps</string>
-    <string name="a11y_tile_live">%1$s, %2$s</string>
+
+    <!-- quantities -->
+    <plurals name="notif_group_count">
+        <item quantity="one">%1$d notification</item>
+        <item quantity="other">%1$d notifications</item>
+    </plurals>
+    <plurals name="a11y_tile_notifications">
+        <item quantity="one">%1$s, %2$d notification</item>
+        <item quantity="other">%1$s, %2$d notifications</item>
+    </plurals>
+    <plurals name="a11y_folder">
+        <item quantity="one">%1$s, folder with %2$d app</item>
+        <item quantity="other">%1$s, folder with %2$d apps</item>
+    </plurals>
 </resources>

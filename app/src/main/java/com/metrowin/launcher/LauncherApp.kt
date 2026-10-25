@@ -58,7 +58,7 @@ import com.metrowin.launcher.data.GestureAction
 import com.metrowin.launcher.data.LaunchPlans
 import androidx.compose.ui.platform.LocalView
 import com.metrowin.launcher.data.TileGrid
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalWindowInfo
 import com.metrowin.launcher.data.SystemSettingDef
 import com.metrowin.launcher.data.VoiceCommand
 import com.metrowin.launcher.data.VoiceCommands
@@ -199,7 +199,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val battery by vm.battery.collectAsStateWithLifecycle()
     val liveNow = remember(live, torchOn, weather, battery) { live.copy(torchOn = torchOn, weather = weather, battery = battery) }
     val appContext = LocalContext.current
-    val screenWidthDp = LocalConfiguration.current.screenWidthDp.toFloat()
+    val screenWidthDp = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp().value }
     val about = remember(appContext) { AboutInfo.of(appContext) }
     val kidsMode = settings.kidsMode
     val kidsCells = remember(settings.kidsApps, items) {

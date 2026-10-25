@@ -41,7 +41,6 @@
 
     <string name="settings_start_theme">start+tema</string>
     <string name="settings_header">IMPOSTAZIONI</string>
-    <string name="theme_background">sfondo</string>
     <string name="theme_dark">scuro</string>
     <string name="theme_light">chiaro</string>
     <string name="theme_accent">colore d\'accento</string>
@@ -118,7 +117,6 @@
     <string name="sec_start_theme_desc">Tema e colore d\'accento, foto di Start, orologio, numero di schermate Start</string>
     <string name="sec_actions_desc">Pulsanti rapidi dell\'Action Center, accesso alle notifiche, risposte e gruppi</string>
     <string name="sec_kids_desc">Condividi il telefono con un bambino, solo con le app che scegli</string>
-    <string name="settings_back">indietro</string>
     <string name="theme_mode">tema</string>
     <string name="theme_auto_system">come Android</string>
     <string name="theme_auto_hours">a orari</string>
@@ -161,7 +159,6 @@
     <string name="apps_hidden">app nascoste</string>
     <string name="apps_hidden_none">Nessuna app nascosta. Tieni premuta un\'app nella lista e scegli \"nascondi dalla lista\".</string>
     <string name="apps_hidden_hint">Tocca un\'app per mostrarla di nuovo nella lista. Le app nascoste si aprono ancora dal loro riquadro su Start.</string>
-    <string name="jump_recent">ultima app aperta</string>
 
     <!-- torch tile, layout backup and about -->
     <string name="torch_title">Torcia</string>
@@ -192,7 +189,6 @@
     <string name="edit_style_standard">riquadro standard</string>
     <string name="edit_style_iconic">riquadro iconic: icona e contatore grande</string>
     <string name="edit_style_cycle">riquadro cycle: foto che sfumano una nell\'altra</string>
-    <string name="peek_label">ultima notifica</string>
     <string name="edit_style_short_standard">standard</string>
     <string name="edit_style_short_iconic">iconic</string>
     <string name="edit_style_short_cycle">cycle</string>
@@ -249,7 +245,6 @@
     <string name="widgets_header">WIDGET</string>
     <string name="widgets_title">widget</string>
     <string name="widgets_none">Questo telefono non ha widget da aggiungere.</string>
-    <string name="widgets_failed">Non è stato possibile aggiungere quel widget</string>
     <string name="widget_unavailable">widget non disponibile</string>
 
     <!-- global search -->
@@ -358,7 +353,6 @@
     <string name="voice_permission">Consenti il microfono per parlare al launcher.</string>
     <string name="voice_network">Il riconoscimento vocale ha bisogno di una connessione per questa lingua.</string>
     <string name="voice_busy">Il riconoscimento vocale è occupato. Riprova tra un attimo.</string>
-    <string name="voice_mic">voce</string>
     <string name="voice_cancel">annulla</string>
 
     <!-- voice settings -->
@@ -426,8 +420,6 @@
     <string name="lock_dream">salvaschermo</string>
     <string name="lock_dream_button">apri le impostazioni del salvaschermo</string>
     <string name="lock_dream_hint">Android non permette a un launcher di sostituire il suo blocco schermo. Il blocco schermo Metro funziona invece come salvaschermo: scegli “Blocco schermo Metro” lì, e compare mentre il telefono si ricarica o sta su un dock. Scorri verso l\'alto per uscire.</string>
-    <string name="lock_alarm_label">sveglia</string>
-    <string name="lock_notifications_label">notifiche</string>
 
     <!-- launch animation -->
     <string name="screen_launch">apertura di un\'app</string>
@@ -459,7 +451,6 @@
     <string name="notif_reply_hint">la tua risposta</string>
     <string name="notif_send">invia</string>
     <string name="notif_reply_failed">Impossibile inviare la risposta</string>
-    <string name="notif_group_count">%1$d notifiche</string>
     <string name="notif_inline_reply">rispondi dall\'Action Center</string>
     <string name="notif_inline_reply_hint">Mostra un link “rispondi” sui messaggi a cui si può rispondere, e manda la risposta all\'app che l\'ha pubblicato.</string>
     <string name="notif_group">raggruppa le notifiche per app</string>
@@ -491,7 +482,21 @@
     <string name="a11y_rename">Rinomina cartella</string>
     <string name="a11y_release">Scomponi la cartella</string>
     <string name="a11y_more_options">Altre opzioni</string>
-    <string name="a11y_tile_notifications">%1$s, %2$d notifiche</string>
-    <string name="a11y_folder">%1$s, cartella con %2$d app</string>
-    <string name="a11y_tile_live">%1$s, %2$s</string>
+
+    <!-- quantities -->
+    <plurals name="notif_group_count">
+        <item quantity="one">%1$d notifica</item>
+        <item quantity="other">%1$d notifiche</item>
+        <item quantity="many">%1$d notifiche</item>
+    </plurals>
+    <plurals name="a11y_tile_notifications">
+        <item quantity="one">%1$s, %2$d notifica</item>
+        <item quantity="other">%1$s, %2$d notifiche</item>
+        <item quantity="many">%1$s, %2$d notifiche</item>
+    </plurals>
+    <plurals name="a11y_folder">
+        <item quantity="one">%1$s, cartella con %2$d app</item>
+        <item quantity="other">%1$s, cartella con %2$d app</item>
+        <item quantity="many">%1$s, cartella con %2$d app</item>
+    </plurals>
 </resources>

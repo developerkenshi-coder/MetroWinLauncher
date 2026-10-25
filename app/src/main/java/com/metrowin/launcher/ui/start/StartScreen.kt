@@ -63,6 +63,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.metrowin.launcher.R
 import androidx.compose.ui.semantics.CustomAccessibilityAction
@@ -651,8 +652,8 @@ private fun Modifier.tileSemantics(
     val currentCell by rememberUpdatedState(cell)
     val notifications = (cell as? AppCell)?.let { badges[it.item.packageName] ?: 0 } ?: 0
     val state = when {
-        cell is FolderCell -> stringResource(R.string.a11y_folder, cell.folder.name, cell.items.size)
-        notifications > 0 -> stringResource(R.string.a11y_tile_notifications, (cell as AppCell).item.label, notifications)
+        cell is FolderCell -> pluralStringResource(R.plurals.a11y_folder, cell.items.size, cell.folder.name, cell.items.size)
+        notifications > 0 -> pluralStringResource(R.plurals.a11y_tile_notifications, notifications, (cell as AppCell).item.label, notifications)
         else -> null
     }
     val unpin = stringResource(if (cell is FolderCell) R.string.a11y_release else R.string.a11y_unpin)

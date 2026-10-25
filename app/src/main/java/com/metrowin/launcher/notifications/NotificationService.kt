@@ -1,6 +1,7 @@
 package com.metrowin.launcher.notifications
 
 import android.app.Notification
+import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 
@@ -56,7 +57,8 @@ class NotificationService : NotificationListenerService() {
     private fun replyOf(notification: Notification): ReplyAction? {
         val actions = notification.actions?.toList().orEmpty()
         fun Notification.Action.freeText() = remoteInputs?.firstOrNull { it.allowFreeFormInput }
-        val action = actions.firstOrNull { it.semanticAction == Notification.Action.SEMANTIC_ACTION_REPLY && it.freeText() != null }
+        // The semantic "reply" first (Android 9 and later says which action it is), then any action that takes text.
+        val action = actions.firstOrNull { Build.VERSION.SDK_INT >= 28 && it.semanticAction == Notification.Action.SEMANTIC_ACTION_REPLY && it.freeText() != null }
             ?: actions.firstOrNull { it.freeText() != null }
             ?: return null
         val input = action.freeText() ?: return null

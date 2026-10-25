@@ -146,6 +146,8 @@
 
     <application
         android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="false"
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="33"
         android:icon="@mipmap/ic_launcher"
@@ -160,7 +162,6 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:resumeWhilePausing="true"
-            android:screenOrientation="portrait"
             android:stateNotNeeded="true"
             android:windowSoftInputMode="adjustPan">
             <!-- This is what makes the app selectable as the device's Home app. -->

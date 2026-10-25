@@ -1,5 +1,6 @@
 package com.metrowin.launcher.data
 
+import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -85,6 +86,8 @@ object AppFilterXml {
 class IconPack(private val resources: Resources, val packageName: String, private val map: IconPackMap) {
     val size: Int get() = map.icons.size
 
+    // An icon pack is another app: its drawables can only be found by name.
+    @SuppressLint("DiscouragedApi")
     private fun drawable(name: String): Drawable? {
         val id = resources.getIdentifier(name, "drawable", packageName)
         if (id == 0) return null
@@ -132,6 +135,7 @@ class IconPackRepository(private val context: Context) {
         IconPack(resources, packageName, AppFilterXml.parse(parser))
     }.getOrNull()
 
+    @SuppressLint("DiscouragedApi") // the appfilter of another app is only found by name
     private fun openFilter(resources: Resources, packageName: String): XmlPullParser? {
         val id = resources.getIdentifier("appfilter", "xml", packageName)
         if (id != 0) return resources.getXml(id)

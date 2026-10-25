@@ -16,6 +16,7 @@ import android.provider.Settings
 import android.service.notification.NotificationListenerService
 import androidx.core.app.NotificationManagerCompat
 import android.graphics.Bitmap
+import androidx.core.graphics.scale
 import android.graphics.Rect
 import android.net.Uri
 import android.widget.Toast
@@ -535,7 +536,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     /** The accent closest to the colour the picture is about, from a small copy of it. */
     private fun accentFor(bitmap: Bitmap): Int? {
-        val small = Bitmap.createScaledBitmap(bitmap, SAMPLE_SIDE, SAMPLE_SIDE, true)
+        val small = bitmap.scale(SAMPLE_SIDE, SAMPLE_SIDE)
         val pixels = IntArray(SAMPLE_SIDE * SAMPLE_SIDE).also { small.getPixels(it, 0, SAMPLE_SIDE, 0, 0, SAMPLE_SIDE, SAMPLE_SIDE) }
         if (small !== bitmap) small.recycle()
         val dominant = DominantColor.of(pixels) ?: return null
