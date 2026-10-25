@@ -5,6 +5,8 @@ import androidx.core.content.edit
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.model.Launch
+import com.metrowin.launcher.model.LiveKind
+import com.metrowin.launcher.model.TileData
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -28,7 +30,25 @@ enum class ShortcutKind(val code: String) {
     Countdown("countdown"),
 
     /** A screen of the Android settings (Wi-Fi, battery…). */
-    Setting("setting");
+    Setting("setting"),
+
+    /** A shortcut an app offers ("new message") put on Start; [ShortcutDef.uri] is `appshortcut:package:user:id`. */
+    AppShortcut("appshortcut"),
+
+    /** A number that goes up by a touch. */
+    Counter("counter"),
+
+    /** A list of things to do. */
+    Checklist("checklist"),
+
+    /** The time in another city; [ShortcutDef.uri] is the time zone. */
+    WorldClock("worldclock"),
+
+    /** The phase of the moon. */
+    Moon("moon"),
+
+    /** The next birthdays of the contacts. */
+    Birthdays("birthdays");
 
     companion object {
         fun fromCode(code: String?) = entries.firstOrNull { it.code == code }
@@ -53,6 +73,8 @@ data class ShortcutDef(
     val text: String = "",
     /** The day a countdown counts to, as an epoch day. */
     val epochDay: Long = 0L,
+    /** The count of a counter. */
+    val number: Long = 0L,
 ) {
     /** The tile's entry. Shortcuts only exist on Start ([AppItem.pinOnly]). */
     fun toItem(photoPath: String?): AppItem = AppItem(
@@ -63,6 +85,10 @@ data class ShortcutDef(
             ShortcutKind.Note -> Launch.Internal(AppRepository.ROUTE_NOTE)
             ShortcutKind.Countdown -> Launch.Internal(AppRepository.ROUTE_COUNTDOWN)
             ShortcutKind.Setting -> Launch.Action(uri)
+            ShortcutKind.Counter -> Launch.Internal(AppRepository.ROUTE_COUNTER)
+            ShortcutKind.Checklist -> Launch.Internal(AppRepository.ROUTE_CHECKLIST)
+            ShortcutKind.WorldClock, ShortcutKind.Moon -> Launch.Internal(AppRepository.ROUTE_NONE)
+            ShortcutKind.Birthdays -> Launch.Link(CONTACTS_ADDRESS)
             else -> Launch.Link(uri)
         },
         glyph = when (kind) {
@@ -73,14 +99,44 @@ data class ShortcutDef(
             ShortcutKind.Note -> Glyph.OneNote
             ShortcutKind.Countdown -> Glyph.Calendar
             ShortcutKind.Setting -> GlobalSearch.systemSettings.firstOrNull { it.action == uri }?.glyph ?: Glyph.Settings
+            ShortcutKind.AppShortcut -> null
+            ShortcutKind.Counter -> Glyph.Calculator
+            ShortcutKind.Checklist -> Glyph.Files
+            ShortcutKind.WorldClock -> Glyph.Globe
+            ShortcutKind.Moon -> Glyph.Moon
+            ShortcutKind.Birthdays -> Glyph.Star
         },
         pinOnly = true,
         photoPath = photoPath,
+        // The icon of an app shortcut is the icon of its app.
+        packageName = if (kind == ShortcutKind.AppShortcut) appShortcutParts(uri)?.first else null,
+        live = if (kind == ShortcutKind.Birthdays) LiveKind.Birthdays else null,
         note = text.takeIf { kind == ShortcutKind.Note },
         targetDay = if (kind == ShortcutKind.Countdown) epochDay else 0L,
+        data = when (kind) {
+            ShortcutKind.Counter -> TileData.Counter(number.toInt())
+            ShortcutKind.Checklist -> TileData.Checklist(text)
+            ShortcutKind.WorldClock -> TileData.WorldClock(uri)
+            ShortcutKind.Moon -> TileData.Moon
+            else -> null
+        },
     )
 
     companion object {
+        /** Where the Birthdays tile opens: the contacts. */
+        const val CONTACTS_ADDRESS = "content://com.android.contacts/contacts"
+
+        /** `appshortcut:package:user:id` as (package, user serial number, shortcut id), or null when [uri] is not one. */
+        fun appShortcutParts(uri: String): Triple<String, Long, String>? {
+            if (!uri.startsWith("appshortcut:")) return null
+            val parts = uri.removePrefix("appshortcut:").split(':', limit = 3)
+            if (parts.size != 3) return null
+            val serial = parts[1].toLongOrNull() ?: return null
+            return Triple(parts[0], serial, parts[2])
+        }
+
+        fun appShortcutUri(packageName: String, userSerial: Long, id: String) = "appshortcut:$packageName:$userSerial:$id"
+
         fun newId(kind: ShortcutKind, seed: String): String = "shortcut:${kind.code}:${seed.hashCode().toUInt().toString(16)}:${System.nanoTime().toString(36)}"
     }
 }
@@ -102,6 +158,7 @@ object ShortcutCodec {
                     }
                     if (s.text.isNotEmpty()) put("text", s.text)
                     if (s.epochDay != 0L) put("day", s.epochDay)
+                    if (s.number != 0L) put("n", s.number)
                 },
             )
         }
@@ -125,6 +182,7 @@ object ShortcutCodec {
                         widgetId = o.optInt("widgetId", -1),
                         text = o.optString("text"),
                         epochDay = o.optLong("day", 0L),
+                        number = o.optLong("n", 0L),
                     ),
                 )
             }

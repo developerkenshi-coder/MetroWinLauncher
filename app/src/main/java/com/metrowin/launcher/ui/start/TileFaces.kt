@@ -50,6 +50,20 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
+import com.metrowin.launcher.data.Birthday
+import com.metrowin.launcher.data.Birthdays
+import com.metrowin.launcher.data.Checklist
+import com.metrowin.launcher.data.MoonPhase
+import com.metrowin.launcher.data.WorldCities
+import com.metrowin.launcher.model.TileData
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathOperation
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.metrowin.launcher.data.BatteryInfo
 import com.metrowin.launcher.data.BatteryState
 import com.metrowin.launcher.data.ClockFormat
@@ -94,6 +108,9 @@ import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 
+/** Whether the tiles show the name of their app (the "names on the tiles" setting). */
+val LocalTileNames = androidx.compose.runtime.staticCompositionLocalOf { true }
+
 /**
  * What a tile looks like. Static for most apps, a flipping live tile for the ones in [LiveKind].
  * The counter in the corner does not flip with the face: it is the number of missed calls on the
@@ -118,6 +135,8 @@ fun TileFace(
     interactive: Boolean = true,
     /** A long press on a widget (which keeps the touches of its own area) selects the tile for editing. */
     onLongClick: () -> Unit = {},
+    /** The "one less" button of a counter: called with -1. */
+    onCounterStep: (Int) -> Unit = {},
 ) {
     val count = if (item.live == LiveKind.Phone) maxOf(live.missedCalls, notifications) else notifications
     // The Iconic template shows the counter big, in the middle; a small tile has no room for that.
@@ -132,6 +151,10 @@ fun TileFace(
                 widget != null -> WidgetFace(item, size, width, height, widget.appWidgetId, interactive, onLongClick)
                 item.note != null -> NoteFace(item, size, width, height)
                 item.targetDay != 0L -> CountdownFace(item, size, width, height)
+                item.data is TileData.Counter -> CounterFace(item, size, width, height, item.data.count, onCounterStep)
+                item.data is TileData.Checklist -> ChecklistFace(item, size, width, height, item.data.raw)
+                item.data is TileData.WorldClock -> WorldClockFace(item, size, width, height, item.data.zone)
+                item.data is TileData.Moon -> MoonFace(item, size, width, height)
                 iconic -> IconicFace(item, size, width, height, count)
                 cycle -> CycleFace(item, live.photos, seed)
                 else -> when (item.live) {
@@ -142,7 +165,8 @@ fun TileFace(
                     LiveKind.Battery -> BatteryFace(item, size, width, height, live.battery, seed)
                     LiveKind.Weather -> WeatherFace(item, size, width, height, live.weather, seed)
                     LiveKind.Storage -> StorageFace(item, size, width, height, live.storage)
-                    LiveKind.Alarm -> AlarmFace(item, size, width, height, live.nextAlarm)
+                    LiveKind.Alarm -> AlarmFace(item, size, width, height, live.nextAlarm, seed)
+                    LiveKind.Birthdays -> BirthdaysFace(item, size, width, height, live.birthdays, seed)
                     LiveKind.Music -> {
                         // The music that plays in any app, then what is going on in the music app itself.
                         val playing = live.nowPlaying?.let { listOf(LiveCard.Playing(it.title, it.artist, it.art, it.playing)) }.orEmpty()
@@ -224,6 +248,168 @@ private fun WeatherDetailsFace(weather: WeatherData) {
     Column(Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         lines.forEach { MetroText(it, size = 19.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("weather:detail")) }
     }
+}
+
+/** A counter: the number in large type, and a small button for one less. A touch on the tile (not here) adds one. */
+@Composable
+private fun CounterFace(item: AppItem, size: TileSize, width: Dp, height: Dp, count: Int, onStep: (Int) -> Unit) {
+    val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.34f else 0.42f).toSp() }
+    val ink = LocalMetroColors.current.tileContent
+    Box(Modifier.fillMaxSize()) {
+        MetroText(count.toString(), size = digits, modifier = Modifier.align(Alignment.Center).testTag("counter:count"))
+        if (count > 0 && size != TileSize.Small) {
+            val description = stringResource(R.string.counter_minus)
+            Box(
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(6.dp)
+                    .size(36.dp)
+                    .testTag("counter:minus")
+                    .border(2.dp, ink.copy(alpha = 0.8f))
+                    .semantics { contentDescription = description }
+                    .pointerInput(Unit) { detectTapGestures { onStep(-1) } },
+                contentAlignment = Alignment.Center,
+            ) { MetroText("−", size = 22.sp, weight = FontWeight.Normal) }
+        }
+        if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+    }
+}
+
+/** A checklist: how many are done, and the first ones still to do. */
+@Composable
+private fun ChecklistFace(item: AppItem, size: TileSize, width: Dp, height: Dp, raw: String) {
+    val items = remember(raw) { Checklist.parse(raw) }
+    if (items.isEmpty()) {
+        StaticFace(item, size, width, height)
+        return
+    }
+    val (done, total) = Checklist.progress(items)
+    Box(Modifier.fillMaxSize()) {
+        if (size == TileSize.Small) {
+            MetroText("$done/$total", size = 22.sp, modifier = Modifier.align(Alignment.Center).testTag("checklist:progress"))
+        } else {
+            Column(Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp, bottom = 30.dp)) {
+                MetroText(stringResource(R.string.checklist_progress, done, total), size = 30.sp, modifier = Modifier.testTag("checklist:progress"))
+                val pending = Checklist.pending(items, if (size == TileSize.Wide) 3 else 4)
+                if (pending.isEmpty()) {
+                    MetroText(stringResource(R.string.checklist_all_done), size = 16.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("checklist:alldone"))
+                } else {
+                    pending.forEach { MetroText("· $it", size = 16.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("checklist:pending")) }
+                }
+            }
+            TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+        }
+    }
+}
+
+/** The time in another city, with the name of the city and, when it is not the same day, which day it is there. */
+@Composable
+private fun WorldClockFace(item: AppItem, size: TileSize, width: Dp, height: Dp, zone: String) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var now by remember { mutableStateOf(java.time.Instant.now()) }
+    // Redrawn when the minute changes, and only while the launcher is on screen.
+    LaunchedWhileStarted(Unit) {
+        while (true) {
+            now = java.time.Instant.now()
+            delay(60_000L - now.toEpochMilli() % 60_000L + 50L)
+        }
+    }
+    val zoneId = remember(zone) { runCatching { java.time.ZoneId.of(zone) }.getOrNull() }
+    if (zoneId == null) {
+        StaticFace(item, size, width, height)
+        return
+    }
+    val there = WorldCities.timeIn(zoneId, now, java.time.ZoneId.systemDefault())
+    val locale = Locale.getDefault()
+    val is24 = android.text.format.DateFormat.is24HourFormat(context)
+    Box(Modifier.fillMaxSize()) {
+        val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.26f else 0.3f).toSp() }
+        Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+            val meridiem = ClockFormat.meridiem(there.time, is24, locale)
+            Row(verticalAlignment = Alignment.Bottom) {
+                MetroText(ClockFormat.time(there.time, is24, locale), size = digits, maxLines = 1, modifier = Modifier.testTag("worldclock:time"))
+                // "AM" and "PM" are small, next to the digits: the time never wraps or gets cut on a narrow tile.
+                if (meridiem.isNotEmpty()) MetroText(meridiem, size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.padding(start = 3.dp, bottom = 6.dp))
+            }
+            if (size != TileSize.Small) {
+                MetroText(item.label, size = 18.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("worldclock:city"))
+                when (there.dayOffset) {
+                    1 -> MetroText(stringResource(R.string.live_tomorrow), size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("worldclock:day"))
+                    -1 -> MetroText(stringResource(R.string.worldclock_yesterday), size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("worldclock:day"))
+                }
+            }
+        }
+        if (size == TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+    }
+}
+
+/** The moon as it is today: a disc with the lit part drawn, and its name and how much of it is lit. */
+@Composable
+private fun MoonFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
+    val today = rememberToday()
+    val ink = LocalMetroColors.current.tileContent
+    val illumination = MoonPhase.illumination(today)
+    val waxing = MoonPhase.waxing(today)
+    val name = MoonPhase.name(today)
+    Box(Modifier.fillMaxSize()) {
+        val disc = minOf(width, height) * if (size == TileSize.Small) 0.6f else 0.5f
+        Canvas(Modifier.align(Alignment.Center).size(disc).testTag("moon:disc")) {
+            val r = this.size.minDimension / 2f
+            // The lit side is the right in the first half of the month and the left in the second.
+            withTransform({ if (!waxing) scale(-1f, 1f, pivot = center) }) {
+                drawCircle(ink.copy(alpha = 0.22f), r)
+                // The lit part: the right half of the disc, less the half of an ellipse for a crescent, plus it for a gibbous moon.
+                // The ellipse is the edge between light and dark, and it gets thinner towards the quarters.
+                val w = r * kotlin.math.abs(1f - 2f * illumination.toFloat())
+                val half = Path().apply { arcTo(Rect(center.x - r, center.y - r, center.x + r, center.y + r), -90f, 180f, true); close() }
+                val edge = Path().apply { addOval(Rect(center.x - w, center.y - r, center.x + w, center.y + r)) }
+                val lit = Path.combine(if (illumination < 0.5) PathOperation.Difference else PathOperation.Union, half, edge)
+                drawPath(lit, ink)
+            }
+        }
+        if (size != TileSize.Small) {
+            Column(Modifier.align(Alignment.BottomStart).padding(start = 9.dp, bottom = 7.dp)) {
+                MetroText(stringResource(name.label), size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("moon:name"))
+                if (size == TileSize.Wide) MetroText(stringResource(R.string.moon_lit, (illumination * 100).toInt()), size = 12.sp, weight = FontWeight.Normal, color = ink.copy(alpha = 0.8f))
+            }
+        }
+    }
+}
+
+/** The next birthdays of the contacts: the nearest in large type, and on the other face the next ones. */
+@Composable
+private fun BirthdaysFace(item: AppItem, size: TileSize, width: Dp, height: Dp, birthdays: List<Birthday>, seed: Int) {
+    val today = rememberToday()
+    val upcoming = remember(birthdays, today) { Birthdays.upcoming(birthdays, today, 3) }
+    if (upcoming.isEmpty()) {
+        StaticFace(item, size, width, height)
+        return
+    }
+    val first = upcoming.first()
+    FlipContainer(if (upcoming.size > 1 && size != TileSize.Small) 2 else 1, seed) { face ->
+        Box(Modifier.fillMaxSize()) {
+            if (face == 0) {
+                Column(Modifier.padding(start = 10.dp, top = 8.dp, end = 10.dp)) {
+                    MetroText(first.name, size = if (size == TileSize.Small) 14.sp else 22.sp, maxLines = 2, lineHeight = 26.sp, modifier = Modifier.testTag("birthday:name"))
+                    if (size != TileSize.Small) {
+                        MetroText(birthdayWhen(first), size = 16.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("birthday:when"))
+                        first.turning?.let { MetroText(stringResource(R.string.birthdays_turning, it), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f)) }
+                    }
+                }
+            } else {
+                Column(Modifier.padding(start = 10.dp, top = 8.dp, end = 10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    upcoming.forEach { MetroText(it.name + " · " + birthdayWhen(it, short = true), size = 15.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("birthday:next")) }
+                }
+            }
+            if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+        }
+    }
+}
+
+@Composable
+private fun birthdayWhen(next: Birthdays.Next, short: Boolean = false): String = when {
+    next.daysAway == 0 -> stringResource(R.string.birthdays_today)
+    else -> pluralStringResource(R.plurals.birthdays_in, next.daysAway, next.daysAway)
 }
 
 /** The number in the top right corner of a tile. */
@@ -637,7 +823,7 @@ private fun StorageFace(item: AppItem, size: TileSize, width: Dp, height: Dp, st
 
 /** The Alarms tile: when the next alarm rings, as a time in large type and the day under it. No alarm: just the mark. */
 @Composable
-private fun AlarmFace(item: AppItem, size: TileSize, width: Dp, height: Dp, triggerMillis: Long) {
+private fun AlarmFace(item: AppItem, size: TileSize, width: Dp, height: Dp, triggerMillis: Long, seed: Int = 0) {
     val next = remember(triggerMillis) { NextAlarm.describe(triggerMillis, System.currentTimeMillis()) }
     if (next == null) {
         StaticFace(item, size, width, height)
@@ -743,6 +929,7 @@ private fun StaticFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
 
 @Composable
 private fun TileLabel(label: String, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.tileContent) {
+    if (!LocalTileNames.current) return
     MetroText(
         text = label,
         size = 13.sp,
@@ -833,6 +1020,7 @@ private fun PeopleFace(item: AppItem, size: TileSize, width: Dp, height: Dp, liv
 /** Name over a photo: a soft shade at the bottom keeps it readable on any picture. */
 @Composable
 private fun PhotoLabel(text: String, modifier: Modifier = Modifier) {
+    if (!LocalTileNames.current) return
     Box(
         modifier.background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f)))),
     ) {

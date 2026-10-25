@@ -98,6 +98,17 @@ enum class ClockHours(val code: String, @param:StringRes val label: Int) {
     }
 }
 
+/** The space between the tiles of Start, as a multiple of the one the look has. */
+enum class TileSpacing(val code: String, val factor: Float, @param:StringRes val label: Int) {
+    Tight("tight", 0.5f, R.string.spacing_tight),
+    Normal("normal", 1f, R.string.spacing_normal),
+    Wide("wide", 1.7f, R.string.spacing_wide);
+
+    companion object {
+        fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: Normal
+    }
+}
+
 /** How an app opens: the Metro turnstile, or the tile growing into the window of the app. */
 enum class LaunchAnimation(val code: String, @param:StringRes val label: Int) {
     Turnstile("turnstile", R.string.launch_turnstile),
@@ -167,6 +178,9 @@ data class LauncherSettings(
     val clockAlarm: Boolean = false,
     /** The number of the week next to the date. */
     val clockWeek: Boolean = false,
+    /** The name of the app under its tile. */
+    val showTileNames: Boolean = true,
+    val tileSpacing: TileSpacing = TileSpacing.Normal,
     /** The size of the text of the launcher, in percent (see [TEXT_SCALES]). */
     val textScale: Int = 100,
     /** The status bar of Android is out of the way on Start; a swipe from the top edge brings it back for a moment. */

@@ -33,6 +33,7 @@ import androidx.lifecycle.viewModelScope
 import com.metrowin.launcher.data.AppFilter
 import com.metrowin.launcher.data.AppLabels
 import com.metrowin.launcher.data.AppShortcut
+import com.metrowin.launcher.data.City
 import com.metrowin.launcher.data.AppShortcuts
 import com.metrowin.launcher.data.AppUsage
 import com.metrowin.launcher.gestures.RecentsTileService
@@ -1032,6 +1033,74 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         it.copy(label = title.trim().ifEmpty { getApplication<Application>().getString(R.string.countdown_default_label) }, epochDay = epochDay)
     }
 
+    /** Pins a counter at zero and gives back its id. */
+    fun addCounter(page: Int): String {
+        val id = ShortcutDef.newId(ShortcutKind.Counter, "counter")
+        addShortcut(ShortcutDef(id, ShortcutKind.Counter, getApplication<Application>().getString(R.string.counter_default_label)), page, TileSize.Medium)
+        return id
+    }
+
+    /** One more or one less on a counter, never below zero. */
+    fun countStep(id: String, delta: Int) = updateShortcut(id) { it.copy(number = (it.number + delta).coerceIn(0L, MAX_COUNT)) }
+
+    /** The name of a counter (blank gives the default one back), and its count back to zero when [reset]. */
+    fun saveCounter(id: String, name: String, reset: Boolean) = updateShortcut(id) {
+        it.copy(
+            label = name.trim().ifEmpty { getApplication<Application>().getString(R.string.counter_default_label) },
+            number = if (reset) 0L else it.number,
+        )
+    }
+
+    /** Pins an empty list of things to do and gives back its id. */
+    fun addChecklist(page: Int): String {
+        val id = ShortcutDef.newId(ShortcutKind.Checklist, "list")
+        addShortcut(ShortcutDef(id, ShortcutKind.Checklist, getApplication<Application>().getString(R.string.checklist_default_label)), page, TileSize.Medium)
+        return id
+    }
+
+    fun saveChecklist(id: String, raw: String) = updateShortcut(id) { it.copy(text = raw) }
+
+    /** Pins the time in [city]. */
+    fun addWorldClock(city: City, page: Int) =
+        addShortcut(ShortcutDef(ShortcutDef.newId(ShortcutKind.WorldClock, city.zone), ShortcutKind.WorldClock, city.name, city.zone), page, TileSize.Medium)
+
+    fun addMoon(page: Int) = addShortcut(
+        ShortcutDef(ShortcutDef.newId(ShortcutKind.Moon, "moon"), ShortcutKind.Moon, getApplication<Application>().getString(R.string.moon_default_label)),
+        page, TileSize.Medium,
+    )
+
+    fun addBirthdays(page: Int) = addShortcut(
+        ShortcutDef(ShortcutDef.newId(ShortcutKind.Birthdays, "birthdays"), ShortcutKind.Birthdays, getApplication<Application>().getString(R.string.birthdays_default_label)),
+        page, TileSize.Wide,
+    )
+
+    /** Puts a shortcut of an app on Start (the app's icon, its name, and the shortcut as what it opens). */
+    fun pinAppShortcut(shortcut: AppShortcut, page: Int) {
+        val serial = getApplication<Application>().getSystemService(android.os.UserManager::class.java).getSerialNumberForUser(shortcut.user)
+        val uri = ShortcutDef.appShortcutUri(shortcut.packageName, serial, shortcut.id)
+        addShortcut(ShortcutDef(ShortcutDef.newId(ShortcutKind.AppShortcut, uri), ShortcutKind.AppShortcut, shortcut.label, uri), page, TileSize.Medium)
+    }
+
+    /**
+     * Start as it was when the launcher was installed: the first tiles of the default layout, and everything the user pinned
+     * that is not an app (contacts, sites, notes, widgets…) taken away. Undo brings it all back except the widgets, which give
+     * their place back to Android at once.
+     */
+    fun resetStart() {
+        rememberForUndo(R.string.undo_reset)
+        _shortcuts.value.forEach { shortcut ->
+            shortcutStore.deletePhoto(shortcut.photoFile)
+            if (shortcut.kind == ShortcutKind.Widget) widgets.delete(shortcut.widgetId)
+        }
+        _shortcuts.value = emptyList()
+        shortcutStore.save(emptyList())
+        rebuildItems()
+        val screens = _settings.value.startPages.coerceAtLeast(1)
+        val fresh = listOf<List<StartEntry>>(DefaultStart.build(_items.value)) + List(screens - 1) { emptyList() }
+        _pages.value = fresh
+        store.savePages(fresh)
+    }
+
     private fun updateShortcut(id: String, change: (ShortcutDef) -> ShortcutDef) {
         if (_shortcuts.value.none { it.id == id }) return
         _shortcuts.value = _shortcuts.value.map { if (it.id == id) change(it) else it }
@@ -1294,6 +1363,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     private companion object {
+        const val MAX_COUNT = 99_999L
         const val RELOAD_DEBOUNCE_MS = 400L
         const val SAMPLE_SIDE = 48
         const val PROFILE_REFRESH_MS = 800L

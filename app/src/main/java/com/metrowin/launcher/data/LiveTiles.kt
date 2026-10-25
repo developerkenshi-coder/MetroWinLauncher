@@ -74,6 +74,8 @@ data class LiveTileData(
     val storage: StorageInfo? = null,
     /** When the next alarm rings (epoch milliseconds), or 0 when there is none, for the Alarms tile. */
     val nextAlarm: Long = 0L,
+    /** The birthdays of the contacts, for the Birthdays tile. */
+    val birthdays: List<Birthday> = emptyList(),
 )
 
 class LiveTileRepository(private val context: Context) {
@@ -88,6 +90,7 @@ class LiveTileRepository(private val context: Context) {
         missedCalls = if (LiveKind.Phone in wanted) missedCalls() else 0,
         storage = if (LiveKind.Storage in wanted) StorageInfo.read() else null,
         nextAlarm = if (LiveKind.Alarm in wanted) NextAlarm.read(context) else 0L,
+        birthdays = if (LiveKind.Birthdays in wanted) birthdays() else emptyList(),
     )
 
     private fun granted(permission: String) = LivePermissions.isGranted(context, permission)
@@ -171,6 +174,27 @@ class LiveTileRepository(private val context: Context) {
         }.getOrNull()
     }
 
+    /** The birthdays of the contacts (needs the contacts permission): every contact with a date of birth. */
+    private fun birthdays(): List<Birthday> {
+        if (!granted(LivePermissions.contacts)) return emptyList()
+        return runCatching {
+            val found = ArrayList<Birthday>()
+            resolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                arrayOf(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY, ContactsContract.CommonDataKinds.Event.START_DATE),
+                "${ContactsContract.Data.MIMETYPE}=? AND ${ContactsContract.CommonDataKinds.Event.TYPE}=?",
+                arrayOf(ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE, ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY.toString()),
+                null,
+            )?.use { cursor ->
+                while (cursor.moveToNext() && found.size < MAX_BIRTHDAYS) {
+                    val name = cursor.getString(0)?.takeIf { it.isNotBlank() } ?: continue
+                    Birthdays.parse(name, cursor.getString(1))?.let { found += it }
+                }
+            }
+            found
+        }.getOrDefault(emptyList())
+    }
+
     private fun missedCalls(): Int {
         if (!granted(LivePermissions.calls)) return 0
         return runCatching {
@@ -200,6 +224,7 @@ class LiveTileRepository(private val context: Context) {
 
     private companion object {
         const val PHOTO_PX = 512
+        const val MAX_BIRTHDAYS = 2_000
         const val WEEK_MILLIS = 7L * 24 * 60 * 60 * 1000
     }
 }

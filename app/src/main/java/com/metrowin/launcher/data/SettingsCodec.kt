@@ -36,6 +36,8 @@ object SettingsCodec {
         put("clockAlarm", s.clockAlarm)
         put("clockWeek", s.clockWeek)
         put("textScale", s.textScale)
+        put("showTileNames", s.showTileNames)
+        put("tileSpacing", s.tileSpacing.code)
         put("hideStatusBar", s.hideStatusBar)
 
         put("orientation", s.orientation.code)
@@ -149,6 +151,8 @@ object SettingsCodec {
             clockWeek = o.optBoolean("clockWeek", base.clockWeek),
             textScale = o.optInt("textScale", base.textScale).let { v -> LauncherSettings.TEXT_SCALES.minByOrNull { kotlin.math.abs(it - v) } ?: 100 },
             hideStatusBar = o.optBoolean("hideStatusBar", base.hideStatusBar),
+            showTileNames = o.optBoolean("showTileNames", base.showTileNames),
+            tileSpacing = if (o.has("tileSpacing")) TileSpacing.fromCode(o.optString("tileSpacing")) else base.tileSpacing,
             startPhotoZoom = o.optInt("startPhotoZoom", base.startPhotoZoom).coerceIn(100, 300),
             startPhotoX = o.optInt("startPhotoX", base.startPhotoX).coerceIn(0, 100),
             startPhotoY = o.optInt("startPhotoY", base.startPhotoY).coerceIn(0, 100),

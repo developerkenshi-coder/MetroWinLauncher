@@ -40,6 +40,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.metrowin.launcher.data.Checklist
+import com.metrowin.launcher.data.City
+import com.metrowin.launcher.data.WorldCities
 import com.metrowin.launcher.data.Countdown
 import com.metrowin.launcher.data.SystemSettingDef
 import com.metrowin.launcher.ui.anim.metroPress
@@ -155,6 +160,126 @@ fun CountdownDialog(
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("countdown:ok")) { onDone(title, date.toEpochDay()) }
             MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag("countdown:cancel"), onClick = onCancel)
+        }
+    }
+}
+
+/** The name of a counter, with a button that puts its count back to zero. */
+@Composable
+fun CounterDialog(
+    initialName: String,
+    count: Int,
+    onDone: (name: String, reset: Boolean) -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var name by remember { mutableStateOf(initialName) }
+    var reset by remember { mutableStateOf(false) }
+    DialogFrame(onCancel, modifier) {
+        MetroText(stringResource(R.string.counter_title), size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+        MetroTextField(
+            value = name, onValueChange = { name = it.take(MAX_TITLE) },
+            placeholder = stringResource(R.string.counter_name_hint), modifier = Modifier.testTag("counter:name"),
+        )
+        MetroText(if (reset) "0" else count.toString(), size = 40.sp, modifier = Modifier.testTag("counter:value"))
+        MetroButton(stringResource(R.string.counter_reset), Modifier.fillMaxWidth().testTag("counter:reset")) { reset = true }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("counter:ok")) { onDone(name, reset) }
+            MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag("counter:cancel"), onClick = onCancel)
+        }
+    }
+}
+
+/** A list of things to do: touch one to tick it, the cross takes it away, the box at the bottom adds one. Saved at every change. */
+@Composable
+fun ChecklistDialog(initialRaw: String, onChange: (String) -> Unit, onClose: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = LocalMetroColors.current
+    var items by remember { mutableStateOf(Checklist.parse(initialRaw)) }
+    var draft by remember { mutableStateOf("") }
+    fun change(next: List<Checklist.Item>) {
+        if (next == items) return
+        items = next
+        onChange(Checklist.serialize(next))
+    }
+    fun addDraft() {
+        change(Checklist.add(items, draft))
+        draft = ""
+    }
+    DialogFrame(onClose, modifier) {
+        MetroText(stringResource(R.string.checklist_title), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle)
+        Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState()).testTag("checklist:items")) {
+            if (items.isEmpty()) MetroText(stringResource(R.string.checklist_empty), size = 17.sp, weight = FontWeight.Normal, color = colors.subtle)
+            items.forEachIndexed { index, item ->
+                Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        Modifier.weight(1f).testTag("checklist:item:$index").metroPress(onClick = { change(Checklist.toggle(items, index)) }),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        com.metrowin.launcher.ui.kids.CheckSquare(item.done)
+                        Spacer(Modifier.width(12.dp))
+                        MetroText(item.text, size = 19.sp, color = if (item.done) colors.subtle else colors.foreground, maxLines = 2)
+                    }
+                    val description = stringResource(R.string.checklist_remove)
+                    Box(
+                        Modifier.testTag("checklist:remove:$index").semantics { contentDescription = description }.metroPress(onClick = { change(Checklist.remove(items, index)) }).padding(10.dp),
+                    ) { MetroText("×", size = 24.sp, weight = FontWeight.Normal, color = colors.subtle) }
+                }
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f)) {
+                MetroTextField(
+                    value = draft, onValueChange = { draft = it.take(Checklist.MAX_TEXT) },
+                    placeholder = stringResource(R.string.checklist_add_hint), modifier = Modifier.testTag("checklist:draft"), onSearch = ::addDraft,
+                )
+            }
+            Box(Modifier.testTag("checklist:add").metroPress(onClick = ::addDraft).padding(start = 12.dp, top = 12.dp, bottom = 12.dp)) {
+                MetroText(stringResource(R.string.checklist_add), size = 18.sp, weight = FontWeight.Normal, color = LocalAccent.current)
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (items.any { it.done }) {
+                MetroButton(stringResource(R.string.checklist_clear_done), Modifier.weight(1f).testTag("checklist:cleardone")) { change(Checklist.clearDone(items)) }
+            }
+            MetroButton(stringResource(R.string.edit_done), Modifier.weight(1f).testTag("checklist:done"), onClick = onClose)
+        }
+    }
+}
+
+/** The cities of the world clock, with a box to search them. */
+@Composable
+fun CityPicker(onPick: (City) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = LocalMetroColors.current
+    val currentDismiss by rememberUpdatedState(onDismiss)
+    var query by remember { mutableStateOf("") }
+    val cities = remember(query) { WorldCities.search(query) }
+    Box(
+        modifier
+            .fillMaxSize()
+            .background(colors.background.copy(alpha = 0.78f))
+            .pointerInput(Unit) { detectTapGestures { currentDismiss() } }
+            .imePadding(),
+        contentAlignment = Alignment.BottomCenter,
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .sheet()
+                .pointerInput(Unit) { detectTapGestures { } }
+                .navigationBarsPadding()
+                .padding(top = 12.dp, start = 16.dp, end = 16.dp, bottom = 76.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            MetroText(stringResource(R.string.worldclock_title), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle)
+            MetroTextField(value = query, onValueChange = { query = it }, placeholder = stringResource(R.string.worldclock_search), modifier = Modifier.testTag("city:query"))
+            Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState())) {
+                cities.forEach { city ->
+                    MetroText(
+                        city.name, size = 21.sp,
+                        modifier = Modifier.fillMaxWidth().testTag("city:${city.name}").metroPress(onClick = { onPick(city) }).padding(vertical = 10.dp),
+                    )
+                }
+            }
         }
     }
 }

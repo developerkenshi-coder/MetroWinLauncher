@@ -38,6 +38,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.ThemeMode
+import com.metrowin.launcher.data.TileSpacing
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import com.metrowin.launcher.data.ThemeStyle
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.ChoiceRow
@@ -210,6 +215,20 @@ fun StartThemePage(env: SettingsEnv) {
             checked = settings.moreTiles,
             onChange = { value -> env.onChange { it.copy(moreTiles = value) } },
         )
+        ToggleSetting(
+            label = stringResource(R.string.theme_tile_names),
+            checked = settings.showTileNames,
+            onChange = { value -> env.onChange { it.copy(showTileNames = value) } },
+            hint = stringResource(R.string.theme_tile_names_hint),
+            tag = "theme:tilenames",
+        )
+        DropdownSetting(
+            stringResource(R.string.theme_tile_spacing),
+            options = TileSpacing.entries.map { stringResource(it.label) },
+            selected = TileSpacing.entries.indexOf(settings.tileSpacing),
+            onSelect = { i -> env.onChange { it.copy(tileSpacing = TileSpacing.entries[i]) } },
+            tag = "theme:spacing",
+        )
         StepperSetting(
             label = stringResource(R.string.text_size),
             value = "${settings.textScale}%",
@@ -236,6 +255,17 @@ fun StartThemePage(env: SettingsEnv) {
             canIncrement = settings.startPages < com.metrowin.launcher.data.LauncherSettings.MAX_START_PAGES,
             hint = stringResource(R.string.theme_start_pages_hint),
             tag = "theme:pages",
+        )
+        // Two touches: the first one asks, the second one restores.
+        var confirmReset by remember { mutableStateOf(false) }
+        ActionSetting(
+            text = stringResource(if (confirmReset) R.string.theme_reset_start_confirm else R.string.theme_reset_start),
+            onClick = {
+                if (confirmReset) env.onResetStart()
+                confirmReset = !confirmReset
+            },
+            hint = stringResource(R.string.theme_reset_start_hint),
+            tag = "theme:resetstart",
         )
     }
 }

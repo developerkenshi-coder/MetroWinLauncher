@@ -6,6 +6,10 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -65,9 +69,11 @@ fun AppContextMenu(
     /** Null when the app cannot be locked; otherwise whether it asks for the screen lock now. */
     locked: Boolean? = null,
     onToggleLock: () -> Unit = {},
+    /** Puts an app's shortcut on Start as a tile; null when the menu cannot (the shortcut stays a plain entry). */
+    onPinShortcut: ((AppShortcut) -> Unit)? = null,
 ) {
     val entries = MenuEntries(
-        pinned, onPinToggle, onUninstall, onHide, onAddToFolder, shortcuts, onShortcut, onRename, onResetName, onInfo, locked, onToggleLock,
+        pinned, onPinToggle, onUninstall, onHide, onAddToFolder, shortcuts, onShortcut, onRename, onResetName, onInfo, locked, onToggleLock, onPinShortcut,
     )
     val currentDismiss by rememberUpdatedState(onDismiss)
     BoxWithConstraints(
@@ -115,6 +121,7 @@ private class MenuEntries(
     val onInfo: (() -> Unit)?,
     val locked: Boolean?,
     val onToggleLock: () -> Unit,
+    val onPinShortcut: ((AppShortcut) -> Unit)?,
 )
 
 @Composable
@@ -124,7 +131,19 @@ private fun Menu(item: AppItem, e: MenuEntries) {
         Modifier.fillMaxWidth().panel().heightIn(max = MENU_MAX_HEIGHT).verticalScroll(rememberScrollState()).padding(vertical = 6.dp),
     ) {
         e.shortcuts.forEach { shortcut ->
-            MenuEntry(shortcut.label, { e.onShortcut(shortcut) }, Modifier.testTag("menu:shortcut:${shortcut.id}"), color = LocalAccent.current)
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                MenuEntry(shortcut.label, { e.onShortcut(shortcut) }, Modifier.weight(1f).testTag("menu:shortcut:${shortcut.id}"), color = LocalAccent.current)
+                if (e.onPinShortcut != null) {
+                    val description = stringResource(R.string.menu_pin_shortcut)
+                    Box(
+                        Modifier
+                            .testTag("menu:shortcutpin:${shortcut.id}")
+                            .semantics { contentDescription = description }
+                            .metroPress(onClick = { e.onPinShortcut.invoke(shortcut) })
+                            .padding(horizontal = 24.dp, vertical = 12.dp),
+                    ) { MetroText("+", size = 21.sp, color = LocalAccent.current) }
+                }
+            }
         }
         MenuEntry(stringResource(if (e.pinned) R.string.menu_unpin else R.string.menu_pin), e.onPinToggle)
         if (e.onAddToFolder != null) MenuEntry(stringResource(R.string.menu_add_to_folder), e.onAddToFolder, Modifier.testTag("menu:folder"))

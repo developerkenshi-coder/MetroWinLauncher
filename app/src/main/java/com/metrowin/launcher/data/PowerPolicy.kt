@@ -57,7 +57,7 @@ object PowerPolicy {
 
 /** Which of the data behind the live tiles Start really shows, so the others are not read at all. */
 object LiveSources {
-    private val sources = setOf(LiveKind.Calendar, LiveKind.Photos, LiveKind.People, LiveKind.Phone, LiveKind.Storage, LiveKind.Alarm)
+    private val sources = setOf(LiveKind.Calendar, LiveKind.Photos, LiveKind.People, LiveKind.Phone, LiveKind.Storage, LiveKind.Alarm, LiveKind.Birthdays)
 
     /** The kinds of live tile among the apps pinned to Start (inside folders too) that need to read data from the phone. */
     fun wanted(pages: List<List<StartEntry>>, items: List<AppItem>): Set<LiveKind> {

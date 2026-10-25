@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import com.metrowin.launcher.model.TileData
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -134,6 +135,10 @@ data class FolderCell(val folder: Folder, val items: List<AppItem>, val expanded
     override val entryId get() = folder.id
 }
 
+/** The tile keeps something the user writes or sets (a note, a countdown, a counter, a list): the pencil opens its editor. */
+val AppCell.hasContentToEdit: Boolean
+    get() = folderId == null && (item.note != null || item.targetDay != 0L || item.data is TileData.Counter || item.data is TileData.Checklist)
+
 /** An app inside an open folder cannot be dragged or resized. */
 val StartCell.isTopLevel: Boolean get() = this !is AppCell || folderId == null
 
@@ -167,6 +172,12 @@ class StartActions(
     val onMoveAfter: (draggedId: String, afterId: String) -> Unit = { _, _ -> },
     /** The color button of a selected tile. */
     val onColor: (StartCell) -> Unit = {},
+    /** The pencil of a selected tile that has something of its own to edit (a note, a countdown, a counter, a list). */
+    val onEditContent: (StartCell) -> Unit = {},
+    /** The "one less" button of a counter tile: the id of the tile and -1. */
+    val onCounterStep: (id: String, delta: Int) -> Unit = { _, _ -> },
+    /** A long press on the empty part of Start: the menu to add something. Null leaves the long press alone. */
+    val onBackgroundLongPress: (() -> Unit)? = null,
     /** A double tap on the empty part of Start, when the settings give it something to do. */
     val onDoubleTap: (() -> Unit)? = null,
     /** The arrow after the last tile: on to the next screen, or to the app list after the last one. */
@@ -211,8 +222,13 @@ fun StartScreen(
     pickedKeys: Set<String>? = null,
     /** How the photo is framed (see [PhotoFrame]). */
     framing: PhotoFrame = PhotoFrame(),
+    /** The name of the app under its tile. */
+    showNames: Boolean = true,
+    /** The space between the tiles, as a multiple of the one the look has: 1 is as it is. */
+    spacing: Float = 1f,
 ) {
     val currentActions by rememberUpdatedState(actions)
+    CompositionLocalProvider(LocalTileNames provides showNames, LocalTileSpacing provides spacing) {
     Box(modifier.fillMaxSize()) {
         if (background != null) ParallaxBackground(background, scrollState, parallax, framing)
         Column(
@@ -220,9 +236,10 @@ fun StartScreen(
                 .fillMaxSize()
                 .then(if (pullConnection != null) Modifier.nestedScroll(pullConnection) else Modifier)
                 // A double tap is only waited for when it has something to do: it delays the single tap a little.
-                .pointerInput(actions.onDoubleTap != null) {
+                .pointerInput(actions.onDoubleTap != null, actions.onBackgroundLongPress != null) {
                     detectTapGestures(
                         onDoubleTap = if (actions.onDoubleTap != null) ({ currentActions.onDoubleTap?.invoke() }) else null,
+                        onLongPress = if (actions.onBackgroundLongPress != null) ({ currentActions.onBackgroundLongPress?.invoke() }) else null,
                         onTap = { currentActions.onBackgroundTap() },
                     )
                 }
@@ -243,7 +260,11 @@ fun StartScreen(
             Spacer(Modifier.navigationBarsPadding())
         }
     }
+    }
 }
+
+/** The space between the tiles is the look's times this (see the "space between the tiles" setting). */
+val LocalTileSpacing = androidx.compose.runtime.staticCompositionLocalOf { 1f }
 
 /** How the Start photo is framed: zoom in percent, and the point that stays in view in percent. */
 @Immutable
@@ -331,7 +352,7 @@ private fun TileGridView(
     pickedKeys: Set<String>?,
 ) {
     val density = LocalDensity.current
-    val TileGap = LocalStyle.current.tileGap
+    val TileGap = LocalStyle.current.tileGap * LocalTileSpacing.current
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val unit = (maxWidth - TileGap * (columns - 1)) / columns
         val unitPx = with(density) { unit.toPx() }
@@ -573,7 +594,7 @@ private fun PositionedTile(
     val reduced = LocalReduceMotion.current
     val highContrast = LocalHighContrast.current
     val style = LocalStyle.current
-    val TileGap = style.tileGap
+    val TileGap = style.tileGap * LocalTileSpacing.current
     val colors = LocalMetroColors.current
     val currentActions by rememberUpdatedState(actions)
     val currentCell by rememberUpdatedState(cell)
@@ -703,6 +724,7 @@ private fun PositionedTile(
                     seed = cell.key.hashCode(), notifications = badges[cell.item.packageName] ?: 0,
                     style = cell.tile.style, cards = peeks[cell.item.packageName].orEmpty(),
                     interactive = editingKey == null, onLongClick = { currentActions.onLongClick(currentCell) },
+                    onCounterStep = { delta -> currentActions.onCounterStep(cell.item.id, delta) },
                 )
                 is FolderCell -> FolderFace(
                     cell.folder, cell.items, cell.expanded, cell.size, width, height,
@@ -736,6 +758,12 @@ private fun PositionedTile(
                     EditButtonKind.Rename,
                     onClick = { (currentCell as? FolderCell)?.let(currentActions.onRename) },
                     modifier = Modifier.align(Alignment.TopStart).padding(6.dp),
+                )
+            } else if (cell is AppCell && cell.hasContentToEdit) {
+                EditButton(
+                    EditButtonKind.Rename,
+                    onClick = { currentActions.onEditContent(currentCell) },
+                    modifier = Modifier.align(Alignment.TopStart).padding(6.dp).testTag("tile:edit"),
                 )
             }
         }

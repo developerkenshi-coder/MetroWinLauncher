@@ -47,7 +47,7 @@ class IconLoader(context: Context) {
 
     /** Null for entries that have no icon of their own (stock apps drawn with a glyph). */
     suspend fun load(item: AppItem, sizePx: Int): Bitmap? {
-        val activity = item.launch as? Launch.Activity ?: return null
+        val activity = item.launch as? Launch.Activity ?: return loadPackageIcon(item, sizePx)
         val key = "${item.id}@$sizePx"
         cache.get(key)?.let { return it }
         val bitmap = withContext(Dispatchers.IO) {
@@ -58,6 +58,17 @@ class IconLoader(context: Context) {
                 icon.also { if (item.isWork) drawWorkBadge(it) else if (item.isPrivate) drawPrivateBadge(it) }
             }.getOrNull()
         }
+        if (bitmap != null) cache.put(key, bitmap)
+        return bitmap
+    }
+
+    /** A shortcut of an app put on Start has the icon of its app (the launcher icon of the package). */
+    private suspend fun loadPackageIcon(item: AppItem, sizePx: Int): Bitmap? {
+        val pkg = item.packageName ?: return null
+        if (!item.pinOnly) return null
+        val key = "${item.id}@$sizePx"
+        cache.get(key)?.let { return it }
+        val bitmap = withContext(Dispatchers.IO) { runCatching { render(pm.getApplicationIcon(pkg), sizePx) }.getOrNull() }
         if (bitmap != null) cache.put(key, bitmap)
         return bitmap
     }

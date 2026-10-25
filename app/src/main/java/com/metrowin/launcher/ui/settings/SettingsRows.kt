@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -194,7 +195,8 @@ fun StepperSetting(
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             MetroText(label, size = 20.sp, modifier = Modifier.weight(1f))
             StepButton("−", stringResource(R.string.stepper_minus), canDecrement, onDecrement, tag?.let { "$it:minus" })
-            MetroText(value, size = 22.sp, modifier = Modifier.width(64.dp).padding(horizontal = 6.dp))
+            // "100%" and "1.5 s" fit, and a longer value pushes the label's room, not the number.
+            MetroText(value, size = 22.sp, maxLines = 1, modifier = Modifier.widthIn(min = 64.dp).padding(horizontal = 6.dp))
             StepButton("+", stringResource(R.string.stepper_plus), canIncrement, onIncrement, tag?.let { "$it:plus" })
         }
         if (hint != null) SettingHint(hint, Modifier.padding(top = 2.dp))

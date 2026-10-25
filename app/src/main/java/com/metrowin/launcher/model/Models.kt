@@ -92,7 +92,7 @@ sealed interface Launch {
 }
 
 /** Which kind of live content a tile can show on its face. */
-enum class LiveKind { Calendar, Photos, People, Phone, Weather, Battery, Messages, Torch, Music, Storage, Alarm }
+enum class LiveKind { Calendar, Photos, People, Phone, Weather, Battery, Messages, Torch, Music, Storage, Alarm, Birthdays }
 
 /**
  * One entry of the app list: either a Windows Phone stock app mapped onto the Android app that
@@ -124,7 +124,27 @@ data class AppItem(
     val note: String? = null,
     /** The day a countdown tile counts to (epoch day), or 0 for every other tile. */
     val targetDay: Long = 0L,
+    /** What a counter, a checklist, a world clock or a moon tile shows; null for every other tile. */
+    val data: TileData? = null,
 )
+
+/** What the tiles that keep something of their own show (see [AppItem.data]). */
+sealed interface TileData {
+    /** A number that goes up by a touch. */
+    @Immutable
+    data class Counter(val count: Int) : TileData
+
+    /** A list of things to do, as text (see Checklist). */
+    @Immutable
+    data class Checklist(val raw: String) : TileData
+
+    /** The time in a city, by the id of its time zone. */
+    @Immutable
+    data class WorldClock(val zone: String) : TileData
+
+    /** The phase of the moon today. */
+    data object Moon : TileData
+}
 
 /** The categories an app can declare (see `ApplicationInfo.category`), as the filter of the app list names them. */
 enum class AppCategory(val code: String, @param:StringRes val label: Int, private val android: Int) {

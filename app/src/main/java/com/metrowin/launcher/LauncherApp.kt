@@ -140,6 +140,10 @@ import com.metrowin.launcher.ui.start.ExitRequest
 import com.metrowin.launcher.ui.start.FolderCell
 import com.metrowin.launcher.data.Countdown
 import com.metrowin.launcher.ui.start.CountdownDialog
+import com.metrowin.launcher.ui.start.ChecklistDialog
+import com.metrowin.launcher.ui.start.CityPicker
+import com.metrowin.launcher.ui.start.CounterDialog
+import com.metrowin.launcher.model.TileData
 import com.metrowin.launcher.ui.start.NoteDialog
 import com.metrowin.launcher.ui.start.PhotoFrame
 import com.metrowin.launcher.ui.start.SettingPicker
@@ -306,6 +310,11 @@ fun LauncherApp(vm: LauncherViewModel) {
     var noteEditingId by remember { mutableStateOf<String?>(null) }
     var countdownEditingId by remember { mutableStateOf<String?>(null) }
     var countdownNew by remember { mutableStateOf(false) }
+    var counterEditingId by remember { mutableStateOf<String?>(null) }
+    var checklistEditingId by remember { mutableStateOf<String?>(null) }
+    var cityPickerOpen by remember { mutableStateOf(false) }
+    // The Start screen the add menu puts the new tile on: the selected tile's, or the one on screen after a long press on the empty part.
+    var addPage by remember { mutableIntStateOf(0) }
     val undoState by vm.undo.collectAsStateWithLifecycle()
     var weatherOpen by remember { mutableStateOf(false) }
     var searchFocus by remember { mutableIntStateOf(0) }
@@ -490,6 +499,9 @@ fun LauncherApp(vm: LauncherViewModel) {
                 countdownNew = false
             }
             settingPickerOpen -> InstantBack { settingPickerOpen = false }
+            cityPickerOpen -> InstantBack { cityPickerOpen = false }
+            counterEditingId != null -> InstantBack { counterEditingId = null }
+            checklistEditingId != null -> InstantBack { checklistEditingId = null }
             colorPickFor != null -> InstantBack { colorPickFor = null }
             addMenuOpen -> InstantBack { addMenuOpen = false }
             renamingFolderId != null -> InstantBack { renamingFolderId = null }
@@ -593,6 +605,8 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     // A speed dial: the picker returns one number; the phone permission is asked once, and without it the tile opens the dialer.
     val speedDialPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    // The birthdays of the contacts are read with the contacts permission, asked once when that tile is put on Start.
+    val birthdaysPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     val pickNumber = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val uri = result.data?.data
         if (result.resultCode == Activity.RESULT_OK && uri != null) {
@@ -632,6 +646,16 @@ fun LauncherApp(vm: LauncherViewModel) {
                 countdownEditingId = item.id
                 return
             }
+            // A counter counts one more where it is; a list opens to be ticked; the clock and the moon only show.
+            AppRepository.ROUTE_COUNTER -> {
+                vm.countStep(item.id, 1)
+                return
+            }
+            AppRepository.ROUTE_CHECKLIST -> {
+                checklistEditingId = item.id
+                return
+            }
+            AppRepository.ROUTE_NONE -> return
         }
         launching = true
         val plan = LaunchPlans.decide(settings.launchAnimation, reduceMotion, fromStart = startKey != null)
@@ -888,6 +912,29 @@ fun LauncherApp(vm: LauncherViewModel) {
             editingKey = null
         },
         onBackgroundTap = { if (folderPick == null) editingKey = null },
+        onEditContent = { cell ->
+            val item = (cell as? AppCell)?.item
+            when {
+                item == null -> Unit
+                item.data is TileData.Counter -> counterEditingId = item.id
+                item.data is TileData.Checklist -> checklistEditingId = item.id
+                item.targetDay != 0L -> countdownEditingId = item.id
+                item.note != null -> noteEditingId = item.id
+            }
+        },
+        onCounterStep = vm::countStep,
+        onBackgroundLongPress = if (kidsMode) {
+            null
+        } else {
+            {
+                if (!launching && folderPick == null && !tutorialVisible && menu == null && !settingsOpen) {
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    editingKey = null
+                    addPage = lastStartPage.coerceIn(0, pages.size - 1)
+                    addMenuOpen = true
+                }
+            }
+        },
         onTileBounds = { bounds ->
             tapBounds = android.graphics.Rect(bounds.left.toInt(), bounds.top.toInt(), bounds.right.toInt(), bounds.bottom.toInt())
         },
@@ -981,6 +1028,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                             parallax = settings.parallax,
                             pickedKeys = folderPick,
                             framing = PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY),
+                            showNames = settings.showTileNames,
+                            spacing = settings.tileSpacing.factor,
                             header = if (settings.showClock && page == 0) {
                                 {
                                     ClockHeader(
@@ -1044,6 +1093,10 @@ fun LauncherApp(vm: LauncherViewModel) {
                         onShortcut = { shortcut ->
                             menu = null
                             vm.startShortcut(shortcut)
+                        },
+                        onPinShortcut = { shortcut ->
+                            menu = null
+                            vm.pinAppShortcut(shortcut, lastStartPage.coerceIn(0, pages.size - 1))
                         },
                         onRename = if (!state.item.pinOnly) {
                             {
@@ -1183,7 +1236,10 @@ fun LauncherApp(vm: LauncherViewModel) {
                             },
                             onDone = { editingKey = null },
                             modifier = Modifier.align(Alignment.BottomCenter),
-                            onAdd = { addMenuOpen = true },
+                            onAdd = {
+                                addPage = selectedPage
+                                addMenuOpen = true
+                            },
                             onFolder = {
                                 folderPick = setOf(cell.entryId)
                                 editingKey = null
@@ -1294,6 +1350,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             apps = items,
                             onStartKidsCorner = ::enterKidsCorner,
                             onClearSearches = vm::clearSearches,
+                            onResetStart = vm::resetStart,
                             about = about,
                             onExportLayout = vm::exportLayout,
                             onImportLayout = vm::importLayout,
@@ -1376,11 +1433,32 @@ fun LauncherApp(vm: LauncherViewModel) {
                         },
                         onNote = {
                             addMenuOpen = false
-                            noteEditingId = vm.addNote(selectedPage)
+                            noteEditingId = vm.addNote(addPage)
                         },
                         onCountdown = {
                             addMenuOpen = false
                             countdownNew = true
+                        },
+                        onCounter = {
+                            addMenuOpen = false
+                            counterEditingId = vm.addCounter(addPage)
+                        },
+                        onChecklist = {
+                            addMenuOpen = false
+                            checklistEditingId = vm.addChecklist(addPage)
+                        },
+                        onWorldClock = {
+                            addMenuOpen = false
+                            cityPickerOpen = true
+                        },
+                        onMoon = {
+                            addMenuOpen = false
+                            vm.addMoon(addPage)
+                        },
+                        onBirthdays = {
+                            addMenuOpen = false
+                            vm.addBirthdays(addPage)
+                            if (!LivePermissions.isGranted(appContext, LivePermissions.contacts)) birthdaysPermission.launch(LivePermissions.contacts)
                         },
                         onDismiss = { addMenuOpen = false },
                     )
@@ -1392,7 +1470,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         settings = defs,
                         onPick = { def ->
                             settingPickerOpen = false
-                            vm.pinSetting(def, selectedPage)
+                            vm.pinSetting(def, addPage)
                         },
                         onDismiss = { settingPickerOpen = false },
                     )
@@ -1424,6 +1502,42 @@ fun LauncherApp(vm: LauncherViewModel) {
                     }
                 }
 
+                if (cityPickerOpen) {
+                    CityPicker(
+                        onPick = { city ->
+                            cityPickerOpen = false
+                            vm.addWorldClock(city, addPage)
+                        },
+                        onDismiss = { cityPickerOpen = false },
+                    )
+                }
+
+                counterEditingId?.let { id ->
+                    val counter = items.firstOrNull { it.id == id }
+                    if (counter != null) {
+                        CounterDialog(
+                            initialName = counter.label,
+                            count = (counter.data as? TileData.Counter)?.count ?: 0,
+                            onDone = { name, reset ->
+                                vm.saveCounter(id, name, reset)
+                                counterEditingId = null
+                            },
+                            onCancel = { counterEditingId = null },
+                        )
+                    }
+                }
+
+                checklistEditingId?.let { id ->
+                    val list = items.firstOrNull { it.id == id }
+                    if (list != null) {
+                        ChecklistDialog(
+                            initialRaw = (list.data as? TileData.Checklist)?.raw.orEmpty(),
+                            onChange = { raw -> vm.saveChecklist(id, raw) },
+                            onClose = { checklistEditingId = null },
+                        )
+                    }
+                }
+
                 if (countdownNew || countdownEditingId != null) {
                     val existing = countdownEditingId?.let { id -> items.firstOrNull { it.id == id } }
                     CountdownDialog(
@@ -1431,7 +1545,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         initialDay = existing?.targetDay ?: Countdown.defaultDay(java.time.LocalDate.now()),
                         onDone = { title, day ->
                             val editing = countdownEditingId
-                            if (editing != null) vm.saveCountdown(editing, title, day) else vm.addCountdown(title, day, selectedPage)
+                            if (editing != null) vm.saveCountdown(editing, title, day) else vm.addCountdown(title, day, addPage)
                             countdownEditingId = null
                             countdownNew = false
                         },
@@ -1455,7 +1569,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 if (siteDialogOpen) {
                     SiteDialog(
                         onDone = { title, address ->
-                            val accepted = vm.pinSite(title, address, selectedPage)
+                            val accepted = vm.pinSite(title, address, addPage)
                             if (accepted) siteDialogOpen = false
                             accepted
                         },

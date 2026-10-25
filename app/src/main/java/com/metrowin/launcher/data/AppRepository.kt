@@ -151,8 +151,13 @@ class AppRepository(private val context: Context) {
                 is Launch.Internal -> Unit // handled by the UI, there is no activity to start
                 is Launch.Widget -> Unit // a widget tile has nothing to open
                 is Launch.Link -> {
+                    val shortcut = ShortcutDef.appShortcutParts(target.uri)
                     val number = PhoneCalls.numberOf(target.uri)
-                    if (number != null) {
+                    if (shortcut != null) {
+                        // A shortcut of an app, pinned to Start: the system starts it (only for the app that is the phone's Home).
+                        val (pkg, serial, id) = shortcut
+                        launcherApps.startShortcut(pkg, id, null, options, userManager.getUserForSerialNumber(serial) ?: owner)
+                    } else if (number != null) {
                         // A speed dial tile: it calls at once when the phone permission was given, else it opens the dialer.
                         val direct = LivePermissions.isGranted(context, PhoneCalls.permission)
                         context.startActivity(PhoneCalls.intent(number, direct), options)
@@ -271,6 +276,11 @@ class AppRepository(private val context: Context) {
         /** The tiles of a note and of a countdown open their editor; these routes tell them apart from the launcher's pages. */
         const val ROUTE_NOTE = "note"
         const val ROUTE_COUNTDOWN = "countdown"
+
+        /** A counter goes up by a touch, a checklist opens its list, and the world clock and the moon do nothing when touched. */
+        const val ROUTE_COUNTER = "counter"
+        const val ROUTE_CHECKLIST = "checklist"
+        const val ROUTE_NONE = "none"
         const val WEATHER_ID = "launcher:weather"
         const val ROUTE_WEATHER = "weather"
     }
