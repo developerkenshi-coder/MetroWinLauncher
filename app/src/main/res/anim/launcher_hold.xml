@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- The launcher stays put while the opened app animates over it. -->
-<set xmlns:android="http://schemas.android.com/apk/res/android">
-    <alpha
-        android:duration="260"
-        android:fromAlpha="1.0"
-        android:toAlpha="1.0" />
-</set>
