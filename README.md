@@ -432,6 +432,13 @@ quanta batteria faccia risparmiare in ore **non è stato misurato** (servirebbe 
   non è in carica), *sempre* o *mai*. Mentre risparmia: i riquadri non girano da soli, le foto non si alternano, la richiesta dei
   120 Hz viene tolta, e tutto si legge meno spesso (meteo 2 ore, dati dei tile 15 minuti, sync quattro volte più rada).
 
+**Misurare su un telefono vero.** Tutto quello che sopra è controllato dai test è logica; i consumi reali si misurano sul telefono.
+`tools/battery-report.sh` (si esegue sul computer a cui il telefono è collegato con il debug USB, serve adb) azzera le statistiche di
+Android (`reset`) e, dopo qualche ora di uso staccato dal cavo, raccoglie (`collect`) in un archivio: tempo del processo per stato
+(in primo piano, servizio, in cache), tempo di CPU, wakelock, sveglie, lavori, quante notifiche arrivano e da quali app, la fascia di
+standby, la frequenza dello schermo e le righe di log del launcher. Legge soltanto; non raccoglie il contenuto delle notifiche. Non è
+stato provato su un telefono: i comandi `dumpsys` cambiano un poco da una versione di Android all'altra.
+
 <img src="docs/screenshots/settings_battery.png" alt="La pagina batteria" width="260">
 
 ### Angolo bambini
