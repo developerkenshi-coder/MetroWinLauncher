@@ -460,4 +460,15 @@
     <string name="sync_not_file">The sync file in the folder is damaged or is not ours</string>
     <string name="sync_failed">Could not reach the folder</string>
     <string name="sync_hint">The first sync of a phone that finds a file in the folder takes it, and keeps what it had as the backup file in the folder. After that, whatever changed since the last sync goes across; if both phones changed, this one wins and the other is kept as a separate file.</string>
+
+    <!-- notification reply and grouping -->
+    <string name="notif_reply">reply</string>
+    <string name="notif_reply_hint">your reply</string>
+    <string name="notif_send">send</string>
+    <string name="notif_reply_failed">Could not send the reply</string>
+    <string name="notif_group_count">%1$d notifications</string>
+    <string name="notif_inline_reply">reply from the Action Center</string>
+    <string name="notif_inline_reply_hint">Shows a “reply” link on messages that can be answered, and sends your answer to the app that posted it.</string>
+    <string name="notif_group">group notifications by app</string>
+    <string name="notif_group_hint">An app with several notifications shows as one line you can open. Swiping it away clears them all.</string>
 </resources>

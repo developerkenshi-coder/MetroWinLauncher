@@ -268,6 +268,13 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         if (entry.autoCancel) NotificationHub.dismiss(entry.key)
     }
 
+    /** Sends the typed answer to a notification. False (and says so) when the app does not take it. */
+    fun replyToNotification(entry: NotificationEntry, text: String): Boolean {
+        val sent = NotificationHub.reply(getApplication(), entry, text)
+        if (sent && entry.autoCancel) NotificationHub.dismiss(entry.key)
+        return sent
+    }
+
     fun dismissNotification(entry: NotificationEntry) = NotificationHub.dismiss(entry.key)
 
     fun clearNotifications() = NotificationHub.dismissAll()

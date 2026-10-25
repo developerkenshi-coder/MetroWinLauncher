@@ -70,6 +70,22 @@ fun ActionsPage(env: SettingsEnv) {
             enabled = env.notificationAccess,
             tag = "notifications:peek",
         )
+        ToggleSetting(
+            label = stringResource(R.string.notif_inline_reply),
+            checked = env.settings.inlineReply,
+            onChange = { value -> env.onChange { it.copy(inlineReply = value) } },
+            hint = stringResource(R.string.notif_inline_reply_hint),
+            enabled = env.notificationAccess,
+            tag = "notifications:reply",
+        )
+        ToggleSetting(
+            label = stringResource(R.string.notif_group),
+            checked = env.settings.groupConversations,
+            onChange = { value -> env.onChange { it.copy(groupConversations = value) } },
+            hint = stringResource(R.string.notif_group_hint),
+            enabled = env.notificationAccess,
+            tag = "notifications:group",
+        )
         Column {
             SettingLabel(stringResource(R.string.settings_notification_access))
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {

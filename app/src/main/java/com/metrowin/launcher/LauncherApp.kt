@@ -878,6 +878,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                             vm.openNotification(entry)
                         },
                         onDismissNotification = vm::dismissNotification,
+                        onReply = if (settings.inlineReply) vm::replyToNotification else null,
+                        groupConversations = settings.groupConversations,
                         onClearAll = vm::clearNotifications,
                         onTurnOnNotificationAccess = vm::openNotificationAccessSettings,
                         onClose = panel::close,

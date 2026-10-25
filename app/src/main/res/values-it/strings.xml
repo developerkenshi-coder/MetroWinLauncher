@@ -453,4 +453,15 @@
     <string name="sync_not_file">Il file di sync nella cartella è danneggiato o non è nostro</string>
     <string name="sync_failed">Impossibile raggiungere la cartella</string>
     <string name="sync_hint">La prima sincronizzazione di un telefono che trova un file nella cartella lo prende, e salva ciò che aveva come file di backup nella cartella. Dopo, passa ciò che è cambiato dall\'ultima sincronizzazione; se sono cambiati entrambi, vince questo e l\'altro resta come file separato.</string>
+
+    <!-- notification reply and grouping -->
+    <string name="notif_reply">rispondi</string>
+    <string name="notif_reply_hint">la tua risposta</string>
+    <string name="notif_send">invia</string>
+    <string name="notif_reply_failed">Impossibile inviare la risposta</string>
+    <string name="notif_group_count">%1$d notifiche</string>
+    <string name="notif_inline_reply">rispondi dall\'Action Center</string>
+    <string name="notif_inline_reply_hint">Mostra un link “rispondi” sui messaggi a cui si può rispondere, e manda la risposta all\'app che l\'ha pubblicato.</string>
+    <string name="notif_group">raggruppa le notifiche per app</string>
+    <string name="notif_group_hint">Un\'app con più notifiche appare come una riga che si può aprire. Scorrerla via le cancella tutte.</string>
 </resources>

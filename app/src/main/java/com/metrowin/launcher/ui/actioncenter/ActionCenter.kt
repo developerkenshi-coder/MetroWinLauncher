@@ -47,6 +47,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.metrowin.launcher.notifications.NotificationGroups
+import com.metrowin.launcher.notifications.NotificationItem
+import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.QuickAction
@@ -89,9 +92,15 @@ fun ActionCenter(
     onTurnOnNotificationAccess: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Sends the typed answer to a notification that can be answered; says whether it went. Null: no reply link. */
+    onReply: ((NotificationEntry, String) -> Boolean)? = null,
+    /** The notifications of an app with several show as one line that opens. */
+    groupConversations: Boolean = false,
 ) {
     val colors = LocalMetroColors.current
     var expanded by remember { mutableStateOf(false) }
+    val listed = remember(notifications, groupConversations) { NotificationGroups.build(notifications, groupConversations) }
+    var openGroups by remember { mutableStateOf(emptySet<String>()) }
     val pushUp = remember(panel) { pushUpConnection(panel) }
     Box(
         modifier
@@ -155,8 +164,28 @@ fun ActionCenter(
                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
                     )
                     else -> LazyColumn(Modifier.fillMaxSize()) {
-                        items(notifications, key = { it.key }) { entry ->
-                            NotificationRow(entry, appsByPackage[entry.packageName], onOpenNotification, onDismissNotification)
+                        items(listed, key = { it.key }) { item ->
+                            when (item) {
+                                is NotificationItem.Single ->
+                                    NotificationRow(item.entry, appsByPackage[item.entry.packageName], onOpenNotification, onDismissNotification, onReply)
+                                is NotificationItem.Group -> {
+                                    val open = item.packageName in openGroups
+                                    Column {
+                                        GroupRow(
+                                            item, appsByPackage[item.packageName], open,
+                                            onToggle = { openGroups = if (open) openGroups - item.packageName else openGroups + item.packageName },
+                                            onDismiss = { item.entries.forEach(onDismissNotification) },
+                                        )
+                                        if (open) {
+                                            item.entries.forEach { entry ->
+                                                Box(Modifier.padding(start = 24.dp)) {
+                                                    NotificationRow(entry, null, onOpenNotification, onDismissNotification, onReply)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -230,12 +259,49 @@ private fun PullUpHandle(onClose: () -> Unit) {
     }
 }
 
+/** The line that stands for several notifications of one app: its icon, how many there are, and the newest one. */
+@Composable
+private fun GroupRow(group: NotificationItem.Group, app: AppItem?, open: Boolean, onToggle: () -> Unit, onDismiss: () -> Unit) {
+    val colors = LocalMetroColors.current
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .testTag("notification:group:${group.packageName}")
+            .swipeToDismiss(onDismiss)
+            .metroPress(onClick = onToggle)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        if (app != null) {
+            AppSquare(app, 44.dp)
+        } else {
+            Box(Modifier.size(44.dp).background(colors.surface), contentAlignment = Alignment.Center) {
+                GlyphIcon(Glyph.Bell, 26.dp, color = colors.subtle)
+            }
+        }
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            MetroText(app?.label ?: group.latest.title, size = 18.sp, weight = FontWeight.Normal)
+            MetroText(
+                stringResource(R.string.notif_group_count, group.entries.size),
+                size = 15.sp, color = LocalAccent.current,
+                modifier = Modifier.testTag("notification:group:count:${group.packageName}"),
+            )
+            if (!open) {
+                val latest = group.latest
+                MetroText(listOf(latest.title, latest.text).filter { it.isNotBlank() }.joinToString(": "), size = 15.sp, color = colors.subtle, maxLines = 2)
+            }
+        }
+    }
+}
+
 @Composable
 private fun NotificationRow(
     entry: NotificationEntry,
     app: AppItem?,
     onOpen: (NotificationEntry) -> Unit,
     onDismiss: (NotificationEntry) -> Unit,
+    onReply: ((NotificationEntry, String) -> Boolean)? = null,
 ) {
     val colors = LocalMetroColors.current
     Row(
@@ -267,6 +333,44 @@ private fun NotificationRow(
                 size = 12.sp, weight = FontWeight.Normal, color = colors.subtle,
                 modifier = Modifier.padding(top = 2.dp),
             )
+            if (entry.reply != null && onReply != null) ReplyBox(entry, onReply)
+        }
+    }
+}
+
+/** The "reply" link of a notification that can be answered; it opens a line to type in and a button to send. */
+@Composable
+private fun ReplyBox(entry: NotificationEntry, onReply: (NotificationEntry, String) -> Boolean) {
+    val colors = LocalMetroColors.current
+    var typing by remember { mutableStateOf(false) }
+    var text by remember { mutableStateOf("") }
+    var failed by remember { mutableStateOf(false) }
+    fun send() {
+        if (text.isBlank()) return
+        if (onReply(entry, text)) {
+            typing = false
+            text = ""
+            failed = false
+        } else {
+            failed = true
+        }
+    }
+    if (!typing) {
+        Box(
+            Modifier.metroPress(onClick = { typing = true }).padding(vertical = 8.dp).testTag("notification:reply:${entry.key}"),
+        ) {
+            MetroText(stringResource(R.string.notif_reply), size = 16.sp, weight = FontWeight.Normal, color = LocalAccent.current)
+        }
+    } else {
+        Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            MetroTextField(
+                text, { text = it; failed = false }, stringResource(R.string.notif_reply_hint),
+                Modifier.testTag("notification:replyfield:${entry.key}"), onSearch = ::send,
+            )
+            if (failed) {
+                MetroText(stringResource(R.string.notif_reply_failed), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.testTag("notification:replyfailed:${entry.key}"))
+            }
+            MetroButton(stringResource(R.string.notif_send), Modifier.testTag("notification:send:${entry.key}")) { send() }
         }
     }
 }
@@ -280,10 +384,6 @@ private fun Modifier.swipeToDismiss(onDismissed: () -> Unit): Modifier {
     val currentDismissed by rememberUpdatedState(onDismissed)
     return this
         .onSizeChanged { width = it.width.toFloat().coerceAtLeast(1f) }
-        .graphicsLayer {
-            translationX = offset.value
-            alpha = 1f - (abs(offset.value) / width).coerceIn(0f, 1f)
-        }
         .draggable(
             orientation = Orientation.Horizontal,
             state = rememberDraggableState { delta ->
@@ -298,6 +398,11 @@ private fun Modifier.swipeToDismiss(onDismissed: () -> Unit): Modifier {
                 }
             },
         )
+        // After the drag, which must follow the finger in the window's coordinates and not in those of a row that moves.
+        .graphicsLayer {
+            translationX = offset.value
+            alpha = 1f - (abs(offset.value) / width).coerceIn(0f, 1f)
+        }
 }
 
 private const val SWIPE_FRACTION = 0.35f

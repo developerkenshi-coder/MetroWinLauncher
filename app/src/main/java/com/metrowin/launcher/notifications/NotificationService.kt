@@ -48,6 +48,19 @@ class NotificationService : NotificationListenerService() {
             postTime = sbn.postTime,
             contentIntent = notification.contentIntent,
             autoCancel = notification.flags and Notification.FLAG_AUTO_CANCEL != 0,
+            reply = replyOf(notification),
         )
+    }
+
+    /** The action that takes free text, if the notification has one: the semantic "reply" first, then any other. */
+    private fun replyOf(notification: Notification): ReplyAction? {
+        val actions = notification.actions?.toList().orEmpty()
+        fun Notification.Action.freeText() = remoteInputs?.firstOrNull { it.allowFreeFormInput }
+        val action = actions.firstOrNull { it.semanticAction == Notification.Action.SEMANTIC_ACTION_REPLY && it.freeText() != null }
+            ?: actions.firstOrNull { it.freeText() != null }
+            ?: return null
+        val input = action.freeText() ?: return null
+        val intent = action.actionIntent ?: return null
+        return ReplyAction(intent, input, action.remoteInputs.toList())
     }
 }
