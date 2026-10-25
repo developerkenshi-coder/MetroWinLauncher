@@ -370,10 +370,12 @@
     <string name="voice_set_button_hint">Shows a microphone in the search box of the app list.</string>
     <string name="voice_set_offline">prefer recognition on the phone</string>
     <string name="voice_set_offline_hint">Uses the offline voice model when the phone has one for your language. Otherwise your voice goes to the speech service you chose in Android.</string>
+    <string name="voice_set_call">call at once</string>
+    <string name="voice_set_call_hint">“Call Anna” places the call without opening the dialer first. Off, the dialer opens with the number written in, one tap from calling, so a word heard wrong does not call anyone. Android asks for the phone permission the first time.</string>
     <string name="voice_try">try it now</string>
     <string name="voice_examples">what you can say</string>
     <string name="voice_ex_open">“open Maps”, “start the camera”</string>
-    <string name="voice_ex_call">“call Anna” opens the card of the contact</string>
+    <string name="voice_ex_call">“call Anna” opens the dialer with her number, or calls her if you turned on “call at once”</string>
     <string name="voice_ex_search">“search for pizza recipes”, or just say what you want to know</string>
     <string name="voice_ex_torch">“turn on the torch”, “turn off the torch”</string>
     <string name="voice_ex_launcher">“weather”, “lock the screen”, “action center”, “all apps”, “launcher settings”</string>
@@ -678,4 +680,18 @@
     <string name="live_apps">apps</string>
     <string name="live_apps_none">No app has live content now.</string>
     <string name="live_apps_hint">Switch an app off and its tile stays as it is. The apps appear here once they have something to show.</string>
+    <string name="live_master">live content of other apps</string>
+    <string name="live_master_hint">The same switch as in the notifications page. It puts the text of your messages on Start, so it stays off until you turn it on.</string>
+    <string name="live_access">Allow notification access</string>
+    <string name="live_access_hint">Android asks for it in its own screen: the launcher only reads the notifications that are already up.</string>
+    <string name="live_report">what the launcher reads now</string>
+    <string name="live_report_none">Nothing yet. Once the switch and the notification access are on, the apps that have notifications up are listed here with what was found in them.</string>
+    <string name="live_report_hint">If an app shows nothing on its tile, look here: if it is listed, the tile can show it; if it is not, the app wrote nothing the launcher can read.</string>
+    <string name="live_report_chats">chats %1$d (%2$d messages)</string>
+    <string name="live_report_others">other notifications %1$d</string>
+    <string name="live_report_pictures">pictures %1$d</string>
+    <string name="live_report_playing">music</string>
+    <string name="live_report_progress">progress %1$d</string>
+    <string name="live_report_ongoing">going on now %1$d</string>
+    <string name="live_report_nothing">no text to show</string>
 </resources>

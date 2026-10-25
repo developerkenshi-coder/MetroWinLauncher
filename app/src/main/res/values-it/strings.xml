@@ -363,10 +363,12 @@
     <string name="voice_set_button_hint">Mostra un microfono nella casella di ricerca della lista app.</string>
     <string name="voice_set_offline">preferisci il riconoscimento sul telefono</string>
     <string name="voice_set_offline_hint">Usa il modello vocale offline se il telefono ne ha uno per la tua lingua. Altrimenti la voce va al servizio vocale scelto in Android.</string>
+    <string name="voice_set_call">chiama subito</string>
+    <string name="voice_set_call_hint">“Chiama Anna” fa partire la chiamata senza aprire prima il tastierino. Spento, si apre il tastierino con il numero già scritto, a un tocco dalla chiamata, così una parola capita male non chiama nessuno. Android chiede il permesso del telefono la prima volta.</string>
     <string name="voice_try">provalo ora</string>
     <string name="voice_examples">cosa puoi dire</string>
     <string name="voice_ex_open">“apri Mappe”, “avvia la fotocamera”</string>
-    <string name="voice_ex_call">“chiama Anna” apre la scheda del contatto</string>
+    <string name="voice_ex_call">“chiama Anna” apre il tastierino con il suo numero, o la chiama subito se hai acceso “chiama subito”</string>
     <string name="voice_ex_search">“cerca ricette di pizza”, o dì semplicemente cosa vuoi sapere</string>
     <string name="voice_ex_torch">“accendi la torcia”, “spegni la torcia”</string>
     <string name="voice_ex_launcher">“meteo”, “blocca lo schermo”, “centro notifiche”, “tutte le app”, “impostazioni del launcher”</string>
@@ -676,4 +678,18 @@
     <string name="live_apps">app</string>
     <string name="live_apps_none">Nessuna app ha contenuti dal vivo ora.</string>
     <string name="live_apps_hint">Spegni un\'app e il suo tile resta com\'è. Le app compaiono qui quando hanno qualcosa da mostrare.</string>
+    <string name="live_master">contenuti dal vivo delle altre app</string>
+    <string name="live_master_hint">È lo stesso interruttore della pagina notifiche. Mette il testo dei tuoi messaggi su Start, quindi resta spento finché non lo accendi.</string>
+    <string name="live_access">Consenti l\'accesso alle notifiche</string>
+    <string name="live_access_hint">Lo chiede Android nella sua schermata: il launcher legge solo le notifiche che sono già in lista.</string>
+    <string name="live_report">cosa legge ora il launcher</string>
+    <string name="live_report_none">Ancora niente. Con l\'interruttore e l\'accesso alle notifiche accesi, qui compaiono le app che hanno notifiche, con quello che c\'è dentro.</string>
+    <string name="live_report_hint">Se un\'app non mostra niente sul suo tile, guarda qui: se c\'è, il tile può mostrarla; se non c\'è, l\'app non ha scritto niente che il launcher possa leggere.</string>
+    <string name="live_report_chats">chat %1$d (%2$d messaggi)</string>
+    <string name="live_report_others">altre notifiche %1$d</string>
+    <string name="live_report_pictures">immagini %1$d</string>
+    <string name="live_report_playing">musica</string>
+    <string name="live_report_progress">avanzamenti %1$d</string>
+    <string name="live_report_ongoing">in corso adesso %1$d</string>
+    <string name="live_report_nothing">nessun testo da mostrare</string>
 </resources>

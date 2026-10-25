@@ -33,6 +33,7 @@ class SettingsCodecTest {
         batterySaving = BatterySaving.Always, oledMode = true,
         liveMessages = false, liveHideText = true, livePictures = false, liveNowPlaying = false, liveProgress = false,
         liveOffApps = setOf("com.whatsapp", "com.reddit.frontpage"),
+        voiceCallDirect = true,
     )
 
     @Test

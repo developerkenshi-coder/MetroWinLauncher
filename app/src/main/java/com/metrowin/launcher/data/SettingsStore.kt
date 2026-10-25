@@ -190,6 +190,8 @@ data class LauncherSettings(
     val voiceOffline: Boolean = true,
     /** A microphone next to the search box of the app list. */
     val voiceButton: Boolean = true,
+    /** "Call Anna" places the call at once (needs the phone permission) instead of opening the dialer with the number. */
+    val voiceCallDirect: Boolean = false,
 
     // --- accessibility
     /** Fades instead of turnstiles, flips and springs. */

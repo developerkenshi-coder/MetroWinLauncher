@@ -12,6 +12,7 @@ import com.metrowin.launcher.data.ThirdPartyTile
 import com.metrowin.launcher.data.ProfileInfo
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.model.AppItem
+import com.metrowin.launcher.notifications.LiveReportLine
 
 /** The two pivot pages of the settings home: what the launcher looks and acts like, and the tools around it. */
 enum class SettingsGroup(@param:StringRes val title: Int) {
@@ -63,6 +64,8 @@ class SettingsEnv(
     val notificationAccess: Boolean = false,
     /** The apps whose tile shows live content now (see LiveCards), for the list of apps that can be switched off. */
     val liveTilePackages: Set<String> = emptySet(),
+    /** What the launcher reads from the notifications of each app now (see LiveCards.report). */
+    val liveReport: List<LiveReportLine> = emptyList(),
     val onManageNotificationAccess: () -> Unit = {},
     /** Every app, including the hidden ones and the launcher's own entries. */
     val apps: List<AppItem> = emptyList(),

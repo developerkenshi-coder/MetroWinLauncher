@@ -13,6 +13,7 @@ import androidx.compose.ui.test.performClick
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Launch
+import com.metrowin.launcher.notifications.LiveReportLine
 import com.metrowin.launcher.ui.settings.SettingsEnv
 import com.metrowin.launcher.ui.settings.SettingsScreen
 import com.metrowin.launcher.ui.settings.SettingsSection
@@ -37,7 +38,7 @@ class LiveTilesSettingsTest : ScreenshotBase() {
     )
 
     @Composable
-    private fun Page(access: Boolean = true, live: Set<String> = emptySet()) {
+    private fun Page(access: Boolean = true, live: Set<String> = emptySet(), report: List<LiveReportLine> = emptyList()) {
         var settings by remember { mutableStateOf(current) }
         SettingsScreen(
             env = SettingsEnv(
@@ -46,6 +47,8 @@ class LiveTilesSettingsTest : ScreenshotBase() {
                 notificationAccess = access,
                 apps = apps,
                 liveTilePackages = live,
+                liveReport = report,
+                onManageNotificationAccess = { accessAsked++ },
             ),
             section = SettingsSection.LiveTiles,
             onSectionChange = {},
@@ -53,9 +56,12 @@ class LiveTilesSettingsTest : ScreenshotBase() {
         )
     }
 
-    private fun open(settings: LauncherSettings, access: Boolean = true, live: Set<String> = emptySet()) {
+    private var accessAsked = 0
+
+    private fun open(settings: LauncherSettings, access: Boolean = true, live: Set<String> = emptySet(), report: List<LiveReportLine> = emptyList()) {
         current = settings
-        show { Page(access, live) }
+        accessAsked = 0
+        show { Page(access, live, report) }
         advance(500)
     }
 
@@ -74,6 +80,66 @@ class LiveTilesSettingsTest : ScreenshotBase() {
         compose.onNodeWithTag("live:off").assertExists()
         tap("live:hidetext")
         assertFalse("a switch that is off does nothing", current.liveHideText)
+    }
+
+    @Test
+    fun theMainSwitchIsOnThePageItself() {
+        open(LauncherSettings(notificationPeek = false))
+        scrollIntoView("live:master", topMargin = 0.2f)
+        compose.onNodeWithTag("live:master").assertExists()
+        tap("live:master")
+        assertTrue(current.notificationPeek)
+        compose.onAllNodesWithTag("live:off").assertCountEquals(0)
+        tap("live:master")
+        assertFalse(current.notificationPeek)
+    }
+
+    @Test
+    fun withoutAccessThePageHasAButtonThatAsksForIt() {
+        open(LauncherSettings(notificationPeek = true), access = false)
+        scrollIntoView("live:access", topMargin = 0.2f)
+        capture("settings_live_tiles_access")
+        tap("live:access")
+        assertEquals(1, accessAsked)
+    }
+
+    @Test
+    fun withAccessThereIsNoButton() {
+        open(LauncherSettings(notificationPeek = true), access = true)
+        compose.onAllNodesWithTag("live:access").assertCountEquals(0)
+    }
+
+    @Test
+    fun thePageTellsWhatTheLauncherReadsFromEachApp() {
+        open(
+            LauncherSettings(notificationPeek = true),
+            report = listOf(
+                LiveReportLine("com.whatsapp", conversations = 2, messages = 5, others = 0, pictures = 1, playing = false, progress = 0, ongoing = 0),
+                LiveReportLine("com.reddit.frontpage", conversations = 0, messages = 0, others = 3, pictures = 0, playing = false, progress = 0, ongoing = 0),
+            ),
+        )
+        scrollIntoView("live:report:com.whatsapp", topMargin = 0.2f)
+        capture("settings_live_tiles_report")
+        compose.onNodeWithTag("live:report:com.whatsapp").assertExists()
+        compose.onNodeWithTag("live:report:com.reddit.frontpage").assertExists()
+        compose.onAllNodesWithTag("live:report:none").assertCountEquals(0)
+    }
+
+    @Test
+    fun withNothingReadThePageExplainsWhy() {
+        open(LauncherSettings(notificationPeek = true))
+        scrollIntoView("live:report:none", topMargin = 0.2f)
+        compose.onNodeWithTag("live:report:none").assertExists()
+    }
+
+    @Test
+    fun withTheSwitchOffTheReportIsEmptyEvenIfNotificationsAreUp() {
+        open(
+            LauncherSettings(notificationPeek = false),
+            report = listOf(LiveReportLine("com.whatsapp", 1, 1, 0, 0, false, 0, 0)),
+        )
+        scrollIntoView("live:report:none", topMargin = 0.2f)
+        compose.onAllNodesWithTag("live:report:com.whatsapp").assertCountEquals(0)
     }
 
     @Test

@@ -28,6 +28,7 @@
         android:label="@string/permission_publish_tile_label"
         android:protectionLevel="normal" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <!--
         A launcher has to see every installed app. LauncherApps and the <queries> below already cover the

@@ -361,7 +361,14 @@ private fun CardsFace(item: AppItem, size: TileSize, width: Dp, height: Dp, card
 @Composable
 private fun MessageCard(card: LiveCard.Message, size: TileSize) {
     val ink = LocalMetroColors.current.tileContent
-    Row(Modifier.fillMaxSize().padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 26.dp)) {
+    Box(Modifier.fillMaxSize()) {
+    if (card.more > 0) {
+        MetroText(
+            "+${card.more}", size = 15.sp, color = ink.copy(alpha = 0.9f),
+            modifier = Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 10.dp).testTag("card:more"),
+        )
+    }
+    Row(Modifier.fillMaxSize().padding(start = 10.dp, top = 10.dp, end = if (card.more > 0) 38.dp else 10.dp, bottom = 26.dp)) {
         card.avatar?.let { avatar ->
             val side = if (size == TileSize.Wide) 64.dp else 44.dp
             Image(avatar, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(side).testTag("card:avatar"))
@@ -379,6 +386,7 @@ private fun MessageCard(card: LiveCard.Message, size: TileSize) {
                 )
             }
         }
+    }
     }
 }
 

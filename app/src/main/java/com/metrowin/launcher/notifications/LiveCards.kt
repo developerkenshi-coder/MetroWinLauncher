@@ -69,6 +69,22 @@ sealed interface LiveCard {
 @Immutable
 data class LiveTileInfo(val cards: List<LiveCard>, val unread: Int)
 
+/**
+ * What the notification service found for one app, counted before the user's choices apply: it tells what the tile could
+ * show, so a missing face can be told from a switch that is off.
+ */
+@Immutable
+data class LiveReportLine(
+    val packageName: String,
+    val conversations: Int,
+    val messages: Int,
+    val others: Int,
+    val pictures: Int,
+    val playing: Boolean,
+    val progress: Int,
+    val ongoing: Int,
+)
+
 /** What the user lets the tiles show: each kind, the text of the messages, and the apps that show nothing. */
 @Immutable
 data class LiveCardOptions(
@@ -159,6 +175,33 @@ object LiveCards {
         }
         return result
     }
+
+    /** What was found in the notifications of each app, by package name; apps with nothing readable are left out. */
+    fun report(notifications: List<AppNotification>, ownPackage: String = ""): List<LiveReportLine> =
+        notifications.filter { it.packageName != ownPackage }.groupBy { it.packageName }.mapNotNull { (pkg, all) ->
+            val used = all.filterNot { it.groupSummary }.ifEmpty { all }
+            var conversations = 0
+            var messages = 0
+            var others = 0
+            var pictures = 0
+            var playing = false
+            var progress = 0
+            var ongoing = 0
+            for (n in used) {
+                if (n.picture != null) pictures++
+                when {
+                    n.playing != null -> playing = true
+                    n.ongoing && (n.progress != null || n.category == "progress") -> progress++
+                    n.ongoing -> ongoing++
+                    n.messages.isNotEmpty() -> {
+                        conversations++
+                        messages += n.messages.size
+                    }
+                    else -> others++
+                }
+            }
+            LiveReportLine(pkg, conversations, messages, others, pictures, playing, progress, ongoing)
+        }.sortedBy { it.packageName }
 
     private fun text(value: String, options: LiveCardOptions) = if (options.hideText) "" else value
 

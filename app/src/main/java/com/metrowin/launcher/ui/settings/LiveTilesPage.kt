@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.PlaceMatch
+import com.metrowin.launcher.notifications.LiveReportLine
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
@@ -116,6 +117,17 @@ fun LiveTilesPage(env: SettingsEnv) {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             SettingHeading(stringResource(R.string.live_heading))
             SettingHint(stringResource(R.string.live_intro))
+            ToggleSetting(
+                stringResource(R.string.live_master), settings.notificationPeek,
+                onChange = { v -> env.onChange { it.copy(notificationPeek = v) } },
+                hint = stringResource(R.string.live_master_hint), tag = "live:master",
+            )
+            if (!env.notificationAccess) {
+                ActionSetting(
+                    stringResource(R.string.live_access), onClick = env.onManageNotificationAccess,
+                    hint = stringResource(R.string.live_access_hint), tag = "live:access",
+                )
+            }
             val on = settings.notificationPeek && env.notificationAccess
             if (!on) SettingHint(stringResource(R.string.live_off), Modifier.testTag("live:off"))
             ToggleSetting(
@@ -160,6 +172,22 @@ fun LiveTilesPage(env: SettingsEnv) {
                 }
                 SettingHint(stringResource(R.string.live_apps_hint))
             }
+            // What the launcher reads from the notifications now, so a face that is missing can be told from a switch that is off.
+            SettingLabel(stringResource(R.string.live_report))
+            if (!on || env.liveReport.isEmpty()) {
+                SettingHint(stringResource(R.string.live_report_none), Modifier.testTag("live:report:none"))
+            } else {
+                env.liveReport.forEach { line ->
+                    Column(Modifier.fillMaxWidth().testTag("live:report:${line.packageName}")) {
+                        MetroText(labels[line.packageName] ?: line.packageName, size = 20.sp)
+                        MetroText(
+                            reportText(line), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+                            maxLines = 3, lineHeight = 19.sp,
+                        )
+                    }
+                }
+                SettingHint(stringResource(R.string.live_report_hint))
+            }
         }
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.tp_heading))
@@ -191,4 +219,18 @@ fun LiveTilesPage(env: SettingsEnv) {
             }
         }
     }
+}
+
+/** What was found for an app, in a line: "chats 2 · messages 5 · pictures 1". */
+@Composable
+private fun reportText(line: LiveReportLine): String {
+    val parts = buildList {
+        if (line.conversations > 0) add(stringResource(R.string.live_report_chats, line.conversations, line.messages))
+        if (line.others > 0) add(stringResource(R.string.live_report_others, line.others))
+        if (line.pictures > 0) add(stringResource(R.string.live_report_pictures, line.pictures))
+        if (line.playing) add(stringResource(R.string.live_report_playing))
+        if (line.progress > 0) add(stringResource(R.string.live_report_progress, line.progress))
+        if (line.ongoing > 0) add(stringResource(R.string.live_report_ongoing, line.ongoing))
+    }
+    return parts.joinToString(" · ").ifEmpty { stringResource(R.string.live_report_nothing) }
 }

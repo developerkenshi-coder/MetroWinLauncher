@@ -72,6 +72,7 @@ object SettingsCodec {
         put("lockShowBattery", s.lockShowBattery)
         put("voiceOffline", s.voiceOffline)
         put("voiceButton", s.voiceButton)
+        put("voiceCallDirect", s.voiceCallDirect)
         put("reduceMotion", s.reduceMotion)
         put("highContrast", s.highContrast)
 
@@ -165,6 +166,7 @@ object SettingsCodec {
             lockShowBattery = o.optBoolean("lockShowBattery", base.lockShowBattery),
             voiceOffline = o.optBoolean("voiceOffline", base.voiceOffline),
             voiceButton = o.optBoolean("voiceButton", base.voiceButton),
+            voiceCallDirect = o.optBoolean("voiceCallDirect", base.voiceCallDirect),
             reduceMotion = o.optBoolean("reduceMotion", base.reduceMotion),
             highContrast = o.optBoolean("highContrast", base.highContrast),
 

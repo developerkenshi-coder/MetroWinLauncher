@@ -29,6 +29,40 @@ class LiveCardsTest {
 
     private fun lines(vararg l: Pair<String, String>) = l.mapIndexed { i, (who, what) -> MessageLine(who, what, i.toLong()) }
 
+    // --- what the service reads
+
+    @Test
+    fun theReportCountsWhatWasFoundInEachApp() {
+        val report = LiveCards.report(
+            listOf(
+                n("1", whatsapp, title = "Giulia", messages = lines("Giulia" to "Ciao", "Giulia" to "Ci sei?")),
+                n("2", whatsapp, title = "Luca", messages = lines("Luca" to "Ok")),
+                n("3", whatsapp, summary = true, title = "3 messaggi"),
+                n("4", instagram, title = "marco", text = "liked your photo"),
+                n("5", spotify, ongoing = true, playing = NowPlaying("Song", "Band", null, true)),
+                n("6", reddit, ongoing = true, progress = 40, category = "progress"),
+                n("7", "com.maps", ongoing = true, category = "navigation", title = "Turn left"),
+                n("8", "com.metrowin.launcher", title = "own"),
+            ),
+            ownPackage = "com.metrowin.launcher",
+        ).associateBy { it.packageName }
+        val wa = report.getValue(whatsapp)
+        assertEquals(2, wa.conversations)
+        assertEquals(3, wa.messages)
+        assertEquals(0, wa.others) // the summary stands for its messages
+        assertEquals(1, report.getValue(instagram).others)
+        assertTrue(report.getValue(spotify).playing)
+        assertEquals(1, report.getValue(reddit).progress)
+        assertEquals(1, report.getValue("com.maps").ongoing)
+        assertTrue("the launcher's own notifications are not reported", "com.metrowin.launcher" !in report)
+        assertEquals(report.keys.sorted(), report.keys.toList())
+    }
+
+    @Test
+    fun theReportAlsoCountsPicturesAndWorksWithNoNotifications() {
+        assertTrue(LiveCards.report(emptyList()).isEmpty())
+    }
+
     // --- messages
 
     @Test

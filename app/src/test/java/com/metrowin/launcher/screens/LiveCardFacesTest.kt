@@ -77,6 +77,22 @@ class LiveCardFacesTest : ScreenshotBase() {
     }
 
     @Test
+    fun otherMessagesOfTheSameChatShowAsAPlusNumber() {
+        showTile(whatsapp, listOf(LiveCard.Message("Giulia", "Ci sei?", null, null, 3)))
+        firstCard()
+        capture("card_message_more")
+        compose.onAllNodesWithText("+3").assertCountEquals(1)
+        compose.onNodeWithTag("card:more").assertExists()
+    }
+
+    @Test
+    fun aChatWithNothingElseWaitingShowsNoPlusNumber() {
+        showTile(whatsapp, listOf(LiveCard.Message("Giulia", "Ciao", null, null, 0)))
+        firstCard()
+        compose.onAllNodesWithTag("card:more").assertCountEquals(0)
+    }
+
+    @Test
     fun withTheTextHiddenOnlyTheNameShows() {
         showTile(whatsapp, listOf(LiveCard.Message("Giulia", "", null, null, 0)))
         firstCard()

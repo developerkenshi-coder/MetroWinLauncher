@@ -25,6 +25,11 @@ fun VoicePage(env: SettingsEnv) {
                 onChange = { value -> env.onChange { it.copy(voiceOffline = value) } },
                 hint = stringResource(R.string.voice_set_offline_hint), tag = "voice:offline",
             )
+            ToggleSetting(
+                stringResource(R.string.voice_set_call), settings.voiceCallDirect,
+                onChange = { value -> env.onChange { it.copy(voiceCallDirect = value) } },
+                hint = stringResource(R.string.voice_set_call_hint), tag = "voice:calldirect",
+            )
             ActionSetting(stringResource(R.string.voice_try), onClick = env.onTryVoice, tag = "voice:try")
             SettingHint(stringResource(R.string.voice_gesture_hint))
         }

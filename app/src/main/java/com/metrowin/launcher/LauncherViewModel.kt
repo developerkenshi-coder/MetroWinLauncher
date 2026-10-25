@@ -45,6 +45,7 @@ import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.OpenMeteo
 import com.metrowin.launcher.data.IconPackInfo
 import com.metrowin.launcher.data.IconPackRepository
+import com.metrowin.launcher.data.PhoneCalls
 import com.metrowin.launcher.data.PlaceMatch
 import com.metrowin.launcher.data.ThirdPartyTile
 import com.metrowin.launcher.data.ThirdPartyTiles
@@ -93,6 +94,7 @@ import com.metrowin.launcher.notifications.NotificationService
 import com.metrowin.launcher.notifications.LiveCard
 import com.metrowin.launcher.notifications.LiveCardOptions
 import com.metrowin.launcher.notifications.LiveCards
+import com.metrowin.launcher.notifications.LiveReportLine
 import com.metrowin.launcher.notifications.LiveTileInfo
 import com.metrowin.launcher.notifications.NowPlaying
 import com.metrowin.launcher.notifications.TilePeek
@@ -243,6 +245,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         combine(NotificationHub.apps, liveOptions, _settings.map { it.notificationPeek }.distinctUntilChanged()) { apps, options, on ->
             if (on) LiveCards.build(apps, options) else emptyMap()
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+
+    /** What the notification service reads from each app now, for the page that shows it (see [LiveCards.report]). */
+    val liveReport: StateFlow<List<LiveReportLine>> =
+        combine(NotificationHub.apps, _settings.map { it.notificationPeek }.distinctUntilChanged()) { apps, on ->
+            if (on) LiveCards.report(apps, application.packageName) else emptyList()
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     /** How many notifications each app has: the counters on the tiles. */
     val badges: StateFlow<Map<String, Int>> =
@@ -547,6 +555,16 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     /** The contacts whose name matches [query]. Empty without the contacts permission. */
+    /** The phone number of a contact found by [searchContacts], or null when it has none or the contacts are not readable. */
+    suspend fun phoneNumberOf(lookupUri: String): String? =
+        withContext(Dispatchers.IO) { PhoneCalls.numberOfContact(getApplication(), lookupUri) }
+
+    /** Calls [number] at once ([direct], the phone permission is granted) or opens the dialer with it written in. */
+    fun dial(number: String, direct: Boolean) {
+        val opened = runCatching { getApplication<Application>().startActivity(PhoneCalls.intent(number, direct)) }.isSuccess
+        if (!opened) tell(R.string.launch_failed)
+    }
+
     suspend fun searchContacts(query: String): List<ContactMatch> =
         withContext(Dispatchers.IO) { ContactSearch(getApplication()).search(query) }
 

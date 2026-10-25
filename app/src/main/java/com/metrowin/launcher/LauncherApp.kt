@@ -76,6 +76,7 @@ import com.metrowin.launcher.ui.voice.rememberVoiceSession
 import androidx.core.content.ContextCompat
 import com.metrowin.launcher.data.GlobalResults
 import com.metrowin.launcher.data.GlobalSearch
+import com.metrowin.launcher.data.PhoneCalls
 import com.metrowin.launcher.data.LocalWidgetHost
 import com.metrowin.launcher.data.RecentApps
 import com.metrowin.launcher.data.WidgetProvider
@@ -190,6 +191,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val badges by vm.badges.collectAsStateWithLifecycle()
     val peeks by vm.peeks.collectAsStateWithLifecycle()
     val liveInfo by vm.liveInfo.collectAsStateWithLifecycle()
+    val liveReport by vm.liveReport.collectAsStateWithLifecycle()
     val notificationAccess by vm.notificationAccess.collectAsStateWithLifecycle()
     val torchOn by vm.torchOn.collectAsStateWithLifecycle()
 
@@ -603,6 +605,13 @@ fun LauncherApp(vm: LauncherViewModel) {
         }
     }
 
+    // A spoken call that waits for the phone permission (asked once, and only when the user turned on "call at once").
+    var pendingCall by remember { mutableStateOf<String?>(null) }
+    val callPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        pendingCall?.let { vm.dial(it, direct = granted) }
+        pendingCall = null
+    }
+
     /** Carries out what was said. The session is closed here, unless there is a problem to show. */
     fun carryOut(heard: List<String>) {
         val label = { def: SystemSettingDef -> appContext.getString(def.label) }
@@ -624,8 +633,19 @@ fun LauncherApp(vm: LauncherViewModel) {
                 if (contact == null) {
                     voice.problem(R.string.voice_no_contact, command.name)
                 } else {
+                    val number = vm.phoneNumberOf(contact.lookupUri)
                     voice.close()
-                    vm.launch(AppItem("search:contact", contact.name, Launch.Link(contact.lookupUri)))
+                    when {
+                        // No number to call: the card of the contact is the next best thing.
+                        number == null -> vm.launch(AppItem("search:contact", contact.name, Launch.Link(contact.lookupUri)))
+                        !settings.voiceCallDirect -> vm.dial(number, direct = false)
+                        ContextCompat.checkSelfPermission(appContext, PhoneCalls.permission) == PackageManager.PERMISSION_GRANTED ->
+                            vm.dial(number, direct = true)
+                        else -> {
+                            pendingCall = number
+                            callPermission.launch(PhoneCalls.permission)
+                        }
+                    }
                 }
             }
             is VoiceCommand.Torch -> {
@@ -1035,6 +1055,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             autoAccentIndex = autoAccentIndex,
                             notificationAccess = notificationAccess,
                             liveTilePackages = liveInfo.keys,
+                            liveReport = liveReport,
                             onManageNotificationAccess = vm::openNotificationAccessSettings,
                             apps = items,
                             onStartKidsCorner = ::enterKidsCorner,
