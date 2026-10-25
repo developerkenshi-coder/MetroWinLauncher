@@ -10,6 +10,7 @@ import com.metrowin.launcher.model.TileSize.Medium
 import com.metrowin.launcher.model.TileSize.Small
 import com.metrowin.launcher.model.TileSize.Wide
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TileGridTest {
@@ -146,7 +147,7 @@ class TileGridTest {
         // A small tile, a medium one after it, and a small one beyond: the first block has three free cells.
         val sizes = listOf(Small, Medium, Small)
         val targets = TileGrid.dropTargets(sizes, 4, dragged = 2)
-        assertEquals(listOf(DropTarget(1, 0, 0), DropTarget(0, 1, 0), DropTarget(1, 1, 0)), targets)
+        assertEquals(listOf(DropTarget(1, 0, 1, 1, 0), DropTarget(0, 1, 1, 1, 0), DropTarget(1, 1, 1, 1, 0)), targets)
     }
 
     @Test
@@ -162,8 +163,8 @@ class TileGridTest {
         val targets = TileGrid.dropTargets(sizes, 4, dragged = 4)
         assertEquals(
             listOf(
-                DropTarget(1, 0, 0), DropTarget(0, 1, 0), DropTarget(1, 1, 0),
-                DropTarget(1, 2, 2), DropTarget(0, 3, 2), DropTarget(1, 3, 2),
+                DropTarget(1, 0, 1, 1, 0), DropTarget(0, 1, 1, 1, 0), DropTarget(1, 1, 1, 1, 0),
+                DropTarget(1, 2, 1, 1, 2), DropTarget(0, 3, 1, 1, 2), DropTarget(1, 3, 1, 1, 2),
             ),
             targets,
         )
@@ -172,7 +173,7 @@ class TileGridTest {
     @Test
     fun aBlockWithTwoSmallTilesHasTwoFreeCells() {
         val targets = TileGrid.dropTargets(listOf(Small, Small, Medium, Small), 4, dragged = 3)
-        assertEquals(listOf(DropTarget(0, 1, 1), DropTarget(1, 1, 1)), targets)
+        assertEquals(listOf(DropTarget(0, 1, 1, 1, 1), DropTarget(1, 1, 1, 1, 1)), targets)
     }
 
     @Test
@@ -188,7 +189,7 @@ class TileGridTest {
         // Six columns: three blocks across. The fourth tile (a medium) fills the third block, the small one the fourth.
         val sizes = listOf(Small, Medium, Medium, Small)
         val targets = TileGrid.dropTargets(sizes, 6, dragged = 3)
-        assertEquals(listOf(DropTarget(1, 0, 0), DropTarget(0, 1, 0), DropTarget(1, 1, 0)), targets)
+        assertEquals(listOf(DropTarget(1, 0, 1, 1, 0), DropTarget(0, 1, 1, 1, 0), DropTarget(1, 1, 1, 1, 0)), targets)
     }
 
     @Test
@@ -221,5 +222,75 @@ class TileGridTest {
         val smalls = entries.indices.filter { entries[it].size == Small }
         assertEquals(setOf(Placement(0, 0, 1, 1), Placement(1, 0, 1, 1), Placement(0, 1, 1, 1), Placement(1, 1, 1, 1)), smalls.map { layout.placements[it] }.toSet())
         assertEquals(emptyList<DropTarget>(), TileGrid.dropTargets(entries.map { it.size }, 4, smalls.last()))
+    }
+
+    // --- the empty room beside four small tiles, and other gaps before the tile
+
+    @Test
+    fun theBlockBesideFourSmallTilesBeforeAWideOneTakesAMediumTile() {
+        // Four small tiles fill a block, the wide tile cannot start beside them, so that block is empty; the medium tile
+        // after the wide one can go there.
+        val sizes = listOf(Small, Small, Small, Small, Wide, Medium)
+        assertEquals(listOf(DropTarget(2, 0, 2, 2, 3)), TileGrid.dropTargets(sizes, 4, dragged = 5))
+    }
+
+    @Test
+    fun aSmallTileTakesAnyOfTheFourCellsOfThatEmptyBlock() {
+        val sizes = listOf(Small, Small, Small, Small, Wide, Small)
+        assertEquals(
+            listOf(DropTarget(2, 0, 1, 1, 3), DropTarget(3, 0, 1, 1, 3), DropTarget(2, 1, 1, 1, 3), DropTarget(3, 1, 1, 1, 3)),
+            TileGrid.dropTargets(sizes, 4, dragged = 5),
+        )
+    }
+
+    @Test
+    fun aTileDroppedInTheEmptyBlockLandsExactlyThereAndTheRestStaysPut() {
+        val entries = listOf<StartEntry>(
+            Tile("a", Small), Tile("b", Small), Tile("c", Small), Tile("d", Small), Tile("w", Wide), Tile("m", Medium),
+        )
+        val target = TileGrid.dropTargets(entries.map { it.size }, 4, dragged = 5).single()
+        val moved = StartEntries.moveAfter(entries, "m", entries[target.after].id)
+        assertEquals(listOf("a", "b", "c", "d", "m", "w"), moved.map { it.id })
+        val layout = TileGrid.place(moved.map { it.size }, 4)
+        assertEquals(Placement(target.col, target.row, target.cols, target.rows), layout.placements[4])
+        // The wide tile did not move: it still has its own row.
+        assertEquals(Placement(0, 2, 4, 2), layout.placements[5])
+        assertEquals(4, layout.rows)
+    }
+
+    @Test
+    fun aWideTileHasNoRoomInASingleBlock() {
+        assertEquals(emptyList<DropTarget>(), TileGrid.dropTargets(listOf(Small, Small, Small, Small, Wide), 4, dragged = 4))
+    }
+
+    @Test
+    fun theRoomBesideALoneMediumTileBeforeAWideOneIsAPlaceToo() {
+        // Medium, then wide (which takes the next row), then another medium: the block beside the first is free.
+        val sizes = listOf(Medium, Wide, Medium)
+        assertEquals(listOf(DropTarget(2, 0, 2, 2, 0)), TileGrid.dropTargets(sizes, 4, dragged = 2))
+    }
+
+    @Test
+    fun roomAfterTheTileIsNotOffered() {
+        // The block beside the first medium tile is empty, but it is after... nothing: the tile there is the first one.
+        assertEquals(emptyList<DropTarget>(), TileGrid.dropTargets(listOf(Medium, Wide), 4, dragged = 0))
+        // And a tile that has nothing before it has nowhere to go.
+        assertEquals(emptyList<DropTarget>(), TileGrid.dropTargets(listOf(Small, Wide, Medium), 4, dragged = 0))
+    }
+
+    @Test
+    fun nothingIsOfferedWhereATileAlreadySits() {
+        // Two mediums side by side, then a third below: no empty room anywhere before the last one.
+        assertEquals(emptyList<DropTarget>(), TileGrid.dropTargets(listOf(Medium, Medium, Medium), 4, dragged = 2))
+    }
+
+    @Test
+    fun theTilesOfAnOpenFolderStayTogetherWithIt() {
+        // A small folder (index 1) open with two medium apps after it, then the tile being dragged.
+        val sizes = listOf(Small, Small, Medium, Medium, Wide, Medium)
+        val leader = listOf(true, true, false, false, true, true)
+        val targets = TileGrid.dropTargets(sizes, 4, dragged = 5, leader = leader)
+        // Whatever is offered comes after a tile that leads, never after one of the folder's apps.
+        assertTrue(targets.all { leader[it.after] })
     }
 }

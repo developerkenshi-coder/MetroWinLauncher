@@ -103,6 +103,11 @@ launcher, e il pulsante diventa "consentito". Un permesso che Android non chiede
   non si sposta. Così usi tutto lo spazio e fai gruppi **senza cartelle**. Sul bordo di un riquadro piccolo il trascinamento
   riordina, solo il suo centro fa una cartella (più piccolo che sui riquadri grandi). Le celle libere sono sempre quelle di un
   blocco che ha già riquadri piccoli: il layout resta un flusso in ordine, quindi non c'è un punto vuoto a piacere.
+- **Lo spazio vuoto accanto ai riquadri**: quando dopo quattro riquadri piccoli (o dopo un riquadro medio) viene un riquadro largo,
+  il blocco accanto resta vuoto perché il largo non ci sta. Trascinando un riquadro che sta **più in basso** nell'ordine, quel blocco
+  si mostra come un'area vuota: un riquadro piccolo (in una delle quattro celle) o medio (nell'area intera) ci va, e il largo
+  resta sulla sua riga. Un riquadro largo non ci sta, e per un riquadro che sta più in alto del vuoto si riordina dal bordo
+  (togliendolo, quelli dopo risalirebbero e lo spazio si sposterebbe, quindi non si può mostrare con sicurezza dove finisce).
 - **Stili dei riquadri**: standard (con flip), **Iconic** (grande numero e icona) e **Cycle** (foto che si alternano).
 - **Live tile**: Calendario, Foto, Persone, Telefono, **Meteo** (Open-Meteo), **Batteria** (carica, tempo alla ricarica),
   **Torcia** (si accende davvero), e le **notifiche** che girano sul riquadro dell'app (*notification peek*).
@@ -353,7 +358,7 @@ solo se il launcher c'era già.
 ./gradlew assembleRelease        # con R8
 ```
 
-**617 test**, nessuno saltato; il lint non ha errori.
+**628 test**, nessuno saltato; il lint non ha errori.
 
 - Logica pura: griglia e colonne dalla larghezza, operazioni su Start, regole di trascinamento e di rilascio, ricerca,
   salvataggio e migrazione delle impostazioni, comandi vocali, pianificazione della sincronizzazione, **cifratura** (anche

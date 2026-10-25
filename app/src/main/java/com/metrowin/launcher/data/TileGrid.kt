@@ -8,11 +8,11 @@ data class Placement(val col: Int, val row: Int, val cols: Int, val rows: Int)
 data class GridLayout(val placements: List<Placement>, val rows: Int)
 
 /**
- * A free cell where the small tile being dragged can be dropped: next to small tiles that share a block with it.
- * [after] is the index (in the list of sizes that was laid out) of the last small tile of the block, which the dropped
- * tile will come after, and that is what puts it in the block.
+ * A free place where the tile being dragged can be dropped: the cell or area at [col], [row] that is [cols] by [rows]
+ * cells. [after] is the index (in the list of sizes that was laid out) of the tile the dropped one will come after, and
+ * that is what puts it there.
  */
-data class DropTarget(val col: Int, val row: Int, val after: Int)
+data class DropTarget(val col: Int, val row: Int, val cols: Int, val rows: Int, val after: Int)
 
 /**
  * Start screen layout. The grid is made of 2x2 blocks, two blocks across ([TileGrid.DEFAULT_COLUMNS]
@@ -47,33 +47,87 @@ object TileGrid {
     }
 
     /**
-     * The free cells where the small tile at index [dragged] can be dropped to sit beside other small tiles: the free
-     * cells of every block that holds one to three of them, apart from the block the tile is in already. The free cells of
-     * a block are always its last ones, as small tiles fill a block in reading order, and a tile put right after the last
-     * small tile of a block in the order takes the first of them. Empty when the tile is not small.
+     * The free places where the tile at [dragged] can be dropped to put it there, instead of swapping it with a tile.
+     * [sizes] are the cells laid out and [leader] says which of them lead a tile or folder (the apps of an open folder
+     * follow it and move with it, so a tile never goes between them). Two kinds of place:
      *
-     * The cells of one block stay where they are when the tile moves (the tiles before it do not move), so the picture
-     * the user drops on is the one the tile joins, although the tiles after its old place come up to fill it.
+     *  - for a small tile, the free cells of every block that holds one to three small tiles, apart from its own block.
+     *    The free cells of a block are always its last ones, as small tiles fill a block in reading order, and a tile put
+     *    right after the last small tile of a block in the order takes the first of them. The cells of a block stay where
+     *    they are when the tile moves, so the picture the user drops on is the one the tile joins;
+     *  - for a tile of any size, the empty room that a tile before it in the order leaves, such as the block beside four
+     *    small tiles when the tile after them is wide. The tile is tried there: taken out, put back after each tile that
+     *    comes before it, and the layout is run again to see where it lands, so a place is always exactly where the tile
+     *    ends up. Only tiles before it count, as taking a tile out does not move the ones before it, so what the user
+     *    sees is what happens; and only room that is empty now.
      */
-    fun dropTargets(sizes: List<TileSize>, columns: Int, dragged: Int): List<DropTarget> {
-        if (sizes.getOrNull(dragged) != TileSize.Small) return emptyList()
-        val layout = place(sizes, columns)
+    fun dropTargets(sizes: List<TileSize>, columns: Int, dragged: Int, leader: List<Boolean> = List(sizes.size) { true }): List<DropTarget> {
+        if (dragged !in sizes.indices || !leader[dragged]) return emptyList()
+        val current = place(sizes, columns)
         val blocksPerRow = columns / BLOCK
         fun block(p: Placement) = p.row / BLOCK * blocksPerRow + p.col / BLOCK
-        val smalls = HashMap<Int, MutableList<Int>>()
-        layout.placements.forEachIndexed { index, p ->
-            if (sizes[index] == TileSize.Small) smalls.getOrPut(block(p)) { mutableListOf() } += index
+
+        // The tiles as groups of cells: a leader and what follows it up to the next leader.
+        val groups = ArrayList<IntRange>()
+        var start = 0
+        for (i in 1..sizes.size) if (i == sizes.size || leader[i]) {
+            groups += start until i
+            start = i
         }
-        val ownBlock = block(layout.placements[dragged])
-        val found = ArrayList<DropTarget>()
-        for ((block, indices) in smalls.toSortedMap()) {
-            if (block == ownBlock || indices.size >= BLOCK * BLOCK) continue
-            val row = block / blocksPerRow * BLOCK
-            val col = block % blocksPerRow * BLOCK
-            val used = indices.map { layout.placements[it] }.map { (it.row - row) * BLOCK + (it.col - col) }.toSet()
-            for (cell in 0 until BLOCK * BLOCK) if (cell !in used) found += DropTarget(col + cell % BLOCK, row + cell / BLOCK, indices.last())
+        val draggedGroup = groups.first { dragged in it }
+        val draggedSize = sizes[dragged]
+        val own = current.placements[dragged]
+        val found = LinkedHashSet<DropTarget>()
+
+        // What the other tiles occupy now, cell by cell.
+        val occupied = HashSet<Int>()
+        current.placements.forEachIndexed { i, p ->
+            if (i !in draggedGroup) for (r in p.row until p.row + p.rows) for (c in p.col until p.col + p.cols) occupied += r * columns + c
         }
-        return found
+        fun free(col: Int, row: Int, cols: Int, rows: Int) =
+            (row until row + rows).none { r -> (col until col + cols).any { c -> r * columns + c in occupied } }
+
+        if (draggedSize == TileSize.Small) {
+            val smalls = HashMap<Int, MutableList<Int>>()
+            current.placements.forEachIndexed { index, p ->
+                if (sizes[index] == TileSize.Small) smalls.getOrPut(block(p)) { mutableListOf() } += index
+            }
+            val ownBlock = block(own)
+            for ((block, indices) in smalls.toSortedMap()) {
+                if (block == ownBlock || indices.size >= BLOCK * BLOCK) continue
+                val row = block / blocksPerRow * BLOCK
+                val col = block % blocksPerRow * BLOCK
+                val used = indices.map { current.placements[it] }.map { (it.row - row) * BLOCK + (it.col - col) }.toSet()
+                for (cell in 0 until BLOCK * BLOCK) if (cell !in used) found += DropTarget(col + cell % BLOCK, row + cell / BLOCK, 1, 1, indices.last())
+            }
+        }
+
+        // Room left empty before the tile: where it lands when put back after each tile that comes before it.
+        val landings = LinkedHashMap<Placement, Int>()
+        for (group in groups) {
+            if (group.first >= draggedGroup.first) break
+            val order = ArrayList<TileSize>()
+            for (g in groups) {
+                if (g.first > group.first) break
+                g.forEach { order += sizes[it] }
+            }
+            val at = order.size
+            draggedGroup.forEach { order += sizes[it] }
+            landings[place(order, columns).placements[at]] = group.first
+        }
+        for ((landed, after) in landings) {
+            if (landed == own || landed.row + landed.rows > current.rows) continue
+            if (draggedSize == TileSize.Small) {
+                // A block with nothing in it: any of its four cells.
+                val row = landed.row / BLOCK * BLOCK
+                val col = landed.col / BLOCK * BLOCK
+                if (!free(col, row, BLOCK, BLOCK)) continue
+                for (cell in 0 until BLOCK * BLOCK) found += DropTarget(col + cell % BLOCK, row + cell / BLOCK, 1, 1, after)
+            } else if (free(landed.col, landed.row, landed.cols, landed.rows)) {
+                found += DropTarget(landed.col, landed.row, landed.cols, landed.rows, after)
+            }
+        }
+        return found.toList()
     }
 
     fun place(sizes: List<TileSize>, columns: Int = DEFAULT_COLUMNS): GridLayout {

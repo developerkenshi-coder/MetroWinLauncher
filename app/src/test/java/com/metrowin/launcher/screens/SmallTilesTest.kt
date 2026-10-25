@@ -35,7 +35,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], qualifiers = "w360dp-h760dp-xxhdpi")
 class SmallTilesTest : ScreenshotBase() {
-    private val items = listOf("A", "B", "C", "D", "E").mapIndexed { i, id ->
+    private val items = listOf("A", "B", "C", "D", "E", "F", "G").mapIndexed { i, id ->
         AppItem(id, "App $id", Launch.Action("x"), Glyph.entries[i + 5])
     }
 
@@ -173,5 +173,80 @@ class SmallTilesTest : ScreenshotBase() {
             compose.onNodeWithTag("tile:C").performTouchInput { up() }
             break // the composition can be set once per test: Glass here, Modern Droid is drawn in the gallery
         }
+    }
+
+    // --- the empty block beside four small tiles
+
+    private fun fourSmallsThenAWideTile() = entriesOf(
+        "A" to TileSize.Small, "B" to TileSize.Small, "C" to TileSize.Small, "D" to TileSize.Small,
+        "E" to TileSize.Wide, "F" to TileSize.Medium, "G" to TileSize.Small,
+    )
+
+    private fun bounds(id: String) = compose.onNodeWithTag("tile:$id").fetchSemanticsNode().boundsInRoot
+
+    @Test
+    fun theEmptyBlockBesideFourSmallTilesIsOutlinedWhileATileIsDragged() {
+        val entries = fourSmallsThenAWideTile()
+        show { Start(entries) }
+        advance(2_500)
+        // The wide tile has its own row, so the block to the right of the four small tiles is empty.
+        val a = bounds("A")
+        val d = bounds("D")
+        val wide = bounds("E")
+        assertTrue("the wide tile is below the small ones", wide.top > d.bottom)
+        pickUp("F")
+        capture("start_empty_block_outlined")
+        // One area of two by two cells for the medium tile.
+        compose.onNodeWithTag("drop:2:0").assertExists()
+        val area = compose.onNodeWithTag("drop:2:0").fetchSemanticsNode().boundsInRoot
+        assertTrue("it starts right of the small tiles", area.left >= d.right)
+        assertEquals(a.top, area.top, 1f)
+        assertTrue("and is as big as a medium tile", area.width > a.width * 1.8f)
+        compose.onNodeWithTag("tile:F").performTouchInput { up() }
+    }
+
+    @Test
+    fun aMediumTileDroppedInThatBlockFillsTheSpaceBesideTheSmallOnes() {
+        val entries = fourSmallsThenAWideTile()
+        show { Start(entries) }
+        advance(2_500)
+        pickUp("F")
+        val from = centerOf("tile:F")
+        val to = centerOf("drop:2:0")
+        compose.onNodeWithTag("tile:F").performTouchInput { moveBy(Offset(to.x - from.x, to.y - from.y)) }
+        advance(500)
+        compose.onNodeWithTag("tile:F").performTouchInput { up() }
+        advance(1_000)
+        capture("start_empty_block_filled")
+        assertEquals(listOf("A", "B", "C", "D", "F", "E", "G"), entries.value.map { it.id })
+        val a = bounds("A")
+        val d = bounds("D")
+        val f = bounds("F")
+        val wide = bounds("E")
+        assertEquals("on the same rows as the small tiles", a.top, f.top, 1f)
+        assertTrue("right of them", f.left >= d.right)
+        assertTrue("and the wide tile still has its row below", wide.top >= f.bottom)
+    }
+
+    @Test
+    fun aSmallTileDroppedInThatBlockIsNextToTheOthersToo() {
+        val entries = fourSmallsThenAWideTile()
+        show { Start(entries) }
+        advance(2_500)
+        pickUp("G")
+        val from = centerOf("tile:G")
+        val to = centerOf("drop:3:0")
+        compose.onNodeWithTag("tile:G").performTouchInput { moveBy(Offset(to.x - from.x, to.y - from.y)) }
+        advance(500)
+        compose.onNodeWithTag("tile:G").performTouchInput { up() }
+        advance(1_000)
+        capture("start_empty_block_small")
+        assertEquals(listOf("A", "B", "C", "D", "G", "E", "F"), entries.value.map { it.id })
+        val a = bounds("A")
+        val d = bounds("D")
+        val g = bounds("G")
+        assertEquals(a.top, g.top, 1f)
+        assertTrue("beside the four small tiles", g.left >= d.right)
+        assertEquals(a.width, g.width, 1f)
     }
 }
