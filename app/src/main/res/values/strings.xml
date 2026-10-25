@@ -480,4 +480,25 @@
     <string name="tp_clear">clear</string>
     <string name="permission_publish_tile_label">put live content on its own tile in MetroWin Launcher</string>
     <string name="permission_publish_tile_description">Lets the app show a title, a line of text and a number on its own tile on the Start screen.</string>
+
+    <!-- accessibility -->
+    <string name="sec_access">accessibility</string>
+    <string name="sec_access_desc">TalkBack, less motion, stronger contrast</string>
+    <string name="access_reduce_motion">reduce motion</string>
+    <string name="access_reduce_motion_hint">Screens fade instead of swinging, tiles stop flipping and tilting, and apps open without an animation. It is also on whenever Android\'s animations are removed.</string>
+    <string name="access_high_contrast">high contrast</string>
+    <string name="access_high_contrast_hint">Tiles get a white frame and stay solid over a Start photo, and grey text turns to full colour.</string>
+    <string name="access_talkback">TalkBack</string>
+    <string name="access_talkback_hint">Every tile says what it is, and its notifications. In the TalkBack actions menu a tile offers: unpin, change size, move earlier, move later (folders: rename, take apart). The app list reads each app and offers its menu.</string>
+    <string name="access_open_settings">open Android accessibility settings</string>
+    <string name="a11y_unpin">Unpin from Start</string>
+    <string name="a11y_resize">Change size</string>
+    <string name="a11y_move_earlier">Move earlier</string>
+    <string name="a11y_move_later">Move later</string>
+    <string name="a11y_rename">Rename folder</string>
+    <string name="a11y_release">Take the folder apart</string>
+    <string name="a11y_more_options">More options</string>
+    <string name="a11y_tile_notifications">%1$s, %2$d notifications</string>
+    <string name="a11y_folder">%1$s, folder with %2$d apps</string>
+    <string name="a11y_tile_live">%1$s, %2$s</string>
 </resources>

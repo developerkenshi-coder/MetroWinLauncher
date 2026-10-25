@@ -24,6 +24,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -125,6 +126,7 @@ import com.metrowin.launcher.ui.start.isTopLevel
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.weather.WeatherScreen
 import com.metrowin.launcher.ui.theme.MetroAccents
+import com.metrowin.launcher.ui.theme.AccessibilityPolicy
 import com.metrowin.launcher.ui.theme.MetroTheme
 import com.metrowin.launcher.ui.theme.rememberIsDark
 import kotlinx.coroutines.delay
@@ -237,7 +239,10 @@ fun LauncherApp(vm: LauncherViewModel) {
     // Where the tile that was tapped is, said by Start just before the tap, for the app that grows out of it.
     var tapBounds by remember { mutableStateOf<android.graphics.Rect?>(null) }
     val decorView = LocalView.current
-    val reduceMotion = settings.reduceMotion
+    // The setting, or Android's own "remove animations": read again whenever the launcher comes back.
+    var animatorScale by remember { mutableFloatStateOf(AccessibilityPolicy.systemAnimatorScale(appContext)) }
+    LifecycleEventEffect(Lifecycle.Event.ON_START) { animatorScale = AccessibilityPolicy.systemAnimatorScale(appContext) }
+    val reduceMotion = AccessibilityPolicy.reduceMotion(settings.reduceMotion, animatorScale)
     val voice = rememberVoiceSession()
     var lockServiceEnabled by remember { mutableStateOf(false) }
     var renamingFolderId by remember { mutableStateOf<String?>(null) }
@@ -698,7 +703,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val dark = rememberIsDark(settings)
 
     CompositionLocalProvider(LocalIconLoader provides vm.icons, LocalWidgetHost provides vm.widgets) {
-        MetroTheme(accent = accent, dark = dark) {
+        MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast) {
             Box(
                 Modifier
                     .fillMaxSize()

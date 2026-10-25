@@ -30,6 +30,7 @@ enum class SettingsSection(
 ) {
     StartTheme(SettingsGroup.Launcher, R.string.settings_start_theme, R.string.sec_start_theme_desc),
     Screen(SettingsGroup.Launcher, R.string.sec_screen, R.string.sec_screen_desc),
+    Accessibility(SettingsGroup.Launcher, R.string.sec_access, R.string.sec_access_desc),
     Icons(SettingsGroup.Launcher, R.string.sec_icons, R.string.sec_icons_desc),
     Gestures(SettingsGroup.Launcher, R.string.sec_gestures, R.string.sec_gestures_desc),
     Actions(SettingsGroup.Launcher, R.string.settings_actions, R.string.sec_actions_desc),

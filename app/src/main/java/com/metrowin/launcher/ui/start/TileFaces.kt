@@ -61,6 +61,7 @@ import com.metrowin.launcher.ui.anim.FlipContainer
 import com.metrowin.launcher.ui.components.AppArt
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.TileWhite
 import com.metrowin.launcher.ui.theme.onTile
@@ -221,8 +222,10 @@ private fun IconicFace(item: AppItem, size: TileSize, width: Dp, height: Dp, cou
 @Composable
 private fun CycleFace(item: AppItem, photos: List<ImageBitmap>, seed: Int) {
     var index by remember { mutableIntStateOf(0) }
-    LaunchedEffect(photos.size) {
-        if (photos.size < 2) return@LaunchedEffect
+    val reduced = LocalReduceMotion.current
+    LaunchedEffect(photos.size, reduced) {
+        // With reduced motion the tile keeps its first photo.
+        if (photos.size < 2 || reduced) return@LaunchedEffect
         // Tiles start at different moments, so the whole screen does not change at once.
         delay(1_000L + seed.mod(5) * 700L)
         while (true) {

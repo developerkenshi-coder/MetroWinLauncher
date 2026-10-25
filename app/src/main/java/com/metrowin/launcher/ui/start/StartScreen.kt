@@ -63,6 +63,14 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import com.metrowin.launcher.R
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import com.metrowin.launcher.ui.theme.LocalHighContrast
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -406,12 +414,16 @@ private fun TileGridView(
                 .height(gridHeight)
                 .onGloballyPositioned { gridTop = it.positionInRoot().y },
         ) {
+            val topLevel = cells.filter { it.isTopLevel }.map { it.entryId }
             cells.forEachIndexed { index, cell ->
                 key(cell.key) {
+                    val at = topLevel.indexOf(cell.entryId).takeIf { cell.isTopLevel } ?: -1
                     PositionedTile(
                         cell, index, layout.placements[index], unit, live, badges, peeks, hasBackground,
                         enterToken, exitRequest, editingKey, drag, actions,
                         onDragStart, onDragBy, onDragEnd, readOnly,
+                        previousId = topLevel.getOrNull(at - 1).takeIf { at > 0 },
+                        nextId = topLevel.getOrNull(at + 1).takeIf { at >= 0 },
                     )
                 }
             }
@@ -466,8 +478,13 @@ private fun PositionedTile(
     onDragBy: (Offset) -> Unit,
     onDragEnd: () -> Unit,
     readOnly: Boolean,
+    /** The tiles either side of this one, for the "move earlier" and "move later" actions of TalkBack. */
+    previousId: String? = null,
+    nextId: String? = null,
 ) {
     val density = LocalDensity.current
+    val reduced = LocalReduceMotion.current
+    val highContrast = LocalHighContrast.current
     val currentActions by rememberUpdatedState(actions)
     val currentCell by rememberUpdatedState(cell)
     val step = unit + TileGap
@@ -496,13 +513,14 @@ private fun PositionedTile(
     // resetting an existing one from an effect would only happen after the frame that shows the tiles in place.
     val away = remember(enterToken) { Animatable(1f) }
     LaunchedEffect(away) {
-        delay(entryDelay(placement, index))
-        away.animateTo(0f, tween(durationMillis = 420, easing = Motion.Decelerate))
+        // Reduced motion: every tile fades in at once, quickly.
+        if (!reduced) delay(entryDelay(placement, index))
+        away.animateTo(0f, tween(durationMillis = if (reduced) REDUCED_FADE_MS else 420, easing = Motion.Decelerate))
     }
     LaunchedEffect(exitRequest, away) {
         if (exitRequest == null) return@LaunchedEffect
-        delay(if (exitRequest.key == cell.key) TAPPED_EXIT_DELAY_MS else exitDelay(placement))
-        away.animateTo(1f, tween(durationMillis = 240, easing = Motion.Accelerate))
+        if (!reduced) delay(if (exitRequest.key == cell.key) TAPPED_EXIT_DELAY_MS else exitDelay(placement))
+        away.animateTo(1f, tween(durationMillis = if (reduced) REDUCED_FADE_MS else 240, easing = Motion.Accelerate))
     }
 
     val selected = editingKey == cell.key
@@ -515,7 +533,7 @@ private fun PositionedTile(
     val armedForFolder = drag.mergeTarget == cell.key
 
     // The built-in apps are transparent over a Start background photo, the others keep the accent.
-    val transparent = hasBackground && cell is AppCell && cell.item.glyph != null
+    val transparent = hasBackground && cell is AppCell && cell.item.glyph != null && !highContrast
     val tileColor = if (transparent) Color.Black.copy(alpha = 0.12f) else LocalAccent.current
 
     Box(
@@ -525,9 +543,10 @@ private fun PositionedTile(
             .size(width, height)
             // After the offset: the semantics (and so TalkBack and the tests) must be where the tile really is.
             .testTag("tile:${cell.key}")
+            .tileSemantics(cell, badges, actions, previousId, nextId, readOnly)
             .onGloballyPositioned { coordinates = it }
             .graphicsLayer {
-                turnstile(away.value)
+                turnstile(away.value, reduced)
                 val scale = editScale * lift * (if (armedForFolder) 1.06f else 1f)
                 scaleX = scale
                 scaleY = scale
@@ -562,6 +581,7 @@ private fun PositionedTile(
             )
             .background(tileColor)
             .then(if (armedForFolder) Modifier.border(3.dp, TileWhite) else Modifier)
+            .then(if (highContrast) Modifier.border(HIGH_CONTRAST_FRAME, TileWhite) else Modifier)
             .clipToBounds(),
     ) {
         when (cell) {
@@ -610,6 +630,49 @@ private fun exitDelay(placement: Placement): Long =
     ((placement.row / 2) * 18L + (placement.col / 2) * 10L).coerceAtMost(120L)
 
 private const val MAX_ENTRY_DELAY_MS = 450L
+private const val REDUCED_FADE_MS = 120
+private val HIGH_CONTRAST_FRAME = 2.dp
+
+/**
+ * What TalkBack knows about a tile besides its text: how many notifications it has (or, for a folder, how many apps),
+ * and what can be done to it without a long press and a drag: unpin, change the size, move it earlier or later, and
+ * for a folder rename it or take it apart.
+ */
+@Composable
+private fun Modifier.tileSemantics(
+    cell: StartCell,
+    badges: Map<String, Int>,
+    actions: StartActions,
+    previousId: String?,
+    nextId: String?,
+    readOnly: Boolean,
+): Modifier {
+    val currentActions by rememberUpdatedState(actions)
+    val currentCell by rememberUpdatedState(cell)
+    val notifications = (cell as? AppCell)?.let { badges[it.item.packageName] ?: 0 } ?: 0
+    val state = when {
+        cell is FolderCell -> stringResource(R.string.a11y_folder, cell.folder.name, cell.items.size)
+        notifications > 0 -> stringResource(R.string.a11y_tile_notifications, (cell as AppCell).item.label, notifications)
+        else -> null
+    }
+    val unpin = stringResource(if (cell is FolderCell) R.string.a11y_release else R.string.a11y_unpin)
+    val resize = stringResource(R.string.a11y_resize)
+    val earlier = stringResource(R.string.a11y_move_earlier)
+    val later = stringResource(R.string.a11y_move_later)
+    val rename = stringResource(R.string.a11y_rename)
+    return semantics {
+        if (state != null) stateDescription = state
+        if (!readOnly) {
+            val list = mutableListOf<CustomAccessibilityAction>()
+            list += CustomAccessibilityAction(unpin) { currentActions.onUnpin(currentCell); true }
+            if (cell.isTopLevel) list += CustomAccessibilityAction(resize) { currentActions.onResize(currentCell); true }
+            if (previousId != null) list += CustomAccessibilityAction(earlier) { currentActions.onMove(currentCell.entryId, previousId); true }
+            if (nextId != null) list += CustomAccessibilityAction(later) { currentActions.onMove(currentCell.entryId, nextId); true }
+            if (cell is FolderCell) list += CustomAccessibilityAction(rename) { (currentCell as? FolderCell)?.let(currentActions.onRename); true }
+            customActions = list
+        }
+    }
+}
 private const val TAPPED_EXIT_DELAY_MS = 140L
 
 private enum class EditButtonKind { Remove, Resize, Rename }

@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import com.metrowin.launcher.ui.anim.Motion
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import kotlin.math.abs
 
 const val PAGE_START = 0
@@ -28,11 +29,12 @@ private const val PAGE_SWING = 0.3f
  * The page follows the finger one to one. On top of that it swings and fades with the distance from the
  * middle of the pager. The distance is only read while drawing, so a swipe never recomposes the pages.
  */
-fun Modifier.pageTurnstile(state: PagerState, page: Int): Modifier = graphicsLayer {
+fun Modifier.pageTurnstile(state: PagerState, page: Int, reduced: Boolean = false): Modifier = graphicsLayer {
     val away = state.distanceTo(page)
     if (away > 0f) {
         transformOrigin = TransformOrigin(0f, 0.5f)
-        rotationY = Motion.TURNSTILE_DEGREES * PAGE_SWING * away
+        // Reduced motion: the page follows the finger and fades, without the swing.
+        rotationY = if (reduced) 0f else Motion.TURNSTILE_DEGREES * PAGE_SWING * away
         cameraDistance = Motion.CAMERA * density
         alpha = 1f - away * away
         // Pages do not overlap their own content, so the alpha can be applied to each draw call
@@ -55,6 +57,7 @@ fun LauncherPager(
     apps: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val reduced = LocalReduceMotion.current
     HorizontalPager(
         state = state,
         modifier = modifier.fillMaxSize(),
@@ -63,7 +66,7 @@ fun LauncherPager(
         flingBehavior = PagerDefaults.flingBehavior(state, snapPositionalThreshold = 0.3f),
         key = { it },
     ) { page ->
-        Box(Modifier.fillMaxSize().pageTurnstile(state, page)) {
+        Box(Modifier.fillMaxSize().pageTurnstile(state, page, reduced)) {
             if (page < startPages) start(page) else apps()
         }
     }

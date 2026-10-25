@@ -125,7 +125,7 @@ class NotificationRepliesTest : ScreenshotBase() {
         advance(300)
         capture("notification_group_closed")
         compose.onNodeWithTag("notification:group:app.a").assertExists()
-        compose.onNodeWithTag("notification:group:count:app.a").assertExists()
+        compose.onNodeWithTag("notification:group:count:app.a", useUnmergedTree = true).assertExists()
         compose.onAllNodesWithTag("notification:a2").assertCountEquals(0)
         compose.onNodeWithTag("notification:b1").assertExists()
         compose.onNodeWithTag("notification:group:app.a").performClick()

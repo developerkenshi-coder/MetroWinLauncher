@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -126,8 +127,8 @@ class ShortcutsUiTest : ScreenshotBase() {
         compose.onNodeWithTag("widget:com.example.clock/.ClockWidget").performClick()
         assertEquals(listOf(clock), picked)
         // A widget without a name of its own is listed under the name of its app.
-        compose.onNodeWithTag("widget:com.example.notes/.NotesWidget").assertExists()
-        compose.onAllNodesWithText("Notes").assertCountEquals(2) // as the name of the widget, and as the name of its app
+        // The row is one button for TalkBack, saying the name of the widget and then the name of its app.
+        compose.onNodeWithTag("widget:com.example.notes/.NotesWidget").assertTextEquals("Notes", "Notes")
     }
 
     @Test

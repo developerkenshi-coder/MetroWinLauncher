@@ -473,4 +473,25 @@
     <string name="tp_clear">cancella</string>
     <string name="permission_publish_tile_label">mettere contenuti dal vivo sul proprio tile in MetroWin Launcher</string>
     <string name="permission_publish_tile_description">Permette all\'app di mostrare un titolo, una riga di testo e un numero sul proprio tile nella schermata Start.</string>
+
+    <!-- accessibility -->
+    <string name="sec_access">accessibilità</string>
+    <string name="sec_access_desc">TalkBack, meno movimento, contrasto più forte</string>
+    <string name="access_reduce_motion">riduci il movimento</string>
+    <string name="access_reduce_motion_hint">Le schermate sfumano invece di girare, i tile smettono di ruotare e inclinarsi, e le app si aprono senza animazione. È attivo anche quando le animazioni di Android sono rimosse.</string>
+    <string name="access_high_contrast">contrasto elevato</string>
+    <string name="access_high_contrast_hint">I tile hanno una cornice bianca e restano pieni sopra una foto di Start, e il testo grigio diventa del colore pieno.</string>
+    <string name="access_talkback">TalkBack</string>
+    <string name="access_talkback_hint">Ogni tile dice cos\'è, e le sue notifiche. Nel menu azioni di TalkBack un tile offre: stacca, cambia dimensione, sposta prima, sposta dopo (cartelle: rinomina, scomponi). La lista app legge ogni app e offre il suo menu.</string>
+    <string name="access_open_settings">apri le impostazioni di accessibilità di Android</string>
+    <string name="a11y_unpin">Stacca da Start</string>
+    <string name="a11y_resize">Cambia dimensione</string>
+    <string name="a11y_move_earlier">Sposta prima</string>
+    <string name="a11y_move_later">Sposta dopo</string>
+    <string name="a11y_rename">Rinomina cartella</string>
+    <string name="a11y_release">Scomponi la cartella</string>
+    <string name="a11y_more_options">Altre opzioni</string>
+    <string name="a11y_tile_notifications">%1$s, %2$d notifiche</string>
+    <string name="a11y_folder">%1$s, cartella con %2$d app</string>
+    <string name="a11y_tile_live">%1$s, %2$s</string>
 </resources>

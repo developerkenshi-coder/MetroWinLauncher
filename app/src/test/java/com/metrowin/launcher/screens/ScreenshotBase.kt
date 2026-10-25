@@ -49,11 +49,13 @@ abstract class ScreenshotBase {
         dark: Boolean = true,
         accent: Color = DefaultAccent,
         size: DpSize = DpSize(360.dp, 760.dp),
+        reduceMotion: Boolean = false,
+        highContrast: Boolean = false,
         content: @Composable () -> Unit,
     ) {
         compose.mainClock.autoAdvance = false
         compose.setContent {
-            MetroTheme(accent, dark) {
+            MetroTheme(accent, dark, reduceMotion, highContrast) {
                 Box(Modifier.size(size).background(LocalMetroColors.current.background)) { content() }
             }
         }

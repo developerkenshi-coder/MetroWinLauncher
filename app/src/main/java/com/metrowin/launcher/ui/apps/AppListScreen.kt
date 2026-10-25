@@ -77,6 +77,7 @@ import androidx.compose.foundation.layout.Column
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.anim.turnstile
 import com.metrowin.launcher.ui.components.AppSquare
 import com.metrowin.launcher.ui.components.MetroText
@@ -335,12 +336,13 @@ private fun HeaderRow(
     exiting: Boolean,
     onClick: () -> Unit,
 ) {
+    val reduced = LocalReduceMotion.current
     val away = rememberRowAway(index, listState, openedAt, exiting)
     Box(
         Modifier
             .fillMaxWidth()
             .height(RowHeight)
-            .graphicsLayer { turnstile(away.value) }
+            .graphicsLayer { turnstile(away.value, reduced) }
             .metroPress(onClick = onClick, enabled = !exiting)
             .padding(horizontal = 12.dp),
         contentAlignment = Alignment.CenterStart,
@@ -362,6 +364,7 @@ private fun AppRow(
     onLongPress: (AppItem, Float, Float) -> Unit,
     highlight: ListHighlight?,
 ) {
+    val reduced = LocalReduceMotion.current
     val away = rememberRowAway(index, listState, openedAt, exiting)
     // The glow starts bright and fades; it is drawn behind the row, only while it lasts.
     val glow = remember { Animatable(0f) }
@@ -377,7 +380,7 @@ private fun AppRow(
         Modifier
             .testTag("app:${item.id}")
             .onGloballyPositioned { coordinates = it }
-            .graphicsLayer { turnstile(away.value) }
+            .graphicsLayer { turnstile(away.value, reduced) }
             .drawBehind { if (glow.value > 0f) drawRect(accent.copy(alpha = glow.value)) }
             .metroPress(
                 onClick = { onLaunch(item) },
@@ -385,6 +388,7 @@ private fun AppRow(
                     coordinates?.takeIf { it.isAttached }?.boundsInRoot()?.let { onLongPress(item, it.top, it.height) }
                 },
                 enabled = !exiting,
+                longClickLabel = stringResource(R.string.a11y_more_options),
             ),
     )
 }
@@ -412,6 +416,7 @@ private fun ResultRow(
     accent: Boolean = false,
     onClick: () -> Unit,
 ) {
+    val reduced = LocalReduceMotion.current
     val away = rememberRowAway(index, listState, openedAt, exiting)
     val colors = LocalMetroColors.current
     Row(
@@ -419,7 +424,7 @@ private fun ResultRow(
             .fillMaxWidth()
             .height(RowHeight)
             .testTag(tag)
-            .graphicsLayer { turnstile(away.value) }
+            .graphicsLayer { turnstile(away.value, reduced) }
             .metroPress(onClick = onClick, enabled = !exiting)
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,

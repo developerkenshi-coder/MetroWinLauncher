@@ -304,36 +304,45 @@ private fun NotificationRow(
     onReply: ((NotificationEntry, String) -> Boolean)? = null,
 ) {
     val colors = LocalMetroColors.current
-    Row(
+    // The part that opens the notification is one button for TalkBack; the reply, which has controls of its own, is
+    // below it and not inside it, so that those controls can be reached.
+    Column(
         Modifier
             .fillMaxWidth()
             .testTag("notification:${entry.key}")
-            .swipeToDismiss { onDismiss(entry) }
-            .metroPress(onClick = { onOpen(entry) })
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.Top,
+            .swipeToDismiss { onDismiss(entry) },
     ) {
-        if (app != null) {
-            AppSquare(app, 44.dp)
-        } else {
-            Box(Modifier.size(44.dp).background(colors.surface), contentAlignment = Alignment.Center) {
-                GlyphIcon(Glyph.Bell, 26.dp, color = colors.subtle)
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .metroPress(onClick = { onOpen(entry) })
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            if (app != null) {
+                AppSquare(app, 44.dp)
+            } else {
+                Box(Modifier.size(44.dp).background(colors.surface), contentAlignment = Alignment.Center) {
+                    GlyphIcon(Glyph.Bell, 26.dp, color = colors.subtle)
+                }
+            }
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                if (entry.title.isNotBlank()) MetroText(entry.title, size = 18.sp, weight = FontWeight.Normal)
+                if (entry.text.isNotBlank()) {
+                    MetroText(entry.text, size = 15.sp, color = colors.subtle, maxLines = 2)
+                }
+                MetroText(
+                    text = DateUtils.getRelativeTimeSpanString(
+                        entry.postTime, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE,
+                    ).toString(),
+                    size = 12.sp, weight = FontWeight.Normal, color = colors.subtle,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
             }
         }
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            if (entry.title.isNotBlank()) MetroText(entry.title, size = 18.sp, weight = FontWeight.Normal)
-            if (entry.text.isNotBlank()) {
-                MetroText(entry.text, size = 15.sp, color = colors.subtle, maxLines = 2)
-            }
-            MetroText(
-                text = DateUtils.getRelativeTimeSpanString(
-                    entry.postTime, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE,
-                ).toString(),
-                size = 12.sp, weight = FontWeight.Normal, color = colors.subtle,
-                modifier = Modifier.padding(top = 2.dp),
-            )
-            if (entry.reply != null && onReply != null) ReplyBox(entry, onReply)
+        if (entry.reply != null && onReply != null) {
+            Box(Modifier.padding(start = 12.dp + 44.dp + 14.dp, end = 12.dp, bottom = 6.dp)) { ReplyBox(entry, onReply) }
         }
     }
 }

@@ -115,11 +115,20 @@ val MetroFont = FontFamily(
 )
 
 @Composable
-fun MetroTheme(accent: Color = DefaultAccent, dark: Boolean = true, content: @Composable () -> Unit) {
+fun MetroTheme(
+    accent: Color = DefaultAccent,
+    dark: Boolean = true,
+    reduceMotion: Boolean = false,
+    highContrast: Boolean = false,
+    content: @Composable () -> Unit,
+) {
     SystemBarIcons(dark)
+    val colors = if (dark) DarkColors else LightColors
     CompositionLocalProvider(
         LocalAccent provides accent,
-        LocalMetroColors provides if (dark) DarkColors else LightColors,
+        LocalMetroColors provides if (highContrast) colors.highContrast() else colors,
+        LocalReduceMotion provides reduceMotion,
+        LocalHighContrast provides highContrast,
         content = content,
     )
 }

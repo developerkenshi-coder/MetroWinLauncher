@@ -22,6 +22,13 @@ import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.onLongClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -42,7 +49,12 @@ object Motion {
  * The turnstile used when Start and the app list come in and go out: the element swings around its
  * left edge like a turnstile arm. [away] is 0 when it faces the screen and 1 when it is turned away.
  */
-fun GraphicsLayerScope.turnstile(away: Float) {
+fun GraphicsLayerScope.turnstile(away: Float, reduced: Boolean = false) {
+    if (reduced) {
+        // Reduced motion: no swing, the element just fades.
+        alpha = 1f - away
+        return
+    }
     transformOrigin = TransformOrigin(0f, 0.5f)
     rotationY = Motion.TURNSTILE_DEGREES * away
     cameraDistance = Motion.CAMERA * density
@@ -60,6 +72,8 @@ fun Modifier.metroPress(
     enabled: Boolean = true,
     maxTiltDegrees: Float = 9f,
     pressedScale: Float = 0.95f,
+    /** What TalkBack calls the long press ("More options"). */
+    longClickLabel: String? = null,
 ): Modifier {
     val scope = rememberCoroutineScope()
     val tiltX = remember { Animatable(0f) }
@@ -68,8 +82,28 @@ fun Modifier.metroPress(
     val currentClick by rememberUpdatedState(onClick)
     val currentLongClick by rememberUpdatedState(onLongClick)
     val hasLongClick = onLongClick != null
+    val reduced = LocalReduceMotion.current
+    val tilt = if (reduced) 0f else maxTiltDegrees
 
     return this
+        // What TalkBack and the other accessibility services see: one button that says its text and can be activated.
+        .semantics(mergeDescendants = true) {
+            role = Role.Button
+            if (enabled) {
+                onClick(label = null) {
+                    currentClick()
+                    true
+                }
+                if (hasLongClick) {
+                    onLongClick(label = longClickLabel) {
+                        currentLongClick?.invoke()
+                        true
+                    }
+                }
+            } else {
+                disabled()
+            }
+        }
         .graphicsLayer {
             rotationX = tiltX.value
             rotationY = tiltY.value
@@ -77,14 +111,14 @@ fun Modifier.metroPress(
             scaleY = scale.value
             cameraDistance = Motion.CAMERA * density
         }
-        .pointerInput(enabled, hasLongClick) {
+        .pointerInput(enabled, hasLongClick, tilt) {
             if (!enabled) return@pointerInput
             detectTapGestures(
                 onPress = { point ->
                     val dx = (point.x / size.width * 2f - 1f).coerceIn(-1f, 1f)
                     val dy = (point.y / size.height * 2f - 1f).coerceIn(-1f, 1f)
-                    scope.launch { tiltY.animateTo(TILT_Y_SIGN * dx * maxTiltDegrees, PressSpring) }
-                    scope.launch { tiltX.animateTo(TILT_X_SIGN * dy * maxTiltDegrees, PressSpring) }
+                    scope.launch { tiltY.animateTo(TILT_Y_SIGN * dx * tilt, PressSpring) }
+                    scope.launch { tiltX.animateTo(TILT_X_SIGN * dy * tilt, PressSpring) }
                     scope.launch { scale.animateTo(pressedScale, PressSpring) }
                     tryAwaitRelease()
                     scope.launch { tiltY.animateTo(0f, ReleaseSpring) }
@@ -122,8 +156,10 @@ fun FlipContainer(
     val angle = remember { Animatable(0f) }
     val showingNext by remember { derivedStateOf { angle.value >= 90f } }
 
-    LaunchedEffect(faces) {
-        if (faces <= 1) return@LaunchedEffect
+    val reduced = LocalReduceMotion.current
+    LaunchedEffect(faces, reduced) {
+        // With reduced motion the tile keeps its first face: nothing flips by itself.
+        if (faces <= 1 || reduced) return@LaunchedEffect
         delay(1_500L + (seed.mod(6)) * 800L)
         while (true) {
             angle.animateTo(180f, tween(durationMillis = 700, easing = FastOutSlowInEasing))

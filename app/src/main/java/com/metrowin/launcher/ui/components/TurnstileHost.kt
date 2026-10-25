@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.turnstile
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 
 /**
  * Shows [content] while [show] is true, swinging in and out like a turnstile: how Windows Phone moves
@@ -30,14 +31,17 @@ fun TurnstileHost(
     content: @Composable () -> Unit,
 ) {
     var composed by remember { mutableStateOf(show) }
+    val reduced = LocalReduceMotion.current
     LaunchedEffect(show) {
         if (show) {
             composed = true
-            away.animateTo(0f, tween(durationMillis = 380, easing = Motion.Decelerate))
+            away.animateTo(0f, tween(durationMillis = if (reduced) REDUCED_MS else 380, easing = Motion.Decelerate))
         } else {
-            away.animateTo(1f, tween(durationMillis = 240, easing = Motion.Accelerate))
+            away.animateTo(1f, tween(durationMillis = if (reduced) REDUCED_MS else 240, easing = Motion.Accelerate))
             composed = false
         }
     }
-    if (composed) Box(modifier.graphicsLayer { turnstile(away.value) }) { content() }
+    if (composed) Box(modifier.graphicsLayer { turnstile(away.value, reduced) }) { content() }
 }
+
+private const val REDUCED_MS = 120
