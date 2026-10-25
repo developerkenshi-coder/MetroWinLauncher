@@ -49,6 +49,8 @@ fun EditBar(
     /** The style of the selected tile, or null for a folder, which has none. */
     style: TileStyle? = null,
     onStyle: () -> Unit = {},
+    /** The button that adds a contact, a web page or a widget; null leaves it out. */
+    onAdd: (() -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
     Row(
@@ -62,6 +64,7 @@ fun EditBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        if (onAdd != null) AddButton(onAdd)
         TileSize.entries.forEach { option ->
             SizeButton(option, selected = option == size, onClick = { onSize(option) })
         }
@@ -104,6 +107,22 @@ fun EditBar(
         Box(Modifier.testTag("edit:done").metroPress(onClick = onDone).padding(horizontal = 10.dp, vertical = 10.dp)) {
             MetroText(stringResource(R.string.edit_done), size = 18.sp, weight = FontWeight.Normal, color = LocalAccent.current)
         }
+    }
+}
+
+@Composable
+private fun AddButton(onClick: () -> Unit) {
+    val description = stringResource(R.string.edit_add)
+    Box(
+        Modifier
+            .size(46.dp)
+            .testTag("edit:add")
+            .semantics { contentDescription = description }
+            .metroPress(onClick = onClick)
+            .background(LocalMetroColors.current.inactive),
+        contentAlignment = Alignment.Center,
+    ) {
+        MetroText("+", size = 30.sp, weight = FontWeight.Normal)
     }
 }
 

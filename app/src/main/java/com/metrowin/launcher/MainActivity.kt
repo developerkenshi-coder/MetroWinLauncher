@@ -29,6 +29,15 @@ class MainActivity : ComponentActivity() {
         setContent { LauncherApp(viewModel) }
     }
 
+    /** Called with the result of a widget's own setup screen (see [com.metrowin.launcher.data.WidgetService.configure]). */
+    var onWidgetConfigured: ((resultCode: Int) -> Unit)? = null
+
+    @Suppress("OVERRIDE_DEPRECATION") // the widget host still answers through onActivityResult
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CONFIGURE_WIDGET) onWidgetConfigured?.invoke(resultCode)
+    }
+
     override fun onResume() {
         super.onResume()
         // The display can change under us (a foldable opened, an external screen).
@@ -52,6 +61,10 @@ class MainActivity : ComponentActivity() {
             // Adaptive refresh rate: keep the rate high while something animates, drop it when idle.
             window.decorView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_HIGH)
         }
+    }
+
+    companion object {
+        const val REQUEST_CONFIGURE_WIDGET = 0x4D58
     }
 
     /**

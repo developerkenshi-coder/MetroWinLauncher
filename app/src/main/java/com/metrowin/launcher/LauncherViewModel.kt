@@ -43,7 +43,15 @@ import com.metrowin.launcher.data.LayoutBackup
 import com.metrowin.launcher.data.LayoutBackupCodec
 import com.metrowin.launcher.data.LiveTileRepository
 import com.metrowin.launcher.data.SettingsStore
+import com.metrowin.launcher.data.ContactMatch
+import com.metrowin.launcher.data.ContactReader
+import com.metrowin.launcher.data.ContactSearch
 import com.metrowin.launcher.data.ShortcutDef
+import com.metrowin.launcher.data.ShortcutKind
+import com.metrowin.launcher.data.SiteInput
+import com.metrowin.launcher.data.WidgetProvider
+import com.metrowin.launcher.data.WidgetService
+import com.metrowin.launcher.data.WidgetSizing
 import com.metrowin.launcher.data.ShortcutStore
 import com.metrowin.launcher.data.StartBackgroundStore
 import com.metrowin.launcher.data.TileStore
@@ -84,6 +92,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val quickActions = QuickActionsController(application)
     private val shortcutStore = ShortcutStore(application)
     private val weatherRepository = WeatherRepository(application)
+
+    /** The widgets placed on Start. */
+    val widgets = WidgetService(application)
 
     val icons = IconLoader(application)
 
@@ -273,6 +284,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    /** The contacts whose name matches [query]. Empty without the contacts permission. */
+    suspend fun searchContacts(query: String): List<ContactMatch> =
+        withContext(Dispatchers.IO) { ContactSearch(getApplication()).search(query) }
+
     /** Null when the search could not be made (no connection), an empty list when nothing matches. */
     suspend fun searchPlaces(query: String): List<PlaceMatch>? =
         withContext(Dispatchers.IO) { weatherRepository.search(query, Locale.getDefault().language) }
@@ -402,8 +417,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun launch(item: AppItem, sourceBounds: Rect? = null): Boolean {
         val opened = apps.launch(item, sourceBounds)
         if (opened) {
-            _recents.value = RecentApps.record(_recents.value, item.id)
-            store.recentApps = _recents.value
+            // A contact, a setting or a web search found by the search is not an app of the list.
+            if (!item.id.startsWith("search:")) {
+                _recents.value = RecentApps.record(_recents.value, item.id)
+                store.recentApps = _recents.value
+            }
         } else {
             Toast.makeText(getApplication(), R.string.launch_failed, Toast.LENGTH_SHORT).show()
         }
@@ -441,12 +459,27 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         _items.value = appItems + _shortcuts.value.map { it.toItem(shortcutStore.photoPath(it.photoFile)) }
     }
 
-    /** Adds a shortcut and pins its tile at the end of Start screen [page]. */
-    fun addShortcut(shortcut: ShortcutDef, page: Int = 0) {
+    /** Adds a shortcut and pins its tile at the end of Start screen [page], in [size] if one is given. */
+    fun addShortcut(shortcut: ShortcutDef, page: Int = 0, size: TileSize? = null) {
         _shortcuts.value = _shortcuts.value.filter { it.id != shortcut.id } + shortcut
         shortcutStore.save(_shortcuts.value)
         rebuildItems()
-        updatePages { StartPages.pin(it, shortcut.id, page) }
+        updatePages { pages ->
+            val pinned = StartPages.pin(pages, shortcut.id, page)
+            if (size == null) pinned else StartPages.update(pinned, shortcut.id) { StartEntries.setSize(it, shortcut.id, size) }
+        }
+    }
+
+    /** Puts a widget that Android has bound to [appWidgetId] on Start. */
+    fun addWidget(appWidgetId: Int, provider: WidgetProvider, page: Int) {
+        val id = "shortcut:widget:$appWidgetId"
+        addShortcut(
+            ShortcutDef(
+                id = id, kind = ShortcutKind.Widget, label = provider.label.ifBlank { provider.appLabel },
+                widgetProvider = provider.component.flattenToString(), widgetId = appWidgetId,
+            ),
+            page, WidgetSizing.tileSizeFor(provider.minWidthDp, provider.minHeightDp),
+        )
     }
 
     fun removeShortcut(id: String) {
@@ -454,11 +487,32 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         _shortcuts.value = _shortcuts.value.filter { it.id != id }
         shortcutStore.save(_shortcuts.value)
         shortcutStore.deletePhoto(removed.photoFile)
+        if (removed.kind == ShortcutKind.Widget) widgets.delete(removed.widgetId)
         rebuildItems()
         updatePages { StartPages.unpin(it, id) }
     }
 
-    fun savePhotoFor(shortcutId: String, bytes: ByteArray): String = shortcutStore.savePhoto(shortcutId, bytes)
+    /** Pins the contact the picker returned, with its photo, at the end of Start screen [page]. */
+    fun pinContact(uri: Uri, page: Int) {
+        viewModelScope.launch {
+            val picked = withContext(Dispatchers.IO) { ContactReader(getApplication()).read(uri) }
+            if (picked == null) {
+                tell(R.string.contact_failed)
+                return@launch
+            }
+            val id = ShortcutDef.newId(ShortcutKind.Contact, picked.lookupUri)
+            val photo = picked.photoJpeg?.let { shortcutStore.savePhoto(id, it) }
+            addShortcut(ShortcutDef(id, ShortcutKind.Contact, picked.name, picked.lookupUri, photoFile = photo), page)
+        }
+    }
+
+    /** Pins a web page. False when [address] is not a web address. */
+    fun pinSite(title: String, address: String, page: Int): Boolean {
+        val url = SiteInput.normalize(address) ?: return false
+        val label = title.trim().ifEmpty { SiteInput.suggestedTitle(url) }
+        addShortcut(ShortcutDef(ShortcutDef.newId(ShortcutKind.Site, url), ShortcutKind.Site, label, url), page)
+        return true
+    }
 
     /** What the layout is now, as a backup file would hold it. */
     fun currentBackup() = LayoutBackup(_pages.value, _shortcuts.value, _settings.value)

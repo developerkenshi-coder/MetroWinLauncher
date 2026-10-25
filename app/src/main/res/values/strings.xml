@@ -241,4 +241,58 @@
     <string name="weather_refresh">refresh</string>
     <string name="weather_not_set">Choose a city to see the weather here and on the tile.</string>
     <string name="weather_updated">updated %1$s</string>
+
+    <!-- shortcuts on Start -->
+    <string name="edit_add">add a contact, a website or a widget</string>
+    <string name="add_contact">pin a contact</string>
+    <string name="add_site">pin a website</string>
+    <string name="add_widget">add a widget</string>
+    <string name="site_title_hint">name</string>
+    <string name="site_address_hint">web address</string>
+    <string name="site_invalid">That does not look like a web address.</string>
+    <string name="contact_failed">Could not read that contact</string>
+
+    <!-- widgets -->
+    <string name="widgets_header">WIDGETS</string>
+    <string name="widgets_title">widgets</string>
+    <string name="widgets_none">This phone has no widgets to add.</string>
+    <string name="widgets_failed">That widget could not be added</string>
+    <string name="widget_unavailable">widget not available</string>
+
+    <!-- global search -->
+    <string name="search_section_contacts">contacts</string>
+    <string name="search_section_settings">settings</string>
+    <string name="search_section_web">web</string>
+    <string name="search_web_for">Search the web for \"%1$s\"</string>
+    <string name="search_contact_subtitle">contact</string>
+    <string name="search_setting_subtitle">android settings</string>
+    <string name="apps_search_contacts">search contacts</string>
+    <string name="apps_search_settings">search Android settings</string>
+    <string name="apps_search_web">offer a web search</string>
+    <string name="apps_search_hint">What you type in the app list is also looked for in these. The web search opens DuckDuckGo in your browser; nothing is sent until you touch it.</string>
+    <string name="apps_search_title">search</string>
+    <string name="ss_wifi">Wi-Fi</string>
+    <string name="ss_bluetooth">Bluetooth</string>
+    <string name="ss_airplane">Airplane mode</string>
+    <string name="ss_display">Display</string>
+    <string name="ss_sound">Sound</string>
+    <string name="ss_battery">Battery</string>
+    <string name="ss_storage">Storage</string>
+    <string name="ss_apps">Apps</string>
+    <string name="ss_location">Location</string>
+    <string name="ss_security">Security</string>
+    <string name="ss_privacy">Privacy</string>
+    <string name="ss_accessibility">Accessibility</string>
+    <string name="ss_date">Date and time</string>
+    <string name="ss_language">Language</string>
+    <string name="ss_keyboard">Keyboard</string>
+    <string name="ss_data">Data usage</string>
+    <string name="ss_nfc">NFC</string>
+    <string name="ss_vpn">VPN</string>
+    <string name="ss_quiet">Do not disturb</string>
+    <string name="ss_hotspot">Hotspot and tethering</string>
+    <string name="ss_cast">Cast</string>
+    <string name="ss_defaults">Default apps</string>
+    <string name="ss_developer">Developer options</string>
+    <string name="ss_about">About the phone</string>
 </resources>

@@ -19,6 +19,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,7 +29,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -41,10 +47,12 @@ import com.metrowin.launcher.data.BatteryState
 import com.metrowin.launcher.data.DayForecast
 import com.metrowin.launcher.data.LiveEvent
 import com.metrowin.launcher.data.LiveTileData
+import com.metrowin.launcher.data.LocalWidgetHost
 import com.metrowin.launcher.data.WeatherData
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Folder
 import com.metrowin.launcher.model.Glyph
+import com.metrowin.launcher.model.Launch
 import com.metrowin.launcher.model.LiveKind
 import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.model.TileStyle
@@ -56,7 +64,12 @@ import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.TileWhite
 import com.metrowin.launcher.ui.theme.onTile
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import android.appwidget.AppWidgetHostView
+import android.graphics.BitmapFactory
+import android.view.View
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -83,6 +96,10 @@ fun TileFace(
     style: TileStyle = TileStyle.Standard,
     /** The latest notification of the app, when the tile is allowed to flip to it. */
     peek: TilePeek? = null,
+    /** False while tiles are being edited: a widget then lets the touch through to the tile instead of using it. */
+    interactive: Boolean = true,
+    /** A long press on a widget (which keeps the touches of its own area) selects the tile for editing. */
+    onLongClick: () -> Unit = {},
 ) {
     val count = if (item.live == LiveKind.Phone) maxOf(live.missedCalls, notifications) else notifications
     // The Iconic template shows the counter big, in the middle; a small tile has no room for that.
@@ -91,7 +108,9 @@ fun TileFace(
     // Whatever the theme, a tile is coloured: its text and glyphs are white.
     CompositionLocalProvider(LocalMetroColors provides LocalMetroColors.current.onTile()) {
         Box(modifier.fillMaxSize()) {
+            val widget = item.launch as? Launch.Widget
             when {
+                widget != null -> WidgetFace(item, size, width, height, widget.appWidgetId, interactive, onLongClick)
                 iconic -> IconicFace(item, size, width, height, count)
                 cycle -> CycleFace(item, live.photos, seed)
                 else -> when (item.live) {
@@ -102,7 +121,8 @@ fun TileFace(
                     LiveKind.Battery -> BatteryFace(item, size, width, height, live.battery, seed)
                     LiveKind.Weather -> WeatherFace(item, size, width, height, live.weather, seed)
                     LiveKind.Phone, LiveKind.Messages, null ->
-                        if (peek != null && size != TileSize.Small) PeekFace(item, size, width, height, peek, seed)
+                        if (item.photoPath != null) PhotoShortcutFace(item, size, width, height)
+                        else if (peek != null && size != TileSize.Small) PeekFace(item, size, width, height, peek, seed)
                         else StaticFace(item, size, width, height)
                 }
             }
@@ -219,6 +239,68 @@ private fun CycleFace(item: AppItem, photos: List<ImageBitmap>, seed: Int) {
 }
 
 private const val CYCLE_MS = 4_500L
+
+/**
+ * A widget: the view Android gives for it, filling the tile. Where there is no widget host (previews, tests) or the
+ * widget's app was removed, the tile shows the glyph and the name instead.
+ */
+@Composable
+@Suppress("DEPRECATION") // updateAppWidgetSize(Bundle, ...) is the form that works on every version we support
+private fun WidgetFace(
+    item: AppItem, size: TileSize, width: Dp, height: Dp, appWidgetId: Int, interactive: Boolean, onLongClick: () -> Unit,
+) {
+    val host = LocalWidgetHost.current
+    val available = remember(host, appWidgetId) { host?.info(appWidgetId) != null }
+    if (host == null || !available) {
+        Box(Modifier.fillMaxSize()) {
+            StaticFace(item, size, width, height)
+            if (host != null) {
+                MetroText(
+                    stringResource(R.string.widget_unavailable), size = 12.sp, weight = FontWeight.Normal,
+                    color = TileWhite.copy(alpha = 0.8f), modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
+                )
+            }
+        }
+        return
+    }
+    val currentLongClick by rememberUpdatedState(onLongClick)
+    Box(Modifier.fillMaxSize()) {
+        AndroidView(
+            factory = { context ->
+                (host.createView(context, appWidgetId) ?: View(context)).also { view ->
+                    view.setOnLongClickListener {
+                        currentLongClick()
+                        true
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxSize(),
+            update = { view ->
+                // Widgets that adapt their layout to their size need to be told it.
+                (view as? AppWidgetHostView)?.updateAppWidgetSize(null, width.value.toInt(), height.value.toInt(), width.value.toInt(), height.value.toInt())
+            },
+        )
+        if (!interactive) Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { } })
+    }
+}
+
+/** The tile of a contact: the person's photo over the whole tile, the name on it. Until the photo is read, the glyph. */
+@Composable
+private fun PhotoShortcutFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
+    val path = item.photoPath
+    val photo by produceState<ImageBitmap?>(null, path) {
+        value = path?.let { withContext(Dispatchers.IO) { BitmapFactory.decodeFile(it)?.asImageBitmap() } }
+    }
+    val bitmap = photo
+    if (bitmap == null) {
+        StaticFace(item, size, width, height)
+    } else {
+        Box(Modifier.fillMaxSize()) {
+            Image(bitmap = bitmap, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+            if (size != TileSize.Small) PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
+        }
+    }
+}
 
 /** The tile of an app with a notification: its usual face, flipping to the notification now and then. */
 @Composable

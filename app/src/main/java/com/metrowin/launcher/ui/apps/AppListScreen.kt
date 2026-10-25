@@ -58,6 +58,13 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.data.AppSection
+import com.metrowin.launcher.data.ContactMatch
+import com.metrowin.launcher.data.GlobalResults
+import com.metrowin.launcher.data.GlobalSearch
+import com.metrowin.launcher.data.SystemSetting
+import com.metrowin.launcher.model.Launch
+import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Column
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.metroPress
@@ -65,6 +72,7 @@ import com.metrowin.launcher.ui.anim.turnstile
 import com.metrowin.launcher.ui.components.AppSquare
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
+import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.TileWhite
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
@@ -83,6 +91,23 @@ sealed interface ListRow {
 
     data class App(val item: AppItem) : ListRow {
         override val key = "app:${item.id}"
+    }
+
+    /** The heading of a group of results that are not apps. */
+    data class Section(@param:StringRes val title: Int) : ListRow {
+        override val key = "section:$title"
+    }
+
+    data class Contact(val match: ContactMatch) : ListRow {
+        override val key = "contact:${match.lookupUri}"
+    }
+
+    data class Setting(val setting: SystemSetting) : ListRow {
+        override val key = "setting:${setting.id}"
+    }
+
+    data class Web(val query: String) : ListRow {
+        override val key = "web"
     }
 }
 
@@ -128,11 +153,32 @@ fun AppListScreen(
     results: List<AppItem>,
     modifier: Modifier = Modifier,
     highlight: ListHighlight? = null,
+    /** What the search finds besides apps: contacts, screens of the Android settings, a web search. */
+    global: GlobalResults = GlobalResults.Empty,
 ) {
     val insets = WindowInsets.systemBars.asPaddingValues()
-    // While searching the list is just the matches, without letter headers.
-    val rows = remember(model, query, results) {
-        if (query.isBlank()) model.rows else listOf<ListRow>(ListRow.Search) + results.map { ListRow.App(it) }
+    // While searching the list is just the matches, without letter headers, followed by what else was found.
+    val rows = remember(model, query, results, global) {
+        if (query.isBlank()) {
+            model.rows
+        } else {
+            buildList {
+                add(ListRow.Search)
+                results.forEach { add(ListRow.App(it)) }
+                if (global.contacts.isNotEmpty()) {
+                    add(ListRow.Section(R.string.search_section_contacts))
+                    global.contacts.forEach { add(ListRow.Contact(it)) }
+                }
+                if (global.settings.isNotEmpty()) {
+                    add(ListRow.Section(R.string.search_section_settings))
+                    global.settings.forEach { add(ListRow.Setting(it)) }
+                }
+                global.webQuery?.let {
+                    add(ListRow.Section(R.string.search_section_web))
+                    add(ListRow.Web(it))
+                }
+            }
+        }
     }
     // Scrolling the list puts the keyboard away, and a new search starts from the top.
     val focus = LocalFocusManager.current
@@ -159,6 +205,19 @@ fun AppListScreen(
                     row.item, index, listState, openedAt, exiting, onLaunch, onLongPress,
                     highlight?.takeIf { it.appId == row.item.id },
                 )
+                is ListRow.Section -> SectionRow(row.title)
+                is ListRow.Contact -> ResultRow(
+                    Glyph.People, row.match.name, stringResource(R.string.search_contact_subtitle), index, listState, openedAt, exiting,
+                    tag = "result:contact:${row.match.lookupUri}",
+                ) { onLaunch(AppItem("search:contact", row.match.name, Launch.Link(row.match.lookupUri))) }
+                is ListRow.Setting -> ResultRow(
+                    row.setting.glyph, row.setting.label, stringResource(R.string.search_setting_subtitle), index, listState, openedAt, exiting,
+                    tag = "result:setting:${row.setting.id}", accent = true,
+                ) { onLaunch(AppItem("search:setting", row.setting.label, Launch.Action(row.setting.action))) }
+                is ListRow.Web -> ResultRow(
+                    Glyph.Globe, stringResource(R.string.search_web_for, row.query), null, index, listState, openedAt, exiting,
+                    tag = "result:web", accent = true,
+                ) { onLaunch(AppItem("search:web", row.query, Launch.Link(GlobalSearch.webUrl(row.query)))) }
             }
         }
     }
@@ -295,6 +354,55 @@ private fun AppRow(
                 enabled = !exiting,
             ),
     )
+}
+
+/** The heading of the results that are not apps (contacts, settings, web). */
+@Composable
+private fun SectionRow(@StringRes title: Int) {
+    MetroText(
+        stringResource(title), size = 20.sp, color = LocalMetroColors.current.subtle,
+        modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 12.dp, top = 18.dp, bottom = 4.dp),
+    )
+}
+
+/** A result that is not an app: a glyph in a square, its name, and what kind of result it is. */
+@Composable
+private fun ResultRow(
+    glyph: Glyph,
+    title: String,
+    subtitle: String?,
+    index: Int,
+    listState: LazyListState,
+    openedAt: Long,
+    exiting: Boolean,
+    tag: String,
+    accent: Boolean = false,
+    onClick: () -> Unit,
+) {
+    val away = rememberRowAway(index, listState, openedAt, exiting)
+    val colors = LocalMetroColors.current
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .height(RowHeight)
+            .testTag(tag)
+            .graphicsLayer { turnstile(away.value) }
+            .metroPress(onClick = onClick, enabled = !exiting)
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier.size(SquareSize).background(if (accent) LocalAccent.current else colors.surface),
+            contentAlignment = Alignment.Center,
+        ) {
+            GlyphIcon(glyph, SquareSize * 0.6f, color = if (accent) TileWhite else colors.foreground)
+        }
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            MetroText(title, size = 22.sp)
+            if (subtitle != null) MetroText(subtitle, size = 13.sp, weight = FontWeight.Normal, color = colors.subtle)
+        }
+    }
 }
 
 /** One app: its square, then its name. Also drawn over the dimmed list by the context menu. */

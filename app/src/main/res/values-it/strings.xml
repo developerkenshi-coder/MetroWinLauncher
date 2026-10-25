@@ -234,4 +234,58 @@
     <string name="weather_refresh">aggiorna</string>
     <string name="weather_not_set">Scegli una città per vedere il meteo qui e sul riquadro.</string>
     <string name="weather_updated">aggiornato %1$s</string>
+
+    <!-- shortcuts on Start -->
+    <string name="edit_add">aggiungi un contatto, un sito o un widget</string>
+    <string name="add_contact">fissa un contatto</string>
+    <string name="add_site">fissa un sito</string>
+    <string name="add_widget">aggiungi un widget</string>
+    <string name="site_title_hint">nome</string>
+    <string name="site_address_hint">indirizzo web</string>
+    <string name="site_invalid">Questo non sembra un indirizzo web.</string>
+    <string name="contact_failed">Non riesco a leggere questo contatto</string>
+
+    <!-- widgets -->
+    <string name="widgets_header">WIDGET</string>
+    <string name="widgets_title">widget</string>
+    <string name="widgets_none">Questo telefono non ha widget da aggiungere.</string>
+    <string name="widgets_failed">Non è stato possibile aggiungere quel widget</string>
+    <string name="widget_unavailable">widget non disponibile</string>
+
+    <!-- global search -->
+    <string name="search_section_contacts">contatti</string>
+    <string name="search_section_settings">impostazioni</string>
+    <string name="search_section_web">web</string>
+    <string name="search_web_for">Cerca sul web \"%1$s\"</string>
+    <string name="search_contact_subtitle">contatto</string>
+    <string name="search_setting_subtitle">impostazioni di android</string>
+    <string name="apps_search_contacts">cerca tra i contatti</string>
+    <string name="apps_search_settings">cerca tra le impostazioni di Android</string>
+    <string name="apps_search_web">proponi la ricerca sul web</string>
+    <string name="apps_search_hint">Quello che scrivi nella lista app viene cercato anche qui. La ricerca web apre DuckDuckGo nel browser; non viene inviato nulla finché non la tocchi.</string>
+    <string name="apps_search_title">ricerca</string>
+    <string name="ss_wifi">Wi-Fi</string>
+    <string name="ss_bluetooth">Bluetooth</string>
+    <string name="ss_airplane">Modalità aereo</string>
+    <string name="ss_display">Schermo</string>
+    <string name="ss_sound">Suoni</string>
+    <string name="ss_battery">Batteria</string>
+    <string name="ss_storage">Memoria</string>
+    <string name="ss_apps">App</string>
+    <string name="ss_location">Posizione</string>
+    <string name="ss_security">Sicurezza</string>
+    <string name="ss_privacy">Privacy</string>
+    <string name="ss_accessibility">Accessibilità</string>
+    <string name="ss_date">Data e ora</string>
+    <string name="ss_language">Lingua</string>
+    <string name="ss_keyboard">Tastiera</string>
+    <string name="ss_data">Consumo dati</string>
+    <string name="ss_nfc">NFC</string>
+    <string name="ss_vpn">VPN</string>
+    <string name="ss_quiet">Non disturbare</string>
+    <string name="ss_hotspot">Hotspot e tethering</string>
+    <string name="ss_cast">Trasmetti</string>
+    <string name="ss_defaults">App predefinite</string>
+    <string name="ss_developer">Opzioni sviluppatore</string>
+    <string name="ss_about">Info sul telefono</string>
 </resources>

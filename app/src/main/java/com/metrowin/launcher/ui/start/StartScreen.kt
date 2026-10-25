@@ -549,6 +549,7 @@ private fun PositionedTile(
                 cell.item, cell.size, width, height, live,
                 seed = cell.key.hashCode(), notifications = badges[cell.item.packageName] ?: 0,
                 style = cell.tile.style, peek = peeks[cell.item.packageName],
+                interactive = editingKey == null, onLongClick = { currentActions.onLongClick(currentCell) },
             )
             is FolderCell -> FolderFace(
                 cell.folder, cell.items, cell.expanded, cell.size, width, height,

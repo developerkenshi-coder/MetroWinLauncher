@@ -26,6 +26,22 @@ import com.metrowin.launcher.ui.components.MetroText
 fun AppsPage(env: SettingsEnv) {
     val hidden = remember(env.apps, env.settings.hiddenApps) { AppFilter.hidden(env.apps, env.settings) }
     SettingsPage {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            SettingHeading(stringResource(R.string.apps_search_title))
+            ToggleSetting(
+                stringResource(R.string.apps_search_contacts), env.settings.searchContacts,
+                onChange = { value -> env.onChange { it.copy(searchContacts = value) } }, tag = "apps:search:contacts",
+            )
+            ToggleSetting(
+                stringResource(R.string.apps_search_settings), env.settings.searchSettings,
+                onChange = { value -> env.onChange { it.copy(searchSettings = value) } }, tag = "apps:search:settings",
+            )
+            ToggleSetting(
+                stringResource(R.string.apps_search_web), env.settings.searchWeb,
+                onChange = { value -> env.onChange { it.copy(searchWeb = value) } },
+                hint = stringResource(R.string.apps_search_hint), tag = "apps:search:web",
+            )
+        }
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             SettingHeading(stringResource(R.string.apps_hidden))
             if (hidden.isEmpty()) {

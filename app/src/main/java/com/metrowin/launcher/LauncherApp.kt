@@ -17,6 +17,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -48,7 +49,11 @@ import com.metrowin.launcher.data.AppRepository
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.QuickAction
+import com.metrowin.launcher.data.GlobalResults
+import com.metrowin.launcher.data.GlobalSearch
+import com.metrowin.launcher.data.LocalWidgetHost
 import com.metrowin.launcher.data.RecentApps
+import com.metrowin.launcher.data.WidgetProvider
 import com.metrowin.launcher.data.StartPages
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Folder
@@ -84,12 +89,15 @@ import com.metrowin.launcher.ui.settings.SettingsEnv
 import com.metrowin.launcher.ui.settings.SettingsScreen
 import com.metrowin.launcher.ui.settings.SettingsSection
 import com.metrowin.launcher.ui.start.AppCell
+import com.metrowin.launcher.ui.start.AddMenu
 import com.metrowin.launcher.ui.start.ClockHeader
 import com.metrowin.launcher.ui.start.EditBar
 import com.metrowin.launcher.ui.start.ExitRequest
 import com.metrowin.launcher.ui.start.FolderCell
 import com.metrowin.launcher.ui.start.FolderNameDialog
+import com.metrowin.launcher.ui.start.SiteDialog
 import com.metrowin.launcher.ui.start.StartActions
+import com.metrowin.launcher.ui.start.WidgetPicker
 import com.metrowin.launcher.ui.start.StartScreen
 import com.metrowin.launcher.ui.start.buildStartCells
 import com.metrowin.launcher.ui.start.isTopLevel
@@ -107,6 +115,9 @@ private const val LIST_EXIT_MS = 240L
 
 /** How far below the status bar a pull from the top edge may start, to open the Action Center from any page. */
 private val EDGE_PULL_ZONE = 28.dp
+
+/** The contacts are looked for once the typing has paused this long. */
+private const val CONTACT_SEARCH_DELAY_MS = 220L
 
 /**
  * The launcher: a pager with the Start screen and the app list, plus the pages and overlays that sit
@@ -177,11 +188,38 @@ fun LauncherApp(vm: LauncherViewModel) {
     var menu by remember { mutableStateOf<MenuState?>(null) }
     var jumpOpen by remember { mutableStateOf(false) }
     var settingsOpen by remember { mutableStateOf(false) }
+    var addMenuOpen by remember { mutableStateOf(false) }
+    var widgetPickerOpen by remember { mutableStateOf(false) }
+    /** A widget that has an id and is waiting for the user: to allow it, or to set it up. */
+    var pendingWidget by remember { mutableStateOf<Pair<Int, WidgetProvider>?>(null) }
+    var siteDialogOpen by remember { mutableStateOf(false) }
     var weatherOpen by remember { mutableStateOf(false) }
     var renamingFolderId by remember { mutableStateOf<String?>(null) }
     var query by remember { mutableStateOf("") }
     var settingsSection by remember { mutableStateOf<SettingsSection?>(null) }
     val searchResults = remember(query, listItems) { AppSearch.filter(listItems, query) }
+
+    // What the search finds besides apps. The settings and the web offer are known at once; the contacts follow
+    // when the typing pauses, so each key does not query the contacts.
+    var globalResults by remember { mutableStateOf(GlobalResults.Empty) }
+    LaunchedEffect(query, settings.searchContacts, settings.searchSettings, settings.searchWeb) {
+        if (query.isBlank()) {
+            globalResults = GlobalResults.Empty
+            return@LaunchedEffect
+        }
+        globalResults = GlobalResults(
+            settings = if (settings.searchSettings) {
+                GlobalSearch.matchSettings(query) { def -> appContext.getString(def.label) }
+            } else {
+                emptyList()
+            },
+            webQuery = query.trim().takeIf { settings.searchWeb },
+        )
+        if (settings.searchContacts) {
+            delay(CONTACT_SEARCH_DELAY_MS)
+            globalResults = globalResults.copy(contacts = vm.searchContacts(query))
+        }
+    }
 
     // The Action Center. The panel is one state that follows the finger, whatever starts the pull.
     val panel = rememberPullPanel()
@@ -280,6 +318,9 @@ fun LauncherApp(vm: LauncherViewModel) {
         when {
             !permissionsHandled -> InstantBack { }
             panel.isShown -> PanelBack(panel)
+            widgetPickerOpen -> InstantBack { widgetPickerOpen = false }
+            siteDialogOpen -> InstantBack { siteDialogOpen = false }
+            addMenuOpen -> InstantBack { addMenuOpen = false }
             renamingFolderId != null -> InstantBack { renamingFolderId = null }
             jumpOpen -> InstantBack { jumpOpen = false }
             menu != null -> InstantBack { menu = null }
@@ -316,6 +357,65 @@ fun LauncherApp(vm: LauncherViewModel) {
         vm.updateSettings { it.copy(kidsMode = false) }
         runCatching { activity?.stopLockTask() }
         comeBack()
+    }
+
+    val widgets = vm.widgets
+
+    fun finishWidget(id: Int, provider: WidgetProvider) {
+        vm.addWidget(id, provider, lastStartPage.coerceIn(0, pages.size - 1))
+        pendingWidget = null
+    }
+
+    fun abandonWidget() {
+        pendingWidget?.let { (id, _) -> widgets.delete(id) }
+        pendingWidget = null
+    }
+
+    /** The widget is allowed: if it needs setting up, its own screen comes first. */
+    fun configureOrFinish(id: Int, provider: WidgetProvider) {
+        val setup = activity
+        if (widgets.info(id)?.configure != null && setup != null) {
+            pendingWidget = id to provider
+            widgets.configure(setup, id, MainActivity.REQUEST_CONFIGURE_WIDGET)
+        } else {
+            finishWidget(id, provider)
+        }
+    }
+
+    val bindWidget = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val pending = pendingWidget ?: return@rememberLauncherForActivityResult
+        if (result.resultCode == Activity.RESULT_OK) configureOrFinish(pending.first, pending.second) else abandonWidget()
+    }
+
+    fun addWidget(provider: WidgetProvider) {
+        val id = widgets.allocateId()
+        if (widgets.bindIfAllowed(id, provider.component)) {
+            configureOrFinish(id, provider)
+        } else {
+            // Android asks the user whether this launcher may show the widget.
+            pendingWidget = id to provider
+            bindWidget.launch(widgets.bindRequest(id, provider.component))
+        }
+    }
+
+    // The widget's own setup screen answers through the activity.
+    DisposableEffect(activity) {
+        val main = activity as? MainActivity
+        main?.onWidgetConfigured = { resultCode ->
+            val pending = pendingWidget
+            if (pending != null) {
+                if (resultCode == Activity.RESULT_OK) finishWidget(pending.first, pending.second) else abandonWidget()
+            }
+        }
+        onDispose { main?.onWidgetConfigured = null }
+    }
+
+    // Widgets only update while the launcher listens.
+    LifecycleEventEffect(Lifecycle.Event.ON_START) { widgets.startListening() }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { widgets.stopListening() }
+
+    val pickContact = rememberLauncherForActivityResult(ActivityResultContracts.PickContact()) { uri ->
+        if (uri != null) vm.pinContact(uri, lastStartPage.coerceIn(0, pages.size - 1))
     }
 
     val confirmCredentials = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -440,7 +540,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val accent = MetroAccents[accentIndex.coerceIn(MetroAccents.indices)]
     val dark = rememberIsDark(settings)
 
-    CompositionLocalProvider(LocalIconLoader provides vm.icons) {
+    CompositionLocalProvider(LocalIconLoader provides vm.icons, LocalWidgetHost provides vm.widgets) {
         MetroTheme(accent = accent, dark = dark) {
             Box(
                 Modifier
@@ -502,6 +602,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onQueryChange = { query = it },
                             results = searchResults,
                             highlight = highlight,
+                            global = globalResults,
                         )
                     },
                 )
@@ -575,6 +676,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             },
                             onDone = { editingKey = null },
                             modifier = Modifier.align(Alignment.BottomCenter),
+                            onAdd = { addMenuOpen = true },
                             style = (cell as? AppCell)?.tile?.style,
                             onStyle = {
                                 val tile = cell as? AppCell ?: return@EditBar
@@ -654,6 +756,45 @@ fun LauncherApp(vm: LauncherViewModel) {
                         section = settingsSection,
                         onSectionChange = { settingsSection = it },
                         sectionAway = sectionAway,
+                    )
+                }
+
+                if (addMenuOpen) {
+                    AddMenu(
+                        onContact = {
+                            addMenuOpen = false
+                            pickContact.launch(null)
+                        },
+                        onSite = {
+                            addMenuOpen = false
+                            siteDialogOpen = true
+                        },
+                        onWidget = {
+                            addMenuOpen = false
+                            widgetPickerOpen = true
+                        },
+                        onDismiss = { addMenuOpen = false },
+                    )
+                }
+
+                if (widgetPickerOpen) {
+                    WidgetPicker(
+                        providers = remember { vm.widgets.providers() },
+                        onPick = { provider ->
+                            widgetPickerOpen = false
+                            addWidget(provider)
+                        },
+                    )
+                }
+
+                if (siteDialogOpen) {
+                    SiteDialog(
+                        onDone = { title, address ->
+                            val accepted = vm.pinSite(title, address, selectedPage)
+                            if (accepted) siteDialogOpen = false
+                            accepted
+                        },
+                        onCancel = { siteDialogOpen = false },
                     )
                 }
 

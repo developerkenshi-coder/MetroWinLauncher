@@ -3,6 +3,8 @@ package com.metrowin.launcher.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -11,6 +13,9 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.data.AppRepository
 import com.metrowin.launcher.data.AppSections
+import com.metrowin.launcher.data.ContactMatch
+import com.metrowin.launcher.data.GlobalResults
+import com.metrowin.launcher.data.SystemSetting
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Glyph
@@ -19,6 +24,7 @@ import com.metrowin.launcher.model.LiveKind
 import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.ui.apps.AppContextMenu
 import com.metrowin.launcher.ui.apps.AppListModel
+import com.metrowin.launcher.ui.apps.AppListScreen
 import com.metrowin.launcher.ui.apps.JumpList
 import com.metrowin.launcher.ui.apps.MenuState
 import com.metrowin.launcher.ui.start.TileFace
@@ -112,6 +118,64 @@ class ListFeaturesTest : ScreenshotBase() {
         assertTrue("an app comes after its letter header", alpha > model.headerIndex.getValue("A"))
         assertTrue(bravo > alpha)
         assertNull(model.indexOfApp("app:nope"))
+    }
+
+    // --- results that are not apps
+
+    private fun showSearch(
+        query: String, results: List<AppItem>, global: GlobalResults, launched: MutableList<AppItem>,
+    ) = show {
+        val model = remember { AppListModel(AppSections.group(AppSections.sort(listOf(app)))) }
+        AppListScreen(
+            model = model, listState = rememberLazyListState(), replayToken = 0, exiting = false,
+            onLaunch = { launched += it }, onLongPress = { _, _, _ -> }, onHeaderClick = {},
+            query = query, onQueryChange = {}, results = results, global = global,
+        )
+    }
+
+    private val giulia = ContactMatch("Giulia Rossi", "content://com.android.contacts/contacts/lookup/abc/1")
+    private val wifi = SystemSetting("wifi", "Wi-Fi", "android.settings.WIFI_SETTINGS", Glyph.Wifi)
+
+    @Test
+    fun theSearchListsContactsSettingsAndTheWebAfterTheApps() {
+        val launched = mutableListOf<AppItem>()
+        showSearch("wi", listOf(app), GlobalResults(listOf(giulia), listOf(wifi), "wi"), launched)
+        advance(1_000)
+        capture("search_global")
+        compose.onNodeWithTag("app:app:a").assertExists()
+        compose.onNodeWithTag("result:contact:${giulia.lookupUri}").assertExists()
+        compose.onNodeWithTag("result:setting:wifi").assertExists()
+        compose.onNodeWithTag("result:web").assertExists()
+    }
+
+    @Test
+    fun touchingAContactASettingOrTheWebOpensTheRightThing() {
+        val launched = mutableListOf<AppItem>()
+        showSearch("wi", emptyList(), GlobalResults(listOf(giulia), listOf(wifi), "wi fi"), launched)
+        advance(1_000)
+        compose.onNodeWithTag("result:contact:${giulia.lookupUri}").performClick()
+        compose.onNodeWithTag("result:setting:wifi").performClick()
+        compose.onNodeWithTag("result:web").performClick()
+        assertEquals(Launch.Link(giulia.lookupUri), launched[0].launch)
+        assertEquals(Launch.Action("android.settings.WIFI_SETTINGS"), launched[1].launch)
+        assertEquals(Launch.Link("https://duckduckgo.com/?q=wi+fi"), launched[2].launch)
+        assertTrue("none of them is an app of the list, so none is remembered as one", launched.all { it.id.startsWith("search:") })
+    }
+
+    @Test
+    fun withNothingExtraOnlyTheAppsShow() {
+        showSearch("alp", listOf(app), GlobalResults.Empty, mutableListOf())
+        advance(1_000)
+        compose.onNodeWithTag("app:app:a").assertExists()
+        compose.onAllNodesWithTag("result:web").assertCountEquals(0)
+    }
+
+    @Test
+    fun withoutAQueryTheExtraResultsAreNotShown() {
+        showSearch("", emptyList(), GlobalResults(listOf(giulia), listOf(wifi), "x"), mutableListOf())
+        advance(1_000)
+        compose.onAllNodesWithTag("result:web").assertCountEquals(0)
+        compose.onAllNodesWithTag("result:setting:wifi").assertCountEquals(0)
     }
 
     // --- the torch tile
