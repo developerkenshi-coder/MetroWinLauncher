@@ -870,10 +870,8 @@
     <string name="worldclock_search">cerca una città</string>
     <string name="worldclock_yesterday">ieri</string>
     <string name="birthdays_default_label">Compleanni</string>
-    <string name="birthdays_none">Nessun compleanno nei contatti</string>
     <string name="birthdays_today">oggi</string>
     <string name="birthdays_turning">compie %1$d anni</string>
-    <string name="birthdays_need_contacts">I compleanni vengono dai contatti: consentili nelle impostazioni di Android per vederli qui.</string>
     <string name="add_counter">contatore</string>
     <string name="add_checklist">lista</string>
     <string name="add_worldclock">ora in un\'altra città</string>
@@ -912,7 +910,6 @@
     <string name="apps_calendar">cerca nel calendario</string>
     <string name="apps_calendar_hint">Gli eventi dei prossimi sei mesi il cui titolo corrisponde. Serve il permesso del calendario; viene letto sul telefono e non esce nulla.</string>
     <string name="search_section_events">calendario</string>
-    <string name="search_event_subtitle">evento</string>
     <string name="apps_compact">elenco compatto</string>
     <string name="apps_compact_hint">Riquadri più piccoli e righe più strette: più app sullo schermo.</string>
     <string name="menu_store">apri nello store</string>

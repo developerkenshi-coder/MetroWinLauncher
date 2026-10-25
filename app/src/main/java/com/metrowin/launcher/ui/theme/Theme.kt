@@ -2,7 +2,6 @@ package com.metrowin.launcher.ui.theme
 
 import android.app.Activity
 import android.content.Context
-import android.content.res.Configuration
 import android.os.Build
 import android.content.ContextWrapper
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -151,7 +150,7 @@ fun MetroTheme(
     SystemBarIcons(dark)
     val adjustment = if (Build.VERSION.SDK_INT >= 31) LocalConfiguration.current.fontWeightAdjustment else 0
     // "Undefined" is a very large number, not a bold setting.
-    val systemBold = adjustment != Configuration.FONT_WEIGHT_ADJUSTMENT_UNDEFINED && adjustment >= SYSTEM_BOLD_ADJUSTMENT
+    val systemBold = adjustment != ADJUSTMENT_UNDEFINED && adjustment >= SYSTEM_BOLD_ADJUSTMENT
     val resolved = remember(style, dark, accent, droid, oled) { Themes.resolve(style, dark, accent, droid, oled) }
     val typed = remember(resolved.style, boldText, systemBold, systemFont) { resolved.style.withType(boldText || systemBold, systemFont) }
     val density = LocalDensity.current
@@ -212,3 +211,6 @@ fun rememberIsDark(settings: LauncherSettings, sunrise: LocalTime? = null, sunse
 
 /** The Android setting "bold text" adds 300 to the weights; a smaller adjustment is not that setting. */
 private const val SYSTEM_BOLD_ADJUSTMENT = 300
+
+/** The value of Configuration.FONT_WEIGHT_ADJUSTMENT_UNDEFINED (a constant of Android 12, written out so it is no inlined API). */
+private const val ADJUSTMENT_UNDEFINED = Int.MAX_VALUE

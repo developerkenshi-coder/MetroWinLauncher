@@ -265,7 +265,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun navigate(destination: String) {
         val app = getApplication<Application>()
         val opened = VoiceActions.navigationUris(destination).any { uri ->
-            runCatching { app.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess
+            runCatching { app.startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess
         }
         if (!opened) tell(R.string.launch_failed)
     }
@@ -1045,7 +1045,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val app = getApplication<Application>()
         val pages = listOfNotNull(AppLinks.storeUri(pkg), AppLinks.webUrl(pkg))
         val opened = pages.any { page ->
-            runCatching { app.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(page)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess
+            runCatching { app.startActivity(Intent(Intent.ACTION_VIEW, page.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess
         }
         if (!opened) tell(R.string.launch_failed)
     }

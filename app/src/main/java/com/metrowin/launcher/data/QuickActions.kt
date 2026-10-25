@@ -136,10 +136,12 @@ class QuickActionsController(private val context: Context) {
     }.getOrNull()
 
     /** How many strengths the flashlight has (1 when it only goes on and off, and before Android 13). */
-    private val torchLevels: Int = torchId
-        ?.takeIf { Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU }
-        ?.let { id -> runCatching { cameras.getCameraCharacteristics(id).get(CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL) }.getOrNull() }
-        ?: 1
+    private val torchLevels: Int =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && torchId != null) strengthLevelsOf(torchId) else 1
+
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun strengthLevelsOf(id: String): Int =
+        runCatching { cameras.getCameraCharacteristics(id).get(CameraCharacteristics.FLASH_INFO_STRENGTH_MAXIMUM_LEVEL) }.getOrNull() ?: 1
 
     /** The strength of the lit flashlight as a fraction, or null when it is off or has only one strength. */
     fun torchStrength(): Float? {

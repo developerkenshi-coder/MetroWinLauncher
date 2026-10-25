@@ -870,10 +870,8 @@
     <string name="worldclock_search">search a city</string>
     <string name="worldclock_yesterday">yesterday</string>
     <string name="birthdays_default_label">Birthdays</string>
-    <string name="birthdays_none">No birthdays in the contacts</string>
     <string name="birthdays_today">today</string>
     <string name="birthdays_turning">turns %1$d</string>
-    <string name="birthdays_need_contacts">Birthdays come from the contacts: allow them in the settings of Android to see them here.</string>
     <string name="add_counter">counter</string>
     <string name="add_checklist">list</string>
     <string name="add_worldclock">time in another city</string>
@@ -911,7 +909,6 @@
     <string name="apps_calendar">search the calendar</string>
     <string name="apps_calendar_hint">Events of the next six months whose title matches. Needs the calendar permission; it is read on the phone and nothing leaves it.</string>
     <string name="search_section_events">calendar</string>
-    <string name="search_event_subtitle">event</string>
     <string name="apps_compact">compact list</string>
     <string name="apps_compact_hint">Smaller squares and tighter rows: more apps on the screen.</string>
     <string name="menu_store">open in the store</string>
