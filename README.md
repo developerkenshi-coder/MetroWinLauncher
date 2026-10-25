@@ -67,7 +67,10 @@ la debug senza perdere i dati. La debug è più lenta e consuma di più: è fatt
 adb install -r app/build/outputs/apk/optimized/app-optimized.apk
 ```
 
-La `assembleRelease` resta non firmata, per la chiave di chi pubblica. Il profilo di compilazione lo applica Android da solo, di solito
+La `assembleRelease` è la build **ufficiale**: la firma con la chiave descritta in `keystore.properties` (nella radice del progetto, **non nel
+repository**: è in `.gitignore`, come la cartella `keystore/`), con le righe `storeFile`, `storePassword`, `keyAlias` e `keyPassword`.
+Senza quel file esce non firmata. **Chi perde la chiave non può più aggiornare l'app già installata**: tienine una copia, e la password
+a parte. La chiave è diversa da quella di debug, quindi un'installazione di debug va disinstallata prima di mettere quella ufficiale. Il profilo di compilazione lo applica Android da solo, di solito
 nella prima notte di manutenzione (a telefono in carica e spento): prima l'avvio è più lento.
 
 Poi premi Home: Android chiede quale launcher usare, scegli **MetroWin Launcher** (o *Impostazioni → App → App

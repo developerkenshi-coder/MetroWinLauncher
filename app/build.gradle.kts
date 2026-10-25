@@ -1,3 +1,4 @@
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -18,11 +19,25 @@ android {
         versionName = "0.1.0"
     }
 
+    // The key of the official release comes from keystore.properties in the root of the project (never committed: it is in
+    // .gitignore): storeFile, storePassword, keyAlias and keyPassword. Without that file the release build stays unsigned.
+    val keystoreFile = rootProject.file("keystore.properties")
+    val official = keystoreFile.takeIf { it.exists() }?.let { file ->
+        val keys = Properties().apply { file.inputStream().use { load(it) } }
+        signingConfigs.create("official") {
+            storeFile = rootProject.file(keys.getProperty("storeFile"))
+            storePassword = keys.getProperty("storePassword")
+            keyAlias = keys.getProperty("keyAlias")
+            keyPassword = keys.getProperty("keyPassword")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (official != null) signingConfig = official
         }
         // The release build (shrunk and optimized, nothing of the debugging in it: the one to live with, it draws less battery than the
         // debug build) signed with the debug key, so that it installs over the debug build without losing anything. The release build

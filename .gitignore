@@ -13,3 +13,5 @@ app/build/
 *.keystore
 *.jks
 .kotlin/
+/keystore.properties
+keystore/
