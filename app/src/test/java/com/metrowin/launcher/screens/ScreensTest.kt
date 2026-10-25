@@ -69,7 +69,6 @@ import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.gesture.rememberPullPanel
 import com.metrowin.launcher.ui.kids.KidsHeader
-import com.metrowin.launcher.ui.permissions.PermissionsScreen
 import com.metrowin.launcher.ui.settings.SettingsEnv
 import com.metrowin.launcher.ui.settings.SettingsScreen
 import com.metrowin.launcher.ui.settings.SettingsSection
@@ -610,13 +609,6 @@ class ScreensTest : ScreenshotBase() {
         // The row spans y 1900..2092: the menu panel is right above it and nothing is below it.
         assertEquals(MENU_PANEL, screen.getPixel(1000, 1840))
         assertNotEquals(MENU_PANEL, screen.getPixel(1000, 2150))
-    }
-
-    @Test
-    fun permissionsPageExplainsEachPermission() {
-        show { PermissionsScreen(onFinished = {}) }
-        advance(100)
-        capture("permissions")
     }
 
     @Test

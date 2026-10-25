@@ -116,14 +116,14 @@ class TileStore(context: Context) {
         get() = RecentApps.decode(prefs.getString(KEY_RECENT, null))
         set(value) = prefs.edit { putString(KEY_RECENT, RecentApps.encode(value)) }
 
-    var permissionsHandled: Boolean
-        get() = prefs.getBoolean(KEY_PERMISSIONS_HANDLED, false)
-        set(value) = prefs.edit { putBoolean(KEY_PERMISSIONS_HANDLED, value) }
+    var tutorialDone: Boolean
+        get() = prefs.getBoolean(KEY_TUTORIAL_DONE, false)
+        set(value) = prefs.edit { putBoolean(KEY_TUTORIAL_DONE, value) }
 
     private companion object {
         const val KEY_TILES = "tiles"
         const val KEY_PAGES = "pages"
         const val KEY_RECENT = "recent_apps"
-        const val KEY_PERMISSIONS_HANDLED = "permissions_handled"
+        const val KEY_TUTORIAL_DONE = "permissions_handled"
     }
 }

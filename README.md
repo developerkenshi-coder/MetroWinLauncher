@@ -25,6 +25,7 @@ Start in orizzontale, con più colonne e riquadri della stessa dimensione che in
 ## Indice
 
 - [Come provarlo e vederlo in Android Studio](#come-provarlo-e-vederlo-in-android-studio)
+- [Il tutorial iniziale](#il-tutorial-iniziale)
 - [Cosa c'è](#cosa-cè)
 - [Le impostazioni, sezione per sezione](#le-impostazioni-sezione-per-sezione)
 - [Cosa non si può fare da un launcher, e come l'ho aggirato](#cosa-non-si-può-fare-da-un-launcher-e-come-lho-aggirato)
@@ -51,7 +52,35 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
 Poi premi Home: Android chiede quale launcher usare, scegli **MetroWin Launcher** (o *Impostazioni → App → App
-predefinite → App Home*).
+predefinite → App Home*). Alla prima apertura parte il [tutorial](#il-tutorial-iniziale).
+
+## Il tutorial iniziale
+
+Alla prima apertura il launcher mostra un giro di **10 pagine**, nello stile di Windows Phone (titolo piccolo in maiuscolo, titolo
+grande in minuscolo con il colore d'accento, un quadrato con il glifo). Ogni pagina spiega una parte del launcher e, se la sua
+funzione ha bisogno di un permesso, lo chiede **lì**, con un pulsante, e dice "consentito" quando c'è: niente viene chiesto in anticipo e
+niente è obbligatorio. Si va avanti con il pulsante o con uno swipe, si esce con "salta", Indietro torna alla pagina prima.
+
+| Pagina | Cosa spiega | Cosa chiede |
+|---|---|---|
+| benvenuto | come si usa il giro | — |
+| rendilo la tua home | perché serve essere l'app Home | **app Home** (dialogo di Android 10+, altrimenti le impostazioni dell'app Home) |
+| la tua schermata start | tocca, tieni premuto, cartelle, più schermate, "+" | — |
+| live tile | tile che girano e i loro stili | **foto**, **calendario**, **contatti**, **cronologia chiamate** (uno per uno) |
+| meteo | il tile del meteo e dove si sceglie la città | **posizione** |
+| tutte le tue app | jump list, ricerca, menu, voce | **microfono** |
+| action center | tirata dal bordo, pulsanti, notifiche, risposta e gruppi | **accesso alle notifiche** (pagina di Android) |
+| gesti | bordi, doppio tocco, due dita, Indietro | **servizio di blocco** (accessibilità, facoltativo) |
+| tienilo attivo | perché Android chiude le app e come evitarlo | **nessuna ottimizzazione della batteria**; e, sui telefoni che hanno un elenco "avvio automatico", di aggiungerci il launcher |
+| rendilo tuo | tutte le sezioni delle impostazioni | — |
+
+| Benvenuto | Live tile e permessi | Tienilo attivo |
+|---|---|---|
+| ![Benvenuto](docs/screenshots/tutorial_welcome.png) | ![Live tile](docs/screenshots/tutorial_live.png) | ![Tienilo attivo](docs/screenshots/tutorial_alive.png) |
+
+Quello che si concede nelle impostazioni di Android (home, notifiche, accessibilità, batteria) viene riletto quando si torna al
+launcher, e il pulsante diventa "consentito". Un permesso che Android non chiede più (negato due volte) fa diventare il pulsante
+"apri impostazioni", che porta alla pagina dell'app. Il giro si rivede da *start+theme → tools → about → rivedi il tutorial*.
 
 ## Cosa c'è
 
@@ -203,8 +232,8 @@ sua pagina; tutto è salvato come un unico JSON (`SettingsCodec`) che legge anch
 
 ## Permessi
 
-Il launcher funziona senza nessun permesso facoltativo. Una pagina all'avvio chiede, una volta, quelli dei live tile; gli
-altri si chiedono quando servono.
+Il launcher funziona senza nessun permesso facoltativo. Li chiede il [tutorial](#il-tutorial-iniziale), uno per pagina, e
+si possono dare anche dopo, quando serve la funzione.
 
 | Permesso | Serve a |
 |---|---|
@@ -216,6 +245,7 @@ altri si chiedono quando servono.
 | `RECORD_AUDIO` | la voce, quando la usi la prima volta |
 | `SET_WALLPAPER` | la foto nella schermata di blocco di Android, quando lo chiedi |
 | `ACCESS_WIFI_STATE`, `REQUEST_DELETE_PACKAGES` | stato del Wi-Fi, *disinstalla* nel menu |
+| `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | solo per chiedere, nel tutorial, che Android non chiuda il launcher in background. **Google Play lo consente solo ad alcuni tipi di app**: per una build non pubblicata sullo store va bene, per pubblicarla va giustificato o tolto (basta rimuovere la pagina "tienilo attivo") |
 | `com.metrowin.launcher.permission.PUBLISH_TILE` | **dichiarato dal launcher**, lo chiedono le app che vogliono un tile (vedi sotto) |
 | Accesso alle notifiche (nelle impostazioni di Android) | Action Center, contatori, risposta rapida, raggruppamento |
 | Servizio di accessibilità del launcher (facoltativo) | solo per **bloccare lo schermo** con un gesto; non legge nulla dello schermo |
@@ -259,7 +289,7 @@ solo se il launcher c'era già.
 ./gradlew assembleRelease        # con R8
 ```
 
-**467 test**, nessuno saltato; il lint è pulito.
+**500 test**, nessuno saltato; il lint è pulito.
 
 - Logica pura: griglia e colonne dalla larghezza, operazioni su Start, regole di trascinamento e di rilascio, ricerca,
   salvataggio e migrazione delle impostazioni, comandi vocali, pianificazione della sincronizzazione, **cifratura** (anche
@@ -284,12 +314,12 @@ app/src/main/java/com/metrowin/launcher/
                   impostazioni (SettingsStore, SettingsCodec, ThemeCodec, LayoutBackup), live tile (LiveTiles, Weather*,
                   BatteryInfo), voce (VoiceCommands, VoiceRecognizer), sync (SyncCrypto, SyncEngine, SafFolder),
                   icone (IconLoader, IconPacks), tile di terzi (ThirdPartyTiles, TilePublishProvider), ricerca,
-                  scorciatoie, LaunchPlan, LockInfo
+                  scorciatoie, LaunchPlan, LockInfo, Tutorial (passi, bisogni, controllo di cosa è già concesso)
   notifications/  NotificationService, NotificationHub (anche risposta), NotificationGroups
   model/          Tile, Folder, TileSize, AppItem, Glyph
   gestures/       servizio per bloccare lo schermo
   ui/             start/, apps/, actioncenter/, settings/ (una pagina per sezione), voice/, lock/ (schermata e salvaschermo),
-                  weather/, kids/, permissions/, anim/, gesture/, components/, theme/ (compreso Accessibility)
+                  weather/, kids/, tutorial/ (giro iniziale e richieste), anim/, gesture/, components/, theme/ (compreso Accessibility)
 ```
 
 ## Note e limiti
@@ -307,6 +337,9 @@ app/src/main/java/com/metrowin/launcher/
   - la **risposta rapida** con le app vere (la consegna è provata con un `PendingIntent` vero, non con ogni app di messaggi);
   - **TalkBack** vero (le proprietà e le azioni sono provate, non il parlato) e l'**espansione** dell'app dal riquadro;
   - le chiamate di rete del **meteo** (Open-Meteo), il servizio di **notifiche**, lo screen pinning e il servizio per bloccare lo schermo.
+- **Il tutorial su un telefono vero**: le richieste (dialoghi dei permessi, dialogo dell'app Home, pagine di Android per notifiche,
+  accessibilità e batteria) sono collegate ma provate solo fin dove si arriva su JVM: i pulsanti chiamano la richiesta giusta e la
+  pagina legge cosa è concesso; cosa mostra davvero Android, e se un produttore ha un'altra pagina per la batteria, va visto.
 - **Font**: Windows Phone usa Segoe WP, proprietario. Qui c'è Open Sans (OFL). Vedi [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 - **Colori d'accento**: Microsoft ha pubblicato i 20 colori solo come immagine; i valori vengono da trascrizioni.
 - **Marchi**: i nomi delle app stock (Internet Explorer, Xbox, Skype…) sono quelli di Windows Phone. Stanno in `MetroCatalog.kt`

@@ -217,8 +217,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     val torchOn: StateFlow<Boolean> = quickActions.torchOn
 
-    private val _permissionsHandled = MutableStateFlow(store.permissionsHandled)
-    val permissionsHandled: StateFlow<Boolean> = _permissionsHandled.asStateFlow()
+    private val _tutorialDone = MutableStateFlow(store.tutorialDone)
+    val tutorialDone: StateFlow<Boolean> = _tutorialDone.asStateFlow()
 
     /** The Home button pressed while the launcher is already running: how many times, and how the last one found us. */
     private val _homePresses = MutableStateFlow(HomePress())
@@ -317,9 +317,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun onPermissionsFinished() {
-        store.permissionsHandled = true
-        _permissionsHandled.value = true
+    fun onTutorialFinished() {
+        store.tutorialDone = true
+        _tutorialDone.value = true
         refreshLive()
     }
 

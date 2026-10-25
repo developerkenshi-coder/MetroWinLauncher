@@ -18,6 +18,10 @@ fun AboutPage(env: SettingsEnv) {
             InfoSetting(stringResource(R.string.about_device), about.device)
             if (about.refreshHz > 0) InfoSetting(stringResource(R.string.about_refresh), "${about.refreshHz} Hz")
         }
+        ActionSetting(
+            stringResource(R.string.tut_replay), onClick = env.onShowTutorial,
+            hint = stringResource(R.string.tut_replay_hint), tag = "about:tutorial",
+        )
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SettingHeading(stringResource(R.string.about_credits))
             SettingHint(stringResource(R.string.about_inspired))

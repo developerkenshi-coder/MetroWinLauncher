@@ -97,9 +97,6 @@
     <string name="menu_uninstall">disinstalla</string>
     <string name="launch_failed">Impossibile aprire questa app</string>
 
-    <string name="perm_header">METROWIN LAUNCHER</string>
-    <string name="perm_title">consenti l\'accesso</string>
-    <string name="perm_intro">I riquadri possono mostrare informazioni dal telefono. Restano sul dispositivo e ogni permesso è facoltativo.</string>
     <string name="perm_photos">foto</string>
     <string name="perm_photos_why">Sfoglia le tue ultime foto sul riquadro Foto.</string>
     <string name="perm_calendar">calendario</string>
@@ -109,7 +106,6 @@
     <string name="perm_calls">registro chiamate</string>
     <string name="perm_calls_why">Conta le chiamate perse sul riquadro Telefono.</string>
     <string name="perm_allow">consenti</string>
-    <string name="perm_skip">non ora</string>
 
     <!-- settings: structure -->
     <string name="settings_group_launcher">launcher</string>
@@ -499,4 +495,89 @@
         <item quantity="other">%1$s, cartella con %2$d app</item>
         <item quantity="many">%1$s, cartella con %2$d app</item>
     </plurals>
+
+    <!-- tutorial: needs -->
+    <string name="need_home">app home</string>
+    <string name="need_home_why">Così premere Home ti porta qui. Android ti chiede di confermare.</string>
+    <string name="need_location">posizione</string>
+    <string name="need_location_why">Trova il meteo dove sei. Usata una volta, quando lo chiedi: puoi anche scrivere una città.</string>
+    <string name="need_mic">microfono</string>
+    <string name="need_mic_why">Ti permette di parlare al launcher. Ascolta solo mentre la schermata di ascolto è aperta.</string>
+    <string name="need_notifications">accesso alle notifiche</string>
+    <string name="need_notifications_why">Mostra le notifiche nell\'Action Center e i contatori sui tile. Android ha una pagina di impostazioni apposta.</string>
+    <string name="need_lock">servizio di blocco</string>
+    <string name="need_lock_why">Permette a un gesto di bloccare lo schermo. Non legge nulla dello schermo. Si attiva nelle impostazioni di accessibilità.</string>
+    <string name="need_battery">resta attivo</string>
+    <string name="need_battery_why">Impedisce ad Android di chiudere il launcher per risparmiare batteria.</string>
+    <string name="need_action_default">rendila predefinita</string>
+    <string name="need_action_settings">apri impostazioni</string>
+    <string name="need_allowed">consentito</string>
+    <string name="tut_next">avanti</string>
+    <string name="tut_skip">salta</string>
+    <string name="tut_done">cominciamo</string>
+    <string name="tut_replay">rivedi il tutorial</string>
+    <string name="tut_replay_hint">Il giro del launcher, con i permessi che può chiedere.</string>
+    <string name="tut_welcome_label">METROWIN LAUNCHER</string>
+    <string name="tut_welcome_title">benvenuto</string>
+    <string name="tut_welcome_intro">MetroWin Launcher trasforma il telefono in una schermata Start di Windows Phone. Questo breve giro mostra come usarlo e chiede qualche permesso alla volta, solo quando una funzione ne ha bisogno. Ognuno è facoltativo.</string>
+    <string name="tut_welcome_tip1">Scorri verso sinistra, o usa i pulsanti qui sotto, per andare avanti.</string>
+    <string name="tut_welcome_tip2">Esci quando vuoi con “salta”. Puoi rivedere il giro da start+tema → strumenti → informazioni.</string>
+    <string name="tut_home_label">APP HOME</string>
+    <string name="tut_home_title">rendilo la tua home</string>
+    <string name="tut_home_intro">Android apre la sua app Home ogni volta che premi Home. Perché tu veda MetroWin, deve essere quell\'app.</string>
+    <string name="tut_home_tip1">Premi Home in qualsiasi momento per tornare a Start.</string>
+    <string name="tut_home_tip2">Se Android chiede quale launcher usare, scegli MetroWin Launcher e “sempre”.</string>
+    <string name="tut_start_label">START</string>
+    <string name="tut_start_title">la tua schermata start</string>
+    <string name="tut_start_intro">I tile sono le tue app e le informazioni dal vivo, disposti come preferisci.</string>
+    <string name="tut_start_tip1">Tocca un tile per aprirlo. Tieni premuto per modificare: toglierlo, cambiarne la dimensione o trascinarlo altrove.</string>
+    <string name="tut_start_tip2">Lascia un tile sul centro di un altro per fare una cartella. Una cartella si apre sul posto.</string>
+    <string name="tut_start_tip3">La freccia dopo l\'ultimo tile porta alla schermata Start successiva (puoi averne tre), poi alla lista app.</string>
+    <string name="tut_start_tip4">In modalità modifica, “+” aggiunge a Start un contatto, un sito o un widget.</string>
+    <string name="tut_live_label">LIVE TILE</string>
+    <string name="tut_live_title">live tile</string>
+    <string name="tut_live_intro">Alcuni tile mostrano cosa succede: le ultime foto, il prossimo appuntamento, i volti dei contatti, le chiamate perse. Le informazioni non escono dal telefono.</string>
+    <string name="tut_live_tip1">I tile girano da soli, ciascuno nel suo momento.</string>
+    <string name="tut_live_tip2">In modalità modifica scegli lo stile di un tile: standard, Iconic (un grande numero) o Cycle (foto).</string>
+    <string name="tut_weather_label">METEO</string>
+    <string name="tut_weather_title">meteo</string>
+    <string name="tut_weather_intro">Il tile Meteo mostra le previsioni di una città. Le chiede a Open-Meteo, un servizio aperto, via internet. Nient\'altro esce dal telefono.</string>
+    <string name="tut_weather_tip1">Scegli la città in start+tema → live tile: per nome, o con la tua posizione.</string>
+    <string name="tut_weather_tip2">Tocca il tile per le previsioni dei prossimi giorni.</string>
+    <string name="tut_apps_label">LISTA APP</string>
+    <string name="tut_apps_title">tutte le tue app</string>
+    <string name="tut_apps_intro">Scorri verso sinistra da Start, o usa la freccia, per vedere tutte le app in ordine alfabetico.</string>
+    <string name="tut_apps_tip1">Tocca una lettera per saltare a un\'altra. La stella ti porta all\'ultima app aperta.</string>
+    <string name="tut_apps_tip2">Scrivi nella casella di ricerca per trovare app, contatti e impostazioni di Android, o per cercare sul web.</string>
+    <string name="tut_apps_tip3">Tieni premuta un\'app per fissarla a Start, nasconderla o disinstallarla.</string>
+    <string name="tut_apps_tip4">Oppure dillo: tocca il microfono nella casella di ricerca e prova “apri Mappe” o “chiama Anna”.</string>
+    <string name="tut_action_label">ACTION CENTER</string>
+    <string name="tut_action_title">action center</string>
+    <string name="tut_action_intro">Tira giù dal bordo più alto dello schermo, da qualsiasi pagina, per aprirlo.</string>
+    <string name="tut_action_tip1">Quattro pulsanti rapidi in cima, e una freccia per gli altri. La torcia si accende davvero; gli altri aprono la schermata giusta di Android.</string>
+    <string name="tut_action_tip2">Scorri una notifica verso destra per scartarla. Quando l\'app lo permette puoi rispondere da qui, e le notifiche di un\'app sono raggruppate.</string>
+    <string name="tut_action_tip3">Trascina il pannello di nuovo in su, o premi Indietro, per chiuderlo.</string>
+    <string name="tut_gestures_label">GESTI</string>
+    <string name="tut_gestures_title">gesti</string>
+    <string name="tut_gestures_intro">Tutto segue il dito. Alcuni gesti fanno quello che scegli in start+tema → gesti.</string>
+    <string name="tut_gestures_tip1">Su Start, scorri dal bordo destro per andare alla lista app e dal bordo sinistro per tornare indietro.</string>
+    <string name="tut_gestures_tip2">Tocca due volte lo sfondo di Start, o scorri in giù o in su con due dita, per bloccare lo schermo, accendere la torcia, parlare, cercare…</string>
+    <string name="tut_gestures_tip3">Indietro torna indietro di un livello alla volta, e il gesto di sistema muove lo schermo con il dito.</string>
+    <string name="tut_alive_label">TIENILO ATTIVO</string>
+    <string name="tut_alive_title">tienilo attivo</string>
+    <string name="tut_alive_intro">Per risparmiare batteria, Android può chiudere le app in background. Se chiude il launcher, contatori, Action Center e sync si fermano finché non lo riapri.</string>
+    <string name="tut_alive_tip1">Consenti a MetroWin Launcher di non essere limitato dall\'ottimizzazione della batteria, e resta attivo.</string>
+    <string name="tut_alive_tip2">Alcuni telefoni (Xiaomi, Huawei, Oppo, Samsung…) hanno anche un proprio elenco “avvio automatico” o “app protette” nelle impostazioni: aggiungi lì anche MetroWin Launcher.</string>
+    <string name="tut_settings_label">IMPOSTAZIONI</string>
+    <string name="tut_settings_title">rendilo tuo</string>
+    <string name="tut_settings_intro">Apri start+tema nella lista app. Ogni sezione è una pagina, in due gruppi: launcher e strumenti.</string>
+    <string name="tut_settings_tip1">start+tema: scuro o chiaro, colori d\'accento, foto di Start, orologio, numero di schermate Start.</string>
+    <string name="tut_settings_tip2">schermo: rotazione e orizzontale, come si aprono le app, 120 Hz. accessibilità: TalkBack, meno movimento, più contrasto.</string>
+    <string name="tut_settings_tip3">icone e temi: icon pack e file tema da condividere.</string>
+    <string name="tut_settings_tip4">gesti, notifiche+azioni, live tile e app: cosa fa ogni gesto, l\'Action Center, la città del meteo, app nascoste e ricerca.</string>
+    <string name="tut_settings_tip5">blocco schermo: il blocco schermo Metro, come salvaschermo, con la sua foto.</string>
+    <string name="tut_settings_tip6">voce e profili: parla al launcher, e metti in pausa o nascondi profilo di lavoro e spazio privato.</string>
+    <string name="tut_settings_tip7">backup+sync: un file o una cartella, e una sincronizzazione cifrata tra i tuoi telefoni.</string>
+    <string name="tut_settings_tip8">angolo bambini: Start con solo le app che scegli.</string>
+    <string name="tut_settings_tip9">informazioni: la versione, e questo giro ogni volta che vuoi rivederlo.</string>
 </resources>

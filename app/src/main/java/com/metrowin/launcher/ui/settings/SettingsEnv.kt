@@ -85,6 +85,8 @@ class SettingsEnv(
     val profiles: List<ProfileInfo> = emptyList(),
     val onSetProfilePaused: (serial: Long, paused: Boolean) -> Unit = { _, _ -> },
     val onTryVoice: () -> Unit = {},
+    /** Shows the tutorial again. */
+    val onShowTutorial: () -> Unit = {},
     /** The tiles apps have published, and a way to clear one. */
     val publishedTiles: List<ThirdPartyTile> = emptyList(),
     val onClearPublishedTile: (String) -> Unit = {},

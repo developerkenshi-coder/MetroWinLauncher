@@ -106,7 +106,8 @@ import com.metrowin.launcher.ui.gesture.pullDownFromTop
 import com.metrowin.launcher.ui.gesture.rememberPullPanel
 import com.metrowin.launcher.ui.gesture.returnToStart
 import com.metrowin.launcher.ui.kids.KidsHeader
-import com.metrowin.launcher.ui.permissions.PermissionsScreen
+import com.metrowin.launcher.ui.tutorial.TutorialHost
+import com.metrowin.launcher.data.Tutorial
 import com.metrowin.launcher.ui.settings.SettingsEnv
 import com.metrowin.launcher.ui.settings.SettingsScreen
 import com.metrowin.launcher.ui.settings.SettingsSection
@@ -167,7 +168,11 @@ fun LauncherApp(vm: LauncherViewModel) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     val startBackground by vm.background.collectAsStateWithLifecycle()
     val lockPhoto by vm.lockPhoto.collectAsStateWithLifecycle()
-    val permissionsHandled by vm.permissionsHandled.collectAsStateWithLifecycle()
+    val tutorialDone by vm.tutorialDone.collectAsStateWithLifecycle()
+    // The tour shows on the first run, and again whenever it is asked for in the settings.
+    var tutorialReplay by remember { mutableStateOf(false) }
+    val tutorialVisible = !tutorialDone || tutorialReplay
+    val tutorialPager = rememberPagerState { Tutorial.steps.size }
     val homePress by vm.homePresses.collectAsStateWithLifecycle()
     val notifications by vm.notifications.collectAsStateWithLifecycle()
     val badges by vm.badges.collectAsStateWithLifecycle()
@@ -371,7 +376,14 @@ fun LauncherApp(vm: LauncherViewModel) {
     // the app list pans back to Start. The others just close when the gesture is done.
     BackGestureHandler {
         when {
-            !permissionsHandled -> InstantBack { }
+            // Back goes back through the tour; on the first page it leaves a replay and does nothing on the first run.
+            tutorialVisible -> InstantBack {
+                if (tutorialPager.currentPage > 0) {
+                    scope.launch { tutorialPager.animateScrollToPage(tutorialPager.currentPage - 1) }
+                } else {
+                    tutorialReplay = false
+                }
+            }
             voice.isOpen -> InstantBack { voice.close() }
             lockPreviewOpen -> InstantBack { lockPreviewOpen = false }
             panel.isShown -> PanelBack(panel)
@@ -679,7 +691,7 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     // Pull down from the top of Start, or from the top edge of any page, to open the Action Center.
     val pullBlocked = kidsMode || voice.isOpen || lockPreviewOpen || launching || settingsOpen || weatherOpen || menu != null || jumpOpen || editingKey != null ||
-        renamingFolderId != null || !permissionsHandled
+        renamingFolderId != null || tutorialVisible
     val currentPullBlocked by rememberUpdatedState(pullBlocked)
     val pullConnections = List(LauncherSettings.MAX_START_PAGES) { page ->
         remember(panel, page) {
@@ -735,7 +747,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 } else LauncherPager(
                     state = pagerState,
                     startPages = pages.size,
-                    userScrollEnabled = !launching && menu == null && !jumpOpen && permissionsHandled,
+                    userScrollEnabled = !launching && menu == null && !jumpOpen && !tutorialVisible,
                     start = { page ->
                         StartScreen(
                             cells = cellsByPage.getOrElse(page) { emptyList() },
@@ -832,7 +844,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                     )
                 }
 
-                if (!kidsMode && permissionsHandled) {
+                if (!kidsMode && !tutorialVisible) {
                     selectedCell?.let { cell ->
                         EditBar(
                             size = cell.size,
@@ -856,7 +868,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                     }
                 }
 
-                if (!kidsMode && pages.size > 1 && permissionsHandled) {
+                if (!kidsMode && pages.size > 1 && !tutorialVisible) {
                     PageDots(
                         pagerState, pages.size + 1,
                         Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 6.dp),
@@ -927,6 +939,10 @@ fun LauncherApp(vm: LauncherViewModel) {
                             profiles = profiles,
                             onSetProfilePaused = vm::setProfilePaused,
                             onTryVoice = { voiceRequest++ },
+                            onShowTutorial = {
+                                scope.launch { tutorialPager.scrollToPage(0) }
+                                tutorialReplay = true
+                            },
                             publishedTiles = publishedTiles,
                             onClearPublishedTile = vm::clearPublishedTile,
                             lockPhoto = lockPhoto,
@@ -1027,8 +1043,16 @@ fun LauncherApp(vm: LauncherViewModel) {
                     )
                 }
 
-                if (!permissionsHandled) {
-                    PermissionsScreen(onFinished = vm::onPermissionsFinished)
+                if (tutorialVisible) {
+                    TutorialHost(
+                        pager = tutorialPager,
+                        onFinish = {
+                            if (!tutorialDone) vm.onTutorialFinished()
+                            tutorialReplay = false
+                        },
+                        onOpenNotificationAccess = vm::openNotificationAccessSettings,
+                        onOpenAccessibility = vm::openAccessibilitySettings,
+                    )
                 }
             }
         }

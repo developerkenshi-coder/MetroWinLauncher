@@ -16,6 +16,10 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <!-- Only to ask, in the tutorial, that Android does not close the launcher to save battery. -->
+    <uses-permission
+        android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
+        tools:ignore="BatteryLife" />
 
     <!-- What an app asks for to put its own live content on its tile (see TilePublishProvider). -->
     <permission
