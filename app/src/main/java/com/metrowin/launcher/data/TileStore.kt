@@ -116,6 +116,11 @@ class TileStore(context: Context) {
         get() = RecentApps.decode(prefs.getString(KEY_RECENT, null))
         set(value) = prefs.edit { putString(KEY_RECENT, RecentApps.encode(value)) }
 
+    /** How many times each app was opened from the launcher (see [AppUsage]); kept apart from the settings. */
+    var appUsage: Map<String, Int>
+        get() = AppUsage.decode(prefs.getString(KEY_USAGE, null))
+        set(value) = prefs.edit { putString(KEY_USAGE, AppUsage.encode(value)) }
+
     var tutorialDone: Boolean
         get() = prefs.getBoolean(KEY_TUTORIAL_DONE, false)
         set(value) = prefs.edit { putBoolean(KEY_TUTORIAL_DONE, value) }
@@ -124,6 +129,7 @@ class TileStore(context: Context) {
         const val KEY_TILES = "tiles"
         const val KEY_PAGES = "pages"
         const val KEY_RECENT = "recent_apps"
+        const val KEY_USAGE = "app_usage"
         const val KEY_TUTORIAL_DONE = "permissions_handled"
     }
 }

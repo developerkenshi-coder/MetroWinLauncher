@@ -1,6 +1,7 @@
 package com.metrowin.launcher.ui.start
 
 import com.metrowin.launcher.ui.theme.panel
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -41,7 +42,15 @@ import com.metrowin.launcher.ui.theme.fieldTextStyle
 
 /** Asks for the name of a Start folder. */
 @Composable
-fun FolderNameDialog(initial: String, onDone: (String) -> Unit, onCancel: () -> Unit, modifier: Modifier = Modifier) {
+fun FolderNameDialog(
+    initial: String,
+    onDone: (String) -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+    /** What the field is for: a folder by default; the app list asks for the name of an app with it too. */
+    @StringRes title: Int = R.string.folder_name,
+    maxLength: Int = MAX_NAME,
+) {
     val colors = LocalMetroColors.current
     var name by remember { mutableStateOf(initial) }
     val focus = remember { FocusRequester() }
@@ -63,10 +72,10 @@ fun FolderNameDialog(initial: String, onDone: (String) -> Unit, onCancel: () -> 
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            MetroText(stringResource(R.string.folder_name), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle)
+            MetroText(stringResource(title), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle)
             BasicTextField(
                 value = name,
-                onValueChange = { name = it.take(MAX_NAME) },
+                onValueChange = { name = it.take(maxLength) },
                 singleLine = true,
                 textStyle = fieldTextStyle(colors.foreground, 26.sp),
                 cursorBrush = SolidColor(LocalAccent.current),

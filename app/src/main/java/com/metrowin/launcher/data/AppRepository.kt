@@ -19,6 +19,7 @@ import android.os.UserHandle
 import android.os.UserManager
 import androidx.core.net.toUri
 import com.metrowin.launcher.R
+import com.metrowin.launcher.model.AppCategory
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.model.Launch
@@ -75,6 +76,8 @@ class AppRepository(private val context: Context) {
                 live = stock.live,
                 packageName = info.componentName.packageName,
                 removable = !info.isSystemApp(),
+                category = AppCategory.fromAndroid(info.applicationInfo.category),
+                installedAt = info.firstInstallTime,
             )
         }
 
@@ -125,6 +128,8 @@ class AppRepository(private val context: Context) {
             removable = isOwner && !info.isSystemApp(),
             isWork = !isOwner && type != ProfileType.Private,
             isPrivate = type == ProfileType.Private,
+            category = AppCategory.fromAndroid(info.applicationInfo.category),
+            installedAt = info.firstInstallTime,
         )
     }
 

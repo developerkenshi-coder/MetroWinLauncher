@@ -692,4 +692,39 @@
     <string name="live_report_progress">avanzamenti %1$d</string>
     <string name="live_report_ongoing">in corso adesso %1$d</string>
     <string name="live_report_nothing">nessun testo da mostrare</string>
+
+    <!-- App list: groups, categories, rename, lock -->
+    <string name="list_frequent">più usate</string>
+    <string name="list_new">nuove</string>
+    <string name="cat_all">tutte</string>
+    <string name="cat_game">giochi</string>
+    <string name="cat_audio">musica e audio</string>
+    <string name="cat_video">video</string>
+    <string name="cat_image">foto</string>
+    <string name="cat_social">social</string>
+    <string name="cat_news">notizie</string>
+    <string name="cat_maps">mappe</string>
+    <string name="cat_productivity">produttività</string>
+    <string name="cat_accessibility">accessibilità</string>
+    <string name="menu_rename">rinomina</string>
+    <string name="menu_reset_name">nome originale</string>
+    <string name="menu_lock">chiedi il blocco schermo</string>
+    <string name="menu_unlock">non chiedere più il blocco schermo</string>
+    <string name="menu_info">informazioni sull\'app</string>
+    <string name="app_rename_title">nome dell\'app</string>
+    <string name="app_lock_title">Sblocca per aprire l\'app</string>
+    <string name="app_lock_needs_screen_lock">Imposta prima un blocco schermo (PIN, sequenza o password) in Android: senza non c\'è niente da chiedere.</string>
+    <string name="apps_list_title">elenco app</string>
+    <string name="apps_frequent">app più usate</string>
+    <string name="apps_frequent_hint">Le app che apri più spesso dal launcher, in un gruppo in cima alla lista. I conteggi restano su questo telefono e non entrano nei backup.</string>
+    <string name="apps_new">app nuove</string>
+    <string name="apps_new_hint">Le app installate nell\'ultima settimana, in cima alla lista. Subito dopo aver configurato o ripristinato un telefono nessuna è chiamata nuova.</string>
+    <string name="apps_categories">filtro per categoria</string>
+    <string name="apps_categories_hint">Pastiglie sotto la casella di ricerca che mostrano solo le app di un tipo. Ci sono dentro solo le app che dichiarano cosa sono (giochi, social, musica…).</string>
+    <string name="apps_renamed">app rinominate</string>
+    <string name="apps_renamed_none">Nessuna app rinominata. Tieni premuta un\'app nella lista e scegli “rinomina”.</string>
+    <string name="apps_renamed_hint">Tocca un\'app per ridarle il suo nome.</string>
+    <string name="apps_locked">app dietro il blocco schermo</string>
+    <string name="apps_locked_none">Nessuna app bloccata. Tieni premuta un\'app nella lista e scegli “chiedi il blocco schermo”.</string>
+    <string name="apps_locked_hint">Tocca un\'app per non chiedere più il blocco. Il blocco vale per aprire dal launcher (lista, riquadri, ricerca, voce): un\'app si può ancora aprire da una notifica, dalle app recenti o da un\'altra app.</string>
 </resources>

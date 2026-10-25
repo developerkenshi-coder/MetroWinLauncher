@@ -694,4 +694,39 @@
     <string name="live_report_progress">progress %1$d</string>
     <string name="live_report_ongoing">going on now %1$d</string>
     <string name="live_report_nothing">no text to show</string>
+
+    <!-- App list: groups, categories, rename, lock -->
+    <string name="list_frequent">most used</string>
+    <string name="list_new">new</string>
+    <string name="cat_all">all</string>
+    <string name="cat_game">games</string>
+    <string name="cat_audio">music &amp; audio</string>
+    <string name="cat_video">video</string>
+    <string name="cat_image">photos</string>
+    <string name="cat_social">social</string>
+    <string name="cat_news">news</string>
+    <string name="cat_maps">maps</string>
+    <string name="cat_productivity">productivity</string>
+    <string name="cat_accessibility">accessibility</string>
+    <string name="menu_rename">rename</string>
+    <string name="menu_reset_name">original name</string>
+    <string name="menu_lock">ask for the screen lock</string>
+    <string name="menu_unlock">stop asking for the screen lock</string>
+    <string name="menu_info">app info</string>
+    <string name="app_rename_title">name of the app</string>
+    <string name="app_lock_title">Unlock to open the app</string>
+    <string name="app_lock_needs_screen_lock">Set a screen lock (PIN, pattern or password) in Android first: there is nothing to ask for without it.</string>
+    <string name="apps_list_title">app list</string>
+    <string name="apps_frequent">most used apps</string>
+    <string name="apps_frequent_hint">The apps you open most from the launcher, in a group at the top of the list. The counts stay on this phone and are not part of the backups.</string>
+    <string name="apps_new">new apps</string>
+    <string name="apps_new_hint">The apps installed in the last week, at the top of the list. Right after setting up or restoring a phone nothing is called new.</string>
+    <string name="apps_categories">filter by category</string>
+    <string name="apps_categories_hint">Chips under the search box that show only the apps of one kind. Only the apps that say what they are (games, social, music…) are in them.</string>
+    <string name="apps_renamed">renamed apps</string>
+    <string name="apps_renamed_none">No renamed apps. Press and hold an app in the list and choose “rename”.</string>
+    <string name="apps_renamed_hint">Touch an app to give it back its own name.</string>
+    <string name="apps_locked">apps behind the screen lock</string>
+    <string name="apps_locked_none">No locked apps. Press and hold an app in the list and choose “ask for the screen lock”.</string>
+    <string name="apps_locked_hint">Touch an app to stop asking. The lock is for opening from the launcher (list, tiles, search, voice): an app can still be opened from a notification, from the recent apps or from another app.</string>
 </resources>

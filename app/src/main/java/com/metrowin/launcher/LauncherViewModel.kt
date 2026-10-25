@@ -31,6 +31,10 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.metrowin.launcher.data.AppFilter
+import com.metrowin.launcher.data.AppLabels
+import com.metrowin.launcher.data.AppShortcut
+import com.metrowin.launcher.data.AppShortcuts
+import com.metrowin.launcher.data.AppUsage
 import com.metrowin.launcher.gestures.RecentsTileService
 import com.metrowin.launcher.data.AppRepository
 import com.metrowin.launcher.data.BatteryInfo
@@ -107,6 +111,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -129,6 +134,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val weatherRepository = WeatherRepository(application)
     private val profilesController = ProfilesController(application)
     private val iconPacks = IconPackRepository(application)
+    private val appShortcuts = AppShortcuts(application)
 
     /** The widgets placed on Start. */
     val widgets = WidgetService(application)
@@ -171,6 +177,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** The apps opened last, most recent first. */
     private val _recents = MutableStateFlow(store.recentApps)
     val recents: StateFlow<List<String>> = _recents.asStateFlow()
+
+    /** How many times each app was opened from the launcher, for the "most used" group of the app list. */
+    private val _usage = MutableStateFlow(store.appUsage)
+    val usage: StateFlow<Map<String, Int>> = _usage.asStateFlow()
 
     /** The weather of the chosen city: the last fetched, shown at once and refreshed when it gets old. */
     private val _weather = MutableStateFlow(weatherRepository.cached())
@@ -319,6 +329,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _settings.map { it.notificationPeek to it.livePictures }.distinctUntilChanged()
                 .collect { (on, pictures) -> NotificationHub.useForLiveTiles(on, pictures) }
+        }
+        // A new name for an app changes the list: the order of the letters too.
+        viewModelScope.launch {
+            _settings.map { it.appLabels }.distinctUntilChanged().drop(1).collect { rebuildItems() }
         }
         // What Start shows from the phone is read again when a tile of that kind is pinned.
         viewModelScope.launch {
@@ -763,6 +777,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             if (!item.id.startsWith("search:")) {
                 _recents.value = RecentApps.record(_recents.value, item.id)
                 store.recentApps = _recents.value
+                _usage.value = AppUsage.record(_usage.value, item.id)
+                store.appUsage = _usage.value
             }
         } else {
             Toast.makeText(getApplication(), R.string.launch_failed, Toast.LENGTH_SHORT).show()
@@ -798,7 +814,26 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     /** Apps first, then the shortcuts: the list every screen reads. */
     private fun rebuildItems() {
-        _items.value = appItems + _shortcuts.value.map { it.toItem(shortcutStore.photoPath(it.photoFile)) }
+        _items.value = AppLabels.apply(appItems, _settings.value.appLabels) +
+            _shortcuts.value.map { it.toItem(shortcutStore.photoPath(it.photoFile)) }
+    }
+
+    /** The shortcuts [item] offers on a long press, up to [AppShortcuts.SHOWN]; none while another launcher is the home app. */
+    fun shortcutsOf(item: AppItem): List<AppShortcut> = appShortcuts.of(item)
+
+    fun startShortcut(shortcut: AppShortcut) {
+        if (!appShortcuts.start(shortcut)) tell(R.string.launch_failed)
+    }
+
+    /** The "app info" screen of Android for [item], where the permissions, the storage and the notifications are. */
+    fun openAppInfo(item: AppItem) {
+        val pkg = item.packageName ?: return
+        val opened = runCatching {
+            getApplication<Application>().startActivity(
+                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", pkg, null)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+        }.isSuccess
+        if (!opened) tell(R.string.launch_failed)
     }
 
     /** Adds a shortcut and pins its tile at the end of Start screen [page], in [size] if one is given. */

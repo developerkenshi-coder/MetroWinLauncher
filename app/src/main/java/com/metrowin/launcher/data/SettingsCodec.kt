@@ -64,6 +64,11 @@ object SettingsCodec {
         put("searchSettings", s.searchSettings)
         put("searchWeb", s.searchWeb)
         put("iconPack", s.iconPack)
+        put("showFrequentApps", s.showFrequentApps)
+        put("showNewApps", s.showNewApps)
+        put("showCategories", s.showCategories)
+        put("appLabels", AppLabels.encode(s.appLabels))
+        put("lockedApps", JSONArray(s.lockedApps.sorted()))
 
         put("showWorkApps", s.showWorkApps)
         put("showPrivateApps", s.showPrivateApps)
@@ -157,6 +162,11 @@ object SettingsCodec {
             searchSettings = o.optBoolean("searchSettings", base.searchSettings),
             searchWeb = o.optBoolean("searchWeb", base.searchWeb),
             iconPack = o.optString("iconPack", base.iconPack),
+            showFrequentApps = o.optBoolean("showFrequentApps", base.showFrequentApps),
+            showNewApps = o.optBoolean("showNewApps", base.showNewApps),
+            showCategories = o.optBoolean("showCategories", base.showCategories),
+            appLabels = if (o.has("appLabels")) AppLabels.decode(o.optJSONObject("appLabels")) else base.appLabels,
+            lockedApps = strings("lockedApps", base.lockedApps).toSet(),
 
             showWorkApps = o.optBoolean("showWorkApps", base.showWorkApps),
             showPrivateApps = o.optBoolean("showPrivateApps", base.showPrivateApps),

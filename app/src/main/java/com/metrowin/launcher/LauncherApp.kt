@@ -49,6 +49,12 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.metrowin.launcher.data.AboutInfo
 import com.metrowin.launcher.data.AppFilter
+import com.metrowin.launcher.data.AppCategories
+import com.metrowin.launcher.data.AppLabels
+import com.metrowin.launcher.data.AppLock
+import com.metrowin.launcher.data.AppUsage
+import com.metrowin.launcher.data.NewApps
+import com.metrowin.launcher.model.AppCategory
 import com.metrowin.launcher.data.AppSearch
 import com.metrowin.launcher.data.AppSections
 import com.metrowin.launcher.data.AppRepository
@@ -198,7 +204,30 @@ fun LauncherApp(vm: LauncherViewModel) {
     var editingKey by remember { mutableStateOf<String?>(null) }
     var openFolderId by remember { mutableStateOf<String?>(null) }
     val cellsByPage = remember(pages, items, openFolderId) { pages.map { buildStartCells(it, items, openFolderId) } }
-    val appList = remember(sections) { AppListModel(sections) }
+    val usage by vm.usage.collectAsStateWithLifecycle()
+    var category by remember { mutableStateOf<AppCategory?>(null) }
+    val categories = remember(listItems, settings.showCategories) {
+        if (settings.showCategories) AppCategories.present(listItems) else emptyList()
+    }
+    LaunchedEffect(categories) { if (category != null && category !in categories) category = null }
+    val frequent = remember(usage, listItems, settings.showFrequentApps) {
+        if (!settings.showFrequentApps) {
+            emptyList()
+        } else {
+            val byId = listItems.associateBy { it.id }
+            AppUsage.top(usage, byId.keys).mapNotNull { byId[it] }
+        }
+    }
+    val fresh = remember(listItems, settings.showNewApps) {
+        if (settings.showNewApps) NewApps.recent(listItems, System.currentTimeMillis()) else emptyList()
+    }
+    val shownSections = remember(sections, listItems, category) {
+        category?.let { AppSections.group(AppCategories.filter(listItems, it)) } ?: sections
+    }
+    val appList = remember(shownSections, frequent, fresh, categories, category) {
+        // A chosen category shows only its apps, in letters; the groups at the top are for the whole list.
+        AppListModel(shownSections, if (category == null) frequent else emptyList(), if (category == null) fresh else emptyList(), categories)
+    }
     val jumpKeys = remember(sections) { AppSections.jumpKeys(sections) }
     val lastOpened = remember(recents, listItems) { RecentApps.lastVisible(recents, listItems.mapTo(HashSet()) { it.id }) }
     var highlight by remember { mutableStateOf<ListHighlight?>(null) }
@@ -270,6 +299,9 @@ fun LauncherApp(vm: LauncherViewModel) {
     val voice = rememberVoiceSession()
     var lockServiceEnabled by remember { mutableStateOf(false) }
     var renamingFolderId by remember { mutableStateOf<String?>(null) }
+    var renamingAppId by remember { mutableStateOf<String?>(null) }
+    // An app that asks for the screen lock, waiting for it: the app and the tile it was opened from.
+    var pendingLocked by remember { mutableStateOf<Pair<AppItem, String?>?>(null) }
     // The tiles picked so far while several are chosen for a folder (null: not choosing), and the app being put in one.
     var folderPick by remember { mutableStateOf<Set<String>?>(null) }
     var folderChooserFor by remember { mutableStateOf<AppItem?>(null) }
@@ -524,8 +556,8 @@ fun LauncherApp(vm: LauncherViewModel) {
         if (intent != null) confirmCredentials.launch(intent) else exitKidsCorner()
     }
 
-    /** Opens an app, or one of the launcher's own pages. [startKey] is the tile it was opened from, if any. */
-    fun open(item: AppItem, startKey: String?) {
+    /** Opens an app, or one of the launcher's own pages, with no questions asked. */
+    fun openNow(item: AppItem, startKey: String?) {
         if (launching) return
         tapFeedback()
         // The torch tile switches the light and goes nowhere: the tiles do not turn away.
@@ -561,6 +593,29 @@ fun LauncherApp(vm: LauncherViewModel) {
                 else -> comeBack()
             }
         }
+    }
+
+    val lockedAppTitle = stringResource(R.string.app_lock_title)
+    val confirmAppLock = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val waiting = pendingLocked
+        pendingLocked = null
+        if (waiting != null && result.resultCode == Activity.RESULT_OK) openNow(waiting.first, waiting.second)
+    }
+
+    /** Opens an app, or one of the launcher's own pages. An app the user locked asks for the screen lock first. */
+    fun open(item: AppItem, startKey: String?) {
+        if (launching) return
+        val keyguard = context.getSystemService(KeyguardManager::class.java)
+        if (AppLock.mustConfirm(item, settings.lockedApps, keyguard?.isDeviceSecure == true)) {
+            @Suppress("DEPRECATION") // still the simple way to ask for the screen lock, and it works on every version we support
+            val intent = keyguard?.createConfirmDeviceCredentialIntent(lockedAppTitle, item.label)
+            if (intent != null) {
+                pendingLocked = item to startKey
+                confirmAppLock.launch(intent)
+                return
+            }
+        }
+        openNow(item, startKey)
     }
 
     fun togglePin(item: AppItem) {
@@ -859,14 +914,62 @@ fun LauncherApp(vm: LauncherViewModel) {
                             global = globalResults,
                             searchFocus = searchFocus,
                             onVoice = if (settings.voiceButton) ({ voiceRequest++ }) else null,
+                            categories = categories,
+                            category = category,
+                            onCategory = { category = it },
                         )
                     },
                 )
 
                 menu?.let { state ->
+                    // What the app itself offers on a long press: asked once for each menu that opens.
+                    val appShortcuts = remember(state.item.id) { vm.shortcutsOf(state.item) }
+                    val lockable = AppLock.canLock(state.item)
+                    val needsScreenLock = stringResource(R.string.app_lock_needs_screen_lock)
                     AppContextMenu(
                         state = state,
                         pinned = state.item.id in pinnedIds,
+                        shortcuts = appShortcuts,
+                        onShortcut = { shortcut ->
+                            menu = null
+                            vm.startShortcut(shortcut)
+                        },
+                        onRename = if (!state.item.pinOnly) {
+                            {
+                                menu = null
+                                renamingAppId = state.item.id
+                            }
+                        } else {
+                            null
+                        },
+                        onResetName = if (state.item.id in settings.appLabels) {
+                            {
+                                menu = null
+                                vm.updateSettings { it.copy(appLabels = it.appLabels - state.item.id) }
+                            }
+                        } else {
+                            null
+                        },
+                        onInfo = if (state.item.packageName != null) {
+                            {
+                                menu = null
+                                vm.openAppInfo(state.item)
+                            }
+                        } else {
+                            null
+                        },
+                        locked = if (lockable) state.item.id in settings.lockedApps else null,
+                        onToggleLock = {
+                            menu = null
+                            val keyguard = context.getSystemService(KeyguardManager::class.java)
+                            if (state.item.id in settings.lockedApps) {
+                                vm.updateSettings { it.copy(lockedApps = it.lockedApps - state.item.id) }
+                            } else if (keyguard?.isDeviceSecure == true) {
+                                vm.updateSettings { it.copy(lockedApps = it.lockedApps + state.item.id) }
+                            } else {
+                                Toast.makeText(appContext, needsScreenLock, Toast.LENGTH_LONG).show()
+                            }
+                        },
                         onPinToggle = {
                             menu = null
                             togglePin(state.item)
@@ -1148,6 +1251,24 @@ fun LauncherApp(vm: LauncherViewModel) {
                                 renamingFolderId = null
                             },
                             onCancel = { renamingFolderId = null },
+                        )
+                    }
+                }
+
+                renamingAppId?.let { id ->
+                    val app = items.firstOrNull { it.id == id }
+                    if (app != null) {
+                        FolderNameDialog(
+                            initial = app.label,
+                            title = R.string.app_rename_title,
+                            maxLength = AppLabels.MAX,
+                            onDone = { name ->
+                                // An empty name brings the original one back.
+                                val clean = AppLabels.clean(name)
+                                vm.updateSettings { s -> s.copy(appLabels = if (clean == null) s.appLabels - id else s.appLabels + (id to clean)) }
+                                renamingAppId = null
+                            },
+                            onCancel = { renamingAppId = null },
                         )
                     }
                 }

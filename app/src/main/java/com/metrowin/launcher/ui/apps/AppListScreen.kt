@@ -47,6 +47,10 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Arrangement
+import com.metrowin.launcher.model.AppCategory
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
@@ -104,8 +108,14 @@ sealed interface ListRow {
         override val key = "header:$letter"
     }
 
-    data class App(val item: AppItem) : ListRow {
-        override val key = "app:${item.id}"
+    /** An app. [group] is empty in the alphabetical list and names the group ("f" most used, "n" new) at the top. */
+    data class App(val item: AppItem, val group: String = "") : ListRow {
+        override val key = if (group.isEmpty()) "app:${item.id}" else "app:$group:${item.id}"
+    }
+
+    /** The chips under the search box that filter the list by category. */
+    data object Categories : ListRow {
+        override val key = "categories"
     }
 
     /** The heading of a group of results that are not apps. */
@@ -126,18 +136,44 @@ sealed interface ListRow {
     }
 }
 
-/** The alphabetical app list flattened into rows: a letter header, then the apps under it. */
+/**
+ * The alphabetical app list flattened into rows: a letter header, then the apps under it. Above the letters: the chips of
+ * the [categories], the apps opened most often ([frequent]) and the ones installed lately ([fresh]), when there are any.
+ */
 @Immutable
-class AppListModel(sections: List<AppSection>) {
-    val rows: List<ListRow> = listOf<ListRow>(ListRow.Search) + sections.flatMap { section ->
-        listOf<ListRow>(ListRow.Header(section.key)) + section.items.map { ListRow.App(it) }
+class AppListModel(
+    sections: List<AppSection>,
+    frequent: List<AppItem> = emptyList(),
+    fresh: List<AppItem> = emptyList(),
+    categories: List<AppCategory> = emptyList(),
+) {
+    val rows: List<ListRow> = buildList {
+        add(ListRow.Search)
+        if (categories.isNotEmpty()) add(ListRow.Categories)
+        if (frequent.isNotEmpty()) {
+            add(ListRow.Section(R.string.list_frequent))
+            frequent.forEach { add(ListRow.App(it, GROUP_FREQUENT)) }
+        }
+        if (fresh.isNotEmpty()) {
+            add(ListRow.Section(R.string.list_new))
+            fresh.forEach { add(ListRow.App(it, GROUP_NEW)) }
+        }
+        sections.forEach { section ->
+            add(ListRow.Header(section.key))
+            section.items.forEach { add(ListRow.App(it)) }
+        }
     }
     val headerIndex: Map<String, Int> =
         rows.withIndex().filter { it.value is ListRow.Header }.associate { (it.value as ListRow.Header).letter to it.index }
     val letters: Set<String> get() = headerIndex.keys
 
     /** Position of the row of app [id], or null when the list does not show it. */
-    fun indexOfApp(id: String): Int? = rows.indexOfFirst { it is ListRow.App && it.item.id == id }.takeIf { it >= 0 }
+    fun indexOfApp(id: String): Int? = rows.indexOfFirst { it is ListRow.App && it.group.isEmpty() && it.item.id == id }.takeIf { it >= 0 }
+
+    companion object {
+        const val GROUP_FREQUENT = "f"
+        const val GROUP_NEW = "n"
+    }
 }
 
 /** An app row that glows for a moment: where the star of the jump list took you. [token] makes a repeat glow again. */
@@ -174,6 +210,10 @@ fun AppListScreen(
     searchFocus: Int = 0,
     /** Shown as a microphone in the search box while it is empty; null for no microphone. */
     onVoice: (() -> Unit)? = null,
+    /** The categories of the chips under the search box (the model decides whether they show), the chosen one, and a choice. */
+    categories: List<AppCategory> = emptyList(),
+    category: AppCategory? = null,
+    onCategory: (AppCategory?) -> Unit = {},
 ) {
     val insets = WindowInsets.systemBars.asPaddingValues()
     // In landscape the camera cutout sits on a side.
@@ -224,10 +264,11 @@ fun AppListScreen(
         itemsIndexed(rows, key = { _, row -> row.key }, contentType = { _, row -> row::class }) { index, row ->
             when (row) {
                 ListRow.Search -> SearchRow(query, onQueryChange, searchFocus, onVoice)
+                ListRow.Categories -> CategoryChips(categories, category, onCategory)
                 is ListRow.Header -> HeaderRow(row.letter, index, listState, openedAt, exiting, onHeaderClick)
                 is ListRow.App -> AppRow(
                     row.item, index, listState, openedAt, exiting, onLaunch, onLongPress,
-                    highlight?.takeIf { it.appId == row.item.id },
+                    highlight?.takeIf { it.appId == row.item.id && row.group.isEmpty() }, row.group,
                 )
                 is ListRow.Section -> SectionRow(row.title)
                 is ListRow.Contact -> ResultRow(
@@ -368,6 +409,7 @@ private fun AppRow(
     onLaunch: (AppItem) -> Unit,
     onLongPress: (AppItem, Float, Float) -> Unit,
     highlight: ListHighlight?,
+    group: String = "",
 ) {
     val reduced = LocalReduceMotion.current
     val away = rememberRowAway(index, listState, openedAt, exiting)
@@ -383,7 +425,7 @@ private fun AppRow(
     AppRowContent(
         item,
         Modifier
-            .testTag("app:${item.id}")
+            .testTag(if (group.isEmpty()) "app:${item.id}" else "app:$group:${item.id}")
             .onGloballyPositioned { coordinates = it }
             .graphicsLayer { turnstile(away.value, reduced) }
             .drawBehind { if (glow.value > 0f) drawRect(accent.copy(alpha = glow.value)) }
@@ -396,6 +438,31 @@ private fun AppRow(
                 longClickLabel = stringResource(R.string.a11y_more_options),
             ),
     )
+}
+
+/** The categories as chips in a row that scrolls sideways: "all", then the ones the installed apps belong to. */
+@Composable
+private fun CategoryChips(categories: List<AppCategory>, selected: AppCategory?, onSelect: (AppCategory?) -> Unit) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth().testTag("categories"),
+    ) {
+        item(key = "all") { Chip(stringResource(R.string.cat_all), selected == null, "cat:all") { onSelect(null) } }
+        items(categories, key = { it.code }) { category ->
+            Chip(stringResource(category.label), selected == category, "cat:${category.code}") { onSelect(if (selected == category) null else category) }
+        }
+    }
+}
+
+@Composable
+private fun Chip(text: String, selected: Boolean, tag: String, onClick: () -> Unit) {
+    Box(
+        Modifier.testTag(tag).metroPress(onClick = onClick).litFill(selected).padding(horizontal = 14.dp, vertical = 7.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        MetroText(text, size = 16.sp, weight = FontWeight.Normal, color = if (selected) onAccent() else LocalMetroColors.current.foreground)
+    }
 }
 
 /** The heading of the results that are not apps (contacts, settings, web). */

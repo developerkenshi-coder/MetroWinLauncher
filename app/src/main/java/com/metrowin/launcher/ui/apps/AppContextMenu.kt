@@ -8,7 +8,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.graphics.Color
+import com.metrowin.launcher.data.AppShortcut
+import com.metrowin.launcher.ui.theme.LocalAccent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
@@ -47,7 +53,22 @@ fun AppContextMenu(
     onHide: (() -> Unit)? = null,
     /** Null when there is no folder on Start to put the app in. */
     onAddToFolder: (() -> Unit)? = null,
+    /** What the app itself offers on a long press ("new message", "incognito tab"), and what to do with one. */
+    shortcuts: List<AppShortcut> = emptyList(),
+    onShortcut: (AppShortcut) -> Unit = {},
+    /** Null when the app cannot be renamed. */
+    onRename: (() -> Unit)? = null,
+    /** Null when the app still has its own name. */
+    onResetName: (() -> Unit)? = null,
+    /** Null when the app has no "app info" screen (the launcher's own pages). */
+    onInfo: (() -> Unit)? = null,
+    /** Null when the app cannot be locked; otherwise whether it asks for the screen lock now. */
+    locked: Boolean? = null,
+    onToggleLock: () -> Unit = {},
 ) {
+    val entries = MenuEntries(
+        pinned, onPinToggle, onUninstall, onHide, onAddToFolder, shortcuts, onShortcut, onRename, onResetName, onInfo, locked, onToggleLock,
+    )
     val currentDismiss by rememberUpdatedState(onDismiss)
     BoxWithConstraints(
         modifier
@@ -70,32 +91,62 @@ fun AppContextMenu(
             },
         ) {
             if (openUp) {
-                Menu(state.item, pinned, onPinToggle, onUninstall, onHide, onAddToFolder)
+                Menu(state.item, entries)
                 AppRowContent(state.item)
             } else {
                 AppRowContent(state.item)
-                Menu(state.item, pinned, onPinToggle, onUninstall, onHide, onAddToFolder)
+                Menu(state.item, entries)
             }
         }
     }
 }
 
+/** What the menu offers and does, gathered so the menu itself stays short. */
+private class MenuEntries(
+    val pinned: Boolean,
+    val onPinToggle: () -> Unit,
+    val onUninstall: () -> Unit,
+    val onHide: (() -> Unit)?,
+    val onAddToFolder: (() -> Unit)?,
+    val shortcuts: List<AppShortcut>,
+    val onShortcut: (AppShortcut) -> Unit,
+    val onRename: (() -> Unit)?,
+    val onResetName: (() -> Unit)?,
+    val onInfo: (() -> Unit)?,
+    val locked: Boolean?,
+    val onToggleLock: () -> Unit,
+)
+
 @Composable
-private fun Menu(item: AppItem, pinned: Boolean, onPinToggle: () -> Unit, onUninstall: () -> Unit, onHide: (() -> Unit)?, onAddToFolder: (() -> Unit)?) {
-    Column(Modifier.fillMaxWidth().panel().padding(vertical = 6.dp)) {
-        MenuEntry(stringResource(if (pinned) R.string.menu_unpin else R.string.menu_pin), onPinToggle)
-        if (onAddToFolder != null) MenuEntry(stringResource(R.string.menu_add_to_folder), onAddToFolder, Modifier.testTag("menu:folder"))
-        if (onHide != null) MenuEntry(stringResource(R.string.menu_hide), onHide, Modifier.testTag("menu:hide"))
-        if (item.removable) MenuEntry(stringResource(R.string.menu_uninstall), onUninstall)
+private fun Menu(item: AppItem, e: MenuEntries) {
+    // Long menus scroll: ten entries and the pressed row do not always fit on a small screen.
+    Column(
+        Modifier.fillMaxWidth().panel().heightIn(max = MENU_MAX_HEIGHT).verticalScroll(rememberScrollState()).padding(vertical = 6.dp),
+    ) {
+        e.shortcuts.forEach { shortcut ->
+            MenuEntry(shortcut.label, { e.onShortcut(shortcut) }, Modifier.testTag("menu:shortcut:${shortcut.id}"), color = LocalAccent.current)
+        }
+        MenuEntry(stringResource(if (e.pinned) R.string.menu_unpin else R.string.menu_pin), e.onPinToggle)
+        if (e.onAddToFolder != null) MenuEntry(stringResource(R.string.menu_add_to_folder), e.onAddToFolder, Modifier.testTag("menu:folder"))
+        if (e.onRename != null) MenuEntry(stringResource(R.string.menu_rename), e.onRename, Modifier.testTag("menu:rename"))
+        if (e.onResetName != null) MenuEntry(stringResource(R.string.menu_reset_name), e.onResetName, Modifier.testTag("menu:resetname"))
+        if (e.locked != null) {
+            MenuEntry(stringResource(if (e.locked) R.string.menu_unlock else R.string.menu_lock), e.onToggleLock, Modifier.testTag("menu:lock"))
+        }
+        if (e.onInfo != null) MenuEntry(stringResource(R.string.menu_info), e.onInfo, Modifier.testTag("menu:info"))
+        if (e.onHide != null) MenuEntry(stringResource(R.string.menu_hide), e.onHide, Modifier.testTag("menu:hide"))
+        if (item.removable) MenuEntry(stringResource(R.string.menu_uninstall), e.onUninstall)
     }
 }
 
 @Composable
-private fun MenuEntry(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Box(modifier.fillMaxWidth().metroPress(onClick = onClick).padding(horizontal = 24.dp, vertical = 14.dp)) {
-        MetroText(text, size = 22.sp)
+private fun MenuEntry(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, color: Color? = null) {
+    Box(modifier.fillMaxWidth().metroPress(onClick = onClick).padding(horizontal = 24.dp, vertical = 12.dp)) {
+        MetroText(text, size = 21.sp, color = color ?: LocalMetroColors.current.foreground)
     }
 }
 
 /** A row whose bottom edge is below this fraction of the screen gets its menu above it. */
 private const val OPEN_UP_BELOW = 0.6f
+
+private val MENU_MAX_HEIGHT = 440.dp

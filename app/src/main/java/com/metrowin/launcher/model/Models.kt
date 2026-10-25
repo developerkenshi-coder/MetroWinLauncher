@@ -2,7 +2,9 @@ package com.metrowin.launcher.model
 
 import android.content.ComponentName
 import android.os.UserHandle
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
+import com.metrowin.launcher.R
 
 /** Tile sizes of the Windows Phone 8 Start screen, in units of the small tile. */
 enum class TileSize(val cols: Int, val rows: Int, val code: String) {
@@ -105,7 +107,29 @@ data class AppItem(
     val pinOnly: Boolean = false,
     /** Path of a picture kept for the tile of a contact or a site. */
     val photoPath: String? = null,
+    /** What the app says it is (Android's own category), or null when it does not say. */
+    val category: AppCategory? = null,
+    /** When the app was first installed (epoch milliseconds), or 0 when not known. */
+    val installedAt: Long = 0L,
 )
+
+/** The categories an app can declare (see `ApplicationInfo.category`), as the filter of the app list names them. */
+enum class AppCategory(val code: String, @param:StringRes val label: Int, private val android: Int) {
+    Game("game", R.string.cat_game, 0),
+    Audio("audio", R.string.cat_audio, 1),
+    Video("video", R.string.cat_video, 2),
+    Image("image", R.string.cat_image, 3),
+    Social("social", R.string.cat_social, 4),
+    News("news", R.string.cat_news, 5),
+    Maps("maps", R.string.cat_maps, 6),
+    Productivity("productivity", R.string.cat_productivity, 7),
+    Accessibility("accessibility", R.string.cat_accessibility, 8);
+
+    companion object {
+        /** The category for the value of `ApplicationInfo.category`; null for undefined (-1) and for those not known yet. */
+        fun fromAndroid(value: Int): AppCategory? = entries.firstOrNull { it.android == value }
+    }
+}
 
 /** Glyphs drawn by the launcher for the stock apps, see ui/components/Glyphs.kt. */
 enum class Glyph {

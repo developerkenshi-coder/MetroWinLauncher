@@ -174,6 +174,16 @@ data class LauncherSettings(
     val searchWeb: Boolean = true,
     /** Package of the icon pack in use, or empty for the apps' own icons. */
     val iconPack: String = "",
+    /** The apps opened most often, in a group at the top of the list. */
+    val showFrequentApps: Boolean = true,
+    /** The apps installed in the last week, in a group at the top of the list. */
+    val showNewApps: Boolean = true,
+    /** Chips under the search box that filter the list by what the apps say they are. */
+    val showCategories: Boolean = true,
+    /** Names the user gave to apps, by [com.metrowin.launcher.model.AppItem.id]. */
+    val appLabels: Map<String, String> = emptyMap(),
+    /** Apps that ask for the screen lock before they open, as app ids. */
+    val lockedApps: Set<String> = emptySet(),
 
     // --- profiles
     val showWorkApps: Boolean = true,
