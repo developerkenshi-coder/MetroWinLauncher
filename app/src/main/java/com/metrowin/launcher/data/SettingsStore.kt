@@ -148,6 +148,8 @@ data class LauncherSettings(
 
     // --- voice
     val voiceOffline: Boolean = true,
+    /** A microphone next to the search box of the app list. */
+    val voiceButton: Boolean = true,
 
     // --- accessibility
     /** Fades instead of turnstiles, flips and springs. */

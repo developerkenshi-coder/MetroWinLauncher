@@ -57,6 +57,7 @@ object SettingsCodec {
         put("showWorkApps", s.showWorkApps)
         put("showPrivateApps", s.showPrivateApps)
         put("voiceOffline", s.voiceOffline)
+        put("voiceButton", s.voiceButton)
         put("reduceMotion", s.reduceMotion)
         put("highContrast", s.highContrast)
 
@@ -128,6 +129,7 @@ object SettingsCodec {
             showWorkApps = o.optBoolean("showWorkApps", base.showWorkApps),
             showPrivateApps = o.optBoolean("showPrivateApps", base.showPrivateApps),
             voiceOffline = o.optBoolean("voiceOffline", base.voiceOffline),
+            voiceButton = o.optBoolean("voiceButton", base.voiceButton),
             reduceMotion = o.optBoolean("reduceMotion", base.reduceMotion),
             highContrast = o.optBoolean("highContrast", base.highContrast),
 

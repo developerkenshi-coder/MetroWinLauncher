@@ -21,7 +21,7 @@ class SettingsCodecTest {
         tapSound = true, quickActions = listOf("wifi", "camera", "vpn", "quiet"), notificationPeek = false,
         weatherCity = "Torino", weatherLatitude = 45.07, weatherLongitude = 7.69, weatherFahrenheit = true,
         hiddenApps = setOf("app:b", "app:a"), searchWeb = false, iconPack = "com.example.pack",
-        showPrivateApps = false, reduceMotion = true, highContrast = true,
+        showPrivateApps = false, voiceButton = false, voiceOffline = false, reduceMotion = true, highContrast = true,
         backupFolder = "content://tree/backup", backupEveryDays = 7, lastBackupAt = 123L,
         syncEnabled = true, syncPassphrase = "secret", deviceId = "phone-1",
         kidsApps = setOf("stock:camera"), kidsMode = true,

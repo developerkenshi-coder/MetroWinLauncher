@@ -344,4 +344,37 @@
     <string name="profile_show_apps">mostra le sue app nella lista</string>
     <string name="profile_none">Questo telefono non ha un profilo di lavoro né uno spazio privato.</string>
     <string name="profile_hint">Un profilo in pausa non esegue nulla e le sue app non si aprono finché non lo riattivi. Android chiede la tua autenticazione per sbloccare lo spazio privato.</string>
+
+    <!-- voice -->
+    <string name="voice_listening">ti ascolto…</string>
+    <string name="voice_hint">Prova “apri Mappe”, “chiama Anna”, “accendi la torcia”, “cerca pizza”</string>
+    <string name="voice_heard">Ho sentito</string>
+    <string name="voice_not_found">Non trovo “%1$s” su questo telefono</string>
+    <string name="voice_no_contact">Nessun contatto di nome “%1$s”</string>
+    <string name="voice_nothing">Non ho capito</string>
+    <string name="voice_try_again">riprova</string>
+    <string name="voice_search_web">cerca sul web</string>
+    <string name="voice_unavailable">Il riconoscimento vocale non è disponibile su questo telefono.</string>
+    <string name="voice_permission">Consenti il microfono per parlare al launcher.</string>
+    <string name="voice_network">Il riconoscimento vocale ha bisogno di una connessione per questa lingua.</string>
+    <string name="voice_busy">Il riconoscimento vocale è occupato. Riprova tra un attimo.</string>
+    <string name="voice_mic">voce</string>
+    <string name="voice_cancel">annulla</string>
+
+    <!-- voice settings -->
+    <string name="sec_voice">voce</string>
+    <string name="sec_voice_desc">Parla al launcher: apri app, chiama, cerca, torcia</string>
+    <string name="voice_set_button">microfono nella casella di ricerca</string>
+    <string name="voice_set_button_hint">Mostra un microfono nella casella di ricerca della lista app.</string>
+    <string name="voice_set_offline">preferisci il riconoscimento sul telefono</string>
+    <string name="voice_set_offline_hint">Usa il modello vocale offline se il telefono ne ha uno per la tua lingua. Altrimenti la voce va al servizio vocale scelto in Android.</string>
+    <string name="voice_try">provalo ora</string>
+    <string name="voice_examples">cosa puoi dire</string>
+    <string name="voice_ex_open">“apri Mappe”, “avvia la fotocamera”</string>
+    <string name="voice_ex_call">“chiama Anna” apre la scheda del contatto</string>
+    <string name="voice_ex_search">“cerca ricette di pizza”, o dì semplicemente cosa vuoi sapere</string>
+    <string name="voice_ex_torch">“accendi la torcia”, “spegni la torcia”</string>
+    <string name="voice_ex_launcher">“meteo”, “blocca lo schermo”, “centro notifiche”, “tutte le app”, “impostazioni del launcher”</string>
+    <string name="voice_ex_settings">“apri Wi-Fi”, “Bluetooth”, “batteria”… le impostazioni di Android</string>
+    <string name="voice_gesture_hint">Puoi avviarla anche con un doppio tocco o uno swipe a due dita: scegli “voce” in Gesti.</string>
 </resources>

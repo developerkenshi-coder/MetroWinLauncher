@@ -1,7 +1,9 @@
 package com.metrowin.launcher
 
+import android.Manifest
 import android.app.Activity
 import android.app.KeyguardManager
+import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -20,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,6 +54,13 @@ import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.QuickAction
 import com.metrowin.launcher.data.GestureAction
+import com.metrowin.launcher.data.SystemSettingDef
+import com.metrowin.launcher.data.VoiceCommand
+import com.metrowin.launcher.data.VoiceCommands
+import com.metrowin.launcher.data.VoiceError
+import com.metrowin.launcher.ui.voice.VoiceScreen
+import com.metrowin.launcher.ui.voice.rememberVoiceSession
+import androidx.core.content.ContextCompat
 import com.metrowin.launcher.data.GlobalResults
 import com.metrowin.launcher.data.GlobalSearch
 import com.metrowin.launcher.data.LocalWidgetHost
@@ -204,6 +214,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     var siteDialogOpen by remember { mutableStateOf(false) }
     var weatherOpen by remember { mutableStateOf(false) }
     var searchFocus by remember { mutableIntStateOf(0) }
+    var voiceRequest by remember { mutableIntStateOf(0) }
+    val voice = rememberVoiceSession()
     var lockServiceEnabled by remember { mutableStateOf(false) }
     var renamingFolderId by remember { mutableStateOf<String?>(null) }
     var query by remember { mutableStateOf("") }
@@ -332,6 +344,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     BackGestureHandler {
         when {
             !permissionsHandled -> InstantBack { }
+            voice.isOpen -> InstantBack { voice.close() }
             panel.isShown -> PanelBack(panel)
             widgetPickerOpen -> InstantBack { widgetPickerOpen = false }
             siteDialogOpen -> InstantBack { siteDialogOpen = false }
@@ -507,12 +520,85 @@ fun LauncherApp(vm: LauncherViewModel) {
             GestureAction.AppList -> scope.launch { pagerState.animateScrollToPage(appsPage) }
             GestureAction.Torch -> vm.activateQuickAction(QuickAction.Flashlight)
             GestureAction.Camera -> vm.activateQuickAction(QuickAction.Camera)
-            GestureAction.Voice -> Unit // set below once the voice screen exists
+            GestureAction.Voice -> voiceRequest++
             GestureAction.Search -> {
                 scope.launch { pagerState.animateScrollToPage(appsPage) }
                 searchFocus++
             }
         }
+    }
+
+    /** Carries out what was said. The session is closed here, unless there is a problem to show. */
+    fun carryOut(heard: List<String>) {
+        val label = { def: SystemSettingDef -> appContext.getString(def.label) }
+        when (val command = VoiceCommands.best(heard, listItems, label)) {
+            is VoiceCommand.OpenApp -> {
+                voice.close()
+                open(command.app, null)
+            }
+            is VoiceCommand.OpenSetting -> {
+                voice.close()
+                vm.launch(AppItem("search:setting", command.setting.label, Launch.Action(command.setting.action)))
+            }
+            is VoiceCommand.Web -> {
+                voice.close()
+                vm.launch(AppItem("search:web", command.query, Launch.Link(GlobalSearch.webUrl(command.query))))
+            }
+            is VoiceCommand.Call -> scope.launch {
+                val contact = vm.searchContacts(command.name).firstOrNull()
+                if (contact == null) {
+                    voice.problem(R.string.voice_no_contact, command.name)
+                } else {
+                    voice.close()
+                    vm.launch(AppItem("search:contact", contact.name, Launch.Link(contact.lookupUri)))
+                }
+            }
+            is VoiceCommand.Torch -> {
+                voice.close()
+                if (command.on == null || command.on != torchOn) vm.activateQuickAction(QuickAction.Flashlight)
+            }
+            VoiceCommand.LauncherSettings -> {
+                voice.close()
+                settingsSection = null
+                settingsOpen = true
+            }
+            VoiceCommand.Weather -> {
+                voice.close()
+                weatherOpen = true
+            }
+            VoiceCommand.LockScreen -> {
+                voice.close()
+                perform(GestureAction.LockScreen)
+            }
+            VoiceCommand.ActionCenter -> {
+                voice.close()
+                panel.open()
+            }
+            VoiceCommand.AppList -> {
+                voice.close()
+                scope.launch { pagerState.animateScrollToPage(appsPage) }
+            }
+            VoiceCommand.Start -> {
+                voice.close()
+                scope.launch { pagerState.animateScrollToPage(lastStartPage.coerceIn(0, pages.size - 1)) }
+            }
+            is VoiceCommand.NotFound -> voice.problem(R.string.voice_not_found, command.target, webQuery = command.target)
+            VoiceCommand.Unclear -> voice.problem(R.string.voice_nothing)
+        }
+    }
+    SideEffect {
+        voice.preferOffline = settings.voiceOffline
+        voice.onHeard = ::carryOut
+    }
+
+    val micPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) voice.open() else voice.problem(VoiceError.Permission.message)
+    }
+    // Voice is asked for by a gesture, the microphone in the search box, or the "try again" of its screen.
+    LaunchedEffect(voiceRequest) {
+        if (voiceRequest == 0) return@LaunchedEffect
+        val granted = ContextCompat.checkSelfPermission(appContext, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+        if (granted) voice.open() else micPermission.launch(Manifest.permission.RECORD_AUDIO)
     }
 
     val startActions = StartActions(
@@ -554,7 +640,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     )
 
     // Pull down from the top of Start, or from the top edge of any page, to open the Action Center.
-    val pullBlocked = kidsMode || launching || settingsOpen || weatherOpen || menu != null || jumpOpen || editingKey != null ||
+    val pullBlocked = kidsMode || voice.isOpen || launching || settingsOpen || weatherOpen || menu != null || jumpOpen || editingKey != null ||
         renamingFolderId != null || !permissionsHandled
     val currentPullBlocked by rememberUpdatedState(pullBlocked)
     val pullConnections = List(LauncherSettings.MAX_START_PAGES) { page ->
@@ -648,6 +734,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             highlight = highlight,
                             global = globalResults,
                             searchFocus = searchFocus,
+                            onVoice = if (settings.voiceButton) ({ voiceRequest++ }) else null,
                         )
                     },
                 )
@@ -799,6 +886,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onUseLocation = vm::useMyLocation,
                             profiles = profiles,
                             onSetProfilePaused = vm::setProfilePaused,
+                            onTryVoice = { voiceRequest++ },
                             backupFolderName = backupFolderName,
                             onPickBackupFolder = vm::setBackupFolder,
                             onClearBackupFolder = vm::clearBackupFolder,
@@ -864,6 +952,18 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onCancel = { renamingFolderId = null },
                         )
                     }
+                }
+
+                voice.state?.let { state ->
+                    VoiceScreen(
+                        state = state,
+                        onRetry = { voiceRequest++ },
+                        onCancel = voice::close,
+                        onSearchWeb = { query ->
+                            voice.close()
+                            vm.launch(AppItem("search:web", query, Launch.Link(GlobalSearch.webUrl(query))))
+                        },
+                    )
                 }
 
                 if (!permissionsHandled) {

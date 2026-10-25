@@ -160,6 +160,8 @@ fun AppListScreen(
     global: GlobalResults = GlobalResults.Empty,
     /** Bumped to put the cursor in the search box (and show the keyboard), as the "search the apps" gesture asks. */
     searchFocus: Int = 0,
+    /** Shown as a microphone in the search box while it is empty; null for no microphone. */
+    onVoice: (() -> Unit)? = null,
 ) {
     val insets = WindowInsets.systemBars.asPaddingValues()
     // While searching the list is just the matches, without letter headers, followed by what else was found.
@@ -204,7 +206,7 @@ fun AppListScreen(
     ) {
         itemsIndexed(rows, key = { _, row -> row.key }, contentType = { _, row -> row::class }) { index, row ->
             when (row) {
-                ListRow.Search -> SearchRow(query, onQueryChange, searchFocus)
+                ListRow.Search -> SearchRow(query, onQueryChange, searchFocus, onVoice)
                 is ListRow.Header -> HeaderRow(row.letter, index, listState, openedAt, exiting, onHeaderClick)
                 is ListRow.App -> AppRow(
                     row.item, index, listState, openedAt, exiting, onLaunch, onLongPress,
@@ -255,7 +257,7 @@ private fun rememberRowAway(index: Int, listState: LazyListState, openedAt: Long
 
 /** The search box: a flat surface with a magnifier, the typed text and a button to clear it. */
 @Composable
-private fun SearchRow(query: String, onQueryChange: (String) -> Unit, focusToken: Int) {
+private fun SearchRow(query: String, onQueryChange: (String) -> Unit, focusToken: Int, onVoice: (() -> Unit)?) {
     val colors = LocalMetroColors.current
     val focus = LocalFocusManager.current
     val requester = remember { FocusRequester() }
@@ -301,6 +303,13 @@ private fun SearchRow(query: String, onQueryChange: (String) -> Unit, focusToken
                 val stroke = 2.dp.toPx()
                 drawLine(colors.subtle, Offset(0f, 0f), Offset(size.width, size.height), stroke, StrokeCap.Round)
                 drawLine(colors.subtle, Offset(size.width, 0f), Offset(0f, size.height), stroke, StrokeCap.Round)
+            }
+        } else if (onVoice != null) {
+            Box(
+                Modifier.size(40.dp).metroPress(onClick = onVoice).testTag("search:voice"),
+                contentAlignment = Alignment.Center,
+            ) {
+                GlyphIcon(Glyph.Mic, 24.dp, color = colors.subtle)
             }
         }
     }

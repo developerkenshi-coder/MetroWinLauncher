@@ -31,6 +31,7 @@ enum class SettingsSection(
     Actions(SettingsGroup.Launcher, R.string.settings_actions, R.string.sec_actions_desc),
     LiveTiles(SettingsGroup.Launcher, R.string.sec_live_tiles, R.string.sec_live_tiles_desc),
     Apps(SettingsGroup.Launcher, R.string.sec_apps, R.string.sec_apps_desc),
+    Voice(SettingsGroup.Tools, R.string.sec_voice, R.string.sec_voice_desc),
     Profiles(SettingsGroup.Tools, R.string.sec_profiles, R.string.sec_profiles_desc),
     Backup(SettingsGroup.Tools, R.string.sec_backup, R.string.sec_backup_desc),
     Kids(SettingsGroup.Tools, R.string.kids_title, R.string.sec_kids_desc),
@@ -76,4 +77,5 @@ class SettingsEnv(
     /** The work profile and the private space, when the phone has them. */
     val profiles: List<ProfileInfo> = emptyList(),
     val onSetProfilePaused: (serial: Long, paused: Boolean) -> Unit = { _, _ -> },
+    val onTryVoice: () -> Unit = {},
 )
