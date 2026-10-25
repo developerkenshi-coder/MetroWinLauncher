@@ -58,6 +58,14 @@ import com.metrowin.launcher.model.AppCategory
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
+import java.util.Locale
+import com.metrowin.launcher.data.EventMatch
+import com.metrowin.launcher.data.ClockFormat
+import com.metrowin.launcher.data.CalendarSearch
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -148,6 +156,10 @@ sealed interface ListRow {
     data class Web(val query: String) : ListRow {
         override val key = "web"
     }
+
+    data class Event(val match: EventMatch) : ListRow {
+        override val key = "event:${match.eventId}:${match.startMillis}"
+    }
 }
 
 /**
@@ -194,8 +206,11 @@ class AppListModel(
 @Immutable
 data class ListHighlight(val appId: String, val token: Int)
 
-private val RowHeight = 64.dp
-private val SquareSize = 52.dp
+/** Whether the list is the compact one: smaller squares and tighter rows. */
+val LocalCompactList = staticCompositionLocalOf { false }
+
+private val RowHeight: Dp @Composable get() = if (LocalCompactList.current) 48.dp else 64.dp
+private val SquareSize: Dp @Composable get() = if (LocalCompactList.current) 38.dp else 52.dp
 
 /**
  * The Windows Phone app list: every app in alphabetical order under its letter. Tapping a letter
@@ -238,6 +253,8 @@ fun AppListScreen(
     engine: SearchEngine = SearchEngine.DuckDuckGo,
     /** The search was confirmed from the keyboard. */
     onSearchSubmit: (String) -> Unit = {},
+    /** Smaller squares and tighter rows. */
+    compact: Boolean = false,
 ) {
     val insets = WindowInsets.systemBars.asPaddingValues()
     // In landscape the camera cutout sits on a side.
@@ -267,6 +284,10 @@ fun AppListScreen(
                     add(ListRow.Section(R.string.search_section_settings))
                     global.settings.forEach { add(ListRow.Setting(it)) }
                 }
+                if (global.events.isNotEmpty()) {
+                    add(ListRow.Section(R.string.search_section_events))
+                    global.events.forEach { add(ListRow.Event(it)) }
+                }
                 global.webQuery?.let {
                     add(ListRow.Section(R.string.search_section_web))
                     add(ListRow.Web(it))
@@ -283,6 +304,7 @@ fun AppListScreen(
     // Rows composed within this window after the page opens animate in; rows that scroll into view later do not.
     val openedAt = remember(replayToken) { System.nanoTime() }
 
+    CompositionLocalProvider(LocalCompactList provides compact) {
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxSize(),
@@ -319,9 +341,27 @@ fun AppListScreen(
                     Glyph.Globe, stringResource(R.string.search_web_for, row.query, engine.label), null, index, listState, openedAt, exiting,
                     tag = "result:web", accent = true,
                 ) { onLaunch(AppItem("search:web", row.query, Launch.Link(GlobalSearch.webUrl(row.query, engine)))) }
+                is ListRow.Event -> ResultRow(
+                    Glyph.Calendar, row.match.title, eventWhen(row.match), index, listState, openedAt, exiting,
+                    tag = "result:event:${row.match.eventId}",
+                ) { onLaunch(AppItem("search:event", row.match.title, Launch.Link(CalendarSearch.uri(row.match.eventId)))) }
             }
         }
     }
+    }
+}
+
+/** "Thu 12 November, 15:30" (or without the time for an event of the whole day), in the language and clock of the phone. */
+@Composable
+private fun eventWhen(event: EventMatch): String {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val locale = Locale.getDefault()
+    val day = java.time.Instant.ofEpochMilli(event.startMillis).atZone(if (event.allDay) java.time.ZoneOffset.UTC else java.time.ZoneId.systemDefault())
+    val date = ClockFormat.date(day.toLocalDate(), locale)
+    if (event.allDay) return date
+    val is24 = android.text.format.DateFormat.is24HourFormat(context)
+    val meridiem = ClockFormat.meridiem(day.toLocalTime(), is24, locale)
+    return date + ", " + ClockFormat.time(day.toLocalTime(), is24, locale) + if (meridiem.isEmpty()) "" else " $meridiem"
 }
 
 private const val GLOW_START = 0.5f
@@ -440,7 +480,7 @@ private fun HeaderRow(
         contentAlignment = Alignment.CenterStart,
     ) {
         Box(Modifier.size(SquareSize).litFill(true), contentAlignment = Alignment.Center) {
-            MetroText(letter.lowercase(), size = 32.sp, color = onAccent())
+            MetroText(letter.lowercase(), size = if (LocalCompactList.current) 26.sp else 32.sp, color = onAccent())
         }
     }
 }
@@ -528,6 +568,8 @@ private fun SectionRow(@StringRes title: Int, onClear: (() -> Unit)? = null) {
     }
 }
 
+private const val MAX_SHOWN_DAYS = 2_000_000L
+
 /** A sum, a conversion, a number, a link, a timer: what it says and what touching it does, in an accent square. */
 @Composable
 private fun AnswerRow(answer: QuickAnswer, index: Int, listState: LazyListState, openedAt: Long, exiting: Boolean, onClick: () -> Unit) {
@@ -540,6 +582,50 @@ private fun AnswerRow(answer: QuickAnswer, index: Int, listState: LazyListState,
         is QuickAnswer.Email -> Triple(Glyph.Mail, stringResource(R.string.answer_email, answer.address), null)
         is QuickAnswer.Timer -> Triple(Glyph.Alarm, stringResource(R.string.answer_timer, QuickAnswerActions.length(answer.seconds)), null)
         is QuickAnswer.Alarm -> Triple(Glyph.Alarm, stringResource(R.string.answer_alarm, QuickAnswerActions.clock(answer.hour, answer.minute)), null)
+        is QuickAnswer.Currency -> Triple(Glyph.Calculator, answer.text, stringResource(R.string.answer_currency_subtitle, answer.ratesDate))
+        is QuickAnswer.WorldTime -> {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val locale = Locale.getDefault()
+            val is24 = android.text.format.DateFormat.is24HourFormat(context)
+            val meridiem = ClockFormat.meridiem(answer.time, is24, locale)
+            val time = ClockFormat.time(answer.time, is24, locale) + if (meridiem.isEmpty()) "" else " $meridiem"
+            val day = when (answer.dayOffset) {
+                1 -> stringResource(R.string.live_tomorrow)
+                -1 -> stringResource(R.string.worldclock_yesterday)
+                else -> stringResource(R.string.answer_day_same)
+            }
+            Triple(Glyph.Globe, stringResource(R.string.answer_worldtime, time, answer.city), "$day · ${stringResource(R.string.answer_copy)}")
+        }
+        is QuickAnswer.DateOffset -> {
+            val days = answer.days.coerceIn(-MAX_SHOWN_DAYS, MAX_SHOWN_DAYS).toInt()
+            val how = when {
+                days == 0 -> stringResource(R.string.answer_today)
+                days > 0 -> pluralStringResource(R.plurals.answer_in_days, days, days)
+                else -> pluralStringResource(R.plurals.answer_days_ago, -days, -days)
+            }
+            Triple(Glyph.Calendar, QuickAnswerActions.fullDate(answer.date), "$how · ${stringResource(R.string.answer_copy)}")
+        }
+        is QuickAnswer.DaysUntil -> {
+            val days = answer.days.coerceIn(-MAX_SHOWN_DAYS, MAX_SHOWN_DAYS).toInt()
+            val date = QuickAnswerActions.fullDate(answer.target)
+            when {
+                days == 0 -> Triple(Glyph.Calendar, stringResource(R.string.answer_today), date)
+                days > 0 -> Triple(Glyph.Calendar, pluralStringResource(R.plurals.answer_days, days, days), stringResource(R.string.answer_until, date))
+                else -> Triple(Glyph.Calendar, pluralStringResource(R.plurals.answer_days, -days, -days), stringResource(R.string.answer_since, date))
+            }
+        }
+        is QuickAnswer.Dice -> {
+            val notation = "${if (answer.count > 1) answer.count else ""}d${answer.sides}" + when {
+                answer.bonus > 0 -> "+${answer.bonus}"
+                answer.bonus < 0 -> "${answer.bonus}"
+                else -> ""
+            }
+            val parts = if (answer.rolls.size > 1 || answer.bonus != 0) answer.rolls.joinToString(" + ") + (if (answer.bonus != 0) " " + (if (answer.bonus > 0) "+ " else "− ") + kotlin.math.abs(answer.bonus) else "") + " · " else ""
+            Triple(Glyph.Calculator, answer.total.toString(), "$notation: $parts${stringResource(R.string.answer_roll_again)}")
+        }
+        is QuickAnswer.Coin -> Triple(
+            Glyph.Calculator, stringResource(if (answer.heads) R.string.answer_heads else R.string.answer_tails), stringResource(R.string.answer_flip_again),
+        )
     }
     ResultRow(glyph, title, subtitle, index, listState, openedAt, exiting, tag = "answer:${answer::class.simpleName}", accent = true, onClick = onClick)
 }
@@ -587,13 +673,15 @@ private fun ResultRow(
 
 /** One app: its square, then its name. Also drawn over the dimmed list by the context menu. */
 @Composable
-fun AppRowContent(item: AppItem, modifier: Modifier = Modifier) {
-    Row(
-        modifier.fillMaxWidth().height(RowHeight).padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AppSquare(item, SquareSize)
-        Spacer(Modifier.width(14.dp))
-        MetroText(item.label, size = 22.sp, modifier = Modifier.weight(1f))
+fun AppRowContent(item: AppItem, modifier: Modifier = Modifier, compact: Boolean = LocalCompactList.current) {
+    CompositionLocalProvider(LocalCompactList provides compact) {
+        Row(
+            modifier.fillMaxWidth().height(RowHeight).padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AppSquare(item, SquareSize)
+            Spacer(Modifier.width(14.dp))
+            MetroText(item.label, size = if (compact) 19.sp else 22.sp, modifier = Modifier.weight(1f))
+        }
     }
 }

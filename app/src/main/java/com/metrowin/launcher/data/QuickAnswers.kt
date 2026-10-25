@@ -1,7 +1,10 @@
 package com.metrowin.launcher.data
 
 import androidx.compose.runtime.Immutable
+import java.time.Instant
+import java.time.ZoneId
 import java.util.Locale
+import kotlin.random.Random
 
 /** What the search box can answer or do for what is typed, besides finding apps. */
 @Immutable
@@ -22,6 +25,26 @@ sealed interface QuickAnswer {
 
     /** An alarm at [hour]:[minute] (0 to 23, 0 to 59), set in the clock app. */
     data class Alarm(val hour: Int, val minute: Int) : QuickAnswer
+
+    /** The time in [city] now, and [dayOffset] (-1, 0 or 1) days from the day it is here. Touching it copies the time. */
+    data class WorldTime(val city: String, val time: java.time.LocalTime, val dayOffset: Int) : QuickAnswer
+
+    /** The date [days] days from today ("tra 30 giorni", "45 days ago"). Touching it copies the date. */
+    data class DateOffset(val date: java.time.LocalDate, val days: Long) : QuickAnswer
+
+    /** How many days there are from today to [target] (negative when it is past). Touching it copies the number. */
+    data class DaysUntil(val target: java.time.LocalDate, val days: Long) : QuickAnswer
+
+    /** A throw of [count] dice of [sides] faces plus [bonus]: the [rolls] and their total. Touching it throws again. */
+    data class Dice(val count: Int, val sides: Int, val rolls: List<Int>, val bonus: Int) : QuickAnswer {
+        val total: Int get() = rolls.sum() + bonus
+    }
+
+    /** A coin that came up heads or tails. Touching it throws again. */
+    data class Coin(val heads: Boolean) : QuickAnswer
+
+    /** "100 USD = 92.4 EUR" with the rates of [ratesDate]; touching it copies [result]. */
+    data class Currency(val text: String, val result: String, val ratesDate: String) : QuickAnswer
 }
 
 /**
@@ -30,16 +53,40 @@ sealed interface QuickAnswer {
  */
 object QuickAnswers {
     /** The answers for [query], the most likely first (usually one); empty for a word that is just a name. */
-    fun of(query: String, locale: Locale = Locale.getDefault()): List<QuickAnswer> {
+    fun of(
+        query: String,
+        locale: Locale = Locale.getDefault(),
+        now: Instant = Instant.now(),
+        here: ZoneId = ZoneId.systemDefault(),
+        random: Random = Random.Default,
+    ): List<QuickAnswer> {
         val text = query.trim()
         if (text.isEmpty()) return emptyList()
-        timerOrAlarm(VoiceCommands.normalize(text))?.let { return listOf(it) }
+        val words = VoiceCommands.normalize(text)
+        timerOrAlarm(words)?.let { return listOf(it) }
         Calculator.evaluate(text)?.let { return listOf(QuickAnswer.Calculation(text, Calculator.format(it, locale))) }
         UnitConverter.convert(text, locale)?.let { return listOf(QuickAnswer.Conversion(it.text, it.result)) }
+        Rolls.of(text, random)?.let { return listOf(it) }
+        worldTime(words, now, here)?.let { return listOf(it) }
+        DateAnswers.of(words, now.atZone(here).toLocalDate(), locale)?.let { return listOf(it) }
         email(text)?.let { return listOf(it) }
         phone(text)?.let { return listOf(QuickAnswer.Call(it), QuickAnswer.Message(it)) }
         link(text)?.let { return listOf(it) }
         return emptyList()
+    }
+
+    // --- the time in another city
+
+    private val TIME_IT = Regex("""^(?:che )?(?:ora|ore|orario)(?: e| sono)?(?: a| in| ad)? (.+)$""")
+    private val TIME_EN = Regex("""^(?:what )?time(?: is it)?(?: in| at)? (.+)$""")
+    private val TIME_AFTER = Regex("""^(.+) (?:time|ora)$""")
+
+    /** "ora a Tokyo", "che ore sono a New York", "time in london", "what time is it in sydney" ([words] folded). */
+    fun worldTime(words: String, now: Instant, here: ZoneId): QuickAnswer.WorldTime? {
+        val name = (TIME_IT.matchEntire(words) ?: TIME_EN.matchEntire(words) ?: TIME_AFTER.matchEntire(words))?.groupValues?.get(1) ?: return null
+        val city = WorldCities.find(name) ?: return null
+        val there = WorldCities.timeIn(city.zoneId, now, here)
+        return QuickAnswer.WorldTime(city.name, there.time, there.dayOffset)
     }
 
     // --- phone numbers, links, email

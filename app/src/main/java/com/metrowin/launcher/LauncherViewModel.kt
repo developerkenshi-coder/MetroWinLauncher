@@ -51,6 +51,11 @@ import com.metrowin.launcher.data.OpenMeteo
 import com.metrowin.launcher.data.IconPackInfo
 import com.metrowin.launcher.data.IconPackRepository
 import com.metrowin.launcher.data.PhoneCalls
+import com.metrowin.launcher.data.AppLinks
+import com.metrowin.launcher.data.CalendarSearch
+import com.metrowin.launcher.data.CurrencyRepository
+import com.metrowin.launcher.data.Currencies
+import com.metrowin.launcher.data.EventMatch
 import com.metrowin.launcher.data.QuickAnswer
 import com.metrowin.launcher.data.QuickAnswerActions
 import com.metrowin.launcher.data.RecentSearches
@@ -140,6 +145,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val quickActions = QuickActionsController(application)
     private val shortcutStore = ShortcutStore(application)
     private val weatherRepository = WeatherRepository(application)
+    private val currencyRepository = CurrencyRepository(application)
     private val profilesController = ProfilesController(application)
     private val iconPacks = IconPackRepository(application)
     private val appShortcuts = AppShortcuts(application)
@@ -681,6 +687,20 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     suspend fun searchContacts(query: String): List<ContactMatch> =
         withContext(Dispatchers.IO) { ContactSearch(getApplication()).search(query) }
 
+    suspend fun searchEvents(query: String): List<EventMatch> =
+        withContext(Dispatchers.IO) { CalendarSearch(getApplication()).search(query) }
+
+    /**
+     * The conversion [query] asks for, with the rates of the last six hours (asked from the Internet when they are older; the old
+     * ones are used when there is no connection). Null when there are no rates at all.
+     */
+    suspend fun currencyAnswer(query: Currencies.Query): QuickAnswer.Currency? = withContext(Dispatchers.IO) {
+        val now = System.currentTimeMillis()
+        val kept = currencyRepository.cached()
+        val rates = kept?.takeIf { now - it.fetchedAt < Currencies.MAX_AGE_MS } ?: currencyRepository.fetch(now) ?: kept
+        rates?.let { Currencies.answer(query, it) }
+    }
+
     /** Null when the search could not be made (no connection), an empty list when nothing matches. */
     suspend fun searchPlaces(query: String): List<PlaceMatch>? =
         withContext(Dispatchers.IO) { weatherRepository.search(query, Locale.getDefault().language) }
@@ -929,6 +949,28 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     /** The "app info" screen of Android for [item], where the permissions, the storage and the notifications are. */
+    /** The app's page in the store app, or on the web when the phone has no store app. */
+    fun openInStore(item: AppItem) {
+        val pkg = item.packageName ?: return
+        val app = getApplication<Application>()
+        val pages = listOfNotNull(AppLinks.storeUri(pkg), AppLinks.webUrl(pkg))
+        val opened = pages.any { page ->
+            runCatching { app.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(page)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess
+        }
+        if (!opened) tell(R.string.launch_failed)
+    }
+
+    /** Opens the share sheet with the name of the app and the link of its page. */
+    fun shareApp(item: AppItem) {
+        val pkg = item.packageName ?: return
+        val text = AppLinks.shareText(item.label, pkg) ?: return
+        val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
+        val opened = runCatching {
+            getApplication<Application>().startActivity(Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }.isSuccess
+        if (!opened) tell(R.string.launch_failed)
+    }
+
     fun openAppInfo(item: AppItem) {
         val pkg = item.packageName ?: return
         val opened = runCatching {

@@ -251,6 +251,12 @@ data class LauncherSettings(
     val searchEngine: SearchEngine = SearchEngine.DuckDuckGo,
     /** Sums, conversions, phone numbers, links, timers and alarms answered in the search box. */
     val searchAnswers: Boolean = true,
+    /** Currency conversions in the search box, with rates from the Internet: off until the user allows it. */
+    val searchCurrency: Boolean = false,
+    /** The events of the calendar whose title matches the search. */
+    val searchCalendar: Boolean = false,
+    /** The app list with smaller squares and tighter rows. */
+    val compactList: Boolean = false,
     /** The last searches are kept on the phone and offered when the search box is touched. */
     val rememberSearches: Boolean = true,
     /** Package of the icon pack in use, or empty for the apps' own icons. */

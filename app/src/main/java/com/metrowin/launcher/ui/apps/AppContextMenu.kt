@@ -71,9 +71,15 @@ fun AppContextMenu(
     onToggleLock: () -> Unit = {},
     /** Puts an app's shortcut on Start as a tile; null when the menu cannot (the shortcut stays a plain entry). */
     onPinShortcut: ((AppShortcut) -> Unit)? = null,
+    /** Null when the app has no page in the store (the launcher's own entries). */
+    onStore: (() -> Unit)? = null,
+    onShare: (() -> Unit)? = null,
+    /** The list the row comes from is the compact one. */
+    compact: Boolean = false,
 ) {
     val entries = MenuEntries(
         pinned, onPinToggle, onUninstall, onHide, onAddToFolder, shortcuts, onShortcut, onRename, onResetName, onInfo, locked, onToggleLock, onPinShortcut,
+        onStore, onShare,
     )
     val currentDismiss by rememberUpdatedState(onDismiss)
     BoxWithConstraints(
@@ -98,9 +104,9 @@ fun AppContextMenu(
         ) {
             if (openUp) {
                 Menu(state.item, entries)
-                AppRowContent(state.item)
+                AppRowContent(state.item, compact = compact)
             } else {
-                AppRowContent(state.item)
+                AppRowContent(state.item, compact = compact)
                 Menu(state.item, entries)
             }
         }
@@ -122,6 +128,8 @@ private class MenuEntries(
     val locked: Boolean?,
     val onToggleLock: () -> Unit,
     val onPinShortcut: ((AppShortcut) -> Unit)?,
+    val onStore: (() -> Unit)?,
+    val onShare: (() -> Unit)?,
 )
 
 @Composable
@@ -153,6 +161,8 @@ private fun Menu(item: AppItem, e: MenuEntries) {
             MenuEntry(stringResource(if (e.locked) R.string.menu_unlock else R.string.menu_lock), e.onToggleLock, Modifier.testTag("menu:lock"))
         }
         if (e.onInfo != null) MenuEntry(stringResource(R.string.menu_info), e.onInfo, Modifier.testTag("menu:info"))
+        if (e.onStore != null) MenuEntry(stringResource(R.string.menu_store), e.onStore, Modifier.testTag("menu:store"))
+        if (e.onShare != null) MenuEntry(stringResource(R.string.menu_share), e.onShare, Modifier.testTag("menu:share"))
         if (e.onHide != null) MenuEntry(stringResource(R.string.menu_hide), e.onHide, Modifier.testTag("menu:hide"))
         if (item.removable) MenuEntry(stringResource(R.string.menu_uninstall), e.onUninstall)
     }

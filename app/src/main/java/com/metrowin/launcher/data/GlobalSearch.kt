@@ -20,8 +20,9 @@ data class GlobalResults(
     val contacts: List<ContactMatch> = emptyList(),
     val settings: List<SystemSetting> = emptyList(),
     val webQuery: String? = null,
+    val events: List<EventMatch> = emptyList(),
 ) {
-    val isEmpty: Boolean get() = contacts.isEmpty() && settings.isEmpty() && webQuery == null
+    val isEmpty: Boolean get() = contacts.isEmpty() && settings.isEmpty() && webQuery == null && events.isEmpty()
 
     companion object {
         val Empty = GlobalResults()

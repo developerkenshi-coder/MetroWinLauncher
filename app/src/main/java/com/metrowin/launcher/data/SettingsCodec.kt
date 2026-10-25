@@ -77,6 +77,9 @@ object SettingsCodec {
         put("searchWeb", s.searchWeb)
         put("searchEngine", s.searchEngine.code)
         put("searchAnswers", s.searchAnswers)
+        put("searchCurrency", s.searchCurrency)
+        put("searchCalendar", s.searchCalendar)
+        put("compactList", s.compactList)
         put("rememberSearches", s.rememberSearches)
         put("iconPack", s.iconPack)
         put("showFrequentApps", s.showFrequentApps)
@@ -196,6 +199,9 @@ object SettingsCodec {
             searchWeb = o.optBoolean("searchWeb", base.searchWeb),
             searchEngine = if (o.has("searchEngine")) SearchEngine.fromCode(o.optString("searchEngine")) else base.searchEngine,
             searchAnswers = o.optBoolean("searchAnswers", base.searchAnswers),
+            searchCurrency = o.optBoolean("searchCurrency", base.searchCurrency),
+            searchCalendar = o.optBoolean("searchCalendar", base.searchCalendar),
+            compactList = o.optBoolean("compactList", base.compactList),
             rememberSearches = o.optBoolean("rememberSearches", base.rememberSearches),
             iconPack = o.optString("iconPack", base.iconPack),
             showFrequentApps = o.optBoolean("showFrequentApps", base.showFrequentApps),

@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -18,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.AppFilter
+import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.data.SearchEngine
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.ui.anim.metroPress
@@ -30,6 +34,9 @@ fun AppsPage(env: SettingsEnv) {
     val hidden = remember(env.apps, env.settings.hiddenApps) { AppFilter.hidden(env.apps, env.settings) }
     val renamed = remember(env.apps, env.settings.appLabels) { env.apps.filter { it.id in env.settings.appLabels && !it.pinOnly } }
     val locked = remember(env.apps, env.settings.lockedApps) { env.apps.filter { it.id in env.settings.lockedApps && !it.pinOnly } }
+    val context = LocalContext.current
+    // The calendar is read with the calendar permission, asked once when the switch is turned on.
+    val calendarPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     SettingsPage {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.apps_list_title))
@@ -42,6 +49,11 @@ fun AppsPage(env: SettingsEnv) {
                 stringResource(R.string.apps_new), env.settings.showNewApps,
                 onChange = { value -> env.onChange { it.copy(showNewApps = value) } },
                 hint = stringResource(R.string.apps_new_hint), tag = "apps:new",
+            )
+            ToggleSetting(
+                stringResource(R.string.apps_compact), env.settings.compactList,
+                onChange = { value -> env.onChange { it.copy(compactList = value) } },
+                hint = stringResource(R.string.apps_compact_hint), tag = "apps:compact",
             )
             ToggleSetting(
                 stringResource(R.string.apps_categories), env.settings.showCategories,
@@ -81,6 +93,20 @@ fun AppsPage(env: SettingsEnv) {
                 stringResource(R.string.apps_answers), env.settings.searchAnswers,
                 onChange = { value -> env.onChange { it.copy(searchAnswers = value) } },
                 hint = stringResource(R.string.apps_answers_hint), tag = "apps:answers",
+            )
+            ToggleSetting(
+                stringResource(R.string.apps_currency), env.settings.searchCurrency,
+                onChange = { value -> env.onChange { it.copy(searchCurrency = value) } },
+                enabled = env.settings.searchAnswers,
+                hint = stringResource(R.string.apps_currency_hint), tag = "apps:currency",
+            )
+            ToggleSetting(
+                stringResource(R.string.apps_calendar), env.settings.searchCalendar,
+                onChange = { value ->
+                    env.onChange { it.copy(searchCalendar = value) }
+                    if (value && !LivePermissions.isGranted(context, LivePermissions.calendar)) calendarPermission.launch(LivePermissions.calendar)
+                },
+                hint = stringResource(R.string.apps_calendar_hint), tag = "apps:calendar",
             )
             ToggleSetting(
                 stringResource(R.string.apps_remember), env.settings.rememberSearches,

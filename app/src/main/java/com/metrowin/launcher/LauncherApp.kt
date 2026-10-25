@@ -88,6 +88,9 @@ import com.metrowin.launcher.data.GlobalResults
 import com.metrowin.launcher.data.GlobalSearch
 import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.data.PhoneCalls
+import com.metrowin.launcher.data.AppLinks
+import com.metrowin.launcher.data.Currencies
+import com.metrowin.launcher.data.QuickAnswer
 import com.metrowin.launcher.data.QuickAnswers
 import com.metrowin.launcher.data.LocalWidgetHost
 import com.metrowin.launcher.data.RecentApps
@@ -189,6 +192,7 @@ private val TWO_FINGER_SWIPE = 96.dp
 
 /** The contacts are looked for once the typing has paused this long. */
 private const val CONTACT_SEARCH_DELAY_MS = 220L
+private const val CURRENCY_DELAY_MS = 350L
 
 /**
  * The launcher: a pager with the Start screen and the app list, plus the pages and overlays that sit
@@ -341,14 +345,27 @@ fun LauncherApp(vm: LauncherViewModel) {
     val searchResults = remember(query, listItems) { AppSearch.filter(listItems, query) }
     val recentSearches by vm.recentSearches.collectAsStateWithLifecycle()
     // What the search box answers by itself: a sum, a conversion, a number, a link, a timer or an alarm.
-    val answers = remember(query, settings.searchAnswers) {
+    // A throw of dice or a coin is made again when it is touched.
+    var rollSeed by remember { mutableIntStateOf(0) }
+    val localAnswers = remember(query, settings.searchAnswers, rollSeed) {
         if (settings.searchAnswers) QuickAnswers.of(query) else emptyList()
     }
+    // A currency conversion needs the rates: they come once the typing pauses, and only when the user allowed it.
+    var currencyAnswer by remember { mutableStateOf<QuickAnswer.Currency?>(null) }
+    LaunchedEffect(query, settings.searchAnswers, settings.searchCurrency) {
+        currencyAnswer = null
+        val asked = if (settings.searchAnswers && settings.searchCurrency) Currencies.parse(query) else null
+        if (asked != null) {
+            delay(CURRENCY_DELAY_MS)
+            currencyAnswer = vm.currencyAnswer(asked)
+        }
+    }
+    val answers = currencyAnswer?.let { listOf(it) + localAnswers } ?: localAnswers
 
     // What the search finds besides apps. The settings and the web offer are known at once; the contacts follow
     // when the typing pauses, so each key does not query the contacts.
     var globalResults by remember { mutableStateOf(GlobalResults.Empty) }
-    LaunchedEffect(query, settings.searchContacts, settings.searchSettings, settings.searchWeb) {
+    LaunchedEffect(query, settings.searchContacts, settings.searchSettings, settings.searchWeb, settings.searchCalendar) {
         if (query.isBlank()) {
             globalResults = GlobalResults.Empty
             return@LaunchedEffect
@@ -364,6 +381,10 @@ fun LauncherApp(vm: LauncherViewModel) {
         if (settings.searchContacts) {
             delay(CONTACT_SEARCH_DELAY_MS)
             globalResults = globalResults.copy(contacts = vm.searchContacts(query))
+        }
+        if (settings.searchCalendar) {
+            if (!settings.searchContacts) delay(CONTACT_SEARCH_DELAY_MS)
+            globalResults = globalResults.copy(events = vm.searchEvents(query))
         }
     }
 
@@ -1070,13 +1091,18 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onCategory = { category = it },
                             answers = answers,
                             onAnswer = { answer ->
-                                vm.rememberSearch(query)
-                                vm.perform(answer)
+                                if (answer is QuickAnswer.Dice || answer is QuickAnswer.Coin) {
+                                    rollSeed++
+                                } else {
+                                    vm.rememberSearch(query)
+                                    vm.perform(answer)
+                                }
                             },
                             recentSearches = recentSearches.takeIf { settings.rememberSearches }.orEmpty(),
                             onClearRecents = vm::clearSearches,
                             engine = settings.searchEngine,
                             onSearchSubmit = vm::rememberSearch,
+                            compact = settings.compactList,
                         )
                     },
                 )
@@ -1122,6 +1148,23 @@ fun LauncherApp(vm: LauncherViewModel) {
                         } else {
                             null
                         },
+                        onStore = if (state.item.packageName?.let(AppLinks::valid) == true && !state.item.pinOnly) {
+                            {
+                                menu = null
+                                vm.openInStore(state.item)
+                            }
+                        } else {
+                            null
+                        },
+                        onShare = if (state.item.packageName?.let(AppLinks::valid) == true && !state.item.pinOnly) {
+                            {
+                                menu = null
+                                vm.shareApp(state.item)
+                            }
+                        } else {
+                            null
+                        },
+                        compact = settings.compactList,
                         locked = if (lockable) state.item.id in settings.lockedApps else null,
                         onToggleLock = {
                             menu = null

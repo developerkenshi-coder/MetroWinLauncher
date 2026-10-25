@@ -894,4 +894,38 @@
         <item quantity="one">in %1$d day</item>
         <item quantity="other">in %1$d days</item>
     </plurals>
+
+    <!-- Second round: answers in the search box, calendar, compact list, app menu -->
+    <string name="answer_worldtime">%1$s in %2$s</string>
+    <string name="answer_day_same">same day</string>
+    <string name="answer_today">today</string>
+    <string name="answer_until">until %1$s</string>
+    <string name="answer_since">since %1$s</string>
+    <string name="answer_roll_again">touch to roll again</string>
+    <string name="answer_heads">heads</string>
+    <string name="answer_tails">tails</string>
+    <string name="answer_flip_again">touch to flip again</string>
+    <string name="answer_currency_subtitle">rates of %1$s · touch to copy</string>
+    <string name="apps_currency">currency conversions</string>
+    <string name="apps_currency_hint">“100 usd in eur”, “50 dollars in euros”. Asks api.frankfurter.dev (the rates of the European Central Bank) once in a while; it sends nothing you type. Off until you turn it on.</string>
+    <string name="apps_calendar">search the calendar</string>
+    <string name="apps_calendar_hint">Events of the next six months whose title matches. Needs the calendar permission; it is read on the phone and nothing leaves it.</string>
+    <string name="search_section_events">calendar</string>
+    <string name="search_event_subtitle">event</string>
+    <string name="apps_compact">compact list</string>
+    <string name="apps_compact_hint">Smaller squares and tighter rows: more apps on the screen.</string>
+    <string name="menu_store">open in the store</string>
+    <string name="menu_share">share the link</string>
+    <plurals name="answer_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="answer_in_days">
+        <item quantity="one">in %1$d day</item>
+        <item quantity="other">in %1$d days</item>
+    </plurals>
+    <plurals name="answer_days_ago">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
 </resources>

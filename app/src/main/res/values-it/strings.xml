@@ -895,4 +895,41 @@
         <item quantity="many">tra %1$d giorni</item>
         <item quantity="other">tra %1$d giorni</item>
     </plurals>
+
+    <!-- Second round: answers in the search box, calendar, compact list, app menu -->
+    <string name="answer_worldtime">%1$s a %2$s</string>
+    <string name="answer_day_same">stesso giorno</string>
+    <string name="answer_today">oggi</string>
+    <string name="answer_until">fino a %1$s</string>
+    <string name="answer_since">da %1$s</string>
+    <string name="answer_roll_again">tocca per rilanciare</string>
+    <string name="answer_heads">testa</string>
+    <string name="answer_tails">croce</string>
+    <string name="answer_flip_again">tocca per rilanciare la moneta</string>
+    <string name="answer_currency_subtitle">tassi del %1$s · tocca per copiare</string>
+    <string name="apps_currency">conversioni di valuta</string>
+    <string name="apps_currency_hint">“100 usd in eur”, “50 dollari in euro”. Chiede ogni tanto a api.frankfurter.dev (i tassi della Banca centrale europea); non invia nulla di ciò che scrivi. Spento finché non lo accendi.</string>
+    <string name="apps_calendar">cerca nel calendario</string>
+    <string name="apps_calendar_hint">Gli eventi dei prossimi sei mesi il cui titolo corrisponde. Serve il permesso del calendario; viene letto sul telefono e non esce nulla.</string>
+    <string name="search_section_events">calendario</string>
+    <string name="search_event_subtitle">evento</string>
+    <string name="apps_compact">elenco compatto</string>
+    <string name="apps_compact_hint">Riquadri più piccoli e righe più strette: più app sullo schermo.</string>
+    <string name="menu_store">apri nello store</string>
+    <string name="menu_share">condividi il link</string>
+    <plurals name="answer_days">
+        <item quantity="one">%1$d giorno</item>
+        <item quantity="many">%1$d giorni</item>
+        <item quantity="other">%1$d giorni</item>
+    </plurals>
+    <plurals name="answer_in_days">
+        <item quantity="one">tra %1$d giorno</item>
+        <item quantity="many">tra %1$d giorni</item>
+        <item quantity="other">tra %1$d giorni</item>
+    </plurals>
+    <plurals name="answer_days_ago">
+        <item quantity="one">%1$d giorno fa</item>
+        <item quantity="many">%1$d giorni fa</item>
+        <item quantity="other">%1$d giorni fa</item>
+    </plurals>
 </resources>
