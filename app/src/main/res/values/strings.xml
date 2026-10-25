@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">MetroWin Launcher</string>
+
+    <!-- Windows Phone stock apps, same names as on Windows Phone 8.1 -->
+    <string name="stock_alarms">Alarms</string>
+    <string name="stock_batterysaver">Battery Saver</string>
+    <string name="stock_calculator">Calculator</string>
+    <string name="stock_calendar">Calendar</string>
+    <string name="stock_camera">Camera</string>
+    <string name="stock_cortana">Cortana</string>
+    <string name="stock_datasense">Data Sense</string>
+    <string name="stock_excel">Excel</string>
+    <string name="stock_files">Files</string>
+    <string name="stock_finance">Finance</string>
+    <string name="stock_games">Games</string>
+    <string name="stock_internetexplorer">Internet Explorer</string>
+    <string name="stock_mail">Mail</string>
+    <string name="stock_maps">Maps</string>
+    <string name="stock_messaging">Messaging</string>
+    <string name="stock_music">Music</string>
+    <string name="stock_news">News</string>
+    <string name="stock_office">Office</string>
+    <string name="stock_onedrive">OneDrive</string>
+    <string name="stock_onenote">OneNote</string>
+    <string name="stock_people">People</string>
+    <string name="stock_phone">Phone</string>
+    <string name="stock_photos">Photos</string>
+    <string name="stock_podcasts">Podcasts</string>
+    <string name="stock_powerpoint">PowerPoint</string>
+    <string name="stock_settings">Settings</string>
+    <string name="stock_skype">Skype</string>
+    <string name="stock_sports">Sports</string>
+    <string name="stock_storagesense">Storage Sense</string>
+    <string name="stock_store">Store</string>
+    <string name="stock_video">Video</string>
+    <string name="stock_voicerecorder">Voice Recorder</string>
+    <string name="stock_wallet">Wallet</string>
+    <string name="stock_weather">Weather</string>
+    <string name="stock_word">Word</string>
+    <string name="stock_xbox">Xbox</string>
+
+    <!-- start+theme (the launcher's own settings) -->
+    <string name="settings_start_theme">start+theme</string>
+    <string name="settings_header">SETTINGS</string>
+    <string name="theme_dark">dark</string>
+    <string name="theme_light">light</string>
+    <string name="theme_accent">accent color</string>
+    <string name="theme_start_background">start background</string>
+    <string name="theme_choose_photo">choose photo</string>
+    <string name="theme_remove_photo">remove</string>
+    <string name="theme_start_background_hint">Tiles of the built-in apps show the photo through them.</string>
+    <string name="theme_more_tiles">show more tiles</string>
+    <string name="toggle_on">On</string>
+    <string name="toggle_off">Off</string>
+    <string name="photo_failed">Can\'t use this photo</string>
+
+    <string name="search_apps">search</string>
+
+    <!-- Kid's Corner -->
+    <string name="kids_title">kid\'s corner</string>
+    <string name="kids_intro">Share your phone with a child: only the apps you choose show up, and the rest of the phone stays out of reach. To leave, confirm with your screen lock.</string>
+    <string name="kids_start">start kid\'s corner</string>
+    <string name="kids_apps">apps</string>
+    <string name="kids_exit">exit</string>
+    <string name="kids_exit_title">Leave kid\'s corner</string>
+    <string name="kids_pin_hint">For a stronger lock, turn on screen pinning in the Android settings.</string>
+
+    <!-- Action Center -->
+    <string name="ac_notifications">notifications</string>
+    <string name="ac_clear_all">clear all</string>
+    <string name="ac_empty">No new notifications</string>
+    <string name="ac_all_settings">all settings</string>
+    <string name="ac_access_needed">Turn on notification access to see your notifications here, and to count them on the tiles.</string>
+    <string name="ac_turn_on">turn on</string>
+    <string name="qa_wifi">Wi-Fi</string>
+    <string name="qa_bluetooth">Bluetooth</string>
+    <string name="qa_airplane">Airplane mode</string>
+    <string name="qa_flashlight">Flashlight</string>
+    <string name="qa_quiet_hours">Quiet hours</string>
+    <string name="qa_rotation">Rotation lock</string>
+    <string name="qa_location">Location</string>
+    <string name="qa_hotspot">Internet sharing</string>
+    <string name="qa_vpn">VPN</string>
+    <string name="qa_cast">Project my screen</string>
+    <string name="qa_brightness">Brightness</string>
+    <string name="qa_camera">Camera</string>
+    <string name="settings_actions">notifications+actions</string>
+    <string name="settings_quick_actions">quick actions</string>
+    <string name="settings_pick_action">Choose what the highlighted button does.</string>
+    <string name="settings_notification_access">notification access</string>
+    <string name="settings_manage">manage</string>
+    <string name="folder_default_name">folder</string>
+    <string name="folder_name">folder name</string>
+
+    <!-- Live tiles -->
+    <string name="live_today">today</string>
+    <string name="live_tomorrow">tomorrow</string>
+
+    <!-- App list context menu -->
+    <string name="menu_pin">pin to start</string>
+    <string name="menu_unpin">unpin from start</string>
+    <string name="menu_uninstall">uninstall</string>
+    <string name="launch_failed">Can\'t open this app</string>
+
+    <!-- First run permissions page -->
+    <string name="perm_photos">photos</string>
+    <string name="perm_photos_why">Flip through your latest photos on the Photos tile.</string>
+    <string name="perm_calendar">calendar</string>
+    <string name="perm_calendar_why">Show your next appointment on the Calendar tile.</string>
+    <string name="perm_contacts">contacts</string>
+    <string name="perm_contacts_why">Show the faces of your contacts on the People tile.</string>
+    <string name="perm_calls">call history</string>
+    <string name="perm_calls_why">Count your missed calls on the Phone tile.</string>
+    <string name="perm_allow">allow</string>
+
+    <!-- settings: structure -->
+    <string name="settings_group_launcher">launcher</string>
+    <string name="settings_group_tools">tools</string>
+    <string name="sec_start_theme_desc">Theme and accent color, Start photo, clock, number of Start screens</string>
+    <string name="sec_actions_desc">Quick buttons of the Action Center, notification access, replies and groups</string>
+    <string name="sec_kids_desc">Share the phone with a child, with only the apps you choose</string>
+    <string name="theme_mode">theme</string>
+    <string name="theme_auto_system">as Android</string>
+    <string name="theme_auto_hours">by the hour</string>
+    <string name="theme_dark_from">dark from</string>
+    <string name="theme_dark_to">until</string>
+    <string name="theme_hours_hint">The launcher is dark between these hours and light the rest of the day.</string>
+    <string name="theme_parallax">photo moves slower than the tiles</string>
+    <string name="theme_start_pages">start screens</string>
+    <string name="theme_start_pages_hint">With more screens, swipe sideways between them. Tiles you remove from a screen stay on it until you move them.</string>
+    <string name="stepper_minus">less</string>
+    <string name="stepper_plus">more</string>
+    <string name="theme_auto_accent">accent from the Start photo</string>
+    <string name="theme_auto_accent_hint">The accent takes the main color of the photo, as the closest of the 20 Windows Phone colors.</string>
+
+    <!-- edit bar and Start clock -->
+    <string name="edit_size_small">small tile</string>
+    <string name="edit_size_medium">medium tile</string>
+    <string name="edit_size_wide">wide tile</string>
+    <string name="edit_page_previous">move to the previous Start screen</string>
+    <string name="edit_page_next">move to the next Start screen</string>
+    <string name="edit_page">screen %1$d</string>
+    <string name="edit_done">done</string>
+    <string name="theme_show_clock">clock and date on Start</string>
+
+    <!-- gestures section -->
+    <string name="sec_gestures">gestures</string>
+    <string name="sec_gestures_desc">Edge pulls, swipes, taps, double tap and two-finger actions</string>
+    <string name="gest_edge_pull">pull down from the top edge</string>
+    <string name="gest_edge_pull_hint">Opens the Action Center from any page, not only from the top of Start.</string>
+    <string name="gest_edge_back_pan">turn pages from the screen edge</string>
+    <string name="gest_edge_back_pan_hint">On Start, the swipe from the edge that Android uses for Back goes to the next or the previous page.</string>
+    <string name="gest_tap_sound">click sound on tap</string>
+    <string name="gest_tap_haptics">vibrate on tap</string>
+    <string name="gest_tap_hint">They follow the touch sounds and the vibration on touch switches of Android.</string>
+
+    <!-- apps section -->
+    <string name="sec_apps">apps</string>
+    <string name="sec_apps_desc">Hidden apps, what the search looks in, icon packs</string>
+    <string name="menu_hide">hide from list</string>
+    <string name="apps_hidden">hidden apps</string>
+    <string name="apps_hidden_none">No hidden apps. Press and hold an app in the list and choose \"hide from list\".</string>
+    <string name="apps_hidden_hint">Touch an app to show it in the list again. Hidden apps still open from their tile on Start.</string>
+
+    <!-- torch tile, layout backup and about -->
+    <string name="torch_title">Torch</string>
+    <string name="sec_backup">backup+sync</string>
+    <string name="sec_backup_desc">Save and restore the layout, backup folder, sync between phones</string>
+    <string name="backup_export">export layout</string>
+    <string name="backup_export_hint">Saves the Start screens, the shortcuts and the settings in a file you can keep or copy to another phone.</string>
+    <string name="backup_import">import layout</string>
+    <string name="backup_import_hint">Replaces the Start screens and the settings with those of a file. Apps this phone does not have are left out.</string>
+    <string name="backup_exported">Layout saved</string>
+    <string name="backup_imported">Layout restored</string>
+    <string name="backup_failed">That did not work</string>
+    <string name="backup_not_layout">This is not a MetroWin layout file</string>
+    <string name="sec_about">about</string>
+    <string name="sec_about_desc">Version, credits and licenses</string>
+    <string name="about_version">version</string>
+    <string name="about_android">android</string>
+    <string name="about_device">device</string>
+    <string name="about_refresh">screen refresh</string>
+    <string name="about_credits">credits</string>
+    <string name="about_inspired">Inspired by Windows Phone. This is not a Microsoft product: Windows Phone and the names of its apps belong to Microsoft.</string>
+    <string name="about_font">Open Sans, by Steve Matteson, SIL Open Font License 1.1.</string>
+    <string name="about_libraries">Built with AndroidX and Jetpack Compose, Apache License 2.0.</string>
+    <string name="about_icons">The phone glyph comes from the Material Design icons, Apache License 2.0.</string>
+    <string name="about_weather">Weather data by Open-Meteo.com, licensed CC BY 4.0.</string>
+
+    <!-- tile styles and notification peek -->
+    <string name="edit_style_standard">standard tile</string>
+    <string name="edit_style_iconic">iconic tile: icon and a big counter</string>
+    <string name="edit_style_cycle">cycle tile: photos fading into one another</string>
+    <string name="edit_style_short_standard">standard</string>
+    <string name="edit_style_short_iconic">iconic</string>
+    <string name="edit_style_short_cycle">cycle</string>
+    <string name="notif_peek">tiles show the latest notification</string>
+    <string name="notif_peek_hint">A tile with a notification flips to show its text. Anyone who sees your screen sees it too, so it is off until you turn it on.</string>
+
+    <!-- weather and battery -->
+    <string name="weather_clear">Clear</string>
+    <string name="weather_partly">Partly cloudy</string>
+    <string name="weather_cloudy">Cloudy</string>
+    <string name="weather_fog">Fog</string>
+    <string name="weather_drizzle">Drizzle</string>
+    <string name="weather_rain">Rain</string>
+    <string name="weather_snow">Snow</string>
+    <string name="weather_showers">Showers</string>
+    <string name="weather_storm">Thunderstorm</string>
+    <string name="weather_title">Forecast</string>
+    <string name="battery_charging">charging</string>
+    <string name="battery_full">fully charged</string>
+    <string name="battery_until_full">%1$s until full</string>
+    <string name="battery_discharging">on battery</string>
+
+    <!-- live tiles settings and the forecast page -->
+    <string name="sec_live_tiles">live tiles</string>
+    <string name="sec_live_tiles_desc">Weather city and units, apps that show their own tile</string>
+    <string name="weather_city">weather city</string>
+    <string name="weather_city_none">No city yet</string>
+    <string name="weather_search_hint">search for a city</string>
+    <string name="weather_search">search</string>
+    <string name="weather_no_results">No city found with that name</string>
+    <string name="weather_search_failed">Could not search. Is there a connection?</string>
+    <string name="weather_my_location">My location</string>
+    <string name="weather_use_location">use my location</string>
+    <string name="weather_no_location">Could not find where you are</string>
+    <string name="weather_fahrenheit">temperatures in Fahrenheit</string>
+    <string name="weather_hint">Weather comes from Open-Meteo and is fetched when the launcher opens, at most every half hour. The city is the only thing sent.</string>
+    <string name="weather_page_header">FORECAST</string>
+    <string name="weather_choose_city">choose a city</string>
+    <string name="weather_refresh">refresh</string>
+    <string name="weather_not_set">Choose a city to see the weather here and on the tile.</string>
+    <string name="weather_updated">updated %1$s</string>
+
+    <!-- shortcuts on Start -->
+    <string name="edit_add">add a contact, a website or a widget</string>
+    <string name="add_contact">pin a contact</string>
+    <string name="add_site">pin a website</string>
+    <string name="add_widget">add a widget</string>
+    <string name="site_title_hint">name</string>
+    <string name="site_address_hint">web address</string>
+    <string name="site_invalid">That does not look like a web address.</string>
+    <string name="contact_failed">Could not read that contact</string>
+
+    <!-- widgets -->
+    <string name="widgets_header">WIDGETS</string>
+    <string name="widgets_title">widgets</string>
+    <string name="widgets_none">This phone has no widgets to add.</string>
+    <string name="widget_unavailable">widget not available</string>
+
+    <!-- global search -->
+    <string name="search_section_contacts">contacts</string>
+    <string name="search_section_settings">settings</string>
+    <string name="search_section_web">web</string>
+    <string name="search_web_for">Search the web for \"%1$s\"</string>
+    <string name="search_contact_subtitle">contact</string>
+    <string name="search_setting_subtitle">android settings</string>
+    <string name="apps_search_contacts">search contacts</string>
+    <string name="apps_search_settings">search Android settings</string>
+    <string name="apps_search_web">offer a web search</string>
+    <string name="apps_search_hint">What you type in the app list is also looked for in these. The web search opens DuckDuckGo in your browser; nothing is sent until you touch it.</string>
+    <string name="apps_search_title">search</string>
+    <string name="ss_wifi">Wi-Fi</string>
+    <string name="ss_bluetooth">Bluetooth</string>
+    <string name="ss_airplane">Airplane mode</string>
+    <string name="ss_display">Display</string>
+    <string name="ss_sound">Sound</string>
+    <string name="ss_battery">Battery</string>
+    <string name="ss_storage">Storage</string>
+    <string name="ss_apps">Apps</string>
+    <string name="ss_location">Location</string>
+    <string name="ss_security">Security</string>
+    <string name="ss_privacy">Privacy</string>
+    <string name="ss_accessibility">Accessibility</string>
+    <string name="ss_date">Date and time</string>
+    <string name="ss_language">Language</string>
+    <string name="ss_keyboard">Keyboard</string>
+    <string name="ss_data">Data usage</string>
+    <string name="ss_nfc">NFC</string>
+    <string name="ss_vpn">VPN</string>
+    <string name="ss_quiet">Do not disturb</string>
+    <string name="ss_hotspot">Hotspot and tethering</string>
+    <string name="ss_cast">Cast</string>
+    <string name="ss_defaults">Default apps</string>
+    <string name="ss_developer">Developer options</string>
+    <string name="ss_about">About the phone</string>
+
+    <!-- custom gestures -->
+    <string name="gest_double_tap">double tap on Start</string>
+    <string name="gest_two_down">two fingers swipe down</string>
+    <string name="gest_two_up">two fingers swipe up</string>
+    <string name="gest_actions_hint">Choose what each gesture does. A double tap waits a moment before a single tap is understood, only while one is set.</string>
+    <string name="gact_none">nothing</string>
+    <string name="gact_lock">lock the screen</string>
+    <string name="gact_settings">open the Android settings</string>
+    <string name="gact_action_center">open the Action Center</string>
+    <string name="gact_apps">open the app list</string>
+    <string name="gact_torch">switch the flashlight</string>
+    <string name="gact_camera">open the camera</string>
+    <string name="gact_voice">start voice commands</string>
+    <string name="gact_search">search the apps</string>
+    <string name="gest_lock_service">screen lock service</string>
+    <string name="gest_lock_service_on">On: the launcher can lock the screen</string>
+    <string name="gest_lock_service_off">Off: locking the screen needs it</string>
+    <string name="gest_lock_service_open">open accessibility settings</string>
+    <string name="gest_lock_service_hint">Android only lets an app lock the screen through an accessibility service. This one does nothing else: it reads nothing from the screen.</string>
+    <string name="gest_lock_needs_service">Turn on the screen lock service in the accessibility settings first</string>
+    <string name="lock_service_label">MetroWin screen lock</string>
+    <string name="lock_service_description">Lets the MetroWin launcher lock the screen when you choose that for a gesture. It does not read or change anything on the screen.</string>
+
+    <!-- scheduled backup -->
+    <string name="backup_folder">backup folder</string>
+    <string name="backup_folder_none">not chosen</string>
+    <string name="backup_choose_folder">choose a folder</string>
+    <string name="backup_forget_folder">stop using this folder</string>
+    <string name="backup_every">back up by itself</string>
+    <string name="backup_every_off">never</string>
+    <string name="backup_every_day">every day</string>
+    <string name="backup_every_week">every week</string>
+    <string name="backup_every_month">every month</string>
+    <string name="backup_now">back up now</string>
+    <string name="backup_restore">restore from the backup</string>
+    <string name="backup_last">last backup</string>
+    <string name="backup_never">never</string>
+    <string name="backup_folder_hint">Choose any folder, also one of Google Drive or another cloud app that shows in the file picker. The layout is saved there as metrowin-layout.json when the launcher goes to the background, no more often than you choose.</string>
+    <string name="backup_saved">Backup saved</string>
+    <string name="backup_no_file">There is no backup in that folder</string>
+
+    <!-- profiles -->
+    <string name="sec_profiles">profiles</string>
+    <string name="sec_profiles_desc">Work profile and private space: pause them, show or hide their apps</string>
+    <string name="profile_work">work profile</string>
+    <string name="profile_private">private space</string>
+    <string name="profile_other">another profile</string>
+    <string name="profile_active">active</string>
+    <string name="profile_paused">paused</string>
+    <string name="profile_pause">pause</string>
+    <string name="profile_resume">resume</string>
+    <string name="profile_unlock">unlock</string>
+    <string name="profile_show_apps">show its apps in the app list</string>
+    <string name="profile_none">This phone has no work profile or private space.</string>
+    <string name="profile_hint">A paused profile runs nothing and its apps cannot be opened until it is resumed. Android asks for your authentication to unlock the private space.</string>
+
+    <!-- voice -->
+    <string name="voice_listening">listening…</string>
+    <string name="voice_hint">Try “open Maps”, “call Anna”, “turn on the torch”, “search for pizza”</string>
+    <string name="voice_heard">I heard</string>
+    <string name="voice_not_found">I could not find “%1$s” on this phone</string>
+    <string name="voice_no_contact">No contact called “%1$s”</string>
+    <string name="voice_nothing">I did not catch that</string>
+    <string name="voice_try_again">try again</string>
+    <string name="voice_search_web">search the web</string>
+    <string name="voice_unavailable">Speech recognition is not available on this phone.</string>
+    <string name="voice_permission">Allow the microphone to talk to the launcher.</string>
+    <string name="voice_network">Speech recognition needs a connection for this language.</string>
+    <string name="voice_busy">Speech recognition is busy. Try again in a moment.</string>
+    <string name="voice_cancel" tools:ignore="ButtonCase">cancel</string>
+
+    <!-- voice settings -->
+    <string name="sec_voice">voice</string>
+    <string name="sec_voice_desc">Speak to the launcher: open apps, call, search, torch</string>
+    <string name="voice_set_button">microphone in the search box</string>
+    <string name="voice_set_button_hint">Shows a microphone in the search box of the app list.</string>
+    <string name="voice_set_offline">prefer recognition on the phone</string>
+    <string name="voice_set_offline_hint">Uses the offline voice model when the phone has one for your language. Otherwise your voice goes to the speech service you chose in Android.</string>
+    <string name="voice_try">try it now</string>
+    <string name="voice_examples">what you can say</string>
+    <string name="voice_ex_open">“open Maps”, “start the camera”</string>
+    <string name="voice_ex_call">“call Anna” opens the card of the contact</string>
+    <string name="voice_ex_search">“search for pizza recipes”, or just say what you want to know</string>
+    <string name="voice_ex_torch">“turn on the torch”, “turn off the torch”</string>
+    <string name="voice_ex_launcher">“weather”, “lock the screen”, “action center”, “all apps”, “launcher settings”</string>
+    <string name="voice_ex_settings">“open Wi-Fi”, “Bluetooth”, “battery”… the Android settings</string>
+    <string name="voice_gesture_hint">You can also start it with a double tap or a two-finger swipe: choose “voice” in Gestures.</string>
+
+    <!-- screen settings -->
+    <string name="sec_screen">screen</string>
+    <string name="sec_screen_desc">Rotation, landscape and refresh rate</string>
+    <string name="screen_orientation">rotation</string>
+    <string name="screen_orient_portrait">portrait only</string>
+    <string name="screen_orient_auto">follow the phone\'s rotation</string>
+    <string name="screen_orient_landscape">landscape only</string>
+    <string name="screen_orient_hint">In landscape the Start screen fits more columns of tiles. “Follow the phone” respects the rotation lock of Android.</string>
+    <string name="screen_high_refresh">highest refresh rate</string>
+    <string name="screen_high_refresh_hint">Asks the screen for its fastest mode (120 Hz and more) at the current resolution. Turn it off to let Android decide and save some battery.</string>
+
+    <!-- icons and themes -->
+    <string name="sec_icons">icons &amp; themes</string>
+    <string name="sec_icons_desc">Icon packs and theme files you can share</string>
+    <string name="icons_pack">icon pack</string>
+    <string name="icons_pack_default">the icons of the apps</string>
+    <string name="icons_pack_none">No icon pack is installed. Packs made for ADW, Nova, Apex or Go Launcher work here.</string>
+    <string name="icons_pack_hint">A pack replaces the icons of the apps it has an icon for. The Metro apps of the phone keep their glyphs.</string>
+    <string name="theme_heading">theme file</string>
+    <string name="theme_export">export the theme</string>
+    <string name="theme_export_hint">Saves the colours, the dark or light mode, the clock, the tile size and the icon pack in a small file to share.</string>
+    <string name="theme_import">import a theme</string>
+    <string name="theme_import_hint">Applies a theme file. Your tiles and your other settings stay as they are.</string>
+    <string name="theme_exported">Theme saved</string>
+    <string name="theme_imported">Theme applied</string>
+    <string name="theme_failed">Could not save the theme</string>
+    <string name="theme_not_theme">That file is not a theme of this launcher</string>
+
+    <!-- lock screen -->
+    <string name="sec_lock">lock screen</string>
+    <string name="sec_lock_desc">The Metro lock screen: photo, clock, alarm, notifications</string>
+    <string name="lock_dream_label">Metro lock screen</string>
+    <string name="lock_preview">preview</string>
+    <string name="lock_photo">lock screen photo</string>
+    <string name="lock_choose_photo">choose a photo</string>
+    <string name="lock_remove_photo">remove the photo</string>
+    <string name="lock_photo_hint">Without its own photo the lock screen uses the Start photo, and black without that.</string>
+    <string name="lock_show_alarm">show the next alarm</string>
+    <string name="lock_show_notifications">show the number of notifications</string>
+    <string name="lock_show_battery">show the battery</string>
+    <string name="lock_apply">use the photo on the phone\'s lock screen</string>
+    <string name="lock_apply_hint">Sets the photo as the wallpaper of the Android lock screen.</string>
+    <string name="lock_applied">Lock screen photo set</string>
+    <string name="lock_apply_failed">Could not set the lock screen photo</string>
+    <string name="lock_no_photo">Choose a photo first, or set a Start photo</string>
+    <string name="lock_dream">screen saver</string>
+    <string name="lock_dream_button">open the screen saver settings</string>
+    <string name="lock_dream_hint">Android does not let a launcher replace its lock screen. The Metro lock screen runs as the screen saver instead: pick “Metro lock screen” there, and it shows while the phone charges or rests on a dock. Swipe it up to leave.</string>
+
+    <!-- launch animation -->
+    <string name="screen_launch">opening an app</string>
+    <string name="launch_turnstile">turnstile: the tiles turn away</string>
+    <string name="launch_expand">expand: the tile grows into the app</string>
+    <string name="screen_launch_hint">Expand keeps the Start screen still and grows the app out of the tile you touched (on the list, out of the middle). Reduce motion in Accessibility turns both off.</string>
+
+    <!-- sync -->
+    <string name="sync_heading">sync between phones</string>
+    <string name="sync_enable">keep Start in sync</string>
+    <string name="sync_needs_folder">Choose a backup folder first: the sync file lives in it. A folder in a cloud app (Google Drive, for example) syncs your phones.</string>
+    <string name="sync_passphrase">passphrase</string>
+    <string name="sync_passphrase_hint">Use the same passphrase on every phone. The file is encrypted with it (AES-256) before it goes in the folder. The passphrase stays on this phone and is never written to the folder: if you lose it, the synced data cannot be read.</string>
+    <string name="sync_now">sync now</string>
+    <string name="sync_last">last sync</string>
+    <string name="sync_never">never</string>
+    <string name="sync_not_ready">Turn sync on, choose a folder and a passphrase first</string>
+    <string name="sync_up_to_date">Everything is in sync</string>
+    <string name="sync_uploaded">Synced: this phone\'s Start is in the folder</string>
+    <string name="sync_applied">Synced: Start updated from the folder</string>
+    <string name="sync_conflict">Both phones changed. This one was kept; the other one is saved in the folder as %1$s</string>
+    <string name="sync_wrong_passphrase">Wrong passphrase for the file in the folder</string>
+    <string name="sync_not_file">The sync file in the folder is damaged or is not ours</string>
+    <string name="sync_failed">Could not reach the folder</string>
+    <string name="sync_hint">The first sync of a phone that finds a file in the folder takes it, and keeps what it had as the backup file in the folder. After that, whatever changed since the last sync goes across; if both phones changed, this one wins and the other is kept as a separate file.</string>
+
+    <!-- notification reply and grouping -->
+    <string name="notif_reply">reply</string>
+    <string name="notif_reply_hint">your reply</string>
+    <string name="notif_send">send</string>
+    <string name="notif_reply_failed">Could not send the reply</string>
+    <string name="notif_inline_reply">reply from the Action Center</string>
+    <string name="notif_inline_reply_hint">Shows a “reply” link on messages that can be answered, and sends your answer to the app that posted it.</string>
+    <string name="notif_group">group notifications by app</string>
+    <string name="notif_group_hint">An app with several notifications shows as one line you can open. Swiping it away clears them all.</string>
+
+    <!-- third-party tiles -->
+    <string name="tp_heading">tiles published by apps</string>
+    <string name="tp_toggle">let apps publish their own tile text</string>
+    <string name="tp_hint">An app that asks for the permission can put a title, a line of text and a number on its own tile, like a Windows Phone live tile. Only its own tile: the launcher knows who is asking.</string>
+    <string name="tp_none">No app has published a tile yet.</string>
+    <string name="tp_clear">clear</string>
+    <string name="permission_publish_tile_label">put live content on its own tile in MetroWin Launcher</string>
+    <string name="permission_publish_tile_description">Lets the app show a title, a line of text and a number on its own tile on the Start screen.</string>
+
+    <!-- accessibility -->
+    <string name="sec_access">accessibility</string>
+    <string name="sec_access_desc">TalkBack, less motion, stronger contrast</string>
+    <string name="access_reduce_motion">reduce motion</string>
+    <string name="access_reduce_motion_hint">Screens fade instead of swinging, tiles stop flipping and tilting, and apps open without an animation. It is also on whenever Android\'s animations are removed.</string>
+    <string name="access_high_contrast">high contrast</string>
+    <string name="access_high_contrast_hint">Tiles get a white frame and stay solid over a Start photo, and grey text turns to full colour.</string>
+    <string name="access_talkback">TalkBack</string>
+    <string name="access_talkback_hint">Every tile says what it is, and its notifications. In the TalkBack actions menu a tile offers: unpin, change size, move earlier, move later (folders: rename, take apart). The app list reads each app and offers its menu.</string>
+    <string name="access_open_settings">open Android accessibility settings</string>
+    <string name="a11y_unpin">Unpin from Start</string>
+    <string name="a11y_resize">Change size</string>
+    <string name="a11y_move_earlier">Move earlier</string>
+    <string name="a11y_move_later">Move later</string>
+    <string name="a11y_rename">Rename folder</string>
+    <string name="a11y_release">Take the folder apart</string>
+    <string name="a11y_more_options">More options</string>
+
+    <!-- quantities -->
+    <plurals name="notif_group_count">
+        <item quantity="one">%1$d notification</item>
+        <item quantity="other">%1$d notifications</item>
+    </plurals>
+    <plurals name="a11y_tile_notifications">
+        <item quantity="one">%1$s, %2$d notification</item>
+        <item quantity="other">%1$s, %2$d notifications</item>
+    </plurals>
+    <plurals name="a11y_folder">
+        <item quantity="one">%1$s, folder with %2$d app</item>
+        <item quantity="other">%1$s, folder with %2$d apps</item>
+    </plurals>
+
+    <!-- tutorial: needs -->
+    <string name="need_home">home app</string>
+    <string name="need_home_why">So that pressing Home brings you here. Android asks you to confirm.</string>
+    <string name="need_location">location</string>
+    <string name="need_location_why">Finds the weather where you are. Used once, when you ask for it: you can also type a city.</string>
+    <string name="need_mic">microphone</string>
+    <string name="need_mic_why">Lets you talk to the launcher. It listens only while the listening screen is open.</string>
+    <string name="need_notifications">notification access</string>
+    <string name="need_notifications_why">Shows your notifications in the Action Center and the counters on the tiles. Android has a settings page for it.</string>
+    <string name="need_lock">lock service</string>
+    <string name="need_lock_why">Lets a gesture lock the screen. It reads nothing from the screen. Turn it on in the accessibility settings.</string>
+    <string name="need_battery">keep running</string>
+    <string name="need_battery_why">Stops Android from closing the launcher to save battery.</string>
+    <string name="need_action_default">make default</string>
+    <string name="need_action_settings">open settings</string>
+    <string name="need_allowed">allowed</string>
+    <string name="tut_next">next</string>
+    <string name="tut_skip">skip</string>
+    <string name="tut_done">let\'s go</string>
+    <string name="tut_replay">show the tutorial again</string>
+    <string name="tut_replay_hint">The tour of the launcher, with the permissions it can ask for.</string>
+    <string name="tut_welcome_label">METROWIN LAUNCHER</string>
+    <string name="tut_welcome_title">welcome</string>
+    <string name="tut_welcome_intro">MetroWin Launcher turns your phone into a Windows Phone Start screen. This short tour shows how to use it, and asks for a few permissions one at a time, only when a feature needs them. Every one of them is optional.</string>
+    <string name="tut_welcome_tip1">Swipe left, or use the buttons below, to go on.</string>
+    <string name="tut_welcome_tip2">Leave at any time with “skip”. You can see the tour again from start+theme → tools → about.</string>
+    <string name="tut_home_label">HOME APP</string>
+    <string name="tut_home_title">make it your home</string>
+    <string name="tut_home_intro">Android opens its Home app every time you press Home. For MetroWin to be what you see, it has to be that app.</string>
+    <string name="tut_home_tip1">Press Home at any time to come back to Start.</string>
+    <string name="tut_home_tip2">If Android asks which launcher to use, choose MetroWin Launcher and “always”.</string>
+    <string name="tut_start_label">START</string>
+    <string name="tut_start_title">your start screen</string>
+    <string name="tut_start_intro">Tiles are your apps and live information, laid out the way you like.</string>
+    <string name="tut_start_tip1">Tap a tile to open it. Touch and hold to edit: remove it, change its size, or drag it somewhere else.</string>
+    <string name="tut_start_tip2">Drop a tile on the middle of another one to make a folder. A folder opens in place.</string>
+    <string name="tut_start_tip3">The arrow after the last tile goes to the next Start screen (you can have three), then to the app list.</string>
+    <string name="tut_start_tip4">In edit mode, “+” adds a contact, a website or a widget to Start.</string>
+    <string name="tut_live_label">LIVE TILES</string>
+    <string name="tut_live_title">live tiles</string>
+    <string name="tut_live_intro">Some tiles show what is happening: your latest photos, your next appointment, the faces of your contacts, your missed calls. The information never leaves your phone.</string>
+    <string name="tut_live_tip1">Tiles flip by themselves, each one at its own time.</string>
+    <string name="tut_live_tip2">In edit mode, choose a tile\'s style: standard, Iconic (a big number) or Cycle (photos).</string>
+    <string name="tut_weather_label">WEATHER</string>
+    <string name="tut_weather_title">weather</string>
+    <string name="tut_weather_intro">The Weather tile shows the forecast of a city. It asks Open-Meteo, an open service, over the internet. Nothing else leaves your phone.</string>
+    <string name="tut_weather_tip1">Choose the city in start+theme → live tiles: by name, or with your location.</string>
+    <string name="tut_weather_tip2">Tap the tile for the forecast of the next days.</string>
+    <string name="tut_apps_label">APP LIST</string>
+    <string name="tut_apps_title">all your apps</string>
+    <string name="tut_apps_intro">Swipe left from Start, or use the arrow, to see every app in alphabetical order.</string>
+    <string name="tut_apps_tip1">Touch a letter to jump to another one. The star takes you to the app you opened last.</string>
+    <string name="tut_apps_tip2">Type in the search box to find apps, contacts and Android settings, or to search the web.</string>
+    <string name="tut_apps_tip3">Touch and hold an app to pin it to Start, hide it or uninstall it.</string>
+    <string name="tut_apps_tip4">Or say it: tap the microphone in the search box and try “open Maps” or “call Anna”.</string>
+    <string name="tut_action_label">ACTION CENTER</string>
+    <string name="tut_action_title">action center</string>
+    <string name="tut_action_intro">Pull down from the very top edge of the screen, on any page, to open it.</string>
+    <string name="tut_action_tip1">Four quick buttons on top, and an arrow for the rest. The torch really switches on; the others open the right screen of Android.</string>
+    <string name="tut_action_tip2">Swipe a notification to the right to dismiss it. When the app allows it you can reply from here, and several notifications of one app are grouped.</string>
+    <string name="tut_action_tip3">Drag the panel back up, or press Back, to close it.</string>
+    <string name="tut_gestures_label">GESTURES</string>
+    <string name="tut_gestures_title">gestures</string>
+    <string name="tut_gestures_intro">Everything follows your finger. A few gestures can do what you choose in start+theme → gestures.</string>
+    <string name="tut_gestures_tip1">On Start, swipe from the right edge to go on to the app list, and from the left edge to go back.</string>
+    <string name="tut_gestures_tip2">Double tap the background of Start, or swipe down or up with two fingers, to lock the screen, switch on the torch, speak, search…</string>
+    <string name="tut_gestures_tip3">Back goes back one layer at a time, and the system gesture moves the screen with your finger.</string>
+    <string name="tut_alive_label">KEEP IT RUNNING</string>
+    <string name="tut_alive_title">keep it running</string>
+    <string name="tut_alive_intro">To save battery, Android can close apps in the background. If it closes the launcher, the counters, the Action Center and the sync stop until you open it again.</string>
+    <string name="tut_alive_tip1">Allow MetroWin Launcher not to be limited by battery optimization, and it stays alive.</string>
+    <string name="tut_alive_tip2">Some phones (Xiaomi, Huawei, Oppo, Samsung…) also have their own “autostart” or “protected apps” list in their settings: add MetroWin Launcher there too.</string>
+    <string name="tut_settings_label">SETTINGS</string>
+    <string name="tut_settings_title">make it yours</string>
+    <string name="tut_settings_intro">Open start+theme in the app list. Each section is a page, in two groups: launcher and tools.</string>
+    <string name="tut_settings_tip1">start+theme: dark or light, accent colors, Start photo, clock, number of Start screens.</string>
+    <string name="tut_settings_tip2">screen: rotation and landscape, how apps open, 120 Hz. accessibility: TalkBack, less motion, more contrast.</string>
+    <string name="tut_settings_tip3">icons &amp; themes: icon packs and theme files to share.</string>
+    <string name="tut_settings_tip4">gestures, notifications+actions, live tiles and apps: what each gesture does, the Action Center, the weather city, hidden apps and search.</string>
+    <string name="tut_settings_tip5">lock screen: the Metro lock screen, as a screen saver, with its photo.</string>
+    <string name="tut_settings_tip6">voice and profiles: speak to the launcher, and pause or hide your work profile and private space.</string>
+    <string name="tut_settings_tip7">backup+sync: a file or a folder, and an encrypted sync between your phones.</string>
+    <string name="tut_settings_tip8">kid\'s corner: Start with only the apps you choose.</string>
+    <string name="tut_settings_tip9">about: the version, and this tour whenever you want it again.</string>
+</resources>
