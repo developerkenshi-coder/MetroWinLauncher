@@ -5,6 +5,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 import android.provider.ContactsContract
 
 /**
@@ -38,7 +39,7 @@ object PhoneCalls {
         if (!LivePermissions.isGranted(context, LivePermissions.contacts)) return null
         return runCatching {
             val resolver = context.contentResolver
-            val contact = ContactsContract.Contacts.lookupContact(resolver, Uri.parse(lookupUri)) ?: return null
+            val contact = ContactsContract.Contacts.lookupContact(resolver, lookupUri.toUri()) ?: return null
             val id = ContentUris.parseId(contact)
             resolver.query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,

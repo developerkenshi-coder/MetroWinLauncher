@@ -91,7 +91,11 @@ class LockAccessibilityService : AccessibilityService() {
     }
 }
 
-/** The things the accessibility service can do for a gesture, with the version of Android that has each. */
+/**
+ * The things the accessibility service can do for a gesture, with the version of Android that has each. The numbers of the
+ * actions are copied into the program when it is built; [perform] checks the version before it asks for one.
+ */
+@android.annotation.SuppressLint("InlinedApi")
 enum class SystemAction(val global: Int, val minSdk: Int) {
     Screenshot(AccessibilityService.GLOBAL_ACTION_TAKE_SCREENSHOT, Build.VERSION_CODES.P),
     PowerMenu(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG, Build.VERSION_CODES.LOLLIPOP),

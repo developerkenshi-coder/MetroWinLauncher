@@ -685,7 +685,7 @@
     <string name="live_report">cosa legge ora il launcher</string>
     <string name="live_report_none">Ancora niente. Con l\'interruttore e l\'accesso alle notifiche accesi, qui compaiono le app che hanno notifiche, con quello che c\'è dentro.</string>
     <string name="live_report_hint">Se un\'app non mostra niente sul suo tile, guarda qui: se c\'è, il tile può mostrarla; se non c\'è, l\'app non ha scritto niente che il launcher possa leggere.</string>
-    <string name="live_report_chats">chat %1$d (%2$d messaggi)</string>
+    <string name="live_report_chats">chat %1$d · messaggi %2$d</string>
     <string name="live_report_others">altre notifiche %1$d</string>
     <string name="live_report_pictures">immagini %1$d</string>
     <string name="live_report_playing">musica</string>
@@ -767,7 +767,6 @@
     <string name="speed_dial_failed">Non è stato scelto nessun numero da chiamare.</string>
     <string name="tile_color_title">colore del riquadro</string>
     <string name="tile_color_default">colore del tema</string>
-    <string name="edit_color">colore del riquadro</string>
     <string name="undo">annulla</string>
     <string name="undo_removed">Riquadro rimosso</string>
     <string name="undo_changed">Riquadro modificato</string>
@@ -775,10 +774,12 @@
     <string name="undo_folder">Cartella modificata</string>
     <plurals name="cd_to">
         <item quantity="one">giorno a %2$s</item>
+        <item quantity="many">giorni a %2$s</item>
         <item quantity="other">giorni a %2$s</item>
     </plurals>
     <plurals name="cd_since">
         <item quantity="one">giorno da %2$s</item>
+        <item quantity="many">giorni da %2$s</item>
         <item quantity="other">giorni da %2$s</item>
     </plurals>
 

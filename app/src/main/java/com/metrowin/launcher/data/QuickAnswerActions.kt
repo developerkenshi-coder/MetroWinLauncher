@@ -2,6 +2,7 @@ package com.metrowin.launcher.data
 
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 import android.provider.AlarmClock
 
 /** What touching a [QuickAnswer] does: an intent to start, or a text to copy. Pure where it can be. */
@@ -11,7 +12,7 @@ object QuickAnswerActions {
         val intent = when (answer) {
             is QuickAnswer.Call -> Intent(Intent.ACTION_DIAL, PhoneCalls.uri(answer.number))
             is QuickAnswer.Message -> Intent(Intent.ACTION_SENDTO, Uri.fromParts("sms", PhoneCalls.clean(answer.number), null))
-            is QuickAnswer.Link -> Intent(Intent.ACTION_VIEW, Uri.parse(answer.url))
+            is QuickAnswer.Link -> Intent(Intent.ACTION_VIEW, answer.url.toUri())
             is QuickAnswer.Email -> Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", answer.address, null))
             is QuickAnswer.Timer -> Intent(AlarmClock.ACTION_SET_TIMER)
                 .putExtra(AlarmClock.EXTRA_LENGTH, answer.seconds)

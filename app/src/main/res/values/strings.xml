@@ -687,7 +687,7 @@
     <string name="live_report">what the launcher reads now</string>
     <string name="live_report_none">Nothing yet. Once the switch and the notification access are on, the apps that have notifications up are listed here with what was found in them.</string>
     <string name="live_report_hint">If an app shows nothing on its tile, look here: if it is listed, the tile can show it; if it is not, the app wrote nothing the launcher can read.</string>
-    <string name="live_report_chats">chats %1$d (%2$d messages)</string>
+    <string name="live_report_chats">chats %1$d · messages %2$d</string>
     <string name="live_report_others">other notifications %1$d</string>
     <string name="live_report_pictures">pictures %1$d</string>
     <string name="live_report_playing">music</string>
@@ -769,7 +769,6 @@
     <string name="speed_dial_failed">No number to call was picked.</string>
     <string name="tile_color_title">color of the tile</string>
     <string name="tile_color_default">color of the theme</string>
-    <string name="edit_color">tile color</string>
     <string name="undo">undo</string>
     <string name="undo_removed">Tile removed</string>
     <string name="undo_changed">Tile changed</string>

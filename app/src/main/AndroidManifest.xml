@@ -28,6 +28,8 @@
         android:label="@string/permission_publish_tile_label"
         android:protectionLevel="normal" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <!-- A phone that cannot call (a tablet) still runs the launcher: the dialer-based paths do not need it. -->
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <!-- Only to move the brightness slider of the Action Center: the user gives it in a screen of Android, never by a dialog. -->
