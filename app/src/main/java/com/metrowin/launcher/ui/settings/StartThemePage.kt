@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.ThemeMode
+import com.metrowin.launcher.data.ThemeStyle
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.ChoiceRow
 import com.metrowin.launcher.ui.components.MetroButton
@@ -40,6 +41,12 @@ fun StartThemePage(env: SettingsEnv) {
         if (uri != null) env.onPickBackground(uri)
     }
     SettingsPage {
+        StylePicker(
+            selected = settings.themeStyle,
+            accent = MetroAccents[settings.accentIndex.coerceIn(MetroAccents.indices)],
+            dark = LocalMetroColors.current.dark,
+            onSelect = { style -> env.onChange { it.copy(themeStyle = style) } },
+        )
         OptionList(
             label = stringResource(R.string.theme_mode),
             options = listOf(
@@ -71,14 +78,24 @@ fun StartThemePage(env: SettingsEnv) {
                 SettingHint(stringResource(R.string.theme_hours_hint))
             }
         }
-        val automatic = settings.autoAccent && settings.hasStartBackground
-        Column {
-            SettingLabel(stringResource(R.string.theme_accent))
-            AccentGrid(
-                selected = if (automatic) env.autoAccentIndex ?: settings.accentIndex else settings.accentIndex,
-                modifier = Modifier.alpha(if (automatic) 0.45f else 1f),
-            ) { index -> env.onChange { it.copy(accentIndex = index, autoAccent = false) } }
+        if (settings.themeStyle == ThemeStyle.Droid) {
+            ToggleSetting(
+                label = stringResource(R.string.style_dynamic),
+                checked = settings.dynamicColor,
+                onChange = { value -> env.onChange { it.copy(dynamicColor = value) } },
+                hint = stringResource(R.string.style_dynamic_hint),
+                tag = "theme:dynamic",
+            )
         }
+        val automatic = settings.autoAccent && settings.hasStartBackground
+        AccentPicker(
+            settings = settings,
+            selectedPreset = if (automatic) env.autoAccentIndex ?: settings.accentIndex else settings.accentIndex,
+            muted = automatic || usesWallpaperColors(settings),
+            onPreset = { index -> env.onChange { it.copy(accentIndex = index, customAccent = 0, autoAccent = false) } },
+            onCustom = { argb -> env.onChange { it.copy(customAccent = argb, autoAccent = false) } },
+            onUsePreset = { env.onChange { it.copy(customAccent = 0) } },
+        )
         ToggleSetting(
             label = stringResource(R.string.theme_auto_accent),
             checked = settings.autoAccent,
@@ -135,31 +152,6 @@ fun StartThemePage(env: SettingsEnv) {
 
 /** 19 as "19:00", in the way the phone shows times. */
 internal fun hourLabel(hour: Int): String = String.format(Locale.getDefault(), "%02d:00", hour)
-
-/** The 20 accent colours in a grid of five columns. The chosen one has a frame. */
-@Composable
-private fun AccentGrid(selected: Int, modifier: Modifier = Modifier, onSelect: (Int) -> Unit) {
-    val frame = LocalMetroColors.current.foreground
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        MetroAccents.chunked(ACCENT_COLUMNS).forEachIndexed { row, colors ->
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                colors.forEachIndexed { column, color ->
-                    val index = row * ACCENT_COLUMNS + column
-                    Box(
-                        Modifier
-                            .weight(1f)
-                            .aspectRatio(1f)
-                            .metroPress(onClick = { onSelect(index) })
-                            .background(color)
-                            .then(if (index == selected) Modifier.border(3.dp, frame) else Modifier),
-                    )
-                }
-            }
-        }
-    }
-}
-
-private const val ACCENT_COLUMNS = 5
 
 @Composable
 private fun BackgroundPreview(image: ImageBitmap?) {

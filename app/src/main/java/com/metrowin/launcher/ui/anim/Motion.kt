@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
+import com.metrowin.launcher.ui.theme.LocalStyle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -83,7 +84,8 @@ fun Modifier.metroPress(
     val currentLongClick by rememberUpdatedState(onLongClick)
     val hasLongClick = onLongClick != null
     val reduced = LocalReduceMotion.current
-    val tilt = if (reduced) 0f else maxTiltDegrees
+    // The tilt is the Windows Phone press: the other looks only sink a little.
+    val tilt = if (reduced || !LocalStyle.current.isClassic) 0f else maxTiltDegrees
 
     return this
         // What TalkBack and the other accessibility services see: one button that says its text and can be activated.

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.theme.sheet
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +46,7 @@ fun AddMenu(
         Column(
             Modifier
                 .fillMaxWidth()
-                .background(colors.surface)
+                .sheet()
                 .pointerInput(Unit) { detectTapGestures { } }
                 .navigationBarsPadding()
                 // Clear of the edit bar under it.

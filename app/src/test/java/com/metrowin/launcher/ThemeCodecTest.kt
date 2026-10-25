@@ -4,6 +4,7 @@ import com.metrowin.launcher.data.LaunchAnimation
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.ThemeCodec
 import com.metrowin.launcher.data.ThemeMode
+import com.metrowin.launcher.data.ThemeStyle
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -32,6 +33,17 @@ class ThemeCodecTest {
         assertEquals("com.example.pack", applied.iconPack)
         assertTrue(applied.highContrast)
         assertEquals(LaunchAnimation.Expand, applied.launchAnimation)
+    }
+
+    @Test
+    fun theLookAndTheCustomColorTravelWithTheTheme() {
+        val mine = LauncherSettings(themeStyle = ThemeStyle.Glass, customAccent = 0xFFAA3355.toInt(), dynamicColor = false)
+        val applied = ThemeCodec.decode(ThemeCodec.encode(mine), LauncherSettings(autoAccent = true))!!
+        assertEquals(ThemeStyle.Glass, applied.themeStyle)
+        assertEquals(0xFFAA3355.toInt(), applied.customAccent)
+        assertFalse(applied.dynamicColor)
+        // A color of its own would be hidden by the accent that follows the photo.
+        assertFalse(applied.autoAccent)
     }
 
     @Test

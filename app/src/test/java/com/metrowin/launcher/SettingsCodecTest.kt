@@ -6,6 +6,7 @@ import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.OrientationMode
 import com.metrowin.launcher.data.SettingsCodec
 import com.metrowin.launcher.data.ThemeMode
+import com.metrowin.launcher.data.ThemeStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -26,11 +27,35 @@ class SettingsCodecTest {
         backupFolder = "content://tree/backup", backupEveryDays = 7, lastBackupAt = 123L,
         syncEnabled = true, syncPassphrase = "secret", deviceId = "phone-1",
         kidsApps = setOf("stock:camera"), kidsMode = true,
+        themeStyle = ThemeStyle.Droid, customAccent = 0xFF3366CC.toInt(), dynamicColor = false,
     )
 
     @Test
     fun everySettingSurvivesAnEncodeAndDecode() {
         assertEquals(custom, SettingsCodec.decode(SettingsCodec.encode(custom)))
+    }
+
+    @Test
+    fun theLookIsClassicWithTheWallpaperColorsByDefault() {
+        val defaults = LauncherSettings()
+        assertEquals(ThemeStyle.Classic, defaults.themeStyle)
+        assertEquals(0, defaults.customAccent)
+        assertTrue(defaults.dynamicColor)
+    }
+
+    @Test
+    fun everyLookSurvivesAndAnUnknownOneIsClassic() {
+        ThemeStyle.entries.forEach { style ->
+            assertEquals(style, SettingsCodec.decode(SettingsCodec.encode(LauncherSettings(themeStyle = style)))!!.themeStyle)
+        }
+        assertEquals(ThemeStyle.Classic, SettingsCodec.decode("""{"themeStyle":"neon"}""")!!.themeStyle)
+    }
+
+    @Test
+    fun aCustomColorIsAlwaysOpaque() {
+        // A file with no alpha would otherwise paint everything transparent.
+        assertEquals(0xFF112233.toInt(), SettingsCodec.decode("""{"customAccent":${0x00112233}}""")!!.customAccent)
+        assertEquals(0, SettingsCodec.decode("""{"customAccent":0}""")!!.customAccent)
     }
 
     @Test

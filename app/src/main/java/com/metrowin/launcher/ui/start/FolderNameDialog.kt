@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.theme.panel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -36,7 +37,7 @@ import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.MetroFont
+import com.metrowin.launcher.ui.theme.fieldTextStyle
 
 /** Asks for the name of a Start folder. */
 @Composable
@@ -57,7 +58,7 @@ fun FolderNameDialog(initial: String, onDone: (String) -> Unit, onCancel: () -> 
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .background(colors.surface)
+                .panel()
                 .pointerInput(Unit) { detectTapGestures { } }
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -67,7 +68,7 @@ fun FolderNameDialog(initial: String, onDone: (String) -> Unit, onCancel: () -> 
                 value = name,
                 onValueChange = { name = it.take(MAX_NAME) },
                 singleLine = true,
-                textStyle = TextStyle(color = colors.foreground, fontSize = 26.sp, fontFamily = MetroFont, fontWeight = FontWeight.Light),
+                textStyle = fieldTextStyle(colors.foreground, 26.sp),
                 cursorBrush = SolidColor(LocalAccent.current),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onDone(name) }),

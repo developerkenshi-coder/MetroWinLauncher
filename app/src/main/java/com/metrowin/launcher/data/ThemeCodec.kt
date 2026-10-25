@@ -12,8 +12,8 @@ object ThemeCodec {
 
     /** The settings a theme carries; the rest of the settings are the user's and a theme never touches them. */
     private val keys = listOf(
-        "themeMode", "darkFromHour", "darkToHour", "accentIndex", "moreTiles", "parallax", "showClock",
-        "iconPack", "highContrast", "launchAnimation",
+        "themeMode", "darkFromHour", "darkToHour", "accentIndex", "themeStyle", "customAccent", "dynamicColor", "moreTiles",
+        "parallax", "showClock", "iconPack", "highContrast", "launchAnimation",
     )
 
     fun encode(settings: LauncherSettings): String {
@@ -36,6 +36,6 @@ object ThemeCodec {
         // Only the keys of a theme: a file cannot smuggle other settings in.
         val picked = JSONObject().apply { keys.filter(theme::has).forEach { put(it, theme.get(it)) } }
         val applied = SettingsCodec.decode(picked.toString(), base = current) ?: return null
-        if (picked.has("accentIndex")) applied.copy(autoAccent = false) else applied
+        if (picked.has("accentIndex") || picked.has("customAccent")) applied.copy(autoAccent = false) else applied
     }.getOrNull()
 }

@@ -23,6 +23,7 @@ import androidx.core.view.WindowCompat
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.ThemeMode
+import com.metrowin.launcher.data.ThemeStyle
 import kotlinx.coroutines.delay
 import java.time.LocalTime
 
@@ -71,6 +72,11 @@ class MetroColors(
     val surface: Color,
     /** Jump list letters that have no apps, and switched-off toggles. */
     val inactive: Color,
+    /** Text and glyphs on a tile: white on the accent color, but ink on the light containers of Modern Droid. */
+    val tileContent: Color = Color.White,
+    /** Modern Droid: the colors the tiles take in turn, and the text color that goes on each. Empty in the other themes. */
+    val containers: List<Color> = emptyList(),
+    val onContainers: List<Color> = emptyList(),
 )
 
 val DarkColors = MetroColors(
@@ -92,13 +98,16 @@ val LightColors = MetroColors(
 )
 
 /** The colours for what is drawn on a coloured tile: white text and glyphs, in either theme. */
-fun MetroColors.onTile() = MetroColors(
+fun MetroColors.onTile(content: Color = tileContent) = MetroColors(
     dark = true,
     background = background,
-    foreground = TileWhite,
-    subtle = TileWhite.copy(alpha = 0.8f),
+    foreground = content,
+    subtle = content.copy(alpha = 0.8f),
     surface = surface,
     inactive = inactive,
+    tileContent = content,
+    containers = containers,
+    onContainers = onContainers,
 )
 
 val LocalMetroColors = staticCompositionLocalOf { DarkColors }
@@ -120,13 +129,17 @@ fun MetroTheme(
     dark: Boolean = true,
     reduceMotion: Boolean = false,
     highContrast: Boolean = false,
+    style: ThemeStyle = ThemeStyle.Classic,
+    /** For Modern Droid: the palette (the wallpaper's, or made from the accent). */
+    droid: DroidPalette? = null,
     content: @Composable () -> Unit,
 ) {
     SystemBarIcons(dark)
-    val colors = if (dark) DarkColors else LightColors
+    val resolved = remember(style, dark, accent, droid) { Themes.resolve(style, dark, accent, droid) }
     CompositionLocalProvider(
-        LocalAccent provides accent,
-        LocalMetroColors provides if (highContrast) colors.highContrast() else colors,
+        LocalAccent provides resolved.accent,
+        LocalMetroColors provides if (highContrast) resolved.colors.highContrast() else resolved.colors,
+        LocalStyle provides resolved.style,
         LocalReduceMotion provides reduceMotion,
         LocalHighContrast provides highContrast,
         content = content,

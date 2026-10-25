@@ -93,6 +93,10 @@ object Tutorial {
             listOf(R.string.tut_action_tip1, R.string.tut_action_tip2, R.string.tut_action_tip3), listOf(Need.NotificationAccess),
         ),
         TutorialStep(
+            "look", Glyph.Theme, R.string.tut_look_label, R.string.tut_look_title, R.string.tut_look_intro,
+            listOf(R.string.tut_look_tip1, R.string.tut_look_tip2),
+        ),
+        TutorialStep(
             "gestures", Glyph.Gesture, R.string.tut_gestures_label, R.string.tut_gestures_title, R.string.tut_gestures_intro,
             listOf(R.string.tut_gestures_tip1, R.string.tut_gestures_tip2, R.string.tut_gestures_tip3), listOf(Need.LockService),
         ),

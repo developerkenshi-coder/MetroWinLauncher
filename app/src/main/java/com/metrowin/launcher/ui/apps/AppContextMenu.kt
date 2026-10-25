@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.apps
 
+import com.metrowin.launcher.ui.theme.panel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -81,7 +82,7 @@ fun AppContextMenu(
 
 @Composable
 private fun Menu(item: AppItem, pinned: Boolean, onPinToggle: () -> Unit, onUninstall: () -> Unit, onHide: (() -> Unit)?, onAddToFolder: (() -> Unit)?) {
-    Column(Modifier.fillMaxWidth().background(LocalMetroColors.current.surface).padding(vertical = 6.dp)) {
+    Column(Modifier.fillMaxWidth().panel().padding(vertical = 6.dp)) {
         MenuEntry(stringResource(if (pinned) R.string.menu_unpin else R.string.menu_pin), onPinToggle)
         if (onAddToFolder != null) MenuEntry(stringResource(R.string.menu_add_to_folder), onAddToFolder, Modifier.testTag("menu:folder"))
         if (onHide != null) MenuEntry(stringResource(R.string.menu_hide), onHide, Modifier.testTag("menu:hide"))

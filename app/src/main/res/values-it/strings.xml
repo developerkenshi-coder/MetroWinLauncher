@@ -113,7 +113,7 @@
     <string name="sec_start_theme_desc">Tema e colore d\'accento, foto di Start, orologio, numero di schermate Start</string>
     <string name="sec_actions_desc">Pulsanti rapidi dell\'Action Center, accesso alle notifiche, risposte e gruppi</string>
     <string name="sec_kids_desc">Condividi il telefono con un bambino, solo con le app che scegli</string>
-    <string name="theme_mode">tema</string>
+    <string name="theme_mode">chiaro o scuro</string>
     <string name="theme_auto_system">come Android</string>
     <string name="theme_auto_hours">a orari</string>
     <string name="theme_dark_from">scuro dalle</string>
@@ -604,4 +604,26 @@
         <item quantity="other">%1$d app</item>
         <item quantity="many">%1$d app</item>
     </plurals>
+
+    <!-- themes and colors -->
+    <string name="style_title">tema</string>
+    <string name="style_classic">Classic</string>
+    <string name="style_classic_desc">I tile piatti di Windows Phone, come sempre.</string>
+    <string name="style_glass">Modern Glass</string>
+    <string name="style_glass_desc">Vetro smerigliato e arrotondato su uno sfondo luminoso.</string>
+    <string name="style_droid">Modern Droid</string>
+    <string name="style_droid_desc">Material You: forme morbide e colori che seguono lo sfondo.</string>
+    <string name="style_dynamic">usa i colori dello sfondo</string>
+    <string name="style_dynamic_hint">Da Android 12 ogni app può avere i colori dello sfondo. Disattivalo per costruire il tema dal colore d\'accento che scegli qui sotto.</string>
+    <string name="accent_custom">colore personalizzato</string>
+    <string name="accent_custom_hint">Crea qualsiasi colore: tonalità, intensità e luminosità.</string>
+    <string name="accent_hue">tonalità</string>
+    <string name="accent_saturation">intensità</string>
+    <string name="accent_brightness">luminosità</string>
+    <string name="accent_use_preset">torna ai 20 colori</string>
+    <string name="tut_look_label">ASPETTO</string>
+    <string name="tut_look_title">il tuo aspetto</string>
+    <string name="tut_look_intro">Tre temi e qualsiasi colore. Apri Impostazioni Launcher → start+tema per sceglierli.</string>
+    <string name="tut_look_tip1">Classic è l\'aspetto piatto di Windows Phone. Modern Glass è vetro smerigliato su uno sfondo luminoso. Modern Droid segue Material You.</string>
+    <string name="tut_look_tip2">Scegli uno dei 20 colori d\'accento, o creane uno tuo con i tre cursori. Scuro, chiaro o a orario, in ogni tema.</string>
 </resources>

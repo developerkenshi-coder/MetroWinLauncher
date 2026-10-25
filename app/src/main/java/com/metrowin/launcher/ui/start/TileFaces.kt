@@ -64,7 +64,8 @@ import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.TileWhite
+import com.metrowin.launcher.ui.theme.ColorMath
+import com.metrowin.launcher.ui.theme.toArgbInt
 import com.metrowin.launcher.ui.theme.onTile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -187,7 +188,7 @@ fun FolderFace(
             if (size != TileSize.Small) {
                 TileLabel(folder.name.ifBlank { stringResource(R.string.folder_default_name) }, Modifier.align(Alignment.BottomStart))
             }
-            if (expanded) Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(4.dp).background(TileWhite))
+            if (expanded) Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(4.dp).background(LocalMetroColors.current.tileContent))
             CountBadge(notifications, size, Modifier.align(Alignment.TopEnd))
         }
     }
@@ -195,7 +196,7 @@ fun FolderFace(
 
 @Composable
 private fun MiniApp(item: AppItem, side: Dp, more: Int? = null) {
-    Box(Modifier.size(side).background(TileWhite.copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
+    Box(Modifier.size(side).background(LocalMetroColors.current.tileContent.copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
         if (more != null) {
             MetroText("+$more", size = with(LocalDensity.current) { (side * 0.42f).toSp() }, modifier = Modifier.testTag("folder:more"))
         } else {
@@ -267,7 +268,7 @@ private fun WidgetFace(
             if (host != null) {
                 MetroText(
                     stringResource(R.string.widget_unavailable), size = 12.sp, weight = FontWeight.Normal,
-                    color = TileWhite.copy(alpha = 0.8f), modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
+                    color = LocalMetroColors.current.tileContent.copy(alpha = 0.8f), modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
                 )
             }
         }
@@ -325,7 +326,7 @@ private fun PeekFace(item: AppItem, size: TileSize, width: Dp, height: Dp, peek:
                     if (peek.text.isNotBlank()) {
                         MetroText(
                             peek.text, size = 15.sp, weight = FontWeight.Normal, maxLines = 3, lineHeight = 19.sp,
-                            color = TileWhite.copy(alpha = 0.85f), modifier = Modifier.padding(top = 3.dp),
+                            color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f), modifier = Modifier.padding(top = 3.dp),
                         )
                     }
                 }
@@ -377,8 +378,9 @@ private fun BatteryFace(item: AppItem, size: TileSize, width: Dp, height: Dp, ba
 
 @Composable
 private fun BatteryBar(percent: Int, width: Dp) {
-    Box(Modifier.size(width, 14.dp).border(2.dp, TileWhite).padding(2.dp)) {
-        Box(Modifier.fillMaxHeight().fillMaxWidth(percent / 100f).background(TileWhite))
+    val ink = LocalMetroColors.current.tileContent
+    Box(Modifier.size(width, 14.dp).border(2.dp, ink).padding(2.dp)) {
+        Box(Modifier.fillMaxHeight().fillMaxWidth(percent / 100f).background(ink))
     }
 }
 
@@ -409,7 +411,7 @@ private fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, we
                     Column(Modifier.padding(end = 18.dp)) {
                         MetroText(
                             day.date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
-                            size = 14.sp, weight = FontWeight.Normal, color = TileWhite.copy(alpha = 0.85f),
+                            size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f),
                         )
                         MetroText("${day.high}° ${day.low}°", size = 20.sp)
                     }
@@ -428,8 +430,10 @@ private fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, we
 /** The torch tile: the glyph on the accent colour while the light is off, black on white while it is on. */
 @Composable
 private fun TorchFace(item: AppItem, size: TileSize, width: Dp, height: Dp, on: Boolean) {
-    val ink = if (on) Color.Black else TileWhite
-    Box(Modifier.fillMaxSize().then(if (on) Modifier.background(TileWhite) else Modifier)) {
+    val light = LocalMetroColors.current.tileContent
+    // Lit, the tile is filled with its text color and the text takes the other one.
+    val ink = if (on) (if (ColorMath.luminance(light.toArgbInt()) > 0.5f) Color.Black else Color.White) else light
+    Box(Modifier.fillMaxSize().then(if (on) Modifier.background(light) else Modifier)) {
         val art = minOf(width, height) * if (size == TileSize.Small) 0.5f else 0.42f
         GlyphIcon(item.glyph ?: Glyph.Flashlight, art, Modifier.align(Alignment.Center), color = ink)
         if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart), color = ink)
@@ -447,7 +451,7 @@ private fun StaticFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
 }
 
 @Composable
-private fun TileLabel(label: String, modifier: Modifier = Modifier, color: Color = TileWhite) {
+private fun TileLabel(label: String, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.tileContent) {
     MetroText(
         text = label,
         size = 13.sp,

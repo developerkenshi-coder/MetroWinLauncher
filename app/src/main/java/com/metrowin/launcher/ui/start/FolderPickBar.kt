@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.theme.sheet
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -47,7 +48,7 @@ fun FolderPickBar(
     Column(
         modifier
             .fillMaxWidth()
-            .background(colors.surface)
+            .sheet()
             // Swallow touches so the tiles behind the bar do not react.
             .pointerInput(Unit) { detectTapGestures { } }
             .navigationBarsPadding()

@@ -536,12 +536,15 @@ class ScreensTest : ScreenshotBase() {
     fun settingsPageOffersTwentyAccentColours() {
         show { Settings(SettingsEnv(LauncherSettings(), onChange = {}), SettingsSection.StartTheme) }
         advance(500)
-        val screen = capture("settings_start_theme")
-        val pixels = screen.pixels()
+        // The colors are under the three looks now: scroll until the last swatch is on screen.
+        scrollIntoView("accent:0", topMargin = 0.2f)
+        val upper = capture("settings_start_theme").pixels()
+        scrollIntoView("accent:19", topMargin = 0.2f)
+        val lower = capture("settings_start_theme_colors").pixels()
         // Every accent colour has a swatch on the page.
         MetroAccents.forEachIndexed { i, color ->
             val argb = color.toArgbInt()
-            assertTrue("accent #$i is missing from the page", pixels.any { it == argb })
+            assertTrue("accent #$i is missing from the page", upper.any { it == argb } || lower.any { it == argb })
         }
     }
 

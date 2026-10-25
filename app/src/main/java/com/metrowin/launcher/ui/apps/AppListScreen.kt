@@ -24,7 +24,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.MetroFont
+import com.metrowin.launcher.ui.theme.fieldTextStyle
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -83,7 +83,12 @@ import com.metrowin.launcher.ui.components.AppSquare
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.TileWhite
+import com.metrowin.launcher.ui.theme.LocalStyle
+import com.metrowin.launcher.ui.theme.litFill
+import com.metrowin.launcher.ui.theme.onAccent
+import com.metrowin.launcher.ui.theme.panel
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.RectangleShape
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 
@@ -286,7 +291,7 @@ private fun SearchRow(query: String, onQueryChange: (String) -> Unit, focusToken
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 4.dp)
             .height(52.dp)
-            .background(colors.surface)
+            .panel(RoundedCornerShape(16.dp).takeUnless { LocalStyle.current.isClassic } ?: RectangleShape)
             .padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -298,7 +303,7 @@ private fun SearchRow(query: String, onQueryChange: (String) -> Unit, focusToken
                 value = query,
                 onValueChange = onQueryChange,
                 singleLine = true,
-                textStyle = TextStyle(color = colors.foreground, fontSize = 20.sp, fontFamily = MetroFont, fontWeight = FontWeight.Light),
+                textStyle = fieldTextStyle(colors.foreground, 20.sp),
                 cursorBrush = SolidColor(LocalAccent.current),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
@@ -347,8 +352,8 @@ private fun HeaderRow(
             .padding(horizontal = 12.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
-        Box(Modifier.size(SquareSize).background(LocalAccent.current), contentAlignment = Alignment.Center) {
-            MetroText(letter.lowercase(), size = 32.sp, color = TileWhite)
+        Box(Modifier.size(SquareSize).litFill(true), contentAlignment = Alignment.Center) {
+            MetroText(letter.lowercase(), size = 32.sp, color = onAccent())
         }
     }
 }
@@ -430,10 +435,10 @@ private fun ResultRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            Modifier.size(SquareSize).background(if (accent) LocalAccent.current else colors.surface),
+            Modifier.size(SquareSize).litFill(accent),
             contentAlignment = Alignment.Center,
         ) {
-            GlyphIcon(glyph, SquareSize * 0.6f, color = if (accent) TileWhite else colors.foreground)
+            GlyphIcon(glyph, SquareSize * 0.6f, color = if (accent) onAccent() else colors.foreground)
         }
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {

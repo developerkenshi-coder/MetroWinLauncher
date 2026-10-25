@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -24,7 +23,9 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import com.metrowin.launcher.ui.theme.DefaultAccent
-import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.data.ThemeStyle
+import com.metrowin.launcher.ui.theme.DroidPalette
+import com.metrowin.launcher.ui.theme.pageBackground
 import com.metrowin.launcher.ui.theme.MetroTheme
 import androidx.compose.ui.unit.DpSize
 import org.junit.Rule
@@ -51,12 +52,14 @@ abstract class ScreenshotBase {
         size: DpSize = DpSize(360.dp, 760.dp),
         reduceMotion: Boolean = false,
         highContrast: Boolean = false,
+        style: ThemeStyle = ThemeStyle.Classic,
+        droid: DroidPalette? = null,
         content: @Composable () -> Unit,
     ) {
         compose.mainClock.autoAdvance = false
         compose.setContent {
-            MetroTheme(accent, dark, reduceMotion, highContrast) {
-                Box(Modifier.size(size).background(LocalMetroColors.current.background)) { content() }
+            MetroTheme(accent, dark, reduceMotion, highContrast, style, droid) {
+                Box(Modifier.size(size).pageBackground()) { content() }
             }
         }
     }
@@ -64,24 +67,32 @@ abstract class ScreenshotBase {
     protected fun advance(ms: Long) = compose.mainClock.advanceTimeBy(ms)
 
     /**
-     * Swipes the page up until the control is on screen, then taps it. (performScrollTo animates its scroll, which
-     * never finishes while the test clock is paused, so the page is scrolled with a finger instead.)
+     * Swipes the page up until the control is on screen. (performScrollTo animates its scroll, which never finishes
+     * while the test clock is paused, so the page is scrolled with a finger instead.)
      */
-    protected fun tapScrolled(tag: String) {
-        val node = compose.onNodeWithTag(tag)
+    protected fun scrollIntoView(tag: String, topMargin: Float = 0f) {
         val screenHeight = compose.onRoot().fetchSemanticsNode().size.height
-        repeat(8) {
+        repeat(12) {
             // Position and size are not clipped to the screen, unlike boundsInRoot, which is empty off screen.
-            val semantics = node.fetchSemanticsNode()
+            val semantics = compose.onNodeWithTag(tag).fetchSemanticsNode()
             val top = semantics.positionInRoot.y
-            if (top >= 0f && top + semantics.size.height <= screenHeight) return@repeat
+            val bottom = top + semantics.size.height
+            // [topMargin] keeps it clear of a header that stays in place while the page scrolls under it.
+            if (top >= topMargin * screenHeight && bottom <= screenHeight) return
+            // Bring the control towards the middle of the screen; a fling can carry it past, so look again afterwards.
+            val toMiddle = ((top + bottom) / 2f - screenHeight / 2f).coerceIn(-0.6f * screenHeight, 0.6f * screenHeight)
             compose.onAllNodes(hasScrollAction()).onLast().performTouchInput {
-                swipe(Offset(centerX, height * 0.85f), Offset(centerX, height * 0.15f), durationMillis = 200)
+                swipe(Offset(centerX, height / 2f + toMiddle / 2f), Offset(centerX, height / 2f - toMiddle / 2f), durationMillis = 300)
             }
             // A touch on a page that is still flinging only stops it: wait for it to settle.
             advance(2_500)
         }
-        node.performClick()
+    }
+
+    /** Scrolls the control into view, then taps it. */
+    protected fun tapScrolled(tag: String) {
+        scrollIntoView(tag)
+        compose.onNodeWithTag(tag).performClick()
         // The state written by the click reaches the composition only once the test thread is idle.
         compose.waitForIdle()
     }

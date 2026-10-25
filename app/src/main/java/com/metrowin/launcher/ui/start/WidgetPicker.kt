@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.theme.pageBackground
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
@@ -31,7 +32,8 @@ import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.TileWhite
+import com.metrowin.launcher.ui.theme.litFill
+import com.metrowin.launcher.ui.theme.onAccent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 
@@ -42,7 +44,7 @@ fun WidgetPicker(providers: List<WidgetProvider>, onPick: (WidgetProvider) -> Un
     Column(
         modifier
             .fillMaxSize()
-            .background(colors.background)
+            .pageBackground()
             .pointerInput(Unit) { detectTapGestures { } }
             .statusBarsPadding()
             .navigationBarsPadding()
@@ -72,8 +74,8 @@ fun WidgetPicker(providers: List<WidgetProvider>, onPick: (WidgetProvider) -> Un
                             .padding(horizontal = 24.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Box(Modifier.size(48.dp).background(LocalAccent.current), contentAlignment = Alignment.Center) {
-                            GlyphIcon(Glyph.Widget, 30.dp, color = TileWhite)
+                        Box(Modifier.size(48.dp).litFill(true), contentAlignment = Alignment.Center) {
+                            GlyphIcon(Glyph.Widget, 30.dp, color = onAccent())
                         }
                         Spacer(Modifier.width(14.dp))
                         Column(Modifier.weight(1f)) {

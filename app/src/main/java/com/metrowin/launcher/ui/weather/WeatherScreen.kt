@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.weather
 
+import com.metrowin.launcher.ui.theme.pageBackground
 import android.text.format.DateUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -47,7 +48,7 @@ fun WeatherScreen(
     Column(
         modifier
             .fillMaxSize()
-            .background(colors.background)
+            .pageBackground()
             // Swallow touches so nothing underneath reacts while this page is up.
             .pointerInput(Unit) { detectTapGestures { } }
             .statusBarsPadding()

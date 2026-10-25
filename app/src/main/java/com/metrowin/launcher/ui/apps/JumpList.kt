@@ -36,7 +36,8 @@ import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.TileWhite
+import com.metrowin.launcher.ui.theme.litFill
+import com.metrowin.launcher.ui.theme.onAccent
 import kotlinx.coroutines.delay
 
 private const val COLUMNS = 4
@@ -113,10 +114,10 @@ private fun JumpCell(key: String, enabled: Boolean, order: Int, onPick: (String)
                 alpha = 1f - away.value
             }
             .then(if (enabled) Modifier.metroPress(onClick = { onPick(key) }) else Modifier)
-            .background(if (enabled) LocalAccent.current else colors.inactive),
+            .litFill(enabled),
         contentAlignment = Alignment.Center,
     ) {
-        val tint = if (enabled) TileWhite else colors.subtle.copy(alpha = 0.5f)
+        val tint = if (enabled) onAccent() else colors.subtle.copy(alpha = 0.5f)
         if (key == RECENT_KEY) GlyphIcon(Glyph.Star, 30.dp, color = tint) else MetroText(key.lowercase(), size = 30.sp, color = tint)
     }
 }

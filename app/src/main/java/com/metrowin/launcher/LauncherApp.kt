@@ -134,6 +134,10 @@ import com.metrowin.launcher.ui.weather.WeatherScreen
 import com.metrowin.launcher.ui.theme.MetroAccents
 import com.metrowin.launcher.ui.theme.AccessibilityPolicy
 import com.metrowin.launcher.ui.theme.MetroTheme
+import com.metrowin.launcher.ui.theme.pageBackground
+import com.metrowin.launcher.ui.theme.Palettes
+import com.metrowin.launcher.data.ThemeStyle
+import androidx.compose.ui.graphics.Color
 import com.metrowin.launcher.ui.theme.rememberIsDark
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -738,15 +742,23 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     val autoAccentIndex by vm.autoAccentIndex.collectAsStateWithLifecycle()
     val accentIndex = if (settings.autoAccent) autoAccentIndex ?: settings.accentIndex else settings.accentIndex
-    val accent = MetroAccents[accentIndex.coerceIn(MetroAccents.indices)]
+    val accent = if (settings.customAccent != 0) Color(settings.customAccent) else MetroAccents[accentIndex.coerceIn(MetroAccents.indices)]
     val dark = rememberIsDark(settings)
+    // Modern Droid takes the colors of the wallpaper (Android 12 and later), or builds its palette from the chosen color.
+    val droid = if (settings.themeStyle == ThemeStyle.Droid) {
+        remember(settings.dynamicColor, accent, context) {
+            (if (settings.dynamicColor) Palettes.fromSystem(context) else null) ?: Palettes.fromSeed(accent)
+        }
+    } else {
+        null
+    }
 
     CompositionLocalProvider(LocalIconLoader provides vm.icons, LocalWidgetHost provides vm.widgets) {
-        MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast) {
+        MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid) {
             Box(
                 Modifier
                     .fillMaxSize()
-                    .background(LocalMetroColors.current.background)
+                    .pageBackground()
                     .onSizeChanged { panel.travelPx = it.height.toFloat() }
                     .pullDownFromTop(panel, edgeZone, enabled = !pullBlocked && settings.edgePull)
                     .twoFingerSwipe(

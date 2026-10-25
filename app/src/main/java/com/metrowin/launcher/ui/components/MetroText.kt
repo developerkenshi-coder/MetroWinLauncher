@@ -9,7 +9,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
-import com.metrowin.launcher.ui.theme.MetroFont
+import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 
 /** Text in the Metro typeface. Light by default, like the big Windows Phone titles. */
@@ -23,14 +23,15 @@ fun MetroText(
     maxLines: Int = 1,
     lineHeight: TextUnit = TextUnit.Unspecified,
 ) {
+    val style = LocalStyle.current
     BasicText(
         text = text,
         modifier = modifier,
         style = TextStyle(
             color = color,
             fontSize = size,
-            fontWeight = weight,
-            fontFamily = MetroFont,
+            fontWeight = style.weight(weight),
+            fontFamily = style.font,
             lineHeight = lineHeight,
         ),
         maxLines = maxLines,

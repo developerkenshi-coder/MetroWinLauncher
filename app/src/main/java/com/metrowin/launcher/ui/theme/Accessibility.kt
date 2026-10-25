@@ -28,4 +28,7 @@ fun MetroColors.highContrast() = MetroColors(
     subtle = foreground,
     surface = if (dark) Color(0xFF333333) else Color(0xFFCCCCCC),
     inactive = if (dark) Color(0xFF4D4D4D) else Color(0xFFB3B3B3),
+    tileContent = tileContent,
+    containers = containers,
+    onContainers = onContainers,
 )

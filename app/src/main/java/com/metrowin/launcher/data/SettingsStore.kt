@@ -95,6 +95,12 @@ data class LauncherSettings(
     val darkToHour: Int = 7,
     /** Index into the 20 accent colours, 4 is Windows Phone's cyan. */
     val accentIndex: Int = DEFAULT_ACCENT,
+    /** The look: Classic, Modern Glass or Modern Droid. */
+    val themeStyle: ThemeStyle = ThemeStyle.Classic,
+    /** A color made with the sliders (ARGB), instead of one of the 20; 0 when there is none. */
+    val customAccent: Int = 0,
+    /** In Modern Droid, take the colors of the wallpaper where Android gives them (12 and later). */
+    val dynamicColor: Boolean = true,
     /** The accent is taken from the Start photo, when there is one. */
     val autoAccent: Boolean = false,
     /** Three columns of medium tiles instead of two ("show more tiles"). */

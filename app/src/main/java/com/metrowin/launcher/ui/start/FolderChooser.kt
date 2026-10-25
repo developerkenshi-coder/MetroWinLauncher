@@ -34,7 +34,9 @@ import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.TileWhite
+import com.metrowin.launcher.ui.theme.litFill
+import com.metrowin.launcher.ui.theme.onAccent
+import com.metrowin.launcher.ui.theme.panel
 
 /** A folder of Start the app can be put in: its id, the name it has (empty until it is given one) and how many apps it holds. */
 @Immutable
@@ -56,7 +58,7 @@ fun FolderChooser(folders: List<FolderChoice>, onPick: (FolderChoice) -> Unit, o
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .background(colors.surface)
+                .panel()
                 .pointerInput(Unit) { detectTapGestures { } }
                 .padding(vertical = 18.dp),
         ) {
@@ -70,8 +72,8 @@ fun FolderChooser(folders: List<FolderChoice>, onPick: (FolderChoice) -> Unit, o
                         Modifier.fillMaxWidth().testTag("folderchooser:${folder.id}").metroPress(onClick = { onPick(folder) }).padding(horizontal = 20.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Box(Modifier.size(48.dp).background(LocalAccent.current), contentAlignment = Alignment.Center) {
-                            GlyphIcon(Glyph.Folder, 30.dp, color = TileWhite)
+                        Box(Modifier.size(48.dp).litFill(true), contentAlignment = Alignment.Center) {
+                            GlyphIcon(Glyph.Folder, 30.dp, color = onAccent())
                         }
                         Spacer(Modifier.width(16.dp))
                         Column(Modifier.weight(1f)) {

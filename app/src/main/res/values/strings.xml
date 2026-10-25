@@ -120,7 +120,7 @@
     <string name="sec_start_theme_desc">Theme and accent color, Start photo, clock, number of Start screens</string>
     <string name="sec_actions_desc">Quick buttons of the Action Center, notification access, replies and groups</string>
     <string name="sec_kids_desc">Share the phone with a child, with only the apps you choose</string>
-    <string name="theme_mode">theme</string>
+    <string name="theme_mode">light or dark</string>
     <string name="theme_auto_system">as Android</string>
     <string name="theme_auto_hours">by the hour</string>
     <string name="theme_dark_from">dark from</string>
@@ -606,4 +606,26 @@
         <item quantity="one">%1$d app</item>
         <item quantity="other">%1$d apps</item>
     </plurals>
+
+    <!-- themes and colors -->
+    <string name="style_title">theme</string>
+    <string name="style_classic">Classic</string>
+    <string name="style_classic_desc">Flat Windows Phone tiles, as ever.</string>
+    <string name="style_glass">Modern Glass</string>
+    <string name="style_glass_desc">Frosted, rounded glass over a glowing backdrop.</string>
+    <string name="style_droid">Modern Droid</string>
+    <string name="style_droid_desc">Material You: soft shapes and colors that follow your wallpaper.</string>
+    <string name="style_dynamic">use the colors of the wallpaper</string>
+    <string name="style_dynamic_hint">Android 12 and later give every app the colors of your wallpaper. Turn it off to build the theme from the accent color you choose below.</string>
+    <string name="accent_custom">custom color</string>
+    <string name="accent_custom_hint">Make any color: hue, strength and lightness.</string>
+    <string name="accent_hue">hue</string>
+    <string name="accent_saturation">strength</string>
+    <string name="accent_brightness">lightness</string>
+    <string name="accent_use_preset">back to the 20 colors</string>
+    <string name="tut_look_label">LOOK</string>
+    <string name="tut_look_title">make it yours</string>
+    <string name="tut_look_intro">Three themes and any color. Open Launcher settings → start+theme to choose.</string>
+    <string name="tut_look_tip1">Classic is the flat Windows Phone look. Modern Glass is frosted glass over a glowing backdrop. Modern Droid follows Material You.</string>
+    <string name="tut_look_tip2">Pick one of the 20 accent colors, or make your own with the three sliders. Dark, light, or by the hour, in every theme.</string>
 </resources>

@@ -24,7 +24,11 @@ import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.TileWhite
+import com.metrowin.launcher.ui.theme.LocalStyle
+import com.metrowin.launcher.ui.theme.onAccent
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.RectangleShape
 
 /** The title of the Kid's Corner, with the way out for a grown-up. */
 @Composable
@@ -41,18 +45,22 @@ fun KidsHeader(onExit: () -> Unit, modifier: Modifier = Modifier) {
 @Composable
 fun CheckSquare(checked: Boolean, modifier: Modifier = Modifier) {
     val accent = LocalAccent.current
+    val style = LocalStyle.current
+    val shape = if (style.isClassic) RectangleShape else RoundedCornerShape(8.dp)
+    val tick = onAccent()
     Box(
         modifier
             .size(28.dp)
-            .border(2.dp, if (checked) accent else LocalMetroColors.current.foreground)
+            .clip(shape)
+            .border(2.dp, if (checked) accent else LocalMetroColors.current.foreground, shape)
             .background(if (checked) accent else Color.Transparent),
         contentAlignment = Alignment.Center,
     ) {
         if (checked) {
             Canvas(Modifier.size(14.dp)) {
                 val stroke = 2.4.dp.toPx()
-                drawLine(TileWhite, Offset(0f, size.height * 0.55f), Offset(size.width * 0.38f, size.height * 0.95f), stroke, StrokeCap.Round)
-                drawLine(TileWhite, Offset(size.width * 0.38f, size.height * 0.95f), Offset(size.width, size.height * 0.1f), stroke, StrokeCap.Round)
+                drawLine(tick, Offset(0f, size.height * 0.55f), Offset(size.width * 0.38f, size.height * 0.95f), stroke, StrokeCap.Round)
+                drawLine(tick, Offset(size.width * 0.38f, size.height * 0.95f), Offset(size.width, size.height * 0.1f), stroke, StrokeCap.Round)
             }
         }
     }

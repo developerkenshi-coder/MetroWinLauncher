@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.theme.panel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -54,7 +55,7 @@ fun SiteDialog(onDone: (title: String, address: String) -> Boolean, onCancel: ()
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .background(colors.surface)
+                .panel()
                 .pointerInput(Unit) { detectTapGestures { } }
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),

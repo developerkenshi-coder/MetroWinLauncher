@@ -43,7 +43,9 @@ import com.metrowin.launcher.ui.gesture.pageTurnstile
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
-import com.metrowin.launcher.ui.theme.TileWhite
+import com.metrowin.launcher.ui.theme.litFill
+import com.metrowin.launcher.ui.theme.onAccent
+import com.metrowin.launcher.ui.theme.pageBackground
 import kotlinx.coroutines.launch
 
 /**
@@ -70,7 +72,7 @@ fun TutorialScreen(
     Box(
         modifier
             .fillMaxSize()
-            .background(LocalMetroColors.current.background)
+            .pageBackground()
             // Swallow touches so nothing underneath reacts while the tour is up.
             .pointerInput(Unit) { detectTapGestures { } }
             .testTag("tutorial:screen"),
@@ -126,8 +128,8 @@ private fun StepPage(step: TutorialStep, met: Set<Need>, denied: Set<Need>, onRe
         Spacer(Modifier.height(28.dp))
         MetroText(stringResource(step.label), size = 14.sp, weight = FontWeight.SemiBold)
         Row(Modifier.padding(top = 10.dp, bottom = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(64.dp).background(LocalAccent.current), contentAlignment = Alignment.Center) {
-                GlyphIcon(step.glyph, 40.dp, color = TileWhite)
+            Box(Modifier.size(64.dp).litFill(true), contentAlignment = Alignment.Center) {
+                GlyphIcon(step.glyph, 40.dp, color = onAccent())
             }
             Spacer(Modifier.width(16.dp))
             MetroText(

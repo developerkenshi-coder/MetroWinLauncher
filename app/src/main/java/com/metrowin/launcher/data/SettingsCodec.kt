@@ -9,6 +9,8 @@ import org.json.JSONObject
  * ones take their default, so files from older and newer versions both load.
  */
 object SettingsCodec {
+    private const val OPAQUE = 0xFF000000.toInt()
+
     /**
      * With [portable] the settings that belong to this phone alone are left out (the backup folder, the sync
      * passphrase and device id, the last backup time, the weather position, whether the Kid's Corner is on): a
@@ -19,6 +21,9 @@ object SettingsCodec {
         put("darkFromHour", s.darkFromHour)
         put("darkToHour", s.darkToHour)
         put("accentIndex", s.accentIndex)
+        put("themeStyle", s.themeStyle.code)
+        put("customAccent", s.customAccent)
+        put("dynamicColor", s.dynamicColor)
         put("autoAccent", s.autoAccent)
         put("moreTiles", s.moreTiles)
         put("parallax", s.parallax)
@@ -96,6 +101,10 @@ object SettingsCodec {
             darkFromHour = o.optInt("darkFromHour", base.darkFromHour).coerceIn(0, 23),
             darkToHour = o.optInt("darkToHour", base.darkToHour).coerceIn(0, 23),
             accentIndex = o.optInt("accentIndex", base.accentIndex).coerceIn(0, ACCENT_COUNT - 1),
+            themeStyle = if (o.has("themeStyle")) ThemeStyle.fromCode(o.optString("themeStyle")) else base.themeStyle,
+            // Always opaque; 0 means "no custom color".
+            customAccent = o.optInt("customAccent", base.customAccent).let { if (it == 0) 0 else it or OPAQUE },
+            dynamicColor = o.optBoolean("dynamicColor", base.dynamicColor),
             autoAccent = o.optBoolean("autoAccent", base.autoAccent),
             moreTiles = o.optBoolean("moreTiles", base.moreTiles),
             backgroundRevision = o.optInt("backgroundRevision", base.backgroundRevision).coerceAtLeast(0),

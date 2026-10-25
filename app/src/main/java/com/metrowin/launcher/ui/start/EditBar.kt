@@ -32,7 +32,9 @@ import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.TileWhite
+import com.metrowin.launcher.ui.theme.litFill
+import com.metrowin.launcher.ui.theme.onAccent
+import com.metrowin.launcher.ui.theme.sheet
 
 /**
  * The bar at the bottom of Start while a tile is selected: the three sizes to choose from (instead of
@@ -60,7 +62,7 @@ fun EditBar(
     Row(
         modifier
             .fillMaxWidth()
-            .background(colors.surface)
+            .sheet()
             // Swallow touches so the tiles behind the bar do not react.
             .pointerInput(Unit) { detectTapGestures { } }
             .navigationBarsPadding()
@@ -93,10 +95,10 @@ fun EditBar(
                     .testTag("edit:style")
                     .semantics { contentDescription = description }
                     .metroPress(onClick = onStyle)
-                    .background(if (style != TileStyle.Standard) LocalAccent.current else colors.inactive)
+                    .litFill(style != TileStyle.Standard)
                     .padding(horizontal = 12.dp, vertical = 11.dp),
             ) {
-                MetroText(label, size = 15.sp, weight = FontWeight.Normal, color = if (style != TileStyle.Standard) TileWhite else colors.foreground)
+                MetroText(label, size = 15.sp, weight = FontWeight.Normal, color = if (style != TileStyle.Standard) onAccent() else colors.foreground)
             }
         }
         if (pageCount > 1) {
@@ -124,7 +126,7 @@ private fun AddButton(onClick: () -> Unit) {
             .testTag("edit:add")
             .semantics { contentDescription = description }
             .metroPress(onClick = onClick)
-            .background(LocalMetroColors.current.inactive),
+            .litFill(false),
         contentAlignment = Alignment.Center,
     ) {
         MetroText("+", size = 30.sp, weight = FontWeight.Normal)
@@ -140,7 +142,7 @@ private fun FolderButton(onClick: () -> Unit) {
             .testTag("edit:folder")
             .semantics { contentDescription = description }
             .metroPress(onClick = onClick)
-            .background(LocalMetroColors.current.inactive),
+            .litFill(false),
         contentAlignment = Alignment.Center,
     ) {
         GlyphIcon(Glyph.Folder, 28.dp)
@@ -163,11 +165,11 @@ private fun SizeButton(size: TileSize, selected: Boolean, onClick: () -> Unit) {
             .testTag("edit:size:${size.name}")
             .semantics { contentDescription = description }
             .metroPress(onClick = onClick)
-            .background(if (selected) LocalAccent.current else colors.inactive),
+            .litFill(selected),
         contentAlignment = Alignment.Center,
     ) {
         // A little picture of the size: its proportions as a filled rectangle.
-        val tint = if (selected) TileWhite else colors.foreground
+        val tint = if (selected) onAccent() else colors.foreground
         Canvas(Modifier.size(30.dp)) {
             val unit = this.size.width / 8f
             val (w, h) = when (size) {

@@ -1,5 +1,13 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.theme.toArgbInt
+import com.metrowin.launcher.ui.theme.ColorMath
+import androidx.compose.runtime.CompositionLocalProvider
+import com.metrowin.launcher.ui.theme.onTile
+import com.metrowin.launcher.ui.theme.tileSurface
+import com.metrowin.launcher.ui.theme.tileInk
+import com.metrowin.launcher.ui.theme.tileColor
+import com.metrowin.launcher.ui.theme.LocalStyle
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VectorConverter
@@ -162,8 +170,6 @@ class StartActions(
 @Immutable
 data class ExitRequest(val key: String)
 
-private val TileGap = 6.dp
-
 /**
  * The Windows Phone Start screen: a column of live tiles that scrolls vertically, with an arrow at
  * the end that leads to the app list. Tiles swing in around their left edge when the screen opens
@@ -302,6 +308,7 @@ private fun TileGridView(
     pickedKeys: Set<String>?,
 ) {
     val density = LocalDensity.current
+    val TileGap = LocalStyle.current.tileGap
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val unit = (maxWidth - TileGap * (columns - 1)) / columns
         val unitPx = with(density) { unit.toPx() }
@@ -490,6 +497,9 @@ private fun PositionedTile(
     val density = LocalDensity.current
     val reduced = LocalReduceMotion.current
     val highContrast = LocalHighContrast.current
+    val style = LocalStyle.current
+    val TileGap = style.tileGap
+    val colors = LocalMetroColors.current
     val currentActions by rememberUpdatedState(actions)
     val currentCell by rememberUpdatedState(cell)
     val step = unit + TileGap
@@ -542,7 +552,8 @@ private fun PositionedTile(
 
     // The built-in apps are transparent over a Start background photo, the others keep the accent.
     val transparent = hasBackground && cell is AppCell && cell.item.glyph != null && !highContrast
-    val tileColor = if (transparent) Color.Black.copy(alpha = 0.12f) else LocalAccent.current
+    val tileColor = if (transparent) Color.Black.copy(alpha = 0.12f) else colors.tileColor(index, LocalAccent.current)
+    val shape = style.tileShapeFor(cell.size)
 
     Box(
         Modifier
@@ -587,22 +598,25 @@ private fun PositionedTile(
                     Modifier
                 },
             )
-            .background(tileColor)
-            .then(if (armedForFolder) Modifier.border(3.dp, TileWhite) else Modifier)
-            .then(if (highContrast) Modifier.border(HIGH_CONTRAST_FRAME, TileWhite) else Modifier)
+            .tileSurface(tileColor, shape, classicColor = tileColor)
+            .then(if (armedForFolder) Modifier.border(3.dp, colors.tileContent, shape) else Modifier)
+            .then(if (highContrast) Modifier.border(HIGH_CONTRAST_FRAME, TileWhite, shape) else Modifier)
             .clipToBounds(),
     ) {
-        when (cell) {
-            is AppCell -> TileFace(
-                cell.item, cell.size, width, height, live,
-                seed = cell.key.hashCode(), notifications = badges[cell.item.packageName] ?: 0,
-                style = cell.tile.style, peek = peeks[cell.item.packageName],
-                interactive = editingKey == null, onLongClick = { currentActions.onLongClick(currentCell) },
-            )
-            is FolderCell -> FolderFace(
-                cell.folder, cell.items, cell.expanded, cell.size, width, height,
-                notifications = cell.items.sumOf { badges[it.packageName] ?: 0 },
-            )
+        // In Modern Droid the tiles take the containers in turn, each with its own ink.
+        CompositionLocalProvider(LocalMetroColors provides colors.onTile(if (transparent) colors.tileContent else colors.tileInk(index))) {
+            when (cell) {
+                is AppCell -> TileFace(
+                    cell.item, cell.size, width, height, live,
+                    seed = cell.key.hashCode(), notifications = badges[cell.item.packageName] ?: 0,
+                    style = cell.tile.style, peek = peeks[cell.item.packageName],
+                    interactive = editingKey == null, onLongClick = { currentActions.onLongClick(currentCell) },
+                )
+                is FolderCell -> FolderFace(
+                    cell.folder, cell.items, cell.expanded, cell.size, width, height,
+                    notifications = cell.items.sumOf { badges[it.packageName] ?: 0 },
+                )
+            }
         }
         if (picked) PickMark(Modifier.align(Alignment.TopEnd))
         if (selected) {
@@ -632,14 +646,16 @@ private fun PositionedTile(
 /** The mark of a tile that is picked for a folder: a white frame and a check in a circle in the corner. */
 @Composable
 private fun PickMark(modifier: Modifier = Modifier) {
-    Box(Modifier.fillMaxSize().border(3.dp, TileWhite).testTag("picked"))
+    val ink = LocalMetroColors.current.tileContent
+    val check = if (ColorMath.luminance(ink.toArgbInt()) > 0.5f) Color(0xFF111111) else Color.White
+    Box(Modifier.fillMaxSize().border(3.dp, ink).testTag("picked"))
     Box(
-        modifier.padding(6.dp).size(30.dp).clip(CircleShape).background(TileWhite),
+        modifier.padding(6.dp).size(30.dp).clip(CircleShape).background(ink),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(Modifier.size(16.dp)) {
             val stroke = 3.dp.toPx()
-            val tint = Color(0xFF111111)
+            val tint = check
             drawLine(tint, Offset(size.width * 0.12f, size.height * 0.55f), Offset(size.width * 0.4f, size.height * 0.85f), stroke, StrokeCap.Round)
             drawLine(tint, Offset(size.width * 0.4f, size.height * 0.85f), Offset(size.width * 0.9f, size.height * 0.2f), stroke, StrokeCap.Round)
         }
@@ -715,7 +731,7 @@ private fun EditButton(kind: EditButtonKind, onClick: () -> Unit, modifier: Modi
         modifier
             .size(34.dp)
             .clip(CircleShape)
-            .background(TileWhite)
+            .background(Color.White)
             .pointerInput(Unit) { detectTapGestures { currentClick() } },
         contentAlignment = Alignment.Center,
     ) {

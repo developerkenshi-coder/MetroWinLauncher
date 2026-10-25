@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.theme.pageBackground
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.background
@@ -61,7 +62,7 @@ fun SettingsScreen(
     Box(
         modifier
             .fillMaxSize()
-            .background(colors.background)
+            .pageBackground()
             // Swallow touches so nothing underneath reacts while this page is up.
             .pointerInput(Unit) { detectTapGestures { } }
             .statusBarsPadding()
@@ -119,7 +120,7 @@ private fun SectionList(sections: List<SettingsSection>, onOpen: (SettingsSectio
 /** The page of one section: the small heading, the section's title, and its settings. */
 @Composable
 private fun SectionPage(section: SettingsSection, env: SettingsEnv, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxSize().background(LocalMetroColors.current.background)) {
+    Column(modifier.fillMaxSize().pageBackground()) {
         SettingsHeader()
         MetroText(
             stringResource(section.title),

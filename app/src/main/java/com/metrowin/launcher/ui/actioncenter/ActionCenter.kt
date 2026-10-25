@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.actioncenter
 
+import com.metrowin.launcher.ui.theme.pageBackground
+import com.metrowin.launcher.ui.theme.squareClip
 import android.text.format.DateUtils
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
@@ -66,7 +68,9 @@ import com.metrowin.launcher.ui.gesture.PullPanel
 import com.metrowin.launcher.ui.gesture.pushUpConnection
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.TileWhite
+import com.metrowin.launcher.ui.theme.LocalStyle
+import com.metrowin.launcher.ui.theme.litFill
+import com.metrowin.launcher.ui.theme.onAccent
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -108,7 +112,7 @@ fun ActionCenter(
             .fillMaxSize()
             // The only place the progress is read, and in the draw phase: pulling never recomposes the panel.
             .graphicsLayer { translationY = -(1f - panel.progress.coerceIn(0f, 1f)) * size.height }
-            .background(colors.background)
+            .pageBackground()
             .nestedScroll(pushUp)
             // Dragging on the buttons and the headings, which do not scroll, moves the panel too.
             .draggable(
@@ -217,14 +221,14 @@ fun QuickButton(action: QuickAction, on: Boolean?, onClick: (QuickAction) -> Uni
             .aspectRatio(1f)
             .testTag("quick:${action.id}")
             .metroPress(onClick = { onClick(action) })
-            .background(if (lit) LocalAccent.current else colors.inactive),
+            .litFill(lit, LocalStyle.current.cardShape),
         contentAlignment = Alignment.Center,
     ) {
-        GlyphIcon(action.glyph, 40.dp, color = if (lit) TileWhite else colors.foreground)
+        GlyphIcon(action.glyph, 40.dp, color = if (lit) onAccent() else colors.foreground)
         MetroText(
             stringResource(action.label),
             size = 11.sp, weight = FontWeight.Normal,
-            color = if (lit) TileWhite else colors.subtle,
+            color = if (lit) onAccent() else colors.subtle,
             modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 4.dp, vertical = 5.dp),
         )
     }
@@ -276,7 +280,7 @@ private fun GroupRow(group: NotificationItem.Group, app: AppItem?, open: Boolean
         if (app != null) {
             AppSquare(app, 44.dp)
         } else {
-            Box(Modifier.size(44.dp).background(colors.surface), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(44.dp).squareClip().background(colors.surface), contentAlignment = Alignment.Center) {
                 GlyphIcon(Glyph.Bell, 26.dp, color = colors.subtle)
             }
         }
@@ -323,7 +327,7 @@ private fun NotificationRow(
             if (app != null) {
                 AppSquare(app, 44.dp)
             } else {
-                Box(Modifier.size(44.dp).background(colors.surface), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(44.dp).squareClip().background(colors.surface), contentAlignment = Alignment.Center) {
                     GlyphIcon(Glyph.Bell, 26.dp, color = colors.subtle)
                 }
             }
