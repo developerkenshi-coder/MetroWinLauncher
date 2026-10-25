@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MetroWin Launcher</string>
+
+    <string name="stock_alarms">Sveglie</string>
+    <string name="stock_batterysaver">Risparmio batteria</string>
+    <string name="stock_calculator">Calcolatrice</string>
+    <string name="stock_calendar">Calendario</string>
+    <string name="stock_camera">Fotocamera</string>
+    <string name="stock_cortana">Cortana</string>
+    <string name="stock_datasense">Data Sense</string>
+    <string name="stock_excel">Excel</string>
+    <string name="stock_files">File</string>
+    <string name="stock_finance">Finanza</string>
+    <string name="stock_games">Giochi</string>
+    <string name="stock_internetexplorer">Internet Explorer</string>
+    <string name="stock_mail">Posta</string>
+    <string name="stock_maps">Mappe</string>
+    <string name="stock_messaging">Messaggi</string>
+    <string name="stock_music">Musica</string>
+    <string name="stock_news">Notizie</string>
+    <string name="stock_office">Office</string>
+    <string name="stock_onedrive">OneDrive</string>
+    <string name="stock_onenote">OneNote</string>
+    <string name="stock_people">Persone</string>
+    <string name="stock_phone">Telefono</string>
+    <string name="stock_photos">Foto</string>
+    <string name="stock_podcasts">Podcast</string>
+    <string name="stock_powerpoint">PowerPoint</string>
+    <string name="stock_settings">Impostazioni</string>
+    <string name="stock_skype">Skype</string>
+    <string name="stock_sports">Sport</string>
+    <string name="stock_storagesense">Storage Sense</string>
+    <string name="stock_store">Store</string>
+    <string name="stock_video">Video</string>
+    <string name="stock_voicerecorder">Registratore vocale</string>
+    <string name="stock_wallet">Wallet</string>
+    <string name="stock_weather">Meteo</string>
+    <string name="stock_word">Word</string>
+    <string name="stock_xbox">Xbox</string>
+
+    <string name="settings_start_theme">start+tema</string>
+    <string name="settings_header">IMPOSTAZIONI</string>
+    <string name="theme_background">sfondo</string>
+    <string name="theme_dark">scuro</string>
+    <string name="theme_light">chiaro</string>
+    <string name="theme_accent">colore d\'accento</string>
+    <string name="theme_start_background">sfondo di start</string>
+    <string name="theme_choose_photo">scegli foto</string>
+    <string name="theme_remove_photo">rimuovi</string>
+    <string name="theme_start_background_hint">I riquadri delle app integrate mostrano la foto in trasparenza.</string>
+    <string name="theme_more_tiles">mostra più riquadri</string>
+    <string name="toggle_on">Attivato</string>
+    <string name="toggle_off">Disattivato</string>
+    <string name="photo_failed">Impossibile usare questa foto</string>
+
+    <string name="search_apps">cerca</string>
+
+    <string name="kids_title">angolo bambini</string>
+    <string name="kids_intro">Condividi il telefono con un bambino: compaiono solo le app che scegli e il resto del telefono resta fuori portata. Per uscire, conferma con il blocco schermo.</string>
+    <string name="kids_start">avvia angolo bambini</string>
+    <string name="kids_apps">app</string>
+    <string name="kids_exit">esci</string>
+    <string name="kids_exit_title">Esci dall\'angolo bambini</string>
+    <string name="kids_pin_hint">Per un blocco più forte, attiva il blocco schermo (screen pinning) nelle impostazioni di Android.</string>
+
+    <string name="ac_notifications">notifiche</string>
+    <string name="ac_clear_all">cancella tutto</string>
+    <string name="ac_empty">Nessuna nuova notifica</string>
+    <string name="ac_all_settings">tutte le impostazioni</string>
+    <string name="ac_access_needed">Attiva l\'accesso alle notifiche per vederle qui e per contarle sui riquadri.</string>
+    <string name="ac_turn_on">attiva</string>
+    <string name="qa_wifi">Wi-Fi</string>
+    <string name="qa_bluetooth">Bluetooth</string>
+    <string name="qa_airplane">Modalità aereo</string>
+    <string name="qa_flashlight">Torcia</string>
+    <string name="qa_quiet_hours">Ore silenziose</string>
+    <string name="qa_rotation">Blocco rotazione</string>
+    <string name="qa_location">Posizione</string>
+    <string name="qa_hotspot">Condivisione internet</string>
+    <string name="qa_vpn">VPN</string>
+    <string name="qa_cast">Proietta lo schermo</string>
+    <string name="qa_brightness">Luminosità</string>
+    <string name="qa_camera">Fotocamera</string>
+    <string name="settings_actions">notifiche+azioni</string>
+    <string name="settings_quick_actions">azioni rapide</string>
+    <string name="settings_pick_action">Scegli cosa fa il pulsante evidenziato.</string>
+    <string name="settings_notification_access">accesso alle notifiche</string>
+    <string name="settings_manage">gestisci</string>
+    <string name="folder_default_name">cartella</string>
+    <string name="folder_name">nome della cartella</string>
+
+    <string name="live_today">oggi</string>
+    <string name="live_tomorrow">domani</string>
+
+    <string name="menu_pin">aggiungi a start</string>
+    <string name="menu_unpin">rimuovi da start</string>
+    <string name="menu_uninstall">disinstalla</string>
+    <string name="launch_failed">Impossibile aprire questa app</string>
+
+    <string name="perm_header">METROWIN LAUNCHER</string>
+    <string name="perm_title">consenti l\'accesso</string>
+    <string name="perm_intro">I riquadri possono mostrare informazioni dal telefono. Restano sul dispositivo e ogni permesso è facoltativo.</string>
+    <string name="perm_photos">foto</string>
+    <string name="perm_photos_why">Sfoglia le tue ultime foto sul riquadro Foto.</string>
+    <string name="perm_calendar">calendario</string>
+    <string name="perm_calendar_why">Mostra il prossimo appuntamento sul riquadro Calendario.</string>
+    <string name="perm_contacts">contatti</string>
+    <string name="perm_contacts_why">Mostra i volti dei tuoi contatti sul riquadro Persone.</string>
+    <string name="perm_calls">registro chiamate</string>
+    <string name="perm_calls_why">Conta le chiamate perse sul riquadro Telefono.</string>
+    <string name="perm_allow">consenti</string>
+    <string name="perm_skip">non ora</string>
+
+    <!-- settings: structure -->
+    <string name="settings_group_launcher">launcher</string>
+    <string name="settings_group_tools">strumenti</string>
+    <string name="sec_start_theme_desc">Tema e colore d\'accento, foto di Start, orologio, numero di schermate Start</string>
+    <string name="sec_actions_desc">Pulsanti rapidi dell\'Action Center, accesso alle notifiche, risposte e gruppi</string>
+    <string name="sec_kids_desc">Condividi il telefono con un bambino, solo con le app che scegli</string>
+    <string name="settings_back">indietro</string>
+    <string name="theme_mode">tema</string>
+    <string name="theme_auto_system">come Android</string>
+    <string name="theme_auto_hours">a orari</string>
+    <string name="theme_dark_from">scuro dalle</string>
+    <string name="theme_dark_to">fino alle</string>
+    <string name="theme_hours_hint">Il launcher è scuro tra questi orari e chiaro per il resto della giornata.</string>
+    <string name="theme_parallax">la foto scorre più piano dei riquadri</string>
+    <string name="theme_start_pages">schermate start</string>
+    <string name="theme_start_pages_hint">Con più schermate scorri di lato tra una e l\'altra. I riquadri restano sulla schermata dove li hai messi.</string>
+    <string name="stepper_minus">meno</string>
+    <string name="stepper_plus">più</string>
+    <string name="theme_auto_accent">accento dalla foto di Start</string>
+    <string name="theme_auto_accent_hint">L\'accento prende il colore principale della foto, il più vicino dei 20 colori di Windows Phone.</string>
+
+    <!-- edit bar and Start clock -->
+    <string name="edit_size_small">riquadro piccolo</string>
+    <string name="edit_size_medium">riquadro medio</string>
+    <string name="edit_size_wide">riquadro largo</string>
+    <string name="edit_page_previous">sposta nella schermata Start precedente</string>
+    <string name="edit_page_next">sposta nella schermata Start successiva</string>
+    <string name="edit_page">schermata %1$d</string>
+    <string name="edit_done">fatto</string>
+    <string name="theme_show_clock">orologio e data su Start</string>
+
+    <!-- gestures section -->
+    <string name="sec_gestures">gesti</string>
+    <string name="sec_gestures_desc">Tirate dal bordo, swipe, tocchi, doppio tocco e azioni a due dita</string>
+    <string name="gest_edge_pull">tira giù dal bordo alto</string>
+    <string name="gest_edge_pull_hint">Apre l\'Action Center da qualsiasi pagina, non solo dalla cima di Start.</string>
+    <string name="gest_edge_back_pan">gira pagina dal bordo dello schermo</string>
+    <string name="gest_edge_back_pan_hint">Su Start, lo swipe dal bordo che Android usa per Indietro porta alla pagina successiva o precedente.</string>
+    <string name="gest_tap_sound">suono al tocco</string>
+    <string name="gest_tap_haptics">vibrazione al tocco</string>
+    <string name="gest_tap_hint">Seguono gli interruttori di Android per i suoni e la vibrazione al tocco.</string>
+
+    <!-- apps section -->
+    <string name="sec_apps">app</string>
+    <string name="sec_apps_desc">App nascoste, dove cerca la ricerca, pacchetti di icone</string>
+    <string name="menu_hide">nascondi dalla lista</string>
+    <string name="apps_hidden">app nascoste</string>
+    <string name="apps_hidden_none">Nessuna app nascosta. Tieni premuta un\'app nella lista e scegli \"nascondi dalla lista\".</string>
+    <string name="apps_hidden_hint">Tocca un\'app per mostrarla di nuovo nella lista. Le app nascoste si aprono ancora dal loro riquadro su Start.</string>
+    <string name="jump_recent">ultima app aperta</string>
+
+    <!-- torch tile, layout backup and about -->
+    <string name="torch_title">Torcia</string>
+    <string name="sec_backup">backup+sync</string>
+    <string name="sec_backup_desc">Salva e ripristina il layout, cartella di backup, sincronizzazione tra telefoni</string>
+    <string name="backup_export">esporta il layout</string>
+    <string name="backup_export_hint">Salva le schermate Start, le scorciatoie e le impostazioni in un file da conservare o copiare su un altro telefono.</string>
+    <string name="backup_import">importa un layout</string>
+    <string name="backup_import_hint">Sostituisce le schermate Start e le impostazioni con quelle di un file. Le app che questo telefono non ha vengono lasciate fuori.</string>
+    <string name="backup_exported">Layout salvato</string>
+    <string name="backup_imported">Layout ripristinato</string>
+    <string name="backup_failed">Non è andata a buon fine</string>
+    <string name="backup_not_layout">Questo non è un file di layout di MetroWin</string>
+    <string name="sec_about">informazioni</string>
+    <string name="sec_about_desc">Versione, crediti e licenze</string>
+    <string name="about_version">versione</string>
+    <string name="about_android">android</string>
+    <string name="about_device">dispositivo</string>
+    <string name="about_refresh">frequenza dello schermo</string>
+    <string name="about_credits">crediti</string>
+    <string name="about_inspired">Ispirato a Windows Phone. Non è un prodotto Microsoft: Windows Phone e i nomi delle sue app appartengono a Microsoft.</string>
+    <string name="about_font">Open Sans, di Steve Matteson, SIL Open Font License 1.1.</string>
+    <string name="about_libraries">Realizzato con AndroidX e Jetpack Compose, Apache License 2.0.</string>
+    <string name="about_icons">Il glifo del telefono viene dalle icone di Material Design, Apache License 2.0.</string>
+    <string name="about_weather">Dati meteo di Open-Meteo.com, licenza CC BY 4.0.</string>
+
+    <!-- tile styles and notification peek -->
+    <string name="edit_style_standard">riquadro standard</string>
+    <string name="edit_style_iconic">riquadro iconic: icona e contatore grande</string>
+    <string name="edit_style_cycle">riquadro cycle: foto che sfumano una nell\'altra</string>
+    <string name="peek_label">ultima notifica</string>
+    <string name="edit_style_short_standard">standard</string>
+    <string name="edit_style_short_iconic">iconic</string>
+    <string name="edit_style_short_cycle">cycle</string>
+    <string name="notif_peek">i riquadri mostrano l\'ultima notifica</string>
+    <string name="notif_peek_hint">Un riquadro con una notifica si gira per mostrarne il testo. Lo vede anche chi guarda il tuo schermo, quindi è spento finché non lo accendi.</string>
+
+    <!-- weather and battery -->
+    <string name="weather_clear">Sereno</string>
+    <string name="weather_partly">Parzialmente nuvoloso</string>
+    <string name="weather_cloudy">Nuvoloso</string>
+    <string name="weather_fog">Nebbia</string>
+    <string name="weather_drizzle">Pioggerella</string>
+    <string name="weather_rain">Pioggia</string>
+    <string name="weather_snow">Neve</string>
+    <string name="weather_showers">Rovesci</string>
+    <string name="weather_storm">Temporale</string>
+    <string name="weather_title">Previsioni</string>
+    <string name="battery_charging">in carica</string>
+    <string name="battery_full">carica completa</string>
+    <string name="battery_until_full">%1$s alla carica completa</string>
+    <string name="battery_discharging">a batteria</string>
+
+    <!-- live tiles settings and the forecast page -->
+    <string name="sec_live_tiles">live tile</string>
+    <string name="sec_live_tiles_desc">Città e unità del meteo, app che mostrano un proprio riquadro</string>
+    <string name="weather_city">città del meteo</string>
+    <string name="weather_city_none">Nessuna città</string>
+    <string name="weather_search_hint">cerca una città</string>
+    <string name="weather_search">cerca</string>
+    <string name="weather_no_results">Nessuna città con questo nome</string>
+    <string name="weather_search_failed">Ricerca non riuscita. C\'è connessione?</string>
+    <string name="weather_my_location">La mia posizione</string>
+    <string name="weather_use_location">usa la mia posizione</string>
+    <string name="weather_no_location">Non riesco a trovare dove sei</string>
+    <string name="weather_fahrenheit">temperature in Fahrenheit</string>
+    <string name="weather_hint">Il meteo arriva da Open-Meteo e viene scaricato quando si apre il launcher, al massimo ogni mezz\'ora. La città è l\'unica cosa che viene inviata.</string>
+    <string name="weather_page_header">PREVISIONI</string>
+    <string name="weather_choose_city">scegli una città</string>
+    <string name="weather_refresh">aggiorna</string>
+    <string name="weather_not_set">Scegli una città per vedere il meteo qui e sul riquadro.</string>
+    <string name="weather_updated">aggiornato %1$s</string>
+</resources>

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MetroWin Launcher</string>
+
+    <!-- Windows Phone stock apps, same names as on Windows Phone 8.1 -->
+    <string name="stock_alarms">Alarms</string>
+    <string name="stock_batterysaver">Battery Saver</string>
+    <string name="stock_calculator">Calculator</string>
+    <string name="stock_calendar">Calendar</string>
+    <string name="stock_camera">Camera</string>
+    <string name="stock_cortana">Cortana</string>
+    <string name="stock_datasense">Data Sense</string>
+    <string name="stock_excel">Excel</string>
+    <string name="stock_files">Files</string>
+    <string name="stock_finance">Finance</string>
+    <string name="stock_games">Games</string>
+    <string name="stock_internetexplorer">Internet Explorer</string>
+    <string name="stock_mail">Mail</string>
+    <string name="stock_maps">Maps</string>
+    <string name="stock_messaging">Messaging</string>
+    <string name="stock_music">Music</string>
+    <string name="stock_news">News</string>
+    <string name="stock_office">Office</string>
+    <string name="stock_onedrive">OneDrive</string>
+    <string name="stock_onenote">OneNote</string>
+    <string name="stock_people">People</string>
+    <string name="stock_phone">Phone</string>
+    <string name="stock_photos">Photos</string>
+    <string name="stock_podcasts">Podcasts</string>
+    <string name="stock_powerpoint">PowerPoint</string>
+    <string name="stock_settings">Settings</string>
+    <string name="stock_skype">Skype</string>
+    <string name="stock_sports">Sports</string>
+    <string name="stock_storagesense">Storage Sense</string>
+    <string name="stock_store">Store</string>
+    <string name="stock_video">Video</string>
+    <string name="stock_voicerecorder">Voice Recorder</string>
+    <string name="stock_wallet">Wallet</string>
+    <string name="stock_weather">Weather</string>
+    <string name="stock_word">Word</string>
+    <string name="stock_xbox">Xbox</string>
+
+    <!-- start+theme (the launcher's own settings) -->
+    <string name="settings_start_theme">start+theme</string>
+    <string name="settings_header">SETTINGS</string>
+    <string name="theme_background">background</string>
+    <string name="theme_dark">dark</string>
+    <string name="theme_light">light</string>
+    <string name="theme_accent">accent color</string>
+    <string name="theme_start_background">start background</string>
+    <string name="theme_choose_photo">choose photo</string>
+    <string name="theme_remove_photo">remove</string>
+    <string name="theme_start_background_hint">Tiles of the built-in apps show the photo through them.</string>
+    <string name="theme_more_tiles">show more tiles</string>
+    <string name="toggle_on">On</string>
+    <string name="toggle_off">Off</string>
+    <string name="photo_failed">Can\'t use this photo</string>
+
+    <string name="search_apps">search</string>
+
+    <!-- Kid's Corner -->
+    <string name="kids_title">kid\'s corner</string>
+    <string name="kids_intro">Share your phone with a child: only the apps you choose show up, and the rest of the phone stays out of reach. To leave, confirm with your screen lock.</string>
+    <string name="kids_start">start kid\'s corner</string>
+    <string name="kids_apps">apps</string>
+    <string name="kids_exit">exit</string>
+    <string name="kids_exit_title">Leave kid\'s corner</string>
+    <string name="kids_pin_hint">For a stronger lock, turn on screen pinning in the Android settings.</string>
+
+    <!-- Action Center -->
+    <string name="ac_notifications">notifications</string>
+    <string name="ac_clear_all">clear all</string>
+    <string name="ac_empty">No new notifications</string>
+    <string name="ac_all_settings">all settings</string>
+    <string name="ac_access_needed">Turn on notification access to see your notifications here, and to count them on the tiles.</string>
+    <string name="ac_turn_on">turn on</string>
+    <string name="qa_wifi">Wi-Fi</string>
+    <string name="qa_bluetooth">Bluetooth</string>
+    <string name="qa_airplane">Airplane mode</string>
+    <string name="qa_flashlight">Flashlight</string>
+    <string name="qa_quiet_hours">Quiet hours</string>
+    <string name="qa_rotation">Rotation lock</string>
+    <string name="qa_location">Location</string>
+    <string name="qa_hotspot">Internet sharing</string>
+    <string name="qa_vpn">VPN</string>
+    <string name="qa_cast">Project my screen</string>
+    <string name="qa_brightness">Brightness</string>
+    <string name="qa_camera">Camera</string>
+    <string name="settings_actions">notifications+actions</string>
+    <string name="settings_quick_actions">quick actions</string>
+    <string name="settings_pick_action">Choose what the highlighted button does.</string>
+    <string name="settings_notification_access">notification access</string>
+    <string name="settings_manage">manage</string>
+    <string name="folder_default_name">folder</string>
+    <string name="folder_name">folder name</string>
+
+    <!-- Live tiles -->
+    <string name="live_today">today</string>
+    <string name="live_tomorrow">tomorrow</string>
+
+    <!-- App list context menu -->
+    <string name="menu_pin">pin to start</string>
+    <string name="menu_unpin">unpin from start</string>
+    <string name="menu_uninstall">uninstall</string>
+    <string name="launch_failed">Can\'t open this app</string>
+
+    <!-- First run permissions page -->
+    <string name="perm_header">METROWIN LAUNCHER</string>
+    <string name="perm_title">allow access</string>
+    <string name="perm_intro">Tiles can show live information from your phone. It never leaves the device, and every permission is optional.</string>
+    <string name="perm_photos">photos</string>
+    <string name="perm_photos_why">Flip through your latest photos on the Photos tile.</string>
+    <string name="perm_calendar">calendar</string>
+    <string name="perm_calendar_why">Show your next appointment on the Calendar tile.</string>
+    <string name="perm_contacts">contacts</string>
+    <string name="perm_contacts_why">Show the faces of your contacts on the People tile.</string>
+    <string name="perm_calls">call history</string>
+    <string name="perm_calls_why">Count your missed calls on the Phone tile.</string>
+    <string name="perm_allow">allow</string>
+    <string name="perm_skip">not now</string>
+
+    <!-- settings: structure -->
+    <string name="settings_group_launcher">launcher</string>
+    <string name="settings_group_tools">tools</string>
+    <string name="sec_start_theme_desc">Theme and accent color, Start photo, clock, number of Start screens</string>
+    <string name="sec_actions_desc">Quick buttons of the Action Center, notification access, replies and groups</string>
+    <string name="sec_kids_desc">Share the phone with a child, with only the apps you choose</string>
+    <string name="settings_back">back</string>
+    <string name="theme_mode">theme</string>
+    <string name="theme_auto_system">as Android</string>
+    <string name="theme_auto_hours">by the hour</string>
+    <string name="theme_dark_from">dark from</string>
+    <string name="theme_dark_to">until</string>
+    <string name="theme_hours_hint">The launcher is dark between these hours and light the rest of the day.</string>
+    <string name="theme_parallax">photo moves slower than the tiles</string>
+    <string name="theme_start_pages">start screens</string>
+    <string name="theme_start_pages_hint">With more screens, swipe sideways between them. Tiles you remove from a screen stay on it until you move them.</string>
+    <string name="stepper_minus">less</string>
+    <string name="stepper_plus">more</string>
+    <string name="theme_auto_accent">accent from the Start photo</string>
+    <string name="theme_auto_accent_hint">The accent takes the main color of the photo, as the closest of the 20 Windows Phone colors.</string>
+
+    <!-- edit bar and Start clock -->
+    <string name="edit_size_small">small tile</string>
+    <string name="edit_size_medium">medium tile</string>
+    <string name="edit_size_wide">wide tile</string>
+    <string name="edit_page_previous">move to the previous Start screen</string>
+    <string name="edit_page_next">move to the next Start screen</string>
+    <string name="edit_page">screen %1$d</string>
+    <string name="edit_done">done</string>
+    <string name="theme_show_clock">clock and date on Start</string>
+
+    <!-- gestures section -->
+    <string name="sec_gestures">gestures</string>
+    <string name="sec_gestures_desc">Edge pulls, swipes, taps, double tap and two-finger actions</string>
+    <string name="gest_edge_pull">pull down from the top edge</string>
+    <string name="gest_edge_pull_hint">Opens the Action Center from any page, not only from the top of Start.</string>
+    <string name="gest_edge_back_pan">turn pages from the screen edge</string>
+    <string name="gest_edge_back_pan_hint">On Start, the swipe from the edge that Android uses for Back goes to the next or the previous page.</string>
+    <string name="gest_tap_sound">click sound on tap</string>
+    <string name="gest_tap_haptics">vibrate on tap</string>
+    <string name="gest_tap_hint">They follow the touch sounds and the vibration on touch switches of Android.</string>
+
+    <!-- apps section -->
+    <string name="sec_apps">apps</string>
+    <string name="sec_apps_desc">Hidden apps, what the search looks in, icon packs</string>
+    <string name="menu_hide">hide from list</string>
+    <string name="apps_hidden">hidden apps</string>
+    <string name="apps_hidden_none">No hidden apps. Press and hold an app in the list and choose \"hide from list\".</string>
+    <string name="apps_hidden_hint">Touch an app to show it in the list again. Hidden apps still open from their tile on Start.</string>
+    <string name="jump_recent">last opened app</string>
+
+    <!-- torch tile, layout backup and about -->
+    <string name="torch_title">Torch</string>
+    <string name="sec_backup">backup+sync</string>
+    <string name="sec_backup_desc">Save and restore the layout, backup folder, sync between phones</string>
+    <string name="backup_export">export layout</string>
+    <string name="backup_export_hint">Saves the Start screens, the shortcuts and the settings in a file you can keep or copy to another phone.</string>
+    <string name="backup_import">import layout</string>
+    <string name="backup_import_hint">Replaces the Start screens and the settings with those of a file. Apps this phone does not have are left out.</string>
+    <string name="backup_exported">Layout saved</string>
+    <string name="backup_imported">Layout restored</string>
+    <string name="backup_failed">That did not work</string>
+    <string name="backup_not_layout">This is not a MetroWin layout file</string>
+    <string name="sec_about">about</string>
+    <string name="sec_about_desc">Version, credits and licenses</string>
+    <string name="about_version">version</string>
+    <string name="about_android">android</string>
+    <string name="about_device">device</string>
+    <string name="about_refresh">screen refresh</string>
+    <string name="about_credits">credits</string>
+    <string name="about_inspired">Inspired by Windows Phone. This is not a Microsoft product: Windows Phone and the names of its apps belong to Microsoft.</string>
+    <string name="about_font">Open Sans, by Steve Matteson, SIL Open Font License 1.1.</string>
+    <string name="about_libraries">Built with AndroidX and Jetpack Compose, Apache License 2.0.</string>
+    <string name="about_icons">The phone glyph comes from the Material Design icons, Apache License 2.0.</string>
+    <string name="about_weather">Weather data by Open-Meteo.com, licensed CC BY 4.0.</string>
+
+    <!-- tile styles and notification peek -->
+    <string name="edit_style_standard">standard tile</string>
+    <string name="edit_style_iconic">iconic tile: icon and a big counter</string>
+    <string name="edit_style_cycle">cycle tile: photos fading into one another</string>
+    <string name="peek_label">latest notification</string>
+    <string name="edit_style_short_standard">standard</string>
+    <string name="edit_style_short_iconic">iconic</string>
+    <string name="edit_style_short_cycle">cycle</string>
+    <string name="notif_peek">tiles show the latest notification</string>
+    <string name="notif_peek_hint">A tile with a notification flips to show its text. Anyone who sees your screen sees it too, so it is off until you turn it on.</string>
+
+    <!-- weather and battery -->
+    <string name="weather_clear">Clear</string>
+    <string name="weather_partly">Partly cloudy</string>
+    <string name="weather_cloudy">Cloudy</string>
+    <string name="weather_fog">Fog</string>
+    <string name="weather_drizzle">Drizzle</string>
+    <string name="weather_rain">Rain</string>
+    <string name="weather_snow">Snow</string>
+    <string name="weather_showers">Showers</string>
+    <string name="weather_storm">Thunderstorm</string>
+    <string name="weather_title">Forecast</string>
+    <string name="battery_charging">charging</string>
+    <string name="battery_full">fully charged</string>
+    <string name="battery_until_full">%1$s until full</string>
+    <string name="battery_discharging">on battery</string>
+
+    <!-- live tiles settings and the forecast page -->
+    <string name="sec_live_tiles">live tiles</string>
+    <string name="sec_live_tiles_desc">Weather city and units, apps that show their own tile</string>
+    <string name="weather_city">weather city</string>
+    <string name="weather_city_none">No city yet</string>
+    <string name="weather_search_hint">search for a city</string>
+    <string name="weather_search">search</string>
+    <string name="weather_no_results">No city found with that name</string>
+    <string name="weather_search_failed">Could not search. Is there a connection?</string>
+    <string name="weather_my_location">My location</string>
+    <string name="weather_use_location">use my location</string>
+    <string name="weather_no_location">Could not find where you are</string>
+    <string name="weather_fahrenheit">temperatures in Fahrenheit</string>
+    <string name="weather_hint">Weather comes from Open-Meteo and is fetched when the launcher opens, at most every half hour. The city is the only thing sent.</string>
+    <string name="weather_page_header">FORECAST</string>
+    <string name="weather_choose_city">choose a city</string>
+    <string name="weather_refresh">refresh</string>
+    <string name="weather_not_set">Choose a city to see the weather here and on the tile.</string>
+    <string name="weather_updated">updated %1$s</string>
+</resources>

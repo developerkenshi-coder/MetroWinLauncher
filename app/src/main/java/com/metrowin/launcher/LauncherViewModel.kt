@@ -1,0 +1,537 @@
+package com.metrowin.launcher
+
+import android.app.ActivityOptions
+import android.app.Application
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.IntentFilter
+import android.location.LocationManager
+import androidx.core.content.ContextCompat
+import android.content.ComponentName
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import android.service.notification.NotificationListenerService
+import androidx.core.app.NotificationManagerCompat
+import android.graphics.Bitmap
+import android.graphics.Rect
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toArgb
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.metrowin.launcher.data.AppFilter
+import com.metrowin.launcher.data.AppRepository
+import com.metrowin.launcher.data.BatteryInfo
+import com.metrowin.launcher.data.AppSection
+import com.metrowin.launcher.data.AppSections
+import com.metrowin.launcher.data.DefaultStart
+import com.metrowin.launcher.data.DominantColor
+import com.metrowin.launcher.data.StartEntries
+import com.metrowin.launcher.data.StartPages
+import com.metrowin.launcher.data.IconLoader
+import com.metrowin.launcher.data.LiveTileData
+import com.metrowin.launcher.data.OpenMeteo
+import com.metrowin.launcher.data.PlaceMatch
+import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.data.QuickAction
+import com.metrowin.launcher.data.RecentApps
+import com.metrowin.launcher.data.QuickActionsController
+import com.metrowin.launcher.data.LayoutBackup
+import com.metrowin.launcher.data.LayoutBackupCodec
+import com.metrowin.launcher.data.LiveTileRepository
+import com.metrowin.launcher.data.SettingsStore
+import com.metrowin.launcher.data.ShortcutDef
+import com.metrowin.launcher.data.ShortcutStore
+import com.metrowin.launcher.data.StartBackgroundStore
+import com.metrowin.launcher.data.TileStore
+import com.metrowin.launcher.data.WeatherData
+import com.metrowin.launcher.data.WeatherRepository
+import com.metrowin.launcher.model.AppItem
+import com.metrowin.launcher.model.StartEntry
+import com.metrowin.launcher.model.TileSize
+import com.metrowin.launcher.model.TileStyle
+import com.metrowin.launcher.notifications.NotificationEntry
+import com.metrowin.launcher.ui.theme.MetroAccents
+import com.metrowin.launcher.notifications.NotificationHub
+import com.metrowin.launcher.notifications.NotificationService
+import com.metrowin.launcher.notifications.TilePeek
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Locale
+
+/** [count] only ever grows, so every press is a new value even when nothing else differs. */
+data class HomePress(val count: Int = 0, val fromBackground: Boolean = false)
+
+class LauncherViewModel(application: Application) : AndroidViewModel(application) {
+    private val apps = AppRepository(application)
+    private val store = TileStore(application)
+    private val liveTiles = LiveTileRepository(application)
+    private val settingsStore = SettingsStore(application)
+    private val backgroundStore = StartBackgroundStore(application)
+    private val quickActions = QuickActionsController(application)
+    private val shortcutStore = ShortcutStore(application)
+    private val weatherRepository = WeatherRepository(application)
+
+    val icons = IconLoader(application)
+
+    private val _settings = MutableStateFlow(settingsStore.load())
+    val settings: StateFlow<LauncherSettings> = _settings.asStateFlow()
+
+    /** The apps of the phone. [items] adds the shortcuts to them. */
+    private var appItems: List<AppItem> = emptyList()
+
+    private val _shortcuts = MutableStateFlow(shortcutStore.load())
+    val shortcuts: StateFlow<List<ShortcutDef>> = _shortcuts.asStateFlow()
+
+    private val _items = MutableStateFlow<List<AppItem>>(emptyList())
+    val items: StateFlow<List<AppItem>> = _items.asStateFlow()
+
+    /** What the app list, its search and its jump list show: [items] without the hidden apps and the Start-only shortcuts. */
+    val listItems: StateFlow<List<AppItem>> =
+        combine(_items, _settings) { items, settings -> AppFilter.visible(items, settings) }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /** The app list, grouped by first letter. */
+    val sections: StateFlow<List<AppSection>> =
+        listItems.map(AppSections::group).stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /** What is pinned to Start, one list of tiles and folders (in order) for each Start screen. */
+    private val _pages = MutableStateFlow<List<List<StartEntry>>>(listOf(emptyList()))
+    val pages: StateFlow<List<List<StartEntry>>> = _pages.asStateFlow()
+
+    /** The apps opened last, most recent first. */
+    private val _recents = MutableStateFlow(store.recentApps)
+    val recents: StateFlow<List<String>> = _recents.asStateFlow()
+
+    /** The weather of the chosen city: the last fetched, shown at once and refreshed when it gets old. */
+    private val _weather = MutableStateFlow(weatherRepository.cached())
+    val weather: StateFlow<WeatherData?> = _weather.asStateFlow()
+    private var weatherJob: Job? = null
+
+    private val _battery = MutableStateFlow(BatteryInfo.read(application))
+    val battery: StateFlow<BatteryInfo?> = _battery.asStateFlow()
+    private val batteryReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            _battery.value = BatteryInfo.from(intent, context)
+        }
+    }
+
+    private val _live = MutableStateFlow(LiveTileData())
+    val live: StateFlow<LiveTileData> = _live.asStateFlow()
+
+
+    /** The photo behind the Start tiles, if the user picked one. */
+    private val _background = MutableStateFlow<ImageBitmap?>(null)
+    val background: StateFlow<ImageBitmap?> = _background.asStateFlow()
+
+    /** The accent that suits the Start photo, as an index into the accent colours; null without a photo or colour. */
+    private val _autoAccent = MutableStateFlow<Int?>(null)
+    val autoAccentIndex: StateFlow<Int?> = _autoAccent.asStateFlow()
+
+    /** Notifications for the Action Center. Empty until the user turns on notification access. */
+    val notifications: StateFlow<List<NotificationEntry>> = NotificationHub.entries
+
+    /** How many notifications each app has: the counters on the tiles. */
+    val badges: StateFlow<Map<String, Int>> =
+        NotificationHub.entries.map(NotificationHub::countsByPackage).stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+
+    private val _notificationAccess = MutableStateFlow(hasNotificationAccess())
+    val notificationAccess: StateFlow<Boolean> = _notificationAccess.asStateFlow()
+
+    /** The latest notification of each app, for the tiles that flip to show it. Empty unless the setting is on. */
+    val peeks: StateFlow<Map<String, TilePeek>> =
+        combine(NotificationHub.entries, _settings) { entries, settings ->
+            if (settings.notificationPeek) NotificationHub.latestByPackage(entries) else emptyMap()
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+
+    val torchOn: StateFlow<Boolean> = quickActions.torchOn
+
+    private val _permissionsHandled = MutableStateFlow(store.permissionsHandled)
+    val permissionsHandled: StateFlow<Boolean> = _permissionsHandled.asStateFlow()
+
+    /** The Home button pressed while the launcher is already running: how many times, and how the last one found us. */
+    private val _homePresses = MutableStateFlow(HomePress())
+    val homePresses: StateFlow<HomePress> = _homePresses.asStateFlow()
+
+    private var tilesReady = false
+    private var loadedLocale: Locale? = null
+    private var reloadJob: Job? = null
+    private val stopObservingPackages: () -> Unit
+
+    init {
+        reloadApps()
+        if (_settings.value.hasStartBackground) loadBackground()
+        stopObservingPackages = apps.observe(::scheduleReload)
+        ContextCompat.registerReceiver(
+            application, batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
+    }
+
+    override fun onCleared() {
+        runCatching { getApplication<Application>().unregisterReceiver(batteryReceiver) }
+        stopObservingPackages()
+        quickActions.close()
+    }
+
+    /** Called every time the launcher comes back on screen. */
+    fun onStart() {
+        if (loadedLocale != null && loadedLocale != Locale.getDefault()) reloadApps()
+        refreshLive()
+        refreshWeather()
+        val access = hasNotificationAccess()
+        _notificationAccess.value = access
+        // After the process was killed Android does not always bind the service again by itself.
+        if (access && NotificationHub.service == null) {
+            NotificationListenerService.requestRebind(ComponentName(getApplication(), NotificationService::class.java))
+        }
+    }
+
+    private fun hasNotificationAccess() =
+        NotificationManagerCompat.getEnabledListenerPackages(getApplication()).contains(getApplication<Application>().packageName)
+
+    fun quickActionState(action: QuickAction): Boolean? = quickActions.isOn(action)
+
+    fun activateQuickAction(action: QuickAction) = quickActions.activate(action)
+
+    /** Runs what the notification does when tapped, then removes it if the app asked for that. */
+    fun openNotification(entry: NotificationEntry) {
+        runCatching {
+            val options = if (Build.VERSION.SDK_INT >= 34) {
+                @Suppress("DEPRECATION") // replaced on Android 16 by finer modes, this one still works there
+                val allowed = ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                ActivityOptions.makeBasic().setPendingIntentBackgroundActivityStartMode(allowed).toBundle()
+            } else {
+                null
+            }
+            entry.contentIntent?.send(getApplication(), 0, null, null, null, null, options)
+        }
+        if (entry.autoCancel) NotificationHub.dismiss(entry.key)
+    }
+
+    fun dismissNotification(entry: NotificationEntry) = NotificationHub.dismiss(entry.key)
+
+    fun clearNotifications() = NotificationHub.dismissAll()
+
+    fun openNotificationAccessSettings() = startSettings(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+
+    fun openSystemSettings() = startSettings(Settings.ACTION_SETTINGS)
+
+    private fun startSettings(action: String) {
+        runCatching { getApplication<Application>().startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+    }
+
+    /** [fromBackground] is true when the launcher was stopped, behind another app, when the button was pressed. */
+    fun onHomePressed(fromBackground: Boolean) {
+        _homePresses.value = HomePress(_homePresses.value.count + 1, fromBackground)
+    }
+
+    fun refreshLive() {
+        viewModelScope.launch {
+            _live.value = withContext(Dispatchers.IO) { liveTiles.load() }
+        }
+    }
+
+    fun onPermissionsFinished() {
+        store.permissionsHandled = true
+        _permissionsHandled.value = true
+        refreshLive()
+    }
+
+    /** Fetches the weather of the chosen city, unless what is there is recent. [force] fetches in any case. */
+    fun refreshWeather(force: Boolean = false) {
+        val s = _settings.value
+        if (s.weatherLatitude.isNaN() || s.weatherLongitude.isNaN()) {
+            _weather.value = null
+            weatherRepository.save(null)
+            return
+        }
+        val current = _weather.value
+        if (!force && current != null && current.fahrenheit == s.weatherFahrenheit && !OpenMeteo.isStale(current, System.currentTimeMillis())) return
+        weatherJob?.cancel()
+        weatherJob = viewModelScope.launch {
+            val fetched = withContext(Dispatchers.IO) {
+                weatherRepository.fetch(s.weatherLatitude, s.weatherLongitude, s.weatherFahrenheit)
+            }
+            // Nothing new (no connection): the weather already there stays, however old.
+            if (fetched != null) {
+                _weather.value = fetched
+                weatherRepository.save(fetched)
+            }
+        }
+    }
+
+    /** Null when the search could not be made (no connection), an empty list when nothing matches. */
+    suspend fun searchPlaces(query: String): List<PlaceMatch>? =
+        withContext(Dispatchers.IO) { weatherRepository.search(query, Locale.getDefault().language) }
+
+    fun choosePlace(place: PlaceMatch) {
+        updateSettings { it.copy(weatherCity = place.displayName, weatherLatitude = place.latitude, weatherLongitude = place.longitude) }
+    }
+
+    /** Takes the last known position of the phone as the weather's place. Needs the location permission. */
+    @android.annotation.SuppressLint("MissingPermission")
+    fun useMyLocation() {
+        val app = getApplication<Application>()
+        val manager = app.getSystemService(LocationManager::class.java)
+        val here = runCatching {
+            listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER, LocationManager.PASSIVE_PROVIDER)
+                .mapNotNull { provider -> runCatching { manager.getLastKnownLocation(provider) }.getOrNull() }
+                .maxByOrNull { it.time }
+        }.getOrNull()
+        if (here == null) {
+            tell(R.string.weather_no_location)
+            return
+        }
+        updateSettings {
+            it.copy(
+                weatherCity = app.getString(R.string.weather_my_location),
+                weatherLatitude = here.latitude,
+                weatherLongitude = here.longitude,
+            )
+        }
+    }
+
+    fun updateSettings(change: (LauncherSettings) -> LauncherSettings) {
+        val previous = _settings.value
+        val updated = change(previous)
+        if (updated != previous) {
+            _settings.value = updated
+            settingsStore.save(updated)
+            val movedWeather = updated.weatherLatitude != previous.weatherLatitude && !(updated.weatherLatitude.isNaN() && previous.weatherLatitude.isNaN()) ||
+                updated.weatherLongitude != previous.weatherLongitude && !(updated.weatherLongitude.isNaN() && previous.weatherLongitude.isNaN()) ||
+                updated.weatherFahrenheit != previous.weatherFahrenheit
+            if (movedWeather) {
+                // Another city or another unit: the weather on show is not the one asked for.
+                _weather.value = null
+                refreshWeather(force = true)
+            }
+            if (updated.startPages != previous.startPages && tilesReady) {
+                updatePages { StartPages.resize(it, updated.startPages) }
+            }
+        }
+    }
+
+    /** Shrinks and keeps the photo the user picked as the Start background. */
+    fun setStartBackground(uri: Uri) {
+        viewModelScope.launch {
+            val saved = withContext(Dispatchers.IO) { backgroundStore.save(uri) }
+            if (saved) {
+                updateSettings { it.copy(backgroundRevision = it.backgroundRevision + 1) }
+                loadBackground()
+            } else {
+                Toast.makeText(getApplication(), R.string.photo_failed, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun clearStartBackground() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { backgroundStore.clear() }
+            _background.value = null
+            _autoAccent.value = null
+            updateSettings { it.copy(backgroundRevision = 0) }
+        }
+    }
+
+    private fun loadBackground() {
+        viewModelScope.launch {
+            val loaded = withContext(Dispatchers.IO) { backgroundStore.load() }
+            _background.value = loaded?.asImageBitmap()
+            _autoAccent.value = loaded?.let { withContext(Dispatchers.Default) { accentFor(it) } }
+        }
+    }
+
+    /** The accent closest to the colour the picture is about, from a small copy of it. */
+    private fun accentFor(bitmap: Bitmap): Int? {
+        val small = Bitmap.createScaledBitmap(bitmap, SAMPLE_SIDE, SAMPLE_SIDE, true)
+        val pixels = IntArray(SAMPLE_SIDE * SAMPLE_SIDE).also { small.getPixels(it, 0, SAMPLE_SIDE, 0, 0, SAMPLE_SIDE, SAMPLE_SIDE) }
+        if (small !== bitmap) small.recycle()
+        val dominant = DominantColor.of(pixels) ?: return null
+        return DominantColor.nearestIndex(dominant, MetroAccents.map { it.toArgb() })
+    }
+
+    fun isPinned(id: String) = StartPages.isPinned(_pages.value, id)
+
+    /** Pins [item] at the end of Start screen [page]. */
+    fun pin(item: AppItem, page: Int = 0) = updatePages { StartPages.pin(it, item.id, page) }
+
+    fun unpin(id: String) {
+        // A shortcut has no other life than its tile: taking it off Start deletes it.
+        if (_shortcuts.value.any { it.id == id }) removeShortcut(id) else updatePages { StartPages.unpin(it, id) }
+    }
+
+    fun resize(id: String) = updatePages { StartPages.update(it, id) { page -> StartEntries.resize(page, id) } }
+
+    fun setSize(id: String, size: TileSize) =
+        updatePages { StartPages.update(it, id) { page -> StartEntries.setSize(page, id, size) } }
+
+    fun setStyle(id: String, style: TileStyle) =
+        updatePages { StartPages.update(it, id) { page -> StartEntries.setStyle(page, id, style) } }
+
+    fun moveToPage(id: String, page: Int) = updatePages { StartPages.moveToPage(it, id, page) }
+
+    fun moveTo(draggedId: String, targetId: String) =
+        updatePages { StartPages.update(it, targetId) { page -> StartEntries.moveTo(page, draggedId, targetId) } }
+
+    fun merge(draggedId: String, ontoId: String) =
+        updatePages { StartPages.update(it, ontoId) { page -> StartEntries.merge(page, draggedId, ontoId) } }
+
+    fun releaseFolder(folderId: String) =
+        updatePages { StartPages.update(it, folderId) { page -> StartEntries.release(page, folderId) } }
+
+    fun removeFromFolder(folderId: String, childId: String) =
+        updatePages { StartPages.update(it, folderId) { page -> StartEntries.removeFromFolder(page, folderId, childId) } }
+
+    fun renameFolder(folderId: String, name: String) =
+        updatePages { StartPages.update(it, folderId) { page -> StartEntries.rename(page, folderId, name) } }
+
+    /** Returns false (and tells the user) when the app could not be opened. */
+    fun launch(item: AppItem, sourceBounds: Rect? = null): Boolean {
+        val opened = apps.launch(item, sourceBounds)
+        if (opened) {
+            _recents.value = RecentApps.record(_recents.value, item.id)
+            store.recentApps = _recents.value
+        } else {
+            Toast.makeText(getApplication(), R.string.launch_failed, Toast.LENGTH_SHORT).show()
+        }
+        return opened
+    }
+
+    fun uninstall(item: AppItem) {
+        apps.uninstall(item)
+    }
+
+    private fun scheduleReload() {
+        reloadJob?.cancel()
+        reloadJob = viewModelScope.launch {
+            delay(RELOAD_DEBOUNCE_MS) // an install fires several package events in a row
+            reload()
+        }
+    }
+
+    private fun reloadApps() {
+        reloadJob?.cancel()
+        reloadJob = viewModelScope.launch { reload() }
+    }
+
+    private suspend fun reload() {
+        val list = withContext(Dispatchers.Default) { apps.load() }
+        loadedLocale = Locale.getDefault()
+        icons.clear()
+        appItems = list
+        rebuildItems()
+        syncTiles(_items.value)
+    }
+
+    /** Apps first, then the shortcuts: the list every screen reads. */
+    private fun rebuildItems() {
+        _items.value = appItems + _shortcuts.value.map { it.toItem(shortcutStore.photoPath(it.photoFile)) }
+    }
+
+    /** Adds a shortcut and pins its tile at the end of Start screen [page]. */
+    fun addShortcut(shortcut: ShortcutDef, page: Int = 0) {
+        _shortcuts.value = _shortcuts.value.filter { it.id != shortcut.id } + shortcut
+        shortcutStore.save(_shortcuts.value)
+        rebuildItems()
+        updatePages { StartPages.pin(it, shortcut.id, page) }
+    }
+
+    fun removeShortcut(id: String) {
+        val removed = _shortcuts.value.firstOrNull { it.id == id } ?: return
+        _shortcuts.value = _shortcuts.value.filter { it.id != id }
+        shortcutStore.save(_shortcuts.value)
+        shortcutStore.deletePhoto(removed.photoFile)
+        rebuildItems()
+        updatePages { StartPages.unpin(it, id) }
+    }
+
+    fun savePhotoFor(shortcutId: String, bytes: ByteArray): String = shortcutStore.savePhoto(shortcutId, bytes)
+
+    /** What the layout is now, as a backup file would hold it. */
+    fun currentBackup() = LayoutBackup(_pages.value, _shortcuts.value, _settings.value)
+
+    /** Puts a backup in place of the current layout. Tiles of apps this phone does not have are left out. */
+    fun restoreBackup(backup: LayoutBackup) {
+        _shortcuts.value = backup.shortcuts
+        shortcutStore.save(backup.shortcuts)
+        rebuildItems()
+        updateSettings { backup.settings }
+        val known = _items.value.mapTo(HashSet()) { it.id }
+        val pages = StartPages.prune(StartPages.resize(backup.pages, backup.settings.startPages), known)
+        _pages.value = pages
+        store.savePages(pages)
+    }
+
+    /** Writes the layout to [uri] (a file the user chose). */
+    fun exportLayout(uri: Uri) {
+        viewModelScope.launch {
+            val written = withContext(Dispatchers.IO) {
+                runCatching {
+                    val text = LayoutBackupCodec.encode(currentBackup(), System.currentTimeMillis())
+                    getApplication<Application>().contentResolver.openOutputStream(uri, "wt")!!.use { it.write(text.toByteArray()) }
+                }.isSuccess
+            }
+            tell(if (written) R.string.backup_exported else R.string.backup_failed)
+        }
+    }
+
+    /** Reads a layout file and puts it in place. */
+    fun importLayout(uri: Uri) {
+        viewModelScope.launch {
+            val backup = withContext(Dispatchers.IO) {
+                runCatching {
+                    val text = getApplication<Application>().contentResolver.openInputStream(uri)!!.use { it.readBytes() }
+                        .takeIf { it.size <= MAX_LAYOUT_BYTES }!!.decodeToString()
+                    LayoutBackupCodec.decode(text, _settings.value)
+                }.getOrNull()
+            }
+            if (backup == null) {
+                tell(R.string.backup_not_layout)
+            } else {
+                restoreBackup(backup)
+                tell(R.string.backup_imported)
+            }
+        }
+    }
+
+    private fun tell(message: Int) = Toast.makeText(getApplication(), message, Toast.LENGTH_SHORT).show()
+
+    private fun syncTiles(items: List<AppItem>) {
+        if (items.isEmpty()) return // never prune the Start screen on a failed or empty load
+        val known = items.mapTo(HashSet()) { it.id }
+        val base = if (tilesReady) _pages.value else store.loadPages() ?: listOf(DefaultStart.build(items))
+        val kept = StartPages.prune(StartPages.resize(base, _settings.value.startPages), known)
+        tilesReady = true
+        if (kept != _pages.value) {
+            _pages.value = kept
+            store.savePages(kept)
+        }
+    }
+
+    private inline fun updatePages(change: (List<List<StartEntry>>) -> List<List<StartEntry>>) {
+        val updated = change(_pages.value)
+        if (updated != _pages.value) {
+            _pages.value = updated
+            store.savePages(updated)
+        }
+    }
+
+    private companion object {
+        const val RELOAD_DEBOUNCE_MS = 400L
+        const val SAMPLE_SIDE = 48
+        const val MAX_LAYOUT_BYTES = 2 * 1024 * 1024
+    }
+}
