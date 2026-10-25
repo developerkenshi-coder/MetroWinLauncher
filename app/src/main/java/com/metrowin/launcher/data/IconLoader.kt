@@ -35,7 +35,9 @@ class IconLoader(context: Context) {
         cache.get(key)?.let { return it }
         val bitmap = withContext(Dispatchers.IO) {
             runCatching {
-                render(iconOf(activity), sizePx).also { if (item.isWork) drawWorkBadge(it) }
+                render(iconOf(activity), sizePx).also {
+                    if (item.isWork) drawWorkBadge(it) else if (item.isPrivate) drawPrivateBadge(it)
+                }
             }.getOrNull()
         }
         if (bitmap != null) cache.put(key, bitmap)
@@ -64,6 +66,18 @@ class IconLoader(context: Context) {
         canvas.drawRect(size - badge * 0.62f, size - badge + pad, size - badge * 0.38f, size - badge + pad * 1.9f, paint)
     }
 
+    /** A purple corner with a keyhole, for the apps of the private space. */
+    private fun drawPrivateBadge(bitmap: Bitmap) {
+        val canvas = Canvas(bitmap)
+        val size = bitmap.width.toFloat()
+        val badge = size * WORK_BADGE
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = PRIVATE_PURPLE }
+        canvas.drawRect(size - badge, size - badge, size, size, paint)
+        paint.color = Color.WHITE
+        canvas.drawCircle(size - badge / 2, size - badge * 0.58f, badge * 0.16f, paint)
+        canvas.drawRect(size - badge * 0.56f, size - badge * 0.52f, size - badge * 0.44f, size - badge * 0.22f, paint)
+    }
+
     private fun render(drawable: Drawable, size: Int): Bitmap {
         val bitmap = createBitmap(size, size)
         val canvas = Canvas(bitmap)
@@ -89,5 +103,6 @@ class IconLoader(context: Context) {
         const val ADAPTIVE_VISIBLE = 72f
         const val WORK_BADGE = 0.36f
         const val WORK_BLUE = 0xFF1A73E8.toInt()
+        const val PRIVATE_PURPLE = 0xFF6A00FF.toInt()
     }
 }

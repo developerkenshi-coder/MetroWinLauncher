@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.AboutInfo
 import com.metrowin.launcher.data.PlaceMatch
+import com.metrowin.launcher.data.ProfileInfo
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.model.AppItem
 
@@ -30,6 +31,7 @@ enum class SettingsSection(
     Actions(SettingsGroup.Launcher, R.string.settings_actions, R.string.sec_actions_desc),
     LiveTiles(SettingsGroup.Launcher, R.string.sec_live_tiles, R.string.sec_live_tiles_desc),
     Apps(SettingsGroup.Launcher, R.string.sec_apps, R.string.sec_apps_desc),
+    Profiles(SettingsGroup.Tools, R.string.sec_profiles, R.string.sec_profiles_desc),
     Backup(SettingsGroup.Tools, R.string.sec_backup, R.string.sec_backup_desc),
     Kids(SettingsGroup.Tools, R.string.kids_title, R.string.sec_kids_desc),
     About(SettingsGroup.Tools, R.string.sec_about, R.string.sec_about_desc),
@@ -71,4 +73,7 @@ class SettingsEnv(
     val onClearBackupFolder: () -> Unit = {},
     val onBackupNow: () -> Unit = {},
     val onRestoreBackup: () -> Unit = {},
+    /** The work profile and the private space, when the phone has them. */
+    val profiles: List<ProfileInfo> = emptyList(),
+    val onSetProfilePaused: (serial: Long, paused: Boolean) -> Unit = { _, _ -> },
 )

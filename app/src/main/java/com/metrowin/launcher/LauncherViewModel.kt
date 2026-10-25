@@ -36,6 +36,8 @@ import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.OpenMeteo
 import com.metrowin.launcher.data.PlaceMatch
+import com.metrowin.launcher.data.ProfileInfo
+import com.metrowin.launcher.data.ProfilesController
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.QuickAction
 import com.metrowin.launcher.data.RecentApps
@@ -96,6 +98,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val quickActions = QuickActionsController(application)
     private val shortcutStore = ShortcutStore(application)
     private val weatherRepository = WeatherRepository(application)
+    private val profilesController = ProfilesController(application)
 
     /** The widgets placed on Start. */
     val widgets = WidgetService(application)
@@ -104,6 +107,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     private val _settings = MutableStateFlow(settingsStore.load())
     val settings: StateFlow<LauncherSettings> = _settings.asStateFlow()
+
+    /** The work profile and the private space, if the phone has them. */
+    private val _profiles = MutableStateFlow<List<ProfileInfo>>(emptyList())
+    val profiles: StateFlow<List<ProfileInfo>> = _profiles.asStateFlow()
 
     /** The apps of the phone. [items] adds the shortcuts to them. */
     private var appItems: List<AppItem> = emptyList()
@@ -203,6 +210,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     /** Called every time the launcher comes back on screen. */
     fun onStart() {
+        refreshProfiles()
         if (loadedLocale != null && loadedLocale != Locale.getDefault()) reloadApps()
         refreshLive()
         refreshWeather()
@@ -265,6 +273,20 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         store.permissionsHandled = true
         _permissionsHandled.value = true
         refreshLive()
+    }
+
+    private fun refreshProfiles() {
+        viewModelScope.launch { _profiles.value = withContext(Dispatchers.IO) { runCatching { profilesController.profiles() }.getOrDefault(emptyList()) } }
+    }
+
+    /** Pauses or resumes a profile. The list of apps follows by itself, as Android reports the apps gone or back. */
+    fun setProfilePaused(serial: Long, paused: Boolean) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { profilesController.setPaused(serial, paused) }
+            delay(PROFILE_REFRESH_MS)
+            refreshProfiles()
+            reloadApps()
+        }
     }
 
     /** Fetches the weather of the chosen city, unless what is there is recent. [force] fetches in any case. */
@@ -659,6 +681,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private companion object {
         const val RELOAD_DEBOUNCE_MS = 400L
         const val SAMPLE_SIDE = 48
+        const val PROFILE_REFRESH_MS = 800L
         const val MAX_LAYOUT_BYTES = 2 * 1024 * 1024
     }
 }

@@ -36,6 +36,7 @@ class AppRepository(private val context: Context) {
     private val userManager = context.getSystemService(UserManager::class.java)
     private val pm = context.packageManager
     private val owner = Process.myUserHandle()
+    private val profiles = ProfilesController(context)
 
     /** Blocking, call it off the main thread. Returns the list in alphabetical order. */
     fun load(): List<AppItem> {
@@ -112,6 +113,7 @@ class AppRepository(private val context: Context) {
 
     private fun toItem(info: LauncherActivityInfo, user: UserHandle): AppItem {
         val isOwner = user == owner
+        val type = if (isOwner) null else profiles.typeOf(user)
         val component = info.componentName
         return AppItem(
             id = "app:${component.flattenToShortString()}" +
@@ -120,7 +122,8 @@ class AppRepository(private val context: Context) {
             launch = Launch.Activity(component, user),
             packageName = component.packageName,
             removable = isOwner && !info.isSystemApp(),
-            isWork = !isOwner,
+            isWork = !isOwner && type != ProfileType.Private,
+            isPrivate = type == ProfileType.Private,
         )
     }
 

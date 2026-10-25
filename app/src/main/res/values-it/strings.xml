@@ -329,4 +329,19 @@
     <string name="backup_folder_hint">Scegli una cartella qualsiasi, anche di Google Drive o di un\'altra app cloud che compare nel selettore di file. Il layout viene salvato lì come metrowin-layout.json quando il launcher va in background, non più spesso di quanto scegli.</string>
     <string name="backup_saved">Backup salvato</string>
     <string name="backup_no_file">In quella cartella non c\'è nessun backup</string>
+
+    <!-- profiles -->
+    <string name="sec_profiles">profili</string>
+    <string name="sec_profiles_desc">Profilo di lavoro e spazio privato: mettili in pausa, mostra o nascondi le loro app</string>
+    <string name="profile_work">profilo di lavoro</string>
+    <string name="profile_private">spazio privato</string>
+    <string name="profile_other">un altro profilo</string>
+    <string name="profile_active">attivo</string>
+    <string name="profile_paused">in pausa</string>
+    <string name="profile_pause">metti in pausa</string>
+    <string name="profile_resume">riattiva</string>
+    <string name="profile_unlock">sblocca</string>
+    <string name="profile_show_apps">mostra le sue app nella lista</string>
+    <string name="profile_none">Questo telefono non ha un profilo di lavoro né uno spazio privato.</string>
+    <string name="profile_hint">Un profilo in pausa non esegue nulla e le sue app non si aprono finché non lo riattivi. Android chiede la tua autenticazione per sbloccare lo spazio privato.</string>
 </resources>

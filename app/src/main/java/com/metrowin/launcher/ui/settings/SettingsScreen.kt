@@ -131,6 +131,7 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, modifier: Mo
                 SettingsSection.Actions -> ActionsPage(env)
                 SettingsSection.LiveTiles -> LiveTilesPage(env)
                 SettingsSection.Apps -> AppsPage(env)
+                SettingsSection.Profiles -> ProfilesPage(env)
                 SettingsSection.Backup -> BackupPage(env)
                 SettingsSection.Kids -> KidsPage(env)
                 SettingsSection.About -> AboutPage(env)

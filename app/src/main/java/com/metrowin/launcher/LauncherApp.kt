@@ -164,6 +164,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     /** The Start screens come first and the app list is the page after the last of them. */
     val appsPage = pages.size
 
+    val profiles by vm.profiles.collectAsStateWithLifecycle()
     val backupFolderName by vm.backupFolderName.collectAsStateWithLifecycle()
     val weather by vm.weather.collectAsStateWithLifecycle()
     val battery by vm.battery.collectAsStateWithLifecycle()
@@ -796,6 +797,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                             searchPlaces = vm::searchPlaces,
                             onChoosePlace = vm::choosePlace,
                             onUseLocation = vm::useMyLocation,
+                            profiles = profiles,
+                            onSetProfilePaused = vm::setProfilePaused,
                             backupFolderName = backupFolderName,
                             onPickBackupFolder = vm::setBackupFolder,
                             onClearBackupFolder = vm::clearBackupFolder,
