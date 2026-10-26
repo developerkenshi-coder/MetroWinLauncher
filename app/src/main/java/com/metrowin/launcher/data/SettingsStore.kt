@@ -140,6 +140,17 @@ enum class LaunchAnimation(val code: String, @param:StringRes val label: Int) {
     }
 }
 
+/** How the faces of a live tile follow one another: the tile turns over, the new face slides in, or each tile uses either one in turn. */
+enum class TileTransition(val code: String, @param:StringRes val label: Int) {
+    Flip("flip", R.string.transition_flip),
+    Slide("slide", R.string.transition_slide),
+    Mixed("mixed", R.string.transition_mixed);
+
+    companion object {
+        fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: Flip
+    }
+}
+
 enum class OrientationMode(val code: String, @param:StringRes val label: Int) {
     Portrait("portrait", R.string.screen_orient_portrait),
 
@@ -223,6 +234,10 @@ data class LauncherSettings(
     /** Ask Android for the fastest refresh rate of the screen. */
     val highRefreshRate: Boolean = true,
     val launchAnimation: LaunchAnimation = LaunchAnimation.Turnstile,
+    /** The big title of a page (start, apps) behind the content, moving slower than it when the pages slide: off until asked for. */
+    val panoramaTitles: Boolean = false,
+    /** The bar at the bottom of the edit mode: its "…" button shows the names of the buttons. */
+    val appBar: Boolean = true,
 
     // --- gestures
     /** Pulling down from the top edge opens the Action Center from any page. */
@@ -260,6 +275,16 @@ data class LauncherSettings(
     val liveProgress: Boolean = true,
     /** Apps (package names) whose tile never shows live content. */
     val liveOffApps: Set<String> = emptySet(),
+    /** The sound of the volume keys is a Metro panel, drawn over the launcher while it is on screen. */
+    val volumePanel: Boolean = true,
+    /** A banner at the top of the launcher for each new notification, while the launcher is on screen. */
+    val toastBanner: Boolean = true,
+    /** The choices made for each app below (what it may show in the Action Center, on the lock screen and as a banner) are applied. */
+    val notifControl: Boolean = true,
+    /** Apps (package names) whose notifications are left out of the Action Center / of the lock screen / of the banner. */
+    val notifHideCenter: Set<String> = emptySet(),
+    val notifHideLock: Set<String> = emptySet(),
+    val notifNoBanner: Set<String> = emptySet(),
 
     // --- live tiles
     val weatherCity: String = "",
@@ -268,6 +293,16 @@ data class LauncherSettings(
     val weatherFahrenheit: Boolean = false,
     /** Apps may show their own content on their tile through the launcher's content provider. */
     val thirdPartyTiles: Boolean = true,
+    /** How the faces of a live tile follow one another. */
+    val tileTransition: TileTransition = TileTransition.Flip,
+    /** Where the News tile reads from: the top stories of Google News, one of its sections, or a feed of your own (see [NewsSources]). */
+    val newsSource: String = NewsSources.GOOGLE_TOP,
+    /** The address of the feed, for [NewsSources.CUSTOM]. */
+    val newsUrl: String = "",
+    /** The currency the Finance tile gives its values in, or empty for the one of the region of the phone. */
+    val financeBase: String = "",
+    /** What the Finance tile follows: "fx:USD", "crypto:bitcoin", at most [FinanceItems.MAX]. */
+    val financeItems: List<String> = FinanceItems.DEFAULT,
 
     // --- apps
     /** Apps hidden from the app list, as [com.metrowin.launcher.model.AppItem.id]s. */
@@ -317,6 +352,14 @@ data class LauncherSettings(
     val lockShowWeather: Boolean = true,
     /** The next event's title on the lock screen: off until asked for, since anyone who sees the screen reads it. */
     val lockShowEvent: Boolean = false,
+    /** Up to five apps with the number of their notifications, under the time. */
+    val lockQuickStatus: Boolean = true,
+    /** The apps (package names) of the quick status, in order; empty for the apps with the most notifications. */
+    val lockQuickApps: List<String> = emptyList(),
+    /** The app whose last notification the lock screen writes out (who and what), or empty for none: chosen, since anyone who sees the screen reads it. */
+    val lockDetailApp: String = "",
+    /** The song that plays, its cover and the buttons to skip and pause, on the lock screen. */
+    val lockShowMusic: Boolean = true,
 
     // --- voice
     val voiceOffline: Boolean = true,
@@ -324,6 +367,12 @@ data class LauncherSettings(
     val voiceButton: Boolean = true,
     /** "Call Anna" places the call at once (needs the phone permission) instead of opening the dialer with the number. */
     val voiceCallDirect: Boolean = false,
+    /** What the search box does with a sentence: reminders, events, notes, "near me", scanning. */
+    val searchAssistant: Boolean = true,
+    /** Digits typed in the search box find contacts by the letters on the keys (T9) and by the number. */
+    val searchSmartDial: Boolean = true,
+    /** A card above the search box: the day, the next event, the weather, the reminders. */
+    val searchToday: Boolean = true,
 
     // --- accessibility
     /** Fades instead of turnstiles, flips and springs. */
@@ -359,6 +408,9 @@ data class LauncherSettings(
         const val DEFAULT_ACCENT = 4
         const val DEFAULT_COLUMNS = 4
         const val MAX_START_PAGES = 3
+
+        /** The most apps the quick status of the lock screen holds. */
+        const val MAX_QUICK_APPS = 5
 
         /** The sizes of text to choose from, in percent. */
         val TEXT_SCALES = listOf(85, 90, 100, 110, 120, 130)

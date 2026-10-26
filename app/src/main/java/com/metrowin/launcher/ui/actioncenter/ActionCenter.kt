@@ -60,6 +60,7 @@ import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.QuickAction
+import com.metrowin.launcher.data.ScreenTimeouts
 import com.metrowin.launcher.data.RingerMode
 import com.metrowin.launcher.ui.components.MetroSlider
 import com.metrowin.launcher.model.AppItem
@@ -104,6 +105,8 @@ fun ActionCenter(
     onTurnOnNotificationAccess: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The length of the screen timeout, in milliseconds: the button of it says it instead of its name. */
+    timeout: Int? = null,
     /** Sends the typed answer to a notification that can be answered; says whether it went. Null: no reply link. */
     onReply: ((NotificationEntry, String) -> Boolean)? = null,
     /** The notifications of an app with several show as one line that opens. */
@@ -142,10 +145,10 @@ fun ActionCenter(
             LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
                 item(key = "quick") {
                     Column(Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        QuickRow(slots, states, onAction)
+                        QuickRow(slots, states, onAction, timeout)
                         if (expanded) {
                             val others = QuickAction.entries.filter { it !in slots }
-                            others.chunked(QuickAction.SLOTS).forEach { row -> QuickRow(row, states, onAction) }
+                            others.chunked(QuickAction.SLOTS).forEach { row -> QuickRow(row, states, onAction, timeout) }
                         }
                         if (controls != null) ControlsBlock(controls)
                         Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -297,10 +300,10 @@ private fun ControlsBlock(controls: ActionControls) {
 }
 
 @Composable
-private fun QuickRow(actions: List<QuickAction>, states: Map<QuickAction, Boolean?>, onAction: (QuickAction) -> Unit) {
+private fun QuickRow(actions: List<QuickAction>, states: Map<QuickAction, Boolean?>, onAction: (QuickAction) -> Unit, timeout: Int?) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         actions.forEach { action ->
-            QuickButton(action, states[action], onAction, Modifier.weight(1f))
+            QuickButton(action, states[action], onAction, Modifier.weight(1f), detail = if (action == QuickAction.ScreenTimeout) timeout else null)
         }
         repeat(QuickAction.SLOTS - actions.size) { Spacer(Modifier.weight(1f)) }
     }
@@ -308,7 +311,7 @@ private fun QuickRow(actions: List<QuickAction>, states: Map<QuickAction, Boolea
 
 /** A button of the Action Center: in the accent colour when what it controls is on, grey when it is off. */
 @Composable
-fun QuickButton(action: QuickAction, on: Boolean?, onClick: (QuickAction) -> Unit, modifier: Modifier = Modifier) {
+fun QuickButton(action: QuickAction, on: Boolean?, onClick: (QuickAction) -> Unit, modifier: Modifier = Modifier, detail: Int? = null) {
     val colors = LocalMetroColors.current
     val lit = on == true
     // The picture and the name one under the other, in a square: the name gets the room that is left and is made smaller to fit it.
@@ -325,13 +328,21 @@ fun QuickButton(action: QuickAction, on: Boolean?, onClick: (QuickAction) -> Uni
         ) {
             GlyphIcon(action.glyph, 32.dp, color = if (lit) onAccent() else colors.foreground)
             MetroText(
-                stringResource(action.label),
+                // The screen timeout says how long it is now ("30 s"); the others say what they are.
+                detail?.let { timeoutText(it) } ?: stringResource(action.label),
                 size = 11.sp, weight = FontWeight.Normal, textAlign = TextAlign.Center, minScale = 0.55f,
                 color = if (lit) onAccent() else colors.subtle,
                 modifier = Modifier.padding(top = 2.dp),
             )
         }
     }
+}
+
+/** "30 s", "2 min": a screen timeout in the words of the button. */
+@Composable
+private fun timeoutText(millis: Int): String {
+    val (value, seconds) = ScreenTimeouts.parts(millis)
+    return stringResource(if (seconds) R.string.qa_timeout_seconds else R.string.qa_timeout_minutes, value)
 }
 
 /** The names of the buttons are not drawn bigger than this, however big the text is: they would not fit the square. */

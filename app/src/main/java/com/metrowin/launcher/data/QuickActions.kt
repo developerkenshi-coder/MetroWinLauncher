@@ -45,7 +45,13 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
     Recents("recents", R.string.qa_recents, Glyph.Recents),
 
     /** Takes a screenshot once the panel is out of the way, through the accessibility service. */
-    Screenshot("screenshot", R.string.qa_screenshot, Glyph.Photos);
+    Screenshot("screenshot", R.string.qa_screenshot, Glyph.Photos),
+
+    /** How long the screen stays on: each touch goes to the next length (15 seconds to 10 minutes), and the button says which. */
+    ScreenTimeout("timeout", R.string.qa_timeout, Glyph.Timeout),
+
+    /** The brightness that follows the light of the room, on or off. */
+    AutoBrightness("autobrightness", R.string.qa_auto_brightness, Glyph.AutoBrightness);
 
     companion object {
         /** The four buttons on top until the user chooses others. */
@@ -76,6 +82,17 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
 
         const val SLOTS = 4
     }
+}
+
+/** The lengths of time the screen may stay on, that the screen timeout button goes through. */
+object ScreenTimeouts {
+    val STEPS = listOf(15_000, 30_000, 60_000, 120_000, 300_000, 600_000)
+
+    /** The step after [current] (the first one after the longest); a value that is not a step goes to the next longer step. */
+    fun next(current: Int): Int = STEPS.firstOrNull { it > current } ?: STEPS.first()
+
+    /** The length as the button says it: 15 and 30 seconds, then minutes. */
+    fun parts(millis: Int): Pair<Int, Boolean> = if (millis < 60_000) millis / 1000 to true else millis / 60_000 to false
 }
 
 class QuickActionsController(private val context: Context) {
@@ -131,9 +148,15 @@ class QuickActionsController(private val context: Context) {
                 Settings.System.getInt(context.contentResolver, Settings.System.ACCELEROMETER_ROTATION, 1) == 0
             QuickAction.Location ->
                 LocationManagerCompat.isLocationEnabled(context.getSystemService(android.location.LocationManager::class.java))
+            QuickAction.AutoBrightness ->
+                Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL) ==
+                    Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
             else -> null
         }
     }.getOrNull()
+
+    /** How long the screen stays on, in milliseconds, or null when it cannot be read. */
+    fun screenTimeout(): Int? = runCatching { Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT) }.getOrNull()
 
     /** How many strengths the flashlight has (1 when it only goes on and off, and before Android 13). */
     private val torchLevels: Int =
@@ -181,6 +204,31 @@ class QuickActionsController(private val context: Context) {
             }
             return start(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS).let { false }
         }
+        if (action == QuickAction.ScreenTimeout || action == QuickAction.AutoBrightness) {
+            // Both are system settings an app may only write once the user has allowed it, in a screen of Android (never in a dialog).
+            if (!Settings.System.canWrite(context)) {
+                runCatching {
+                    context.startActivity(
+                        Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, android.net.Uri.fromParts("package", context.packageName, null))
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                }
+                return false
+            }
+            runCatching {
+                val resolver = context.contentResolver
+                if (action == QuickAction.AutoBrightness) {
+                    val auto = isOn(QuickAction.AutoBrightness) == true
+                    Settings.System.putInt(
+                        resolver, Settings.System.SCREEN_BRIGHTNESS_MODE,
+                        if (auto) Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL else Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC,
+                    )
+                } else {
+                    Settings.System.putInt(resolver, Settings.System.SCREEN_OFF_TIMEOUT, ScreenTimeouts.next(screenTimeout() ?: 0))
+                }
+            }
+            return true
+        }
         val intentAction = when (action) {
             QuickAction.Wifi -> Settings.ACTION_WIFI_SETTINGS
             QuickAction.Bluetooth -> Settings.ACTION_BLUETOOTH_SETTINGS
@@ -194,6 +242,7 @@ class QuickActionsController(private val context: Context) {
             QuickAction.Camera -> MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA
             // Not screens of Android: the launcher opens its own settings and the recent apps itself (see LauncherApp).
             QuickAction.LauncherSettings, QuickAction.Recents, QuickAction.Screenshot -> return false
+            QuickAction.ScreenTimeout, QuickAction.AutoBrightness -> return false
         }
         if (!start(intentAction)) start(Settings.ACTION_SETTINGS)
         return false

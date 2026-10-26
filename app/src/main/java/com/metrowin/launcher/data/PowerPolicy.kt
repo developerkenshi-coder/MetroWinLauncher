@@ -5,6 +5,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.LiveKind
 import com.metrowin.launcher.model.StartEntry
+import com.metrowin.launcher.model.TileData
 
 /** When the launcher saves battery: by itself when the phone asks for it, always, or never. */
 enum class BatterySaving(val code: String, @param:StringRes val label: Int, @param:StringRes val description: Int) {
@@ -40,8 +41,8 @@ object PowerPolicy {
      */
     fun liveMaxAgeMs(kind: LiveKind, saving: Boolean): Long {
         val base = when (kind) {
-            LiveKind.Photos -> 15 * MINUTE
-            LiveKind.People -> 30 * MINUTE
+            LiveKind.Photos, LiveKind.Album -> 15 * MINUTE
+            LiveKind.People, LiveKind.Group -> 30 * MINUTE
             LiveKind.Storage -> 10 * MINUTE
             LiveKind.Birthdays -> 12 * HOUR
             else -> 2 * MINUTE
@@ -54,6 +55,15 @@ object PowerPolicy {
 
     /** A weather fetch is not tried again sooner than this, whether the last one worked or not: no connection must not mean a try at every return. */
     fun weatherRetryMs(saving: Boolean): Long = if (saving) 30 * MINUTE else 10 * MINUTE
+
+    /** The headlines and the quotes are fetched again when older than this. */
+    fun feedMaxAgeMs(saving: Boolean): Long = if (saving) 3 * HOUR else 30 * MINUTE
+
+    /** A fetch of headlines or quotes is not tried again sooner than this, whether the last one worked or not. */
+    fun feedRetryMs(saving: Boolean): Long = if (saving) 30 * MINUTE else 10 * MINUTE
+
+    /** The Today card (a query of the calendar and the alarm) is read again when the list comes up after this long. */
+    fun todayMaxAgeMs(saving: Boolean): Long = if (saving) 20 * MINUTE else 2 * MINUTE
 
     /** The icon packs (a search through every installed app) are looked for again after this long. */
     fun packagesMaxAgeMs(saving: Boolean): Long = if (saving) 30 * MINUTE else 5 * MINUTE
@@ -73,12 +83,36 @@ object PowerPolicy {
 
 /** Which of the data behind the live tiles Start really shows, so the others are not read at all. */
 object LiveSources {
-    private val sources = setOf(LiveKind.Calendar, LiveKind.Photos, LiveKind.People, LiveKind.Phone, LiveKind.Storage, LiveKind.Alarm, LiveKind.Birthdays)
+    private val sources = setOf(
+        LiveKind.Calendar, LiveKind.Photos, LiveKind.People, LiveKind.Phone, LiveKind.Storage, LiveKind.Alarm, LiveKind.Birthdays,
+        LiveKind.Album, LiveKind.Group,
+    )
+
+    /** The tiles that read from the Internet: nothing is asked for while none of them is on Start. */
+    private val feeds = setOf(LiveKind.News, LiveKind.Finance)
 
     /** The kinds of live tile among the apps pinned to Start (inside folders too) that need to read data from the phone. */
     fun wanted(pages: List<List<StartEntry>>, items: List<AppItem>): Set<LiveKind> {
         val pinned = StartPages.pinnedIds(pages)
         return items.filter { it.id in pinned }.mapNotNullTo(HashSet()) { it.live?.takeIf { kind -> kind in sources } }
+    }
+
+    /** The ids of the photo albums that have a tile on Start. */
+    fun albumIds(pages: List<List<StartEntry>>, items: List<AppItem>): Set<String> {
+        val pinned = StartPages.pinnedIds(pages)
+        return items.filter { it.id in pinned }.mapNotNullTo(HashSet()) { (it.data as? TileData.Album)?.bucket }
+    }
+
+    /** The ids of the groups of contacts that have a tile on Start. */
+    fun groupIds(pages: List<List<StartEntry>>, items: List<AppItem>): Set<Long> {
+        val pinned = StartPages.pinnedIds(pages)
+        return items.filter { it.id in pinned }.mapNotNullTo(HashSet()) { (it.data as? TileData.Group)?.groupId }
+    }
+
+    /** The kinds of live tile among the apps pinned to Start that read headlines or quotes from the Internet. */
+    fun feedsWanted(pages: List<List<StartEntry>>, items: List<AppItem>): Set<LiveKind> {
+        val pinned = StartPages.pinnedIds(pages)
+        return items.filter { it.id in pinned }.mapNotNullTo(HashSet()) { it.live?.takeIf { kind -> kind in feeds } }
     }
 
     val all: Set<LiveKind> get() = sources

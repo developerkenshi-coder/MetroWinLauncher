@@ -28,6 +28,40 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.R
+import com.metrowin.launcher.ui.start.PlaceDialog
+import com.metrowin.launcher.ui.start.GroupPicker
+import com.metrowin.launcher.ui.start.AlbumPicker
+import com.metrowin.launcher.ui.pages.TimerPage
+import com.metrowin.launcher.ui.pages.StopwatchPage
+import com.metrowin.launcher.ui.pages.RemindersPage
+import com.metrowin.launcher.ui.pages.PeopleHubPage
+import com.metrowin.launcher.ui.pages.NewsPage
+import com.metrowin.launcher.ui.pages.FinancePage
+import com.metrowin.launcher.ui.pages.DialGridPage
+import com.metrowin.launcher.ui.actioncenter.VolumeHudPanel
+import com.metrowin.launcher.ui.actioncenter.ToastBanner
+import com.metrowin.launcher.notifications.MediaInfo
+import com.metrowin.launcher.model.TimerState
+import com.metrowin.launcher.model.StopwatchState
+import com.metrowin.launcher.data.VolumeStream
+import com.metrowin.launcher.data.VolumeRow
+import com.metrowin.launcher.data.VolumeHud
+import com.metrowin.launcher.data.TodayExtras
+import com.metrowin.launcher.data.Today
+import com.metrowin.launcher.data.Reminder
+import com.metrowin.launcher.data.RecentCall
+import com.metrowin.launcher.data.Quote
+import com.metrowin.launcher.data.QuickBadge
+import com.metrowin.launcher.data.NewsItem
+import com.metrowin.launcher.data.NewsData
+import com.metrowin.launcher.data.LockStatus
+import com.metrowin.launcher.data.GroupInfo
+import com.metrowin.launcher.data.FinanceData
+import com.metrowin.launcher.data.Favourite
+import com.metrowin.launcher.data.DetailLine
+import com.metrowin.launcher.data.AlbumInfo
+import android.media.session.MediaSession
+import android.media.session.MediaController
 import com.metrowin.launcher.data.AppSections
 import com.metrowin.launcher.data.AppShortcut
 import com.metrowin.launcher.data.BatteryInfo
@@ -255,7 +289,18 @@ abstract class TextFitBase(private val scale: Float, private val style: ThemeSty
         }
     }
 
-    @Test fun everyQuickButton() = fit("quick_buttons") { QuickButtons(QuickAction.entries.toList().let { it + List((4 - it.size % 4) % 4) { _ -> it.first() } }) }
+    /**
+     * Every button, in groups of two rows: the panel scrolls, but this grid does not, and on a screen that is short (a phone on its side)
+     * more rows than fit would be squeezed on top of one another by the grid, not by the buttons.
+     */
+    private fun quickGroup(index: Int, name: String) {
+        val group = QuickAction.entries.chunked(QuickAction.SLOTS * 2).getOrNull(index) ?: return
+        fit(name) { QuickButtons(group + List((QuickAction.SLOTS - group.size % QuickAction.SLOTS) % QuickAction.SLOTS) { _ -> group.first() }) }
+    }
+
+    @Test fun everyQuickButton() = quickGroup(0, "quick_buttons")
+    @Test fun everyQuickButtonSecondGroup() = quickGroup(1, "quick_buttons_2")
+    @Test fun everyQuickButtonThirdGroup() = quickGroup(2, "quick_buttons_3")
 
     // ---- Start: menus, dialogs and bars
 
@@ -425,6 +470,192 @@ abstract class TextFitBase(private val scale: Float, private val style: ThemeSty
 
     @Test fun ownTilesMedium() = fit("own_tiles_medium") { OwnTiles(TileSize.Medium) }
     @Test fun ownTilesWide() = fit("own_tiles_wide") { OwnTiles(TileSize.Wide) }
+
+    // ---- the third round: the faces of the new tiles, their pages, the choices that make them and what comes over the launcher
+
+    private fun liveNew(): LiveTileData {
+        val now = System.currentTimeMillis()
+        return live().copy(
+            news = NewsData("Prime pagine", listOf(NewsItem("Approvata la nuova legge di bilancio", "ANSA", "https://example.com/1", now - 3_600_000L)), now, "k"),
+            finance = FinanceData(
+                "EUR", listOf(Quote("fx:USD", 0.92, 0.4), Quote("fx:GBP", 1.17, -0.2), Quote("crypto:bitcoin", 61_000.0, -1.2), Quote("fx:JPY", 0.0061, 0.0)),
+                "2026-10-23", now, "k",
+            ),
+            reminders = listOf(Reminder(1, "Chiamare Anna per la cena", now + 3_600_000L), Reminder(2, "Comprare il latte", now + 7_200_000L)),
+        )
+    }
+
+    @Composable
+    private fun NewTiles(size: TileSize) {
+        val running = TimerState(10 * 60_000L, endAt = System.currentTimeMillis() + 4 * 60_000L)
+        val items = listOf(
+            ShortcutDef("p", ShortcutKind.Place, "Casa", "Via Giuseppe Garibaldi 12, Torino"),
+            ShortcutDef("t1", ShortcutKind.Timer, "Timer", text = TimerState(5 * 60_000L).encode()),
+            ShortcutDef("t2", ShortcutKind.Timer, "Pasta", text = running.encode()),
+            ShortcutDef("s", ShortcutKind.Stopwatch, "Cronometro", text = StopwatchState(accumulatedMs = 83_000L, laps = listOf(40_000L, 83_000L)).encode()),
+            ShortcutDef("n", ShortcutKind.News, "Notizie"), ShortcutDef("f", ShortcutKind.Finance, "Finanza"),
+            ShortcutDef("r", ShortcutKind.Reminders, "Promemoria"), ShortcutDef("d", ShortcutKind.DialGrid, "Chiamata rapida"),
+            ShortcutDef("h", ShortcutKind.PeopleHub, "Persone"),
+        ).map { it.toItem(null) }
+        Column(Modifier.verticalScroll(rememberScrollState()).padding(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            items.chunked(if (size == TileSize.Wide) 1 else 2).forEach { chunk ->
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { chunk.forEach { tile(it, size, liveNew())() } }
+            }
+        }
+    }
+
+    @Test fun newTilesSmall() = fit("new_tiles_small") { NewTiles(TileSize.Small) }
+    @Test fun newTilesMedium() = fit("new_tiles_medium") { NewTiles(TileSize.Medium) }
+    @Test fun newTilesWide() = fit("new_tiles_wide") { NewTiles(TileSize.Wide) }
+
+    private val hour = 3_600_000L
+
+    @Test fun timerPage() = fit("timer_page", overlaps = false) {
+        TimerPage("Timer della pasta", TimerState(5 * 60_000L), {}, {}, {}, {}, {})
+    }
+    @Test fun timerPageRunning() = fit("timer_page_running", overlaps = false) {
+        TimerPage("Timer della pasta", TimerState(10 * 60_000L, endAt = System.currentTimeMillis() + 4 * 60_000L), {}, {}, {}, {}, {})
+    }
+    @Test fun stopwatchPage() = fit("stopwatch_page", overlaps = false) {
+        StopwatchPage("Cronometro", StopwatchState(accumulatedMs = 3_723_400L, laps = listOf(60_000L, 3_723_400L)), {}, {}, {}, {})
+    }
+
+    private fun newsSample() = NewsData(
+        "Prime pagine - Google News",
+        listOf(
+            NewsItem("Approvata la nuova legge di bilancio", "ANSA", "https://example.com/1", System.currentTimeMillis() - hour),
+            NewsItem("Maltempo al nord, allerta arancione", "Il Sole 24 Ore", "https://example.com/2", System.currentTimeMillis() - 5 * hour),
+        ),
+        System.currentTimeMillis() - 600_000L, "k",
+    )
+
+    @Test fun newsPage() = fit("news_page", overlaps = false) { NewsPage(newsSample(), googleSource = true, onOpen = {}, onRefresh = {}, onChooseSource = {}) }
+    @Test fun newsPageEmpty() = fit("news_page_empty", overlaps = false) { NewsPage(null, googleSource = true, onOpen = {}, onRefresh = {}, onChooseSource = {}) }
+
+    @Test fun financePage() = fit("finance_page", overlaps = false) {
+        FinancePage(
+            FinanceData(
+                "EUR", listOf(Quote("fx:USD", 0.92, 0.4), Quote("fx:GBP", 1.17, -0.2), Quote("crypto:bitcoin", 61_000.0, -1.2), Quote("fx:JPY", 0.0061, 0.0)),
+                "2026-10-23", System.currentTimeMillis(), "k",
+            ),
+            onOpen = {}, onRefresh = {}, onChoose = {},
+        )
+    }
+    @Test fun financePageEmpty() = fit("finance_page_empty", overlaps = false) { FinancePage(null, onOpen = {}, onRefresh = {}, onChoose = {}) }
+
+    @Test fun remindersPage() = fit("reminders_page", overlaps = false) {
+        val now = System.currentTimeMillis()
+        RemindersPage(
+            listOf(
+                Reminder(1, "Chiamare Anna", now + hour), Reminder(2, "Comprare il latte", now - 5 * hour), Reminder(3, "Pagare la bolletta", now - hour, done = true),
+            ),
+            draft = "", canExact = false, onAdd = { _, _ -> true }, onDone = {}, onRemove = {}, onClearDone = {}, onAllowExact = {},
+        )
+    }
+    @Test fun remindersPageEmpty() = fit("reminders_page_empty", overlaps = false) {
+        RemindersPage(emptyList(), draft = "", canExact = true, onAdd = { _, _ -> true }, onDone = {}, onRemove = {}, onClearDone = {}, onAllowExact = {})
+    }
+
+    private val people = listOf("Anna", "Bruno", "Carla", "Alessandro", "Elena").mapIndexed { i, name -> Favourite(name, "content://c/$i", "33$i", null) }
+    private val calls = listOf(
+        RecentCall("Anna", "331", android.provider.CallLog.Calls.INCOMING_TYPE, System.currentTimeMillis() - hour),
+        RecentCall("Bruno", "332", android.provider.CallLog.Calls.MISSED_TYPE, System.currentTimeMillis() - 2 * hour),
+    )
+
+    @Test fun dialGridPage() = fit("dial_grid_page", overlaps = false) { DialGridPage(people, hasPermission = true, onRequestPermission = {}, onCall = {}) }
+    @Test fun dialGridPageNeedsContacts() = fit("dial_grid_needs_contacts", overlaps = false) { DialGridPage(null, hasPermission = false, onRequestPermission = {}, onCall = {}) }
+    @Test fun peopleHubPage() = fit("people_hub_page", overlaps = false) {
+        PeopleHubPage(
+            people, calls, listOf(NotificationEntry("k1", "chat", "Giulia", "Ci vediamo alle otto?", System.currentTimeMillis() - 60_000L, null, true)),
+            labelOf = { "Messaggi" }, hasContacts = true, hasCallLog = true, onRequestContacts = {}, onRequestCallLog = {}, onCall = {}, onOpenNotification = {},
+        )
+    }
+    @Test fun peopleHubPageNeedsPermissions() = fit("people_hub_needs_permissions", overlaps = false) {
+        PeopleHubPage(
+            null, null, emptyList(), labelOf = { "" }, hasContacts = false, hasCallLog = false,
+            onRequestContacts = {}, onRequestCallLog = {}, onCall = {}, onOpenNotification = {},
+        )
+    }
+
+    @Test fun addMenuWithTheNewTiles() = fit("add_menu_new_tiles") {
+        AddMenu(
+            onContact = {}, onSite = {}, onWidget = {}, onDismiss = {}, onSpeedDial = {}, onSetting = {}, onNote = {}, onCountdown = {},
+            onCounter = {}, onChecklist = {}, onWorldClock = {}, onMoon = {}, onBirthdays = {}, onPlace = {}, onAlbum = {}, onGroup = {}, onTimer = {},
+            onStopwatch = {}, onNews = {}, onFinance = {}, onReminders = {}, onDialGrid = {}, onPeopleHub = {},
+        )
+    }
+    @Test fun placeDialog() = fit("place_dialog", fixedHeight = true) { PlaceDialog(onDone = { _, _ -> true }, onCancel = {}) }
+    @Test fun albumPicker() = fit("album_picker") {
+        AlbumPicker(listOf(AlbumInfo("1", "Fotocamera", 1240), AlbumInfo("2", "Vacanze in Sardegna", 1)), permissionMissing = false, onAllow = {}, onPick = {}, onDismiss = {})
+    }
+    @Test fun albumPickerNeedsPhotos() = fit("album_picker_needs_photos") { AlbumPicker(null, permissionMissing = true, onAllow = {}, onPick = {}, onDismiss = {}) }
+    @Test fun groupPicker() = fit("group_picker") {
+        GroupPicker(listOf(GroupInfo(1, "Famiglia", 5), GroupInfo(2, "Colleghi di lavoro", 1)), permissionMissing = false, onAllow = {}, onPick = {}, onDismiss = {})
+    }
+    @Test fun groupPickerNeedsContacts() = fit("group_picker_needs_contacts") { GroupPicker(null, permissionMissing = true, onAllow = {}, onPick = {}, onDismiss = {}) }
+
+    @Test fun editBarWithNames() = fit("edit_bar_names", fixedHeight = true) {
+        EditBar(
+            size = TileSize.Medium, page = 0, pageCount = 3, onSize = {}, onMovePage = {}, onDone = {}, style = TileStyle.Standard,
+            onStyle = {}, onAdd = {}, onFolder = {}, onLabels = {}, labels = true,
+        )
+    }
+
+    @Test fun volumePanel() = fit("volume_panel", fixedHeight = true) {
+        VolumeHudPanel(
+            VolumeHud(
+                token = 1, main = VolumeRow(VolumeStream.Music, null, 7, 0, 15), app = "YouTube Music",
+                others = listOf(VolumeRow(VolumeStream.Ring, null, 0, 0, 7, ringerMode = android.media.AudioManager.RINGER_MODE_VIBRATE), VolumeRow(VolumeStream.Alarm, null, 5, 0, 7)),
+                expanded = true,
+            ),
+            onSet = { _, _ -> }, onToggle = {}, onDismiss = {},
+        )
+    }
+    @Test fun volumePanelRemote() = fit("volume_panel_remote", fixedHeight = true) {
+        VolumeHudPanel(VolumeHud(token = 1, main = VolumeRow(null, "com.example.cast", 4, 0, 10), app = "Altoparlante della cucina"), onSet = { _, _ -> }, onToggle = {}, onDismiss = {})
+    }
+    @Test fun toastBanner() = fit("toast_banner", fixedHeight = true) {
+        ToastBanner(
+            NotificationEntry("k1", "chat", "Giulia Bianchi", "Ci vediamo alle otto davanti al cinema, ok?", System.currentTimeMillis(), null, true),
+            app = null, hideText = false, onOpen = {}, onDismiss = {},
+        )
+    }
+
+    @Test fun todayCard() = fit("today_card") {
+        val now = System.currentTimeMillis()
+        val model = remember { AppListModel(AppSections.group(AppSections.sort(apps)), today = true) }
+        AppListScreen(
+            model = model, listState = rememberLazyListState(), replayToken = 0, exiting = false, onLaunch = {}, onLongPress = { _, _, _ -> },
+            onHeaderClick = {}, query = "", onQueryChange = {}, results = emptyList(),
+            today = Today.info(
+                TodayExtras(now, LiveEvent("Riunione con il commercialista", now + 2 * hour, false), now + 10 * hour), sunny,
+                listOf(Reminder(1, "Chiamare Anna per la cena", now + hour), Reminder(2, "Comprare il latte e il pane", now + 3 * hour), Reminder(3, "Vecchio", now - 5 * hour)),
+                now,
+            ),
+        )
+    }
+
+    @Composable
+    private fun mediaInfo(): MediaInfo {
+        val session = remember { MediaSession(context, "textfit") }
+        return MediaInfo("player", "Una canzone", "Un artista", null, true, MediaController(context, session.sessionToken))
+    }
+
+    @Test fun lockScreenWithStatusAndMusic() = fit("lock_screen_status_music", fixedHeight = true) {
+        MetroLockScreen(
+            info = LockInfo(
+                nowMillis = System.currentTimeMillis(), nextAlarmMillis = System.currentTimeMillis() + 86_400_000L, notifications = 3,
+                battery = BatteryInfo(85, BatteryState.Charging), weather = sunny,
+                nextEvent = LiveEvent("Riunione con il commercialista", System.currentTimeMillis() + 7_200_000L, false),
+            ),
+            photo = null, options = LockOptions(showStatus = true, showMusic = true),
+            status = LockStatus(
+                listOf(QuickBadge("com.example.alpha", 3), QuickBadge("com.example.beta", 12), QuickBadge("com.example.gamma", 120), QuickBadge("a", 1), QuickBadge("b", 2)),
+                DetailLine("com.example.alpha", "Giulia Bianchi", "Ci vediamo alle otto davanti al cinema, ok? Porto io i biglietti."),
+            ),
+            media = mediaInfo(),
+        )
+    }
 }
 
 /** The tour of the first start: each page by itself. */

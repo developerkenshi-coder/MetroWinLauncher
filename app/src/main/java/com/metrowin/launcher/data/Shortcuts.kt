@@ -6,7 +6,9 @@ import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.model.Launch
 import com.metrowin.launcher.model.LiveKind
+import com.metrowin.launcher.model.StopwatchState
 import com.metrowin.launcher.model.TileData
+import com.metrowin.launcher.model.TimerState
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -48,7 +50,37 @@ enum class ShortcutKind(val code: String) {
     Moon("moon"),
 
     /** The next birthdays of the contacts. */
-    Birthdays("birthdays");
+    Birthdays("birthdays"),
+
+    /** A place (home, work, an address): a touch starts the navigation to it; [ShortcutDef.uri] is the address. */
+    Place("place"),
+
+    /** An album of the photos of the phone: [ShortcutDef.uri] is the id of the album, [ShortcutDef.label] its name. */
+    Album("album"),
+
+    /** A group of the contacts: [ShortcutDef.uri] is the id of the group, [ShortcutDef.label] its name. */
+    Group("group"),
+
+    /** A countdown; [ShortcutDef.text] is its state (see [com.metrowin.launcher.model.TimerState]). */
+    Timer("timer"),
+
+    /** A stopwatch; [ShortcutDef.text] is its state (see [com.metrowin.launcher.model.StopwatchState]). */
+    Stopwatch("stopwatch"),
+
+    /** The headlines of the news source the user chose. */
+    News("news"),
+
+    /** The exchange rates and the coins the user follows. */
+    Finance("finance"),
+
+    /** A grid of numbers that are called at a touch. */
+    DialGrid("dialgrid"),
+
+    /** The people hub: favourites, recent calls and what is new. */
+    PeopleHub("peoplehub"),
+
+    /** The reminders that wait for their time. */
+    Reminders("reminders");
 
     companion object {
         fun fromCode(code: String?) = entries.firstOrNull { it.code == code }
@@ -89,6 +121,16 @@ data class ShortcutDef(
             ShortcutKind.Checklist -> Launch.Internal(AppRepository.ROUTE_CHECKLIST)
             ShortcutKind.WorldClock, ShortcutKind.Moon -> Launch.Internal(AppRepository.ROUTE_NONE)
             ShortcutKind.Birthdays -> Launch.Link(CONTACTS_ADDRESS)
+            ShortcutKind.Place -> Launch.Link(Places.navigationUri(uri))
+            ShortcutKind.Album -> Launch.Internal(AppRepository.ROUTE_ALBUM)
+            ShortcutKind.Group -> Launch.Internal(AppRepository.ROUTE_GROUP)
+            ShortcutKind.Timer -> Launch.Internal(AppRepository.ROUTE_TIMER)
+            ShortcutKind.Stopwatch -> Launch.Internal(AppRepository.ROUTE_STOPWATCH)
+            ShortcutKind.News -> Launch.Internal(AppRepository.ROUTE_NEWS)
+            ShortcutKind.Finance -> Launch.Internal(AppRepository.ROUTE_FINANCE)
+            ShortcutKind.DialGrid -> Launch.Internal(AppRepository.ROUTE_DIALGRID)
+            ShortcutKind.PeopleHub -> Launch.Internal(AppRepository.ROUTE_PEOPLEHUB)
+            ShortcutKind.Reminders -> Launch.Internal(AppRepository.ROUTE_REMINDERS)
             else -> Launch.Link(uri)
         },
         glyph = when (kind) {
@@ -105,12 +147,29 @@ data class ShortcutDef(
             ShortcutKind.WorldClock -> Glyph.Globe
             ShortcutKind.Moon -> Glyph.Moon
             ShortcutKind.Birthdays -> Glyph.Star
+            ShortcutKind.Place -> Glyph.Maps
+            ShortcutKind.Album -> Glyph.Photos
+            ShortcutKind.Group -> Glyph.People
+            ShortcutKind.Timer -> Glyph.Hourglass
+            ShortcutKind.Stopwatch -> Glyph.Stopwatch
+            ShortcutKind.News -> Glyph.News
+            ShortcutKind.Finance -> Glyph.Finance
+            ShortcutKind.DialGrid -> Glyph.Phone
+            ShortcutKind.PeopleHub -> Glyph.People
+            ShortcutKind.Reminders -> Glyph.Bell
         },
         pinOnly = true,
         photoPath = photoPath,
         // The icon of an app shortcut is the icon of its app.
         packageName = if (kind == ShortcutKind.AppShortcut) appShortcutParts(uri)?.first else null,
-        live = if (kind == ShortcutKind.Birthdays) LiveKind.Birthdays else null,
+        live = when (kind) {
+            ShortcutKind.Birthdays -> LiveKind.Birthdays
+            ShortcutKind.Album -> LiveKind.Album
+            ShortcutKind.Group -> LiveKind.Group
+            ShortcutKind.News -> LiveKind.News
+            ShortcutKind.Finance -> LiveKind.Finance
+            else -> null
+        },
         note = text.takeIf { kind == ShortcutKind.Note },
         targetDay = if (kind == ShortcutKind.Countdown) epochDay else 0L,
         data = when (kind) {
@@ -118,6 +177,16 @@ data class ShortcutDef(
             ShortcutKind.Checklist -> TileData.Checklist(text)
             ShortcutKind.WorldClock -> TileData.WorldClock(uri)
             ShortcutKind.Moon -> TileData.Moon
+            ShortcutKind.Place -> TileData.Place(uri)
+            ShortcutKind.Album -> TileData.Album(uri)
+            ShortcutKind.Group -> TileData.Group(uri.toLongOrNull() ?: -1L)
+            ShortcutKind.Timer -> TileData.Timer(TimerState.decode(text))
+            ShortcutKind.Stopwatch -> TileData.Stopwatch(StopwatchState.decode(text))
+            ShortcutKind.News -> TileData.News
+            ShortcutKind.Finance -> TileData.Finance
+            ShortcutKind.DialGrid -> TileData.DialGrid
+            ShortcutKind.PeopleHub -> TileData.PeopleHub
+            ShortcutKind.Reminders -> TileData.Reminders
             else -> null
         },
     )

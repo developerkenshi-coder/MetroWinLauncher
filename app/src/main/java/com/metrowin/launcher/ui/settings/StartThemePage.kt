@@ -188,6 +188,14 @@ fun StartThemePage(env: SettingsEnv) {
             tag = "theme:parallax",
             id = "theme.parallax",
         )
+        ToggleSetting(
+            label = stringResource(R.string.theme_panorama),
+            checked = settings.panoramaTitles,
+            onChange = { value -> env.onChange { it.copy(panoramaTitles = value) } },
+            hint = stringResource(R.string.theme_panorama_hint),
+            tag = "theme:panorama",
+            id = "theme.panorama",
+        )
     }
 }
 

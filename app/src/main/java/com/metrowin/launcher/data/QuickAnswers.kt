@@ -45,6 +45,24 @@ sealed interface QuickAnswer {
 
     /** "100 USD = 92.4 EUR" with the rates of [ratesDate]; touching it copies [result]. */
     data class Currency(val text: String, val result: String, val ratesDate: String) : QuickAnswer
+
+    /** A reminder of [text] at [at] (epoch milliseconds), or at no moment yet (null): then touching it opens the form. */
+    data class Reminder(val text: String, val at: Long?) : QuickAnswer
+
+    /**
+     * An event for the calendar: its [title], when it [start]s (epoch milliseconds; for a whole day the midnight, UTC, of that
+     * day) or null when no moment was said. Touching it opens the calendar with the event filled in.
+     */
+    data class CalendarEvent(val title: String, val start: Long?, val allDay: Boolean) : QuickAnswer
+
+    /** A note: touching it saves [text] in Google Keep, or on a tile of Start where Keep is not there. */
+    data class Note(val text: String) : QuickAnswer
+
+    /** A search for [what] near where the user is, on the map. */
+    data class NearMe(val what: String) : QuickAnswer
+
+    /** The camera that reads codes and text (Google Lens). */
+    data object Scan : QuickAnswer
 }
 
 /**

@@ -114,6 +114,13 @@ fun LiveTilesPage(env: SettingsEnv) {
             hint = stringResource(R.string.weather_hint),
             tag = "weather:fahrenheit", id = "live.fahrenheit",
         )
+        Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            SettingHeading(stringResource(R.string.tiles_more_heading))
+            TileTransitionSetting(env)
+            NewsSourceSetting(env)
+            FinanceBaseSetting(env)
+            FinanceItemsSetting(env)
+        }
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             SettingHeading(stringResource(R.string.live_heading))
             SettingHint(stringResource(R.string.live_intro))

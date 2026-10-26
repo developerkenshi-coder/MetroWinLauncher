@@ -113,6 +113,22 @@ fun ActionsPage(env: SettingsEnv) {
                 enabled = env.notificationAccess,
                 tag = "notifications:group", id = "ac.group",
             )
+            ToggleSetting(
+                label = stringResource(R.string.ac_banner),
+                checked = env.settings.toastBanner,
+                onChange = { value -> env.onChange { it.copy(toastBanner = value) } },
+                hint = stringResource(R.string.ac_banner_hint),
+                enabled = env.notificationAccess,
+                tag = "notifications:banner", id = "ac.banner",
+            )
         }
+        ToggleSetting(
+            label = stringResource(R.string.ac_volume_panel),
+            checked = env.settings.volumePanel,
+            onChange = { value -> env.onChange { it.copy(volumePanel = value) } },
+            hint = stringResource(R.string.ac_volume_panel_hint),
+            tag = "actions:volumepanel", id = "ac.volume",
+        )
+        NotificationAppsSetting(env)
     }
 }

@@ -284,6 +284,8 @@ fun AppPickerSetting(
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
     tag: String = "apppicker",
+    /** When set and an app is chosen, a button beside it takes the choice away. */
+    onClear: (() -> Unit)? = null,
 ) {
     var open by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -304,6 +306,12 @@ fun AppPickerSetting(
                 color = if (chosen == null) colors.subtle else colors.foreground, modifier = Modifier.weight(1f),
             )
             MetroText(if (open) "−" else "+", size = 24.sp, weight = FontWeight.Normal, color = colors.subtle)
+        }
+        if (onClear != null && chosen != null) {
+            MetroText(
+                stringResource(R.string.settings_clear_choice), size = 16.sp, weight = FontWeight.Normal, color = com.metrowin.launcher.ui.theme.LocalAccent.current,
+                modifier = Modifier.testTag("$tag:clear").metroPress(onClick = onClear).padding(vertical = 8.dp),
+            )
         }
         if (open) {
             Column(Modifier.padding(top = 8.dp)) {

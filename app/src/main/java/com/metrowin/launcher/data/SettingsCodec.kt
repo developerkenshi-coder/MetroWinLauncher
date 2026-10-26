@@ -47,6 +47,8 @@ object SettingsCodec {
         put("orientation", s.orientation.code)
         put("highRefreshRate", s.highRefreshRate)
         put("launchAnimation", s.launchAnimation.code)
+        put("panoramaTitles", s.panoramaTitles)
+        put("appBar", s.appBar)
 
         put("edgePull", s.edgePull)
         put("edgeBackPan", s.edgeBackPan)
@@ -70,10 +72,21 @@ object SettingsCodec {
         put("liveNowPlaying", s.liveNowPlaying)
         put("liveProgress", s.liveProgress)
         put("liveOffApps", JSONArray(s.liveOffApps.sorted()))
+        put("volumePanel", s.volumePanel)
+        put("toastBanner", s.toastBanner)
+        put("notifControl", s.notifControl)
+        put("notifHideCenter", JSONArray(s.notifHideCenter.sorted()))
+        put("notifHideLock", JSONArray(s.notifHideLock.sorted()))
+        put("notifNoBanner", JSONArray(s.notifNoBanner.sorted()))
 
         put("weatherCity", s.weatherCity)
         put("weatherFahrenheit", s.weatherFahrenheit)
         put("thirdPartyTiles", s.thirdPartyTiles)
+        put("tileTransition", s.tileTransition.code)
+        put("newsSource", s.newsSource)
+        put("newsUrl", s.newsUrl)
+        put("financeBase", s.financeBase)
+        put("financeItems", JSONArray(s.financeItems))
 
         put("hiddenApps", JSONArray(s.hiddenApps.sorted()))
         put("searchContacts", s.searchContacts)
@@ -101,9 +114,16 @@ object SettingsCodec {
         put("lockShowBattery", s.lockShowBattery)
         put("lockShowWeather", s.lockShowWeather)
         put("lockShowEvent", s.lockShowEvent)
+        put("lockQuickStatus", s.lockQuickStatus)
+        put("lockQuickApps", JSONArray(s.lockQuickApps))
+        put("lockDetailApp", s.lockDetailApp)
+        put("lockShowMusic", s.lockShowMusic)
         put("voiceOffline", s.voiceOffline)
         put("voiceButton", s.voiceButton)
         put("voiceCallDirect", s.voiceCallDirect)
+        put("searchAssistant", s.searchAssistant)
+        put("searchSmartDial", s.searchSmartDial)
+        put("searchToday", s.searchToday)
         put("reduceMotion", s.reduceMotion)
         put("highContrast", s.highContrast)
 
@@ -175,6 +195,8 @@ object SettingsCodec {
             orientation = if (o.has("orientation")) OrientationMode.fromCode(o.optString("orientation")) else base.orientation,
             highRefreshRate = o.optBoolean("highRefreshRate", base.highRefreshRate),
             launchAnimation = if (o.has("launchAnimation")) LaunchAnimation.fromCode(o.optString("launchAnimation")) else base.launchAnimation,
+            panoramaTitles = o.optBoolean("panoramaTitles", base.panoramaTitles),
+            appBar = o.optBoolean("appBar", base.appBar),
 
             edgePull = o.optBoolean("edgePull", base.edgePull),
             edgeBackPan = o.optBoolean("edgeBackPan", base.edgeBackPan),
@@ -198,12 +220,23 @@ object SettingsCodec {
             liveNowPlaying = o.optBoolean("liveNowPlaying", base.liveNowPlaying),
             liveProgress = o.optBoolean("liveProgress", base.liveProgress),
             liveOffApps = strings("liveOffApps", base.liveOffApps).toSet(),
+            volumePanel = o.optBoolean("volumePanel", base.volumePanel),
+            toastBanner = o.optBoolean("toastBanner", base.toastBanner),
+            notifControl = o.optBoolean("notifControl", base.notifControl),
+            notifHideCenter = strings("notifHideCenter", base.notifHideCenter).toSet(),
+            notifHideLock = strings("notifHideLock", base.notifHideLock).toSet(),
+            notifNoBanner = strings("notifNoBanner", base.notifNoBanner).toSet(),
 
             weatherCity = o.optString("weatherCity", base.weatherCity),
             weatherLatitude = if (o.has("weatherLatitude")) o.optDouble("weatherLatitude") else base.weatherLatitude,
             weatherLongitude = if (o.has("weatherLongitude")) o.optDouble("weatherLongitude") else base.weatherLongitude,
             weatherFahrenheit = o.optBoolean("weatherFahrenheit", base.weatherFahrenheit),
             thirdPartyTiles = o.optBoolean("thirdPartyTiles", base.thirdPartyTiles),
+            tileTransition = if (o.has("tileTransition")) TileTransition.fromCode(o.optString("tileTransition")) else base.tileTransition,
+            newsSource = if (o.has("newsSource")) NewsSources.normalize(o.optString("newsSource")) else base.newsSource,
+            newsUrl = o.optString("newsUrl", base.newsUrl).take(NewsSources.MAX_URL),
+            financeBase = o.optString("financeBase", base.financeBase).let { if (it in Currencies.codes) it else "" },
+            financeItems = FinanceItems.normalize(strings("financeItems", base.financeItems), ""),
 
             hiddenApps = strings("hiddenApps", base.hiddenApps).toSet(),
             searchContacts = o.optBoolean("searchContacts", base.searchContacts),
@@ -232,9 +265,16 @@ object SettingsCodec {
             lockShowBattery = o.optBoolean("lockShowBattery", base.lockShowBattery),
             lockShowWeather = o.optBoolean("lockShowWeather", base.lockShowWeather),
             lockShowEvent = o.optBoolean("lockShowEvent", base.lockShowEvent),
+            lockQuickStatus = o.optBoolean("lockQuickStatus", base.lockQuickStatus),
+            lockQuickApps = strings("lockQuickApps", base.lockQuickApps).distinct().take(LauncherSettings.MAX_QUICK_APPS),
+            lockDetailApp = o.optString("lockDetailApp", base.lockDetailApp),
+            lockShowMusic = o.optBoolean("lockShowMusic", base.lockShowMusic),
             voiceOffline = o.optBoolean("voiceOffline", base.voiceOffline),
             voiceButton = o.optBoolean("voiceButton", base.voiceButton),
             voiceCallDirect = o.optBoolean("voiceCallDirect", base.voiceCallDirect),
+            searchAssistant = o.optBoolean("searchAssistant", base.searchAssistant),
+            searchSmartDial = o.optBoolean("searchSmartDial", base.searchSmartDial),
+            searchToday = o.optBoolean("searchToday", base.searchToday),
             reduceMotion = o.optBoolean("reduceMotion", base.reduceMotion),
             highContrast = o.optBoolean("highContrast", base.highContrast),
 

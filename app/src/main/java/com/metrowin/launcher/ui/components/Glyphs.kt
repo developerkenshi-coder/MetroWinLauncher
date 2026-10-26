@@ -225,4 +225,11 @@ private fun build(glyph: Glyph): Spec = when (glyph) {
     Glyph.Recents -> spec(stroke(rect(18f, 18f, 64f, 64f, 10f)), fill(rect(36f, 36f, 28f, 28f, 5f)))
     Glyph.Gesture -> spec(stroke(circle(26f, 50f, 11f), "M42 50H90", "M76 36L90 50L76 64"))
     Glyph.Storage -> spec(stroke("M18 26A32 12 0 1 0 82 26A32 12 0 1 0 18 26Z", "M18 26V74A32 12 0 0 0 82 74V26", "M18 50A32 12 0 0 0 82 50"))
+    Glyph.Hourglass -> spec(stroke("M26 10H74", "M26 90H74", "M30 10C30 38 50 42 50 50C50 58 30 62 30 90", "M70 10C70 38 50 42 50 50C50 58 70 62 70 90"), fill("M38 82C42 70 58 70 62 82Z"))
+    Glyph.Stopwatch -> spec(stroke(circle(50f, 56f, 32f), "M40 10H60", "M50 10V24", "M50 56V38", "M74 26L82 18"))
+    Glyph.Timeout -> spec(stroke(rect(26f, 8f, 48f, 84f, 6f), circle(50f, 50f, 17f), "M50 50V40", "M50 50L58 55"))
+    Glyph.AutoBrightness -> spec(
+        stroke(circle(50f, 50f, 14f), "M50 12V24", "M50 76V88", "M12 50H24", "M76 50H88", "M23 23L32 32", "M68 68L77 77", "M77 23L68 32", "M32 68L23 77"),
+        letter = "A", letterScale = 0.2f, letterDy = 0f,
+    )
 }

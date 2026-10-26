@@ -28,6 +28,12 @@
         android:label="@string/permission_publish_tile_label"
         android:protectionLevel="normal" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <!-- The short vibration of a tap, when the launcher's setting for it is on. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Timer and reminders: the notification when they come due, the alarm that wakes it, and setting the alarms again after a reboot. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <!-- A phone that cannot call (a tablet) still runs the launcher: the dialer-based paths do not need it. -->
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
@@ -186,6 +192,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+            Wakes at the moment of a timer or a reminder (an alarm of Android, so nothing runs in between), and once after a
+            reboot or an update of the launcher to set the alarms again.
+        -->
+        <receiver
+            android:name=".notifications.AlertReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
 
         <provider
             android:name=".data.TilePublishProvider"

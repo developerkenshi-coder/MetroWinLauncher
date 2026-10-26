@@ -131,4 +131,8 @@ class SettingsEnv(
     val iconPacks: List<IconPackInfo> = emptyList(),
     val onExportTheme: (Uri) -> Unit = {},
     val onImportTheme: (Uri) -> Unit = {},
+    /** The apps that have a notification up now, for the per-app notification choices (they come first). */
+    val notificationPackages: Set<String> = emptySet(),
+    /** Opens the page of Android where the sound and the vibration of an app's notifications are chosen. */
+    val onAppNotificationSettings: (String) -> Unit = {},
 )

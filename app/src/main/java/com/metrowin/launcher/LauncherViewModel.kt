@@ -107,6 +107,40 @@ import com.metrowin.launcher.data.StartBackgroundStore
 import com.metrowin.launcher.data.TileStore
 import com.metrowin.launcher.data.WeatherData
 import com.metrowin.launcher.data.WeatherRepository
+import com.metrowin.launcher.data.AlbumInfo
+import com.metrowin.launcher.data.NextAlarm
+import com.metrowin.launcher.data.TodayExtras
+import com.metrowin.launcher.data.BootCount
+import com.metrowin.launcher.data.ContactDirectory
+import com.metrowin.launcher.data.Favourite
+import com.metrowin.launcher.data.Finance
+import com.metrowin.launcher.data.FinanceItems
+import com.metrowin.launcher.data.FinanceRepository
+import com.metrowin.launcher.data.GroupInfo
+import com.metrowin.launcher.data.MediaCollections
+import com.metrowin.launcher.data.NewsEdition
+import com.metrowin.launcher.data.NewsRepository
+import com.metrowin.launcher.data.NewsSources
+import com.metrowin.launcher.data.PeopleReader
+import com.metrowin.launcher.data.Places
+import com.metrowin.launcher.data.RecentCall
+import com.metrowin.launcher.data.Reminder
+import com.metrowin.launcher.data.ReminderStore
+import com.metrowin.launcher.data.Reminders
+import com.metrowin.launcher.data.SmartDial
+import com.metrowin.launcher.model.StopwatchState
+import com.metrowin.launcher.model.TimerState
+import com.metrowin.launcher.model.TimerStatus
+import com.metrowin.launcher.notifications.Alerts
+import com.metrowin.launcher.notifications.MediaSessions
+import com.metrowin.launcher.data.VolumeControl
+import com.metrowin.launcher.data.VolumeHud
+import com.metrowin.launcher.data.VolumeRoute
+import com.metrowin.launcher.data.VolumeRouting
+import com.metrowin.launcher.data.VolumeRow
+import com.metrowin.launcher.data.VolumeStream
+import android.media.AudioManager
+import com.metrowin.launcher.notifications.NotificationControl
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.LiveKind
 import com.metrowin.launcher.model.StartEntry
@@ -155,6 +189,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val shortcutStore = ShortcutStore(application)
     private val weatherRepository = WeatherRepository(application)
     private val currencyRepository = CurrencyRepository(application)
+    private val newsRepository = NewsRepository(application)
+    private val financeRepository = FinanceRepository(application)
+    private val reminderStore = ReminderStore(application)
+    private val directory = ContactDirectory(application)
+    private val collections = MediaCollections(application)
+    private val people = PeopleReader(application)
     private val profilesController = ProfilesController(application)
     private val iconPacks = IconPackRepository(application)
     private val appShortcuts = AppShortcuts(application)
@@ -326,13 +366,50 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             tell(R.string.answer_copied)
             return
         }
-        val intent = QuickAnswerActions.intent(answer) ?: return
-        val opened = runCatching { app.startActivity(intent) }.isSuccess
+        when (answer) {
+            // The reminders are the launcher's own; one without a time is finished in the form of its page (see the caller).
+            is QuickAnswer.Reminder -> {
+                val at = answer.at
+                if (at != null && addReminder(answer.text, at)) tell(R.string.reminder_added)
+                return
+            }
+            is QuickAnswer.Note -> {
+                saveNoteText(answer.text)
+                return
+            }
+            else -> Unit
+        }
+        var intent = QuickAnswerActions.intent(answer) ?: return
+        // Google first where it is installed; any other app that does the same takes over where it is not.
+        when (answer) {
+            is QuickAnswer.CalendarEvent -> intent = preferring(intent, QuickAnswerActions.GOOGLE_CALENDAR)
+            is QuickAnswer.NearMe -> intent = preferring(intent, QuickAnswerActions.GOOGLE_MAPS)
+            else -> Unit
+        }
+        var opened = runCatching { app.startActivity(intent) }.isSuccess
+        // No Google Lens: the camera at least.
+        if (!opened && answer is QuickAnswer.Scan) opened = runCatching { app.startActivity(QuickAnswerActions.cameraIntent()) }.isSuccess
         when {
             !opened && (answer is QuickAnswer.Timer || answer is QuickAnswer.Alarm) -> tell(R.string.answer_no_clock)
             !opened -> tell(R.string.launch_failed)
             answer is QuickAnswer.Timer || answer is QuickAnswer.Alarm -> tell(R.string.answer_clock_set)
         }
+    }
+
+    /** [intent] aimed at [packageName] when that app is installed and takes it, otherwise as it was. */
+    private fun preferring(intent: Intent, packageName: String): Intent {
+        val aimed = Intent(intent).setPackage(packageName)
+        return if (getApplication<Application>().packageManager.resolveActivity(aimed, 0) != null) aimed else intent
+    }
+
+    /** A note: to Google Keep when it is installed, else a note tile on the first Start screen. */
+    private fun saveNoteText(text: String) {
+        val app = getApplication<Application>()
+        val keep = QuickAnswerActions.noteIntent(text).setPackage(QuickAnswerActions.GOOGLE_KEEP)
+        if (runCatching { app.startActivity(keep) }.isSuccess) return
+        val id = addNote(0)
+        saveNote(id, text)
+        tell(R.string.note_saved_tile)
     }
 
     /** The weather of the chosen city: the last fetched, shown at once and refreshed when it gets old. */
@@ -367,6 +444,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     private val throttle = Throttle()
     private var loadedLive: Set<LiveKind>? = null
+    private var loadedAlbums: Set<String> = emptySet()
+    private var loadedGroups: Set<Long> = emptySet()
+    private var feedsJob: Job? = null
     private var loadedGrants = -1
     private var listening = false
 
@@ -376,7 +456,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** Whether this screen is counted as one that shows the notifications (see [NotificationHub.startWatching]). */
     private var watchingNotifications = false
 
-    private val _live = MutableStateFlow(LiveTileData())
+    private val _live = MutableStateFlow(LiveTileData(reminders = reminderStore.load()))
     val live: StateFlow<LiveTileData> = _live.asStateFlow()
 
 
@@ -393,8 +473,20 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val _autoAccent = MutableStateFlow<Int?>(null)
     val autoAccentIndex: StateFlow<Int?> = _autoAccent.asStateFlow()
 
-    /** Notifications for the Action Center. Empty until the user turns on notification access. */
-    val notifications: StateFlow<List<NotificationEntry>> = NotificationHub.entries
+    /**
+     * Notifications for the Action Center, without the apps the user keeps out of it (see [NotificationControl]). Empty until the
+     * user turns on notification access.
+     */
+    val notifications: StateFlow<List<NotificationEntry>> =
+        combine(NotificationHub.entries, _settings) { entries, settings -> NotificationControl.forActionCenter(entries, settings) }
+            .distinctUntilChanged().stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /** The notifications that arrive while the launcher is on screen, one after the other, for the banner (see [NotificationControl.showsBanner]). */
+    private val _banners = kotlinx.coroutines.flow.MutableSharedFlow<NotificationEntry>(extraBufferCapacity = 4, onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST)
+    val banners: kotlinx.coroutines.flow.SharedFlow<NotificationEntry> = _banners
+
+    private var seenNotifications: Set<String> = emptySet()
+    private var bannersFrom = 0L
 
     /** What the user lets the live tiles of other apps show (see [LiveCards]). */
     private val liveOptions = _settings
@@ -489,13 +581,41 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             _settings.map { it.notificationPeek to it.livePictures }.distinctUntilChanged()
                 .collect { (on, pictures) -> NotificationHub.useForLiveTiles(on, pictures) }
         }
+        // A notification that arrives while the launcher is on screen gets a banner. What was up when the launcher came back, and
+        // what the service reads again at that moment, does not: it is old news.
+        viewModelScope.launch {
+            NotificationHub.entries.collect { entries ->
+                val s = _settings.value
+                val wall = System.currentTimeMillis()
+                if (listening && android.os.SystemClock.elapsedRealtime() >= bannersFrom && s.toastBanner) {
+                    entries
+                        .filter {
+                            it.key !in seenNotifications && wall - it.postTime < BANNER_MAX_AGE_MS && it.packageName != application.packageName &&
+                                NotificationControl.showsBanner(it.packageName, s)
+                        }
+                        .maxByOrNull { it.postTime }
+                        ?.let { _banners.tryEmit(it) }
+                }
+                seenNotifications = entries.mapTo(HashSet()) { it.key }
+            }
+        }
         // A new name for an app changes the list: the order of the letters too.
         viewModelScope.launch {
             _settings.map { it.appLabels }.distinctUntilChanged().drop(1).collect { rebuildItems() }
         }
         // What Start shows from the phone is read again when a tile of that kind is pinned.
         viewModelScope.launch {
-            combine(_pages, _items) { pages, items -> LiveSources.wanted(pages, items) }.distinctUntilChanged().collect { if (listening) refreshLive() }
+            combine(_pages, _items) { pages, items ->
+                listOf(
+                    LiveSources.wanted(pages, items), LiveSources.albumIds(pages, items), LiveSources.groupIds(pages, items),
+                    LiveSources.feedsWanted(pages, items),
+                )
+            }.distinctUntilChanged().collect { if (listening) refreshLive() }
+        }
+        // A new source of news, other currencies: the tiles read again, now.
+        viewModelScope.launch {
+            _settings.map { listOf(it.newsSource, it.newsUrl, it.financeBase, it.financeItems) }.distinctUntilChanged().drop(1)
+                .collect { if (listening) refreshFeeds() }
         }
     }
 
@@ -516,6 +636,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         ContextCompat.registerReceiver(app, batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(app, powerSaveReceiver, IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
         quickActions.start()
+        // The service reads the notifications again when a screen comes on: a moment of quiet, so they are not all announced.
+        bannersFrom = android.os.SystemClock.elapsedRealtime() + BANNER_SETTLE_MS
         if (!watchingNotifications) {
             watchingNotifications = true
             NotificationHub.startWatching()
@@ -539,7 +661,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     /** Called every time the launcher goes off screen: behind another app, or the screen turned off. */
-    fun onStop() = stopListening()
+    fun onStop() {
+        _volumeHud.value = null
+        stopListening()
+    }
 
     /** Called every time the launcher comes back on screen. */
     fun onStart() {
@@ -552,6 +677,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         syncIfDue(PowerPolicy.syncGapMs(SYNC_MIN_GAP_ON_START_MS, saving))
         val changedMeanwhile = packageEvents.takePending()
         if (changedMeanwhile || (loadedLocale != null && loadedLocale != Locale.getDefault())) reloadApps()
+        // The buttons of a reminder's notification (done, in 10 min) change the list while the launcher is away.
+        reminderStore.load().let { kept -> if (kept != _live.value.reminders) _live.update { it.copy(reminders = kept) } }
         refreshLive()
         refreshWeather()
         val access = hasNotificationAccess()
@@ -566,6 +693,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         NotificationManagerCompat.getEnabledListenerPackages(getApplication()).contains(getApplication<Application>().packageName)
 
     fun quickActionState(action: QuickAction): Boolean? = quickActions.isOn(action)
+
+    /** The length of the screen timeout, in milliseconds, for the button that goes through them (null for the other buttons). */
+    fun quickActionTimeout(action: QuickAction): Int? = if (action == QuickAction.ScreenTimeout) quickActions.screenTimeout() else null
 
     /**
      * Does what the button does. True when that was done on the spot (the flashlight, the quiet hours), false when a screen
@@ -592,8 +722,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     /** The notification settings of the app a notification came from. */
-    fun openAppNotificationSettings(entry: NotificationEntry) = startIntent(
-        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, entry.packageName),
+    fun openAppNotificationSettings(entry: NotificationEntry) = openAppNotificationSettings(entry.packageName)
+
+    /** The page of Android where the sound, the vibration and the importance of an app's notifications are chosen. */
+    fun openAppNotificationSettings(packageName: String) = startIntent(
+        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName),
     )
 
     /** Runs what the notification does when tapped, then removes it if the app asked for that. */
@@ -675,20 +808,76 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
      * data of the tiles that are pinned is read, and not at all while none of them is. [force] reads in any case.
      */
     fun refreshLive(force: Boolean = false) {
+        refreshFeeds(force)
         val wanted = LiveSources.wanted(_pages.value, _items.value)
+        val albumIds = LiveSources.albumIds(_pages.value, _items.value)
+        val groupIds = LiveSources.groupIds(_pages.value, _items.value)
+        val feeds = LiveSources.feedsWanted(_pages.value, _items.value)
         // A permission given or taken away since the last read changes what there is to show at once.
         val grants = LivePermissions.all.count { LivePermissions.isGranted(getApplication(), it) }
-        val everything = force || wanted != loadedLive || grants != loadedGrants
+        val everything = force || wanted != loadedLive || grants != loadedGrants || albumIds != loadedAlbums || groupIds != loadedGroups
         // Every kind has its own age (see PowerPolicy.liveMaxAgeMs): the birthdays are not read again at every return to Start.
         val saving = powerSaving.value
         val stale = wanted.filterTo(HashSet()) { throttle.due("live:${it.name}", PowerPolicy.liveMaxAgeMs(it, saving)) }
         val toRead = if (everything) wanted else stale
-        if (toRead.isEmpty() && !everything) return
+        if (toRead.isEmpty() && !everything) {
+            // Nothing to read, but a tile that went from Start must let go of what it showed.
+            _live.update { it.keeping(wanted + feeds, albumIds, groupIds) }
+            return
+        }
         loadedLive = wanted
         loadedGrants = grants
+        loadedAlbums = albumIds
+        loadedGroups = groupIds
         viewModelScope.launch {
-            val fresh = if (toRead.isEmpty()) LiveTileData() else withContext(Dispatchers.IO) { liveTiles.load(toRead) }
-            _live.update { it.keeping(wanted).updatedWith(fresh, toRead) }
+            val fresh = if (toRead.isEmpty()) LiveTileData() else withContext(Dispatchers.IO) { liveTiles.load(toRead, albumIds, groupIds) }
+            _live.update { it.keeping(wanted + feeds, albumIds, groupIds).updatedWith(fresh, toRead) }
+        }
+    }
+
+    /**
+     * Reads the headlines and the quotes of the News and Finance tiles that are on Start, unless what is kept is recent
+     * ([PowerPolicy.feedMaxAgeMs]); a failed try is not repeated at every return ([PowerPolicy.feedRetryMs]). [force] reads at once.
+     * The network is asked only while the launcher is on screen and only for a tile that is pinned.
+     */
+    private fun refreshFeeds(force: Boolean = false) {
+        val feeds = LiveSources.feedsWanted(_pages.value, _items.value)
+        if (feeds.isEmpty()) {
+            if (_live.value.news != null || _live.value.finance != null) _live.update { it.copy(news = null, finance = null) }
+            return
+        }
+        val s = _settings.value
+        val locale = Locale.getDefault()
+        val edition = NewsEdition.of(locale)
+        val newsKey = NewsSources.key(s.newsSource, s.newsUrl, edition)
+        val base = Finance.baseFor(s.financeBase, locale)
+        val items = FinanceItems.normalize(s.financeItems, base)
+        val financeKey = Finance.key(base, items)
+        val saving = powerSaving.value
+        val maxAge = PowerPolicy.feedMaxAgeMs(saving)
+        val retry = PowerPolicy.feedRetryMs(saving)
+        fun stale(fetchedAt: Long, now: Long) = now < fetchedAt || now - fetchedAt >= maxAge
+        feedsJob?.cancel()
+        feedsJob = viewModelScope.launch {
+            if (LiveKind.News in feeds) {
+                // What is kept is shown at once, if it is of the source that is chosen now.
+                val kept = (_live.value.news ?: withContext(Dispatchers.IO) { newsRepository.cached() })?.takeIf { it.sourceKey == newsKey }
+                _live.update { it.copy(news = kept) }
+                val now = System.currentTimeMillis()
+                if ((force || kept == null || stale(kept.fetchedAt, now)) && (force || throttle.due("news:$newsKey", retry))) {
+                    val fetched = withContext(Dispatchers.IO) { newsRepository.fetch(s.newsSource, s.newsUrl, edition, now) }
+                    if (fetched != null) _live.update { it.copy(news = fetched) }
+                }
+            }
+            if (LiveKind.Finance in feeds) {
+                val kept = (_live.value.finance ?: withContext(Dispatchers.IO) { financeRepository.cached() })?.takeIf { it.key == financeKey }
+                _live.update { it.copy(finance = kept) }
+                val now = System.currentTimeMillis()
+                if (items.isNotEmpty() && (force || kept == null || stale(kept.fetchedAt, now)) && (force || throttle.due("finance:$financeKey", retry))) {
+                    val fetched = withContext(Dispatchers.IO) { financeRepository.fetch(base, items, now) }
+                    if (fetched != null) _live.update { it.copy(finance = fetched) }
+                }
+            }
         }
     }
 
@@ -789,6 +978,28 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    /** The next event and alarm for the Today card: read when the app list comes up, never in the background. */
+    private val _today = MutableStateFlow(TodayExtras())
+    val today: StateFlow<TodayExtras> = _today.asStateFlow()
+
+    /**
+     * Reads the next event of the calendar and the next alarm for the Today card, unless that was done lately
+     * ([PowerPolicy.todayMaxAgeMs]) or the card is off. It is called only while the app list is on screen; the weather and the
+     * reminders the card also shows are the ones the launcher already holds.
+     */
+    fun refreshToday(force: Boolean = false) {
+        if (!_settings.value.searchToday) return
+        if (!force && !throttle.due("today", PowerPolicy.todayMaxAgeMs(powerSaving.value))) return
+        val app = getApplication<Application>()
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            val read = withContext(Dispatchers.IO) {
+                TodayExtras(now, CalendarSearch(app).next(now, TODAY_WINDOW_MS), NextAlarm.read(app).takeIf { it > 0L })
+            }
+            if (read != _today.value) _today.value = read
+        }
+    }
+
     /** The contacts whose name matches [query]. Empty without the contacts permission. */
     /** The phone number of a contact found by [searchContacts], or null when it has none or the contacts are not readable. */
     suspend fun phoneNumberOf(lookupUri: String): String? =
@@ -800,8 +1011,15 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         if (!opened) tell(R.string.launch_failed)
     }
 
-    suspend fun searchContacts(query: String): List<ContactMatch> =
-        withContext(Dispatchers.IO) { ContactSearch(getApplication()).search(query) }
+    suspend fun searchContacts(query: String): List<ContactMatch> = withContext(Dispatchers.IO) {
+        val digits = query.trim()
+        // Digits are a dial: the keys of the names and the numbers, with the number to call at hand (see [SmartDial]).
+        if (_settings.value.searchSmartDial && SmartDial.isQuery(digits)) {
+            directory.search(digits).map { ContactMatch(it.name, it.lookupUri, it.number) }
+        } else {
+            ContactSearch(getApplication()).search(query)
+        }
+    }
 
     suspend fun searchEvents(query: String): List<EventMatch> =
         withContext(Dispatchers.IO) { CalendarSearch(getApplication()).search(query) }
@@ -1131,6 +1349,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         shortcutStore.save(_shortcuts.value)
         shortcutStore.deletePhoto(removed.photoFile)
         if (removed.kind == ShortcutKind.Widget) widgets.delete(removed.widgetId)
+        if (removed.kind == ShortcutKind.Timer) Alerts.cancelTimer(getApplication(), removed.id)
         rebuildItems()
         updatePages { StartPages.unpin(it, id) }
     }
@@ -1235,6 +1454,287 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         page, TileSize.Wide,
     )
 
+    // --- the tiles that need a choice or keep a state of their own
+
+    /** Pins a place: a name and an address; a touch starts the navigation there. False when there is no address. */
+    fun addPlace(name: String, address: String, page: Int): Boolean {
+        val clean = Places.clean(address) ?: return false
+        val label = Places.nameFor(name, clean).ifBlank { getApplication<Application>().getString(R.string.place_default_label) }
+        addShortcut(ShortcutDef(ShortcutDef.newId(ShortcutKind.Place, clean), ShortcutKind.Place, label, clean), page, TileSize.Medium)
+        return true
+    }
+
+    /** The albums of photos to choose from (needs the permission to read photos). */
+    suspend fun albums(): List<AlbumInfo> = withContext(Dispatchers.IO) { collections.albums() }
+
+    /** The groups of contacts to choose from (needs the permission to read contacts). */
+    suspend fun groups(): List<GroupInfo> = withContext(Dispatchers.IO) { collections.groups() }
+
+    /** Pins an album as a Cycle tile: its photos fade into one another. */
+    fun addAlbum(album: AlbumInfo, page: Int) {
+        val id = ShortcutDef.newId(ShortcutKind.Album, album.id)
+        addShortcut(ShortcutDef(id, ShortcutKind.Album, album.name, album.id), page, TileSize.Medium)
+        setStyle(id, TileStyle.Cycle)
+    }
+
+    /** Pins a group of contacts: the faces of its people, one after the other. */
+    fun addGroup(group: GroupInfo, page: Int) =
+        addShortcut(ShortcutDef(ShortcutDef.newId(ShortcutKind.Group, group.id.toString()), ShortcutKind.Group, group.name, group.id.toString()), page, TileSize.Medium)
+
+    fun addNews(page: Int) = addShortcut(
+        ShortcutDef(ShortcutDef.newId(ShortcutKind.News, "news"), ShortcutKind.News, getApplication<Application>().getString(R.string.news_default_label)),
+        page, TileSize.Wide,
+    )
+
+    fun addFinance(page: Int) = addShortcut(
+        ShortcutDef(ShortcutDef.newId(ShortcutKind.Finance, "finance"), ShortcutKind.Finance, getApplication<Application>().getString(R.string.finance_default_label)),
+        page, TileSize.Medium,
+    )
+
+    fun addDialGrid(page: Int) = addShortcut(
+        ShortcutDef(ShortcutDef.newId(ShortcutKind.DialGrid, "dialgrid"), ShortcutKind.DialGrid, getApplication<Application>().getString(R.string.dialgrid_default_label)),
+        page, TileSize.Medium,
+    )
+
+    fun addPeopleHub(page: Int) = addShortcut(
+        ShortcutDef(ShortcutDef.newId(ShortcutKind.PeopleHub, "peoplehub"), ShortcutKind.PeopleHub, getApplication<Application>().getString(R.string.peoplehub_default_label)),
+        page, TileSize.Medium,
+    )
+
+    fun addRemindersTile(page: Int) = addShortcut(
+        ShortcutDef(ShortcutDef.newId(ShortcutKind.Reminders, "reminders"), ShortcutKind.Reminders, getApplication<Application>().getString(R.string.reminders_default_label)),
+        page, TileSize.Medium,
+    )
+
+    // --- timer: a moment kept in the tile and one alarm of Android; nothing runs while it counts
+
+    /** Pins a timer of five minutes and gives back its id, so its page can open on it. */
+    fun addTimer(page: Int): String {
+        val id = ShortcutDef.newId(ShortcutKind.Timer, "timer")
+        addShortcut(
+            ShortcutDef(id, ShortcutKind.Timer, getApplication<Application>().getString(R.string.timer_default_label), text = TimerState.Default.encode()),
+            page, TileSize.Medium,
+        )
+        return id
+    }
+
+    fun timerStart(id: String) = changeTimer(id) { it.start(System.currentTimeMillis()) }
+
+    fun timerPause(id: String) = changeTimer(id) { it.pause(System.currentTimeMillis()) }
+
+    fun timerReset(id: String) = changeTimer(id) { it.reset() }
+
+    /** Another length for the timer, from the beginning. */
+    fun timerLength(id: String, millis: Long) = changeTimer(id) { it.withDuration(millis) }
+
+    /** Adds [millis] to the timer that runs (or to the one that waits), up to the longest one. */
+    fun timerAdd(id: String, millis: Long) = changeTimer(id) { state ->
+        val now = System.currentTimeMillis()
+        if (state.running && state.status(now) == TimerStatus.Running) {
+            val longer = (state.durationMs + millis).coerceAtMost(TimerState.MAX_MS)
+            state.copy(durationMs = longer, endAt = state.endAt + (longer - state.durationMs))
+        } else {
+            state.withDuration(state.durationMs + millis)
+        }
+    }
+
+    private fun changeTimer(id: String, change: (TimerState) -> TimerState) {
+        val def = _shortcuts.value.firstOrNull { it.id == id && it.kind == ShortcutKind.Timer } ?: return
+        val after = change(TimerState.decode(def.text))
+        updateShortcut(id) { it.copy(text = after.encode()) }
+        val app = getApplication<Application>()
+        // The alarm that rings it is set while it counts, and taken back when it stops; the notification of a timer that rang goes with a reset.
+        if (after.running && after.status(System.currentTimeMillis()) == TimerStatus.Running) {
+            Alerts.scheduleTimer(app, id, def.label, after.endAt)
+        } else {
+            Alerts.cancelTimer(app, id)
+        }
+    }
+
+    // --- stopwatch: the two clocks of the phone at the start, and arithmetic when somebody looks
+
+    fun addStopwatch(page: Int): String {
+        val id = ShortcutDef.newId(ShortcutKind.Stopwatch, "stopwatch")
+        addShortcut(
+            ShortcutDef(id, ShortcutKind.Stopwatch, getApplication<Application>().getString(R.string.stopwatch_default_label), text = StopwatchState().encode()),
+            page, TileSize.Medium,
+        )
+        return id
+    }
+
+    fun stopwatchStart(id: String) = changeStopwatch(id) { it.start(android.os.SystemClock.elapsedRealtime(), System.currentTimeMillis(), boot()) }
+
+    fun stopwatchStop(id: String) = changeStopwatch(id) { it.stop(android.os.SystemClock.elapsedRealtime(), System.currentTimeMillis(), boot()) }
+
+    fun stopwatchLap(id: String) = changeStopwatch(id) { it.lap(android.os.SystemClock.elapsedRealtime(), System.currentTimeMillis(), boot()) }
+
+    fun stopwatchReset(id: String) = changeStopwatch(id) { it.reset() }
+
+    private fun boot() = BootCount.read(getApplication())
+
+    private fun changeStopwatch(id: String, change: (StopwatchState) -> StopwatchState) {
+        val def = _shortcuts.value.firstOrNull { it.id == id && it.kind == ShortcutKind.Stopwatch } ?: return
+        updateShortcut(id) { it.copy(text = change(StopwatchState.decode(def.text)).encode()) }
+    }
+
+    // --- reminders
+
+    /** The reminders, in the order they were made (see [Reminders] for the order of the list). */
+    val reminders: StateFlow<List<Reminder>> = _live.map { it.reminders }.distinctUntilChanged().stateIn(viewModelScope, SharingStarted.Eagerly, _live.value.reminders)
+
+    /** Makes a reminder for [at] and sets its alarm. False when there is no text. */
+    fun addReminder(text: String, at: Long): Boolean {
+        val before = _live.value.reminders
+        val after = Reminders.add(before, text, at)
+        val added = after.firstOrNull { it.id == Reminders.nextId(before) } ?: return false
+        saveReminders(after)
+        Alerts.scheduleReminder(getApplication(), added)
+        return true
+    }
+
+    fun completeReminder(id: Long) {
+        saveReminders(Reminders.complete(_live.value.reminders, id))
+        Alerts.cancelReminder(getApplication(), id)
+    }
+
+    fun removeReminder(id: Long) {
+        saveReminders(Reminders.remove(_live.value.reminders, id))
+        Alerts.cancelReminder(getApplication(), id)
+    }
+
+    /** Another time for a reminder; it is not done any more. */
+    fun rescheduleReminder(id: Long, at: Long) {
+        val after = Reminders.reschedule(_live.value.reminders, id, at)
+        saveReminders(after)
+        after.firstOrNull { it.id == id }?.let { Alerts.scheduleReminder(getApplication(), it) }
+    }
+
+    fun clearDoneReminders() = saveReminders(Reminders.clearDone(_live.value.reminders))
+
+    private fun saveReminders(list: List<Reminder>) {
+        reminderStore.save(list)
+        _live.update { it.copy(reminders = list) }
+    }
+
+    /** Whether Android lets the launcher ring a reminder to the minute. */
+    fun canScheduleExactAlarms() = Alerts.canScheduleExact(getApplication())
+
+    /** The screen of Android where the user lets the launcher set exact alarms (Android 12 and later). */
+    fun openExactAlarmAccess() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            startIntent(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.fromParts("package", getApplication<Application>().packageName, null)))
+        }
+    }
+
+    // --- the people: favourites, recent calls
+
+    suspend fun favourites(): List<Favourite> = withContext(Dispatchers.IO) { people.favourites() }
+
+    suspend fun recentCalls(): List<RecentCall> = withContext(Dispatchers.IO) { people.recentCalls() }
+
+    // --- the volume keys: a panel over the launcher for what is sounding now
+
+    private val volumeControl = VolumeControl(application)
+    private val _volumeHud = MutableStateFlow<VolumeHud?>(null)
+
+    /** The volume panel, or null while it is away. It goes by itself (see VolumeHudPanel) and with the launcher leaving the screen. */
+    val volumeHud: StateFlow<VolumeHud?> = _volumeHud.asStateFlow()
+    private var hudToken = 0
+
+    /** The player whose own volume the panel moves, while it is that one's. */
+    private var hudPlayer: android.media.session.MediaController? = null
+
+    private fun labelOf(packageName: String): String = runCatching {
+        val manager = getApplication<Application>().packageManager
+        manager.getApplicationLabel(manager.getApplicationInfo(packageName, 0)).toString()
+    }.getOrDefault(packageName)
+
+    /**
+     * A press of a volume key while the launcher is on screen. It moves what is sounding, the way Android does (the call, then a
+     * player with a volume of its own, then the music of whatever app plays, then the ringer), and shows the panel with the name
+     * of the app that plays. False when the panel is off in the settings or nothing could be moved: Android then handles the key.
+     */
+    fun onVolumeKey(raise: Boolean): Boolean {
+        if (!_settings.value.volumePanel) return false
+        return runCatching {
+            val sessions = MediaSessions.active(getApplication())
+            val playing = sessions.firstOrNull { it.playbackState?.state == android.media.session.PlaybackState.STATE_PLAYING }
+            val remote = playing?.takeIf {
+                val info = it.playbackInfo
+                info != null && info.playbackType == android.media.session.MediaController.PlaybackInfo.PLAYBACK_TYPE_REMOTE &&
+                    info.volumeControl != android.media.VolumeProvider.VOLUME_CONTROL_FIXED
+            }
+            val hud = when (val route = VolumeRouting.route(volumeControl.inCall(), remote != null, volumeControl.musicActive() || playing != null)) {
+                VolumeRoute.Remote -> remote?.let { moveRemote(it, raise) }
+                is VolumeRoute.Stream -> volumeControl.adjust(route.stream, raise)?.let { row ->
+                    hudPlayer = null
+                    VolumeHud(++hudToken, row, app = playing?.takeIf { route.stream == VolumeStream.Music }?.let { labelOf(it.packageName) })
+                }
+            } ?: return false
+            _volumeHud.value = hud
+            true
+        }.getOrDefault(false)
+    }
+
+    private fun moveRemote(player: android.media.session.MediaController, raise: Boolean): VolumeHud? {
+        val info = player.playbackInfo ?: return null
+        runCatching { player.adjustVolume(if (raise) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER, 0) }
+        hudPlayer = player
+        // The level is worked out here: the player reports the new one a moment later.
+        val level = VolumeRouting.step(info.currentVolume, 0, info.maxVolume, raise)
+        return VolumeHud(++hudToken, VolumeRow(null, player.packageName, level, 0, info.maxVolume), app = labelOf(player.packageName))
+    }
+
+    /** A slider of the panel was touched: sets that volume and keeps the panel up. */
+    fun setVolume(row: VolumeRow, fraction: Float) {
+        val hud = _volumeHud.value ?: return
+        val level = VolumeRouting.level(fraction, row.min, row.max)
+        val updated = when {
+            row.remotePackage != null -> {
+                hudPlayer?.takeIf { it.packageName == row.remotePackage }?.let { runCatching { it.setVolumeTo(level, 0) } }
+                row.copy(level = level)
+            }
+            row.stream != null -> volumeControl.set(row.stream, level) ?: row
+            else -> row
+        }
+        fun same(other: VolumeRow) = other.stream == row.stream && other.remotePackage == row.remotePackage
+        _volumeHud.value = hud.copy(
+            token = ++hudToken,
+            main = if (same(hud.main)) updated else hud.main,
+            others = hud.others.map { if (same(it)) updated else it },
+        )
+    }
+
+    /** Opens the panel out to the other volumes, or folds it back. */
+    fun toggleVolumeHud() {
+        val hud = _volumeHud.value ?: return
+        val expanded = !hud.expanded
+        val others = if (expanded) {
+            listOf(VolumeStream.Music, VolumeStream.Ring, VolumeStream.Alarm)
+                .filter { it != hud.main.stream }
+                .mapNotNull(volumeControl::read)
+        } else {
+            emptyList()
+        }
+        _volumeHud.value = hud.copy(token = ++hudToken, expanded = expanded, others = others)
+    }
+
+    fun dismissVolumeHud() {
+        _volumeHud.value = null
+    }
+
+    /** The gallery app, for a touch on an album tile. */
+    fun openGallery() = startIntent(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_GALLERY))
+
+    /** The contacts app, for a touch on a group tile. */
+    fun openContacts() = startIntent(Intent(Intent.ACTION_VIEW, android.provider.ContactsContract.Contacts.CONTENT_URI))
+
+    /** Opens a web page (a headline, a quote) in the browser. */
+    fun openUrl(address: String) = startIntent(Intent(Intent.ACTION_VIEW, address.toUri()))
+
+    /** The headlines and the quotes read again, now (the refresh button of their pages). */
+    fun refreshFeedsNow() = refreshFeeds(force = true)
+
     /** Puts a shortcut of an app on Start (the app's icon, its name, and the shortcut as what it opens). */
     fun pinAppShortcut(shortcut: AppShortcut, page: Int) {
         val serial = getApplication<Application>().getSystemService(android.os.UserManager::class.java).getSerialNumberForUser(shortcut.user)
@@ -1251,6 +1751,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         rememberForUndo(R.string.undo_reset)
         _shortcuts.value.forEach { shortcut ->
             shortcutStore.deletePhoto(shortcut.photoFile)
+            if (shortcut.kind == ShortcutKind.Timer) Alerts.cancelTimer(getApplication(), shortcut.id)
             if (shortcut.kind == ShortcutKind.Widget) widgets.delete(shortcut.widgetId)
         }
         _shortcuts.value = emptyList()
@@ -1529,6 +2030,15 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         const val SAMPLE_SIDE = 48
         const val PROFILE_REFRESH_MS = 800L
         const val SYNC_MIN_GAP_ON_START_MS = 15 * 60_000L
+
+        /** The Today card tells about the events of the next day. */
+        const val TODAY_WINDOW_MS = 24L * 60 * 60 * 1000
+
+        /** A banner is for a notification that came just now, not for one that is a while old. */
+        const val BANNER_MAX_AGE_MS = 15_000L
+
+        /** After the launcher comes on screen, this long nothing is announced: the service is reading what is up. */
+        const val BANNER_SETTLE_MS = 1_500L
         const val SYNC_MIN_GAP_ON_LEAVE_MS = 15 * 60_000L
         const val MAX_LAYOUT_BYTES = 2 * 1024 * 1024
     }

@@ -51,6 +51,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import com.metrowin.launcher.data.ThemeStyle
+import com.metrowin.launcher.ui.anim.LocalTapFeedback
 import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.theme.fieldTextStyle
 import com.metrowin.launcher.ui.theme.glass
@@ -176,6 +177,7 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
     val style = LocalStyle.current
     val accent = LocalAccent.current
     val currentChange by rememberUpdatedState(onChange)
+    val currentFeedback by rememberUpdatedState(LocalTapFeedback.current)
     Row(
         modifier
             .fillMaxWidth()
@@ -188,7 +190,12 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
                     true
                 }
             }
-            .pointerInput(checked) { detectTapGestures { currentChange(!checked) } }
+            .pointerInput(checked) {
+                detectTapGestures {
+                    currentFeedback()
+                    currentChange(!checked)
+                }
+            }
             .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -348,6 +355,8 @@ fun MetroTextField(
     onSearch: (() -> Unit)? = null,
     /** Shows dots instead of the letters, and tells the keyboard not to learn or suggest the text. */
     password: Boolean = false,
+    /** The keyboard to show: digits for a number, the letters otherwise. */
+    keyboardType: KeyboardType = KeyboardType.Text,
 ) {
     val colors = LocalMetroColors.current
     val style = LocalStyle.current
@@ -371,7 +380,7 @@ fun MetroTextField(
                 cursorBrush = SolidColor(LocalAccent.current),
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Search,
-                    keyboardType = if (password) KeyboardType.Password else KeyboardType.Text,
+                    keyboardType = if (password) KeyboardType.Password else keyboardType,
                     autoCorrectEnabled = !password,
                 ),
                 visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,

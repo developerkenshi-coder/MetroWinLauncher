@@ -17,6 +17,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import com.metrowin.launcher.data.QuickAnswer
+import com.metrowin.launcher.data.TodayAction
+import com.metrowin.launcher.data.TodayInfo
 import com.metrowin.launcher.data.QuickAnswerActions
 import com.metrowin.launcher.data.SearchEngine
 import androidx.compose.ui.platform.testTag
@@ -119,6 +121,11 @@ sealed interface ListRow {
         override val key = "search"
     }
 
+    /** The card with the day, the next event, the weather and the reminders, above the search box. */
+    data object Today : ListRow {
+        override val key = "today"
+    }
+
     data class Header(val letter: String) : ListRow {
         override val key = "header:$letter"
     }
@@ -185,8 +192,14 @@ class AppListModel(
     frequent: List<AppItem> = emptyList(),
     fresh: List<AppItem> = emptyList(),
     categories: List<AppCategory> = emptyList(),
+    /** The Today card goes above the search box. */
+    today: Boolean = false,
 ) {
+    /** How many rows come before the first one that belongs to the apps: the search box, and the Today card when there is one. */
+    val head: Int = if (today) 2 else 1
+
     val rows: List<ListRow> = buildList {
+        if (today) add(ListRow.Today)
         add(ListRow.Search)
         if (categories.isNotEmpty()) add(ListRow.Categories)
         if (frequent.isNotEmpty()) {
@@ -270,6 +283,11 @@ fun AppListScreen(
     onSearchSubmit: (String) -> Unit = {},
     /** Smaller squares and tighter rows. */
     compact: Boolean = false,
+    /** A touch on a contact found by digits (the smart dial) calls its number. */
+    onDial: (String) -> Unit = {},
+    /** What the Today card (the model decides whether it shows) tells, and what a touch on one of its lines does. */
+    today: TodayInfo? = null,
+    onToday: (TodayAction) -> Unit = {},
 ) {
     val insets = WindowInsets.systemBars.asPaddingValues()
     // In landscape the camera cutout sits on a side.
@@ -281,8 +299,8 @@ fun AppListScreen(
         if (query.isBlank()) {
             if (searchFocused && recentSearches.isNotEmpty()) {
                 // The searches made before come right under the box; the list stays below them.
-                listOf<ListRow>(ListRow.Search, ListRow.Section(R.string.search_section_recent)) + recentSearches.map { ListRow.Recent(it) } +
-                    model.rows.drop(1)
+                listOfNotNull<ListRow>(ListRow.Today.takeIf { model.head > 1 }, ListRow.Search, ListRow.Section(R.string.search_section_recent)) +
+                    recentSearches.map { ListRow.Recent(it) } + model.rows.drop(model.head)
             } else {
                 model.rows
             }
@@ -340,6 +358,7 @@ fun AppListScreen(
     ) {
         itemsIndexed(rows, key = { _, row -> row.key }, contentType = { _, row -> row::class }) { index, row ->
             when (row) {
+                ListRow.Today -> if (today != null) TodayCard(today, index, listState, openedAt, exiting, onToday)
                 ListRow.Search -> SearchRow(query, onQueryChange, searchFocus, onVoice, onFocusChange = { searchFocused = it }, onSubmit = onSearchSubmit)
                 is ListRow.Answer -> AnswerRow(row.answer, index, listState, openedAt, exiting) { onAnswer(row.answer) }
                 is ListRow.Recent -> ResultRow(
@@ -353,9 +372,13 @@ fun AppListScreen(
                 )
                 is ListRow.Section -> SectionRow(row.title, if (row.title == R.string.search_section_recent) onClearRecents else null)
                 is ListRow.Contact -> ResultRow(
-                    Glyph.People, row.match.name, stringResource(R.string.search_contact_subtitle), index, listState, openedAt, exiting,
+                    if (row.match.number != null) Glyph.Phone else Glyph.People, row.match.name,
+                    row.match.number ?: stringResource(R.string.search_contact_subtitle), index, listState, openedAt, exiting,
                     tag = "result:contact:${row.match.lookupUri}",
-                ) { onLaunch(AppItem("search:contact", row.match.name, Launch.Link(row.match.lookupUri))) }
+                ) {
+                    val number = row.match.number
+                    if (number != null) onDial(number) else onLaunch(AppItem("search:contact", row.match.name, Launch.Link(row.match.lookupUri)))
+                }
                 is ListRow.Setting -> ResultRow(
                     row.setting.glyph, row.setting.label, stringResource(R.string.search_setting_subtitle), index, listState, openedAt, exiting,
                     tag = "result:setting:${row.setting.id}", accent = true,
@@ -384,12 +407,16 @@ fun AppListScreen(
 
 /** "Thu 12 November, 15:30" (or without the time for an event of the whole day), in the language and clock of the phone. */
 @Composable
-private fun eventWhen(event: EventMatch): String {
+private fun eventWhen(event: EventMatch): String = momentText(event.startMillis, event.allDay)
+
+/** A moment as the list says it: the date and the time of the day, in the language and the clock of the phone. [allDay] has no time. */
+@Composable
+private fun momentText(millis: Long, allDay: Boolean): String {
     val context = androidx.compose.ui.platform.LocalContext.current
     val locale = Locale.getDefault()
-    val day = java.time.Instant.ofEpochMilli(event.startMillis).atZone(if (event.allDay) java.time.ZoneOffset.UTC else java.time.ZoneId.systemDefault())
+    val day = java.time.Instant.ofEpochMilli(millis).atZone(if (allDay) java.time.ZoneOffset.UTC else java.time.ZoneId.systemDefault())
     val date = ClockFormat.date(day.toLocalDate(), locale)
-    if (event.allDay) return date
+    if (allDay) return date
     val is24 = android.text.format.DateFormat.is24HourFormat(context)
     val meridiem = ClockFormat.meridiem(day.toLocalTime(), is24, locale)
     return date + ", " + ClockFormat.time(day.toLocalTime(), is24, locale) + if (meridiem.isEmpty()) "" else " $meridiem"
@@ -404,7 +431,7 @@ private const val ENTRY_WINDOW_NANOS = 700_000_000L
 
 /** 1 = turned away, 0 = facing the screen. Handles both the entrance and the exit of a row. */
 @Composable
-private fun rememberRowAway(index: Int, listState: LazyListState, openedAt: Long, exiting: Boolean): Animatable<Float, *> {
+internal fun rememberRowAway(index: Int, listState: LazyListState, openedAt: Long, exiting: Boolean): Animatable<Float, *> {
     // A replay (openedAt changes) builds a new Animatable that starts turned away, so no frame shows the row in place.
     val away = remember(openedAt) { Animatable(if (isEntering(openedAt)) 1f else 0f) }
     LaunchedEffect(away) {
@@ -657,6 +684,18 @@ private fun AnswerRow(answer: QuickAnswer, index: Int, listState: LazyListState,
         is QuickAnswer.Coin -> Triple(
             Glyph.Calculator, stringResource(if (answer.heads) R.string.answer_heads else R.string.answer_tails), stringResource(R.string.answer_flip_again),
         )
+        is QuickAnswer.Reminder -> Triple(
+            Glyph.Bell, stringResource(R.string.answer_reminder, answer.text),
+            answer.at?.let { momentText(it, allDay = false) } ?: stringResource(R.string.answer_reminder_choose),
+        )
+        is QuickAnswer.CalendarEvent -> Triple(
+            Glyph.Calendar,
+            if (answer.title.isBlank()) stringResource(R.string.answer_event_new) else stringResource(R.string.answer_event, answer.title),
+            answer.start?.let { momentText(it, answer.allDay) } ?: stringResource(R.string.answer_event_where),
+        )
+        is QuickAnswer.Note -> Triple(Glyph.OneNote, stringResource(R.string.answer_note, answer.text), stringResource(R.string.answer_note_where))
+        is QuickAnswer.NearMe -> Triple(Glyph.Maps, stringResource(R.string.answer_near, answer.what), stringResource(R.string.answer_near_where))
+        QuickAnswer.Scan -> Triple(Glyph.Camera, stringResource(R.string.answer_scan), stringResource(R.string.answer_scan_where))
     }
     ResultRow(glyph, title, subtitle, index, listState, openedAt, exiting, tag = "answer:${answer::class.simpleName}", accent = true, onClick = onClick)
 }

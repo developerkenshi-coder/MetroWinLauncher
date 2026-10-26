@@ -36,6 +36,9 @@ sealed interface VoiceCommand {
     /** A system action of the accessibility service: the screenshot, the power menu, split screen, recent apps. */
     data class System(val action: GestureAction) : VoiceCommand
 
+    /** What the search box does with the same sentence ([Assistant]): a reminder, an event, a note, a place near the user, the camera. */
+    data class Assist(val answer: QuickAnswer) : VoiceCommand
+
     data object LauncherSettings : VoiceCommand
     data object Weather : VoiceCommand
     data object LockScreen : VoiceCommand
@@ -270,7 +273,16 @@ object VoiceCommands {
      * The command in [heard]. [apps] are the apps the list shows and [settingLabel] gives a name to the entries of the
      * Android settings in the language of the phone.
      */
-    fun parse(heard: String, apps: List<AppItem>, settingLabel: (SystemSettingDef) -> String): VoiceCommand {
+    fun parse(heard: String, apps: List<AppItem>, settingLabel: (SystemSettingDef) -> String): VoiceCommand =
+        parse(heard, apps, settingLabel, java.time.LocalDateTime.now())
+
+    /** The same, with "now" given, which the times in a sentence ("tomorrow at 6") are counted from. */
+    fun parse(
+        heard: String,
+        apps: List<AppItem>,
+        settingLabel: (SystemSettingDef) -> String,
+        now: java.time.LocalDateTime,
+    ): VoiceCommand {
         val text = stripFillers(normalize(heard))
         if (text.isEmpty()) return VoiceCommand.Unclear
 
@@ -283,6 +295,7 @@ object VoiceCommands {
         ringer(text)?.let { return it }
         system(text)?.let { return it }
 
+        // "search for…" and "call…" are what they say, whatever the rest of the sentence looks like ("search for best pizza near me").
         afterAny(text, searchVerbs)?.let { rest ->
             val query = stripArticles(rest)
             return if (query.isEmpty()) VoiceCommand.Unclear else VoiceCommand.Web(query)
@@ -291,6 +304,11 @@ object VoiceCommands {
             val name = stripArticles(rest)
             return if (name.isEmpty()) VoiceCommand.Unclear else VoiceCommand.Call(name)
         }
+
+        // The sentences the search box turns into a reminder, an event, a note, "near me" or the camera. As they were said, with their
+        // accents and capitals, when there is no "please" or "hey" in front; otherwise the same without them (the way [text] is written).
+        val sentence = if (normalize(heard) == text) heard else text
+        Assistant.of(sentence, now).firstOrNull()?.let { return VoiceCommand.Assist(it) }
 
         // The launcher's own commands. A phrase that only names one is also taken, so "meteo" is enough.
         if (hasAny(text, torchWords)) {
@@ -323,8 +341,16 @@ object VoiceCommands {
      * The command to carry out among the recognizer's [alternatives]: the first that is a real command, so that "open
      * maps" heard also as "open mops" still finds the app; failing that, the first one.
      */
-    fun best(alternatives: List<String>, apps: List<AppItem>, settingLabel: (SystemSettingDef) -> String): VoiceCommand {
-        val commands = alternatives.map { parse(it, apps, settingLabel) }
+    fun best(alternatives: List<String>, apps: List<AppItem>, settingLabel: (SystemSettingDef) -> String): VoiceCommand =
+        best(alternatives, apps, settingLabel, java.time.LocalDateTime.now())
+
+    fun best(
+        alternatives: List<String>,
+        apps: List<AppItem>,
+        settingLabel: (SystemSettingDef) -> String,
+        now: java.time.LocalDateTime,
+    ): VoiceCommand {
+        val commands = alternatives.map { parse(it, apps, settingLabel, now) }
         return commands.firstOrNull { it !is VoiceCommand.Web && it !is VoiceCommand.NotFound && it !is VoiceCommand.Unclear }
             ?: commands.firstOrNull()
             ?: VoiceCommand.Unclear

@@ -102,6 +102,7 @@ import com.metrowin.launcher.model.Tile
 import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.notifications.LiveCard
 import com.metrowin.launcher.ui.anim.Motion
+import com.metrowin.launcher.ui.anim.LocalTapFeedback
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.anim.turnstile
 import com.metrowin.launcher.ui.theme.LocalAccent
@@ -854,12 +855,18 @@ private enum class EditButtonKind { Remove, Resize, Rename, Color }
 @Composable
 private fun EditButton(kind: EditButtonKind, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val currentClick by rememberUpdatedState(onClick)
+    val currentFeedback by rememberUpdatedState(LocalTapFeedback.current)
     Box(
         modifier
             .size(34.dp)
             .clip(CircleShape)
             .background(Color.White)
-            .pointerInput(Unit) { detectTapGestures { currentClick() } },
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    currentFeedback()
+                    currentClick()
+                }
+            },
         contentAlignment = Alignment.Center,
     ) {
         Canvas(Modifier.size(16.dp)) {

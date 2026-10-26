@@ -59,6 +59,7 @@ object SettingsIndex {
         e("theme.background", StartTheme, R.string.theme_start_background, "photo", "wallpaper", "picture", "image", "sfondo", "foto", "immagine"),
         e("theme.framing", StartTheme, R.string.photo_framing, "zoom", "crop", "position", "inquadratura", "ritaglio", "posizione"),
         e("theme.parallax", StartTheme, R.string.theme_parallax, "parallax", "parallasse", "scroll", "depth", "motion", "scorrimento", "profondita", "movimento"),
+        e("theme.panorama", StartTheme, R.string.theme_panorama, "panorama", "title", "big title", "parallax", "titolo", "titoli", "parallasse", "pagine"),
 
         // --- start: tiles, clock and the Start screens
         e("start.moretiles", Start, R.string.theme_more_tiles, "columns", "smaller", "bigger", "colonne", "piu riquadri", "piccoli"),
@@ -72,6 +73,7 @@ object SettingsIndex {
         e("start.alarm", Start, R.string.clock_show_alarm, "next alarm", "sveglia", "prossima sveglia"),
         e("start.week", Start, R.string.clock_show_week, "week number", "numero della settimana", "settimana"),
         e("start.clocktaps", Start, R.string.theme_clock_taps, "tap", "open clock", "open calendar", "tocca", "apri", "calendario"),
+        e("start.appbar", Start, R.string.theme_app_bar, "bar", "ellipsis", "dots", "labels", "buttons", "edit", "barra", "puntini", "etichette", "pulsanti", "modifica"),
 
         // --- icons & themes
         e("icons.pack", Icons, R.string.icons_pack, "icons", "icon pack", "nova", "adw", "apex", "go launcher", "icone"),
@@ -96,6 +98,10 @@ object SettingsIndex {
         e("lock.event", Lock, R.string.lock_show_event, "calendar", "next event", "agenda", "calendario", "prossimo evento"),
         e("lock.apply", Lock, R.string.lock_apply, "wallpaper", "system lock screen", "sfondo", "blocco schermo del telefono"),
         e("lock.dream", Lock, R.string.lock_dream, "screensaver", "daydream", "charging", "salvaschermo", "ricarica", "dock"),
+        e("lock.quick", Lock, R.string.lock_quick, "status", "counters", "badges", "icons", "stato", "contatori", "icone", "notifiche"),
+        e("lock.quickapps", Lock, R.string.lock_quick_apps, "choose apps", "five", "scegli le app", "cinque"),
+        e("lock.detail", Lock, R.string.lock_detail, "detailed", "last notification", "message", "dettagliato", "ultima notifica", "messaggio"),
+        e("lock.music", Lock, R.string.lock_music, "music", "player", "cover", "skip", "pause", "musica", "copertina", "pausa"),
 
         // --- screen: rotation, opening animation, refresh rate, language
         e("screen.orientation", Screen, R.string.screen_orientation, "rotate", "landscape", "portrait", "orientation", "orizzontale", "verticale", "orientamento"),
@@ -122,6 +128,10 @@ object SettingsIndex {
         e("ac.reply", Actions, R.string.notif_inline_reply, "reply", "answer", "message", "rispondi", "risposta", "messaggio"),
         e("ac.group", Actions, R.string.notif_group, "group", "stack", "raggruppa", "raggruppamento"),
         e("ac.access", Actions, R.string.settings_notification_access, "permission", "listener", "permesso", "accesso", "notifiche"),
+        e("ac.banner", Actions, R.string.ac_banner, "toast", "heads up", "popup", "notifications", "avviso", "notifiche", "banner"),
+        e("ac.volume", Actions, R.string.ac_volume_panel, "volume keys", "panel", "hud", "sound", "tasti del volume", "pannello", "suono"),
+        e("ac.notifcontrol", Actions, R.string.ac_notifcontrol, "per app", "app by app", "mute", "silence", "block", "app per app", "silenzia", "blocca"),
+        e("ac.notifapps", Actions, R.string.ac_notifapps_title, "apps", "action center", "lock screen", "banner", "sound", "centro azioni", "blocco", "suono"),
 
         // --- battery
         e("battery.saving", Battery, R.string.saving_title, "power", "saver", "energy", "low battery", "risparmio", "energia", "batteria scarica"),
@@ -149,6 +159,9 @@ object SettingsIndex {
         e("search.web", Search, R.string.apps_search_web, "internet", "browser", "google", "ricerca web"),
         e("search.engine", Search, R.string.apps_engine, "duckduckgo", "google", "bing", "brave", "ecosia", "startpage", "qwant", "motore", "browser"),
         e("search.answers", Search, R.string.apps_answers, "calculator", "convert", "units", "timer", "calcolatrice", "conversioni", "unita", "risposte"),
+        e("search.assistant", Search, R.string.apps_assistant, "reminder", "event", "note", "keep", "lens", "near me", "qr", "promemoria", "evento", "nota", "vicino a me", "scansiona"),
+        e("search.dial", Search, R.string.apps_dial, "t9", "dial", "keypad", "numbers", "tastierino", "chiamata", "numeri"),
+        e("search.today", Search, R.string.apps_today, "card", "agenda", "today", "scheda", "oggi", "giornata"),
         e("search.currency", Search, R.string.apps_currency, "money", "exchange", "euro", "dollar", "valute", "cambio", "soldi"),
         e("search.calendar", Search, R.string.apps_calendar, "events", "agenda", "eventi", "calendario"),
         e("search.remember", Search, R.string.apps_remember, "history", "recent searches", "cronologia", "ricerche recenti"),
@@ -166,6 +179,10 @@ object SettingsIndex {
         e("live.progress", LiveTiles, R.string.live_progress, "download", "upload", "percentage", "avanzamento", "scarica"),
         e("live.apps", LiveTiles, R.string.live_apps, "per app", "switch off", "una per una", "spegni"),
         e("live.report", LiveTiles, R.string.live_report, "debug", "reads", "legge", "diagnosi"),
+        e("live.transition", LiveTiles, R.string.transition_title, "flip", "slide", "animation", "tile", "rotazione", "scorrimento", "animazione", "faccia"),
+        e("live.news", LiveTiles, R.string.news_source_title, "google news", "rss", "feed", "headlines", "source", "notizie", "fonte", "titoli", "giornale"),
+        e("live.financebase", LiveTiles, R.string.finance_base_title, "currency", "euro", "dollar", "valuta", "cambio", "moneta"),
+        e("live.financeitems", LiveTiles, R.string.finance_items_title, "bitcoin", "crypto", "exchange", "currencies", "valute", "criptovalute", "borsa"),
         e("live.published", LiveTiles, R.string.tp_toggle, "third party", "publish", "terze parti", "pubblica", "tile"),
 
         // --- profiles

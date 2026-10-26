@@ -87,6 +87,7 @@ import com.metrowin.launcher.notifications.TilePeek
 import com.metrowin.launcher.ui.anim.FlipContainer
 import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
 import com.metrowin.launcher.ui.anim.LocalPowerSaving
+import com.metrowin.launcher.ui.anim.LocalTapFeedback
 import com.metrowin.launcher.ui.components.AppArt
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
@@ -142,7 +143,13 @@ fun TileFace(
     val count = if (item.live == LiveKind.Phone) maxOf(live.missedCalls, notifications) else notifications
     // The Iconic template shows the counter big, in the middle; a small tile has no room for that.
     val iconic = style == TileStyle.Iconic && size != TileSize.Small && item.live != LiveKind.Torch
-    val cycle = style == TileStyle.Cycle && item.live == LiveKind.Photos && size != TileSize.Small && live.photos.isNotEmpty()
+    // The photos a Cycle tile fades through: the latest of the phone, or those of the album the tile stands for.
+    val cyclePhotos = when (item.live) {
+        LiveKind.Photos -> live.photos
+        LiveKind.Album -> (item.data as? TileData.Album)?.let { live.albums[it.bucket] }.orEmpty()
+        else -> emptyList()
+    }
+    val cycle = style == TileStyle.Cycle && cyclePhotos.isNotEmpty() && size != TileSize.Small
     val faces = cards.ifEmpty { peek?.let { listOf(LiveCard.Digest(it.title, it.text)) }.orEmpty() }
     // Whatever the theme, a tile is coloured: its text and glyphs are white. A tile has a size of its own, so the text on it
     // grows with the text size of the phone only as far as the tile has room for it.
@@ -161,8 +168,12 @@ fun TileFace(
                 item.data is TileData.Checklist -> ChecklistFace(item, size, width, height, item.data.raw)
                 item.data is TileData.WorldClock -> WorldClockFace(item, size, width, height, item.data.zone)
                 item.data is TileData.Moon -> MoonFace(item, size, width, height)
+                item.data is TileData.Place -> PlaceFace(item, size, width, height, item.data.address)
+                item.data is TileData.Timer -> TimerFace(item, size, width, height, item.data.state)
+                item.data is TileData.Stopwatch -> StopwatchFace(item, size, width, height, item.data.state)
+                item.data is TileData.Reminders -> RemindersFace(item, size, width, height, live.reminders)
                 iconic -> IconicFace(item, size, width, height, count)
-                cycle -> CycleFace(item, live.photos, seed)
+                cycle -> CycleFace(item, cyclePhotos, seed)
                 else -> when (item.live) {
                     LiveKind.Calendar -> CalendarFace(item, size, width, height, live.nextEvent, seed)
                     LiveKind.Photos -> PhotosFace(item, size, width, height, live, seed)
@@ -180,6 +191,10 @@ fun TileFace(
                         if (shown.isNotEmpty() && size != TileSize.Small) CardsFace(item, size, width, height, shown, seed)
                         else StaticFace(item, size, width, height)
                     }
+                    LiveKind.Album -> AlbumFace(item, size, width, height, cyclePhotos, seed)
+                    LiveKind.Group -> GroupFace(item, size, width, height, (item.data as? TileData.Group)?.let { live.groups[it.groupId] }.orEmpty(), seed)
+                    LiveKind.News -> NewsFace(item, size, width, height, live.news, seed)
+                    LiveKind.Finance -> FinanceFace(item, size, width, height, live.finance)
                     LiveKind.Phone, LiveKind.Messages, null ->
                         if (item.photoPath != null) PhotoShortcutFace(item, size, width, height)
                         else if (faces.isNotEmpty() && size != TileSize.Small) CardsFace(item, size, width, height, faces, seed)
@@ -261,6 +276,7 @@ private fun WeatherDetailsFace(weather: WeatherData) {
 private fun CounterFace(item: AppItem, size: TileSize, width: Dp, height: Dp, count: Int, onStep: (Int) -> Unit) {
     val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.34f else 0.42f).toSp() }
     val ink = LocalMetroColors.current.tileContent
+    val feedback by rememberUpdatedState(LocalTapFeedback.current)
     Box(Modifier.fillMaxSize()) {
         MetroText(count.toString(), size = digits, modifier = Modifier.align(Alignment.Center).testTag("counter:count"))
         if (count > 0 && size != TileSize.Small) {
@@ -273,7 +289,12 @@ private fun CounterFace(item: AppItem, size: TileSize, width: Dp, height: Dp, co
                     .testTag("counter:minus")
                     .border(2.dp, ink.copy(alpha = 0.8f))
                     .semantics { contentDescription = description }
-                    .pointerInput(Unit) { detectTapGestures { onStep(-1) } },
+                    .pointerInput(Unit) {
+                        detectTapGestures {
+                            feedback()
+                            onStep(-1)
+                        }
+                    },
                 contentAlignment = Alignment.Center,
             ) { MetroText("−", size = 22.sp, weight = FontWeight.Normal) }
         }
@@ -512,7 +533,7 @@ private fun IconicFace(item: AppItem, size: TileSize, width: Dp, height: Dp, cou
 
 /** Windows Phone's Cycle template: photos fading into one another, one after the other. */
 @Composable
-private fun CycleFace(item: AppItem, photos: List<ImageBitmap>, seed: Int) {
+internal fun CycleFace(item: AppItem, photos: List<ImageBitmap>, seed: Int) {
     var index by remember { mutableIntStateOf(0) }
     val reduced = LocalReduceMotion.current
     val saving = LocalPowerSaving.current
@@ -797,7 +818,7 @@ private fun BatteryFace(item: AppItem, size: TileSize, width: Dp, height: Dp, ba
 }
 
 @Composable
-private fun BatteryBar(percent: Int, width: Dp) {
+internal fun BatteryBar(percent: Int, width: Dp) {
     val ink = LocalMetroColors.current.tileContent
     Box(Modifier.size(width, 14.dp).border(2.dp, ink).padding(2.dp)) {
         Box(Modifier.fillMaxHeight().fillMaxWidth(percent / 100f).background(ink))
@@ -924,7 +945,7 @@ private fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, we
 private const val MAX_TILE_FONT_SCALE = 1.3f
 
 /** The room the name of a tile takes along the bottom edge. */
-private val NAME_ROOM = 26.dp
+internal val NAME_ROOM = 26.dp
 
 /** The torch tile: the glyph on the accent colour while the light is off, black on white while it is on. */
 @Composable
@@ -941,7 +962,7 @@ private fun TorchFace(item: AppItem, size: TileSize, width: Dp, height: Dp, on: 
 
 /** Glyph or icon in the middle, name in the bottom left corner, like every Windows Phone tile. */
 @Composable
-private fun StaticFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
+internal fun StaticFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
     Box(Modifier.fillMaxSize()) {
         val art = minOf(width, height) * if (size == TileSize.Small) 0.5f else 0.42f
         AppArt(item, art, Modifier.align(Alignment.Center))
@@ -950,7 +971,7 @@ private fun StaticFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
 }
 
 @Composable
-private fun TileLabel(label: String, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.tileContent) {
+internal fun TileLabel(label: String, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.tileContent) {
     if (!LocalTileNames.current) return
     MetroText(
         text = label,
@@ -1043,7 +1064,7 @@ private fun PeopleFace(item: AppItem, size: TileSize, width: Dp, height: Dp, liv
 
 /** Name over a photo: a soft shade at the bottom keeps it readable on any picture. */
 @Composable
-private fun PhotoLabel(text: String, modifier: Modifier = Modifier) {
+internal fun PhotoLabel(text: String, modifier: Modifier = Modifier) {
     if (!LocalTileNames.current) return
     Box(
         modifier.background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f)))),
@@ -1054,7 +1075,7 @@ private fun PhotoLabel(text: String, modifier: Modifier = Modifier) {
 
 /** The current date, kept right across midnight. */
 @Composable
-private fun rememberToday(): LocalDate {
+internal fun rememberToday(): LocalDate {
     var today by remember { mutableStateOf(LocalDate.now()) }
     LaunchedWhileStarted(Unit) {
         while (true) {

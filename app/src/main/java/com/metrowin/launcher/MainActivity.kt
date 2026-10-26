@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.view.Display
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import androidx.activity.ComponentActivity
@@ -153,6 +154,33 @@ class MainActivity : ComponentActivity() {
 
         /** The check for an idle screen comes a moment after the rate would run out. */
         private const val IDLE_SLACK_MS = 100L
+    }
+
+    /** The volume key whose press the panel took, so its release is taken too (and Android's own panel does not come on). */
+    private var volumeKeyTaken = 0
+
+    /**
+     * The volume keys, while the launcher is on screen: the Metro panel moves what is sounding (see LauncherViewModel.onVolumeKey).
+     * When the panel is off in the settings, or has nothing to move, Android handles them as always.
+     */
+    // The lint check on ComponentActivity.dispatchKeyEvent (a restricted override of a public method of Activity) is wrong for an app.
+    @Suppress("RestrictedApi")
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        val key = event.keyCode
+        if (key == KeyEvent.KEYCODE_VOLUME_UP || key == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            when (event.action) {
+                KeyEvent.ACTION_DOWN ->
+                    if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) && viewModel.onVolumeKey(raise = key == KeyEvent.KEYCODE_VOLUME_UP)) {
+                        volumeKeyTaken = key
+                        return true
+                    }
+                KeyEvent.ACTION_UP -> if (volumeKeyTaken == key) {
+                    volumeKeyTaken = 0
+                    return true
+                }
+            }
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     /**

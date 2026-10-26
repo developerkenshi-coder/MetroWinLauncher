@@ -76,10 +76,22 @@ data class LiveTileData(
     val nextAlarm: Long = 0L,
     /** The birthdays of the contacts, for the Birthdays tile. */
     val birthdays: List<Birthday> = emptyList(),
+    /** The latest photos of each album pinned to Start, by the id of the album. */
+    val albums: Map<String, List<ImageBitmap>> = emptyMap(),
+    /** The faces of the people of each group of contacts pinned to Start, by the id of the group. */
+    val groups: Map<Long, List<LivePerson>> = emptyMap(),
+    /** The headlines for the News tile and the quotes for the Finance tile: they come from the Internet and are set apart from the rest. */
+    val news: NewsData? = null,
+    val finance: FinanceData? = null,
+    /** The reminders, for the Reminders tile. */
+    val reminders: List<Reminder> = emptyList(),
 )
 
-/** Keeps what the tiles of [kinds] show and lets the rest go: a tile that is not on Start any more has no use for its data. */
-fun LiveTileData.keeping(kinds: Set<LiveKind>) = copy(
+/**
+ * Keeps what the tiles of [kinds] show and lets the rest go: a tile that is not on Start any more has no use for its data.
+ * [albumIds] and [groupIds] are the albums and the groups that are pinned.
+ */
+fun LiveTileData.keeping(kinds: Set<LiveKind>, albumIds: Set<String> = emptySet(), groupIds: Set<Long> = emptySet()) = copy(
     photos = if (LiveKind.Photos in kinds) photos else emptyList(),
     people = if (LiveKind.People in kinds) people else emptyList(),
     nextEvent = if (LiveKind.Calendar in kinds) nextEvent else null,
@@ -87,6 +99,10 @@ fun LiveTileData.keeping(kinds: Set<LiveKind>) = copy(
     storage = if (LiveKind.Storage in kinds) storage else null,
     nextAlarm = if (LiveKind.Alarm in kinds) nextAlarm else 0L,
     birthdays = if (LiveKind.Birthdays in kinds) birthdays else emptyList(),
+    albums = if (LiveKind.Album in kinds) albums.filterKeys { it in albumIds } else emptyMap(),
+    groups = if (LiveKind.Group in kinds) groups.filterKeys { it in groupIds } else emptyMap(),
+    news = if (LiveKind.News in kinds) news else null,
+    finance = if (LiveKind.Finance in kinds) finance else null,
 )
 
 /** What the tiles of [kinds] show, taken from [fresh]; the rest stays as it was. */
@@ -98,14 +114,18 @@ fun LiveTileData.updatedWith(fresh: LiveTileData, kinds: Set<LiveKind>) = copy(
     storage = if (LiveKind.Storage in kinds) fresh.storage else storage,
     nextAlarm = if (LiveKind.Alarm in kinds) fresh.nextAlarm else nextAlarm,
     birthdays = if (LiveKind.Birthdays in kinds) fresh.birthdays else birthdays,
+    albums = if (LiveKind.Album in kinds) fresh.albums else albums,
+    groups = if (LiveKind.Group in kinds) fresh.groups else groups,
 )
 
 class LiveTileRepository(private val context: Context) {
     private val resolver: ContentResolver = context.contentResolver
 
-    /** Blocking, call it off the main thread. */
-    /** Reads the data of the kinds in [wanted] only: a Start with no photo tile has no use for the photos. */
-    fun load(wanted: Set<LiveKind> = LiveSources.all) = LiveTileData(
+    /**
+     * Blocking, call it off the main thread. Reads the data of the kinds in [wanted] only: a Start with no photo tile has no use
+     * for the photos. [albumIds] and [groupIds] are the albums and the groups whose tiles are pinned.
+     */
+    fun load(wanted: Set<LiveKind> = LiveSources.all, albumIds: Set<String> = emptySet(), groupIds: Set<Long> = emptySet()) = LiveTileData(
         photos = if (LiveKind.Photos in wanted) photos() else emptyList(),
         people = if (LiveKind.People in wanted) people() else emptyList(),
         nextEvent = if (LiveKind.Calendar in wanted) nextEvent() else null,
@@ -113,16 +133,27 @@ class LiveTileRepository(private val context: Context) {
         storage = if (LiveKind.Storage in wanted) StorageInfo.read() else null,
         nextAlarm = if (LiveKind.Alarm in wanted) NextAlarm.read(context) else 0L,
         birthdays = if (LiveKind.Birthdays in wanted) birthdays() else emptyList(),
+        albums = if (LiveKind.Album in wanted) albumIds.associateWith { album(it) } else emptyMap(),
+        groups = if (LiveKind.Group in wanted) groupIds.associateWith { group(it) } else emptyMap(),
     )
 
     private fun granted(permission: String) = LivePermissions.isGranted(context, permission)
 
     /** The photos and faces already decoded, by where they come from: a read finds the same ones most times and decodes none. */
-    private val photoCache = LinkedHashMap<Uri, ImageBitmap>()
+    private val photoCache = object : LinkedHashMap<Uri, ImageBitmap>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Uri, ImageBitmap>?) = size > MAX_PHOTOS
+    }
     private val faceCache = HashMap<Uri, ImageBitmap>()
 
     @Synchronized
-    private fun photos(limit: Int = 8): List<ImageBitmap> {
+    private fun photos(limit: Int = 8): List<ImageBitmap> = recentPhotos(null, limit)
+
+    /** The latest photos of one album of the phone ([bucket] is the id of the album), as thumbnails. */
+    @Synchronized
+    private fun album(bucket: String, limit: Int = 8): List<ImageBitmap> = recentPhotos(bucket, limit)
+
+    /** The latest photos of the phone, or of one of its albums, as thumbnails. */
+    private fun recentPhotos(bucket: String?, limit: Int): List<ImageBitmap> {
         if (!LivePermissions.canReadPhotos(context)) return emptyList()
         return runCatching {
             val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
@@ -130,14 +161,46 @@ class LiveTileRepository(private val context: Context) {
                 putInt(ContentResolver.QUERY_ARG_LIMIT, limit)
                 putStringArray(ContentResolver.QUERY_ARG_SORT_COLUMNS, arrayOf(MediaStore.Images.Media.DATE_ADDED))
                 putInt(ContentResolver.QUERY_ARG_SORT_DIRECTION, ContentResolver.QUERY_SORT_DIRECTION_DESCENDING)
+                if (bucket != null) {
+                    putString(ContentResolver.QUERY_ARG_SQL_SELECTION, "${MediaStore.Images.Media.BUCKET_ID}=?")
+                    putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, arrayOf(bucket))
+                }
             }
             val uris = ArrayList<Uri>(limit)
             resolver.query(collection, arrayOf(MediaStore.Images.Media._ID), args, null)?.use { cursor ->
                 while (cursor.moveToNext()) uris += ContentUris.withAppendedId(collection, cursor.getLong(0))
             }
-            val found = uris.mapNotNull { uri -> photoCache[uri] ?: thumbnail(uri, PHOTO_PX)?.asImageBitmap()?.also { photoCache[uri] = it } }
-            photoCache.keys.retainAll(uris.toSet())
-            found
+            uris.mapNotNull { uri -> photoCache[uri] ?: thumbnail(uri, PHOTO_PX)?.asImageBitmap()?.also { photoCache[uri] = it } }
+        }.getOrDefault(emptyList())
+    }
+
+    /** The faces of the people of one group of the contacts, in a different order each time. */
+    @Synchronized
+    private fun group(groupId: Long, limit: Int = 8): List<LivePerson> {
+        if (!granted(LivePermissions.contacts)) return emptyList()
+        return runCatching {
+            val rows = ArrayList<Pair<String, Uri>>()
+            resolver.query(
+                ContactsContract.Data.CONTENT_URI,
+                arrayOf(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY, ContactsContract.Contacts.PHOTO_THUMBNAIL_URI),
+                "${ContactsContract.Data.MIMETYPE}=? AND ${ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID}=? AND " +
+                    "${ContactsContract.Contacts.PHOTO_THUMBNAIL_URI} IS NOT NULL",
+                arrayOf(ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE, groupId.toString()),
+                null,
+            )?.use { cursor ->
+                while (cursor.moveToNext() && rows.size < MAX_GROUP_ROWS) {
+                    val name = cursor.getString(0)?.takeIf { it.isNotBlank() } ?: continue
+                    val photo = cursor.getString(1)?.let(Uri::parse) ?: continue
+                    rows += name to photo
+                }
+            }
+            if (faceCache.size > MAX_FACES) faceCache.clear()
+            rows.distinctBy { it.second }.shuffled().take(limit).mapNotNull { (name, uri) ->
+                val face = faceCache[uri]
+                    ?: resolver.openInputStream(uri)?.use(BitmapFactory::decodeStream)?.asImageBitmap()?.also { faceCache[uri] = it }
+                    ?: return@mapNotNull null
+                LivePerson(name, face)
+            }
         }.getOrDefault(emptyList())
     }
 
@@ -234,6 +297,8 @@ class LiveTileRepository(private val context: Context) {
         const val PHOTO_PX = 512
         const val MAX_BIRTHDAYS = 2_000
         const val MAX_FACES = 40
+        const val MAX_PHOTOS = 32
+        const val MAX_GROUP_ROWS = 2_000
         const val WEEK_MILLIS = 7L * 24 * 60 * 60 * 1000
     }
 }

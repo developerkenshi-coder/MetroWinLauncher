@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -60,8 +61,13 @@ fun EditBar(
     onAdd: (() -> Unit)? = null,
     /** The button that picks several tiles to put in a folder; null leaves it out. */
     onFolder: (() -> Unit)? = null,
+    /** The "…" button, which shows or hides the names of the buttons (see [labels]); null leaves it out, and the names with it. */
+    onLabels: (() -> Unit)? = null,
+    /** The names of the buttons are written under them, as when the app bar of Windows Phone is opened with its "…". */
+    labels: Boolean = false,
 ) {
     val colors = LocalMetroColors.current
+    val named = labels && onLabels != null
     // The controls go on as many lines as the width needs: nothing is squeezed, cut or pushed off the screen.
     FlowRow(
         modifier
@@ -75,10 +81,15 @@ fun EditBar(
         verticalArrangement = Arrangement.spacedBy(6.dp),
         itemVerticalAlignment = Alignment.CenterVertically,
     ) {
-        if (onAdd != null) AddButton(onAdd)
-        if (onFolder != null) FolderButton(onFolder)
+        if (onAdd != null) Named(if (named) stringResource(R.string.edit_label_add) else null) { AddButton(onAdd) }
+        if (onFolder != null) Named(if (named) stringResource(R.string.edit_label_folder) else null) { FolderButton(onFolder) }
         TileSize.entries.forEach { option ->
-            SizeButton(option, selected = option == size, onClick = { onSize(option) })
+            val name = when (option) {
+                TileSize.Small -> R.string.edit_label_small
+                TileSize.Medium -> R.string.edit_label_medium
+                TileSize.Wide -> R.string.edit_label_wide
+            }
+            Named(if (named) stringResource(name) else null) { SizeButton(option, selected = option == size, onClick = { onSize(option) }) }
         }
         if (style != null) {
             val description = stringResource(
@@ -117,9 +128,49 @@ fun EditBar(
                 ArrowButton(false, stringResource(R.string.edit_page_next), page < pageCount - 1, "edit:page:next") { onMovePage(1) }
             }
         }
-        Box(Modifier.weight(1f))
-        Box(Modifier.testTag("edit:done").metroPress(onClick = onDone).padding(horizontal = 10.dp, vertical = 10.dp)) {
-            MetroText(stringResource(R.string.edit_done), size = 18.sp, weight = FontWeight.Normal, color = LocalAccent.current)
+        // The "…" and "done" are one piece at the right end: when the line is full they go to the next line together, on its right.
+        Row(Modifier.weight(1f), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+            if (onLabels != null) MoreButton(labels, onLabels)
+            Box(Modifier.testTag("edit:done").metroPress(onClick = onDone).padding(horizontal = 10.dp, vertical = 10.dp)) {
+                MetroText(stringResource(R.string.edit_done), size = 18.sp, weight = FontWeight.Normal, color = LocalAccent.current)
+            }
+        }
+    }
+}
+
+/** A button with its name under it when [label] is not null. */
+@Composable
+private fun Named(label: String?, content: @Composable () -> Unit) {
+    if (label == null) {
+        content()
+        return
+    }
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        content()
+        MetroText(label, size = 12.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, maxLines = 1)
+    }
+}
+
+/** The "…" of the bar: lit while the names of the buttons are shown. */
+@Composable
+private fun MoreButton(labels: Boolean, onClick: () -> Unit) {
+    val description = stringResource(if (labels) R.string.edit_more_hide else R.string.edit_more_show)
+    val tint = if (labels) onAccent() else LocalMetroColors.current.foreground
+    Box(
+        Modifier
+            .size(46.dp)
+            .testTag("edit:more")
+            .semantics { contentDescription = description }
+            .metroPress(onClick = onClick)
+            .litFill(labels),
+        contentAlignment = Alignment.Center,
+    ) {
+        // Three dots drawn, not typed: they do not depend on the font.
+        Canvas(Modifier.size(width = 26.dp, height = 8.dp)) {
+            val radius = 2.6.dp.toPx()
+            repeat(3) { i ->
+                drawCircle(tint, radius, Offset(radius + i * (this.size.width - 2 * radius) / 2f, this.size.height / 2f))
+            }
         }
     }
 }

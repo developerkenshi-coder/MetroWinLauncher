@@ -67,7 +67,7 @@ import java.util.Locale
 
 /** A dimmed page with [content] in a panel in the middle; touching outside it calls [onCancel]. */
 @Composable
-private fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+internal fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val colors = LocalMetroColors.current
     val currentCancel by rememberUpdatedState(onCancel)
     Box(

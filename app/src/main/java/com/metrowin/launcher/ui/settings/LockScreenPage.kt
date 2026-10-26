@@ -91,6 +91,7 @@ fun LockScreenPage(env: SettingsEnv) {
                 hint = stringResource(R.string.lock_show_event_hint), tag = "lock:event", id = "lock.event",
             )
         }
+        LockQuickSettings(env)
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.lock_dream))
             ActionSetting(

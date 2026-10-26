@@ -4,6 +4,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.net.toUri
 import android.provider.AlarmClock
+import android.provider.CalendarContract
+import android.provider.MediaStore
 import java.util.Locale
 
 /** What touching a [QuickAnswer] does: an intent to start, or a text to copy. Pure where it can be. */
@@ -22,13 +24,42 @@ object QuickAnswerActions {
                 .putExtra(AlarmClock.EXTRA_HOUR, answer.hour)
                 .putExtra(AlarmClock.EXTRA_MINUTES, answer.minute)
                 .putExtra(AlarmClock.EXTRA_SKIP_UI, true)
+            is QuickAnswer.CalendarEvent -> Intent(Intent.ACTION_INSERT, CalendarContract.Events.CONTENT_URI).apply {
+                if (answer.title.isNotBlank()) putExtra(CalendarContract.Events.TITLE, answer.title)
+                answer.start?.let { start ->
+                    putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, start)
+                    putExtra(CalendarContract.EXTRA_EVENT_END_TIME, start + if (answer.allDay) DAY_MS else HOUR_MS)
+                    if (answer.allDay) putExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, true)
+                }
+            }
+            is QuickAnswer.NearMe -> Intent(Intent.ACTION_VIEW, nearMeUri(answer.what).toUri())
+            QuickAnswer.Scan -> Intent(Intent.ACTION_VIEW, LENS_URI.toUri()).setPackage(GOOGLE_APP)
+            // These are done by the launcher itself, not by another app.
             is QuickAnswer.Calculation, is QuickAnswer.Conversion, is QuickAnswer.Currency,
             is QuickAnswer.WorldTime, is QuickAnswer.DateOffset, is QuickAnswer.DaysUntil,
-            is QuickAnswer.Dice, is QuickAnswer.Coin,
+            is QuickAnswer.Dice, is QuickAnswer.Coin, is QuickAnswer.Reminder, is QuickAnswer.Note,
             -> return null
         }
         return intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
+
+    /** [what] on the map, around where the user is: Google Maps takes a `geo:` address with no position as "near me". */
+    fun nearMeUri(what: String): String = "geo:0,0?q=" + Uri.encode(what)
+
+    /** The note as text to share to Google Keep. */
+    fun noteIntent(text: String): Intent =
+        Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+    /** The camera, for a phone that has no Google Lens. */
+    fun cameraIntent(): Intent = Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+    const val GOOGLE_APP = "com.google.android.googlequicksearchbox"
+    const val GOOGLE_KEEP = "com.google.android.keep"
+    const val GOOGLE_CALENDAR = "com.google.android.calendar"
+    const val GOOGLE_MAPS = "com.google.android.apps.maps"
+    private const val LENS_URI = "googleapp://lens"
+    private const val HOUR_MS = 60L * 60 * 1000
+    private const val DAY_MS = 24L * HOUR_MS
 
     /** The text that touching a calculation or a conversion copies: the result alone, ready to paste. */
     fun copyText(answer: QuickAnswer, locale: Locale = Locale.getDefault()): String? = when (answer) {

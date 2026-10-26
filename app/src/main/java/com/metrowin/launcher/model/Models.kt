@@ -92,7 +92,7 @@ sealed interface Launch {
 }
 
 /** Which kind of live content a tile can show on its face. */
-enum class LiveKind { Calendar, Photos, People, Phone, Weather, Battery, Messages, Torch, Music, Storage, Alarm, Birthdays }
+enum class LiveKind { Calendar, Photos, People, Phone, Weather, Battery, Messages, Torch, Music, Storage, Alarm, Birthdays, Album, Group, News, Finance }
 
 /**
  * One entry of the app list: either a Windows Phone stock app mapped onto the Android app that
@@ -144,6 +144,41 @@ sealed interface TileData {
 
     /** The phase of the moon today. */
     data object Moon : TileData
+
+    /** A place the tile starts the navigation to: its address, as it was typed. */
+    @Immutable
+    data class Place(val address: String) : TileData
+
+    /** The photos of one album of the phone ([bucket] is the id Android gives the album), cycling on the tile. */
+    @Immutable
+    data class Album(val bucket: String) : TileData
+
+    /** The people of one group of the contacts ([groupId] is its id in the contacts), their faces cycling on the tile. */
+    @Immutable
+    data class Group(val groupId: Long) : TileData
+
+    /** A countdown that runs without the launcher: see [TimerState]. */
+    @Immutable
+    data class Timer(val state: TimerState) : TileData
+
+    /** A stopwatch: see [StopwatchState]. */
+    @Immutable
+    data class Stopwatch(val state: StopwatchState) : TileData
+
+    /** The headlines of the news source the user chose. */
+    data object News : TileData
+
+    /** The currencies and coins the user follows. */
+    data object Finance : TileData
+
+    /** The grid of numbers that are called at a touch. */
+    data object DialGrid : TileData
+
+    /** The people hub: favourites, recent calls, what is new. */
+    data object PeopleHub : TileData
+
+    /** The reminders that wait. */
+    data object Reminders : TileData
 }
 
 /** The categories an app can declare (see `ApplicationInfo.category`), as the filter of the app list names them. */
@@ -171,4 +206,5 @@ enum class Glyph {
     Photos, Podcasts, PowerPoint, Settings, Skype, Sports, Storage, Store, Video, Wallet,
     Weather, Word, Xbox, Theme, Search, Wifi, Bluetooth, Airplane, Moon, Flashlight, Rotation, Hotspot, Vpn,
     Cast, Brightness, Bell, Kids, Globe, Widget, Lock, Star, Home, Gesture, Folder, Recents,
+    Hourglass, Stopwatch, Timeout, AutoBrightness,
 }

@@ -105,6 +105,14 @@ fun StartPage(env: SettingsEnv) {
             tag = "start:hidestatus",
             id = "start.hidestatus",
         )
+        ToggleSetting(
+            label = stringResource(R.string.theme_app_bar),
+            checked = settings.appBar,
+            onChange = { value -> env.onChange { it.copy(appBar = value) } },
+            hint = stringResource(R.string.theme_app_bar_hint),
+            tag = "start:appbar",
+            id = "start.appbar",
+        )
         // Two touches: the first one asks, the second one restores.
         var confirmReset by remember { mutableStateOf(false) }
         ActionSetting(

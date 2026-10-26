@@ -162,7 +162,13 @@ class AppRepository(private val context: Context) {
                         val direct = LivePermissions.isGranted(context, PhoneCalls.permission)
                         context.startActivity(PhoneCalls.intent(number, direct), options)
                     } else {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, target.uri.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), options)
+                        // A navigation address tries Google Maps, then any map app, then the page of Google Maps; the others open as they are.
+                        val opened = Places.fallbacks(target.uri).any { address ->
+                            runCatching {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, address.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), options)
+                            }.isSuccess
+                        }
+                        check(opened) { "nothing opens ${target.uri}" }
                     }
                 }
             }
@@ -281,6 +287,17 @@ class AppRepository(private val context: Context) {
         const val ROUTE_COUNTER = "counter"
         const val ROUTE_CHECKLIST = "checklist"
         const val ROUTE_NONE = "none"
+
+        /** The tiles that open a page of the launcher itself: an album, a group of people, a timer, the news… */
+        const val ROUTE_ALBUM = "album"
+        const val ROUTE_GROUP = "group"
+        const val ROUTE_TIMER = "timer"
+        const val ROUTE_STOPWATCH = "stopwatch"
+        const val ROUTE_NEWS = "news"
+        const val ROUTE_FINANCE = "finance"
+        const val ROUTE_DIALGRID = "dialgrid"
+        const val ROUTE_PEOPLEHUB = "peoplehub"
+        const val ROUTE_REMINDERS = "reminders"
         const val WEATHER_ID = "launcher:weather"
         const val ROUTE_WEATHER = "weather"
     }

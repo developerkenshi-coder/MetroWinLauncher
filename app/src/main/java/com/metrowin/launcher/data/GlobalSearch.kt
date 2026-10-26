@@ -11,9 +11,9 @@ import com.metrowin.launcher.model.Glyph
 @Immutable
 data class SystemSetting(val id: String, val label: String, val action: String, val glyph: Glyph)
 
-/** A contact that matched what was typed. [lookupUri] opens it. */
+/** A contact that matched what was typed. [lookupUri] opens it; [number] is set when the match came from digits (the smart dial): the number to call. */
 @Immutable
-data class ContactMatch(val name: String, val lookupUri: String)
+data class ContactMatch(val name: String, val lookupUri: String, val number: String? = null)
 
 /**
  * A setting of the launcher itself that matched what was typed. [id] is its entry in the settings index (null when it is a whole

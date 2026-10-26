@@ -29,9 +29,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.animation.core.Animatable
@@ -94,6 +98,8 @@ import com.metrowin.launcher.data.PhoneCalls
 import com.metrowin.launcher.data.AppLinks
 import com.metrowin.launcher.data.Currencies
 import com.metrowin.launcher.data.QuickAnswer
+import com.metrowin.launcher.data.Today
+import com.metrowin.launcher.data.TodayAction
 import com.metrowin.launcher.data.QuickAnswers
 import com.metrowin.launcher.data.LocalWidgetHost
 import com.metrowin.launcher.data.RecentApps
@@ -116,12 +122,14 @@ import com.metrowin.launcher.ui.apps.MenuState
 import com.metrowin.launcher.ui.components.LocalIconLoader
 import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
 import com.metrowin.launcher.ui.anim.LocalPowerSaving
+import com.metrowin.launcher.ui.anim.LocalTapFeedback
 import com.metrowin.launcher.ui.anim.rememberTapFeedback
 import com.metrowin.launcher.ui.components.TurnstileHost
 import com.metrowin.launcher.ui.gesture.BackGestureHandler
 import com.metrowin.launcher.ui.gesture.EdgePageBack
 import com.metrowin.launcher.ui.gesture.InstantBack
 import com.metrowin.launcher.ui.gesture.LauncherPager
+import com.metrowin.launcher.ui.gesture.PanoramaTitles
 import com.metrowin.launcher.ui.gesture.PageDots
 import com.metrowin.launcher.ui.gesture.PagerBack
 import com.metrowin.launcher.ui.gesture.PanelBack
@@ -149,6 +157,23 @@ import com.metrowin.launcher.data.Countdown
 import com.metrowin.launcher.ui.start.CountdownDialog
 import com.metrowin.launcher.ui.start.ChecklistDialog
 import com.metrowin.launcher.ui.start.CityPicker
+import com.metrowin.launcher.ui.start.AlbumPicker
+import com.metrowin.launcher.ui.start.GroupPicker
+import com.metrowin.launcher.ui.start.PlaceDialog
+import com.metrowin.launcher.ui.pages.Panel
+import com.metrowin.launcher.ui.pages.PanelContent
+import com.metrowin.launcher.ui.pages.PanelState
+import com.metrowin.launcher.ui.pages.rememberNotificationPermission
+import com.metrowin.launcher.data.Assistant
+import com.metrowin.launcher.ui.actioncenter.ToastBanner
+import com.metrowin.launcher.ui.actioncenter.VolumeHudPanel
+import com.metrowin.launcher.notifications.NotificationEntry
+import com.metrowin.launcher.notifications.rememberMediaInfo
+import com.metrowin.launcher.ui.lock.hiddenOnLock
+import com.metrowin.launcher.ui.lock.lockOptions
+import com.metrowin.launcher.ui.lock.rememberLockStatus
+import com.metrowin.launcher.data.AlbumInfo
+import com.metrowin.launcher.data.GroupInfo
 import com.metrowin.launcher.ui.start.CounterDialog
 import com.metrowin.launcher.model.TileData
 import com.metrowin.launcher.ui.start.NoteDialog
@@ -234,6 +259,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     val torchOn by vm.torchOn.collectAsStateWithLifecycle()
 
     var editingKey by remember { mutableStateOf<String?>(null) }
+    // The "…" of the edit bar: its buttons show their names. It stays as it was left while the launcher is open.
+    var editLabels by rememberSaveable { mutableStateOf(false) }
     var openFolderId by remember { mutableStateOf<String?>(null) }
     val cellsByPage = remember(pages, items, openFolderId) { pages.map { buildStartCells(it, items, openFolderId) } }
     val usage by vm.usage.collectAsStateWithLifecycle()
@@ -256,9 +283,12 @@ fun LauncherApp(vm: LauncherViewModel) {
     val shownSections = remember(sections, listItems, category) {
         category?.let { AppSections.group(AppCategories.filter(listItems, it)) } ?: sections
     }
-    val appList = remember(shownSections, frequent, fresh, categories, category) {
+    val appList = remember(shownSections, frequent, fresh, categories, category, settings.searchToday) {
         // A chosen category shows only its apps, in letters; the groups at the top are for the whole list.
-        AppListModel(shownSections, if (category == null) frequent else emptyList(), if (category == null) fresh else emptyList(), categories)
+        AppListModel(
+            shownSections, if (category == null) frequent else emptyList(), if (category == null) fresh else emptyList(), categories,
+            today = settings.searchToday,
+        )
     }
     val jumpKeys = remember(sections) { AppSections.jumpKeys(sections) }
     val lastOpened = remember(recents, listItems) { RecentApps.lastVisible(recents, listItems.mapTo(HashSet()) { it.id }) }
@@ -280,6 +310,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     val installedIconPacks by vm.installedIconPacks.collectAsStateWithLifecycle()
     val backupFolderName by vm.backupFolderName.collectAsStateWithLifecycle()
     val weather by vm.weather.collectAsStateWithLifecycle()
+    val todayExtras by vm.today.collectAsStateWithLifecycle()
+    val reminders by vm.reminders.collectAsStateWithLifecycle()
     val battery by vm.battery.collectAsStateWithLifecycle()
     val nowPlaying by vm.nowPlaying.collectAsStateWithLifecycle()
     val liveNow = remember(live, torchOn, weather, battery, nowPlaying) { live.copy(torchOn = torchOn, weather = weather, battery = battery, nowPlaying = nowPlaying) }
@@ -332,6 +364,16 @@ fun LauncherApp(vm: LauncherViewModel) {
     var addPage by remember { mutableIntStateOf(0) }
     val undoState by vm.undo.collectAsStateWithLifecycle()
     var weatherOpen by remember { mutableStateOf(false) }
+    // The pages of the tiles that do more than show (timer, news, reminders…), and the choices that make some of the tiles.
+    val panels = remember { PanelState() }
+    val panelAway = remember { Animatable(1f) }
+    var placeDialogOpen by remember { mutableStateOf(false) }
+    var albumPickerOpen by remember { mutableStateOf(false) }
+    var groupPickerOpen by remember { mutableStateOf(false) }
+    val ensureNotifications = rememberNotificationPermission()
+    // The newest notification that came while the launcher is on screen (see LauncherViewModel.banners).
+    var banner by remember { mutableStateOf<NotificationEntry?>(null) }
+    LaunchedEffect(vm) { vm.banners.collect { banner = it } }
     var searchFocus by remember { mutableIntStateOf(0) }
     var voiceRequest by remember { mutableIntStateOf(0) }
     var lockPreviewOpen by remember { mutableStateOf(false) }
@@ -383,7 +425,11 @@ fun LauncherApp(vm: LauncherViewModel) {
             currencyAnswer = vm.currencyAnswer(asked)
         }
     }
-    val answers = currencyAnswer?.let { listOf(it) + localAnswers } ?: localAnswers
+    // A sentence that asks for something (a reminder, an event, a note, a place near, the camera) comes before the plain answers.
+    val assistantAnswers = remember(query, settings.searchAssistant) {
+        if (settings.searchAssistant) Assistant.of(query) else emptyList()
+    }
+    val answers = assistantAnswers + (currencyAnswer?.let { listOf(it) + localAnswers } ?: localAnswers)
 
     // What the search finds besides apps. The settings and the web offer are known at once; the contacts follow
     // when the typing pauses, so each key does not query the contacts.
@@ -449,6 +495,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     // The flashlight lighting or going out shows or takes away its strength slider.
     LaunchedEffect(panel.isShown, torchOn) { if (panel.isShown) vm.refreshControls() }
     var quickStates by remember { mutableStateOf<Map<QuickAction, Boolean?>>(emptyMap()) }
+    var screenTimeout by remember { mutableStateOf<Int?>(null) }
 
     // The settings page, and the section on top of it, swing in and out like a turnstile; the back gesture
     // moves them with the finger.
@@ -518,6 +565,10 @@ fun LauncherApp(vm: LauncherViewModel) {
             weatherOpen = false
             comeBack()
         }
+        panels.close()
+        placeDialogOpen = false
+        albumPickerOpen = false
+        groupPickerOpen = false
         if (instant) panel.snapTo(0f) else panel.close()
         returnToStart(pagerState, startScrolls.take(pages.size), instant)
     }
@@ -557,6 +608,10 @@ fun LauncherApp(vm: LauncherViewModel) {
             voice.isOpen -> InstantBack { voice.close() }
             lockPreviewOpen -> InstantBack { lockPreviewOpen = false }
             panel.isShown -> PanelBack(panel)
+            placeDialogOpen -> InstantBack { placeDialogOpen = false }
+            albumPickerOpen -> InstantBack { albumPickerOpen = false }
+            groupPickerOpen -> InstantBack { groupPickerOpen = false }
+            panels.isOpen -> TurnstileBack(panelAway, scope) { panels.close() }
             widgetPickerOpen -> InstantBack { widgetPickerOpen = false }
             siteDialogOpen -> InstantBack { siteDialogOpen = false }
             noteEditingId != null -> InstantBack { noteEditingId = null }
@@ -696,7 +751,6 @@ fun LauncherApp(vm: LauncherViewModel) {
     /** Opens an app, or one of the launcher's own pages, with no questions asked. */
     fun openNow(item: AppItem, startKey: String?) {
         if (launching) return
-        tapFeedback()
         // The torch tile switches the light and goes nowhere: the tiles do not turn away.
         if ((item.launch as? Launch.Internal)?.route == AppRepository.ROUTE_TORCH) {
             vm.activateQuickAction(QuickAction.Flashlight)
@@ -722,6 +776,44 @@ fun LauncherApp(vm: LauncherViewModel) {
                 return
             }
             AppRepository.ROUTE_NONE -> return
+            // The tiles with a page of their own: the page opens over Start, nothing leaves.
+            AppRepository.ROUTE_TIMER -> {
+                panels.open(Panel.Timer(item.id))
+                return
+            }
+            AppRepository.ROUTE_STOPWATCH -> {
+                panels.open(Panel.Stopwatch(item.id))
+                return
+            }
+            AppRepository.ROUTE_NEWS -> {
+                panels.open(Panel.News)
+                return
+            }
+            AppRepository.ROUTE_FINANCE -> {
+                panels.open(Panel.Finance)
+                return
+            }
+            AppRepository.ROUTE_REMINDERS -> {
+                panels.open(Panel.Reminders())
+                return
+            }
+            AppRepository.ROUTE_DIALGRID -> {
+                panels.open(Panel.DialGrid)
+                return
+            }
+            AppRepository.ROUTE_PEOPLEHUB -> {
+                panels.open(Panel.PeopleHub)
+                return
+            }
+            // An album and a group lead to the apps that hold them.
+            AppRepository.ROUTE_ALBUM -> {
+                vm.openGallery()
+                return
+            }
+            AppRepository.ROUTE_GROUP -> {
+                vm.openContacts()
+                return
+            }
         }
         launching = true
         val plan = LaunchPlans.decide(settings.launchAnimation, reduceMotion, fromStart = startKey != null)
@@ -887,6 +979,18 @@ fun LauncherApp(vm: LauncherViewModel) {
                 voice.close()
                 vm.perform(command.answer)
             }
+            is VoiceCommand.Assist -> {
+                voice.close()
+                val answer = command.answer
+                when {
+                    // No time was said: the form of the reminders finishes it.
+                    answer is QuickAnswer.Reminder && answer.at == null -> panels.open(Panel.Reminders(answer.text))
+                    else -> {
+                        if (answer is QuickAnswer.Reminder) ensureNotifications()
+                        vm.perform(answer)
+                    }
+                }
+            }
             is VoiceCommand.Volume -> {
                 voice.close()
                 vm.changeVolume(command.change)
@@ -983,7 +1087,6 @@ fun LauncherApp(vm: LauncherViewModel) {
                 folderPick != null -> togglePick(cell)
                 editingKey != null -> editingKey = if (editingKey == cell.key) null else cell.key
                 cell is FolderCell -> {
-                    tapFeedback()
                     openFolderId = if (openFolderId == cell.folder.id) null else cell.folder.id
                 }
                 cell is AppCell -> open(cell.item, cell.key)
@@ -1044,7 +1147,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     )
 
     // Pull down from the top of Start, or from the top edge of any page, to open the Action Center.
-    val pullBlocked = kidsMode || voice.isOpen || lockPreviewOpen || launching || settingsOpen || weatherOpen || menu != null || jumpOpen || editingKey != null ||
+    val pullBlocked = kidsMode || voice.isOpen || lockPreviewOpen || launching || settingsOpen || weatherOpen || panels.isOpen ||
+        placeDialogOpen || albumPickerOpen || groupPickerOpen || menu != null || jumpOpen || editingKey != null ||
         folderPick != null || folderChooserFor != null || renamingFolderId != null || tutorialVisible
     val currentPullBlocked by rememberUpdatedState(pullBlocked)
     val pullConnections = List(LauncherSettings.MAX_START_PAGES) { page ->
@@ -1059,6 +1163,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     LaunchedWhileStarted(actionCenterShown to torchOn) {
         while (actionCenterShown) {
             quickStates = QuickAction.entries.associateWith(vm::quickActionState)
+            screenTimeout = vm.quickActionTimeout(QuickAction.ScreenTimeout)
             delay(1_000)
         }
     }
@@ -1078,7 +1183,21 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     val powerSaving by vm.powerSaving.collectAsStateWithLifecycle()
 
-    CompositionLocalProvider(LocalIconLoader provides vm.icons, LocalWidgetHost provides vm.widgets, LocalPowerSaving provides powerSaving) {
+    // The Today card is written from what the launcher already holds, and again whenever the list comes up. The calendar and the
+    // alarm are read only when the app list page is the one on screen (and not more often than PowerPolicy.todayMaxAgeMs).
+    val todayInfo = remember(todayExtras, weather, reminders, listReplay, settings.searchToday) {
+        if (settings.searchToday) Today.info(todayExtras, weather, reminders, System.currentTimeMillis()) else null
+    }
+    LaunchedEffect(pagerState, appsPage, settings.searchToday) {
+        if (!settings.searchToday) return@LaunchedEffect
+        snapshotFlow { pagerState.currentPage == appsPage }.distinctUntilChanged().filter { it }.collect { vm.refreshToday() }
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_START) { if (pagerState.currentPage == appsPage) vm.refreshToday() }
+
+    CompositionLocalProvider(
+        LocalIconLoader provides vm.icons, LocalWidgetHost provides vm.widgets, LocalPowerSaving provides powerSaving,
+        LocalTapFeedback provides tapFeedback,
+    ) {
         MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode, textScale = settings.textScale / 100f, boldText = settings.boldText, systemFont = settings.systemFont) {
             Box(
                 Modifier
@@ -1093,6 +1212,12 @@ fun LauncherApp(vm: LauncherViewModel) {
                         onUp = { perform(settings.twoFingerUpAction, settings.twoFingerUpApp) },
                     ),
             ) {
+                // The big titles of the pages behind them, moving slower (off until asked for in the settings). A Start photo would hide
+                // them, so with one they are drawn over the pages instead, faint enough to read through.
+                val panorama = settings.panoramaTitles && !kidsMode
+                val panoramaStart = stringResource(R.string.panorama_start)
+                val panoramaApps = stringResource(R.string.panorama_apps)
+                if (panorama && !settings.hasStartBackground) PanoramaTitles(pagerState, pages.size, panoramaStart, panoramaApps)
                 if (kidsMode) {
                     StartScreen(
                         cells = kidsCells,
@@ -1173,7 +1298,12 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onAnswer = { answer ->
                                 if (answer is QuickAnswer.Dice || answer is QuickAnswer.Coin) {
                                     rollSeed++
+                                } else if (answer is QuickAnswer.Reminder && answer.at == null) {
+                                    // No time was said: the form of the reminders finishes it.
+                                    vm.rememberSearch(query)
+                                    panels.open(Panel.Reminders(answer.text))
                                 } else {
+                                    if (answer is QuickAnswer.Reminder) ensureNotifications()
                                     vm.rememberSearch(query)
                                     vm.perform(answer)
                                 }
@@ -1189,9 +1319,22 @@ fun LauncherApp(vm: LauncherViewModel) {
                             engine = settings.searchEngine,
                             onSearchSubmit = vm::rememberSearch,
                             compact = settings.compactList,
+                            onDial = { number -> vm.dial(number, settings.voiceCallDirect && LivePermissions.isGranted(appContext, PhoneCalls.permission)) },
+                            today = todayInfo,
+                            onToday = { action ->
+                                when (action) {
+                                    TodayAction.Calendar -> vm.openCalendar()
+                                    TodayAction.Weather -> weatherOpen = true
+                                    TodayAction.Reminders -> panels.open(Panel.Reminders())
+                                    TodayAction.Clock -> vm.openClock()
+                                    is TodayAction.Near -> vm.perform(QuickAnswer.NearMe(action.what))
+                                }
+                            },
                         )
                     },
                 )
+
+                if (panorama && settings.hasStartBackground) PanoramaTitles(pagerState, pages.size, panoramaStart, panoramaApps)
 
                 menu?.let { state ->
                     // What the app itself offers on a long press: asked once for each menu that opens.
@@ -1373,10 +1516,12 @@ fun LauncherApp(vm: LauncherViewModel) {
                                 folderPick = setOf(cell.entryId)
                                 editingKey = null
                             },
+                            onLabels = if (settings.appBar) ({ editLabels = !editLabels }) else null,
+                            labels = editLabels,
                             style = (cell as? AppCell)?.tile?.style,
                             onStyle = {
                                 val tile = cell as? AppCell ?: return@EditBar
-                                vm.setStyle(tile.entryId, tile.tile.style.next(cycleAvailable = tile.item.live == LiveKind.Photos))
+                                vm.setStyle(tile.entryId, tile.tile.style.next(cycleAvailable = tile.item.live == LiveKind.Photos || tile.item.live == LiveKind.Album))
                             },
                         )
                     }
@@ -1393,6 +1538,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                     ActionCenter(
                         slots = QuickAction.slots(settings.quickActions),
                         states = quickStates,
+                        timeout = screenTimeout,
                         notifications = notifications,
                         appsByPackage = appsByPackage,
                         hasNotificationAccess = notificationAccess,
@@ -1417,7 +1563,12 @@ fun LauncherApp(vm: LauncherViewModel) {
                             } else {
                                 // The flashlight and the quiet hours switch on the spot and the panel stays; anything else opens a screen.
                                 val inPlace = vm.activateQuickAction(action)
-                                if (inPlace) quickStates = quickStates + (action to vm.quickActionState(action)) else panel.close()
+                                if (inPlace) {
+                                    quickStates = quickStates + (action to vm.quickActionState(action))
+                                    screenTimeout = vm.quickActionTimeout(QuickAction.ScreenTimeout)
+                                } else {
+                                    panel.close()
+                                }
                             }
                         },
                         onAllSettings = {
@@ -1468,6 +1619,22 @@ fun LauncherApp(vm: LauncherViewModel) {
                             settingsOpen = true
                         },
                     )
+                }
+
+                // The page of a tile (timer, news, reminders…). It keeps the page it showed while it turns away.
+                var lastPanel by remember { mutableStateOf<Panel?>(null) }
+                panels.current?.let { lastPanel = it }
+                TurnstileHost(show = panels.isOpen, away = panelAway) {
+                    lastPanel?.let { page ->
+                        PanelContent(
+                            panel = page, vm = vm, items = items, settings = settings,
+                            onOpenSettings = { section ->
+                                panels.close()
+                                settingsSection = section
+                                settingsOpen = true
+                            },
+                        )
+                    }
                 }
 
                 TurnstileHost(show = settingsOpen, away = settingsAway) {
@@ -1526,6 +1693,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                             lockServiceEnabled = lockServiceEnabled,
                             onOpenAccessibilitySettings = vm::openAccessibilitySettings,
                             onAddRecentsTile = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) vm::requestRecentsTile else null,
+                            notificationPackages = badges.keys,
+                            onAppNotificationSettings = { pkg -> vm.openAppNotificationSettings(pkg) },
                         ),
                         section = settingsSection,
                         onSectionChange = { settingsSection = it },
@@ -1533,6 +1702,32 @@ fun LauncherApp(vm: LauncherViewModel) {
                         target = settingsTarget,
                         onTargetChange = { settingsTarget = it },
                     )
+                }
+
+                // The banner of a new notification, while the launcher is on screen and nothing covers the top of it.
+                banner?.let { entry ->
+                    if (!panel.isShown && !lockPreviewOpen && !tutorialVisible && !voice.isOpen) {
+                        ToastBanner(
+                            entry = entry, app = appsByPackage[entry.packageName], hideText = settings.liveHideText,
+                            onOpen = {
+                                banner = null
+                                vm.openNotification(entry)
+                            },
+                            onDismiss = { if (banner?.key == entry.key) banner = null },
+                            modifier = Modifier.align(Alignment.TopCenter),
+                        )
+                    }
+                }
+
+                // The volume panel: over everything but the tutorial, while the launcher is on screen.
+                val volumeHud by vm.volumeHud.collectAsStateWithLifecycle()
+                volumeHud?.let { hud ->
+                    if (!tutorialVisible) {
+                        VolumeHudPanel(
+                            hud = hud, onSet = vm::setVolume, onToggle = vm::toggleVolumeHud, onDismiss = vm::dismissVolumeHud,
+                            modifier = Modifier.align(Alignment.TopCenter),
+                        )
+                    }
                 }
 
                 // What was just done to Start, with a way to take it back; it goes by itself after a few seconds.
@@ -1604,6 +1799,49 @@ fun LauncherApp(vm: LauncherViewModel) {
                             vm.addBirthdays(addPage)
                             if (!LivePermissions.isGranted(appContext, LivePermissions.contacts)) birthdaysPermission.launch(LivePermissions.contacts)
                         },
+                        onPlace = {
+                            addMenuOpen = false
+                            placeDialogOpen = true
+                        },
+                        onAlbum = {
+                            addMenuOpen = false
+                            albumPickerOpen = true
+                        },
+                        onGroup = {
+                            addMenuOpen = false
+                            groupPickerOpen = true
+                        },
+                        onTimer = {
+                            addMenuOpen = false
+                            panels.open(Panel.Timer(vm.addTimer(addPage)))
+                        },
+                        onStopwatch = {
+                            addMenuOpen = false
+                            panels.open(Panel.Stopwatch(vm.addStopwatch(addPage)))
+                        },
+                        onReminders = {
+                            addMenuOpen = false
+                            vm.addRemindersTile(addPage)
+                            ensureNotifications()
+                        },
+                        onNews = {
+                            addMenuOpen = false
+                            vm.addNews(addPage)
+                        },
+                        onFinance = {
+                            addMenuOpen = false
+                            vm.addFinance(addPage)
+                        },
+                        onDialGrid = {
+                            addMenuOpen = false
+                            vm.addDialGrid(addPage)
+                            if (!LivePermissions.isGranted(appContext, LivePermissions.contacts)) birthdaysPermission.launch(LivePermissions.contacts)
+                        },
+                        onPeopleHub = {
+                            addMenuOpen = false
+                            vm.addPeopleHub(addPage)
+                            if (!LivePermissions.isGranted(appContext, LivePermissions.contacts)) birthdaysPermission.launch(LivePermissions.contacts)
+                        },
                         onDismiss = { addMenuOpen = false },
                     )
                 }
@@ -1617,6 +1855,47 @@ fun LauncherApp(vm: LauncherViewModel) {
                             vm.pinSetting(def, addPage)
                         },
                         onDismiss = { settingPickerOpen = false },
+                    )
+                }
+
+                if (placeDialogOpen) {
+                    PlaceDialog(
+                        onDone = { name, address ->
+                            val accepted = vm.addPlace(name, address, addPage)
+                            if (accepted) placeDialogOpen = false
+                            accepted
+                        },
+                        onCancel = { placeDialogOpen = false },
+                    )
+                }
+
+                if (albumPickerOpen) {
+                    var granted by remember { mutableStateOf(LivePermissions.canReadPhotos(appContext)) }
+                    val photosPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+                        granted = LivePermissions.canReadPhotos(appContext)
+                    }
+                    val albums by produceState<List<AlbumInfo>?>(null, granted) { value = if (granted) vm.albums() else emptyList() }
+                    AlbumPicker(
+                        albums = albums, permissionMissing = !granted, onAllow = { photosPermission.launch(LivePermissions.photos) },
+                        onPick = { album ->
+                            albumPickerOpen = false
+                            vm.addAlbum(album, addPage)
+                        },
+                        onDismiss = { albumPickerOpen = false },
+                    )
+                }
+
+                if (groupPickerOpen) {
+                    var granted by remember { mutableStateOf(LivePermissions.isGranted(appContext, LivePermissions.contacts)) }
+                    val contactsPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it }
+                    val groups by produceState<List<GroupInfo>?>(null, granted) { value = if (granted) vm.groups() else emptyList() }
+                    GroupPicker(
+                        groups = groups, permissionMissing = !granted, onAllow = { contactsPermission.launch(LivePermissions.contacts) },
+                        onPick = { group ->
+                            groupPickerOpen = false
+                            vm.addGroup(group, addPage)
+                        },
+                        onDismiss = { groupPickerOpen = false },
                     )
                 }
 
@@ -1755,10 +2034,12 @@ fun LauncherApp(vm: LauncherViewModel) {
 
                 if (lockPreviewOpen) {
                     MetroLockScreen(
-                        info = rememberLockInfo(),
+                        info = rememberLockInfo(settings.hiddenOnLock()),
                         photo = lockPhoto ?: startBackground,
-                        options = LockOptions(settings.lockShowAlarm, settings.lockShowNotifications, settings.lockShowBattery, settings.lockShowWeather, settings.lockShowEvent),
+                        options = settings.lockOptions(),
                         onUnlock = { lockPreviewOpen = false },
+                        status = rememberLockStatus(settings),
+                        media = rememberMediaInfo(settings.lockShowMusic),
                     )
                 }
 

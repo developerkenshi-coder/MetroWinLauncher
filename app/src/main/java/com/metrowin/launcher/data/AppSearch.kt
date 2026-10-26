@@ -132,5 +132,9 @@ object SearchAliases {
         Glyph.Gesture -> listOf("gesture", "gesti")
         Glyph.Folder -> listOf("folder", "cartella")
         Glyph.Recents -> listOf("recents", "recent", "recenti")
+        Glyph.Hourglass -> listOf("timer", "countdown", "hourglass", "conto", "rovescia", "clessidra")
+        Glyph.Stopwatch -> listOf("stopwatch", "laps", "chronometer", "cronometro", "giri", "tempo")
+        Glyph.Timeout -> listOf("timeout", "sleep", "screen", "display", "spegnimento", "schermo")
+        Glyph.AutoBrightness -> listOf("auto", "brightness", "adaptive", "automatica", "luminosita", "adattiva")
     }
 }

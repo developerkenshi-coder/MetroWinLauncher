@@ -45,6 +45,16 @@ fun AddMenu(
     onWorldClock: (() -> Unit)? = null,
     onMoon: (() -> Unit)? = null,
     onBirthdays: (() -> Unit)? = null,
+    onPlace: (() -> Unit)? = null,
+    onAlbum: (() -> Unit)? = null,
+    onGroup: (() -> Unit)? = null,
+    onTimer: (() -> Unit)? = null,
+    onStopwatch: (() -> Unit)? = null,
+    onNews: (() -> Unit)? = null,
+    onFinance: (() -> Unit)? = null,
+    onReminders: (() -> Unit)? = null,
+    onDialGrid: (() -> Unit)? = null,
+    onPeopleHub: (() -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
     val currentDismiss by rememberUpdatedState(onDismiss)
@@ -77,6 +87,16 @@ fun AddMenu(
                 if (onWorldClock != null) Entry(R.string.add_worldclock, "add:worldclock", onWorldClock)
                 if (onMoon != null) Entry(R.string.add_moon, "add:moon", onMoon)
                 if (onBirthdays != null) Entry(R.string.add_birthdays, "add:birthdays", onBirthdays)
+                if (onPlace != null) Entry(R.string.add_place, "add:place", onPlace)
+                if (onAlbum != null) Entry(R.string.add_album, "add:album", onAlbum)
+                if (onGroup != null) Entry(R.string.add_group, "add:group", onGroup)
+                if (onTimer != null) Entry(R.string.add_timer, "add:timer", onTimer)
+                if (onStopwatch != null) Entry(R.string.add_stopwatch, "add:stopwatch", onStopwatch)
+                if (onReminders != null) Entry(R.string.add_reminders, "add:reminders", onReminders)
+                if (onNews != null) Entry(R.string.add_news, "add:news", onNews)
+                if (onFinance != null) Entry(R.string.add_finance, "add:finance", onFinance)
+                if (onDialGrid != null) Entry(R.string.add_dialgrid, "add:dialgrid", onDialGrid)
+                if (onPeopleHub != null) Entry(R.string.add_peoplehub, "add:peoplehub", onPeopleHub)
                 Entry(R.string.add_widget, "add:widget", onWidget)
             }
         }

@@ -71,6 +71,21 @@ fun SearchPage(env: SettingsEnv) {
                 hint = stringResource(R.string.apps_answers_hint), tag = "search:answers", id = "search.answers",
             )
             ToggleSetting(
+                stringResource(R.string.apps_assistant), env.settings.searchAssistant,
+                onChange = { value -> env.onChange { it.copy(searchAssistant = value) } },
+                hint = stringResource(R.string.apps_assistant_hint), tag = "search:assistant", id = "search.assistant",
+            )
+            ToggleSetting(
+                stringResource(R.string.apps_dial), env.settings.searchSmartDial,
+                onChange = { value -> env.onChange { it.copy(searchSmartDial = value) } },
+                hint = stringResource(R.string.apps_dial_hint), tag = "search:dial", id = "search.dial",
+            )
+            ToggleSetting(
+                stringResource(R.string.apps_today), env.settings.searchToday,
+                onChange = { value -> env.onChange { it.copy(searchToday = value) } },
+                hint = stringResource(R.string.apps_today_hint), tag = "search:today", id = "search.today",
+            )
+            ToggleSetting(
                 stringResource(R.string.apps_currency), env.settings.searchCurrency,
                 onChange = { value -> env.onChange { it.copy(searchCurrency = value) } },
                 enabled = env.settings.searchAnswers,

@@ -15,6 +15,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.draw.clipToBounds
+import com.metrowin.launcher.data.TileTransition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -82,6 +85,8 @@ fun Modifier.metroPress(
     val scale = remember { Animatable(1f) }
     val currentClick by rememberUpdatedState(onClick)
     val currentLongClick by rememberUpdatedState(onLongClick)
+    // The click and the vibration of a tap, if the settings ask for them: every button, tile and row that can be touched has them.
+    val currentFeedback by rememberUpdatedState(LocalTapFeedback.current)
     val hasLongClick = onLongClick != null
     val reduced = LocalReduceMotion.current
     // The tilt is the Windows Phone press: the other looks only sink a little.
@@ -127,7 +132,10 @@ fun Modifier.metroPress(
                     scope.launch { tiltX.animateTo(0f, ReleaseSpring) }
                     scope.launch { scale.animateTo(1f, ReleaseSpring) }
                 },
-                onTap = { currentClick() },
+                onTap = {
+                    currentFeedback()
+                    currentClick()
+                },
                 onLongPress = if (hasLongClick) ({ currentLongClick?.invoke() }) else null,
             )
         }
@@ -142,10 +150,14 @@ private const val TILT_X_SIGN = -1f
 private val PressSpring = spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium)
 private val ReleaseSpring = spring<Float>(dampingRatio = 0.55f, stiffness = Spring.StiffnessMediumLow)
 
+/** How the faces of a live tile follow one another (see [TileTransition]); the same for every tile of Start. */
+val LocalTileTransition = staticCompositionLocalOf { TileTransition.Flip }
+
 /**
- * The flip of a Windows Phone live tile: the face rotates away around its horizontal axis and the
- * next one swings in from behind. Tiles flip at different times, as on the phone, so Start never
- * moves all at once.
+ * The faces of a live tile, one after the other: the tile turns over (the face rotates away around its horizontal axis and the
+ * next one swings in from behind) or, in the slide transition, the face goes up and the next one comes in from below. Tiles
+ * change at different times, as on the phone, so Start never moves all at once. Nothing moves while the launcher is not on
+ * screen, with reduced motion, or while the battery is spared.
  */
 @Composable
 fun FlipContainer(
@@ -155,26 +167,42 @@ fun FlipContainer(
     content: @Composable (face: Int) -> Unit,
 ) {
     var index by remember { mutableIntStateOf(0) }
+    // 0 to 180: how far the change has gone, whichever way the tile changes.
     val angle = remember { Animatable(0f) }
     val showingNext by remember { derivedStateOf { angle.value >= 90f } }
+    val moving by remember { derivedStateOf { angle.value > 0f } }
+    val slide = when (LocalTileTransition.current) {
+        TileTransition.Flip -> false
+        TileTransition.Slide -> true
+        // Each tile keeps to one way: half of Start turns over, the other half slides.
+        TileTransition.Mixed -> seed.mod(2) == 1
+    }
 
     val reduced = LocalReduceMotion.current
     val saving = LocalPowerSaving.current
-    LaunchedWhileStarted(faces to (reduced || saving)) {
+    LaunchedWhileStarted(Triple(faces, reduced || saving, slide)) {
         // With reduced motion, or while saving battery, the tile keeps its face: nothing flips by itself.
         if (faces <= 1 || reduced || saving) return@LaunchedWhileStarted
-        // Coming back after being off screen in the middle of a flip: settle on the face that was turning in.
+        // Coming back after being off screen in the middle of a change: settle on the face that was coming in.
         if (angle.value >= 90f) index = (index + 1) % faces
         angle.snapTo(0f)
         delay(1_500L + (seed.mod(6)) * 800L)
         while (true) {
-            angle.animateTo(180f, tween(durationMillis = 700, easing = FastOutSlowInEasing))
+            angle.animateTo(180f, if (slide) tween(durationMillis = 600, easing = Motion.Decelerate) else tween(durationMillis = 700, easing = FastOutSlowInEasing))
             index = (index + 1) % faces
             angle.snapTo(0f)
             delay(5_000L + (seed.mod(4)) * 900L)
         }
     }
 
+    if (slide && faces > 1) {
+        Box(modifier.clipToBounds()) {
+            Box(Modifier.graphicsLayer { translationY = -size.height * angle.value / 180f }) { content(index % faces) }
+            // The next face is only there while the change goes on.
+            if (moving) Box(Modifier.graphicsLayer { translationY = size.height * (1f - angle.value / 180f) }) { content((index + 1) % faces) }
+        }
+        return
+    }
     val visible = if (faces <= 1) 0 else (index + if (showingNext) 1 else 0) % faces
     Box(
         modifier.graphicsLayer {

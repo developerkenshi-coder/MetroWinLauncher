@@ -18,6 +18,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.notifications.NotificationHub
+import com.metrowin.launcher.notifications.rememberMediaInfo
 import com.metrowin.launcher.ui.theme.MetroTheme
 import java.io.File
 
@@ -55,10 +56,12 @@ class MetroDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwne
             setContent {
                 MetroTheme(accent = com.metrowin.launcher.ui.theme.MetroAccents[settings.accentIndex], dark = true) {
                     MetroLockScreen(
-                        info = rememberLockInfo(),
+                        info = rememberLockInfo(settings.hiddenOnLock()),
                         photo = photo,
-                        options = LockOptions(settings.lockShowAlarm, settings.lockShowNotifications, settings.lockShowBattery, settings.lockShowWeather, settings.lockShowEvent),
+                        options = settings.lockOptions(),
                         onUnlock = ::finish,
+                        status = rememberLockStatus(settings),
+                        media = rememberMediaInfo(settings.lockShowMusic),
                     )
                 }
             }
