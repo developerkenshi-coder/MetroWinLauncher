@@ -113,9 +113,10 @@ class MainActivity : ComponentActivity() {
 
     /**
      * Asks for the fastest refresh rate the screen has (120 Hz and more) at its current resolution, while the screen is being
-     * used, and takes the request away when it is not (see [RefreshRate.wantsHigh]). Without the request Android keeps many
-     * phones at 60 Hz for apps that do not ask. The tile animations are time based, so they run the same at any rate, only
-     * smoother. Where the phone cannot go between the rates without a flash, the rate is simply kept as asked.
+     * used, and for the slowest one that is still 60 Hz when it is not (see [RefreshRate.wantsHigh], [RefreshRate.atRest]).
+     * Without the request Android keeps many phones at 60 Hz for apps that do not ask. The tile animations are time based, so
+     * they run the same at any rate, only smoother. Where the phone cannot go between the rates without a flash, the rate is
+     * simply kept as asked.
      */
     private fun requestHighestRefreshRate() {
         val wants = RefreshRate.wantsHigh(wantsHighRefresh, saving, lastTouchAt, SystemClock.uptimeMillis())
@@ -130,15 +131,29 @@ class MainActivity : ComponentActivity() {
             if (Build.VERSION.SDK_INT >= 31) alternativeRefreshRates.toList() else emptyList(),
         )
         val current = screen.mode.info()
-        val best = RefreshRate.best(current, screen.supportedModes.map { it.info() }) ?: return
+        val modes = screen.supportedModes.map { it.info() }
+        val best = RefreshRate.best(current, modes) ?: return
         if (wants || !RefreshRate.canLeave(current)) {
-            if (window.attributes.preferredDisplayModeId != best.id) {
-                window.attributes = window.attributes.also { it.preferredDisplayModeId = best.id }
-            }
+            requestMode(best.id)
             if (Build.VERSION.SDK_INT >= 35) window.decorView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_HIGH)
         } else {
-            // Nobody is touching it, and the screen can change rate cleanly: the phone decides, and goes as low as the content allows.
-            releaseRefreshRequest()
+            // Nobody is touching it, and the screen can change rate cleanly: ask for the slowest rate that still looks smooth.
+            // Only letting go would leave the choice to the phone, and one whose ceiling is 120 Hz stays there (measured on a vivo).
+            val rest = RefreshRate.atRest(current, modes)
+            if (rest == null) {
+                releaseRefreshRequest()
+            } else {
+                requestMode(rest.id)
+                // The mode alone is only a hint for the base mode (measured: the screen stayed at 120 Hz with it); the category is
+                // what the display service weighs against the content. NORMAL is about 60 Hz, never the 30 of LOW.
+                if (Build.VERSION.SDK_INT >= 35) window.decorView.setRequestedFrameRate(View.REQUESTED_FRAME_RATE_CATEGORY_NORMAL)
+            }
+        }
+    }
+
+    private fun requestMode(modeId: Int) {
+        if (window.attributes.preferredDisplayModeId != modeId) {
+            window.attributes = window.attributes.also { it.preferredDisplayModeId = modeId }
         }
     }
 

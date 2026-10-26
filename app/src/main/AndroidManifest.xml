@@ -175,6 +175,7 @@
         <activity
             android:name=".MainActivity"
             android:clearTaskOnLaunch="true"
+            android:enableOnBackInvokedCallback="true"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|uiMode|density"
             android:exported="true"
             android:launchMode="singleTask"

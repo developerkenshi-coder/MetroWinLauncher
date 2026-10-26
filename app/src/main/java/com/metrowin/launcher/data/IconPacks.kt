@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ResolveInfo
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -122,8 +123,9 @@ class IconPackRepository(private val context: Context) {
     private val pm = context.packageManager
 
     /** The installed packs, by name. A pack declares itself with one of the intents the big launchers use. */
+    @Suppress("DEPRECATION")
     fun installed(): List<IconPackInfo> =
-        ACTIONS.flatMap { action -> runCatching { pm.queryIntentActivities(Intent(action), 0) }.getOrDefault(emptyList()) }
+        answering(ACTIONS, { pm.resolveActivity(Intent(it), 0) != null }, { pm.queryIntentActivities(Intent(it), 0) })
             .distinctBy { it.activityInfo.packageName }
             .map { IconPackInfo(it.activityInfo.packageName, it.loadLabel(pm).toString()) }
             .sortedBy { it.label.lowercase() }
@@ -153,5 +155,19 @@ class IconPackRepository(private val context: Context) {
             "com.fede.launcher.THEME_ICONPACK",
             "com.gau.go.launcherex.theme",
         )
+
+        /**
+         * The activities that answer [actions]. The list is only asked for an action that [anyAnswer] says someone answers: on a
+         * phone with no icon pack (nearly all of them) the five lists would all come back empty, and each empty list costs a call
+         * to the system and, on some phones, an error line in the log. When the check itself fails the list is asked for anyway.
+         */
+        internal fun answering(
+            actions: List<String>,
+            anyAnswer: (String) -> Boolean,
+            listAnswers: (String) -> List<ResolveInfo>,
+        ): List<ResolveInfo> =
+            actions
+                .filter { runCatching { anyAnswer(it) }.getOrDefault(true) }
+                .flatMap { runCatching { listAnswers(it) }.getOrDefault(emptyList()) }
     }
 }

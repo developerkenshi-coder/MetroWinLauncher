@@ -382,7 +382,7 @@
     <string name="screen_orient_landscape">solo orizzontale</string>
     <string name="screen_orient_hint">In orizzontale la schermata Start ha più colonne di tile. “Segui il telefono” rispetta il blocco della rotazione di Android.</string>
     <string name="screen_high_refresh">massima frequenza di aggiornamento</string>
-    <string name="screen_high_refresh_hint">Chiede allo schermo la modalità più veloce (120 Hz e oltre) alla risoluzione attuale, ma solo mentre lo usi: tre secondi dopo l\'ultimo tocco il telefono è libero di scendere. Disattiva per lasciar sempre decidere ad Android e risparmiare più batteria.</string>
+    <string name="screen_high_refresh_hint">Chiede allo schermo la modalità più veloce (120 Hz e oltre) alla risoluzione attuale, ma solo mentre lo usi: tre secondi dopo l\'ultimo tocco chiede 60 Hz, la frequenza più bassa che ancora si vede fluida. Disattiva per lasciar sempre decidere ad Android.</string>
 
     <!-- icons and themes -->
     <string name="sec_icons">icone e temi</string>

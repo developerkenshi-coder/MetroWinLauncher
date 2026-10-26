@@ -485,7 +485,8 @@ o **solo orizzontale**. In orizzontale Start e le altre pagine tengono fuori dai
 ### Batteria
 
 Il launcher fa lavorare il telefono il meno possibile. Quello che segue è ciò che il codice fa e che i test controllano;
-quanta batteria faccia risparmiare in ore **non è stato misurato** (servirebbe un telefono e una settimana di uso).
+quanta batteria faccia risparmiare in ore **non è stato misurato** (servirebbe un telefono e una settimana di uso). Una prima misura
+di cosa consuma il launcher su un telefono vero è in fondo a questa sezione.
 
 - **A riposo non fa nulla.** Quando un'altra app è davanti, o lo schermo è spento, il launcher non ha timer, non ascolta la batteria
   né il risparmio energetico di Android, non segue la torcia, non aggiorna l'orologio. Gli orologi, i giri dei riquadri, il
@@ -515,10 +516,22 @@ quanta batteria faccia risparmiare in ore **non è stato misurato** (servirebbe 
   o tolto, o un tile nuovo, fanno rileggere subito.
 - **I 120 Hz solo mentre usi lo schermo.** Prima la richiesta restava fissa, e Start è la schermata che resta accesa più a lungo: a
   120 Hz anche quando nessuno la tocca. Ora (`RefreshRate.wantsHigh`) la frequenza alta si chiede al tocco e quando il launcher torna
-  sullo schermo, e tre secondi dopo l'ultimo tocco si toglie e decide il telefono (clock e giri dei riquadri sono basati sul tempo:
-  a 60 Hz si vedono uguali). Si toglie solo se lo schermo dice di poter cambiare frequenza senza lampeggi (`alternativeRefreshRates`,
-  Android 12 e oltre); altrimenti resta come prima. Non l'ho provato su un telefono vero: se su un telefono la frequenza non risale
-  al tocco, l'impostazione *massima frequenza di aggiornamento* si può spegnere.
+  sullo schermo, e tre secondi dopo l'ultimo tocco si chiede la modalità più lenta che sia ancora a 60 Hz o più (`RefreshRate.atRest`,
+  alla stessa risoluzione; sull'Android 15 e oltre anche la categoria di frequenza *normale*). Clock e giri dei riquadri sono basati
+  sul tempo: a 60 Hz si vedono uguali. Sotto i 60 Hz non si scende: Android elenca 45, 30 o 20 Hz solo come sottomultipli di una modalità
+  fisica. Si cambia solo se lo schermo dice di poter passare da una frequenza all'altra senza lampeggi (`alternativeRefreshRates`,
+  Android 12 e oltre); altrimenti resta come prima.
+
+  **Misurato su un telefono vero** (vivo V2514, Android 17, 25 ottobre 2026; build `optimized` in una copia affiancata, con un altro
+  nome di pacchetto): lasciare andare la richiesta, come faceva la versione precedente, **non abbassa nulla**. Con il launcher fermo
+  davanti per 14 secondi lo schermo restava a 120 Hz, perché il tetto scelto dal sistema era 120 e nessuno chiedeva di meno. Chiedere
+  la modalità a 60 Hz arriva al sistema (`PRIORITY_APP_REQUEST_BASE_MODE_REFRESH_RATE = 60`), ma è solo un suggerimento sulla modalità
+  di base: lo schermo è rimasto a 120 Hz, anche aggiungendo la categoria *normale*. Quel telefono non ha frequenza variabile per Android
+  (`mVrrSupported=false`, tre sole modalità fisiche: 120, 90, 60 Hz) e ha un suo meccanismo (`dvrrWindowFrameRateHint`,
+  `frameRateBoostOnTouch`): la frequenza che Android riporta potrebbe non essere quella vera del pannello. **Non so quindi se su quel
+  telefono la richiesta faccia risparmiare batteria**; su altri telefoni dipende da come il produttore tratta il voto. A riposo il
+  launcher non chiede alcun fotogramma (nessuna richiesta di vsync): a 120 Hz paga il pannello, non la CPU o la GPU del launcher. Se su
+  un telefono la frequenza non risale al tocco, l'impostazione *massima frequenza di aggiornamento* si può spegnere.
 - **Schermata di blocco e salvaschermo**: l'orologio si aggiorna ogni minuto, ma il calendario (una query) si interroga ogni cinque
   minuti, o subito quando l'evento è iniziato. Un'app che pubblica sul proprio tile le stesse parole non fa scrivere nulla su disco né
   ridisegnare il tile, e il provider non decodifica più tutte le impostazioni a ogni chiamata.
@@ -530,8 +543,20 @@ quanta batteria faccia risparmiare in ore **non è stato misurato** (servirebbe 
 `tools/battery-report.sh collect` (si esegue sul computer a cui il telefono è collegato con il debug USB, serve adb; solo lettura:
 non installa e non cambia nulla, e non serve azzerare niente, perché Android tiene le statistiche dall'ultima carica) raccoglie in un archivio: tempo del processo per stato
 (in primo piano, servizio, in cache), tempo di CPU, wakelock, sveglie, lavori, quante notifiche arrivano e da quali app, la fascia di
-standby, la frequenza dello schermo e le righe di log del launcher. Legge soltanto; non raccoglie il contenuto delle notifiche. Non è
-stato provato su un telefono: i comandi `dumpsys` cambiano un poco da una versione di Android all'altra.
+standby, la frequenza dello schermo e le righe di log del launcher. Legge soltanto; non raccoglie il contenuto delle notifiche. È stato
+provato su un vivo V2514 con Android 17 (tutte le sezioni sono uscite piene); i comandi `dumpsys` cambiano un poco da una versione di
+Android all'altra.
+
+**Una prima misura** (vivo V2514, Android 17, 25 ottobre 2026; 4 h 56 min dalla nuova installazione, 9 min 20 s di launcher davanti in
+63 ritorni; il telefono aveva speso 4.864 mAh dall'ultima carica): 22,0 mAh in tutto, lo 0,45%, di cui 20,4 mAh di **schermo** mentre il
+launcher era davanti (dipende dalla luminosità, non dal lavoro del launcher) e 1,57 mAh di CPU (41,7 s di CPU). A schermo spento la CPU è
+costata 0,058 mAh. Nessun wakelock né lavoro pianificato proprio, un solo avvio del processo, fascia di standby *esente*. Il servizio
+notifiche tiene il processo vivo (lo lega il sistema, non si può evitare): 131 MB di memoria sua, 229-366 MB residenti nelle ultime
+24 ore. Fotogrammi: 16.793, il 0,74% scattosi, mediana 7 ms, 95° percentile 12 ms, 99° 32 ms; una ventina oltre i 100 ms, 7 oltre i 200.
+Nella stessa giornata la versione precedente dello stesso launcher (installazione sullo stesso telefono, uso diverso: **non è un
+confronto controllato**) aveva speso nel servizio notifiche 10,3 mAh di CPU in 6 h 35 min contro 0,76 mAh in 4 h 47 min, e in primo
+piano 9,78 mAh in 43 min contro 0,72 mAh in 9 min. Non si sa quanto di questo venga dalle ottimizzazioni e quanto dalla build `optimized` o
+dall'uso: per dirlo serve un confronto sulla stessa giornata di uso, con la stessa build.
 
 <img src="docs/screenshots/settings_battery.png" alt="La pagina batteria" width="260">
 
