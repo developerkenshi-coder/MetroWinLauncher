@@ -15,4 +15,4 @@ MetroWin Launcher porta su Android la schermata Start di Windows Phone (Metro, 8
 - Comandi vocali, blocco schermo Metro, Angolo bambini e opzioni di accessibilità.
 - Sincronizzazione cifrata del layout e backup.
 
-Ogni permesso è facoltativo e serve a un solo riquadro o a una sola funzione. La rete serve per il meteo, e per i riquadri Notizie e Finanza solo se li aggiungi.
+Ogni permesso è facoltativo e serve a un solo riquadro o a una sola funzione. La rete serve per il meteo (Open-Meteo), e per i riquadri Notizie e Finanza solo se li aggiungi. Nessun servizio di Google è obbligatorio: il riquadro Notizie legge Google News di base oppure un feed RSS a tua scelta, la ricerca web usa il motore che scegli (DuckDuckGo di base), e i collegamenti a mappe, note o calendario aprono l'app che hai per quello.

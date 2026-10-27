@@ -15,4 +15,4 @@ MetroWin Launcher brings the Start screen of Windows Phone (Metro, 8 and 8.1) to
 - Voice commands, a Metro lock screen, Kids Corner, and accessibility options.
 - Encrypted sync of your layout, and backups.
 
-Every permission is optional and only powers one live tile or one feature. Network access is used for the weather, and for the news and finance tiles only if you add them.
+Every permission is optional and only powers one live tile or one feature. Network access is used for the weather (Open-Meteo), and for the news and finance tiles only if you add them. No Google service is required: the news tile reads Google News by default or any RSS feed you choose, web search uses the engine you pick (DuckDuckGo by default), and links to maps, notes or calendar open whatever app you have for them.
