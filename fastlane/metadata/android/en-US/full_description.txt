@@ -1,0 +1,18 @@
+MetroWin Launcher brings the Start screen of Windows Phone (Metro, 8 and 8.1) to Android: flat tiles that flip with live content, an alphabetical app list, turnstile and tilt animations, and the system features a launcher can really offer. It does nothing while it is not on screen.
+
+<b>Start</b>
+- Live tiles for photos, calendar, people, phone, weather, news, finance, steps and more, each one optional.
+- Several Start pages, folders, tile sizes, groups with titles, and widgets.
+- Three looks (Classic, Modern Glass, Modern Droid) with customizable colors, and a landscape layout.
+
+<b>Action Center</b>
+- Quick buttons you choose, with the Wi-Fi network and the Bluetooth device you are connected to shown on the button. A long press lists the networks around you, or the connected and paired Bluetooth devices.
+- Volume, ringer and brightness controls, flashlight strength, and quiet hours.
+- Notifications you swipe away, reply to, group by app, snooze or silence. Opening an app clears its notifications and the number on its tile.
+
+<b>And more</b>
+- Search across apps, contacts, files, calendar and settings, with quick answers and an assistant.
+- Voice commands, a Metro lock screen, Kids Corner, and accessibility options.
+- Encrypted sync of your layout, and backups.
+
+Every permission is optional and only powers one live tile or one feature. Network access is used for the weather, and for the news and finance tiles only if you add them.

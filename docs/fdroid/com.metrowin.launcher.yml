@@ -1,0 +1,26 @@
+# The recipe F-Droid builds the app from. It goes in the `metadata/` folder of a fork of
+# https://gitlab.com/fdroid/fdroiddata (see README, "Pubblicare su F-Droid"); it is kept here so that it is versioned with the app.
+Categories:
+  - System
+  - Theming
+License: GPL-3.0-or-later
+SourceCode: https://github.com/developerkenshi-coder/MetroWinLauncher
+IssueTracker: https://github.com/developerkenshi-coder/MetroWinLauncher/issues
+
+AutoName: MetroWin Launcher
+
+RepoType: git
+Repo: https://github.com/developerkenshi-coder/MetroWinLauncher.git
+
+Builds:
+  - versionName: 0.1.0
+    versionCode: 1
+    commit: v0.1.0
+    subdir: app
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: 0.1.0
+CurrentVersionCode: 1

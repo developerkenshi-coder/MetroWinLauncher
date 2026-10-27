@@ -730,6 +730,21 @@ dell'indice: una impostazione nuova non indicizzata, o spostata senza aggiornarl
 | Ritaglio con pizzico della foto di sfondo | Fatto in altro modo: **zoom e due cursori di posizione** con anteprima (non il pizzico) |
 | Sincronizzare la foto di Start e quella del blocco | Non fatto: le foto sono file di questo telefono |
 
+## Pubblicare su F-Droid
+
+Il progetto è pronto per F-Droid (licenza GPL-3.0-or-later nel file `LICENSE`, solo dipendenze libere di AndroidX e Compose, nessun
+servizio di Google, metadati in `fastlane/metadata/android/`, ricetta in [`docs/fdroid/com.metrowin.launcher.yml`](docs/fdroid/com.metrowin.launcher.yml)).
+F-Droid compila dal sorgente **e firma con la propria chiave**: la build senza `keystore.properties` esce non firmata, come serve.
+
+1. Il repository deve essere pubblico, con il lavoro su `main` e un tag per ogni versione (`v0.1.0` per `versionCode 1`).
+2. A ogni rilascio: alza `versionCode` e `versionName` in `app/build.gradle.kts`, aggiungi `fastlane/metadata/android/<lingua>/changelogs/<versionCode>.txt`
+   (al massimo 500 byte) e crea il tag.
+3. Fai il fork di <https://gitlab.com/fdroid/fdroiddata>, copia la ricetta in `metadata/com.metrowin.launcher.yml`, prova con `fdroid lint`,
+   `fdroid rewritemeta` e `fdroid build -v -l com.metrowin.launcher` (`pip install fdroidserver`), poi apri una merge request.
+
+Chi ha già installato una build firmata con la chiave ufficiale dovrà disinstallarla prima di passare a quella di F-Droid (firma diversa): si fa
+prima un backup dalle impostazioni.
+
 ## Permessi
 
 Il launcher funziona senza nessun permesso facoltativo. Li chiede il [tutorial](#il-tutorial-iniziale), uno per pagina, e

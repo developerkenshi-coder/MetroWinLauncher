@@ -1,0 +1,18 @@
+MetroWin Launcher porta su Android la schermata Start di Windows Phone (Metro, 8 e 8.1): riquadri piatti che girano mostrando contenuti dal vivo, lista app alfabetica, animazioni a tornello e inclinazione, e le funzioni di sistema che un launcher può davvero offrire. Non fa nulla quando non è sullo schermo.
+
+<b>Start</b>
+- Riquadri animati per foto, calendario, persone, telefono, meteo, notizie, finanza, passi e altro, ciascuno facoltativo.
+- Più pagine Start, cartelle, dimensioni dei riquadri, gruppi con titolo e widget.
+- Tre aspetti (Classic, Modern Glass, Modern Droid) con colori personalizzabili, e il layout in orizzontale.
+
+<b>Action Center</b>
+- Pulsanti rapidi a scelta, con la rete Wi-Fi e il dispositivo Bluetooth a cui sei collegato scritti sul pulsante. Con un tocco lungo si apre la lista delle reti intorno a te, oppure dei dispositivi Bluetooth connessi e abbinati.
+- Volume, suoneria e luminosità, intensità della torcia e silenzioso.
+- Notifiche che si scartano, a cui si risponde, raggruppate per app, da posticipare o silenziare. Aprendo un'app le sue notifiche e il numero sul riquadro spariscono.
+
+<b>E ancora</b>
+- Ricerca in app, contatti, file, calendario e impostazioni, con risposte rapide e assistente.
+- Comandi vocali, blocco schermo Metro, Angolo bambini e opzioni di accessibilità.
+- Sincronizzazione cifrata del layout e backup.
+
+Ogni permesso è facoltativo e serve a un solo riquadro o a una sola funzione. La rete serve per il meteo, e per i riquadri Notizie e Finanza solo se li aggiungi.
