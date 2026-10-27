@@ -79,8 +79,7 @@ internal class OverlayBanner(context: Context, private val host: () -> Context? 
     fun show(entry: NotificationEntry, settings: LauncherSettings) {
         hide()
         val owner = OverlayWindowOwner()
-        // With the screen lock service on, the banner is a window of that service: Android posts no "shown over other apps"
-        // notification for those, and it does for every window of an app (each banner would bring one).
+        // A window of the accessibility service brings no "shown over other apps" notice; one of the app does.
         val service = host()
         val windows = (service ?: app).getSystemService(WindowManager::class.java)
         val view = ComposeView(service ?: app).apply {

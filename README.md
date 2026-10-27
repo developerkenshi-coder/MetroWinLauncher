@@ -773,7 +773,7 @@ si possono dare anche dopo, quando serve la funzione.
 | `WRITE_SETTINGS` (accesso speciale) | solo il cursore della **luminosità** dell'Action Center: lo dai tu, in una schermata di Android, e il cursore lo dice finché non c'è |
 | `SET_WALLPAPER` | la foto nella schermata di blocco di Android, quando lo chiedi |
 | `ACCESS_WIFI_STATE`, `REQUEST_DELETE_PACKAGES` | stato del Wi-Fi, *disinstalla* nel menu |
-| `BLUETOOTH_CONNECT` (Android 12 e successivi; `BLUETOOTH` fino ad Android 11) | i dispositivi collegati e abbinati nella lista del pulsante Bluetooth dell'Action Center; si chiede al tocco lungo. Il nome della rete Wi-Fi usa `ACCESS_FINE_LOCATION` |
+| `BLUETOOTH_CONNECT` (Android 12 e successivi; `BLUETOOTH` fino ad Android 11) | i dispositivi collegati e abbinati nella lista del pulsante Bluetooth dell'Action Center; si chiede dal pulsante *consenti* della lista. Il nome della rete Wi-Fi usa `ACCESS_FINE_LOCATION` |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | solo per chiedere, nel tutorial, che Android non chiuda il launcher in background. **Google Play lo consente solo ad alcuni tipi di app**: per una build non pubblicata sullo store va bene, per pubblicarla va giustificato o tolto (basta rimuovere la pagina "tienilo attivo") |
 | `com.metrowin.launcher.permission.PUBLISH_TILE` | **dichiarato dal launcher**, lo chiedono le app che vogliono un tile (vedi sotto) |
 | Accesso alle notifiche (nelle impostazioni di Android) | Action Center, contatori, risposta rapida, raggruppamento, **posticipa** |

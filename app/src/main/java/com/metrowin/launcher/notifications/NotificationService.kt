@@ -241,7 +241,7 @@ class NotificationService : NotificationListenerService() {
     private fun toEntry(sbn: StatusBarNotification): NotificationEntry? {
         val notification = sbn.notification
         val extras = notification.extras
-        // Android's own "shown over other apps" notice about the banner and the strip of the launcher: not one to list or to count.
+        // Android's "shown over other apps" notice about the launcher's own windows.
         if (NotificationHub.isOverlayNotice(sbn.packageName, sbn.tag, notification.channelId)) return null
         val title = extras.getCharSequence(Notification.EXTRA_TITLE)
         // A chat keeps one notification: its plain text can be an older message, the newest is in the messages.

@@ -1270,13 +1270,12 @@ fun LauncherApp(vm: LauncherViewModel) {
         while (actionCenterShown) {
             quickStates = QuickAction.entries.associateWith(vm::quickActionState)
             screenTimeout = vm.quickActionTimeout(QuickAction.ScreenTimeout)
-            // The Bluetooth devices are asked about at once and then every few seconds, the network and the Wi-Fi list every second.
+            // Bluetooth devices are read every few seconds, the Wi-Fi network and list every second.
             connectionPanel = vm.readConnections(connectionPanel, devices = round % CONNECTION_DEVICES_EVERY == 0)
             round++
             delay(1_000)
         }
     }
-    // The access Android wants before it tells the names of the networks and the devices; the lists fill in on the next read.
     val connectionPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     val dark = rememberIsDark(settings, weather?.details?.sunrise, weather?.details?.sunset)
@@ -1714,7 +1713,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         onConnectionList = { action -> if (action == QuickAction.Wifi) vm.scanNetworks() },
                         onAllowConnections = { action ->
                             if (action == QuickAction.Wifi && connectionPanel.wifiAccess == ConnectionAccess.NeedsLocation) {
-                                // Permission is given, the location is off: the screen where it is switched on.
+                                // The permission is given but the location is off.
                                 panel.close()
                                 vm.activateQuickAction(QuickAction.Location)
                             } else {

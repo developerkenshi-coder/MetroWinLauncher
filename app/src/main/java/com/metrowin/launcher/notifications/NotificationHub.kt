@@ -210,11 +210,7 @@ object NotificationHub {
         Notification.CATEGORY_PROGRESS, Notification.CATEGORY_SERVICE, Notification.CATEGORY_STOPWATCH,
     )
 
-    /**
-     * The notice Android itself posts while an app has a window over the others ("MetroWin Launcher shown over other apps"). It cannot
-     * be dismissed or switched off by the user, and it comes back with every banner, so the launcher keeps it out of its lists. Told
-     * by the tag Android gives it, or by its channel, whatever the exact words (the package is "android", the system's own).
-     */
+    /** The notice Android posts while an app has a window over the others. It cannot be dismissed and comes back with every banner. */
     fun isOverlayNotice(packageName: String, tag: String?, channelId: String?): Boolean {
         if (packageName != "android") return false
         fun String?.flat() = orEmpty().lowercase().filter { it.isLetter() }
@@ -275,13 +271,9 @@ object NotificationHub {
         return runCatching { service.snoozeNotification(key, millis) }.isSuccess
     }
 
-    /** The notifications of the app [packageName] among [entries]. */
     fun ofApp(entries: List<NotificationEntry>, packageName: String): List<NotificationEntry> = entries.filter { it.packageName == packageName }
 
-    /**
-     * The app was opened: its notifications are taken away, so the number on its tile goes with them. They go to the history
-     * of dismissed ones, where they can be looked at again.
-     */
+    /** Takes away the notifications of an app that was opened; they stay in the history. */
     fun dismissApp(packageName: String) {
         val mine = ofApp(_entries.value, packageName)
         if (mine.isEmpty()) return

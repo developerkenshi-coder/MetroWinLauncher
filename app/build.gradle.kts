@@ -58,8 +58,7 @@ android {
         compose = true
     }
 
-    // The signed list of dependencies that Android Gradle Plugin puts in the APK is not wanted: F-Droid's scanner reports it, and it
-    // keeps a build from being reproducible.
+    // F-Droid's scanner reports the dependency list the plugin signs into the APK, and it keeps the build from being reproducible.
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false

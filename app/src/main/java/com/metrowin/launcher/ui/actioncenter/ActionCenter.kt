@@ -149,16 +149,13 @@ fun ActionCenter(
     onClearHistory: (() -> Unit)? = null,
     /** The room to leave for the bars and the camera cut-out when the window does not get the insets itself (a window over other apps); null takes them from the window. */
     contentPadding: PaddingValues? = null,
-    /** The network and the devices the Wi-Fi and Bluetooth buttons name, and the lists a long press on them opens. */
     connections: ConnectionPanel = ConnectionPanel(),
-    /** A long press on the Wi-Fi or Bluetooth button opened its list: the place to look around again. Null: no long press. */
     onConnectionList: ((QuickAction) -> Unit)? = null,
-    /** Asks for the access Android wants before it tells the names of the networks or the devices. */
     onAllowConnections: ((QuickAction) -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
     var expanded by remember { mutableStateOf(false) }
-    // The list under the buttons, if one is open, and the last one that was, which stays on screen while it closes.
+    // The open list, and the last one opened, which stays drawn while it closes.
     var openList by remember { mutableStateOf<QuickAction?>(null) }
     var lastList by remember { mutableStateOf(QuickAction.Wifi) }
     val holdButton: ((QuickAction) -> Unit)? = onConnectionList?.let { look ->
@@ -202,7 +199,6 @@ fun ActionCenter(
                 item(key = "quick") {
                     Column(Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         QuickRow(slots, states, onAction, timeout, connections = connections, onHold = holdButton)
-                        // The networks or the devices a long press asked for come out under the buttons.
                         AnimatedVisibility(
                             openList != null,
                             enter = expandVertically(metroTween(durationMillis = 320, easing = Motion.Decelerate)) + fadeIn(metroTween(220)),
@@ -454,7 +450,6 @@ private fun QuickRow(
     /** The place of the first button among those that turn in when the row appears; negative for a row that is always there. */
     firstIndex: Int = -1,
     connections: ConnectionPanel = ConnectionPanel(),
-    /** A long press on Wi-Fi or Bluetooth, which have a list to show; null leaves the long press out. */
     onHold: ((QuickAction) -> Unit)? = null,
 ) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -464,7 +459,7 @@ private fun QuickRow(
             QuickButton(
                 action, states[action], onAction, Modifier.weight(1f).then(turn),
                 detail = if (action == QuickAction.ScreenTimeout) timeout else null,
-                // The network or the device it is on, only while it is on: off, the button says what it is.
+                // Only while it is on: off, the button says what it is.
                 caption = if (states[action] == true) connections.captionFor(action) else null,
                 onLongClick = if (hasList && onHold != null) ({ onHold(action) }) else null,
             )
@@ -481,9 +476,8 @@ fun QuickButton(
     onClick: (QuickAction) -> Unit,
     modifier: Modifier = Modifier,
     detail: Int? = null,
-    /** Said under the picture in place of the name: the network the Wi-Fi is on, the device the Bluetooth is connected to. */
+    /** Said under the picture in place of the name. */
     caption: String? = null,
-    /** What a long press does (the list of networks or devices); null for a button that has none. */
     onLongClick: (() -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current

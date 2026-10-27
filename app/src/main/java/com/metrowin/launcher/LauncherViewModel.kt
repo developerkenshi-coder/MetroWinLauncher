@@ -820,13 +820,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun quickActionState(action: QuickAction): Boolean? = quickActions.isOn(action)
 
-    /** What the Wi-Fi and Bluetooth buttons of the Action Center say, read again from [previous] (see [ConnectionController.read]). */
     suspend fun readConnections(previous: ConnectionPanel, devices: Boolean): ConnectionPanel = connections.read(previous, devices)
 
-    /** A long press on the Wi-Fi button opened the list: asks Android for a fresh look at the networks around. */
     fun scanNetworks() = connections.scan()
 
-    /** The permission to ask for before the list of [action] can show names, or null when it needs none or the access is already there. */
     fun connectionPermission(action: QuickAction): String? =
         connections.permissionFor(action)?.takeIf {
             if (action == QuickAction.Wifi) connections.wifiAccess() == ConnectionAccess.NeedsPermission
@@ -1456,7 +1453,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 store.recentApps = _recents.value
                 _usage.value = AppUsage.record(_usage.value, item.id)
                 store.appUsage = _usage.value
-                // Going into the app is reading what it says: its notifications, and the number on its tile, go.
+                // Opening the app clears its notifications, and the number on its tile with them.
                 val target = item.launch
                 if (_settings.value.clearOnOpen && target is Launch.Activity) NotificationHub.dismissApp(target.component.packageName)
             }

@@ -35,16 +35,9 @@ import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 
-/** The longest the list of networks or devices gets: the system screen of the button has the rest. */
 private const val MAX_ROWS = 8
 
-/**
- * What a long press on the Wi-Fi or Bluetooth button opens under the buttons: the networks around you, or the devices that are
- * connected and those that are paired but not connected. A touch on a line opens the settings of Android, where it is switched
- * on; a touch on the heading closes the list.
- *
- * [on] says whether Wi-Fi or Bluetooth is switched on. [onAllow] asks for what Android wants before it tells the names.
- */
+/** The networks around you, or the Bluetooth devices connected and paired. A line opens the settings of Android; the heading closes the list. */
 @Composable
 fun ConnectionList(
     action: QuickAction,
@@ -157,11 +150,9 @@ private fun DeviceRow(device: BluetoothPeer, onClick: () -> Unit) {
     }
 }
 
-/** Four bars that grow, [bars] of them in [color] and the rest in [dim]. */
 @Composable
 private fun SignalBars(bars: Int, color: Color, dim: Color) {
     Canvas(Modifier.size(22.dp)) {
-        // Four bars and the three gaps between them, all the same width.
         val unit = size.width / 7f
         repeat(4) { i ->
             val height = size.height * (i + 1) / 4f

@@ -254,7 +254,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                 var round = 0
                 while (true) {
                     readStates()
-                    // The network and the devices the Wi-Fi and Bluetooth buttons name; the devices are asked about every few seconds.
+                    // Bluetooth devices are read every few seconds.
                     connections = network.read(connections, devices = round % CONNECTION_DEVICES_EVERY == 0)
                     round++
                     delay(1_000)
@@ -301,7 +301,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                 },
                 connections = connections,
                 onConnectionList = { action -> if (action == QuickAction.Wifi) network.scan() },
-                // A window over other apps cannot ask for a permission: the page of the launcher in the settings of Android can give it.
+                // A window over other apps cannot ask for a permission: the app page in the settings of Android can give it.
                 onAllowConnections = { action ->
                     if (action == QuickAction.Wifi && connections.wifiAccess == ConnectionAccess.NeedsLocation) {
                         goTo(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
