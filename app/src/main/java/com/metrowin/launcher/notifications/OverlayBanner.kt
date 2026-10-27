@@ -64,9 +64,8 @@ object OverlayRules {
  * The banner of [ToastBanner] drawn in a window over the other apps. One at a time, the newest replaces the one up. It goes by
  * itself like the banner of the launcher; a second timer takes the window away if the animation never ends, so nothing stays on the screen.
  */
-internal class OverlayBanner(context: Context) {
+internal class OverlayBanner(context: Context, private val host: () -> Context? = { null }) {
     private val app = context.applicationContext
-    private val windows = app.getSystemService(WindowManager::class.java)
     private val handler = Handler(Looper.getMainLooper())
     private val icons by lazy { IconLoader(app) }
 
@@ -75,12 +74,16 @@ internal class OverlayBanner(context: Context) {
     private var shown: Shown? = null
     private val hideLater = Runnable { hide() }
 
-    private class Shown(val view: ComposeView, val owner: OverlayWindowOwner)
+    private class Shown(val view: ComposeView, val owner: OverlayWindowOwner, val windows: WindowManager)
 
     fun show(entry: NotificationEntry, settings: LauncherSettings) {
         hide()
         val owner = OverlayWindowOwner()
-        val view = ComposeView(app).apply {
+        // With the screen lock service on, the banner is a window of that service: Android posts no "shown over other apps"
+        // notification for those, and it does for every window of an app (each banner would bring one).
+        val service = host()
+        val windows = (service ?: app).getSystemService(WindowManager::class.java)
+        val view = ComposeView(service ?: app).apply {
             setViewTreeLifecycleOwner(owner)
             setViewTreeSavedStateRegistryOwner(owner)
             setContent {
@@ -97,7 +100,7 @@ internal class OverlayBanner(context: Context) {
         // Not focusable and not modal: the touches outside the banner go on to the app below it.
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            if (service != null) WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY else WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT,
         ).apply { gravity = Gravity.TOP }
@@ -107,7 +110,7 @@ internal class OverlayBanner(context: Context) {
             return
         }
         if (settings.metroSounds) sounds.play(MetroSound.Notify)
-        shown = Shown(view, owner)
+        shown = Shown(view, owner, windows)
         handler.postDelayed(hideLater, BANNER_MS + SAFETY_MS)
     }
 
@@ -115,7 +118,7 @@ internal class OverlayBanner(context: Context) {
         handler.removeCallbacks(hideLater)
         val current = shown ?: return
         shown = null
-        runCatching { windows.removeViewImmediate(current.view) }
+        runCatching { current.windows.removeViewImmediate(current.view) }
         current.owner.destroy()
     }
 

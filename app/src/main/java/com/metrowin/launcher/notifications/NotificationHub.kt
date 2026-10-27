@@ -210,6 +210,17 @@ object NotificationHub {
         Notification.CATEGORY_PROGRESS, Notification.CATEGORY_SERVICE, Notification.CATEGORY_STOPWATCH,
     )
 
+    /**
+     * The notice Android itself posts while an app has a window over the others ("MetroWin Launcher shown over other apps"). It cannot
+     * be dismissed or switched off by the user, and it comes back with every banner, so the launcher keeps it out of its lists. Told
+     * by the tag Android gives it, or by its channel, whatever the exact words (the package is "android", the system's own).
+     */
+    fun isOverlayNotice(packageName: String, tag: String?, channelId: String?): Boolean {
+        if (packageName != "android") return false
+        fun String?.flat() = orEmpty().lowercase().filter { it.isLetter() }
+        return tag.flat().contains("alertwindow") || channelId.flat().contains("alertwindow")
+    }
+
     /** Whether a notification is worth showing: not an ongoing one (music, a download), not a group summary, not ours, not empty. */
     fun isWorthShowing(ongoing: Boolean, groupSummary: Boolean, fromUs: Boolean, title: CharSequence?, text: CharSequence?): Boolean =
         !ongoing && !groupSummary && !fromUs && !(title.isNullOrBlank() && text.isNullOrBlank())

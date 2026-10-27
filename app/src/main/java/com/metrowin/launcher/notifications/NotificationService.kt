@@ -121,7 +121,7 @@ class NotificationService : NotificationListenerService() {
         changed()
     }
 
-    private val overlay by lazy { OverlayBanner(this) }
+    private val overlay by lazy { OverlayBanner(this, LockAccessibilityService::host) }
 
     /** What each notification said when it got a banner over other apps: the same post is not shown twice, a new message in the chat is. */
     private val overlaySeen = HashMap<String, String>()
@@ -241,6 +241,8 @@ class NotificationService : NotificationListenerService() {
     private fun toEntry(sbn: StatusBarNotification): NotificationEntry? {
         val notification = sbn.notification
         val extras = notification.extras
+        // Android's own "shown over other apps" notice about the banner and the strip of the launcher: not one to list or to count.
+        if (NotificationHub.isOverlayNotice(sbn.packageName, sbn.tag, notification.channelId)) return null
         val title = extras.getCharSequence(Notification.EXTRA_TITLE)
         // A chat keeps one notification: its plain text can be an older message, the newest is in the messages.
         val text: CharSequence? = reader.latestMessage(notification)?.let { line ->
