@@ -34,6 +34,8 @@
 2. Aprilo. Quando Android lo chiede, consenti al browser o al gestore di file di installare app sconosciute.
 3. Premi Home e scegli **MetroWin Launcher** come app Home. Alla prima apertura parte un breve giro, e ogni permesso è facoltativo.
 
+**F-Droid:** l'autore invierà l'app a F-Droid. Se vuoi pacchettizzarla tu per F-Droid, scrivi prima in una [issue](https://github.com/developerkenshi-coder/MetroWinLauncher/issues).
+
 <details>
 <summary>Controlla il download</summary>
 
