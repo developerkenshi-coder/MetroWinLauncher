@@ -264,6 +264,23 @@ object NotificationHub {
         return runCatching { service.snoozeNotification(key, millis) }.isSuccess
     }
 
+    /** The notifications of the app [packageName] among [entries]. */
+    fun ofApp(entries: List<NotificationEntry>, packageName: String): List<NotificationEntry> = entries.filter { it.packageName == packageName }
+
+    /**
+     * The app was opened: its notifications are taken away, so the number on its tile goes with them. They go to the history
+     * of dismissed ones, where they can be looked at again.
+     */
+    fun dismissApp(packageName: String) {
+        val mine = ofApp(_entries.value, packageName)
+        if (mine.isEmpty()) return
+        rememberDismissed(mine)
+        mine.forEach { entry ->
+            forget(entry.key)
+            service?.cancelNotification(entry.key)
+        }
+    }
+
     fun dismissAll() {
         rememberDismissed(_entries.value)
         clearHeld()

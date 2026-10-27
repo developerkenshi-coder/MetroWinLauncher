@@ -30,7 +30,7 @@ object SectionReset {
             "tiltStrength", "twoFingerDownAction", "twoFingerDownApp", "twoFingerUpAction", "twoFingerUpApp", "vibrationStrength",
         ),
         "Actions" to setOf(
-            "actionSliders", "dndMinutes", "edgeActionCenter", "groupConversations", "hideSystemNotifications", "inlineReply", "metroSounds", "muteFromPanel",
+            "actionSliders", "clearOnOpen", "dndMinutes", "edgeActionCenter", "groupConversations", "hideSystemNotifications", "inlineReply", "metroSounds", "muteFromPanel",
             "notifFilterOn", "notifFilterWords", "notifPriority", "notificationPeek", "overlayBanner", "quickActions", "toastBanner", "torchAutoOffMin",
             "volumePanel", "volumeProfilesShow",
         ),

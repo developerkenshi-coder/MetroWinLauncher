@@ -1624,4 +1624,6 @@
     <string name="ac_bluetooth_none">No devices are paired with this phone.</string>
     <string name="ac_bluetooth_paired">Paired, not connected</string>
     <string name="ac_bluetooth_needs_permission">Android shows the devices only to apps that have the nearby devices access.</string>
+    <string name="ac_clear_on_open">Clear when the app is opened</string>
+    <string name="ac_clear_on_open_hint">Opening the app from Start or the app list takes away its notifications and the number on its tile. They stay in the history of the Action Center for a while. Opening the app from elsewhere (its notification, the recent apps) does not.</string>
 </resources>

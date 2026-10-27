@@ -31,6 +31,11 @@ fun NotificationExtrasSettings(env: SettingsEnv) {
             hint = stringResource(R.string.ac_mute_hint), enabled = env.notificationAccess, tag = "notifications:mute", id = "ac.mute",
         )
         ToggleSetting(
+            label = stringResource(R.string.ac_clear_on_open), checked = s.clearOnOpen,
+            onChange = { v -> env.onChange { it.copy(clearOnOpen = v) } },
+            hint = stringResource(R.string.ac_clear_on_open_hint), enabled = env.notificationAccess, tag = "notifications:clearonopen", id = "ac.clearonopen",
+        )
+        ToggleSetting(
             label = stringResource(R.string.ac_priority), checked = s.notifPriority,
             onChange = { v -> env.onChange { it.copy(notifPriority = v) } },
             hint = stringResource(R.string.ac_priority_hint), enabled = env.notificationAccess, tag = "notifications:priority", id = "ac.priority",

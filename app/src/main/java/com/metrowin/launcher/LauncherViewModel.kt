@@ -174,6 +174,7 @@ import com.metrowin.launcher.data.VolumeStream
 import android.media.AudioManager
 import com.metrowin.launcher.notifications.NotifAction
 import com.metrowin.launcher.notifications.NotificationControl
+import com.metrowin.launcher.model.Launch
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.LiveKind
 import com.metrowin.launcher.model.StartEntry
@@ -1455,6 +1456,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 store.recentApps = _recents.value
                 _usage.value = AppUsage.record(_usage.value, item.id)
                 store.appUsage = _usage.value
+                // Going into the app is reading what it says: its notifications, and the number on its tile, go.
+                val target = item.launch
+                if (_settings.value.clearOnOpen && target is Launch.Activity) NotificationHub.dismissApp(target.component.packageName)
             }
         } else {
             Toast.makeText(getApplication(), R.string.launch_failed, Toast.LENGTH_SHORT).show()

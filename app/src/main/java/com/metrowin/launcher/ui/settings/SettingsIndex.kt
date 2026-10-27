@@ -157,6 +157,7 @@ object SettingsIndex {
         e("ac.banner", Actions, R.string.ac_banner, "toast", "heads up", "popup", "notifications", "avviso", "notifiche", "banner"),
         e("ac.overlay", Actions, R.string.ac_overlay, "overlay", "over other apps", "display over", "draw over", "sopra altre app", "fuori dal launcher", "notifiche", "banner"),
         e("ac.mute", Actions, R.string.ac_mute, "mute", "silence", "app", "hour", "silenzia", "zittisci", "ora", "notifiche"),
+        e("ac.clearonopen", Actions, R.string.ac_clear_on_open, "open", "opening", "clear", "badge", "number", "aprire", "apri", "numero", "pulisci"),
         e("ac.priority", Actions, R.string.ac_priority, "priority", "messages", "calls", "first", "priorita", "messaggi", "chiamate", "prima"),
         e("ac.filter", Actions, R.string.ac_filter, "filter", "words", "block", "spam", "filtro", "parole", "blocca"),
         e("ac.filterwords", Actions, R.string.ac_filter_words, "filter", "words", "add", "filtro", "parole", "aggiungi"),

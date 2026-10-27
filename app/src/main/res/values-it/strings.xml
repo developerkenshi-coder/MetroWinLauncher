@@ -1634,4 +1634,6 @@
     <string name="ac_bluetooth_none">Nessun dispositivo è abbinato a questo telefono.</string>
     <string name="ac_bluetooth_paired">Abbinato, non connesso</string>
     <string name="ac_bluetooth_needs_permission">Android mostra i dispositivi solo alle app che hanno l\'accesso ai dispositivi nelle vicinanze.</string>
+    <string name="ac_clear_on_open">Togli le notifiche quando apro l\'app</string>
+    <string name="ac_clear_on_open_hint">Aprendo l\'app da Start o dalla lista app le sue notifiche vengono tolte, e con loro il numero sul riquadro. Restano per un po\' nella cronologia dell\'Action Center. Aprendo l\'app da altrove (dalla sua notifica, dalle app recenti) non succede.</string>
 </resources>

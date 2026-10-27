@@ -343,6 +343,8 @@ data class LauncherSettings(
     val notificationPeek: Boolean = false,
     val inlineReply: Boolean = true,
     val groupConversations: Boolean = true,
+    /** Opening an app from Start or the app list takes away its notifications, and the number on its tile. */
+    val clearOnOpen: Boolean = true,
     /** The volume and the brightness sliders and the sound mode buttons in the Action Center. */
     val actionSliders: Boolean = true,
     /** With [notificationPeek] on: the conversations of messaging apps (who wrote, and what), one face for each. */

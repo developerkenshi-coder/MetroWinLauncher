@@ -90,6 +90,7 @@ object SettingsCodec {
         put("notificationPeek", s.notificationPeek)
         put("inlineReply", s.inlineReply)
         put("groupConversations", s.groupConversations)
+        put("clearOnOpen", s.clearOnOpen)
         put("actionSliders", s.actionSliders)
         put("liveMessages", s.liveMessages)
         put("liveHideText", s.liveHideText)
@@ -289,6 +290,7 @@ object SettingsCodec {
             notificationPeek = o.optBoolean("notificationPeek", base.notificationPeek),
             inlineReply = o.optBoolean("inlineReply", base.inlineReply),
             groupConversations = o.optBoolean("groupConversations", base.groupConversations),
+            clearOnOpen = o.optBoolean("clearOnOpen", base.clearOnOpen),
             actionSliders = o.optBoolean("actionSliders", base.actionSliders),
             liveMessages = o.optBoolean("liveMessages", base.liveMessages),
             liveHideText = o.optBoolean("liveHideText", base.liveHideText),
