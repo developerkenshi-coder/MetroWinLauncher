@@ -141,7 +141,12 @@ private fun build(glyph: Glyph): Spec = when (glyph) {
     Glyph.Photos -> spec(stroke(rect(10f, 18f, 80f, 64f, 4f), "M10 74L34 50L52 66L66 54L90 76", circle(68f, 38f, 7f)))
     Glyph.Music -> spec(stroke(circle(38f, 72f, 12f), "M50 72V18", "M50 18C62 22 78 26 76 42"))
     Glyph.Video -> spec(stroke(circle(50f, 50f, 38f), "M42 34V66L68 50Z"))
-    Glyph.Browser -> spec(stroke(circle(50f, 50f, 38f)), letter = "e", letterScale = 0.62f, letterDy = -0.02f)
+    Glyph.Browser -> spec(
+        stroke(
+            rect(10f, 18f, 80f, 64f, 6f), "M10 38H90", rect(20f, 24f, 46f, 8f, 4f),
+            circle(50f, 60f, 14f), "M36 60H64", "M50 46C43 52 43 68 50 74", "M50 46C57 52 57 68 50 74",
+        ),
+    )
     Glyph.Maps -> spec(stroke("M50 92C50 92 20 60 20 40A30 30 0 0 1 80 40C80 60 50 92 50 92Z", circle(50f, 40f, 10f)))
     Glyph.Store -> spec(stroke(rect(20f, 34f, 60f, 54f, 3f), "M36 34V28A14 14 0 0 1 64 28V34"))
     Glyph.Settings -> spec(stroke(gear(), circle(50f, 50f, 12f)))

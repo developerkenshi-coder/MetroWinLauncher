@@ -7,9 +7,9 @@
     <string name="stock_calculator">Calcolatrice</string>
     <string name="stock_calendar">Calendario</string>
     <string name="stock_camera">Fotocamera</string>
-    <string name="stock_cortana">Cortana</string>
+    <string name="stock_cortana">Assistente</string>
     <string name="stock_datasense">Data Sense</string>
-    <string name="stock_excel">Excel</string>
+    <string name="stock_excel">Fogli di calcolo</string>
     <string name="stock_files">File</string>
     <string name="stock_finance">Finanza</string>
     <string name="stock_games">Giochi</string>
@@ -19,16 +19,16 @@
     <string name="stock_messaging">Messaggi</string>
     <string name="stock_music">Musica</string>
     <string name="stock_news">Notizie</string>
-    <string name="stock_office">Office</string>
-    <string name="stock_onedrive">OneDrive</string>
-    <string name="stock_onenote">OneNote</string>
+    <string name="stock_office">Documenti</string>
+    <string name="stock_onedrive">Archivio cloud</string>
+    <string name="stock_onenote">Note</string>
     <string name="stock_people">Persone</string>
     <string name="stock_phone">Telefono</string>
     <string name="stock_photos">Foto</string>
     <string name="stock_podcasts">Podcast</string>
-    <string name="stock_powerpoint">PowerPoint</string>
+    <string name="stock_powerpoint">Presentazioni</string>
     <string name="stock_settings">Impostazioni</string>
-    <string name="stock_skype">Skype</string>
+    <string name="stock_skype">Videochiamate</string>
     <string name="stock_sports">Sport</string>
     <string name="stock_storagesense">Storage Sense</string>
     <string name="stock_store">Store</string>
@@ -36,8 +36,8 @@
     <string name="stock_voicerecorder">Registratore vocale</string>
     <string name="stock_wallet">Wallet</string>
     <string name="stock_weather">Meteo</string>
-    <string name="stock_word">Word</string>
-    <string name="stock_xbox">Xbox</string>
+    <string name="stock_word">Editor di testo</string>
+    <string name="stock_xbox">Hub giochi</string>
 
     <string name="settings_start_theme">start+tema</string>
     <string name="settings_header">IMPOSTAZIONI</string>

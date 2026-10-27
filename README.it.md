@@ -28,7 +28,7 @@
 
 ## Download
 
-**[⬇ Scarica l'ultima versione](https://github.com/developerkenshi-coder/MetroWinLauncher/releases/latest)**: `MetroWinLauncher-26.2S.apk`, per Android 8.0 (API 26) o successivo.
+**[⬇ Scarica l'ultima versione](https://github.com/developerkenshi-coder/MetroWinLauncher/releases/latest)**: `MetroWinLauncher-26.3S.apk`, per Android 8.0 (API 26) o successivo.
 
 1. Scarica l'APK sul telefono.
 2. Aprilo. Quando Android lo chiede, consenti al browser o al gestore di file di installare app sconosciute.
@@ -49,7 +49,7 @@ Ogni versione ha anche un file `SHA256SUMS`. Per controllare tutti e due:
 
 ```sh
 shasum -a 256 -c SHA256SUMS
-apksigner verify --print-certs MetroWinLauncher-26.2S.apk
+apksigner verify --print-certs MetroWinLauncher-26.3S.apk
 ```
 
 Android permette di aggiornare l'app solo con la stessa chiave di firma, quindi installa gli aggiornamenti da questa pagina. Una versione

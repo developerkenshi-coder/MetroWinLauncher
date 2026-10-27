@@ -3,6 +3,14 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
+## 26.3S: 2026-10-27
+
+- The stock tiles that carried the names of Microsoft apps now have generic names: Game hub, Assistant, Video calls, Cloud storage, Documents, Text editor, Spreadsheet, Presentations and Notes. They only appear next to the real app when it is installed.
+- The browser tile has a new icon: a window with a small globe.
+- Documentation and the F-Droid files are brought to this version.
+
+Download: [`MetroWinLauncher-26.3S.apk`](https://github.com/developerkenshi-coder/MetroWinLauncher/releases/tag/v26.3S).
+
 ## 26.2S: 2026-10-27
 
 - The browser tile on Start is now called "Browser" (it was "Internet Explorer"). Layouts you already have keep the tile.
