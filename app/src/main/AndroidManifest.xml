@@ -75,6 +75,14 @@
     <!-- Wi-Fi state on the Action Center button. -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
+    <!--
+        The devices the Bluetooth button names in the Action Center (the connected ones and the paired ones). Android 12 asks for the
+        nearby devices access (BLUETOOTH_CONNECT) at the moment of the long press; before it the plain Bluetooth permission is enough.
+        The names of the Wi-Fi networks use the location access above.
+    -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
     <!-- "uninstall" in the app list context menu. -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
 

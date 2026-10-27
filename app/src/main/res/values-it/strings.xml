@@ -1617,4 +1617,21 @@
     </string-array>
 
     <string name="start_locked_notice">Start è bloccato. Sbloccalo nelle impostazioni di Start.</string>
+    <string name="ac_conn_list_label">Mostra reti o dispositivi</string>
+    <string name="ac_wifi_networks">Reti Wi-Fi</string>
+    <string name="ac_bluetooth_devices">Dispositivi Bluetooth</string>
+    <string name="ac_conn_settings">impostazioni</string>
+    <string name="ac_conn_connected">Connesso</string>
+    <string name="ac_conn_allow">consenti</string>
+    <string name="ac_conn_location">attiva la posizione</string>
+    <string name="ac_wifi_secured">Protetta</string>
+    <string name="ac_wifi_open">Aperta</string>
+    <string name="ac_wifi_off">Il Wi-Fi è spento. Tocca il pulsante per accenderlo.</string>
+    <string name="ac_wifi_none">Nessuna rete trovata intorno a te. Android limita quante volte cerca: riprova tra un momento.</string>
+    <string name="ac_wifi_needs_permission">Android mostra i nomi delle reti solo alle app che hanno l\'accesso alla posizione.</string>
+    <string name="ac_wifi_needs_location">La posizione è spenta e senza di essa Android nasconde i nomi delle reti.</string>
+    <string name="ac_bluetooth_off">Il Bluetooth è spento. Questi sono i dispositivi abbinati a questo telefono.</string>
+    <string name="ac_bluetooth_none">Nessun dispositivo è abbinato a questo telefono.</string>
+    <string name="ac_bluetooth_paired">Abbinato, non connesso</string>
+    <string name="ac_bluetooth_needs_permission">Android mostra i dispositivi solo alle app che hanno l\'accesso ai dispositivi nelle vicinanze.</string>
 </resources>

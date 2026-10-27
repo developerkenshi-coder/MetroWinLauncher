@@ -79,6 +79,9 @@ import com.metrowin.launcher.data.AppSections
 import com.metrowin.launcher.data.AppRepository
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.LiveTileData
+import com.metrowin.launcher.data.CONNECTION_DEVICES_EVERY
+import com.metrowin.launcher.data.ConnectionAccess
+import com.metrowin.launcher.data.ConnectionPanel
 import com.metrowin.launcher.data.QuickAction
 import com.metrowin.launcher.data.GestureAction
 import com.metrowin.launcher.ui.start.FolderChoice
@@ -557,6 +560,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     // The flashlight lighting or going out shows or takes away its strength slider.
     LaunchedEffect(panel.isShown, torchOn) { if (panel.isShown) vm.refreshControls() }
     var quickStates by remember { mutableStateOf<Map<QuickAction, Boolean?>>(emptyMap()) }
+    var connectionPanel by remember { mutableStateOf(ConnectionPanel()) }
     var screenTimeout by remember { mutableStateOf<Int?>(null) }
 
     // The settings page, and the section on top of it, swing in and out like a turnstile; the back gesture
@@ -1262,12 +1266,18 @@ fun LauncherApp(vm: LauncherViewModel) {
     // While the panel is up, the state of its buttons is read again every second.
     val actionCenterShown = panel.isShown
     LaunchedWhileStarted(actionCenterShown to torchOn) {
+        var round = 0
         while (actionCenterShown) {
             quickStates = QuickAction.entries.associateWith(vm::quickActionState)
             screenTimeout = vm.quickActionTimeout(QuickAction.ScreenTimeout)
+            // The Bluetooth devices are asked about at once and then every few seconds, the network and the Wi-Fi list every second.
+            connectionPanel = vm.readConnections(connectionPanel, devices = round % CONNECTION_DEVICES_EVERY == 0)
+            round++
             delay(1_000)
         }
     }
+    // The access Android wants before it tells the names of the networks and the devices; the lists fill in on the next read.
+    val connectionPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     val dark = rememberIsDark(settings, weather?.details?.sunrise, weather?.details?.sunset)
     val autoAccentIndex by vm.autoAccentIndex.collectAsStateWithLifecycle()
@@ -1698,6 +1708,17 @@ fun LauncherApp(vm: LauncherViewModel) {
                                 } else {
                                     panel.close()
                                 }
+                            }
+                        },
+                        connections = connectionPanel,
+                        onConnectionList = { action -> if (action == QuickAction.Wifi) vm.scanNetworks() },
+                        onAllowConnections = { action ->
+                            if (action == QuickAction.Wifi && connectionPanel.wifiAccess == ConnectionAccess.NeedsLocation) {
+                                // Permission is given, the location is off: the screen where it is switched on.
+                                panel.close()
+                                vm.activateQuickAction(QuickAction.Location)
+                            } else {
+                                vm.connectionPermission(action)?.let { connectionPermission.launch(it) }
                             }
                         },
                         onAllSettings = {

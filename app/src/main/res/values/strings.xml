@@ -1607,4 +1607,21 @@
     </string-array>
 
     <string name="start_locked_notice">Start is locked. Unlock it in the Start settings.</string>
+    <string name="ac_conn_list_label">Show networks or devices</string>
+    <string name="ac_wifi_networks">Wi-Fi networks</string>
+    <string name="ac_bluetooth_devices">Bluetooth devices</string>
+    <string name="ac_conn_settings">settings</string>
+    <string name="ac_conn_connected">Connected</string>
+    <string name="ac_conn_allow">allow</string>
+    <string name="ac_conn_location">turn on location</string>
+    <string name="ac_wifi_secured">Secured</string>
+    <string name="ac_wifi_open">Open</string>
+    <string name="ac_wifi_off">Wi-Fi is off. Touch the button to turn it on.</string>
+    <string name="ac_wifi_none">No networks found around you. Android limits how often it looks: try again in a moment.</string>
+    <string name="ac_wifi_needs_permission">Android shows the names of the networks only to apps that have the location access.</string>
+    <string name="ac_wifi_needs_location">The location is off, and without it Android hides the names of the networks.</string>
+    <string name="ac_bluetooth_off">Bluetooth is off. These are the devices paired with this phone.</string>
+    <string name="ac_bluetooth_none">No devices are paired with this phone.</string>
+    <string name="ac_bluetooth_paired">Paired, not connected</string>
+    <string name="ac_bluetooth_needs_permission">Android shows the devices only to apps that have the nearby devices access.</string>
 </resources>

@@ -81,6 +81,7 @@ import com.metrowin.launcher.ui.components.FontScaleAtMost
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.R
+import com.metrowin.launcher.data.ConnectionPanel
 import com.metrowin.launcher.data.QuickAction
 import com.metrowin.launcher.data.ScreenTimeouts
 import com.metrowin.launcher.data.RingerMode
@@ -148,9 +149,29 @@ fun ActionCenter(
     onClearHistory: (() -> Unit)? = null,
     /** The room to leave for the bars and the camera cut-out when the window does not get the insets itself (a window over other apps); null takes them from the window. */
     contentPadding: PaddingValues? = null,
+    /** The network and the devices the Wi-Fi and Bluetooth buttons name, and the lists a long press on them opens. */
+    connections: ConnectionPanel = ConnectionPanel(),
+    /** A long press on the Wi-Fi or Bluetooth button opened its list: the place to look around again. Null: no long press. */
+    onConnectionList: ((QuickAction) -> Unit)? = null,
+    /** Asks for the access Android wants before it tells the names of the networks or the devices. */
+    onAllowConnections: ((QuickAction) -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
     var expanded by remember { mutableStateOf(false) }
+    // The list under the buttons, if one is open, and the last one that was, which stays on screen while it closes.
+    var openList by remember { mutableStateOf<QuickAction?>(null) }
+    var lastList by remember { mutableStateOf(QuickAction.Wifi) }
+    val holdButton: ((QuickAction) -> Unit)? = onConnectionList?.let { look ->
+        { action ->
+            if (openList == action) {
+                openList = null
+            } else {
+                openList = action
+                lastList = action
+                look(action)
+            }
+        }
+    }
     val listed = remember(notifications, groupConversations) { NotificationGroups.build(notifications, groupConversations) }
     var openGroups by remember { mutableStateOf(emptySet<String>()) }
     val pushUp = remember(panel) { pushUpConnection(panel) }
@@ -180,7 +201,20 @@ fun ActionCenter(
             LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
                 item(key = "quick") {
                     Column(Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        QuickRow(slots, states, onAction, timeout)
+                        QuickRow(slots, states, onAction, timeout, connections = connections, onHold = holdButton)
+                        // The networks or the devices a long press asked for come out under the buttons.
+                        AnimatedVisibility(
+                            openList != null,
+                            enter = expandVertically(metroTween(durationMillis = 320, easing = Motion.Decelerate)) + fadeIn(metroTween(220)),
+                            exit = shrinkVertically(metroTween(durationMillis = 220, easing = Motion.Accelerate)) + fadeOut(metroTween(150)),
+                        ) {
+                            ConnectionList(
+                                action = lastList, panel = connections, on = states[lastList],
+                                onAllow = { onAllowConnections?.invoke(lastList) },
+                                onOpenSettings = { onAction(lastList) },
+                                onClose = { openList = null },
+                            )
+                        }
                         // The rest of the buttons open out, and turn in one after the other like the tiles of Start.
                         AnimatedVisibility(
                             expanded,
@@ -190,7 +224,7 @@ fun ActionCenter(
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 val others = QuickAction.entries.filter { it !in slots }
                                 others.chunked(QuickAction.SLOTS).forEachIndexed { rowIndex, row ->
-                                    QuickRow(row, states, onAction, timeout, firstIndex = rowIndex * QuickAction.SLOTS)
+                                    QuickRow(row, states, onAction, timeout, firstIndex = rowIndex * QuickAction.SLOTS, connections = connections, onHold = holdButton)
                                 }
                             }
                         }
@@ -419,11 +453,21 @@ private fun QuickRow(
     timeout: Int?,
     /** The place of the first button among those that turn in when the row appears; negative for a row that is always there. */
     firstIndex: Int = -1,
+    connections: ConnectionPanel = ConnectionPanel(),
+    /** A long press on Wi-Fi or Bluetooth, which have a list to show; null leaves the long press out. */
+    onHold: ((QuickAction) -> Unit)? = null,
 ) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         actions.forEachIndexed { column, action ->
             val turn = if (firstIndex >= 0) Modifier.flipIn(firstIndex + column) else Modifier
-            QuickButton(action, states[action], onAction, Modifier.weight(1f).then(turn), detail = if (action == QuickAction.ScreenTimeout) timeout else null)
+            val hasList = action == QuickAction.Wifi || action == QuickAction.Bluetooth
+            QuickButton(
+                action, states[action], onAction, Modifier.weight(1f).then(turn),
+                detail = if (action == QuickAction.ScreenTimeout) timeout else null,
+                // The network or the device it is on, only while it is on: off, the button says what it is.
+                caption = if (states[action] == true) connections.captionFor(action) else null,
+                onLongClick = if (hasList && onHold != null) ({ onHold(action) }) else null,
+            )
         }
         repeat(QuickAction.SLOTS - actions.size) { Spacer(Modifier.weight(1f)) }
     }
@@ -431,7 +475,17 @@ private fun QuickRow(
 
 /** A button of the Action Center: in the accent colour when what it controls is on, grey when it is off. */
 @Composable
-fun QuickButton(action: QuickAction, on: Boolean?, onClick: (QuickAction) -> Unit, modifier: Modifier = Modifier, detail: Int? = null) {
+fun QuickButton(
+    action: QuickAction,
+    on: Boolean?,
+    onClick: (QuickAction) -> Unit,
+    modifier: Modifier = Modifier,
+    detail: Int? = null,
+    /** Said under the picture in place of the name: the network the Wi-Fi is on, the device the Bluetooth is connected to. */
+    caption: String? = null,
+    /** What a long press does (the list of networks or devices); null for a button that has none. */
+    onLongClick: (() -> Unit)? = null,
+) {
     val colors = LocalMetroColors.current
     val lit = on == true
     // The picture and the name one under the other, in a square: the name gets the room that is left and is made smaller to fit it.
@@ -440,7 +494,11 @@ fun QuickButton(action: QuickAction, on: Boolean?, onClick: (QuickAction) -> Uni
             modifier
                 .squareUpTo(QUICK_MAX_SIDE)
                 .testTag("quick:${action.id}")
-                .metroPress(onClick = { onClick(action) })
+                .metroPress(
+                    onClick = { onClick(action) },
+                    onLongClick = onLongClick,
+                    longClickLabel = if (onLongClick != null) stringResource(R.string.ac_conn_list_label) else null,
+                )
                 .litFill(lit, LocalStyle.current.cardShape)
                 .padding(horizontal = 3.dp, vertical = 5.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -449,7 +507,7 @@ fun QuickButton(action: QuickAction, on: Boolean?, onClick: (QuickAction) -> Uni
             GlyphIcon(action.glyph, 32.dp, color = if (lit) onAccent() else colors.foreground)
             MetroText(
                 // The screen timeout says how long it is now ("30 s"); the others say what they are.
-                detail?.let { timeoutText(it) } ?: stringResource(action.label),
+                detail?.let { timeoutText(it) } ?: caption ?: stringResource(action.label),
                 size = 11.sp, weight = FontWeight.Normal, textAlign = TextAlign.Center, minScale = 0.55f,
                 color = if (lit) onAccent() else colors.subtle,
                 modifier = Modifier.padding(top = 2.dp),

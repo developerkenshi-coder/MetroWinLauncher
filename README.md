@@ -183,7 +183,7 @@ tocco li cambierebbe), i contatti, le impostazioni di Android (anche in italiano
 
 Quattro pulsanti rapidi a scelta (sugli altri otto si apre il resto), notifiche che si scartano a destra o tutte insieme,
 **risposta rapida** dai messaggi a cui l'app permette di rispondere, **raggruppamento per app** (una riga che si apre; scorrerla via
-le scarta tutte). Il **banner Metro** compare anche **sopra le altre app** quando il launcher non è sullo schermo, se lo accendi
+le scarta tutte). I pulsanti **Wi-Fi** e **Bluetooth** dicono sotto l'icona la **rete** e il **dispositivo** a cui sei collegato (il Bluetooth: «Cuffie +1» se sono due); con un **tocco lungo** si apre sotto i pulsanti la lista delle **reti Wi-Fi intorno a te** (la tua in cima, con il segnale) o dei **dispositivi Bluetooth**, i connessi prima e poi quelli abbinati ma scollegati; un tocco sul titolo la chiude, *impostazioni* apre il pannello di Android. Android mostra i nomi solo con l'accesso alla **posizione** (Wi-Fi, e la posizione accesa) e ai **dispositivi nelle vicinanze** (Bluetooth, da Android 12): la lista lo dice e ha il pulsante per darlo. Il **banner Metro** compare anche **sopra le altre app** quando il launcher non è sullo schermo, se lo accendi
 (*notifiche+azioni → banner sopra le altre app*, spento di base) e consenti «Mostra sopra altre app»: non sul blocco schermo, non per le notifiche
 silenziose, non quando Non disturbare le blocca, e per le app che scegli con l'interruttore *banner* di ognuna. Il banner di Android compare comunque, a meno che accenda *nascondi la notifica di Android* (spento di base): quando compare il banner Metro, la notifica
 di Android viene tolta e resta nell'Action Center finché non la scarti (Android la mostra per un istante e il suono è dell'app; l'app viene avvisata che
@@ -758,6 +758,7 @@ si possono dare anche dopo, quando serve la funzione.
 | `WRITE_SETTINGS` (accesso speciale) | solo il cursore della **luminosità** dell'Action Center: lo dai tu, in una schermata di Android, e il cursore lo dice finché non c'è |
 | `SET_WALLPAPER` | la foto nella schermata di blocco di Android, quando lo chiedi |
 | `ACCESS_WIFI_STATE`, `REQUEST_DELETE_PACKAGES` | stato del Wi-Fi, *disinstalla* nel menu |
+| `BLUETOOTH_CONNECT` (Android 12 e successivi; `BLUETOOTH` fino ad Android 11) | i dispositivi collegati e abbinati nella lista del pulsante Bluetooth dell'Action Center; si chiede al tocco lungo. Il nome della rete Wi-Fi usa `ACCESS_FINE_LOCATION` |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | solo per chiedere, nel tutorial, che Android non chiuda il launcher in background. **Google Play lo consente solo ad alcuni tipi di app**: per una build non pubblicata sullo store va bene, per pubblicarla va giustificato o tolto (basta rimuovere la pagina "tienilo attivo") |
 | `com.metrowin.launcher.permission.PUBLISH_TILE` | **dichiarato dal launcher**, lo chiedono le app che vogliono un tile (vedi sotto) |
 | Accesso alle notifiche (nelle impostazioni di Android) | Action Center, contatori, risposta rapida, raggruppamento, **posticipa** |

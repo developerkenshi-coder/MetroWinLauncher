@@ -38,6 +38,10 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.metrowin.launcher.MainActivity
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.BrightnessController
+import com.metrowin.launcher.data.CONNECTION_DEVICES_EVERY
+import com.metrowin.launcher.data.ConnectionAccess
+import com.metrowin.launcher.data.ConnectionController
+import com.metrowin.launcher.data.ConnectionPanel
 import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.MetroSound
@@ -228,6 +232,8 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
             val quick = remember { QuickActionsController(app) }
             val sound = remember { SoundController(app) }
             val brightness = remember { BrightnessController(app) }
+            val network = remember { ConnectionController(app) }
+            var connections by remember { mutableStateOf(ConnectionPanel()) }
             DisposableEffect(quick) {
                 quick.start()
                 onDispose { quick.close() }
@@ -245,8 +251,12 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                 controls = Controls(sound.ringVolume(), sound.alarmVolume(), sound.volume(), sound.ringer(), brightness.brightness(), brightness.canWrite(), quick.torchStrength())
                 pull.open()
                 // The state of the buttons is read again every second while the panel is up, as in the launcher.
+                var round = 0
                 while (true) {
                     readStates()
+                    // The network and the devices the Wi-Fi and Bluetooth buttons name; the devices are asked about every few seconds.
+                    connections = network.read(connections, devices = round % CONNECTION_DEVICES_EVERY == 0)
+                    round++
                     delay(1_000)
                 }
             }
@@ -287,6 +297,16 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                                 close()
                             }
                         }
+                    }
+                },
+                connections = connections,
+                onConnectionList = { action -> if (action == QuickAction.Wifi) network.scan() },
+                // A window over other apps cannot ask for a permission: the page of the launcher in the settings of Android can give it.
+                onAllowConnections = { action ->
+                    if (action == QuickAction.Wifi && connections.wifiAccess == ConnectionAccess.NeedsLocation) {
+                        goTo(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                    } else {
+                        go(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", app.packageName, null)))
                     }
                 },
                 onAllSettings = { goTo(Settings.ACTION_SETTINGS) },

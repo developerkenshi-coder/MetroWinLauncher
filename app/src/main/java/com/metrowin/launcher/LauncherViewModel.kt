@@ -109,6 +109,9 @@ import com.metrowin.launcher.data.ProfileInfo
 import com.metrowin.launcher.data.ProfilesController
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.BrightnessController
+import com.metrowin.launcher.data.ConnectionAccess
+import com.metrowin.launcher.data.ConnectionController
+import com.metrowin.launcher.data.ConnectionPanel
 import com.metrowin.launcher.data.QuickAction
 import com.metrowin.launcher.data.RingerMode
 import com.metrowin.launcher.data.SoundController
@@ -216,6 +219,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val backgroundStore = StartBackgroundStore(application)
     private val lockStore = StartBackgroundStore(application, "lock_background.jpg")
     private val quickActions = QuickActionsController(application)
+    private val connections = ConnectionController(application)
     private val shortcutStore = ShortcutStore(application)
     private val weatherRepository = WeatherRepository(application)
     private val currencyRepository = CurrencyRepository(application)
@@ -814,6 +818,19 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         NotificationManagerCompat.getEnabledListenerPackages(getApplication()).contains(getApplication<Application>().packageName)
 
     fun quickActionState(action: QuickAction): Boolean? = quickActions.isOn(action)
+
+    /** What the Wi-Fi and Bluetooth buttons of the Action Center say, read again from [previous] (see [ConnectionController.read]). */
+    suspend fun readConnections(previous: ConnectionPanel, devices: Boolean): ConnectionPanel = connections.read(previous, devices)
+
+    /** A long press on the Wi-Fi button opened the list: asks Android for a fresh look at the networks around. */
+    fun scanNetworks() = connections.scan()
+
+    /** The permission to ask for before the list of [action] can show names, or null when it needs none or the access is already there. */
+    fun connectionPermission(action: QuickAction): String? =
+        connections.permissionFor(action)?.takeIf {
+            if (action == QuickAction.Wifi) connections.wifiAccess() == ConnectionAccess.NeedsPermission
+            else connections.bluetoothAccess() == ConnectionAccess.NeedsPermission
+        }
 
     /** The length of the screen timeout, in milliseconds, for the button that goes through them (null for the other buttons). */
     fun quickActionTimeout(action: QuickAction): Int? = if (action == QuickAction.ScreenTimeout) quickActions.screenTimeout() else null
