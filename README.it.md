@@ -115,8 +115,12 @@ Ognuno è facoltativo e legge i dati solo finché è fissato su Start.
 - **Backup** del layout in un file o in una cartella (qualsiasi cartella che Android sa aprire), a mano o ogni 1, 7 o 30 giorni, e **sincronizzazione cifrata tra telefoni** attraverso quella cartella (AES-256-GCM, chiave dalla tua passphrase con PBKDF2-SHA256).
 - **Profilo di lavoro** e **spazio privato** (Android 15), **Angolo bambini**, e accessibilità: TalkBack su ogni riquadro e riga, dimensione del testo, meno movimento, contrasto più forte.
 
-### Per chi sviluppa un'app
-Un'app può scrivere un titolo, una riga e un numero sul **proprio** riquadro, come un live tile di Windows Phone. Vedi [«Per chi sviluppa un'app»](docs/DOCUMENTAZIONE.md#per-chi-sviluppa-unapp-un-tile-tuo-su-start) nella documentazione.
+### Per chi sviluppa un'app: un riquadro tuo su Start
+
+Se sviluppi un'app, puoi mostrare sul suo riquadro di Start un titolo, un breve testo e un contatore, come i live tile di
+Windows Phone. Il riquadro gira per mostrare il testo, e il contatore compare come numero. Un'app può scrivere solo sul
+**proprio** riquadro, mai su quello di un'altra: il launcher controlla quale app sta chiamando, qualunque cosa la chiamata
+dichiari.
 
 ## Privacy e permessi
 
