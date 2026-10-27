@@ -1,0 +1,1 @@
+Il riquadro del browser ora si chiama «Browser» invece di «Internet Explorer». Il tuo layout di Start resta com'è.

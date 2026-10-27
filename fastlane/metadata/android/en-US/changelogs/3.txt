@@ -1,0 +1,1 @@
+The browser tile is now called "Browser" instead of "Internet Explorer". Your Start layout is kept.

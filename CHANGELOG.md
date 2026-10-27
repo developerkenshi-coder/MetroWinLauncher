@@ -3,6 +3,13 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
+## 26.2S: 2026-10-27
+
+- The browser tile on Start is now called "Browser" (it was "Internet Explorer"). Layouts you already have keep the tile.
+- Documentation and the F-Droid files are brought to this version.
+
+Download: [`MetroWinLauncher-26.2S.apk`](https://github.com/developerkenshi-coder/MetroWinLauncher/releases/tag/v26.2S).
+
 ## 26.1S: 2026-10-27
 
 The first public release (`versionCode 2`).

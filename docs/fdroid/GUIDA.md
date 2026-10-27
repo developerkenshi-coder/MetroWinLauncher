@@ -6,7 +6,7 @@ come si rilascia una versione nuova e che cosa succede quando si manda l'app in 
 ## Stato
 
 La richiesta a F-Droid è **rimandata**: la policy chiede almeno 3 mesi di sviluppo attivo e il primo commit è del 24 ottobre 2026, quindi
-si riprende **verso fine gennaio 2027**. Nel frattempo la versione 26.1S è pubblica su GitHub, firmata con una chiave propria del
+si riprende **verso fine gennaio 2027**. Nel frattempo le versioni 26.1S e 26.2S sono pubbliche su GitHub, firmata con una chiave propria del
 progetto. Quando si riprende: porta la ricetta all'ultima versione (`versionName`, `versionCode`, `CurrentVersion*`), metti nel campo `commit`
 l'hash completo del tag, e segui la sezione «Che cosa succede quando mandi l'app in pubblicazione».
 
@@ -38,7 +38,7 @@ Tutti i file stanno in `fastlane/metadata/android/<lingua>/`. Le lingue ora sono
 | **Icona** | `images/icon.png` | PNG, 512×512 | |
 | **Screenshot** | `images/phoneScreenshots/1.png`, `2.png`, … | PNG o JPG | si mostrano in ordine numerico; ora sono 8 per lingua, 1080×2400 |
 | **Immagine in evidenza** (facoltativa) | `images/featureGraphic.png` | PNG, 1024×500 | il banner in cima alla scheda |
-| **Changelog di una versione** | `changelogs/<versionCode>.txt` | 500 caratteri | il nome è il `versionCode`: la versione 26.1S (codice 2) usa `2.txt` |
+| **Changelog di una versione** | `changelogs/<versionCode>.txt` | 500 caratteri | il nome è il `versionCode`: la versione 26.2S (codice 3) usa `3.txt` |
 | **Nome sotto l'icona sul telefono** | `app/src/main/res/values/strings.xml` e `values-it/strings.xml`, voce `app_name` | | è un cambio dell'app, esce con la versione |
 | **Categorie, licenza, autore, link, tipo di aggiornamento** | la ricetta in fdroiddata | | richiede una merge request |
 
@@ -102,8 +102,9 @@ repository, the release build is unsigned unless a local keystore.properties exi
   prima volta, di aprire prima una richiesta nel tracker [RFP](https://gitlab.com/fdroid/rfp/-/issues).
 - **Servizio di rete non libero** (anti-feature `NonFreeNet`): il riquadro Notizie legge Google News di base, ma si può mettere qualsiasi
   feed RSS e il riquadro è facoltativo. Se lo chiedono, si spiega così oppure si accetta l'etichetta.
-- **Marchi di terzi**: il nome «MetroWin», i riferimenti a Windows Phone e il nome «Internet Explorer» sul riquadro del browser nel Start
-  di base. Se lo chiedono, si rinomina il riquadro.
+- **Marchi di terzi**: il nome «MetroWin», i riferimenti a Windows Phone, il glifo «e» del browser e i nomi di alcune app stock di
+  Microsoft nel Start di base (Xbox, Skype, Office, Word, Excel, OneDrive, OneNote, PowerPoint, Cortana). Il riquadro del browser ora
+  si chiama «Browser». Se i revisori lo chiedono, si rinominano anche gli altri (si cambia in `strings.xml`, non l'identificativo).
 - **Permessi e servizi**: `QUERY_ALL_PACKAGES` (vedere tutte le app per la lista), il servizio di accessibilità (solo per bloccare lo
   schermo e per l'Action Center sopra le altre app). Lo scopo di ciascuno è nella tabella dei permessi della [documentazione](../DOCUMENTAZIONE.md#permessi).
 

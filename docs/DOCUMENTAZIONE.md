@@ -739,7 +739,7 @@ servizio di Google, metadati in `fastlane/metadata/android/`, ricetta in [`docs/
 F-Droid compila dal sorgente **e firma con la propria chiave**: la build senza `keystore.properties` esce non firmata, come serve.
 
 1. Il repository deve essere pubblico, con il lavoro su `main` e un tag per ogni versione, col nome della versione preceduto da `v`
-   (`v26.1S` per `versionName 26.1S`, `versionCode 2`). Il tag deve puntare a un commit in cui `app/build.gradle.kts` ha già quella versione.
+   (`v26.2S` per `versionName 26.2S`, `versionCode 3`). Il tag deve puntare a un commit in cui `app/build.gradle.kts` ha già quella versione.
 2. A ogni rilascio: alza `versionCode` e `versionName` in `app/build.gradle.kts`, aggiungi `fastlane/metadata/android/<lingua>/changelogs/<versionCode>.txt`
    (al massimo 500 byte) e crea il tag.
 3. Fai il fork di <https://gitlab.com/fdroid/fdroiddata>, copia la ricetta in `metadata/com.metrowin.launcher.yml`, prova con `fdroid lint`,
@@ -922,7 +922,7 @@ app/src/main/java/com/metrowin/launcher/
   pulsante Recenti non ha attese (lo riferiscono utenti di launcher di terze parti; non l'ho provato).
 - **Font**: Windows Phone usa Segoe WP, proprietario. Qui c'è Open Sans (OFL). Vedi [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 - **Colori d'accento**: Microsoft ha pubblicato i 20 colori solo come immagine; i valori vengono da trascrizioni.
-- **Marchi**: i nomi delle app stock (Internet Explorer, Xbox, Skype…) sono quelli di Windows Phone. Stanno in `MetroCatalog.kt`
+- **Marchi**: i nomi delle app stock (Xbox, Skype, Office…) sono quelli di Windows Phone; il browser si chiama «Browser». Stanno in `MetroCatalog.kt`
   e in `strings.xml`, e si cambiano in un punto solo se vuoi pubblicare l'app.
 - **Passphrase**: sta nelle preferenze private dell'app, in chiaro, e non esce dal telefono; non viene salvata nel backup di Android.
 - Versioni: AGP 8.13, Kotlin 2.3, Compose BOM 2025.10. Le librerie AndroidX più recenti chiedono AGP 9 e compileSdk 37.

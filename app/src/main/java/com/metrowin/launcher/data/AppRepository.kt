@@ -30,7 +30,7 @@ import com.metrowin.launcher.model.LiveKind
  * plus the Windows Phone stock apps ([MetroCatalog]) that the device can play.
  *
  * An app is always listed under its own name. When a stock entry maps onto it, the stock entry is
- * added next to it ("Internet Explorer" beside "Chrome"); when both have the same name ("Calculator")
+ * added next to it ("Browser" beside "Chrome"); when both have the same name ("Calculator")
  * they are one entry, which takes the Metro glyph.
  */
 class AppRepository(private val context: Context) {
