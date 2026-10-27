@@ -15,8 +15,8 @@ android {
         applicationId = "com.metrowin.launcher"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "26.1S"
     }
 
     // The key of the official release comes from keystore.properties in the root of the project (never committed: it is in
