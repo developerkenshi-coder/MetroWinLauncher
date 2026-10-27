@@ -1,0 +1,1 @@
+First public release: the Start screen with live tiles, the Action Center, the alphabetical app list, the Metro lock screen and three looks (Classic, Modern Glass, Modern Droid).

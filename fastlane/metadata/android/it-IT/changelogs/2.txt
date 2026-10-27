@@ -1,0 +1,1 @@
+Prima versione pubblica: la schermata Start con riquadri animati, l'Action Center, la lista app alfabetica, il blocco schermo Metro e tre aspetti (Classic, Modern Glass, Modern Droid).
