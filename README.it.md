@@ -40,7 +40,7 @@
 L'APK è firmato con questo certificato (SHA-256):
 
 ```
-E1:53:D6:F5:2B:E5:9A:39:E0:97:DE:06:C8:00:F6:08:BF:64:F6:27:DF:BF:23:8C:28:5E:24:E0:2B:66:75:96
+B5:E0:52:EB:C5:48:EF:A1:C5:71:6B:85:E0:D2:0F:FC:BC:D3:0E:31:C6:76:1E:BC:C2:34:A9:DD:E7:DF:0C:61
 ```
 
 Ogni versione ha anche un file `SHA256SUMS`. Per controllare tutti e due:
