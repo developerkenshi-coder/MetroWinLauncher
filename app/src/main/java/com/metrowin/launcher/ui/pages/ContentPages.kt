@@ -1,7 +1,18 @@
 package com.metrowin.launcher.ui.pages
 
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
+import com.metrowin.launcher.ui.anim.metroTween
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import com.metrowin.launcher.ui.anim.Motion
+import com.metrowin.launcher.ui.components.MetroButton
+import com.metrowin.launcher.ui.components.MetroDatePicker
+import com.metrowin.launcher.ui.components.MetroTimePicker
+import java.time.LocalDate
+import java.time.LocalTime
 import android.text.format.DateUtils
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -189,20 +200,16 @@ fun RemindersPage(
     fun add(at: Long) {
         if (onAdd(text, at)) text = ""
     }
+    // The day and the hour of a reminder are chosen on wheels, one above the other, in the page itself.
+    var choosing by remember { mutableStateOf(false) }
+    var chosenDate by remember { mutableStateOf(LocalDate.now()) }
+    var chosenTime by remember { mutableStateOf(LocalTime.now().plusHours(1).withMinute(0).withSecond(0).withNano(0)) }
     fun choose() {
         if (Reminders.clean(text) == null) return
         val start = LocalDateTime.now().plusHours(1)
-        DatePickerDialog(
-            context,
-            { _, year, month, day ->
-                TimePickerDialog(
-                    context,
-                    { _, hour, minute -> add(millis(LocalDateTime.of(year, month + 1, day, hour, minute))) },
-                    start.hour, 0, android.text.format.DateFormat.is24HourFormat(context),
-                ).show()
-            },
-            start.year, start.monthValue - 1, start.dayOfMonth,
-        ).show()
+        chosenDate = start.toLocalDate()
+        chosenTime = start.toLocalTime().withMinute(0).withSecond(0).withNano(0)
+        choosing = true
     }
     PageFrame(stringResource(R.string.reminders_page_header), stringResource(R.string.reminders_default_label), modifier) {
         MetroTextField(
@@ -220,6 +227,23 @@ fun RemindersPage(
                 }
             }
             PageChip(stringResource(R.string.reminders_choose), false, "reminders:choose") { choose() }
+        }
+        AnimatedVisibility(
+            choosing,
+            enter = expandVertically(metroTween(durationMillis = 300, easing = Motion.Decelerate)) + fadeIn(metroTween(200)),
+            exit = shrinkVertically(metroTween(durationMillis = 200, easing = Motion.Accelerate)) + fadeOut(metroTween(140)),
+        ) {
+            Column(Modifier.padding(top = 12.dp).testTag("reminders:wheels"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                MetroDatePicker(chosenDate, { chosenDate = it }, years = LocalDate.now().year..LocalDate.now().year + 20, tag = "reminders:date")
+                MetroTimePicker(chosenTime, android.text.format.DateFormat.is24HourFormat(context), { chosenTime = it }, tag = "reminders:time")
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("reminders:wheels:ok")) {
+                        choosing = false
+                        add(millis(LocalDateTime.of(chosenDate, chosenTime)))
+                    }
+                    MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag("reminders:wheels:cancel")) { choosing = false }
+                }
+            }
         }
         if (!canExact) {
             PageNote(stringResource(R.string.reminders_inexact), Modifier.padding(top = 14.dp))

@@ -80,7 +80,34 @@ enum class ShortcutKind(val code: String) {
     PeopleHub("peoplehub"),
 
     /** The reminders that wait for their time. */
-    Reminders("reminders");
+    Reminders("reminders"),
+
+    /** A switch of the Action Center on Start; [ShortcutDef.uri] is the id of the quick action. */
+    Toggle("toggle"),
+
+    /** When the sun rises and sets today. */
+    Sun("sun"),
+
+    /** The steps of today. */
+    Steps("steps"),
+
+    /** The voice recorder. */
+    Recorder("recorder"),
+
+    /** The camera, with the last photo on the tile. */
+    Camera("camera"),
+
+    /** The cards of the wallet (loyalty cards, tickets) as barcodes. */
+    Wallet("wallet"),
+
+    /** The street and the numbers of the place the phone is at. */
+    WhereAmI("whereami"),
+
+    /** The place where the car was left. */
+    Parking("parking"),
+
+    /** A clock with hands. */
+    AnalogClock("analogclock");
 
     companion object {
         fun fromCode(code: String?) = entries.firstOrNull { it.code == code }
@@ -119,7 +146,7 @@ data class ShortcutDef(
             ShortcutKind.Setting -> Launch.Action(uri)
             ShortcutKind.Counter -> Launch.Internal(AppRepository.ROUTE_COUNTER)
             ShortcutKind.Checklist -> Launch.Internal(AppRepository.ROUTE_CHECKLIST)
-            ShortcutKind.WorldClock, ShortcutKind.Moon -> Launch.Internal(AppRepository.ROUTE_NONE)
+            ShortcutKind.WorldClock, ShortcutKind.Moon, ShortcutKind.AnalogClock -> Launch.Internal(AppRepository.ROUTE_NONE)
             ShortcutKind.Birthdays -> Launch.Link(CONTACTS_ADDRESS)
             ShortcutKind.Place -> Launch.Link(Places.navigationUri(uri))
             ShortcutKind.Album -> Launch.Internal(AppRepository.ROUTE_ALBUM)
@@ -131,6 +158,14 @@ data class ShortcutDef(
             ShortcutKind.DialGrid -> Launch.Internal(AppRepository.ROUTE_DIALGRID)
             ShortcutKind.PeopleHub -> Launch.Internal(AppRepository.ROUTE_PEOPLEHUB)
             ShortcutKind.Reminders -> Launch.Internal(AppRepository.ROUTE_REMINDERS)
+            ShortcutKind.Toggle -> Launch.Internal(AppRepository.ROUTE_TOGGLE)
+            ShortcutKind.Sun -> Launch.Internal(AppRepository.ROUTE_WEATHER)
+            ShortcutKind.Steps -> Launch.Internal(AppRepository.ROUTE_STEPS)
+            ShortcutKind.Recorder -> Launch.Internal(AppRepository.ROUTE_RECORDER)
+            ShortcutKind.Camera -> Launch.Action(CAMERA_ACTION)
+            ShortcutKind.Wallet -> Launch.Internal(AppRepository.ROUTE_WALLET)
+            ShortcutKind.WhereAmI -> Launch.Internal(AppRepository.ROUTE_WHEREAMI)
+            ShortcutKind.Parking -> Launch.Internal(AppRepository.ROUTE_PARKING)
             else -> Launch.Link(uri)
         },
         glyph = when (kind) {
@@ -157,6 +192,15 @@ data class ShortcutDef(
             ShortcutKind.DialGrid -> Glyph.Phone
             ShortcutKind.PeopleHub -> Glyph.People
             ShortcutKind.Reminders -> Glyph.Bell
+            ShortcutKind.Toggle -> QuickAction.fromId(uri)?.glyph ?: Glyph.Settings
+            ShortcutKind.Sun -> Glyph.Weather
+            ShortcutKind.Steps -> Glyph.Sports
+            ShortcutKind.Recorder -> Glyph.Mic
+            ShortcutKind.Camera -> Glyph.Camera
+            ShortcutKind.Wallet -> Glyph.Wallet
+            ShortcutKind.WhereAmI -> Glyph.Maps
+            ShortcutKind.Parking -> Glyph.Maps
+            ShortcutKind.AnalogClock -> Glyph.Alarm
         },
         pinOnly = true,
         photoPath = photoPath,
@@ -168,6 +212,8 @@ data class ShortcutDef(
             ShortcutKind.Group -> LiveKind.Group
             ShortcutKind.News -> LiveKind.News
             ShortcutKind.Finance -> LiveKind.Finance
+            // The camera tile shows the latest photo: the photos are read for it.
+            ShortcutKind.Camera -> LiveKind.Photos
             else -> null
         },
         note = text.takeIf { kind == ShortcutKind.Note },
@@ -187,6 +233,17 @@ data class ShortcutDef(
             ShortcutKind.DialGrid -> TileData.DialGrid
             ShortcutKind.PeopleHub -> TileData.PeopleHub
             ShortcutKind.Reminders -> TileData.Reminders
+            ShortcutKind.Toggle -> TileData.Toggle(uri)
+            ShortcutKind.Sun -> TileData.Sun
+            ShortcutKind.Steps -> TileData.Steps
+            ShortcutKind.Recorder -> TileData.Recorder
+            ShortcutKind.Camera -> TileData.Camera
+            ShortcutKind.Wallet -> TileData.Wallet
+            ShortcutKind.WhereAmI -> TileData.WhereAmI
+            ShortcutKind.Parking -> TileData.Parking
+            ShortcutKind.AnalogClock -> TileData.AnalogClock
+            ShortcutKind.Contact -> TileData.Contact
+            ShortcutKind.Site -> TileData.Site(uri)
             else -> null
         },
     )
@@ -194,6 +251,9 @@ data class ShortcutDef(
     companion object {
         /** Where the Birthdays tile opens: the contacts. */
         const val CONTACTS_ADDRESS = "content://com.android.contacts/contacts"
+
+        /** What opens the camera app of the phone, whichever it is. */
+        const val CAMERA_ACTION = "android.media.action.STILL_IMAGE_CAMERA"
 
         /** `appshortcut:package:user:id` as (package, user serial number, shortcut id), or null when [uri] is not one. */
         fun appShortcutParts(uri: String): Triple<String, Long, String>? {

@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import com.metrowin.launcher.ui.anim.Motion
+import com.metrowin.launcher.ui.theme.AccentScope
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import kotlin.math.abs
 
@@ -56,6 +57,9 @@ fun LauncherPager(
     start: @Composable (page: Int) -> Unit,
     apps: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    /** Where the accent colour is used (see the settings): the tiles of Start, and the app list. */
+    startAccent: Boolean = true,
+    appsAccent: Boolean = true,
 ) {
     val reduced = LocalReduceMotion.current
     HorizontalPager(
@@ -67,7 +71,7 @@ fun LauncherPager(
         key = { it },
     ) { page ->
         Box(Modifier.fillMaxSize().pageTurnstile(state, page, reduced)) {
-            if (page < startPages) start(page) else apps()
+            if (page < startPages) AccentScope(startAccent) { start(page) } else AccentScope(appsAccent) { apps() }
         }
     }
 }

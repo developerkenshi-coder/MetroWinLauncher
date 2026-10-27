@@ -30,6 +30,9 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
     Airplane("airplane", R.string.qa_airplane, Glyph.Airplane),
     Flashlight("flashlight", R.string.qa_flashlight, Glyph.Flashlight),
     QuietHours("quiet", R.string.qa_quiet_hours, Glyph.Moon),
+
+    /** Quiet hours that switch themselves off after the length chosen in the settings (see [LauncherSettings.dndMinutes]). */
+    QuietTimed("quiettimed", R.string.qa_quiet_timed, Glyph.Moon),
     Rotation("rotation", R.string.qa_rotation, Glyph.Rotation),
     Location("location", R.string.qa_location, Glyph.Maps),
     Hotspot("hotspot", R.string.qa_hotspot, Glyph.Hotspot),
@@ -57,6 +60,9 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
         /** The four buttons on top until the user chooses others. */
         val defaults = listOf(Wifi, Bluetooth, Flashlight, LauncherSettings)
 
+        /** The buttons that can be kept on Start as a switch: the ones that have a state to show. */
+        val toggles = listOf(Wifi, Bluetooth, Airplane, Flashlight, QuietHours, QuietTimed, Rotation, Location, AutoBrightness)
+
         /** What the four buttons were before the launcher's settings joined them: nobody chose that, so it is replaced. */
         private val previousDefaults = listOf("wifi", "bluetooth", "airplane", "flashlight")
 
@@ -78,6 +84,12 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
             if (previous >= 0) slots[previous] = slots[slot]
             slots[slot] = action
             return slots
+        }
+
+        /** [current] with the button at [from] moved to [to], the ones between moving over by one. */
+        fun move(current: List<QuickAction>, from: Int, to: Int): List<QuickAction> {
+            if (from !in current.indices || to !in current.indices) return current
+            return current.toMutableList().also { it.add(to, it.removeAt(from)) }
         }
 
         const val SLOTS = 4
@@ -141,7 +153,7 @@ class QuickActionsController(private val context: Context) {
             QuickAction.Bluetooth -> context.getSystemService(BluetoothManager::class.java).adapter?.isEnabled
             QuickAction.Airplane -> Settings.Global.getInt(context.contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) == 1
             QuickAction.Flashlight -> if (torchId == null) null else _torchOn.value
-            QuickAction.QuietHours ->
+            QuickAction.QuietHours, QuickAction.QuietTimed ->
                 context.getSystemService(android.app.NotificationManager::class.java).currentInterruptionFilter !=
                     android.app.NotificationManager.INTERRUPTION_FILTER_ALL
             QuickAction.Rotation ->
@@ -184,13 +196,17 @@ class QuickActionsController(private val context: Context) {
      * Switches the flashlight or the quiet hours on the spot, or opens the system screen of the button. True when it was
      * done on the spot. Quiet hours need the "do not disturb" access: without it the screen that gives it opens.
      */
-    fun activate(action: QuickAction): Boolean {
+    fun activate(action: QuickAction, quietMinutes: Int = 60, torchMinutes: Int = 0): Boolean {
         val torch = torchId
         if (action == QuickAction.Flashlight && torch != null) {
-            runCatching { cameras.setTorchMode(torch, !_torchOn.value) }
+            val turnOn = !_torchOn.value
+            runCatching { cameras.setTorchMode(torch, turnOn) }
+            // An alarm of Android puts it out when the time is up; switching it off by hand cancels that.
+            if (turnOn && torchMinutes > 0) com.metrowin.launcher.notifications.Alerts.scheduleTorchOff(context, torchMinutes)
+            else com.metrowin.launcher.notifications.Alerts.cancelTorchOff(context)
             return true
         }
-        if (action == QuickAction.QuietHours) {
+        if (action == QuickAction.QuietHours || action == QuickAction.QuietTimed) {
             val manager = context.getSystemService(android.app.NotificationManager::class.java)
             if (manager.isNotificationPolicyAccessGranted) {
                 val on = manager.currentInterruptionFilter != android.app.NotificationManager.INTERRUPTION_FILTER_ALL
@@ -200,6 +216,9 @@ class QuickActionsController(private val context: Context) {
                         if (on) android.app.NotificationManager.INTERRUPTION_FILTER_ALL else android.app.NotificationManager.INTERRUPTION_FILTER_PRIORITY,
                     )
                 }
+                // The timed one asks Android to wake the launcher when the time is up; any other switch-off cancels that.
+                if (action == QuickAction.QuietTimed && !on) com.metrowin.launcher.notifications.Alerts.scheduleQuietEnd(context, quietMinutes)
+                else com.metrowin.launcher.notifications.Alerts.cancelQuietEnd(context)
                 return true
             }
             return start(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS).let { false }
@@ -233,7 +252,7 @@ class QuickActionsController(private val context: Context) {
             QuickAction.Wifi -> Settings.ACTION_WIFI_SETTINGS
             QuickAction.Bluetooth -> Settings.ACTION_BLUETOOTH_SETTINGS
             QuickAction.Airplane -> Settings.ACTION_AIRPLANE_MODE_SETTINGS
-            QuickAction.QuietHours -> "android.settings.ZEN_MODE_SETTINGS"
+            QuickAction.QuietHours, QuickAction.QuietTimed -> "android.settings.ZEN_MODE_SETTINGS"
             QuickAction.Rotation, QuickAction.Brightness, QuickAction.Flashlight -> Settings.ACTION_DISPLAY_SETTINGS
             QuickAction.Location -> Settings.ACTION_LOCATION_SOURCE_SETTINGS
             QuickAction.Hotspot -> "android.settings.TETHER_SETTINGS"
@@ -250,4 +269,16 @@ class QuickActionsController(private val context: Context) {
 
     private fun start(intentAction: String): Boolean =
         runCatching { context.startActivity(Intent(intentAction).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess
+}
+
+/** Puts the flashlight out, from the alarm that was set when it was lit. Nothing happens when the phone has no flashlight. */
+fun switchTorchOff(context: Context) {
+    runCatching {
+        val cameras = context.getSystemService(CameraManager::class.java) ?: return
+        val id = cameras.cameraIdList.firstOrNull { id ->
+            val c = cameras.getCameraCharacteristics(id)
+            c.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true && c.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
+        } ?: return
+        cameras.setTorchMode(id, false)
+    }
 }

@@ -9,6 +9,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.R
+import androidx.compose.ui.Modifier
+import com.metrowin.launcher.data.FileType
 import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.data.SearchEngine
 
@@ -18,6 +20,7 @@ fun SearchPage(env: SettingsEnv) {
     val context = LocalContext.current
     // The calendar is read with the calendar permission, asked once when the switch is turned on.
     val calendarPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    val filePermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     SettingsPage {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.search_where_title))
@@ -49,6 +52,33 @@ fun SearchPage(env: SettingsEnv) {
             )
         }
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            ToggleSetting(
+                stringResource(R.string.search_notifications), env.settings.searchNotifications,
+                onChange = { value -> env.onChange { it.copy(searchNotifications = value) } },
+                hint = stringResource(R.string.search_notifications_hint), tag = "search:notifications", id = "search.notifications",
+            )
+            ToggleSetting(
+                stringResource(R.string.search_operators), env.settings.searchOperators,
+                onChange = { value -> env.onChange { it.copy(searchOperators = value) } },
+                hint = stringResource(R.string.search_operators_hint), tag = "search:operators", id = "search.operators",
+            )
+        }
+        Column(Modifier.settingAnchor("search.files"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            SettingHeading(stringResource(R.string.search_files_title))
+            FileType.entries.forEach { type ->
+                val on = type.code in env.settings.searchFileTypes
+                ToggleSetting(
+                    stringResource(type.label), on,
+                    onChange = { value ->
+                        env.onChange { it.copy(searchFileTypes = if (value) it.searchFileTypes + type.code else it.searchFileTypes - type.code) }
+                        if (value && !LivePermissions.isGranted(context, type.permission)) filePermission.launch(type.permission)
+                    },
+                    tag = "search:files:${type.code}",
+                )
+            }
+            SettingHint(stringResource(R.string.search_files_hint))
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.search_web_title))
             ToggleSetting(
                 stringResource(R.string.apps_search_web), env.settings.searchWeb,
@@ -74,6 +104,16 @@ fun SearchPage(env: SettingsEnv) {
                 stringResource(R.string.apps_assistant), env.settings.searchAssistant,
                 onChange = { value -> env.onChange { it.copy(searchAssistant = value) } },
                 hint = stringResource(R.string.apps_assistant_hint), tag = "search:assistant", id = "search.assistant",
+            )
+            ToggleSetting(
+                stringResource(R.string.apps_commands), env.settings.searchCommands,
+                onChange = { value -> env.onChange { it.copy(searchCommands = value) } },
+                hint = stringResource(R.string.apps_commands_hint), tag = "search:commands", id = "search.commands",
+            )
+            ToggleSetting(
+                stringResource(R.string.apps_tip), env.settings.tipOfDay,
+                onChange = { value -> env.onChange { it.copy(tipOfDay = value) } },
+                hint = stringResource(R.string.apps_tip_hint), tag = "search:tip", id = "search.tip",
             )
             ToggleSetting(
                 stringResource(R.string.apps_dial), env.settings.searchSmartDial,

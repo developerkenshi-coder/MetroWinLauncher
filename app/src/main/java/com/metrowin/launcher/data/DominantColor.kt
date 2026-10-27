@@ -61,6 +61,19 @@ object DominantColor {
         return if (h < 0f) h + 360f else h
     }
 
+    /** The brightest a tile colour may be and still carry white text. */
+    private const val MAX_TILE_LUMA = 0.45f
+
+    /** [argb] darkened, when it is too light for white text, keeping its hue. */
+    fun forTile(argb: Int): Int {
+        val r = (argb shr 16) and 0xFF
+        val g = (argb shr 8) and 0xFF
+        val b = argb and 0xFF
+        val luma = (0.2126f * r + 0.7152f * g + 0.0722f * b) / 255f
+        val k = if (luma > MAX_TILE_LUMA) MAX_TILE_LUMA / luma else 1f
+        return (0xFF shl 24) or ((r * k).toInt() shl 16) or ((g * k).toInt() shl 8) or (b * k).toInt()
+    }
+
     /** Index in [accents] (ARGB colours) of the one closest to [argb], by the "redmean" approximation of how the eye sees colour. */
     fun nearestIndex(argb: Int, accents: List<Int>): Int {
         require(accents.isNotEmpty())

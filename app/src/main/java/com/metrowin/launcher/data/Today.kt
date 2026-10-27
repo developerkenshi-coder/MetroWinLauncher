@@ -22,6 +22,8 @@ data class TodayInfo(
     val reminders: List<Reminder> = emptyList(),
     /** How many reminders have passed their time and are not done. */
     val missed: Int = 0,
+    /** The tip of the day (a place in the list of tips), or -1 for none. */
+    val tip: Int = -1,
 ) {
     /** Nothing but the date: no event, no alarm, no weather and no reminder. */
     val isQuiet: Boolean get() = event == null && alarmMillis == null && weather == null && reminders.isEmpty() && missed == 0

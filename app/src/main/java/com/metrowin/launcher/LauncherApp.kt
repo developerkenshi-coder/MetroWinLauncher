@@ -1,5 +1,16 @@
 package com.metrowin.launcher
 
+import com.metrowin.launcher.data.Tips
+import com.metrowin.launcher.data.SystemCommands
+import com.metrowin.launcher.ui.components.asShape
+import com.metrowin.launcher.ui.components.LocalIconShape
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import com.metrowin.launcher.ui.settings.RestoreDialog
+import com.metrowin.launcher.data.SearchOperators
+import com.metrowin.launcher.ui.start.TileFeatures
+import com.metrowin.launcher.ui.start.ChoiceSheet
+import com.metrowin.launcher.ui.start.Choice
+import com.metrowin.launcher.data.Steps
 import android.Manifest
 import android.app.Activity
 import android.app.KeyguardManager
@@ -123,7 +134,10 @@ import com.metrowin.launcher.ui.components.LocalIconLoader
 import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
 import com.metrowin.launcher.ui.anim.LocalPowerSaving
 import com.metrowin.launcher.ui.anim.LocalTapFeedback
+import com.metrowin.launcher.ui.anim.rememberMetroSounds
 import com.metrowin.launcher.ui.anim.rememberTapFeedback
+import com.metrowin.launcher.data.MetroSound
+import kotlinx.coroutines.flow.drop
 import com.metrowin.launcher.ui.components.TurnstileHost
 import com.metrowin.launcher.ui.gesture.BackGestureHandler
 import com.metrowin.launcher.ui.gesture.EdgePageBack
@@ -193,6 +207,7 @@ import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.weather.WeatherScreen
 import com.metrowin.launcher.ui.theme.MetroAccents
 import com.metrowin.launcher.ui.theme.AccessibilityPolicy
+import com.metrowin.launcher.ui.theme.AccentScope
 import com.metrowin.launcher.ui.theme.MetroTheme
 import com.metrowin.launcher.ui.theme.pageBackground
 import com.metrowin.launcher.ui.theme.Palettes
@@ -242,6 +257,10 @@ fun LauncherApp(vm: LauncherViewModel) {
     val live by vm.live.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
     val startBackground by vm.background.collectAsStateWithLifecycle()
+    val pageBackgrounds by vm.pageBackgrounds.collectAsStateWithLifecycle()
+    val layouts by vm.layouts.collectAsStateWithLifecycle()
+    val backupCopies by vm.backupCopies.collectAsStateWithLifecycle()
+    val pendingRestore by vm.pendingRestore.collectAsStateWithLifecycle()
     val lockPhoto by vm.lockPhoto.collectAsStateWithLifecycle()
     val tutorialDone by vm.tutorialDone.collectAsStateWithLifecycle()
     // The tour shows on the first run, and again whenever it is asked for in the settings.
@@ -250,6 +269,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val tutorialPager = rememberPagerState { Tutorial.steps.size }
     val homePress by vm.homePresses.collectAsStateWithLifecycle()
     val notifications by vm.notifications.collectAsStateWithLifecycle()
+    val notificationHistory by vm.notificationHistory.collectAsStateWithLifecycle()
     val badges by vm.badges.collectAsStateWithLifecycle()
     val peeks by vm.peeks.collectAsStateWithLifecycle()
     val liveInfo by vm.liveInfo.collectAsStateWithLifecycle()
@@ -310,6 +330,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val installedIconPacks by vm.installedIconPacks.collectAsStateWithLifecycle()
     val backupFolderName by vm.backupFolderName.collectAsStateWithLifecycle()
     val weather by vm.weather.collectAsStateWithLifecycle()
+    val missingApps by vm.missingApps.collectAsStateWithLifecycle()
     val todayExtras by vm.today.collectAsStateWithLifecycle()
     val reminders by vm.reminders.collectAsStateWithLifecycle()
     val battery by vm.battery.collectAsStateWithLifecycle()
@@ -317,6 +338,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val liveNow = remember(live, torchOn, weather, battery, nowPlaying) { live.copy(torchOn = torchOn, weather = weather, battery = battery, nowPlaying = nowPlaying) }
     val appContext = LocalContext.current
     val screenWidthDp = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp().value }
+    val screenHeightDp = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp().value }
     val about = remember(appContext) { AboutInfo.of(appContext) }
     val kidsMode = settings.kidsMode
     val kidsCells = remember(settings.kidsApps, items) {
@@ -331,7 +353,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val haptics = LocalHapticFeedback.current
-    val tapFeedback = rememberTapFeedback(settings.tapSound, settings.tapHaptics)
+    val tapFeedback = rememberTapFeedback(settings.tapSound, settings.tapHaptics, settings.vibrationStrength)
     val pagerState = rememberPagerState { pages.size + 1 }
     val startScrolls = List(LauncherSettings.MAX_START_PAGES) { rememberScrollState() }
     // The Start screen last seen: where a new tile is pinned and where Back from the app list returns.
@@ -350,6 +372,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     var pendingWidget by remember { mutableStateOf<Pair<Int, WidgetProvider>?>(null) }
     var siteDialogOpen by remember { mutableStateOf(false) }
     var settingPickerOpen by remember { mutableStateOf(false) }
+    var togglePickerOpen by remember { mutableStateOf(false) }
+    var groupEditingId by remember { mutableStateOf<String?>(null) }
     // The tile (entry id) whose color is being chosen, the note being written, and the countdown being made or changed.
     var colorPickFor by remember { mutableStateOf<String?>(null) }
     var noteEditingId by remember { mutableStateOf<String?>(null) }
@@ -363,6 +387,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     // The Start screen the add menu puts the new tile on: the selected tile's, or the one on screen after a long press on the empty part.
     var addPage by remember { mutableIntStateOf(0) }
     val undoState by vm.undo.collectAsStateWithLifecycle()
+    val undoDepth by vm.undoDepth.collectAsStateWithLifecycle()
     var weatherOpen by remember { mutableStateOf(false) }
     // The pages of the tiles that do more than show (timer, news, reminders…), and the choices that make some of the tiles.
     val panels = remember { PanelState() }
@@ -395,6 +420,15 @@ fun LauncherApp(vm: LauncherViewModel) {
     var folderChooserFor by remember { mutableStateOf<AppItem?>(null) }
     var query by remember { mutableStateOf("") }
     var settingsSection by remember { mutableStateOf<SettingsSection?>(null) }
+    // Asked from outside (the Action Center over other apps): the settings of the launcher.
+    val settingsRequest by vm.settingsRequests.collectAsStateWithLifecycle()
+    LaunchedEffect(settingsRequest) {
+        if (settingsRequest == 0) return@LaunchedEffect
+        settingsSection = null
+        settingsOpen = true
+        // Met: a turned screen makes the activity again, and it must not open them once more.
+        vm.settingsRequestMet()
+    }
     // The setting the open section was opened for, when the search took the user there.
     var settingsTarget by remember { mutableStateOf<String?>(null) }
     // The apps are indexed once (and again when they or the counts of the opens change), not read again for every key.
@@ -405,50 +439,64 @@ fun LauncherApp(vm: LauncherViewModel) {
             profileWords = AppSearch.ProfileWords(appContext.getString(R.string.profile_work), appContext.getString(R.string.profile_private)),
         )
     }
-    val searchResults = remember(query, appIndex, listItems) { if (query.isBlank()) listItems else appIndex.search(query) }
+    // A word and a colon in front (`app:`, `contact:`, `file:`...) narrows the search to one kind of result.
+    val scoped = remember(query, settings.searchOperators) { if (settings.searchOperators) SearchOperators.parse(query) else SearchOperators.Parsed(null, query) }
+    val searchResults = remember(scoped, appIndex, listItems) {
+        when {
+            query.isBlank() -> listItems
+            !scoped.allows(SearchOperators.Scope.Apps) -> emptyList()
+            scoped.text.isBlank() -> listItems
+            else -> appIndex.search(scoped.text)
+        }
+    }
     val launcherSettingsIndex = remember { SettingsIndex.searchIndex(appContext) }
     val tileIndex = remember(items) { TileSearch.index(items) }
     val recentSearches by vm.recentSearches.collectAsStateWithLifecycle()
     // What the search box answers by itself: a sum, a conversion, a number, a link, a timer or an alarm.
     // A throw of dice or a coin is made again when it is touched.
     var rollSeed by remember { mutableIntStateOf(0) }
-    val localAnswers = remember(query, settings.searchAnswers, rollSeed) {
-        if (settings.searchAnswers) QuickAnswers.of(query) else emptyList()
+    val localAnswers = remember(scoped, settings.searchAnswers, rollSeed) {
+        if (settings.searchAnswers && scoped.scope == null) QuickAnswers.of(query) else emptyList()
     }
     // A currency conversion needs the rates: they come once the typing pauses, and only when the user allowed it.
     var currencyAnswer by remember { mutableStateOf<QuickAnswer.Currency?>(null) }
-    LaunchedEffect(query, settings.searchAnswers, settings.searchCurrency) {
+    LaunchedEffect(scoped, settings.searchAnswers, settings.searchCurrency) {
         currencyAnswer = null
-        val asked = if (settings.searchAnswers && settings.searchCurrency) Currencies.parse(query) else null
+        val asked = if (settings.searchAnswers && settings.searchCurrency && scoped.scope == null) Currencies.parse(query) else null
         if (asked != null) {
             delay(CURRENCY_DELAY_MS)
             currencyAnswer = vm.currencyAnswer(asked)
         }
     }
     // A sentence that asks for something (a reminder, an event, a note, a place near, the camera) comes before the plain answers.
-    val assistantAnswers = remember(query, settings.searchAssistant) {
-        if (settings.searchAssistant) Assistant.of(query) else emptyList()
+    val assistantAnswers = remember(scoped, settings.searchAssistant) {
+        if (settings.searchAssistant && scoped.scope == null) Assistant.of(query) else emptyList()
     }
-    val answers = assistantAnswers + (currencyAnswer?.let { listOf(it) + localAnswers } ?: localAnswers)
+    val commandAnswers = remember(scoped, settings.searchCommands) {
+        if (settings.searchCommands && scoped.scope == null) listOfNotNull(SystemCommands.of(query)) else emptyList()
+    }
+    val answers = commandAnswers + assistantAnswers + (currencyAnswer?.let { listOf(it) + localAnswers } ?: localAnswers)
 
     // What the search finds besides apps. The settings and the web offer are known at once; the contacts follow
     // when the typing pauses, so each key does not query the contacts.
     var globalResults by remember { mutableStateOf(GlobalResults.Empty) }
     LaunchedEffect(
-        query, settings.searchContacts, settings.searchSettings, settings.searchWeb, settings.searchCalendar,
-        settings.searchLauncherSettings, settings.searchTiles, tileIndex,
+        scoped, settings.searchContacts, settings.searchSettings, settings.searchWeb, settings.searchCalendar,
+        settings.searchLauncherSettings, settings.searchTiles, tileIndex, settings.searchFileTypes, settings.searchNotifications,
     ) {
+        // What is looked for, without the operator in front of it.
+        val query = scoped.text
         if (query.isBlank()) {
             globalResults = GlobalResults.Empty
             return@LaunchedEffect
         }
         globalResults = GlobalResults(
-            settings = if (settings.searchSettings) {
+            settings = if (settings.searchSettings && scoped.allows(SearchOperators.Scope.Settings)) {
                 GlobalSearch.matchSettings(query) { def -> appContext.getString(def.label) }.take(MAX_SETTING_RESULTS)
             } else {
                 emptyList()
             },
-            launcherSettings = if (settings.searchLauncherSettings) {
+            launcherSettings = if (settings.searchLauncherSettings && scoped.allows(SearchOperators.Scope.Settings)) {
                 launcherSettingsIndex.search(query).take(MAX_SETTING_RESULTS).map { hit ->
                     val place = appContext.getString(hit.section.title)
                     LauncherSettingMatch(
@@ -461,25 +509,39 @@ fun LauncherApp(vm: LauncherViewModel) {
             } else {
                 emptyList()
             },
-            tiles = if (settings.searchTiles) {
+            tiles = if (settings.searchTiles && scoped.allows(SearchOperators.Scope.Tiles)) {
                 tileIndex.search(query).take(MAX_TILE_RESULTS).map { TileMatch(it, TileSearch.snippet(it, query)) }
             } else {
                 emptyList()
             },
-            webQuery = query.trim().takeIf { settings.searchWeb },
+            webQuery = query.trim().takeIf { settings.searchWeb && scoped.allows(SearchOperators.Scope.Web) },
+            notifications = if (settings.searchNotifications && scoped.allows(SearchOperators.Scope.Notifications)) vm.searchNotifications(query) else emptyList(),
         )
-        if (settings.searchContacts) {
+        val contacts = settings.searchContacts && scoped.allows(SearchOperators.Scope.Contacts)
+        val events = settings.searchCalendar && scoped.allows(SearchOperators.Scope.Events)
+        val files = settings.searchFileTypes.isNotEmpty() && scoped.allows(SearchOperators.Scope.Files)
+        if (contacts) {
             delay(CONTACT_SEARCH_DELAY_MS)
             globalResults = globalResults.copy(contacts = vm.searchContacts(query))
         }
-        if (settings.searchCalendar) {
-            if (!settings.searchContacts) delay(CONTACT_SEARCH_DELAY_MS)
+        if (events) {
+            if (!contacts) delay(CONTACT_SEARCH_DELAY_MS)
             globalResults = globalResults.copy(events = vm.searchEvents(query))
+        }
+        if (files) {
+            if (!contacts && !events) delay(CONTACT_SEARCH_DELAY_MS)
+            globalResults = globalResults.copy(files = vm.searchFiles(query))
         }
     }
 
     // The Action Center. The panel is one state that follows the finger, whatever starts the pull.
     val panel = rememberPullPanel()
+    // The glide of the Action Center as it comes down and goes, and the chime of a banner, when the sounds are on.
+    val metroSound = rememberMetroSounds(settings.metroSounds)
+    LaunchedEffect(panel) {
+        snapshotFlow { panel.isShown }.drop(1).collect { metroSound(if (it) MetroSound.Open else MetroSound.Close) }
+    }
+    LaunchedEffect(banner?.key) { if (banner != null) metroSound(MetroSound.Notify) }
     // The status bar of Android out of the way on Start; a swipe from the top edge brings it back for a moment.
     val hostView = LocalView.current
     DisposableEffect(settings.hideStatusBar) {
@@ -576,8 +638,13 @@ fun LauncherApp(vm: LauncherViewModel) {
     // A section left open when the settings close must not be half open the next time.
     LaunchedEffect(settingsOpen) { if (!settingsOpen) sectionAway.snapTo(1f) }
 
-    // Leaving the app list puts its keyboard away.
+    // Leaving the app list puts its keyboard away; so does going to another app, so the keyboard is not still there when the launcher comes back.
     val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+        focus.clearFocus(force = true)
+        keyboard?.hide()
+    }
     LaunchedEffect(pagerState, focus) {
         snapshotFlow { pagerState.currentPage }.collect { if (it != appsPage) focus.clearFocus() }
     }
@@ -727,7 +794,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     // A speed dial: the picker returns one number; the phone permission is asked once, and without it the tile opens the dialer.
     val speedDialPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     // The birthdays of the contacts are read with the contacts permission, asked once when that tile is put on Start.
-    val birthdaysPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    val birthdaysPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { vm.refreshLive(force = true) }
     val pickNumber = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val uri = result.data?.data
         if (result.resultCode == Activity.RESULT_OK && uri != null) {
@@ -795,6 +862,31 @@ fun LauncherApp(vm: LauncherViewModel) {
             }
             AppRepository.ROUTE_REMINDERS -> {
                 panels.open(Panel.Reminders())
+                return
+            }
+            AppRepository.ROUTE_STEPS -> {
+                panels.open(Panel.Steps)
+                return
+            }
+            // A switch kept on Start does its thing where it is.
+            AppRepository.ROUTE_TOGGLE -> {
+                (item.data as? TileData.Toggle)?.let { vm.toggleTile(it.action) }
+                return
+            }
+            AppRepository.ROUTE_RECORDER -> {
+                panels.open(Panel.Recorder)
+                return
+            }
+            AppRepository.ROUTE_WALLET -> {
+                panels.open(Panel.Wallet)
+                return
+            }
+            AppRepository.ROUTE_WHEREAMI -> {
+                panels.open(Panel.WhereAmI)
+                return
+            }
+            AppRepository.ROUTE_PARKING -> {
+                panels.open(Panel.Parking)
                 return
             }
             AppRepository.ROUTE_DIALGRID -> {
@@ -868,7 +960,14 @@ fun LauncherApp(vm: LauncherViewModel) {
         openNow(item, startKey)
     }
 
+    // A locked Start says why nothing happens when a tile is held or an app is pinned.
+    fun lockedNotice() = Toast.makeText(appContext, R.string.start_locked_notice, Toast.LENGTH_SHORT).show()
+
     fun togglePin(item: AppItem) {
+        if (settings.lockStart) {
+            lockedNotice()
+            return
+        }
         if (item.id in pinnedIds) {
             vm.unpin(item.id)
             return
@@ -1093,7 +1192,9 @@ fun LauncherApp(vm: LauncherViewModel) {
             }
         },
         onLongClick = { cell ->
-            if (!launching && folderPick == null) {
+            if (settings.lockStart) {
+                if (!launching) lockedNotice()
+            } else if (!launching && folderPick == null) {
                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                 editingKey = cell.key
             }
@@ -1131,7 +1232,7 @@ fun LauncherApp(vm: LauncherViewModel) {
             null
         } else {
             {
-                if (!launching && folderPick == null && !tutorialVisible && menu == null && !settingsOpen) {
+                if (!launching && folderPick == null && !tutorialVisible && menu == null && !settingsOpen && !settings.lockStart) {
                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                     editingKey = null
                     addPage = lastStartPage.coerceIn(0, pages.size - 1)
@@ -1168,10 +1269,17 @@ fun LauncherApp(vm: LauncherViewModel) {
         }
     }
 
+    val dark = rememberIsDark(settings, weather?.details?.sunrise, weather?.details?.sunset)
     val autoAccentIndex by vm.autoAccentIndex.collectAsStateWithLifecycle()
     val accentIndex = if (settings.autoAccent) autoAccentIndex ?: settings.accentIndex else settings.accentIndex
-    val accent = if (settings.customAccent != 0) Color(settings.customAccent) else MetroAccents[accentIndex.coerceIn(MetroAccents.indices)]
-    val dark = rememberIsDark(settings, weather?.details?.sunrise, weather?.details?.sunset)
+    // The accent of the night, when there is one, wins over the others while the dark theme is on.
+    val accent = if (dark && settings.accentNightIndex >= 0) {
+        MetroAccents[settings.accentNightIndex.coerceIn(MetroAccents.indices)]
+    } else if (settings.customAccent != 0) {
+        Color(settings.customAccent)
+    } else {
+        MetroAccents[accentIndex.coerceIn(MetroAccents.indices)]
+    }
     // Modern Droid takes the colors of the wallpaper (Android 12 and later), or builds its palette from the chosen color.
     val droid = if (settings.themeStyle == ThemeStyle.Droid) {
         remember(settings.dynamicColor, accent, context) {
@@ -1185,8 +1293,14 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     // The Today card is written from what the launcher already holds, and again whenever the list comes up. The calendar and the
     // alarm are read only when the app list page is the one on screen (and not more often than PowerPolicy.todayMaxAgeMs).
-    val todayInfo = remember(todayExtras, weather, reminders, listReplay, settings.searchToday) {
-        if (settings.searchToday) Today.info(todayExtras, weather, reminders, System.currentTimeMillis()) else null
+    val todayInfo = remember(todayExtras, weather, reminders, listReplay, settings.searchToday, settings.tipOfDay) {
+        if (settings.searchToday) {
+            Today.info(todayExtras, weather, reminders, System.currentTimeMillis()).let { info ->
+                if (settings.tipOfDay) info.copy(tip = Tips.indexFor(java.time.LocalDate.now())) else info
+            }
+        } else {
+            null
+        }
     }
     LaunchedEffect(pagerState, appsPage, settings.searchToday) {
         if (!settings.searchToday) return@LaunchedEffect
@@ -1195,10 +1309,10 @@ fun LauncherApp(vm: LauncherViewModel) {
     LifecycleEventEffect(Lifecycle.Event.ON_START) { if (pagerState.currentPage == appsPage) vm.refreshToday() }
 
     CompositionLocalProvider(
-        LocalIconLoader provides vm.icons, LocalWidgetHost provides vm.widgets, LocalPowerSaving provides powerSaving,
+        LocalIconLoader provides vm.icons, LocalIconShape provides settings.iconShape.asShape(), LocalWidgetHost provides vm.widgets, LocalPowerSaving provides powerSaving,
         LocalTapFeedback provides tapFeedback,
     ) {
-        MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode, textScale = settings.textScale / 100f, boldText = settings.boldText, systemFont = settings.systemFont) {
+        MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode, textScale = settings.textScale / 100f, boldText = settings.boldText, systemFont = settings.systemFont, tilt = settings.tiltStrength / 100f, speed = settings.animationSpeed / 100f) {
             Box(
                 Modifier
                     .fillMaxSize()
@@ -1234,6 +1348,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                         header = { KidsHeader(onExit = ::requestExitKidsCorner) },
                     )
                 } else LauncherPager(
+                    startAccent = settings.accentStart,
+                    appsAccent = settings.accentApps,
                     state = pagerState,
                     startPages = pages.size,
                     userScrollEnabled = !launching && menu == null && !jumpOpen && !tutorialVisible && folderPick == null,
@@ -1244,7 +1360,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             badges = badges,
                             peeks = peeks,
                             columns = TileGrid.columnsFor(screenWidthDp, settings.moreTiles),
-                            background = startBackground,
+                            background = pageBackgrounds[page] ?: startBackground,
                             enterToken = enterToken,
                             exitRequest = exitRequest,
                             editingKey = editingKey,
@@ -1254,12 +1370,18 @@ fun LauncherApp(vm: LauncherViewModel) {
                             parallax = settings.parallax,
                             pickedKeys = folderPick,
                             framing = PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY),
+                            photoFit = settings.startPhotoFit,
                             showNames = settings.showTileNames,
                             spacing = settings.tileSpacing.factor,
+                            features = TileFeatures(settings.tileMusicControls, settings.batteryEstimate, settings.calendarAgenda, settings.weatherBlocks, settings.stepGoal, settings.iconTileColors),
+                            showGroups = settings.groupTitles,
+                            locked = settings.lockStart,
+                            topInset = (screenHeightDp * settings.startLowerPercent / 100f).dp,
                             header = if (settings.showClock && page == 0) {
                                 {
                                     ClockHeader(
                                         hours = settings.clockHours, showAlarm = settings.clockAlarm, showWeek = settings.clockWeek,
+                                        zone = settings.clockZone,
                                         onTimeClick = if (settings.clockTaps) ({ vm.openClock() }) else null,
                                         onDateClick = if (settings.clockTaps) ({ vm.openCalendar() }) else null,
                                     )
@@ -1307,6 +1429,10 @@ fun LauncherApp(vm: LauncherViewModel) {
                                     vm.rememberSearch(query)
                                     vm.perform(answer)
                                 }
+                            },
+                            onOpenNotification = { entry ->
+                                vm.rememberSearch(query)
+                                vm.openNotification(entry)
                             },
                             onOpenSetting = { match ->
                                 vm.rememberSearch(query)
@@ -1519,9 +1645,12 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onLabels = if (settings.appBar) ({ editLabels = !editLabels }) else null,
                             labels = editLabels,
                             style = (cell as? AppCell)?.tile?.style,
+                            sizes = if (settings.largeTiles) TileSize.entries else TileSize.entries - TileSize.Large,
+                            onGroup = if (settings.groupTitles) ({ groupEditingId = cell.entryId }) else null,
                             onStyle = {
                                 val tile = cell as? AppCell ?: return@EditBar
-                                vm.setStyle(tile.entryId, tile.tile.style.next(cycleAvailable = tile.item.live == LiveKind.Photos || tile.item.live == LiveKind.Album))
+                                val pictures = tile.item.live == LiveKind.Photos || tile.item.live == LiveKind.Album
+                                vm.setStyle(tile.entryId, tile.tile.style.next(cycleAvailable = pictures, collectionAvailable = pictures && settings.collectionTiles))
                             },
                         )
                     }
@@ -1535,7 +1664,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 }
 
                 if (panel.isShown) {
-                    ActionCenter(
+                    AccentScope(settings.accentPanel) { ActionCenter(
                         slots = QuickAction.slots(settings.quickActions),
                         states = quickStates,
                         timeout = screenTimeout,
@@ -1593,25 +1722,37 @@ fun LauncherApp(vm: LauncherViewModel) {
                                 },
                                 torch = panelControls.torch.takeIf { torchOn },
                                 onTorch = vm::setTorchStrength,
+                                ringVolume = panelControls.ringVolume, alarmVolume = panelControls.alarmVolume,
+                                onRingVolume = vm::setRingVolume, onAlarmVolume = vm::setAlarmVolume,
+                                profiles = if (settings.volumeProfilesShow) settings.volumeProfiles.map { it.name } else emptyList(),
+                                onProfile = vm::applyVolumeProfile,
                             )
                         } else {
                             null
                         },
                         onSnooze = vm::snoozeNotification,
+                        onMute = if (settings.muteFromPanel) vm::muteApp else null,
                         onAppNotificationSettings = { entry ->
                             panel.close()
                             vm.openAppNotificationSettings(entry)
                         },
                         onClearAll = vm::clearNotifications,
+                        onNotificationAction = vm::runNotificationAction,
+                        history = notificationHistory,
+                        onClearHistory = vm::clearNotificationHistory,
                         onTurnOnNotificationAccess = vm::openNotificationAccessSettings,
                         onClose = panel::close,
-                    )
+                    ) }
                 }
 
                 TurnstileHost(show = weatherOpen, away = weatherAway) {
+                    val cityWeather by vm.cityWeather.collectAsStateWithLifecycle()
+                    LaunchedEffect(weatherOpen, settings.weatherCities) { if (weatherOpen) vm.refreshCities() }
                     WeatherScreen(
                         weather = weather,
                         place = settings.weatherCity,
+                        others = settings.weatherCities.map { it to cityWeather[it.key] },
+                        blocks = settings.weatherBlocks,
                         onRefresh = { vm.refreshWeather(force = true) },
                         onChooseCity = {
                             weatherOpen = false
@@ -1638,7 +1779,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 }
 
                 TurnstileHost(show = settingsOpen, away = settingsAway) {
-                    SettingsScreen(
+                    AccentScope(settings.accentApps) { SettingsScreen(
                         env = SettingsEnv(
                             powerSaving = powerSaving,
                             settings = settings,
@@ -1655,6 +1796,9 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onStartKidsCorner = ::enterKidsCorner,
                             onClearSearches = vm::clearSearches,
                             onResetStart = vm::resetStart,
+                            onSaveVolumeProfile = vm::saveVolumeProfile,
+                            undoDepth = undoDepth,
+                            onUndo = vm::undoStep,
                             language = language,
                             onLanguage = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) ({ tag ->
                                 language = tag
@@ -1663,8 +1807,28 @@ fun LauncherApp(vm: LauncherViewModel) {
                             about = about,
                             onExportLayout = vm::exportLayout,
                             onImportLayout = vm::importLayout,
+                            backupCopies = backupCopies,
+                            onRefreshCopies = vm::refreshBackupCopies,
+                            onRestoreCopy = vm::restoreFromCopy,
+                            onShareLayout = vm::shareLayout,
+                            onShareTheme = vm::shareTheme,
+                            onExportApps = vm::exportApps,
+                            onImportApps = vm::importApps,
+                            layouts = layouts,
+                            onSaveLayout = vm::saveLayout,
+                            onApplyLayout = vm::applyLayout,
+                            onResaveLayout = vm::resaveLayout,
+                            onDeleteLayout = vm::deleteLayout,
+                            onLayoutHour = vm::setLayoutHour,
+                            pageBackgrounds = pageBackgrounds,
+                            onPickPageBackground = vm::setPageBackground,
+                            onClearPageBackground = vm::clearPageBackground,
+                            missingApps = missingApps,
+                            onOpenStore = vm::openStore,
                             searchPlaces = vm::searchPlaces,
                             onChoosePlace = vm::choosePlace,
+                            onFollowPlace = vm::followPlace,
+                            onUnfollowCity = vm::unfollowCity,
                             onUseLocation = vm::useMyLocation,
                             profiles = profiles,
                             onSetProfilePaused = vm::setProfilePaused,
@@ -1701,13 +1865,13 @@ fun LauncherApp(vm: LauncherViewModel) {
                         sectionAway = sectionAway,
                         target = settingsTarget,
                         onTargetChange = { settingsTarget = it },
-                    )
+                    ) }
                 }
 
                 // The banner of a new notification, while the launcher is on screen and nothing covers the top of it.
                 banner?.let { entry ->
                     if (!panel.isShown && !lockPreviewOpen && !tutorialVisible && !voice.isOpen) {
-                        ToastBanner(
+                        AccentScope(settings.accentPanel) { ToastBanner(
                             entry = entry, app = appsByPackage[entry.packageName], hideText = settings.liveHideText,
                             onOpen = {
                                 banner = null
@@ -1715,7 +1879,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             },
                             onDismiss = { if (banner?.key == entry.key) banner = null },
                             modifier = Modifier.align(Alignment.TopCenter),
-                        )
+                        ) }
                     }
                 }
 
@@ -1723,10 +1887,10 @@ fun LauncherApp(vm: LauncherViewModel) {
                 val volumeHud by vm.volumeHud.collectAsStateWithLifecycle()
                 volumeHud?.let { hud ->
                     if (!tutorialVisible) {
-                        VolumeHudPanel(
+                        AccentScope(settings.accentPanel) { VolumeHudPanel(
                             hud = hud, onSet = vm::setVolume, onToggle = vm::toggleVolumeHud, onDismiss = vm::dismissVolumeHud,
                             modifier = Modifier.align(Alignment.TopCenter),
-                        )
+                        ) }
                     }
                 }
 
@@ -1842,7 +2006,59 @@ fun LauncherApp(vm: LauncherViewModel) {
                             vm.addPeopleHub(addPage)
                             if (!LivePermissions.isGranted(appContext, LivePermissions.contacts)) birthdaysPermission.launch(LivePermissions.contacts)
                         },
+                        onSteps = {
+                            addMenuOpen = false
+                            vm.addSteps(addPage)
+                            Steps.permission()?.takeIf { !LivePermissions.isGranted(appContext, it) }?.let(birthdaysPermission::launch)
+                        },
+                        onRecorder = {
+                            addMenuOpen = false
+                            vm.addRecorder(addPage)
+                        },
+                        onCamera = {
+                            addMenuOpen = false
+                            vm.addCamera(addPage)
+                            if (!LivePermissions.canReadPhotos(appContext)) birthdaysPermission.launch(LivePermissions.photos)
+                        },
+                        onWallet = {
+                            addMenuOpen = false
+                            vm.addWallet(addPage)
+                        },
+                        onWhereAmI = {
+                            addMenuOpen = false
+                            vm.addWhereAmI(addPage)
+                        },
+                        onParking = {
+                            addMenuOpen = false
+                            vm.addParking(addPage)
+                        },
+                        onAnalogClock = {
+                            addMenuOpen = false
+                            vm.addAnalogClock(addPage)
+                        },
+                        onSun = {
+                            addMenuOpen = false
+                            vm.addSun(addPage)
+                        },
+                        onToggle = {
+                            addMenuOpen = false
+                            togglePickerOpen = true
+                        },
                         onDismiss = { addMenuOpen = false },
+                    )
+                }
+
+                if (togglePickerOpen) {
+                    val choices = remember(appContext) {
+                        QuickAction.toggles.map { Choice(it.id, it.glyph, appContext.getString(it.label)) }
+                    }
+                    ChoiceSheet(
+                        title = stringResource(R.string.add_toggle_title), choices = choices, tagPrefix = "toggle",
+                        onPick = { choice ->
+                            togglePickerOpen = false
+                            QuickAction.fromId(choice.id)?.let { vm.addToggle(it, addPage) }
+                        },
+                        onDismiss = { togglePickerOpen = false },
                     )
                 }
 
@@ -1998,6 +2214,26 @@ fun LauncherApp(vm: LauncherViewModel) {
                         },
                         onCancel = { siteDialogOpen = false },
                     )
+                }
+
+                if (pendingRestore != null) {
+                    RestoreDialog(onDone = vm::applyRestore, onCancel = vm::cancelRestore)
+                }
+
+                groupEditingId?.let { id ->
+                    val entry = StartPages.all(pages).firstOrNull { it.id == id }
+                    if (entry != null) {
+                        FolderNameDialog(
+                            initial = entry.group,
+                            title = R.string.group_title_prompt,
+                            maxLength = StartEntries.MAX_GROUP,
+                            onDone = { title ->
+                                vm.setGroupTitle(id, title)
+                                groupEditingId = null
+                            },
+                            onCancel = { groupEditingId = null },
+                        )
+                    }
                 }
 
                 renamingFolderId?.let { id ->

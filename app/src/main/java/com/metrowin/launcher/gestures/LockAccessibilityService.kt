@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
+import com.metrowin.launcher.notifications.NotificationHub
 
 /**
  * Locks the screen, or opens the recent apps, when the launcher asks. Android gives an app no other way to do either.
@@ -17,10 +18,12 @@ import android.view.accessibility.AccessibilityEvent
 class LockAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         instance = this
+        NotificationHub.edgeChanged()
     }
 
     override fun onUnbind(intent: android.content.Intent?): Boolean {
         if (instance === this) instance = null
+        NotificationHub.edgeChanged()
         return super.onUnbind(intent)
     }
 
@@ -31,6 +34,12 @@ class LockAccessibilityService : AccessibilityService() {
     companion object {
         @Volatile
         private var instance: LockAccessibilityService? = null
+
+        /**
+         * The service itself while it is on, to put windows over everything, the status bar included: the windows of an app go under the
+         * status bar and cannot take a swipe from the top edge, those of an accessibility service go over it.
+         */
+        internal fun host(): Context? = instance
 
         /** Locks the screen. False when the service is off, or on a version of Android that cannot do it (before 9). */
         fun lock(): Boolean {

@@ -69,7 +69,8 @@ class SyncPageTest : ScreenshotBase() {
     @Test
     fun withAFolderSyncCanBeTurnedOnAndAskedForAPassphrase() {
         open(LauncherSettings(backupFolder = "content://tree/drive"))
-        tapScrolled("sync:enable")
+        // A long page: a slow finger, so that the page does not fling past the switch.
+        tapScrolled("sync:enable", swipeMs = 1_200L)
         advance(500)
         assertTrue(current.syncEnabled)
         capture("settings_sync")

@@ -169,6 +169,29 @@
     <string name="backup_not_layout">Questo non è un file di layout di MetroWin</string>
     <string name="sec_about">informazioni</string>
     <string name="sec_about_desc">Versione, crediti e licenze</string>
+    <string name="sec_debug">Debug developer</string>
+    <string name="sec_debug_desc">Report di batteria e log, salvati come file di testo</string>
+    <string name="dbg_access">Permessi dei report</string>
+    <string name="dbg_dump">Dump di sistema (DUMP)</string>
+    <string name="dbg_logs">Log di sistema (READ_LOGS)</string>
+    <string name="dbg_usage">Accesso all\'uso</string>
+    <string name="dbg_allowed">consentito</string>
+    <string name="dbg_missing">non consentito</string>
+    <string name="dbg_privacy">I file possono contenere cose private: nomi, notifiche, indirizzi, quello che le altre app hanno scritto nel log. Guarda un file prima di mandarlo a qualcuno.</string>
+    <string name="dbg_adb">Android dà i dump di sistema e il log di tutto il telefono solo tramite adb. Da un computer, con il telefono collegato:</string>
+    <string name="dbg_usage_open">Consenti l\'accesso all\'uso</string>
+    <string name="dbg_usage_hint">Serve anche ai dump della batteria: consenti MetroWin nella schermata che si apre.</string>
+    <string name="dbg_app_battery">Stato batteria dell\'app</string>
+    <string name="dbg_app_battery_hint">La batteria e il risparmio energetico adesso, la fascia di standby, CPU e memoria del processo, come è stato fermato prima, cosa ha acceso il launcher e le statistiche di Android per questa app.</string>
+    <string name="dbg_device_battery">Stato batteria di tutto il telefono</string>
+    <string name="dbg_device_battery_hint">La batteria adesso e le statistiche di Android per ogni app: consumi, wakelock, sveglie, schermo. Può volerci qualche secondo.</string>
+    <string name="dbg_device_log">Log di sistema di tutto il telefono</string>
+    <string name="dbg_device_log_hint">Tutto quello che Android ha adesso nei suoi buffer di log, di ogni app. Senza il permesso READ_LOGS contiene solo le righe di questa app.</string>
+    <string name="dbg_app_log">Log dell\'app</string>
+    <string name="dbg_app_log_hint">Tutto quello che questa app ha scritto nel log da quando è partita, finché i buffer di Android lo hanno ancora (sono circolari: il file dice da quando parte).</string>
+    <string name="dbg_working">Scrivo il file…</string>
+    <string name="dbg_saved">Salvato (%1$s)</string>
+    <string name="dbg_failed">Non riuscito: %1$s</string>
     <string name="about_version">versione</string>
     <string name="about_android">android</string>
     <string name="about_device">dispositivo</string>
@@ -304,7 +327,7 @@
     <string name="gest_lock_service_hint">Android permette a un\'app di bloccare lo schermo o aprire le app recenti solo tramite un servizio di accessibilità. Questo non fa altro: non legge nulla dallo schermo e non chiede eventi. Le app recenti si aprono subito, senza l\'attesa che lo swipe della navigazione a gesti di Android può avere con un launcher che non è quello del telefono.</string>
     <string name="gest_lock_needs_service">Prima attiva il servizio per bloccare lo schermo nelle impostazioni di accessibilità</string>
     <string name="lock_service_label">Blocco schermo di MetroWin</string>
-    <string name="lock_service_description">Permette al launcher MetroWin di bloccare lo schermo, aprire le app recenti, fare uno screenshot, aprire il menu di spegnimento o dividere lo schermo quando lo scegli per un gesto o un pulsante. Non legge né modifica nulla sullo schermo.</string>
+    <string name="lock_service_description">Permette al launcher MetroWin di bloccare lo schermo, aprire le app recenti, fare uno screenshot, aprire il menu di spegnimento o dividere lo schermo quando lo scegli per un gesto o un pulsante. Se accendi l\'Action Center sopra le altre app, tiene anche una striscia sottile sul bordo alto dello schermo che aspetta uno swipe verso il basso. Non legge né modifica nulla sullo schermo.</string>
 
     <!-- scheduled backup -->
     <string name="backup_folder">cartella di backup</string>
@@ -1106,6 +1129,39 @@
     <string name="add_dialgrid">Pagina chiamata rapida</string>
     <string name="add_peoplehub">Hub Persone</string>
     <string name="add_reminders">Promemoria</string>
+    <string name="accent_use">Dove si usa il colore d\'accento</string>
+    <string name="accent_use_start">Riquadri di Start</string>
+    <string name="accent_use_panel">Action Center e banner</string>
+    <string name="accent_use_apps">Lista app e impostazioni</string>
+    <string name="accent_use_hint">Dove una parte è spenta, il colore è un grigio adatto al tema.</string>
+    <string name="photo_fit">Come la foto riempie lo schermo</string>
+    <string name="photo_fit_fill">riempi</string>
+    <string name="photo_fit_fit">adatta</string>
+    <string name="photo_fit_stretch">allunga</string>
+    <string name="photo_fit_tile">affianca</string>
+    <string name="photo_fit_center">centra</string>
+    <string name="ac_sounds">Suoni Metro</string>
+    <string name="ac_sounds_hint">Un din per le nuove notifiche e un breve glissando quando l\'Action Center scende o va via, anche sopra le altre app. Seguono il volume del telefono.</string>
+    <string name="notif_history">scartate da poco (%1$d)</string>
+    <string name="notif_history_clear">svuota l\'elenco</string>
+    <string name="notif_more_text">leggi tutto</string>
+    <string name="notif_less_text">mostra meno</string>
+    <string name="ac_ring_volume">Volume della suoneria</string>
+    <string name="ac_alarm_volume">Volume della sveglia</string>
+    <string name="add_cat_people">Persone</string>
+    <string name="add_cat_places">Luoghi e web</string>
+    <string name="add_cat_time">Tempo</string>
+    <string name="add_cat_notes">Note e liste</string>
+    <string name="add_cat_info">Informazioni</string>
+    <string name="add_cat_media">Foto e suoni</string>
+    <string name="add_cat_system">Sistema</string>
+    <string name="add_search">cerca cosa aggiungere</string>
+    <string name="add_nothing">nessun risultato</string>
+    <string name="add_steps">Passi</string>
+    <string name="add_recorder">Registratore vocale</string>
+    <string name="add_camera">Fotocamera</string>
+    <string name="add_wallet">Wallet (carte)</string>
+    <string name="add_whereami">Dove sono</string>
     <string name="place_title">Un posto dove andare</string>
     <string name="place_name_hint">Nome (Casa, Lavoro…)</string>
     <string name="place_address_hint">Indirizzo</string>
@@ -1168,6 +1224,13 @@
     <string name="lock_music_hint">Mentre suona un brano: la copertina, il titolo e i pulsanti per saltare e mettere in pausa.</string>
     <string name="ac_volume_panel_hint">I tasti del volume disegnano un pannello Metro sopra il launcher per ciò che sta suonando adesso: la chiamata, la musica (col nome dell\'app) o la suoneria. Android non permette a un\'app di abbassare da sola il volume di un\'altra; per un player che ha un volume suo (un cast, un altoparlante) il pannello muove quello.</string>
     <string name="ac_banner">Banner per le nuove notifiche</string>
+    <string name="ac_overlay">Banner sopra le altre app</string>
+    <string name="ac_overlay_hint">Lo stesso banner sopra l\'app in cui sei, quando il launcher non è sullo schermo. Non sul blocco schermo, non per le notifiche silenziose, non quando Non disturbare le blocca. Il banner di Android compare comunque. Scegli le app con l\'interruttore banner di ognuna.</string>
+    <string name="ac_hide_system">Nascondi la notifica di Android</string>
+    <string name="ac_hide_system_hint">Ogni notifica che arriva passa dalla tendina di Android all\'Action Center: anche quelle silenziose, quelle che arrivano a schermo spento o bloccato e quelle già presenti quando accendi questa opzione. Chiamate, sveglie, musica e tutto ciò che è in corso restano dove sono, come le app che tieni fuori dall\'Action Center. Resta nell\'Action Center finché non la scarti. Android mostra la sua per un istante e l\'app fa il suo suono: nessuno dei due si può fermare. L\'app viene avvisata che la notifica è stata scartata.</string>
+    <string name="ac_edge">Action Center sopra le altre app</string>
+    <string name="ac_edge_hint">Uno swipe verso il basso dal bordo più alto dello schermo (una striscia sottile, 20 dp) apre l\'Action Center del launcher sopra l\'app in cui sei. Serve il servizio di blocco schermo nelle impostazioni di accessibilità, l\'unico tipo di finestra che può stare sopra la barra di stato. Un tocco sulla striscia non fa niente, e il pannello di Android resta raggiungibile subito sotto. Non sul blocco schermo.</string>
+    <string name="ac_overlay_needs">Serve «Mostra sopra altre app» per MetroWin: accendi l\'interruttore per consentirlo.</string>
     <string name="ac_banner_hint">Un banner Metro in alto mentre il launcher è sullo schermo. Può comparire anche il banner di Android: spegnilo per un\'app nelle impostazioni delle notifiche di quell\'app.</string>
     <string name="ac_notifcontrol">Notifiche app per app</string>
     <string name="ac_notifcontrol_hint">Scegli per ogni app dove compaiono le sue notifiche: il centro azioni, la schermata di blocco, il banner. Il suono è di Android: da qui si apre la pagina di ogni app.</string>
@@ -1230,4 +1293,328 @@
         <item quantity="many">%d promemoria scaduti</item>
         <item quantity="other">%d promemoria scaduti</item>
     </plurals>
+
+    <string name="steps_default_label">Passi</string>
+    <string name="steps_today">passi oggi</string>
+    <string name="steps_header">PASSI</string>
+    <string name="steps_need_permission">Il contapassi del telefono richiede il permesso per l\'attività fisica. Nulla esce dal telefono.</string>
+    <string name="steps_allow">Consenti</string>
+    <string name="steps_goal">Obiettivo: %d passi</string>
+    <string name="steps_since_note">Contati dal sensore di passi del telefono, dalla prima volta che il riquadro l\'ha letto oggi.</string>
+    <string name="recorder_default_label">Registratore</string>
+    <string name="recorder_header">REGISTRATORE VOCALE</string>
+    <string name="recorder_need_permission">Il registratore richiede il permesso di usare il microfono. Le registrazioni restano nella memoria dell\'app.</string>
+    <string name="recorder_allow">Consenti</string>
+    <string name="recorder_start">Registra</string>
+    <string name="recorder_stop">Ferma</string>
+    <string name="recorder_failed">Impossibile aprire il microfono. C\'è una chiamata in corso?</string>
+    <string name="recorder_delete">elimina</string>
+    <plurals name="recordings_count">
+        <item quantity="one">%d registrazione</item>
+        <item quantity="many">%d registrazioni</item>
+        <item quantity="other">%d registrazioni</item>
+    </plurals>
+    <string name="camera_default_label">Fotocamera</string>
+    <string name="wallet_default_label">Portafoglio</string>
+    <string name="wallet_header">PORTAFOGLIO</string>
+    <string name="wallet_empty">Nessuna carta. Aggiungi una carta fedeltà o un biglietto con il numero sotto il codice a barre.</string>
+    <string name="wallet_add">Aggiungi una carta</string>
+    <string name="wallet_name">Nome</string>
+    <string name="wallet_code">Numero del codice a barre</string>
+    <string name="wallet_refused">Il nome è vuoto o il numero non si può disegnare: solo lettere, cifre e segni.</string>
+    <string name="wallet_save">Salva</string>
+    <string name="wallet_back">Indietro</string>
+    <string name="wallet_remove">Rimuovi</string>
+    <plurals name="wallet_count">
+        <item quantity="one">%d carta</item>
+        <item quantity="many">%d carte</item>
+        <item quantity="other">%d carte</item>
+    </plurals>
+    <string name="whereami_default_label">Dove sono</string>
+    <string name="where_header">DOVE SONO</string>
+    <string name="where_need_permission">Per dirti dove sei il telefono richiede il permesso per la posizione.</string>
+    <string name="where_allow">Consenti</string>
+    <string name="where_no_address">Nessuna via trovata qui</string>
+    <string name="where_map">Mappa</string>
+    <string name="where_share">Invia</string>
+    <string name="where_searching">Cerco la posizione…</string>
+    <string name="where_missed">Non trovo la posizione. La localizzazione è attiva?</string>
+    <string name="where_again">Cerca ancora</string>
+    <string name="share_pin_label">Fissa su Start</string>
+    <string name="share_pinned">Fissato su Start</string>
+    <string name="share_not_a_link">Non è un indirizzo web</string>
+
+    <string name="weather_hourly">Prossime ore</string>
+    <string name="weather_other_cities">Altre città</string>
+    <string name="weather_loading">Caricamento…</string>
+    <string name="weather_follow">+ segui anche questa città</string>
+    <string name="weather_followed">Città che segui</string>
+    <string name="weather_unfollow">rimuovi</string>
+    <string name="clock_second_zone">Secondo fuso orario sotto la data</string>
+    <string name="clock_second_none">Nessuno</string>
+
+    <string name="search_section_files">file</string>
+    <string name="search_files_title">File nella ricerca</string>
+    <string name="search_files_hint">Scegli i tipi di file che la ricerca cerca per nome. Ognuno chiede il suo permesso; i nomi sono letti sul telefono e nulla esce. Da Android 13 il telefono mostra i documenti solo all\'app che li ha creati, quindi Documenti potrebbe non trovare nulla.</string>
+    <string name="file_type_images">Immagini</string>
+    <string name="file_type_video">Video</string>
+    <string name="file_type_audio">Musica e suoni</string>
+    <string name="file_type_documents">Documenti</string>
+
+    <string name="apps_backup_heading">App installate</string>
+    <string name="apps_backup_save">Salva l\'elenco delle mie app</string>
+    <string name="apps_backup_save_hint">Scrive in un file i nomi delle app che hai installato. Nient\'altro esce dal telefono.</string>
+    <string name="apps_backup_read_action">Configura da un elenco di app</string>
+    <string name="apps_backup_read_hint">Legge un elenco salvato e mostra le app che questo telefono non ha; ognuna apre la sua pagina nello store, dove la installi.</string>
+    <string name="apps_backup_saved">Elenco delle app salvato</string>
+    <string name="apps_backup_read">Elenco letto</string>
+    <string name="apps_backup_not_list">Quel file non è un elenco di app</string>
+    <string name="apps_backup_missing">Mancanti su questo telefono: %d (tocca per aprire lo store)</string>
+    <string name="edit_label_large">grande</string>
+    <string name="edit_size_large">Riquadro grande</string>
+    <string name="edit_style_collection">Stile: collage</string>
+    <string name="edit_style_short_collection">Collage</string>
+    <string name="add_toggle">Interruttore (Wi-Fi, silenzioso…)</string>
+    <string name="add_toggle_title">Quale interruttore</string>
+    <string name="add_sun">Alba e tramonto</string>
+    <string name="sun_default_label">Sole</string>
+    <string name="sun_day_length">Giorno: %s</string>
+    <string name="qa_quiet_timed">Silenzioso a tempo</string>
+    <string name="battery_time_left">Dura ancora circa %s</string>
+    <string name="edit_label_group">titolo</string>
+    <string name="edit_group">Titolo di un gruppo di riquadri</string>
+    <string name="group_title_prompt">Titolo del gruppo che inizia qui (vuoto per nessuno)</string>
+    <string name="start_features_title">Extra dei riquadri</string>
+    <string name="start_large">Dimensione grande</string>
+    <string name="start_large_hint">Offre la dimensione grande (quattro riquadri per quattro) nella barra di modifica e nella freccia di ridimensionamento. I riquadri già grandi restano grandi.</string>
+    <string name="start_groups">Titoli dei gruppi di riquadri</string>
+    <string name="start_groups_hint">Mostra i titoli scritti sopra i gruppi di riquadri e fa iniziare ogni gruppo su una riga a sé. Spento: Start è una griglia semplice; i titoli restano salvati.</string>
+    <string name="start_collection">Stile collage</string>
+    <string name="start_collection_hint">Offre il collage (tante piccole immagini affiancate) ai riquadri che hanno foto.</string>
+    <string name="start_agenda">Agenda sul riquadro Calendario</string>
+    <string name="start_agenda_hint">Il riquadro Calendario largo elenca i prossimi eventi; quello grande mostra il mese e i prossimi eventi.</string>
+    <string name="start_battery_left">Durata sul riquadro Batteria</string>
+    <string name="start_battery_left_hint">Dice quanto dovrebbe durare la carica, come la prevede Android (da Android 12).</string>
+    <string name="start_music_controls">Pulsanti sul riquadro Musica</string>
+    <string name="start_music_controls_hint">Precedente, play o pausa e successivo, sul riquadro Musica mentre qualcosa suona. Serve l\'accesso alle notifiche.</string>
+    <string name="layouts_title">Layout di Start</string>
+    <string name="layouts_hint">Conserva le schermate di Start con un nome (Casa, Lavoro, Viaggio) e rimettine una con un tocco. Prima di mettere un layout, quello che c\'è su Start viene salvato nel layout che era attivo.</string>
+    <string name="layouts_hour">Subentra alle</string>
+    <string name="layouts_no_hour">Nessuna ora</string>
+    <string name="layouts_apply">Usa</string>
+    <string name="layouts_update">Aggiorna</string>
+    <string name="layouts_delete">Elimina</string>
+    <string name="layouts_name_hint">Nome del layout</string>
+    <string name="layouts_save">Salva Start come layout</string>
+    <string name="layouts_schedule">Cambia layout a orario</string>
+    <string name="layouts_schedule_hint">Ogni layout con un\'ora prende il posto di Start a quell\'ora, una volta. Uno scelto a mano resta fino all\'ora successiva.</string>
+    <string name="page_photos">Una foto per ogni schermata di Start</string>
+    <string name="page_photos_hint">Ogni schermata di Start può avere la sua foto. Una senza foto mostra quella scelta per tutte.</string>
+    <string name="page_photo_label">Schermata di Start %d</string>
+    <string name="page_photo_shared">come le altre</string>
+    <string name="mute_hour">1 ora</string>
+    <string name="mute_8h">8 ore</string>
+    <string name="mute_morning">Fino a domattina</string>
+    <string name="notif_mute">Silenzia questa app</string>
+    <string name="mute_done">App silenziata per ora. Le sue notifiche tornano quando il tempo è finito.</string>
+    <string name="search_section_notifications">notifiche</string>
+    <string name="ac_mute">Silenzia un\'app dal pannello</string>
+    <string name="ac_mute_hint">Una pressione lunga su una notifica offre di silenziare la sua app per un\'ora, otto ore o fino a mattina: le sue notifiche e i suoi banner restano fuori vista e tornano allo scadere del tempo.</string>
+    <string name="ac_priority">Prima messaggi e chiamate</string>
+    <string name="ac_priority_hint">Nell\'Action Center i messaggi e le chiamate vengono prima delle altre notifiche.</string>
+    <string name="ac_filter">Escludi notifiche con certe parole</string>
+    <string name="ac_filter_hint">Una notifica che ha una delle parole qui sotto viene tolta da Android e non si vede da nessuna parte: né nell\'Action Center, né come banner, né sul blocco schermo. Chiamate, sveglie e musica non si toccano mai.</string>
+    <string name="ac_filter_words">Parole da escludere</string>
+    <string name="ac_filter_hint_field">Una parola o un pezzo di parola</string>
+    <string name="ac_filter_add">Aggiungi la parola</string>
+    <string name="ac_dnd_minutes">Durata del silenzioso a tempo</string>
+    <string name="dnd_minutes">%d minuti</string>
+    <string name="dnd_hours">%d h</string>
+    <string name="feel_speed">Velocità delle animazioni</string>
+    <string name="feel_speed_hint">100% è come progettato; 200% è il doppio più veloce. Le molle (il rimbalzo di un riquadro) tengono il loro passo.</string>
+    <string name="feel_tilt">Inclinazione alla pressione</string>
+    <string name="feel_tilt_hint">Quanto un riquadro o un pulsante si inclina via dal dito. Con 0% resta solo l\'affondamento. È la pressione dell\'aspetto Classic.</string>
+    <string name="feel_vibration">Forza della vibrazione di un tocco</string>
+    <string name="feel_percent">%d%%</string>
+    <string name="search_notifications">Cerca nelle notifiche</string>
+    <string name="search_notifications_hint">Cerca anche nelle notifiche che aspettano nell\'Action Center. Sono lette sul telefono, solo mentre cerchi.</string>
+    <string name="search_operators">Operatori nella ricerca</string>
+    <string name="search_operators_hint">Una parola e i due punti davanti restringono la ricerca: app:, contatto:, imp:, file:, evento:, notifica:, riquadro:, web: (oppure a:, c:, s:, f:, e:, n:, t:, w:).</string>
+    <string name="about_phone_toggle">Racconta del telefono</string>
+    <string name="about_phone_toggle_hint">Modello, Android, memoria, spazio e da quanto il telefono è acceso, in questa pagina. Nulla esce dal telefono.</string>
+    <string name="about_phone_title">Questo telefono</string>
+    <string name="about_phone_model">Modello</string>
+    <string name="about_phone_patch">Patch di sicurezza</string>
+    <string name="about_phone_ram">Memoria</string>
+    <string name="about_phone_storage">Spazio (libero / totale)</string>
+    <string name="about_phone_screen">Schermo</string>
+    <string name="about_phone_uptime">Acceso da</string>
+    <string name="about_phone_abi">Processore</string>
+    <string name="backup_copies">Backup conservati</string>
+    <string name="backup_copies_one">Solo l\'ultimo</string>
+    <string name="backup_copies_n">Gli ultimi %d</string>
+    <string name="backup_copies_hint">Ogni backup viene tenuto anche con il minuto in cui è stato fatto, e i più vecchi spariscono quando superano questo numero. Tocca uno qui sotto per rimetterlo.</string>
+    <string name="backup_copies_list">Backup nella cartella</string>
+    <string name="backup_share_layout">Invia il layout</string>
+    <string name="backup_share_hint">Invia le schermate di Start, i collegamenti e le impostazioni, come file, all\'app o alla persona che scegli. Niente di ciò che è solo di questo telefono ci entra (né passphrase, né cartella).</string>
+    <string name="backup_share_theme">Invia l\'aspetto</string>
+    <string name="restore_title">Rimettere cosa?</string>
+    <string name="restore_hint">Scegli le parti del backup da mettere al posto di ciò che c\'è ora sul telefono.</string>
+    <string name="restore_start">Le schermate di Start e i loro collegamenti</string>
+    <string name="restore_settings">Le impostazioni</string>
+    <string name="restore_theme">L\'aspetto del launcher</string>
+    <string name="restore_go">Rimetti</string>
+
+    <!-- Meteo: cosa mostrano la pagina delle previsioni e il riquadro -->
+    <string name="wx_heading">Cosa mostrano le previsioni</string>
+    <string name="wx_intro">Ogni parte ha il suo interruttore. La pagina e il riquadro del meteo li seguono.</string>
+    <string name="wx_rain">Pioggia in arrivo (e sul riquadro)</string>
+    <string name="wx_hourly">Ora per ora</string>
+    <string name="wx_chart">Grafico della temperatura</string>
+    <string name="wx_details">Percepita, vento, umidità, sole e UV</string>
+    <string name="wx_wind">Raffiche e direzione del vento</string>
+    <string name="wx_pressure">Pressione</string>
+    <string name="wx_clouds">Copertura nuvolosa</string>
+    <string name="wx_visibility">Visibilità</string>
+    <string name="wx_dew">Punto di rugiada</string>
+    <string name="wx_rainmm">Pioggia prevista oggi</string>
+    <string name="wx_sunshine">Ore di sole</string>
+    <string name="wx_daylength">Durata del giorno</string>
+    <string name="wx_moon">Fase lunare</string>
+    <string name="wx_daily">Pioggia e vento nei prossimi giorni</string>
+    <string name="wx_air">Qualità dell\'aria (e sul riquadro)</string>
+    <string name="wx_pollen">Pollini</string>
+    <string name="wx_air_hint">L\'aria e i pollini sono una seconda richiesta a Open-Meteo, fatta solo se uno dei due è acceso. I pollini ci sono solo in Europa.</string>
+    <string name="weather_rain_in">Pioggia prevista tra %1$d h</string>
+    <string name="weather_rain_stops">Dovrebbe smettere di piovere tra %1$d h</string>
+    <string name="weather_rain_all_day">Pioggia per le prossime 24 ore</string>
+    <string name="weather_rain_none">Nessuna pioggia nelle prossime 24 ore</string>
+    <string name="weather_rain_amount">Pioggia oggi</string>
+    <string name="weather_day_length">Durata del giorno</string>
+    <string name="weather_hours_minutes">%1$d h %2$d min</string>
+    <string name="weather_sunshine">Sole</string>
+    <string name="weather_gusts">Raffiche</string>
+    <string name="weather_direction">Vento da</string>
+    <string name="weather_pressure">Pressione</string>
+    <string name="weather_clouds">Nuvole</string>
+    <string name="weather_visibility">Visibilità</string>
+    <string name="weather_dew">Punto di rugiada</string>
+    <string name="weather_moon">Luna</string>
+    <string name="weather_chart_description">Temperatura delle prossime ore, da %1$d° a %2$d°</string>
+    <string name="weather_air_title">Aria</string>
+    <string name="weather_pollen_title">Pollini</string>
+    <string-array name="wind_compass">
+        <item>N</item><item>NE</item><item>E</item><item>SE</item><item>S</item><item>SO</item><item>O</item><item>NO</item>
+    </string-array>
+    <string-array name="aqi_levels">
+        <item>Buona</item><item>Discreta</item><item>Moderata</item><item>Scadente</item><item>Molto scadente</item><item>Pessima</item>
+    </string-array>
+    <string-array name="pollen_names">
+        <item>Ontano</item><item>Betulla</item><item>Graminacee</item><item>Artemisia</item><item>Olivo</item><item>Ambrosia</item>
+    </string-array>
+    <string-array name="pollen_levels">
+        <item>Basso</item><item>Moderato</item><item>Alto</item><item>Molto alto</item>
+    </string-array>
+
+    <!-- Passi: obiettivo e storico -->
+    <string name="steps_streak">%1$d giorni di fila con l\'obiettivo raggiunto</string>
+    <string name="steps_week">Ultimi 7 giorni</string>
+    <string name="steps_stats">Media %1$d · giorno migliore %2$d</string>
+    <string name="steps_goal_setting">Obiettivo giornaliero dei passi</string>
+    <string name="steps_goal_off">Nessun obiettivo</string>
+
+    <!-- Auto parcheggiata e orologio analogico -->
+    <string name="add_parking">Auto parcheggiata</string>
+    <string name="add_analogclock">Orologio analogico</string>
+    <string name="parking_default_label">La mia auto</string>
+    <string name="analogclock_default_label">Orologio</string>
+    <string name="parking_header">AUTO PARCHEGGIATA</string>
+    <string name="parking_need_permission">Per salvare dove hai lasciato l\'auto, il launcher ha bisogno della posizione del telefono, una volta, quando premi il pulsante. Non va da nessuna parte.</string>
+    <string name="parking_none">Nessun posto salvato. Quando parcheggi, premi il pulsante.</string>
+    <string name="parking_here">Ho parcheggiato qui</string>
+    <string name="parking_here_again">Salva questo posto</string>
+    <string name="parking_walk">Vai all\'auto a piedi</string>
+    <string name="parking_forget">Dimentica</string>
+
+    <!-- Comportamento di Start e icone -->
+    <string name="shape_style">Come l\'aspetto</string>
+    <string name="shape_square">Quadrata</string>
+    <string name="shape_circle">Cerchio</string>
+    <string name="shape_squircle">Quadrato arrotondato</string>
+
+    <!-- Impostazioni del quarto giro -->
+    <string name="r4_off">No</string>
+    <string name="r4_minutes">%1$d min</string>
+    <string name="start_behaviour_title">Come si comporta Start</string>
+    <string name="start_top_after">Torna in cima dopo</string>
+    <string name="start_top_after_hint">Se torni da un\'altra app dopo questo tempo, Start è in cima, come dopo Home.</string>
+    <string name="start_lock">Blocca la disposizione</string>
+    <string name="start_lock_hint">I riquadri non si spostano, ridimensionano, tolgono o aggiungono per sbaglio. Spegni qui per cambiarli di nuovo.</string>
+    <string name="start_lower">Start più in basso (una mano)</string>
+    <string name="start_lower_hint">L\'orologio e i riquadri iniziano più in basso, a portata di pollice. Scorri per vedere il resto.</string>
+    <string name="icons_shape">Forma delle icone</string>
+    <string name="icons_tile_colors">Colore del riquadro dall\'icona</string>
+    <string name="icons_tile_colors_hint">Il riquadro di un\'app prende il colore principale della sua icona al posto dell\'accento. Le icone grigie tengono l\'accento.</string>
+    <string name="theme_night_accent">Un altro accento di notte</string>
+    <string name="theme_night_accent_hint">Vale mentre il tema scuro è acceso (a orario, col sole, o sempre scuro).</string>
+
+    <!-- Action Center: ordine, timer della torcia, preimpostazioni del volume -->
+    <string name="ac_reorder_hint">Tieni premuto un pulsante della riga, poi trascinalo dove vuoi.</string>
+    <string name="ac_torch_off">Spegni la torcia dopo</string>
+    <string name="ac_torch_off_hint">La torcia accesa dall\'Action Center o da Start si spegne da sola (una sveglia di Android: può essere un po\' in ritardo).</string>
+    <string name="ac_profiles">Volumi preimpostati nell\'Action Center</string>
+    <string name="ac_profiles_hint">Pulsanti sotto i modi del suono: un tocco porta suoneria, contenuti multimediali e sveglie ai volumi della preimpostazione.</string>
+    <string name="ac_profile_line">%1$s · suoneria %2$d%% · media %3$d%% · sveglia %4$d%%</string>
+    <string name="ac_profile_name">Nome della preimpostazione</string>
+    <string name="ac_profile_save">Salva i volumi come sono ora</string>
+    <string name="ac_profile_save_hint">Metti i tre volumi come vuoi (dall\'Action Center), scrivi un nome e salva. Lo stesso nome sostituisce la preimpostazione.</string>
+
+    <!-- Comandi nella ricerca, suggerimento del giorno, annulla, ripristina una pagina, registrazioni -->
+    <string name="apps_commands">Interruttori e modi del suono per nome</string>
+    <string name="apps_commands_hint">Scrivi torcia, silenzioso, vibra, wifi, bluetooth... e il primo risultato lo fa, come il pulsante dell\'Action Center.</string>
+    <string name="apps_tip">Suggerimento del giorno</string>
+    <string name="apps_tip_hint">Un consiglio diverso sul launcher ogni giorno, nella scheda Oggi dell\'elenco delle app (serve la scheda Oggi).</string>
+    <string name="answer_command_here">Comando · tocca per farlo</string>
+    <string name="answer_command_panel">Comando · apre la schermata di Android</string>
+    <string name="today_tip">Suggerimento: %1$s</string>
+    <string name="start_undo_steps">Modifiche di Start che puoi annullare</string>
+    <string name="start_undo_now">Annulla l\'ultima modifica di Start (%1$d da annullare)</string>
+    <string name="start_undo_now_title">Annulla l\'ultima modifica di Start</string>
+    <string name="start_undo_hint">Spostamenti, dimensioni, colori, cartelle e rimozioni dei riquadri tornano indietro uno dopo l\'altro.</string>
+    <string name="reset_page">Riporta questa pagina all\'inizio</string>
+    <string name="reset_page_confirm">Tocca ancora per riportarla</string>
+    <string name="recorder_rename">Rinomina</string>
+    <string name="recorder_share">Invia</string>
+    <string name="recorder_name_hint">Nome della registrazione</string>
+    <string name="recorder_rename_save">Salva il nome</string>
+    <string name="recorder_rename_cancel">Annulla</string>
+    <string name="recorder_rename_failed">Quel nome è già preso o non si può usare.</string>
+    <string-array name="tips">
+        <item>Tieni premuto un riquadro per spostarlo, ingrandirlo, rimpicciolirlo o toglierlo da Start.</item>
+        <item>Tieni premuto un posto vuoto su Start per aggiungere un riquadro: contatti, note, timer, il meteo e molto altro.</item>
+        <item>Tira giù dal bordo alto dello schermo per aprire l\'Action Center.</item>
+        <item>Scrivi un calcolo come 12*3+4 nella casella di ricerca e la risposta è lì.</item>
+        <item>Metti app: o contatto: davanti a una parola nella ricerca per cercare solo quel tipo di risultato.</item>
+        <item>Tieni premuta una notifica nell\'Action Center per silenziare la sua app per un\'ora, otto ore o fino a mattina.</item>
+        <item>Salva Start come Casa, Lavoro o Viaggio nelle impostazioni di Start, e rimettilo con un tocco.</item>
+        <item>Le impostazioni hanno una ricerca tutta loro: scrivi in alto quello che cerchi.</item>
+        <item>Il titolo di un gruppo sopra una riga di riquadri tiene Start in ordine: usa il pulsante titolo nella barra di modifica.</item>
+        <item>Scrivi torcia, silenzioso o vibra nella ricerca per attivarlo subito.</item>
+        <item>Aggiungi un riquadro Passi e scegli il tuo obiettivo giornaliero nelle impostazioni di Start.</item>
+        <item>Aggiungi un riquadro Auto parcheggiata e premi il pulsante quando lasci l\'auto: ti mostra la strada del ritorno.</item>
+        <item>Blocca la disposizione nelle impostazioni di Start così un riquadro non si sposta per sbaglio.</item>
+        <item>Start più in basso porta i riquadri sotto il pollice quando usi il telefono con una mano sola.</item>
+        <item>Un riquadro Registratore tiene le tue note vocali: rinominale e mandale dalla sua pagina.</item>
+        <item>L\'Action Center può mostrare volumi preimpostati: salva i volumi che ti piacciono con un nome.</item>
+        <item>La torcia può spegnersi da sola dopo qualche minuto: scegli quanto nelle impostazioni dell\'Action Center.</item>
+        <item>Tieni premuto un pulsante della riga in alto nelle impostazioni dell\'Action Center e trascinalo in un altro posto.</item>
+        <item>Un riquadro può prendere il colore della sua icona al posto dell\'accento: guarda le impostazioni delle icone.</item>
+        <item>Scegli icone tonde o arrotondate nelle impostazioni delle icone.</item>
+        <item>L\'accento può essere diverso di notte: guarda le impostazioni di Start e tema.</item>
+        <item>La pagina del meteo mostra pioggia, aria, pollini e altro: scegli cosa vedere nelle impostazioni dei riquadri dinamici.</item>
+        <item>Tieni più copie del backup nella cartella, e ripristina solo Start, le impostazioni o l\'aspetto.</item>
+        <item>Annulla può tornare indietro di più di una modifica di Start: scegli quante nelle impostazioni di Start.</item>
+    </string-array>
+
+    <string name="start_locked_notice">Start è bloccato. Sbloccalo nelle impostazioni di Start.</string>
 </resources>

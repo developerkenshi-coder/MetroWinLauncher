@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.actioncenter
 
+import com.metrowin.launcher.ui.anim.metroTween
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.Orientation
@@ -62,9 +63,9 @@ fun ToastBanner(
     // In from the top, a while on screen, out again; a swipe up takes it out at once.
     val shown = remember(entry.key) { Animatable(0f) }
     LaunchedEffect(entry.key) {
-        shown.animateTo(1f, tween(durationMillis = if (reduced) 80 else 260, easing = Motion.Decelerate))
+        shown.animateTo(1f, metroTween(durationMillis = if (reduced) 80 else 260, easing = Motion.Decelerate))
         delay(BANNER_MS)
-        shown.animateTo(0f, tween(durationMillis = if (reduced) 80 else 200, easing = Motion.Accelerate))
+        shown.animateTo(0f, metroTween(durationMillis = if (reduced) 80 else 200, easing = Motion.Accelerate))
         currentDismiss()
     }
     val colors = LocalMetroColors.current
@@ -80,7 +81,7 @@ fun ToastBanner(
                 state = rememberDraggableState { delta -> scope.launch { offset.snapTo((offset.value + delta).coerceAtMost(0f)) } },
                 onDragStopped = {
                     scope.launch {
-                        if (offset.value < -height / 3f) currentDismiss() else offset.animateTo(0f, tween(150))
+                        if (offset.value < -height / 3f) currentDismiss() else offset.animateTo(0f, metroTween(150))
                     }
                 },
             )

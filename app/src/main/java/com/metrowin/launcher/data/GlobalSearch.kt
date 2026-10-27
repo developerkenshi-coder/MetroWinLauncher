@@ -35,9 +35,11 @@ data class GlobalResults(
     val events: List<EventMatch> = emptyList(),
     val launcherSettings: List<LauncherSettingMatch> = emptyList(),
     val tiles: List<TileMatch> = emptyList(),
+    val files: List<FileMatch> = emptyList(),
+    val notifications: List<com.metrowin.launcher.notifications.NotificationEntry> = emptyList(),
 ) {
     val isEmpty: Boolean
-        get() = contacts.isEmpty() && settings.isEmpty() && webQuery == null && events.isEmpty() && launcherSettings.isEmpty() && tiles.isEmpty()
+        get() = contacts.isEmpty() && settings.isEmpty() && webQuery == null && events.isEmpty() && launcherSettings.isEmpty() && tiles.isEmpty() && files.isEmpty() && notifications.isEmpty()
 
     companion object {
         val Empty = GlobalResults()

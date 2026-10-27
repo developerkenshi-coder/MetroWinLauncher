@@ -134,7 +134,7 @@ class SystemTilesUiTest : ScreenshotBase() {
 
     @Test
     fun withNoDetailsThePageHasNoDetailsBlock() {
-        show { WeatherScreen(weather(WeatherDetails()), "Torino", onRefresh = {}, onChooseCity = {}) }
+        show { WeatherScreen(weather(WeatherDetails()), "Torino", blocks = com.metrowin.launcher.data.WeatherBlock.DEFAULT - com.metrowin.launcher.data.WeatherBlock.Moon.code, onRefresh = {}, onChooseCity = {}) }
         advance(300)
         compose.onAllNodesWithTag("weather:details").assertCountEquals(0)
     }

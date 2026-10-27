@@ -66,6 +66,7 @@ fun SettingsPage(modifier: Modifier = Modifier, content: @Composable ColumnScope
             verticalArrangement = Arrangement.spacedBy(26.dp),
             content = {
                 content()
+                PageResetLine()
                 Spacer(Modifier.height(24.dp))
             },
         )

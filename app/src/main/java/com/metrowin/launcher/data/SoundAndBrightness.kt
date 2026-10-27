@@ -37,10 +37,25 @@ class SoundController(private val context: Context) {
         Levels.fraction(audio.getStreamVolume(AudioManager.STREAM_MUSIC), audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC))
     }.getOrNull()
 
-    fun setVolume(fraction: Float) {
-        runCatching {
-            audio.setStreamVolume(AudioManager.STREAM_MUSIC, Levels.level(fraction, audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)), 0)
-        }
+    fun setVolume(fraction: Float) = setStreamVolume(AudioManager.STREAM_MUSIC, fraction)
+
+    /** The volume of the ringtone, as a fraction. */
+    fun ringVolume(): Float? = streamVolume(AudioManager.STREAM_RING)
+
+    fun setRingVolume(fraction: Float) = setStreamVolume(AudioManager.STREAM_RING, fraction)
+
+    /** The volume of the alarms, as a fraction. */
+    fun alarmVolume(): Float? = streamVolume(AudioManager.STREAM_ALARM)
+
+    fun setAlarmVolume(fraction: Float) = setStreamVolume(AudioManager.STREAM_ALARM, fraction)
+
+    private fun streamVolume(stream: Int): Float? = runCatching {
+        Levels.fraction(audio.getStreamVolume(stream), audio.getStreamMaxVolume(stream))
+    }.getOrNull()
+
+    /** Without the "do not disturb" access Android refuses to move the ringtone volume while it is silent or on vibration: nothing happens then. */
+    private fun setStreamVolume(stream: Int, fraction: Float) {
+        runCatching { audio.setStreamVolume(stream, Levels.level(fraction, audio.getStreamMaxVolume(stream)), 0) }
     }
 
     fun ringer(): RingerMode? = runCatching {

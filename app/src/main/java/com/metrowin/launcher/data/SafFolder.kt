@@ -34,13 +34,21 @@ class SafFolder(private val context: Context, private val tree: Uri) {
         resolver.openInputStream(file)!!.use { it.readAtMost(maxBytes) }
     }.getOrNull()
 
-    /** When the file called [name] was last changed (epoch milliseconds), or null. */
-    fun lastModified(name: String): Long? = runCatching {
-        val file = find(name) ?: return null
-        resolver.query(file, arrayOf(DocumentsContract.Document.COLUMN_LAST_MODIFIED), null, null, null)?.use {
-            if (it.moveToFirst() && !it.isNull(0)) it.getLong(0) else null
-        }
-    }.getOrNull()
+    /** Blocking. The names of the files in the folder. */
+    fun names(): List<String> = runCatching {
+        val found = ArrayList<String>()
+        resolver.query(
+            DocumentsContract.buildChildDocumentsUriUsingTree(tree, treeId),
+            arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null,
+        )?.use { cursor -> while (cursor.moveToNext()) cursor.getString(0)?.let(found::add) }
+        found
+    }.getOrDefault(emptyList())
+
+    /** Blocking. Takes the file called [name] out of the folder; false when there is none or it cannot be removed. */
+    fun delete(name: String): Boolean = runCatching {
+        val file = find(name) ?: return false
+        DocumentsContract.deleteDocument(resolver, file)
+    }.getOrDefault(false)
 
     private fun find(name: String): Uri? {
         val children = DocumentsContract.buildChildDocumentsUriUsingTree(tree, treeId)

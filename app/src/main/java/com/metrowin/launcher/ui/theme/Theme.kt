@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.theme
 
+import com.metrowin.launcher.ui.anim.MotionSpeed
+import com.metrowin.launcher.ui.anim.LocalTiltStrength
 import android.app.Activity
 import android.content.Context
 import android.os.Build
@@ -118,6 +120,17 @@ fun MetroColors.onTile(content: Color = tileContent) = MetroColors(
 val LocalMetroColors = staticCompositionLocalOf { DarkColors }
 val LocalAccent = staticCompositionLocalOf { DefaultAccent }
 
+/** What the accent becomes where the user turned it off: a grey that suits the theme, so that nothing there is coloured. */
+@Composable
+fun AccentScope(use: Boolean, content: @Composable () -> Unit) {
+    if (use) {
+        content()
+        return
+    }
+    val grey = if (LocalMetroColors.current.dark) Color(0xFF5C5C5C) else Color(0xFF8C8C8C)
+    CompositionLocalProvider(LocalAccent provides grey, content = content)
+}
+
 /**
  * Open Sans stands in for Segoe WP, which is proprietary. It has the same humanist shapes and the
  * Light weight that gives Windows Phone its look.
@@ -145,9 +158,13 @@ fun MetroTheme(
     boldText: Boolean = false,
     /** The font of the phone instead of the one the look brings. */
     systemFont: Boolean = false,
+    /** How far a press tilts the tiles and buttons (1 as designed, 0 not at all) and how fast the animations go (2 is twice as fast). */
+    tilt: Float = 1f,
+    speed: Float = 1f,
     content: @Composable () -> Unit,
 ) {
     SystemBarIcons(dark)
+    SideEffect { MotionSpeed.factor = speed.coerceIn(0.25f, 4f) }
     val adjustment = if (Build.VERSION.SDK_INT >= 31) LocalConfiguration.current.fontWeightAdjustment else 0
     // "Undefined" is a very large number, not a bold setting.
     val systemBold = adjustment != ADJUSTMENT_UNDEFINED && adjustment >= SYSTEM_BOLD_ADJUSTMENT
@@ -161,6 +178,7 @@ fun MetroTheme(
         LocalOled provides (oled && dark),
         LocalReduceMotion provides reduceMotion,
         LocalHighContrast provides highContrast,
+        LocalTiltStrength provides tilt,
         LocalDensity provides density.let { Density(it.density, it.fontScale * textScale) },
         content = content,
     )

@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.anim
 
+import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -66,6 +68,65 @@ fun GraphicsLayerScope.turnstile(away: Float, reduced: Boolean = false) {
 }
 
 /**
+ * The "feather" of Windows Phone: the items of a list come in one after the other, each swinging in around its left edge as the
+ * turnstile does, a little later than the one above it ([index] times [stepMs], never more than [maxDelayMs]). Plays once for
+ * each [key]; with reduced motion the item is just there.
+ */
+@Composable
+fun Modifier.featherIn(index: Int, key: Any = Unit, stepMs: Int = 40, maxDelayMs: Int = 420): Modifier {
+    val reduced = LocalReduceMotion.current
+    val progress = remember(key) { Animatable(if (reduced) 1f else 0f) }
+    LaunchedEffect(key, reduced) {
+        if (reduced) return@LaunchedEffect
+        delay((index * stepMs).coerceAtMost(maxDelayMs).toLong())
+        progress.animateTo(1f, metroTween(durationMillis = 340, easing = Motion.Decelerate))
+    }
+    return graphicsLayer { turnstile(1f - progress.value) }
+}
+
+/**
+ * The tiles of a row turning in: each one swings up around its top edge, the next a moment after (the way the tiles of Start come in), for
+ * the buttons that appear all at once when a panel opens out. [index] is the place in the row.
+ */
+@Composable
+fun Modifier.flipIn(index: Int, key: Any = Unit, stepMs: Int = 55): Modifier {
+    val reduced = LocalReduceMotion.current
+    val progress = remember(key) { Animatable(if (reduced) 1f else 0f) }
+    LaunchedEffect(key, reduced) {
+        if (reduced) return@LaunchedEffect
+        delay((index * stepMs).toLong())
+        progress.animateTo(1f, metroTween(durationMillis = 380, easing = Motion.Decelerate))
+    }
+    return graphicsLayer {
+        val away = 1f - progress.value
+        transformOrigin = TransformOrigin(0.5f, 0f)
+        rotationX = -FLIP_IN_DEGREES * away
+        cameraDistance = Motion.CAMERA * density
+        alpha = 1f - away * away
+    }
+}
+
+private const val FLIP_IN_DEGREES = 85f
+
+/**
+ * How fast the animations of the interface go, as a multiple of the design: 2 is twice as fast, 0.5 half as fast. It is set from the
+ * settings and read when an animation starts, so the one running is not changed.
+ */
+object MotionSpeed {
+    @Volatile
+    var factor: Float = 1f
+}
+
+/** The same as `tween`, with the duration and the delay divided by [MotionSpeed.factor]. */
+fun <T> metroTween(durationMillis: Int = 300, delayMillis: Int = 0, easing: Easing = FastOutSlowInEasing): TweenSpec<T> =
+    androidx.compose.animation.core.tween(
+        (durationMillis / MotionSpeed.factor).toInt().coerceAtLeast(1), (delayMillis / MotionSpeed.factor).toInt(), easing,
+    )
+
+/** How far the tiles and buttons tilt when pressed, as a multiple of the design (see the settings). */
+val LocalTiltStrength = staticCompositionLocalOf { 1f }
+
+/**
  * Windows Phone press feedback: the element sinks and tilts away from the finger, then springs back.
  * Tapping near the right edge pushes the right edge down, and so on.
  */
@@ -90,7 +151,7 @@ fun Modifier.metroPress(
     val hasLongClick = onLongClick != null
     val reduced = LocalReduceMotion.current
     // The tilt is the Windows Phone press: the other looks only sink a little.
-    val tilt = if (reduced || !LocalStyle.current.isClassic) 0f else maxTiltDegrees
+    val tilt = if (reduced || !LocalStyle.current.isClassic) 0f else maxTiltDegrees * LocalTiltStrength.current
 
     return this
         // What TalkBack and the other accessibility services see: one button that says its text and can be activated.
@@ -188,7 +249,7 @@ fun FlipContainer(
         angle.snapTo(0f)
         delay(1_500L + (seed.mod(6)) * 800L)
         while (true) {
-            angle.animateTo(180f, if (slide) tween(durationMillis = 600, easing = Motion.Decelerate) else tween(durationMillis = 700, easing = FastOutSlowInEasing))
+            angle.animateTo(180f, if (slide) metroTween(durationMillis = 600, easing = Motion.Decelerate) else metroTween(durationMillis = 700, easing = FastOutSlowInEasing))
             index = (index + 1) % faces
             angle.snapTo(0f)
             delay(5_000L + (seed.mod(4)) * 900L)

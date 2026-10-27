@@ -19,17 +19,20 @@ class WeatherRepository(context: Context) {
         get(OpenMeteo.forecastUrl(latitude, longitude, fahrenheit))
             ?.let { OpenMeteo.parseForecast(it, fahrenheit, System.currentTimeMillis()) }
 
+    /** Blocking. The air and the pollen of a place, or null when there is no connection or the model does not cover it. */
+    fun fetchAir(latitude: Double, longitude: Double): AirQuality? = get(OpenMeteo.airUrl(latitude, longitude))?.let(OpenMeteo::parseAir)
+
     /** Blocking. Null when the search could not be made, an empty list when nothing matches. */
     fun search(name: String, language: String): List<PlaceMatch>? {
         if (name.isBlank()) return emptyList()
         return get(OpenMeteo.geocodingUrl(name, language))?.let(OpenMeteo::parsePlaces)
     }
 
-    /** Only the two Open-Meteo hosts (see [SafeHttp]). */
+    /** Only the three Open-Meteo hosts (see [SafeHttp]). */
     private fun get(address: String): String? = SafeHttp.get(address, HOSTS)
 
     private companion object {
         const val KEY_CACHE = "weather_cache"
-        val HOSTS = setOf("api.open-meteo.com", "geocoding-api.open-meteo.com")
+        val HOSTS = setOf("api.open-meteo.com", "geocoding-api.open-meteo.com", "air-quality-api.open-meteo.com")
     }
 }

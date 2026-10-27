@@ -18,6 +18,7 @@ fun IconsPage(env: SettingsEnv) {
     }
     val packs = env.iconPacks
     SettingsPage {
+        IconLookSettings(env)
         if (packs.isEmpty()) {
             SettingHint(stringResource(R.string.icons_pack_none), androidx.compose.ui.Modifier.testTag("icons:none"))
         } else {

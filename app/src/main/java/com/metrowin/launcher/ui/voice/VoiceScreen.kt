@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.voice
 
+import com.metrowin.launcher.ui.anim.metroTween
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -100,7 +101,7 @@ fun VoiceScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            val level by animateFloatAsState((state as? VoiceUiState.Listening)?.level ?: 0f, tween(90), label = "voiceLevel")
+            val level by animateFloatAsState((state as? VoiceUiState.Listening)?.level ?: 0f, metroTween(90), label = "voiceLevel")
             val listening = state is VoiceUiState.Listening
             Box(
                 Modifier

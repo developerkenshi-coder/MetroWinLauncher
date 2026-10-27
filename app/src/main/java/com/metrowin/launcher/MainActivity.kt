@@ -48,7 +48,21 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        // Started by something that asked for a screen (the settings): a recreated activity gets the same intent again, and does not ask twice.
+        if (savedInstanceState == null) openWhatTheIntentAsks(intent)
         setContent { LauncherApp(viewModel) }
+    }
+
+    private fun openWhatTheIntentAsks(intent: Intent) {
+        if (intent.getBooleanExtra(EXTRA_SETTINGS, false)) viewModel.requestSettings()
+        // "Share" in any browser lists the launcher: the page is pinned to Start.
+        if (intent.action == Intent.ACTION_SEND && intent.type == "text/plain") {
+            val shared = intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
+            val link = Regex("https?://\\S+").find(shared)?.value
+            val title = intent.getStringExtra(Intent.EXTRA_SUBJECT).orEmpty()
+            val pinned = link != null && viewModel.pinSite(title, link, 0)
+            android.widget.Toast.makeText(this, if (pinned) R.string.share_pinned else R.string.share_not_a_link, android.widget.Toast.LENGTH_SHORT).show()
+        }
     }
 
     private var wantsHighRefresh = true
@@ -167,6 +181,9 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val REQUEST_CONFIGURE_WIDGET = 0x4D58
 
+        /** Boolean extra of the intent that starts the launcher: open its settings. */
+        const val EXTRA_SETTINGS = "open_settings"
+
         /** The check for an idle screen comes a moment after the rate would run out. */
         private const val IDLE_SLACK_MS = 100L
     }
@@ -204,6 +221,7 @@ class MainActivity : ComponentActivity() {
      */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        openWhatTheIntentAsks(intent)
         if (intent.hasCategory(Intent.CATEGORY_HOME)) {
             viewModel.onHomePressed(fromBackground = !lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED))
         }

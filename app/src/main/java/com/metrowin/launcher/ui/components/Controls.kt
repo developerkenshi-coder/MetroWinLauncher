@@ -1,5 +1,10 @@
 package com.metrowin.launcher.ui.components
 
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.DisposableEffect
+import com.metrowin.launcher.ui.anim.metroTween
 import androidx.annotation.StringRes
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.semantics.Role
@@ -203,7 +208,7 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
         when (style.kind) {
             ThemeStyle.Classic -> {
                 val thumbX by animateDpAsState(
-                    (ToggleGeometry.thumbLeft(checked) - ToggleGeometry.INSET).dp, tween(160), label = "toggleThumb",
+                    (ToggleGeometry.thumbLeft(checked) - ToggleGeometry.INSET).dp, metroTween(160), label = "toggleThumb",
                 )
                 // The word beside the switch only repeats what the switch shows: at the biggest text it must not take the room of the label.
                 // Both words take their room whatever the state, so the label does not wrap differently when the switch flips.
@@ -232,7 +237,7 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
             }
             ThemeStyle.Glass -> {
                 // The round switch of iOS: a capsule track, a white thumb that slides over it.
-                val thumbX by animateDpAsState(if (checked) 20.dp else 0.dp, tween(180), label = "switchThumb")
+                val thumbX by animateDpAsState(if (checked) 20.dp else 0.dp, metroTween(180), label = "switchThumb")
                 Box(
                     Modifier
                         .testTag(TOGGLE_TRACK_TAG)
@@ -254,8 +259,8 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
             }
             ThemeStyle.Droid -> {
                 // The Material switch: the thumb grows when it is on, and the track is the main color.
-                val thumb by animateDpAsState(if (checked) 24.dp else 16.dp, tween(180), label = "switchThumbSize")
-                val x by animateDpAsState(if (checked) 24.dp else 4.dp, tween(180), label = "switchThumbX")
+                val thumb by animateDpAsState(if (checked) 24.dp else 16.dp, metroTween(180), label = "switchThumbSize")
+                val x by animateDpAsState(if (checked) 24.dp else 4.dp, metroTween(180), label = "switchThumbX")
                 Box(
                     Modifier
                         .testTag(TOGGLE_TRACK_TAG)
@@ -346,6 +351,20 @@ fun MetroSlider(
 }
 
 /** A single line of text to type in, on a flat surface, with a hint while it is empty. */
+/**
+ * A text field that is removed (a page changes, a dialog closes) while it has the focus leaves the keyboard of Android on the screen
+ * with nothing to type in: this puts the keyboard away when the field goes.
+ */
+@Composable
+fun Modifier.hideKeyboardWhenGone(): Modifier {
+    val keyboard = LocalSoftwareKeyboardController.current
+    // Whether the field ever had the focus: the focus can leave a moment before the field does (a page changes), and the keyboard stays.
+    var hadFocus by remember { mutableStateOf(false) }
+    val hadFocusNow by rememberUpdatedState(hadFocus)
+    DisposableEffect(Unit) { onDispose { if (hadFocusNow) keyboard?.hide() } }
+    return this.onFocusChanged { if (it.isFocused) hadFocus = true }
+}
+
 @Composable
 fun MetroTextField(
     value: String,
@@ -385,7 +404,7 @@ fun MetroTextField(
                 ),
                 visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
                 keyboardActions = KeyboardActions(onSearch = { onSearch?.invoke() }),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().hideKeyboardWhenGone(),
             )
         }
     }

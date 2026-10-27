@@ -16,10 +16,12 @@ data class BatteryInfo(
     val state: BatteryState,
     /** Minutes left to a full battery, known only while charging and only on Android 9 and later. */
     val minutesToFull: Int? = null,
+    /** Minutes the charge is expected to last while discharging, as Android predicts them (Android 12 and later). */
+    val minutesLeft: Int? = null,
 ) {
     companion object {
         /** From the values of the system's battery broadcast. [chargeTimeMillis] is -1 when the phone cannot say. */
-        fun from(level: Int, scale: Int, status: Int, chargeTimeMillis: Long = -1L): BatteryInfo {
+        fun from(level: Int, scale: Int, status: Int, chargeTimeMillis: Long = -1L, dischargeMillis: Long = -1L): BatteryInfo {
             val percent = if (scale <= 0 || level < 0) 0 else (level * 100 / scale).coerceIn(0, 100)
             val state = when (status) {
                 BatteryManager.BATTERY_STATUS_CHARGING -> BatteryState.Charging
@@ -31,7 +33,8 @@ data class BatteryInfo(
             } else {
                 null
             }
-            return BatteryInfo(percent, state, minutes)
+            val left = if (state == BatteryState.Discharging && dischargeMillis > 0) ((dischargeMillis + 59_999) / 60_000).toInt() else null
+            return BatteryInfo(percent, state, minutes, left)
         }
 
         /** "35 min", "1 h 05 min": units that read the same in most languages. */
@@ -49,11 +52,17 @@ data class BatteryInfo(
         fun from(intent: Intent, context: Context): BatteryInfo {
             val manager = context.getSystemService(BatteryManager::class.java)
             val chargeTime = if (Build.VERSION.SDK_INT >= 28) manager?.computeChargeTimeRemaining() ?: -1L else -1L
+            val discharge = if (Build.VERSION.SDK_INT >= 31) {
+                runCatching { context.getSystemService(android.os.PowerManager::class.java)?.batteryDischargePrediction?.toMillis() }.getOrNull() ?: -1L
+            } else {
+                -1L
+            }
             return from(
                 level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1),
                 scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 100),
                 status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_UNKNOWN),
                 chargeTimeMillis = chargeTime,
+                dischargeMillis = discharge,
             )
         }
     }

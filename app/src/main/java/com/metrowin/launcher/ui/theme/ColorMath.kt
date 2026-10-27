@@ -52,8 +52,6 @@ object ColorMath {
         return 0.2126f * r + 0.7152f * g + 0.0722f * b
     }
 
-    fun toColor(argb: Int) = Color(argb)
-
     /** [color] with its hue turned by [degrees]. */
     fun rotateHue(color: Color, degrees: Float): Color {
         val hsv = argbToHsv(color.toArgbInt())

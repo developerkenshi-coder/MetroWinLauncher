@@ -10,10 +10,16 @@ import com.metrowin.launcher.R
 enum class TileSize(val cols: Int, val rows: Int, val code: String) {
     Small(1, 1, "s"),
     Medium(2, 2, "m"),
-    Wide(4, 2, "w");
+    Wide(4, 2, "w"),
 
-    /** The resize arrow of the Start screen edit mode cycles through the sizes. */
-    fun next(): TileSize = entries[(ordinal + 1) % entries.size]
+    /** Four small tiles across and four down: the Large tile of Windows 10 Mobile. */
+    Large(4, 4, "l");
+
+    /** The resize arrow of the Start screen edit mode cycles through the sizes; the Large one only when [allowLarge]. */
+    fun next(allowLarge: Boolean = true): TileSize {
+        val next = entries[(ordinal + 1) % entries.size]
+        return if (next == Large && !allowLarge) entries.first() else next
+    }
 
     companion object {
         fun fromCode(code: String?): TileSize = entries.firstOrNull { it.code == code } ?: Medium
@@ -29,16 +35,20 @@ enum class TileStyle(val code: String) {
     Iconic("iconic"),
 
     /** Windows Phone's Cycle template: photos fading into one another (the Photos tile). */
-    Cycle("cycle");
+    Cycle("cycle"),
+
+    /** Many small pictures side by side, like a collage (the Collection template). */
+    Collection("collection");
 
     /**
      * The style the style button of the edit bar goes to next. Cycle is only for tiles that have photos to cycle
-     * through ([cycleAvailable]).
+     * through ([cycleAvailable]); Collection comes after it when those photos may also make a collage ([collectionAvailable]).
      */
-    fun next(cycleAvailable: Boolean): TileStyle = when (this) {
+    fun next(cycleAvailable: Boolean, collectionAvailable: Boolean = false): TileStyle = when (this) {
         Standard -> Iconic
         Iconic -> if (cycleAvailable) Cycle else Standard
-        Cycle -> Standard
+        Cycle -> if (collectionAvailable) Collection else Standard
+        Collection -> Standard
     }
 
     companion object {
@@ -53,6 +63,9 @@ sealed interface StartEntry {
 
     /** The color the user gave the tile (one of the 20 accents, as ARGB), or 0 for the accent of the theme. */
     val color: Int
+
+    /** The title of the group of tiles that starts here (it is written above, and the tile starts a new row), or empty. */
+    val group: String
 }
 
 /** A tile pinned to Start. [id] is the [AppItem.id] it opens. */
@@ -62,6 +75,7 @@ data class Tile(
     override val size: TileSize,
     val style: TileStyle = TileStyle.Standard,
     override val color: Int = 0,
+    override val group: String = "",
 ) : StartEntry
 
 /** A Start folder: tiles dragged onto each other. [children] are [AppItem.id]s. */
@@ -72,6 +86,7 @@ data class Folder(
     override val size: TileSize,
     val children: List<String>,
     override val color: Int = 0,
+    override val group: String = "",
 ) : StartEntry
 
 sealed interface Launch {
@@ -179,6 +194,41 @@ sealed interface TileData {
 
     /** The reminders that wait. */
     data object Reminders : TileData
+
+    /** A switch of the Action Center ([action] is the id of a [com.metrowin.launcher.data.QuickAction]) kept on Start. */
+    @Immutable
+    data class Toggle(val action: String) : TileData
+
+    /** The sun today: when it rises and sets, and how long the day is. */
+    data object Sun : TileData
+
+    /** The steps taken today. */
+    data object Steps : TileData
+
+    /** The voice recorder. */
+    data object Recorder : TileData
+
+    /** The camera, with the last photo on its face. */
+    data object Camera : TileData
+
+    /** The cards of the wallet. */
+    data object Wallet : TileData
+
+    /** The place the phone is at. */
+    data object WhereAmI : TileData
+
+    /** The place where the car was left. */
+    data object Parking : TileData
+
+    /** A clock with hands. */
+    data object AnalogClock : TileData
+
+    /** A person from the contacts: the latest message of the person shows on the tile. */
+    data object Contact : TileData
+
+    /** A web page at [url]: its newest headline shows on the tile. */
+    @Immutable
+    data class Site(val url: String) : TileData
 }
 
 /** The categories an app can declare (see `ApplicationInfo.category`), as the filter of the app list names them. */

@@ -42,6 +42,8 @@ object Alerts {
     const val ACTION_REMINDER_DONE = "com.metrowin.launcher.action.REMINDER_DONE"
     const val ACTION_REMINDER_SNOOZE = "com.metrowin.launcher.action.REMINDER_SNOOZE"
     const val ACTION_TIMER_STOP = "com.metrowin.launcher.action.TIMER_STOP"
+    const val ACTION_QUIET_END = "com.metrowin.launcher.action.QUIET_END"
+    const val ACTION_TORCH_OFF = "com.metrowin.launcher.action.TORCH_OFF"
 
     const val EXTRA_ID = "id"
     const val EXTRA_TEXT = "text"
@@ -55,6 +57,42 @@ object Alerts {
 
     private const val TIMER_NOTIFICATION = 0x7100_0000
     private const val REMINDER_NOTIFICATION = 0x7200_0000
+
+    private fun quietEndIntent(context: Context) = android.app.PendingIntent.getBroadcast(
+        context, 0, Intent(ACTION_QUIET_END).setClass(context, AlertReceiver::class.java),
+        android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE,
+    )
+
+    /** Asks Android to end the quiet hours the launcher switched on, in [minutes] (an inexact alarm: it may come a little late). */
+    fun scheduleQuietEnd(context: Context, minutes: Int) {
+        val alarms = context.getSystemService(android.app.AlarmManager::class.java) ?: return
+        runCatching { alarms.setAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + minutes.coerceAtLeast(1) * 60_000L, quietEndIntent(context)) }
+    }
+
+    fun cancelQuietEnd(context: Context) {
+        runCatching { context.getSystemService(android.app.AlarmManager::class.java)?.cancel(quietEndIntent(context)) }
+    }
+
+    private fun torchOffIntent(context: Context) = android.app.PendingIntent.getBroadcast(
+        context, 1, Intent(ACTION_TORCH_OFF).setClass(context, AlertReceiver::class.java),
+        android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE,
+    )
+
+    /** Asks Android to put the flashlight out in [minutes] (an inexact alarm: it may come a little late). */
+    fun scheduleTorchOff(context: Context, minutes: Int) {
+        val alarms = context.getSystemService(android.app.AlarmManager::class.java) ?: return
+        runCatching { alarms.setAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + minutes.coerceAtLeast(1) * 60_000L, torchOffIntent(context)) }
+    }
+
+    fun cancelTorchOff(context: Context) {
+        runCatching { context.getSystemService(android.app.AlarmManager::class.java)?.cancel(torchOffIntent(context)) }
+    }
+
+    /** The time is up: everything is let through again, if the launcher is still allowed to say so. */
+    fun onQuietEnd(context: Context) {
+        val manager = context.getSystemService(NotificationManager::class.java) ?: return
+        if (manager.isNotificationPolicyAccessGranted) runCatching { manager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL) }
+    }
 
     fun ensureChannels(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
@@ -246,6 +284,8 @@ class AlertReceiver : BroadcastReceiver() {
         val id = intent.getStringExtra(Alerts.EXTRA_ID).orEmpty()
         when (intent.action) {
             Alerts.ACTION_TIMER -> Alerts.onTimerDone(context, id, intent.getStringExtra(Alerts.EXTRA_TEXT).orEmpty())
+            Alerts.ACTION_QUIET_END -> Alerts.onQuietEnd(context)
+            Alerts.ACTION_TORCH_OFF -> com.metrowin.launcher.data.switchTorchOff(context)
             Alerts.ACTION_TIMER_STOP -> androidx.core.app.NotificationManagerCompat.from(context).cancel(0x7100_0000 + (id.hashCode() and 0xFFFF))
             Alerts.ACTION_REMINDER -> id.toLongOrNull()?.let { Alerts.onReminderDue(context, it) }
             Alerts.ACTION_REMINDER_DONE -> id.toLongOrNull()?.let { Alerts.onReminderDone(context, it) }

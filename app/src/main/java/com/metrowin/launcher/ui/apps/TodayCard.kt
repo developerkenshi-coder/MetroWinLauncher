@@ -124,6 +124,13 @@ internal fun TodayCard(
             ) { onAction(TodayAction.Clock) }
         }
 
+        info.tip.takeIf { it >= 0 }?.let { tip ->
+            val tips = androidx.compose.ui.res.stringArrayResource(R.array.tips)
+            Row(Modifier.fillMaxWidth().testTag("today:tip"), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                GlyphIcon(Glyph.Star, 22.dp, color = LocalAccent.current)
+                MetroText(stringResource(R.string.today_tip, tips[tip.coerceIn(tips.indices)]), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 4, modifier = Modifier.weight(1f))
+            }
+        }
         MetroText(stringResource(R.string.today_near), size = 13.sp, weight = FontWeight.Normal, color = colors.subtle)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             NearPlace.entries.forEach { place ->

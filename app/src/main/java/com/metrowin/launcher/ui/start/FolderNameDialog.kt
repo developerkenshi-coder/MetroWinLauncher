@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.components.hideKeyboardWhenGone
 import com.metrowin.launcher.ui.theme.panel
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -81,7 +82,7 @@ fun FolderNameDialog(
                 cursorBrush = SolidColor(LocalAccent.current),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onDone(name) }),
-                modifier = Modifier.fillMaxWidth().focusRequester(focus),
+                modifier = Modifier.fillMaxWidth().focusRequester(focus).hideKeyboardWhenGone(),
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f)) { onDone(name) }

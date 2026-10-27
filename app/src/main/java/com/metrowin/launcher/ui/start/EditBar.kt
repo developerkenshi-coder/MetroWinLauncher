@@ -65,6 +65,10 @@ fun EditBar(
     onLabels: (() -> Unit)? = null,
     /** The names of the buttons are written under them, as when the app bar of Windows Phone is opened with its "…". */
     labels: Boolean = false,
+    /** The sizes the bar offers; the selected tile's own size is always there. */
+    sizes: List<TileSize> = TileSize.entries,
+    /** The button that writes the title of a group above the selected tile; null leaves it out. */
+    onGroup: (() -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
     val named = labels && onLabels != null
@@ -83,11 +87,13 @@ fun EditBar(
     ) {
         if (onAdd != null) Named(if (named) stringResource(R.string.edit_label_add) else null) { AddButton(onAdd) }
         if (onFolder != null) Named(if (named) stringResource(R.string.edit_label_folder) else null) { FolderButton(onFolder) }
-        TileSize.entries.forEach { option ->
+        if (onGroup != null) Named(if (named) stringResource(R.string.edit_label_group) else null) { GroupButton(onGroup) }
+        TileSize.entries.filter { it in sizes || it == size }.forEach { option ->
             val name = when (option) {
                 TileSize.Small -> R.string.edit_label_small
                 TileSize.Medium -> R.string.edit_label_medium
                 TileSize.Wide -> R.string.edit_label_wide
+                TileSize.Large -> R.string.edit_label_large
             }
             Named(if (named) stringResource(name) else null) { SizeButton(option, selected = option == size, onClick = { onSize(option) }) }
         }
@@ -97,6 +103,7 @@ fun EditBar(
                     TileStyle.Standard -> R.string.edit_style_standard
                     TileStyle.Iconic -> R.string.edit_style_iconic
                     TileStyle.Cycle -> R.string.edit_style_cycle
+                    TileStyle.Collection -> R.string.edit_style_collection
                 },
             )
             val label = stringResource(
@@ -104,6 +111,7 @@ fun EditBar(
                     TileStyle.Standard -> R.string.edit_style_short_standard
                     TileStyle.Iconic -> R.string.edit_style_short_iconic
                     TileStyle.Cycle -> R.string.edit_style_short_cycle
+                    TileStyle.Collection -> R.string.edit_style_short_collection
                 },
             )
             Box(
@@ -208,6 +216,30 @@ private fun FolderButton(onClick: () -> Unit) {
 }
 
 @Composable
+private fun GroupButton(onClick: () -> Unit) {
+    val description = stringResource(R.string.edit_group)
+    val tint = LocalMetroColors.current.foreground
+    Box(
+        Modifier
+            .size(46.dp)
+            .testTag("edit:group")
+            .semantics { contentDescription = description }
+            .metroPress(onClick = onClick)
+            .litFill(false),
+        contentAlignment = Alignment.Center,
+    ) {
+        // A title line over two tiles.
+        Canvas(Modifier.size(28.dp)) {
+            val u = this.size.width / 8f
+            drawRect(tint, Offset(0f, 0f), Size(6f * u, u))
+            drawRect(tint, Offset(0f, 2f * u), Size(3.4f * u, 3.4f * u))
+            drawRect(tint, Offset(4.6f * u, 2f * u), Size(3.4f * u, 3.4f * u))
+            drawRect(tint, Offset(0f, 6.4f * u), Size(3.4f * u, 1.6f * u))
+        }
+    }
+}
+
+@Composable
 private fun SizeButton(size: TileSize, selected: Boolean, onClick: () -> Unit) {
     val colors = LocalMetroColors.current
     val description = stringResource(
@@ -215,6 +247,7 @@ private fun SizeButton(size: TileSize, selected: Boolean, onClick: () -> Unit) {
             TileSize.Small -> R.string.edit_size_small
             TileSize.Medium -> R.string.edit_size_medium
             TileSize.Wide -> R.string.edit_size_wide
+            TileSize.Large -> R.string.edit_size_large
         },
     )
     Box(
@@ -234,6 +267,7 @@ private fun SizeButton(size: TileSize, selected: Boolean, onClick: () -> Unit) {
                 TileSize.Small -> 2f to 2f
                 TileSize.Medium -> 4f to 4f
                 TileSize.Wide -> 8f to 4f
+                TileSize.Large -> 8f to 8f
             }
             drawRect(tint, Offset((this.size.width - w * unit) / 2, (this.size.height - h * unit) / 2), Size(w * unit, h * unit))
         }

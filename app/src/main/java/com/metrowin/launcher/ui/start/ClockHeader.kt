@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.ClockHours
 import com.metrowin.launcher.data.NextAlarm
+import com.metrowin.launcher.data.WorldCities
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.data.ClockFormat
@@ -42,6 +43,8 @@ fun ClockHeader(
     /** The next alarm under the date, and the number of the week next to it. */
     showAlarm: Boolean = false,
     showWeek: Boolean = false,
+    /** A second time zone under the date (the id of the zone), or empty for none. */
+    zone: String = "",
 ) {
     val context = LocalContext.current
     var now by remember { mutableStateOf(LocalDateTime.now()) }
@@ -73,6 +76,24 @@ fun ClockHeader(
             size = 18.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
             modifier = if (onDateClick != null) Modifier.testTag("clock:date").metroPress(onClick = onDateClick) else Modifier,
         )
+        val there = remember(zone, now) {
+            if (zone.isEmpty()) null else runCatching {
+                WorldCities.timeIn(java.time.ZoneId.of(zone), java.time.Instant.now(), java.time.ZoneId.systemDefault())
+            }.getOrNull()
+        }
+        if (there != null) {
+            val name = WorldCities.all.firstOrNull { it.zone == zone }?.name ?: zone.substringAfterLast('/').replace('_', ' ')
+            val day = when (there.dayOffset) {
+                1 -> " · " + stringResource(R.string.live_tomorrow)
+                -1 -> " · " + stringResource(R.string.worldclock_yesterday)
+                else -> ""
+            }
+            MetroText(
+                name + " " + ClockFormat.time(there.time, is24, locale) + ClockFormat.meridiem(there.time, is24, locale).let { if (it.isEmpty()) "" else " $it" } + day,
+                size = 16.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+                modifier = Modifier.padding(top = 2.dp).testTag("clock:zone"),
+            )
+        }
         if (alarm != null) {
             Row(Modifier.padding(top = 2.dp).testTag("clock:alarm"), verticalAlignment = Alignment.CenterVertically) {
                 GlyphIcon(Glyph.Alarm, 16.dp, color = LocalMetroColors.current.subtle)

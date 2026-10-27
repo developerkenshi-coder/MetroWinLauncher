@@ -1,5 +1,9 @@
 package com.metrowin.launcher.ui.apps
 
+import com.metrowin.launcher.data.SystemCommands
+import com.metrowin.launcher.ui.components.hideKeyboardWhenGone
+import com.metrowin.launcher.ui.anim.metroTween
+import com.metrowin.launcher.notifications.NotificationEntry
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -65,6 +69,8 @@ import java.util.Locale
 import com.metrowin.launcher.data.EventMatch
 import com.metrowin.launcher.data.ClockFormat
 import com.metrowin.launcher.data.CalendarSearch
+import com.metrowin.launcher.data.FileMatch
+import com.metrowin.launcher.data.FileSearch
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -165,6 +171,14 @@ sealed interface ListRow {
 
     data class Web(val query: String) : ListRow {
         override val key = "web"
+    }
+
+    data class Notification(val entry: NotificationEntry) : ListRow {
+        override val key = "notification:${entry.key}"
+    }
+
+    data class File(val match: FileMatch) : ListRow {
+        override val key = "file:${match.uri}"
     }
 
     data class Event(val match: EventMatch) : ListRow {
@@ -274,6 +288,8 @@ fun AppListScreen(
     onAnswer: (QuickAnswer) -> Unit = {},
     /** What touching a setting of the launcher found by the search does: the caller opens the settings there. */
     onOpenSetting: (LauncherSettingMatch) -> Unit = {},
+    /** A notification that waits, found by the search. */
+    onOpenNotification: (NotificationEntry) -> Unit = {},
     /** The searches made before, offered while the box is touched and empty; the way to forget them. */
     recentSearches: List<String> = emptyList(),
     onClearRecents: () -> Unit = {},
@@ -328,6 +344,14 @@ fun AppListScreen(
                 if (global.events.isNotEmpty()) {
                     add(ListRow.Section(R.string.search_section_events))
                     global.events.forEach { add(ListRow.Event(it)) }
+                }
+                if (global.notifications.isNotEmpty()) {
+                    add(ListRow.Section(R.string.search_section_notifications))
+                    global.notifications.forEach { add(ListRow.Notification(it)) }
+                }
+                if (global.files.isNotEmpty()) {
+                    add(ListRow.Section(R.string.search_section_files))
+                    global.files.forEach { add(ListRow.File(it)) }
                 }
                 global.webQuery?.let {
                     add(ListRow.Section(R.string.search_section_web))
@@ -395,6 +419,15 @@ fun AppListScreen(
                     row.match.item.glyph ?: Glyph.Star, row.match.item.label, row.match.snippet ?: stringResource(R.string.search_tile_subtitle),
                     index, listState, openedAt, exiting, tag = "result:tile:${row.match.item.id}",
                 ) { onLaunch(row.match.item) }
+                is ListRow.Notification -> ResultRow(
+                    Glyph.Bell, row.entry.title.ifBlank { row.entry.text }, row.entry.text.takeIf { row.entry.title.isNotBlank() },
+                    index, listState, openedAt, exiting, tag = "result:notification:${row.entry.key}",
+                ) { onOpenNotification(row.entry) }
+                is ListRow.File -> ResultRow(
+                    row.match.type.glyph, row.match.name,
+                    stringResource(row.match.type.label) + " · " + FileSearch.sizeText(row.match.size),
+                    index, listState, openedAt, exiting, tag = "result:file:${row.match.uri}",
+                ) { onLaunch(AppItem("search:file", row.match.name, Launch.Link(row.match.uri))) }
                 is ListRow.Event -> ResultRow(
                     Glyph.Calendar, row.match.title, eventWhen(row.match), index, listState, openedAt, exiting,
                     tag = "result:event:${row.match.eventId}",
@@ -437,12 +470,12 @@ internal fun rememberRowAway(index: Int, listState: LazyListState, openedAt: Lon
     LaunchedEffect(away) {
         if (away.value < 1f) return@LaunchedEffect
         delay((index - listState.firstVisibleItemIndex).coerceIn(0, 14) * 26L)
-        away.animateTo(0f, tween(durationMillis = 380, easing = Motion.Decelerate))
+        away.animateTo(0f, metroTween(durationMillis = 380, easing = Motion.Decelerate))
     }
     LaunchedEffect(exiting, away) {
         if (!exiting) return@LaunchedEffect
         delay((index - listState.firstVisibleItemIndex).coerceIn(0, 14) * 14L)
-        away.animateTo(1f, tween(durationMillis = 220, easing = Motion.Accelerate))
+        away.animateTo(1f, metroTween(durationMillis = 220, easing = Motion.Accelerate))
     }
     return away
 }
@@ -492,7 +525,7 @@ private fun SearchRow(
                     onSubmit(query)
                     focus.clearFocus()
                 }),
-                modifier = Modifier.fillMaxWidth().testTag("search:field").focusRequester(requester).onFocusChanged { onFocusChange(it.isFocused) },
+                modifier = Modifier.fillMaxWidth().testTag("search:field").focusRequester(requester).onFocusChanged { onFocusChange(it.isFocused) }.hideKeyboardWhenGone(),
             )
         }
         if (query.isNotEmpty()) {
@@ -562,7 +595,7 @@ private fun AppRow(
     LaunchedEffect(highlight) {
         if (highlight == null) return@LaunchedEffect
         glow.snapTo(GLOW_START)
-        glow.animateTo(0f, tween(durationMillis = GLOW_MS))
+        glow.animateTo(0f, metroTween(durationMillis = GLOW_MS))
     }
     val accent = LocalAccent.current
     var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
@@ -696,6 +729,11 @@ private fun AnswerRow(answer: QuickAnswer, index: Int, listState: LazyListState,
         is QuickAnswer.Note -> Triple(Glyph.OneNote, stringResource(R.string.answer_note, answer.text), stringResource(R.string.answer_note_where))
         is QuickAnswer.NearMe -> Triple(Glyph.Maps, stringResource(R.string.answer_near, answer.what), stringResource(R.string.answer_near_where))
         QuickAnswer.Scan -> Triple(Glyph.Camera, stringResource(R.string.answer_scan), stringResource(R.string.answer_scan_where))
+        is QuickAnswer.Command -> Triple(
+            answer.action?.glyph ?: Glyph.Bell,
+            stringResource(answer.action?.label ?: answer.ringer?.label ?: R.string.app_name),
+            stringResource(if (SystemCommands.inPlace(answer)) R.string.answer_command_here else R.string.answer_command_panel),
+        )
     }
     ResultRow(glyph, title, subtitle, index, listState, openedAt, exiting, tag = "answer:${answer::class.simpleName}", accent = true, onClick = onClick)
 }

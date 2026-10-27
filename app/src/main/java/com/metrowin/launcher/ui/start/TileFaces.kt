@@ -1,5 +1,10 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.weather.rainOutlookText
+import androidx.compose.ui.res.stringArrayResource
+import com.metrowin.launcher.data.WeatherBlock
+import com.metrowin.launcher.data.OpenMeteo
+import com.metrowin.launcher.ui.anim.metroTween
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -150,6 +155,7 @@ fun TileFace(
         else -> emptyList()
     }
     val cycle = style == TileStyle.Cycle && cyclePhotos.isNotEmpty() && size != TileSize.Small
+    val collection = style == TileStyle.Collection && cyclePhotos.isNotEmpty() && size != TileSize.Small
     val faces = cards.ifEmpty { peek?.let { listOf(LiveCard.Digest(it.title, it.text)) }.orEmpty() }
     // Whatever the theme, a tile is coloured: its text and glyphs are white. A tile has a size of its own, so the text on it
     // grows with the text size of the phone only as far as the tile has room for it.
@@ -172,10 +178,24 @@ fun TileFace(
                 item.data is TileData.Timer -> TimerFace(item, size, width, height, item.data.state)
                 item.data is TileData.Stopwatch -> StopwatchFace(item, size, width, height, item.data.state)
                 item.data is TileData.Reminders -> RemindersFace(item, size, width, height, live.reminders)
+                item.data is TileData.Steps -> StepsFace(item, size, width, height, live.extras.steps, LocalTileFeatures.current.stepGoal)
+                item.data is TileData.Toggle -> ToggleFace(item, size, width, height, live.extras.toggles[item.data.action])
+                item.data is TileData.Sun -> SunFace(item, size, width, height, live.weather)
+                item.data is TileData.Camera -> CameraFace(item, size, width, height, live.photos.firstOrNull())
+                item.data is TileData.Recorder -> NoteLineFace(item, size, width, height, recordingsLine(live.extras.recordings), "recorder:count")
+                item.data is TileData.Wallet -> NoteLineFace(item, size, width, height, cardsLine(live.extras.cards), "wallet:count")
+                item.data is TileData.WhereAmI -> NoteLineFace(item, size, width, height, live.extras.place, "where:place")
+                item.data is TileData.Parking -> NoteLineFace(item, size, width, height, live.extras.parked?.let { parkedLine(it) }, "parking:line")
+                item.data is TileData.AnalogClock -> AnalogClockFace(item, size, width, height)
                 iconic -> IconicFace(item, size, width, height, count)
                 cycle -> CycleFace(item, cyclePhotos, seed)
+                collection -> CollectionFace(item, cyclePhotos, size, seed)
+                item.data is TileData.Contact ->
+                    LinkFace(item, size, width, height, live.extras.messages[item.id], seed) { PinnedBase(item, size, width, height) }
+                item.data is TileData.Site ->
+                    LinkFace(item, size, width, height, live.extras.sites[item.id]?.title, seed) { PinnedBase(item, size, width, height) }
                 else -> when (item.live) {
-                    LiveKind.Calendar -> CalendarFace(item, size, width, height, live.nextEvent, seed)
+                    LiveKind.Calendar -> CalendarFace(item, size, width, height, live.nextEvent, live.events, seed)
                     LiveKind.Photos -> PhotosFace(item, size, width, height, live, seed)
                     LiveKind.People -> PeopleFace(item, size, width, height, live, seed)
                     LiveKind.Torch -> TorchFace(item, size, width, height, live.torchOn)
@@ -188,8 +208,14 @@ fun TileFace(
                         // The music that plays in any app, then what is going on in the music app itself.
                         val playing = live.nowPlaying?.let { listOf(LiveCard.Playing(it.title, it.artist, it.art, it.playing)) }.orEmpty()
                         val shown = playing + faces.filter { it !is LiveCard.Playing }
-                        if (shown.isNotEmpty() && size != TileSize.Small) CardsFace(item, size, width, height, shown, seed)
-                        else StaticFace(item, size, width, height)
+                        if (shown.isNotEmpty() && size != TileSize.Small) {
+                            CardsFace(item, size, width, height, shown, seed)
+                            if (LocalTileFeatures.current.musicControls && live.nowPlaying != null) {
+                                MusicControls(live.nowPlaying.playing, Modifier.align(Alignment.BottomEnd))
+                            }
+                        } else {
+                            StaticFace(item, size, width, height)
+                        }
                     }
                     LiveKind.Album -> AlbumFace(item, size, width, height, cyclePhotos, seed)
                     LiveKind.Group -> GroupFace(item, size, width, height, (item.data as? TileData.Group)?.let { live.groups[it.groupId] }.orEmpty(), seed)
@@ -548,7 +574,7 @@ internal fun CycleFace(item: AppItem, photos: List<ImageBitmap>, seed: Int) {
         }
     }
     Box(Modifier.fillMaxSize()) {
-        Crossfade(targetState = index % photos.size, animationSpec = tween(durationMillis = 900), label = "cycle") { shown ->
+        Crossfade(targetState = index % photos.size, animationSpec = metroTween(durationMillis = 900), label = "cycle") { shown ->
             Image(bitmap = photos[shown], contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         }
         PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
@@ -603,7 +629,7 @@ private fun WidgetFace(
 
 /** The tile of a contact: the person's photo over the whole tile, the name on it. Until the photo is read, the glyph. */
 @Composable
-private fun PhotoShortcutFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
+internal fun PhotoShortcutFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
     val path = item.photoPath
     val photo by produceState<ImageBitmap?>(null, path) {
         value = path?.let { withContext(Dispatchers.IO) { BitmapFactory.decodeFile(it)?.asImageBitmap() } }
@@ -810,6 +836,14 @@ private fun BatteryFace(item: AppItem, size: TileSize, width: Dp, height: Dp, ba
                             size = 15.sp, weight = FontWeight.Normal, modifier = Modifier.padding(top = 4.dp),
                         )
                     }
+                    if (LocalTileFeatures.current.batteryEstimate) {
+                        battery.minutesLeft?.let {
+                            MetroText(
+                                stringResource(R.string.battery_time_left, BatteryInfo.duration(it)),
+                                size = 15.sp, weight = FontWeight.Normal, modifier = Modifier.padding(top = 4.dp).testTag("battery:left"),
+                            )
+                        }
+                    }
                 }
             }
             if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
@@ -885,6 +919,22 @@ private fun AlarmFace(item: AppItem, size: TileSize, width: Dp, height: Dp, trig
     }
 }
 
+/** The next hours: as many as the tile has room for, the hour over the temperature. */
+@Composable
+private fun HoursFace(weather: WeatherData, width: Dp) {
+    val fontScale = LocalDensity.current.fontScale
+    val shown = weather.hours.drop(1).filterIndexed { i, _ -> i % 2 == 1 }.take(((width - 20.dp) / (56.dp * fontScale + 10.dp)).toInt().coerceIn(2, 5))
+    val clock = remember { java.time.format.DateTimeFormatter.ofPattern("H") }
+    Row(Modifier.fillMaxHeight().padding(start = 10.dp, top = 12.dp, bottom = NAME_ROOM), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        shown.forEach { hour ->
+            Column {
+                MetroText(hour.time.format(clock) + "h", size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f), modifier = Modifier.testTag("weather:hour"))
+                MetroText("${hour.temperature}°", size = 20.sp)
+            }
+        }
+    }
+}
+
 /** The weather tile: the temperature in large type with the weather under it, and on the other face the next days. */
 @Composable
 private fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, weather: WeatherData?, seed: Int) {
@@ -893,13 +943,41 @@ private fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, we
         return
     }
     val withDays = size != TileSize.Small && weather.days.size >= 2
-    val withDetails = size != TileSize.Small && !weather.details.isEmpty
-    val faces = 1 + (if (withDays) 1 else 0) + (if (withDetails) 1 else 0)
-    FlipContainer(faces, seed) { face ->
+    val blocks = LocalTileFeatures.current.weatherBlocks
+    val withDetails = size != TileSize.Small && !weather.details.isEmpty && WeatherBlock.Details.code in blocks
+    val withHours = size != TileSize.Small && weather.hours.size >= 3 && WeatherBlock.Hourly.code in blocks
+    // Only when it rains or is about to: a face that says "no rain" every time would be a face nobody needs.
+    val outlook = if (size != TileSize.Small && WeatherBlock.Rain.code in blocks) {
+        OpenMeteo.rainOutlook(weather.condition, weather.hours)?.takeIf { it.raining || it.hours != null }
+    } else {
+        null
+    }
+    val withAir = size != TileSize.Small && WeatherBlock.Air.code in blocks && weather.air?.aqi != null
+    // The faces after the first, in order: the rain, the next hours, the next days, the details, the air.
+    val others = listOfNotNull(
+        if (outlook != null) 'r' else null, if (withHours) 'h' else null, if (withDays) 'd' else null,
+        if (withDetails) 'x' else null, if (withAir) 'a' else null,
+    )
+    FlipContainer(1 + others.size, seed) { face ->
         Box(Modifier.fillMaxSize()) {
-            if (face == 2 || (face == 1 && !withDays)) {
+            val kind = if (face == 0) 'n' else others[(face - 1) % others.size]
+            if (kind == 'x') {
                 WeatherDetailsFace(weather)
-            } else if (face == 0) {
+            } else if (kind == 'r' && outlook != null) {
+                MetroText(
+                    rainOutlookText(outlook), size = 20.sp, weight = FontWeight.Normal, maxLines = 4, lineHeight = 24.sp,
+                    modifier = Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = NAME_ROOM).testTag("weather:rain-face"),
+                )
+            } else if (kind == 'a') {
+                val aqi = weather.air?.aqi ?: 0
+                Column(Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp)) {
+                    MetroText(stringResource(R.string.weather_air_title), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f))
+                    MetroText("$aqi", size = 34.sp, modifier = Modifier.testTag("weather:air-face"))
+                    MetroText(stringArrayResource(R.array.aqi_levels)[OpenMeteo.aqiLevel(aqi)], size = 16.sp, weight = FontWeight.Normal, maxLines = 1)
+                }
+            } else if (kind == 'h') {
+                HoursFace(weather, width)
+            } else if (kind == 'n') {
                 val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.46f else 0.38f).toSp() }
                 Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 2.dp)) {
                     MetroText("${weather.temperature}°", size = digits)
@@ -985,8 +1063,14 @@ internal fun TileLabel(label: String, modifier: Modifier = Modifier, color: Colo
 }
 
 @Composable
-private fun CalendarFace(item: AppItem, size: TileSize, width: Dp, height: Dp, event: LiveEvent?, seed: Int) {
+private fun CalendarFace(item: AppItem, size: TileSize, width: Dp, height: Dp, event: LiveEvent?, events: List<LiveEvent>, seed: Int) {
     val today = rememberToday()
+    val features = LocalTileFeatures.current
+    if (features.calendarAgenda && size == TileSize.Large) {
+        LargeCalendar(item, events, today)
+        return
+    }
+    val agenda = features.calendarAgenda && size == TileSize.Wide && events.size > 1
     val faces = if (event != null && size != TileSize.Small) 2 else 1
     FlipContainer(faces, seed) { face ->
         Box(Modifier.fillMaxSize()) {
@@ -1004,6 +1088,9 @@ private fun CalendarFace(item: AppItem, size: TileSize, width: Dp, height: Dp, e
                     }
                 }
                 if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+            } else if (agenda) {
+                AgendaList(events.take(3), today, Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = NAME_ROOM))
+                TileLabel(item.label, Modifier.align(Alignment.BottomStart))
             } else {
                 Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 10.dp, end = 10.dp)) {
                     MetroText(describeWhen(event, today), size = 14.sp, weight = FontWeight.Normal)
@@ -1088,7 +1175,7 @@ internal fun rememberToday(): LocalDate {
 }
 
 @Composable
-private fun describeWhen(event: LiveEvent, today: LocalDate): String {
+internal fun describeWhen(event: LiveEvent, today: LocalDate): String {
     val start = Instant.ofEpochMilli(event.startMillis).atZone(ZoneId.systemDefault())
     val day = when (start.toLocalDate()) {
         today -> stringResource(R.string.live_today)

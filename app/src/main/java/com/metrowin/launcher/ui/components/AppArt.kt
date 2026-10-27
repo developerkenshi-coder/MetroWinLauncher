@@ -1,5 +1,12 @@
 package com.metrowin.launcher.ui.components
 
+import com.metrowin.launcher.data.IconShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -24,6 +31,26 @@ import com.metrowin.launcher.ui.theme.squareClip
 
 val LocalIconLoader = staticCompositionLocalOf<IconLoader?> { null }
 
+/** The shape the user chose for app icons, or null for the one the look has. */
+val LocalIconShape = staticCompositionLocalOf<Shape?> { null }
+
+internal fun IconShape.asShape(): Shape? = when (this) {
+    IconShape.Style -> null
+    IconShape.Square -> RectangleShape
+    IconShape.Circle -> CircleShape
+    IconShape.Squircle -> RoundedCornerShape(percent = 30)
+}
+
+/** The colour the icon of [item] is about (ready for white text), or null while it is read or when the icon has none. */
+@Composable
+fun rememberIconTileColor(item: AppItem): Color? {
+    val loader = LocalIconLoader.current
+    val color by produceState<Color?>(null, item.id, loader, loader?.revision) {
+        value = loader?.tileColor(item)?.let(::Color)
+    }
+    return color
+}
+
 /** The app's own icon as a flat square. Draws nothing until the icon is loaded. */
 @Composable
 fun AppIcon(item: AppItem, size: Dp, modifier: Modifier = Modifier) {
@@ -32,7 +59,8 @@ fun AppIcon(item: AppItem, size: Dp, modifier: Modifier = Modifier) {
     val bitmap by produceState<ImageBitmap?>(null, item.id, px, loader, loader?.revision) {
         value = loader?.load(item, px)?.asImageBitmap()
     }
-    bitmap?.let { Image(it, contentDescription = null, modifier = modifier.size(size)) }
+    val shape = LocalIconShape.current
+    bitmap?.let { Image(it, contentDescription = null, modifier = modifier.size(size).then(if (shape != null) Modifier.clip(shape) else Modifier)) }
 }
 
 /** A stock app is its Metro glyph, any other app is its own icon. */
@@ -47,7 +75,7 @@ fun AppArt(item: AppItem, size: Dp, modifier: Modifier = Modifier) {
 fun AppSquare(item: AppItem, size: Dp, modifier: Modifier = Modifier) {
     val glyph = item.glyph
     Box(
-        modifier.size(size).then(if (glyph != null) Modifier.litFill(true) else Modifier.squareClip().background(LocalMetroColors.current.surface)),
+        modifier.size(size).then(if (glyph != null) Modifier.litFill(true) else (LocalIconShape.current?.let { Modifier.clip(it) } ?: Modifier.squareClip()).background(LocalMetroColors.current.surface)),
         contentAlignment = Alignment.Center,
     ) {
         if (glyph != null) GlyphIcon(glyph, size * GLYPH_IN_SQUARE, color = onAccent()) else AppIcon(item, size)

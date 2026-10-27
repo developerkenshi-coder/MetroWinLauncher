@@ -1,8 +1,24 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.theme.LocalAccent
+import kotlinx.coroutines.delay
+import com.metrowin.launcher.data.SectionReset
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalFocusManager
+import com.metrowin.launcher.ui.anim.metroTween
 import com.metrowin.launcher.ui.theme.pageBackground
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import com.metrowin.launcher.ui.anim.Motion
+import com.metrowin.launcher.ui.anim.featherIn
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -70,11 +86,22 @@ fun SettingsScreen(
     if (section != null) shown = section
     // Closing the section is the end of the visit to a setting.
     LaunchedEffect(section) { if (section == null) onTargetChange(null) }
+    // The search box stays under the page that opens; its keyboard must not stay over it.
+    val focusManager = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    LaunchedEffect(section) {
+        if (section != null) {
+            focusManager.clearFocus(force = true)
+            keyboard?.hide()
+        }
+    }
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val index = remember(configuration) { SettingsIndex.searchIndex(context) }
     var query by remember { mutableStateOf("") }
     val hits = remember(query, index) { index.search(query) }
+    // Where the name that was touched was on the screen: the title of the page flies up from there (the "continuum" of Windows Phone).
+    var tappedTop by remember { mutableFloatStateOf(0f) }
 
     Box(
         modifier
@@ -99,10 +126,14 @@ fun SettingsScreen(
                     Modifier.padding(start = 24.dp, top = 2.dp, bottom = 8.dp),
                 )
                 HorizontalPager(pagerState, Modifier.weight(1f)) { page ->
-                    SectionList(SettingsSection.entries.filter { it.group == groups[page] }, onSectionChange)
+                    SectionList(SettingsSection.entries.filter { it.group == groups[page] }) { opened, top ->
+                        tappedTop = top
+                        onSectionChange(opened)
+                    }
                 }
             } else {
-                SearchResults(query, hits, Modifier.weight(1f)) { hit ->
+                SearchResults(query, hits, Modifier.weight(1f)) { hit, top ->
+                    tappedTop = top
                     onTargetChange(hit.setting?.id)
                     onSectionChange(hit.section)
                 }
@@ -111,7 +142,7 @@ fun SettingsScreen(
         TurnstileHost(show = section != null, away = sectionAway) {
             shown?.let { opened ->
                 CompositionLocalProvider(LocalSettingsTarget provides target?.takeIf { SettingsIndex.get(it)?.section == opened }) {
-                    SectionPage(opened, env)
+                    SectionPage(opened, env, tappedTop)
                 }
             }
         }
@@ -120,7 +151,7 @@ fun SettingsScreen(
 
 /** What the search of the settings found: each a setting (or a whole section) with the place it is in. */
 @Composable
-private fun SearchResults(query: String, hits: List<SettingHit>, modifier: Modifier = Modifier, onOpen: (SettingHit) -> Unit) {
+private fun SearchResults(query: String, hits: List<SettingHit>, modifier: Modifier = Modifier, onOpen: (SettingHit, Float) -> Unit) {
     val colors = LocalMetroColors.current
     if (hits.isEmpty()) {
         MetroText(
@@ -133,11 +164,13 @@ private fun SearchResults(query: String, hits: List<SettingHit>, modifier: Modif
     LazyColumn(modifier.fillMaxSize()) {
         items(hits, key = { it.setting?.id ?: "section:${it.section.name}" }) { hit ->
             val where = if (hit.setting == null) stringResource(hit.section.description) else stringResource(R.string.settings_search_in, stringResource(hit.section.title))
+            var top by remember { mutableFloatStateOf(0f) }
             Column(
                 Modifier
                     .fillMaxWidth()
                     .testTag("settings:result:${hit.setting?.id ?: hit.section.name}")
-                    .metroPress(onClick = { onOpen(hit) })
+                    .onGloballyPositioned { top = it.positionInRoot().y }
+                    .metroPress(onClick = { onOpen(hit, top) })
                     .padding(horizontal = 24.dp, vertical = 8.dp),
             ) {
                 MetroText(stringResource(hit.setting?.title ?: hit.section.title), size = 24.sp)
@@ -158,15 +191,18 @@ private fun SettingsHeader(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun SectionList(sections: List<SettingsSection>, onOpen: (SettingsSection) -> Unit) {
+private fun SectionList(sections: List<SettingsSection>, onOpen: (SettingsSection, Float) -> Unit) {
     val colors = LocalMetroColors.current
     LazyColumn(Modifier.fillMaxSize()) {
-        items(sections, key = { it.name }) { section ->
+        itemsIndexed(sections, key = { _, section -> section.name }) { index, section ->
+            var top by remember { mutableFloatStateOf(0f) }
             Column(
                 Modifier
                     .fillMaxWidth()
+                    .featherIn(index, section.group)
                     .testTag("settings:section:${section.name}")
-                    .metroPress(onClick = { onOpen(section) })
+                    .onGloballyPositioned { top = it.positionInRoot().y }
+                    .metroPress(onClick = { onOpen(section, top) })
                     .padding(horizontal = 24.dp, vertical = 10.dp),
             ) {
                 MetroText(stringResource(section.title), size = 28.sp)
@@ -181,15 +217,41 @@ private fun SectionList(sections: List<SettingsSection>, onOpen: (SettingsSectio
 
 /** The page of one section: the small heading, the section's title, and its settings. */
 @Composable
-private fun SectionPage(section: SettingsSection, env: SettingsEnv, modifier: Modifier = Modifier) {
+private fun SectionPage(section: SettingsSection, env: SettingsEnv, fromTop: Float, modifier: Modifier = Modifier) {
+    val reduced = LocalReduceMotion.current
+    var titleTop by remember { mutableFloatStateOf(0f) }
+    // 0 when the page has just opened, 1 when it has settled: the title comes from where the touched name was, bigger as it goes, and the
+    // settings slide in after it.
+    val settled = remember(section) { Animatable(if (reduced || fromTop <= 0f) 1f else 0f) }
+    LaunchedEffect(section) {
+        if (settled.value < 1f) settled.animateTo(1f, metroTween(durationMillis = 420, easing = Motion.Decelerate))
+    }
     Column(modifier.fillMaxSize().pageBackground()) {
         SettingsHeader()
         MetroText(
             stringResource(section.title),
             size = 40.sp,
-            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 2.dp, bottom = 8.dp),
+            modifier = Modifier
+                .padding(start = 24.dp, end = 24.dp, top = 2.dp, bottom = 8.dp)
+                .onGloballyPositioned { titleTop = it.positionInRoot().y }
+                .graphicsLayer {
+                    val away = 1f - settled.value
+                    transformOrigin = TransformOrigin(0f, 0.5f)
+                    translationY = (fromTop - titleTop) * away
+                    scaleX = 1f - 0.3f * away
+                    scaleY = 1f - 0.3f * away
+                },
         )
-        Box(Modifier.weight(1f)) {
+        Box(
+            Modifier
+                .weight(1f)
+                .graphicsLayer {
+                    alpha = settled.value
+                    translationX = (1f - settled.value) * 56.dp.toPx()
+                },
+        ) {
+            // The page can be put back to the start when the section allows it (see SectionReset).
+            CompositionLocalProvider(LocalPageReset provides PageReset(section.name, env.settings) { env.onChange { SectionReset.reset(it, section.name) } }) {
             when (section) {
                 SettingsSection.StartTheme -> StartThemePage(env)
                 SettingsSection.Start -> StartPage(env)
@@ -208,6 +270,8 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, modifier: Mo
                 SettingsSection.Backup -> BackupPage(env)
                 SettingsSection.Kids -> KidsPage(env)
                 SettingsSection.About -> AboutPage(env)
+                SettingsSection.Debug -> DebugPage(env)
+            }
             }
         }
     }

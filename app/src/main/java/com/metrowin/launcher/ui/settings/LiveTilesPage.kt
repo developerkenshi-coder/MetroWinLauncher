@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.data.WeatherBlock
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -7,7 +8,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import com.metrowin.launcher.ui.theme.LocalAccent
-import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,7 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.metrowin.launcher.R
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
 import com.metrowin.launcher.data.PlaceMatch
+import com.metrowin.launcher.data.SavedCities
 import com.metrowin.launcher.notifications.LiveReportLine
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroText
@@ -96,6 +99,28 @@ fun LiveTilesPage(env: SettingsEnv) {
                         MetroText(detail, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
                     }
                 }
+                if (settings.weatherCities.size < SavedCities.MAX) {
+                    MetroText(
+                        stringResource(R.string.weather_follow), size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+                        modifier = Modifier.testTag("weather:follow:$index").metroPress(onClick = {
+                            env.onFollowPlace(place)
+                            results = null
+                            query = ""
+                        }).padding(bottom = 6.dp),
+                    )
+                }
+            }
+            if (settings.weatherCities.isNotEmpty()) {
+                SettingLabel(stringResource(R.string.weather_followed))
+                settings.weatherCities.forEachIndexed { index, city ->
+                    Row(Modifier.fillMaxWidth().testTag("weather:city:$index"), verticalAlignment = Alignment.CenterVertically) {
+                        MetroText(city.name, size = 18.sp, weight = FontWeight.Normal, maxLines = 1, modifier = Modifier.weight(1f))
+                        MetroText(
+                            stringResource(R.string.weather_unfollow), size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+                            modifier = Modifier.testTag("weather:unfollow:$index").metroPress(onClick = { env.onUnfollowCity(city) }).padding(8.dp),
+                        )
+                    }
+                }
             }
             ActionSetting(
                 stringResource(R.string.weather_use_location),
@@ -114,6 +139,19 @@ fun LiveTilesPage(env: SettingsEnv) {
             hint = stringResource(R.string.weather_hint),
             tag = "weather:fahrenheit", id = "live.fahrenheit",
         )
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            SettingHeading(stringResource(R.string.wx_heading))
+            SettingHint(stringResource(R.string.wx_intro))
+            WeatherBlock.entries.forEach { block ->
+                ToggleSetting(
+                    label = stringResource(block.label),
+                    checked = block.code in settings.weatherBlocks,
+                    onChange = { value -> env.onChange { it.copy(weatherBlocks = if (value) it.weatherBlocks + block.code else it.weatherBlocks - block.code) } },
+                    hint = if (block == WeatherBlock.Air) stringResource(R.string.wx_air_hint) else null,
+                    tag = "weather:block:${block.code}", id = "live.wx.${block.code}",
+                )
+            }
+        }
         Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
             SettingHeading(stringResource(R.string.tiles_more_heading))
             TileTransitionSetting(env)

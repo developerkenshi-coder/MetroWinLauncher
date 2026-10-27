@@ -7,7 +7,9 @@ import androidx.compose.ui.platform.testTag
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.ui.start.PhotoFrame
 import com.metrowin.launcher.ui.components.MetroSlider
+import com.metrowin.launcher.data.PhotoFit
 import com.metrowin.launcher.data.PhotoFraming
+import com.metrowin.launcher.ui.start.contentScale
 import com.metrowin.launcher.data.ClockHours
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.TransformOrigin
@@ -142,6 +144,7 @@ fun StartThemePage(env: SettingsEnv) {
             tag = "theme:autoaccent",
             id = "theme.autoaccent",
         )
+        NightAccentSettings(env)
         Column(Modifier.settingAnchor("theme.background")) {
             SettingLabel(stringResource(R.string.theme_start_background))
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top) {
@@ -157,11 +160,22 @@ fun StartThemePage(env: SettingsEnv) {
                 }
             }
         }
+        PageBackgroundsSettings(env)
         if (settings.hasStartBackground) {
+            DropdownSetting(
+                label = stringResource(R.string.photo_fit),
+                options = PhotoFit.entries.map { stringResource(photoFitLabel(it)) },
+                selected = settings.startPhotoFit.ordinal,
+                onSelect = { index -> env.onChange { it.copy(startPhotoFit = PhotoFit.entries[index]) } },
+                tag = "theme:photofit",
+                id = "theme.photofit",
+            )
+        }
+        if (settings.hasStartBackground && settings.startPhotoFit == PhotoFit.Fill) {
             Column(Modifier.settingAnchor("theme.framing"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 SettingLabel(stringResource(R.string.photo_framing))
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    BackgroundPreview(env.startBackground, PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY))
+                    BackgroundPreview(env.startBackground, PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY), settings.startPhotoFit)
                     Column(Modifier.weight(1f)) {
                         FramingSlider(R.string.photo_zoom, PhotoFraming.fractionOfZoom(settings.startPhotoZoom), "theme:photozoom") { f ->
                             env.onChange { it.copy(startPhotoZoom = PhotoFraming.zoomOf(f)) }
@@ -179,6 +193,22 @@ fun StartThemePage(env: SettingsEnv) {
                 }
                 SettingHint(stringResource(R.string.photo_framing_hint))
             }
+        }
+        Column(Modifier.settingAnchor("theme.accentuse"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            SettingLabel(stringResource(R.string.accent_use))
+            ToggleSetting(
+                label = stringResource(R.string.accent_use_start), checked = settings.accentStart,
+                onChange = { value -> env.onChange { it.copy(accentStart = value) } }, tag = "theme:accentstart",
+            )
+            ToggleSetting(
+                label = stringResource(R.string.accent_use_panel), checked = settings.accentPanel,
+                onChange = { value -> env.onChange { it.copy(accentPanel = value) } }, tag = "theme:accentpanel",
+            )
+            ToggleSetting(
+                label = stringResource(R.string.accent_use_apps), checked = settings.accentApps,
+                onChange = { value -> env.onChange { it.copy(accentApps = value) } }, tag = "theme:accentapps",
+            )
+            SettingHint(stringResource(R.string.accent_use_hint))
         }
         ToggleSetting(
             label = stringResource(R.string.theme_parallax),
@@ -199,16 +229,25 @@ fun StartThemePage(env: SettingsEnv) {
     }
 }
 
+@StringRes
+private fun photoFitLabel(fit: PhotoFit): Int = when (fit) {
+    PhotoFit.Fill -> R.string.photo_fit_fill
+    PhotoFit.Fit -> R.string.photo_fit_fit
+    PhotoFit.Stretch -> R.string.photo_fit_stretch
+    PhotoFit.Tile -> R.string.photo_fit_tile
+    PhotoFit.Center -> R.string.photo_fit_center
+}
+
 /** 19 as "19:00", in the way the phone shows times. */
 internal fun hourLabel(hour: Int): String = String.format(Locale.getDefault(), "%02d:00", hour)
 
 @Composable
-private fun BackgroundPreview(image: ImageBitmap?, framing: PhotoFrame = PhotoFrame()) {
+private fun BackgroundPreview(image: ImageBitmap?, framing: PhotoFrame = PhotoFrame(), fit: PhotoFit = PhotoFit.Fill) {
     val colors = LocalMetroColors.current
     Box(Modifier.size(90.dp, 160.dp).background(colors.surface).clipToBounds()) {
         if (image != null) {
             Image(
-                image, contentDescription = null, contentScale = ContentScale.Crop,
+                image, contentDescription = null, contentScale = fit.contentScale(),
                 alignment = BiasAlignment(PhotoFraming.bias(framing.x), PhotoFraming.bias(framing.y)),
                 modifier = Modifier
                     .fillMaxSize()

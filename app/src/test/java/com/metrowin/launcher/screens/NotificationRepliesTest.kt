@@ -78,6 +78,8 @@ class NotificationRepliesTest : ScreenshotBase() {
         compose.onNodeWithTag("notification:send:n1").performClick()
         advance(200)
         assertEquals(listOf("n1" to "arrivo"), replies)
+        // The field closes with a movement now, not at once.
+        advance(500)
         compose.onAllNodesWithTag("notification:replyfield:n1").assertCountEquals(0)
         compose.onNodeWithTag("notification:reply:n1").assertExists()
     }

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.gesture
 
+import com.metrowin.launcher.ui.anim.metroTween
 import android.annotation.SuppressLint
 import androidx.activity.BackEventCompat
 import androidx.activity.compose.PredictiveBackHandler
@@ -85,7 +86,7 @@ class TurnstileBack(
     override fun onCommit() = commit()
 
     override fun onCancel() {
-        scope.launch { away.animateTo(0f, tween(durationMillis = 200, easing = Motion.Decelerate)) }
+        scope.launch { away.animateTo(0f, metroTween(durationMillis = 200, easing = Motion.Decelerate)) }
     }
 }
 

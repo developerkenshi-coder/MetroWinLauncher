@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.data.WorldCities
+import com.metrowin.launcher.data.City
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -54,6 +56,9 @@ fun StartPage(env: SettingsEnv) {
                 id = "start.pages",
             )
         }
+        StartFeaturesSettings(env)
+        StartBehaviourSettings(env)
+        LayoutsSettings(env)
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.start_clock_title))
             ToggleSetting(
@@ -86,6 +91,16 @@ fun StartPage(env: SettingsEnv) {
                 enabled = settings.showClock,
                 tag = "start:clockweek",
                 id = "start.week",
+            )
+            val zones = remember { listOf<City?>(null) + WorldCities.all.sortedBy { it.name } }
+            val none = stringResource(R.string.clock_second_none)
+            DropdownSetting(
+                label = stringResource(R.string.clock_second_zone),
+                options = zones.map { it?.name ?: none },
+                selected = zones.indexOfFirst { it?.zone == settings.clockZone }.coerceAtLeast(0),
+                onSelect = { i -> env.onChange { it.copy(clockZone = zones[i]?.zone.orEmpty()) } },
+                tag = "start:zone",
+                id = "start.zone",
             )
             ToggleSetting(
                 label = stringResource(R.string.theme_clock_taps),

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.lock
 
+import com.metrowin.launcher.ui.anim.metroTween
 import android.text.format.DateFormat
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -179,7 +180,7 @@ fun MetroLockScreen(
                         onDragStopped = { velocity ->
                             scope.launch {
                                 if (lift.value < -height * UNLOCK_FRACTION || velocity < -UNLOCK_VELOCITY) {
-                                    lift.animateTo(-height.toFloat(), tween(durationMillis = 220))
+                                    lift.animateTo(-height.toFloat(), metroTween(durationMillis = 220))
                                     onUnlock()
                                 } else {
                                     lift.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow))

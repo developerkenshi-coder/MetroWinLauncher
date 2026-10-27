@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.anim.metroTween
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ScrollState
@@ -65,9 +66,9 @@ internal class SettingsFocus(val target: String?, val scroll: ScrollState) {
             top = targetTop()
         }
         if (top == null) return
-        scroll.animateScrollTo((top.toInt() - marginPx).coerceAtLeast(0), tween(350))
+        scroll.animateScrollTo((top.toInt() - marginPx).coerceAtLeast(0), metroTween(350))
         glow.snapTo(1f)
-        glow.animateTo(0f, tween(1_600))
+        glow.animateTo(0f, metroTween(1_600))
     }
 }
 

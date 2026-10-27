@@ -55,6 +55,9 @@ sealed interface QuickAnswer {
      */
     data class CalendarEvent(val title: String, val start: Long?, val allDay: Boolean) : QuickAnswer
 
+    /** A switch or a sound mode named in the search box: touching it does what the button of the Action Center does. */
+    data class Command(val action: QuickAction?, val ringer: RingerMode?) : QuickAnswer
+
     /** A note: touching it saves [text] in Google Keep, or on a tile of Start where Keep is not there. */
     data class Note(val text: String) : QuickAnswer
 

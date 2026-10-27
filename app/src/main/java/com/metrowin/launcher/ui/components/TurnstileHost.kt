@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.components
 
+import com.metrowin.launcher.ui.anim.metroTween
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.tween
@@ -35,9 +36,9 @@ fun TurnstileHost(
     LaunchedEffect(show) {
         if (show) {
             composed = true
-            away.animateTo(0f, tween(durationMillis = if (reduced) REDUCED_MS else 380, easing = Motion.Decelerate))
+            away.animateTo(0f, metroTween(durationMillis = if (reduced) REDUCED_MS else 380, easing = Motion.Decelerate))
         } else {
-            away.animateTo(1f, tween(durationMillis = if (reduced) REDUCED_MS else 240, easing = Motion.Accelerate))
+            away.animateTo(1f, metroTween(durationMillis = if (reduced) REDUCED_MS else 240, easing = Motion.Accelerate))
             composed = false
         }
     }

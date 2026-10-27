@@ -29,7 +29,25 @@ class IconLoader(context: Context) {
         override fun sizeOf(key: String, value: Bitmap) = value.byteCount
     }
 
-    fun clear() = cache.evictAll()
+    fun clear() {
+        cache.evictAll()
+        tileColors.clear()
+    }
+
+    /** The colour of each icon as a tile colour (0: the icon has none worth a colour), kept so an icon is read once. */
+    private val tileColors = java.util.concurrent.ConcurrentHashMap<String, Int>()
+
+    /** The colour the icon of [item] is about, darkened to carry white text; null for a grey icon or one that is not loaded. */
+    suspend fun tileColor(item: AppItem): Int? {
+        tileColors[item.id]?.let { return it.takeIf { c -> c != 0 } }
+        val bitmap = load(item, COLOR_SAMPLE) ?: return null
+        val color = withContext(Dispatchers.Default) {
+            val pixels = IntArray(bitmap.width * bitmap.height).also { bitmap.getPixels(it, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height) }
+            DominantColor.of(pixels)?.let(DominantColor::forTile) ?: 0
+        }
+        tileColors[item.id] = color
+        return color.takeIf { it != 0 }
+    }
 
     /** The icon pack in use, or null for the icons of the apps. */
     @Volatile
@@ -42,6 +60,7 @@ class IconLoader(context: Context) {
     fun usePack(newPack: IconPack?) {
         pack = newPack
         cache.evictAll()
+        tileColors.clear()
         revision++
     }
 
@@ -127,6 +146,8 @@ class IconLoader(context: Context) {
     }
 
     private companion object {
+        private const val COLOR_SAMPLE = 24
+
         const val CACHE_BYTES = 16 * 1024 * 1024
         const val ADAPTIVE_CANVAS = 108f
         const val ADAPTIVE_VISIBLE = 72f

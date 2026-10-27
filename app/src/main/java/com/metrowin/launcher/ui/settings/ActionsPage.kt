@@ -1,5 +1,17 @@
 package com.metrowin.launcher.ui.settings
 
+import kotlin.math.roundToInt
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.zIndex
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.runtime.mutableFloatStateOf
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,14 +20,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.QuickAction
 import com.metrowin.launcher.ui.actioncenter.QuickButton
@@ -32,17 +48,49 @@ fun ActionsPage(env: SettingsEnv) {
     val colors = LocalMetroColors.current
     val slots = QuickAction.slots(env.settings.quickActions)
     var selected by remember { mutableIntStateOf(0) }
+    // The button held and dragged along the row, and how far it has gone.
+    var dragIndex by remember { mutableIntStateOf(-1) }
+    var dragX by remember { mutableFloatStateOf(0f) }
+    var slotWidth by remember { mutableFloatStateOf(1f) }
     SettingsPage {
         Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
             SettingHeading(stringResource(R.string.actions_center_title))
             Column(Modifier.settingAnchor("ac.buttons")) {
                 SettingLabel(stringResource(R.string.settings_quick_actions))
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.onSizeChanged { slotWidth = it.width / slots.size.toFloat() }) {
                     slots.forEachIndexed { index, action ->
                         QuickButton(
                             action, on = true, onClick = { selected = index },
                             modifier = Modifier
                                 .weight(1f)
+                                .zIndex(if (dragIndex == index) 1f else 0f)
+                                .graphicsLayer { translationX = if (dragIndex == index) dragX else 0f }
+                                .pointerInput(slots) {
+                                    detectDragGesturesAfterLongPress(
+                                        onDragStart = {
+                                            dragIndex = index
+                                            dragX = 0f
+                                            selected = index
+                                        },
+                                        onDrag = { change, amount ->
+                                            change.consume()
+                                            dragX += amount.x
+                                        },
+                                        onDragEnd = {
+                                            val to = (index + (dragX / slotWidth).roundToInt()).coerceIn(0, slots.lastIndex)
+                                            dragIndex = -1
+                                            dragX = 0f
+                                            if (to != index) {
+                                                env.onChange { s -> s.copy(quickActions = QuickAction.move(slots, index, to).map { it.id }) }
+                                                selected = to
+                                            }
+                                        },
+                                        onDragCancel = {
+                                            dragIndex = -1
+                                            dragX = 0f
+                                        },
+                                    )
+                                }
                                 .then(if (index == selected) Modifier.frame(3.dp, colors.foreground, LocalStyle.current.cardShape) else Modifier),
                         )
                     }
@@ -66,6 +114,7 @@ fun ActionsPage(env: SettingsEnv) {
                     }
                 }
             }
+            SettingHint(stringResource(R.string.ac_reorder_hint))
             ToggleSetting(
                 label = stringResource(R.string.ac_sliders),
                 checked = env.settings.actionSliders,
@@ -73,6 +122,7 @@ fun ActionsPage(env: SettingsEnv) {
                 hint = stringResource(R.string.ac_sliders_hint),
                 tag = "actions:sliders", id = "ac.sliders",
             )
+            ActionCenterExtrasSettings(env)
         }
         Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
             SettingHeading(stringResource(R.string.actions_notifications_title))
@@ -121,6 +171,23 @@ fun ActionsPage(env: SettingsEnv) {
                 enabled = env.notificationAccess,
                 tag = "notifications:banner", id = "ac.banner",
             )
+            OverlaySettings(env)
+            ToggleSetting(
+                label = stringResource(R.string.ac_sounds),
+                checked = env.settings.metroSounds,
+                onChange = { value -> env.onChange { it.copy(metroSounds = value) } },
+                hint = stringResource(R.string.ac_sounds_hint),
+                tag = "notifications:sounds", id = "ac.sounds",
+            )
+            ToggleSetting(
+                label = stringResource(R.string.ac_hide_system),
+                checked = env.settings.hideSystemNotifications,
+                onChange = { value -> env.onChange { it.copy(hideSystemNotifications = value) } },
+                hint = stringResource(R.string.ac_hide_system_hint),
+                enabled = env.notificationAccess && env.settings.toastBanner,
+                tag = "notifications:hidesystem", id = "ac.hide",
+            )
+            NotificationExtrasSettings(env)
         }
         ToggleSetting(
             label = stringResource(R.string.ac_volume_panel),
@@ -130,5 +197,48 @@ fun ActionsPage(env: SettingsEnv) {
             tag = "actions:volumepanel", id = "ac.volume",
         )
         NotificationAppsSetting(env)
+    }
+}
+
+/** The two switches that draw over other apps: each is on only when Android also lets the launcher do it, and turning one on without that opens the screen that gives it. */
+@Composable
+private fun OverlaySettings(env: SettingsEnv) {
+    val context = LocalContext.current
+    var allowed by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { allowed = Settings.canDrawOverlays(context) }
+    OverlayToggle(
+        label = R.string.ac_overlay, hint = R.string.ac_overlay_hint, on = env.settings.overlayBanner, allowed = allowed,
+        needs = R.string.ac_overlay_needs,
+        enabled = env.notificationAccess && env.settings.toastBanner, tag = "notifications:overlay", id = "ac.overlay",
+        onChange = { value -> env.onChange { it.copy(overlayBanner = value) }; if (value && !allowed) askToDrawOverApps(context) },
+    )
+    // The Action Center over other apps draws with the accessibility service (the one that locks the screen), not with this permission.
+    OverlayToggle(
+        label = R.string.ac_edge, hint = R.string.ac_edge_hint, on = env.settings.edgeActionCenter, allowed = env.lockServiceEnabled,
+        needs = R.string.gest_lock_needs_service,
+        enabled = env.notificationAccess, tag = "notifications:edge", id = "ac.edge",
+        onChange = { value -> env.onChange { it.copy(edgeActionCenter = value) }; if (value && !env.lockServiceEnabled) env.onOpenAccessibilitySettings() },
+    )
+}
+
+@Composable
+private fun OverlayToggle(
+    label: Int, hint: Int, on: Boolean, allowed: Boolean, needs: Int, enabled: Boolean, tag: String, id: String, onChange: (Boolean) -> Unit,
+) {
+    ToggleSetting(
+        label = stringResource(label),
+        checked = on && allowed,
+        onChange = onChange,
+        hint = stringResource(if (allowed) hint else needs),
+        enabled = enabled,
+        tag = tag, id = id,
+    )
+}
+
+private fun askToDrawOverApps(context: Context) {
+    runCatching {
+        context.startActivity(
+            Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.fromParts("package", context.packageName, null)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
     }
 }

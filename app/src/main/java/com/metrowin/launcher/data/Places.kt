@@ -23,9 +23,6 @@ object Places {
     /** [address] on the map of any app that shows addresses. */
     fun geoUri(address: String): String = GEO + encode(address)
 
-    /** Directions to [address] on the Google Maps page: opens in the Maps app where it is installed, in the browser otherwise. */
-    fun webUri(address: String): String = WEB + encode(address)
-
     /** What to try, in order, to open [uri]: a navigation address has two more ways to open when Google Maps is not there. */
     fun fallbacks(uri: String): List<String> {
         if (!uri.startsWith(NAVIGATION)) return listOf(uri)

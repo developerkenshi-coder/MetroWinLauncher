@@ -11,6 +11,9 @@ import org.json.JSONObject
 object SettingsCodec {
     private const val OPAQUE = 0xFF000000.toInt()
 
+    /** The most words the notification filter keeps. */
+    const val NOTIF_WORDS_MAX = 30
+
     /**
      * With [portable] the settings that belong to this phone alone are left out (the backup folder, the sync
      * passphrase and device id, the last backup time, the weather position, whether the Kid's Corner is on): a
@@ -35,6 +38,28 @@ object SettingsCodec {
         put("clockHours", s.clockHours.code)
         put("clockAlarm", s.clockAlarm)
         put("clockWeek", s.clockWeek)
+        put("clockZone", s.clockZone)
+        put("largeTiles", s.largeTiles)
+        put("groupTitles", s.groupTitles)
+        put("collectionTiles", s.collectionTiles)
+        put("layoutSchedule", s.layoutSchedule)
+        put("calendarAgenda", s.calendarAgenda)
+        put("batteryEstimate", s.batteryEstimate)
+        put("tileMusicControls", s.tileMusicControls)
+        put("pageBackgrounds", s.pageBackgrounds)
+        put("searchNotifications", s.searchNotifications)
+        put("muteFromPanel", s.muteFromPanel)
+        put("notifFilterOn", s.notifFilterOn)
+        put("notifFilterWords", JSONArray(s.notifFilterWords))
+        put("notifPriority", s.notifPriority)
+        put("dndMinutes", s.dndMinutes)
+        put("animationSpeed", s.animationSpeed)
+        put("tiltStrength", s.tiltStrength)
+        put("vibrationStrength", s.vibrationStrength)
+        put("searchOperators", s.searchOperators)
+        put("backupCopies", s.backupCopies)
+        put("showPhoneInfo", s.showPhoneInfo)
+        put("weatherCities", SavedCities.encode(s.weatherCities))
         put("textScale", s.textScale)
         put("showTileNames", s.showTileNames)
         put("boldText", s.boldText)
@@ -74,6 +99,13 @@ object SettingsCodec {
         put("liveOffApps", JSONArray(s.liveOffApps.sorted()))
         put("volumePanel", s.volumePanel)
         put("toastBanner", s.toastBanner)
+        put("overlayBanner", s.overlayBanner)
+        put("accentStart", s.accentStart)
+        put("accentPanel", s.accentPanel)
+        put("accentApps", s.accentApps)
+        put("metroSounds", s.metroSounds)
+        put("hideSystemNotifications", s.hideSystemNotifications)
+        put("edgeActionCenter", s.edgeActionCenter)
         put("notifControl", s.notifControl)
         put("notifHideCenter", JSONArray(s.notifHideCenter.sorted()))
         put("notifHideLock", JSONArray(s.notifHideLock.sorted()))
@@ -81,6 +113,20 @@ object SettingsCodec {
 
         put("weatherCity", s.weatherCity)
         put("weatherFahrenheit", s.weatherFahrenheit)
+        put("weatherBlocks", JSONArray(s.weatherBlocks.sorted()))
+        put("stepGoal", s.stepGoal)
+        put("startTopAfterMin", s.startTopAfterMin)
+        put("lockStart", s.lockStart)
+        put("startLowerPercent", s.startLowerPercent)
+        put("iconShape", s.iconShape.code)
+        put("iconTileColors", s.iconTileColors)
+        put("accentNightIndex", s.accentNightIndex)
+        put("volumeProfiles", VolumeProfiles.encode(s.volumeProfiles))
+        put("volumeProfilesShow", s.volumeProfilesShow)
+        put("torchAutoOffMin", s.torchAutoOffMin)
+        put("searchCommands", s.searchCommands)
+        put("tipOfDay", s.tipOfDay)
+        put("undoSteps", s.undoSteps)
         put("thirdPartyTiles", s.thirdPartyTiles)
         put("tileTransition", s.tileTransition.code)
         put("newsSource", s.newsSource)
@@ -98,6 +144,7 @@ object SettingsCodec {
         put("searchAnswers", s.searchAnswers)
         put("searchCurrency", s.searchCurrency)
         put("searchCalendar", s.searchCalendar)
+        put("searchFileTypes", JSONArray(s.searchFileTypes.sorted()))
         put("compactList", s.compactList)
         put("rememberSearches", s.rememberSearches)
         put("iconPack", s.iconPack)
@@ -137,6 +184,7 @@ object SettingsCodec {
             put("kidsMode", s.kidsMode)
             // The photos are files of this phone: a copy would point at pictures that are not there.
             put("backgroundRevision", s.backgroundRevision)
+            put("startPhotoFit", s.startPhotoFit.code)
             put("startPhotoZoom", s.startPhotoZoom)
             put("startPhotoX", s.startPhotoX)
             put("startPhotoY", s.startPhotoY)
@@ -144,6 +192,9 @@ object SettingsCodec {
             if (!s.weatherLatitude.isNaN()) put("weatherLatitude", s.weatherLatitude)
             if (!s.weatherLongitude.isNaN()) put("weatherLongitude", s.weatherLongitude)
             put("backupFolder", s.backupFolder)
+            // Who is silenced for now, and which layout the schedule put on, are states of this phone.
+            put("mutedUntil", JSONObject().apply { s.mutedUntil.forEach { (pkg, until) -> put(pkg, until) } })
+            put("activeLayout", s.activeLayout)
             put("lastBackupAt", s.lastBackupAt)
             put("syncPassphrase", s.syncPassphrase)
             put("deviceId", s.deviceId)
@@ -180,6 +231,30 @@ object SettingsCodec {
             clockHours = if (o.has("clockHours")) ClockHours.fromCode(o.optString("clockHours")) else base.clockHours,
             clockAlarm = o.optBoolean("clockAlarm", base.clockAlarm),
             clockWeek = o.optBoolean("clockWeek", base.clockWeek),
+            largeTiles = o.optBoolean("largeTiles", base.largeTiles),
+            groupTitles = o.optBoolean("groupTitles", base.groupTitles),
+            collectionTiles = o.optBoolean("collectionTiles", base.collectionTiles),
+            layoutSchedule = o.optBoolean("layoutSchedule", base.layoutSchedule),
+            calendarAgenda = o.optBoolean("calendarAgenda", base.calendarAgenda),
+            batteryEstimate = o.optBoolean("batteryEstimate", base.batteryEstimate),
+            tileMusicControls = o.optBoolean("tileMusicControls", base.tileMusicControls),
+            pageBackgrounds = o.optBoolean("pageBackgrounds", base.pageBackgrounds),
+            searchNotifications = o.optBoolean("searchNotifications", base.searchNotifications),
+            muteFromPanel = o.optBoolean("muteFromPanel", base.muteFromPanel),
+            mutedUntil = o.optJSONObject("mutedUntil")?.let { m -> m.keys().asSequence().associateWith { m.optLong(it) }.filterValues { it > 0L } } ?: base.mutedUntil,
+            notifFilterOn = o.optBoolean("notifFilterOn", base.notifFilterOn),
+            notifFilterWords = strings("notifFilterWords", base.notifFilterWords).map { it.trim() }.filter { it.isNotEmpty() }.distinct().take(NOTIF_WORDS_MAX),
+            notifPriority = o.optBoolean("notifPriority", base.notifPriority),
+            dndMinutes = o.optInt("dndMinutes", base.dndMinutes).coerceIn(5, 480),
+            animationSpeed = o.optInt("animationSpeed", base.animationSpeed).coerceIn(50, 200),
+            tiltStrength = o.optInt("tiltStrength", base.tiltStrength).coerceIn(0, 150),
+            vibrationStrength = o.optInt("vibrationStrength", base.vibrationStrength).coerceIn(0, 200),
+            searchOperators = o.optBoolean("searchOperators", base.searchOperators),
+            backupCopies = o.optInt("backupCopies", base.backupCopies).coerceIn(1, 10),
+            showPhoneInfo = o.optBoolean("showPhoneInfo", base.showPhoneInfo),
+            activeLayout = o.optString("activeLayout", base.activeLayout),
+            clockZone = o.optString("clockZone", base.clockZone).takeIf { zone -> zone.isEmpty() || runCatching { java.time.ZoneId.of(zone) }.isSuccess } ?: base.clockZone,
+            weatherCities = if (o.has("weatherCities")) SavedCities.decode(o.optString("weatherCities")) else base.weatherCities,
             textScale = o.optInt("textScale", base.textScale).let { v -> LauncherSettings.TEXT_SCALES.minByOrNull { kotlin.math.abs(it - v) } ?: 100 },
             hideStatusBar = o.optBoolean("hideStatusBar", base.hideStatusBar),
             showTileNames = o.optBoolean("showTileNames", base.showTileNames),
@@ -188,6 +263,7 @@ object SettingsCodec {
             homeDoubleAction = GestureAction.fromCode(o.optString("homeDoubleAction").ifEmpty { null }, base.homeDoubleAction),
             homeDoubleApp = o.optString("homeDoubleApp", base.homeDoubleApp),
             tileSpacing = if (o.has("tileSpacing")) TileSpacing.fromCode(o.optString("tileSpacing")) else base.tileSpacing,
+            startPhotoFit = if (o.has("startPhotoFit")) PhotoFit.fromCode(o.optString("startPhotoFit")) else base.startPhotoFit,
             startPhotoZoom = o.optInt("startPhotoZoom", base.startPhotoZoom).coerceIn(100, 300),
             startPhotoX = o.optInt("startPhotoX", base.startPhotoX).coerceIn(0, 100),
             startPhotoY = o.optInt("startPhotoY", base.startPhotoY).coerceIn(0, 100),
@@ -222,6 +298,13 @@ object SettingsCodec {
             liveOffApps = strings("liveOffApps", base.liveOffApps).toSet(),
             volumePanel = o.optBoolean("volumePanel", base.volumePanel),
             toastBanner = o.optBoolean("toastBanner", base.toastBanner),
+            overlayBanner = o.optBoolean("overlayBanner", base.overlayBanner),
+            accentStart = o.optBoolean("accentStart", base.accentStart),
+            accentPanel = o.optBoolean("accentPanel", base.accentPanel),
+            accentApps = o.optBoolean("accentApps", base.accentApps),
+            metroSounds = o.optBoolean("metroSounds", base.metroSounds),
+            hideSystemNotifications = o.optBoolean("hideSystemNotifications", base.hideSystemNotifications),
+            edgeActionCenter = o.optBoolean("edgeActionCenter", base.edgeActionCenter),
             notifControl = o.optBoolean("notifControl", base.notifControl),
             notifHideCenter = strings("notifHideCenter", base.notifHideCenter).toSet(),
             notifHideLock = strings("notifHideLock", base.notifHideLock).toSet(),
@@ -231,6 +314,20 @@ object SettingsCodec {
             weatherLatitude = if (o.has("weatherLatitude")) o.optDouble("weatherLatitude") else base.weatherLatitude,
             weatherLongitude = if (o.has("weatherLongitude")) o.optDouble("weatherLongitude") else base.weatherLongitude,
             weatherFahrenheit = o.optBoolean("weatherFahrenheit", base.weatherFahrenheit),
+            weatherBlocks = strings("weatherBlocks", base.weatherBlocks).filter { it in WeatherBlock.CODES }.toSet(),
+            stepGoal = o.optInt("stepGoal", base.stepGoal).coerceIn(0, 100_000),
+            startTopAfterMin = o.optInt("startTopAfterMin", base.startTopAfterMin).coerceIn(0, 24 * 60),
+            lockStart = o.optBoolean("lockStart", base.lockStart),
+            startLowerPercent = o.optInt("startLowerPercent", base.startLowerPercent).coerceIn(0, 60),
+            iconShape = if (o.has("iconShape")) IconShape.fromCode(o.optString("iconShape")) else base.iconShape,
+            iconTileColors = o.optBoolean("iconTileColors", base.iconTileColors),
+            accentNightIndex = o.optInt("accentNightIndex", base.accentNightIndex).coerceIn(-1, 19),
+            volumeProfiles = if (o.has("volumeProfiles")) VolumeProfiles.decode(o.optString("volumeProfiles")) else base.volumeProfiles,
+            volumeProfilesShow = o.optBoolean("volumeProfilesShow", base.volumeProfilesShow),
+            torchAutoOffMin = o.optInt("torchAutoOffMin", base.torchAutoOffMin).coerceIn(0, 120),
+            searchCommands = o.optBoolean("searchCommands", base.searchCommands),
+            tipOfDay = o.optBoolean("tipOfDay", base.tipOfDay),
+            undoSteps = o.optInt("undoSteps", base.undoSteps).coerceIn(1, 20),
             thirdPartyTiles = o.optBoolean("thirdPartyTiles", base.thirdPartyTiles),
             tileTransition = if (o.has("tileTransition")) TileTransition.fromCode(o.optString("tileTransition")) else base.tileTransition,
             newsSource = if (o.has("newsSource")) NewsSources.normalize(o.optString("newsSource")) else base.newsSource,
@@ -248,6 +345,7 @@ object SettingsCodec {
             searchAnswers = o.optBoolean("searchAnswers", base.searchAnswers),
             searchCurrency = o.optBoolean("searchCurrency", base.searchCurrency),
             searchCalendar = o.optBoolean("searchCalendar", base.searchCalendar),
+            searchFileTypes = strings("searchFileTypes", base.searchFileTypes).filter { FileType.fromCode(it) != null }.toSet(),
             compactList = o.optBoolean("compactList", base.compactList),
             rememberSearches = o.optBoolean("rememberSearches", base.rememberSearches),
             iconPack = o.optString("iconPack", base.iconPack),

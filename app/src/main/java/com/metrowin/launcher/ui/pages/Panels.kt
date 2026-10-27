@@ -1,6 +1,14 @@
 package com.metrowin.launcher.ui.pages
 
+import com.metrowin.launcher.data.ParkedCarStore
 import android.Manifest
+import android.content.Intent
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
+import com.metrowin.launcher.R
+import com.metrowin.launcher.data.PlaceFinder
+import com.metrowin.launcher.data.Steps
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -41,6 +49,11 @@ sealed interface Panel {
     data class Reminders(val draft: String = "") : Panel
     data object DialGrid : Panel
     data object PeopleHub : Panel
+    data object Steps : Panel
+    data object Recorder : Panel
+    data object Wallet : Panel
+    data object WhereAmI : Panel
+    data object Parking : Panel
 }
 
 /** Which page is open, if any. The pages come and go with a turnstile (see TurnstileHost); Back closes them. */
@@ -167,6 +180,64 @@ fun PanelContent(
             DialGridPage(
                 favourites = favourites, hasPermission = hasContacts, onRequestPermission = { permission.launch(LivePermissions.contacts) },
                 onCall = { vm.dial(it, direct) }, modifier = modifier,
+            )
+        }
+        Panel.Steps -> {
+            var allowed by remember { mutableStateOf(Steps.allowed(context)) }
+            val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { allowed = it }
+            val live by vm.live.collectAsStateWithLifecycle()
+            LaunchedEffect(allowed) { if (allowed) vm.refreshExtras(force = true) }
+            StepsPage(
+                stringResource(R.string.steps_default_label), live.extras.steps, allowed, { Steps.permission()?.let(ask::launch) }, modifier,
+                goal = settings.stepGoal, history = live.extras.stepDays,
+            )
+        }
+        Panel.Recorder -> {
+            var allowed by remember { mutableStateOf(LivePermissions.isGranted(context, Manifest.permission.RECORD_AUDIO)) }
+            val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { allowed = it }
+            RecorderPage(stringResource(R.string.recorder_default_label), allowed, { ask.launch(Manifest.permission.RECORD_AUDIO) }, modifier)
+            DisposableEffect(Unit) { onDispose { vm.refreshExtras(force = true) } }
+        }
+        Panel.Wallet -> {
+            val cards by vm.wallet.collectAsStateWithLifecycle()
+            WalletPage(stringResource(R.string.wallet_default_label), cards, vm::addCard, vm::removeCard, modifier)
+        }
+        Panel.WhereAmI -> {
+            var allowed by remember { mutableStateOf(PlaceFinder.allowed(context)) }
+            val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { allowed = PlaceFinder.allowed(context) }
+            WhereAmIPage(
+                label = stringResource(R.string.whereami_default_label), allowed = allowed,
+                onAllow = { ask.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)) },
+                locate = vm::locate,
+                onOpenMap = { here ->
+                    runCatching {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, PlaceFinder.mapsUri(here).toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    }
+                },
+                onShare = { here ->
+                    val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, PlaceFinder.shareText(here))
+                    runCatching { context.startActivity(Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                },
+                modifier = modifier,
+            )
+        }
+        Panel.Parking -> {
+            var allowed by remember { mutableStateOf(PlaceFinder.allowed(context)) }
+            val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { allowed = PlaceFinder.allowed(context) }
+            val live by vm.live.collectAsStateWithLifecycle()
+            LaunchedEffect(Unit) { vm.refreshExtras(force = true) }
+            ParkingPage(
+                label = stringResource(R.string.parking_default_label), car = live.extras.parked, allowed = allowed,
+                onAllow = { ask.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)) },
+                park = vm::parkHere,
+                onWalk = { car ->
+                    val view = { uri: String -> Intent(Intent.ACTION_VIEW, uri.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+                    // The walking route when a map app takes it, else the place on the map.
+                    runCatching { context.startActivity(view(ParkedCarStore.walkUri(car))) }
+                        .onFailure { runCatching { context.startActivity(view(ParkedCarStore.mapUri(car))) } }
+                },
+                onForget = vm::forgetCar,
+                modifier = modifier,
             )
         }
         Panel.PeopleHub -> {

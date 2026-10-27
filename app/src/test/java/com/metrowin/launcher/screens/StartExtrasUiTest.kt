@@ -171,20 +171,20 @@ class StartExtrasUiTest : ScreenshotBase() {
     }
 
     @Test
-    fun theCountdownDateIsChosenWithTheButtons() {
+    fun theCountdownKeepsTheDateOfTheWheelsAndTheTitle() {
         var result: Pair<String, Long>? = null
         val start = LocalDate.of(2026, 1, 31)
         show { CountdownDialog(initialTitle = "", initialDay = start.toEpochDay(), onDone = { t, d -> result = t to d }, onCancel = {}) }
         advance(300)
         capture("countdown_dialog")
+        // The wheels show the day, the month and the year they were given.
+        compose.onNodeWithTag("countdown:day").assertExists()
+        compose.onNodeWithTag("countdown:month").assertExists()
+        compose.onNodeWithTag("countdown:year").assertExists()
         compose.onNode(hasSetTextAction()).performTextInput("Trip")
-        compose.onNodeWithTag("countdown:day:plus").performClick()
-        compose.onNodeWithTag("countdown:month:plus").performClick()
-        compose.onNodeWithTag("countdown:year:plus").performClick()
         compose.waitForIdle()
         compose.onNodeWithTag("countdown:ok").performClick()
-        // 31 January 2026 plus a day is 1 February, plus a month 1 March, plus a year 1 March 2027.
-        assertEquals("Trip" to LocalDate.of(2027, 3, 1).toEpochDay(), result)
+        assertEquals("Trip" to start.toEpochDay(), result)
     }
 
     @Test

@@ -44,8 +44,12 @@ class StartEntriesTest {
         entries = StartEntries.resize(entries, "a")
         assertEquals(TileSize.Wide, entries[0].size)
         entries = StartEntries.resize(entries, "a")
+        assertEquals(TileSize.Large, entries[0].size)
+        entries = StartEntries.resize(entries, "a")
         assertEquals(TileSize.Small, entries[0].size)
         assertEquals(TileSize.Wide, StartEntries.resize(entries, "f")[1].size)
+        // With the Large size off the arrow goes from Wide back to Small.
+        assertEquals(TileSize.Small, StartEntries.resize(listOf(tile("w", TileSize.Wide)), "w", allowLarge = false)[0].size)
     }
 
     @Test

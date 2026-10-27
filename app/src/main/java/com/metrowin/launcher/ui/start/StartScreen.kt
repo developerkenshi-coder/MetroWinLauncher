@@ -1,5 +1,11 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.components.rememberIconTileColor
+import com.metrowin.launcher.ui.anim.metroTween
+import com.metrowin.launcher.ui.components.MetroText
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.wrapContentHeight
 import com.metrowin.launcher.ui.theme.toArgbInt
 import com.metrowin.launcher.ui.theme.ColorMath
 import androidx.compose.runtime.CompositionLocalProvider
@@ -55,6 +61,11 @@ import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.ImageShader
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.TileMode
+import com.metrowin.launcher.data.PhotoFit
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -120,6 +131,9 @@ sealed interface StartCell {
 
     /** The id of the pinned entry this cell belongs to, as the data layer knows it. */
     val entryId: String
+
+    /** The title of the group this cell starts; empty for the cells of an open folder and for those that start nothing. */
+    val group: String
 }
 
 @Immutable
@@ -127,6 +141,7 @@ data class AppCell(val tile: Tile, val item: AppItem, val folderId: String? = nu
     override val key get() = if (folderId == null) tile.id else "$folderId/${tile.id}"
     override val size get() = tile.size
     override val entryId get() = tile.id
+    override val group get() = if (folderId == null) tile.group else ""
 }
 
 @Immutable
@@ -134,6 +149,7 @@ data class FolderCell(val folder: Folder, val items: List<AppItem>, val expanded
     override val key get() = folder.id
     override val size get() = folder.size
     override val entryId get() = folder.id
+    override val group get() = folder.group
 }
 
 /** The tile keeps something the user writes or sets (a note, a countdown, a counter, a list): the pencil opens its editor. */
@@ -223,15 +239,25 @@ fun StartScreen(
     pickedKeys: Set<String>? = null,
     /** How the photo is framed (see [PhotoFrame]). */
     framing: PhotoFrame = PhotoFrame(),
+    /** How the photo fills the screen (see [PhotoFit]). */
+    photoFit: PhotoFit = PhotoFit.Fill,
     /** The name of the app under its tile. */
     showNames: Boolean = true,
     /** The space between the tiles, as a multiple of the one the look has: 1 is as it is. */
     spacing: Float = 1f,
+    /** The extras of the live tiles that are on (see [TileFeatures]). */
+    features: TileFeatures = TileFeatures(),
+    /** The titles of the groups of tiles are shown, and the groups start on a row of their own. */
+    showGroups: Boolean = true,
+    /** The tiles stay where they are: no move, no resize, no removal (the arrow to the app list stays). */
+    locked: Boolean = false,
+    /** Room added above the clock and the tiles, to bring them down to the thumb. */
+    topInset: androidx.compose.ui.unit.Dp = 0.dp,
 ) {
     val currentActions by rememberUpdatedState(actions)
-    CompositionLocalProvider(LocalTileNames provides showNames, LocalTileSpacing provides spacing) {
+    CompositionLocalProvider(LocalTileNames provides showNames, LocalTileSpacing provides spacing, LocalTileFeatures provides features) {
     Box(modifier.fillMaxSize()) {
-        if (background != null) ParallaxBackground(background, scrollState, parallax, framing)
+        if (background != null) ParallaxBackground(background, scrollState, parallax, framing, photoFit)
         Column(
             Modifier
                 .fillMaxSize()
@@ -249,11 +275,11 @@ fun StartScreen(
                 .cutoutSidesPadding()
                 .padding(horizontal = 12.dp),
         ) {
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp + topInset))
             header?.invoke()
             TileGridView(
                 cells, live, badges, peeks, columns, background != null,
-                enterToken, exitRequest, editingKey, scrollState, actions, readOnly, pickedKeys,
+                enterToken, exitRequest, editingKey, scrollState, actions, readOnly || locked, pickedKeys, showGroups,
             )
             Box(Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 18.dp), contentAlignment = Alignment.CenterEnd) {
                 if (!readOnly) NextPageArrow(actions.onNextPage)
@@ -273,33 +299,49 @@ data class PhotoFrame(val zoom: Int = 100, val x: Int = 50, val y: Int = 50)
 
 /** The photo, drawn taller than the screen and moved up slower than the tiles. */
 @Composable
-private fun ParallaxBackground(image: ImageBitmap, scrollState: ScrollState, parallax: Boolean, framing: PhotoFrame) {
+private fun ParallaxBackground(image: ImageBitmap, scrollState: ScrollState, parallax: Boolean, framing: PhotoFrame, fit: PhotoFit) {
     val travel = if (parallax) 120.dp else 0.dp
     BoxWithConstraints(Modifier.fillMaxSize().clipToBounds()) {
         val travelPx = with(LocalDensity.current) { travel.toPx() }
-        Image(
-            bitmap = image,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            alignment = BiasAlignment(PhotoFraming.bias(framing.x), PhotoFraming.bias(framing.y)),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(maxHeight + travel)
-                .graphicsLayer {
-                    translationY = -(scrollState.value * PARALLAX).coerceAtMost(travelPx)
-                    // Zoomed in around the point the user chose, so that point stays where it is.
-                    val zoom = framing.zoom / 100f
-                    scaleX = zoom
-                    scaleY = zoom
-                    transformOrigin = TransformOrigin(framing.x / 100f, framing.y / 100f)
-                },
-        )
+        val moving = Modifier
+            .fillMaxWidth()
+            .height(maxHeight + travel)
+            .graphicsLayer {
+                translationY = -(scrollState.value * PARALLAX).coerceAtMost(travelPx)
+                // Zoomed in around the point the user chose, so that point stays where it is (only when the photo covers the screen).
+                val zoom = if (fit == PhotoFit.Fill) framing.zoom / 100f else 1f
+                scaleX = zoom
+                scaleY = zoom
+                transformOrigin = TransformOrigin(framing.x / 100f, framing.y / 100f)
+            }
+        if (fit == PhotoFit.Tile) {
+            Box(moving.drawBehind { drawRect(ShaderBrush(ImageShader(image, TileMode.Repeated, TileMode.Repeated))) })
+        } else {
+            Image(
+                bitmap = image,
+                contentDescription = null,
+                contentScale = fit.contentScale(),
+                alignment = if (fit == PhotoFit.Fill) BiasAlignment(PhotoFraming.bias(framing.x), PhotoFraming.bias(framing.y)) else Alignment.Center,
+                modifier = moving,
+            )
+        }
         // A light shade keeps the white glyphs readable on a bright photo.
         Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.12f)))
     }
 }
 
 private const val PARALLAX = 0.2f
+
+/** The room above the first row of a group for its title. */
+private val GROUP_HEADER = 40.dp
+
+/** What the photo does to fill the screen, as Compose says it (a tiled photo is drawn by hand, the preview shows it covering). */
+internal fun PhotoFit.contentScale(): ContentScale = when (this) {
+    PhotoFit.Fill, PhotoFit.Tile -> ContentScale.Crop
+    PhotoFit.Fit -> ContentScale.Fit
+    PhotoFit.Stretch -> ContentScale.FillBounds
+    PhotoFit.Center -> ContentScale.None
+}
 
 /** State of the tile being dragged. The position is its top left corner in grid coordinates. */
 @Stable
@@ -330,9 +372,9 @@ private class TileDragState {
     }
 }
 
-private fun placementRect(p: Placement, unitPx: Float, gapPx: Float): Rect {
+private fun placementRect(p: Placement, unitPx: Float, gapPx: Float, extraY: Float = 0f): Rect {
     val x = p.col * (unitPx + gapPx)
-    val y = p.row * (unitPx + gapPx)
+    val y = p.row * (unitPx + gapPx) + extraY
     return Rect(x, y, x + p.cols * unitPx + (p.cols - 1) * gapPx, y + p.rows * unitPx + (p.rows - 1) * gapPx)
 }
 
@@ -351,6 +393,7 @@ private fun TileGridView(
     actions: StartActions,
     readOnly: Boolean,
     pickedKeys: Set<String>?,
+    showGroups: Boolean,
 ) {
     val density = LocalDensity.current
     val TileGap = LocalStyle.current.tileGap * LocalTileSpacing.current
@@ -359,8 +402,14 @@ private fun TileGridView(
         val unitPx = with(density) { unit.toPx() }
         val gapPx = with(density) { TileGap.toPx() }
         val sizes = cells.map { it.size }
-        val layout = remember(sizes, columns) { TileGrid.place(sizes, columns) }
-        val gridHeight = if (layout.rows == 0) 0.dp else unit * layout.rows + TileGap * (layout.rows - 1)
+        // The title of a group is written above the row it starts; the rows from there on move down by the height of the title.
+        val titles = remember(cells, showGroups) { cells.map { if (showGroups && it.isTopLevel) it.group else "" } }
+        val breaks = remember(titles) { titles.map { it.isNotEmpty() } }
+        val layout = remember(sizes, breaks, columns) { TileGrid.place(sizes, columns, breaks) }
+        val headerPx = with(density) { GROUP_HEADER.toPx() }
+        val startRows = remember(layout, breaks) { layout.placements.filterIndexed { i, _ -> breaks[i] }.map { it.row } }
+        val shiftOf: (Int) -> Float = { row -> headerPx * startRows.count { it <= row } }
+        val gridHeight = if (layout.rows == 0) 0.dp else unit * layout.rows + TileGap * (layout.rows - 1) + GROUP_HEADER * startRows.size
 
         val drag = remember { TileDragState() }
         var gridTop by remember { mutableFloatStateOf(0f) }
@@ -371,6 +420,7 @@ private fun TileGridView(
         val currentLayout by rememberUpdatedState(layout)
         val currentActions by rememberUpdatedState(actions)
         val currentMetrics by rememberUpdatedState(unitPx to gapPx)
+        val currentShift by rememberUpdatedState(shiftOf)
 
         // The free places the dragged tile can be dropped on, worked out again whenever the layout or the dragged tile changes.
         val draggedIndex = cells.indexOfFirst { it.key == drag.draggedKey }
@@ -380,7 +430,7 @@ private fun TileGridView(
         }
         val currentDropTargets by rememberUpdatedState(dropTargets)
 
-        fun rectOf(index: Int) = placementRect(currentLayout.placements[index], currentMetrics.first, currentMetrics.second)
+        fun rectOf(index: Int) = currentLayout.placements[index].let { placementRect(it, currentMetrics.first, currentMetrics.second, currentShift(it.row)) }
 
         val onDragStart: (StartCell, Offset) -> Unit = { cell, at -> drag.start(cell.key, at) }
 
@@ -400,7 +450,7 @@ private fun TileGridView(
                 dragged = draggedIndex,
                 center = center,
                 canMerge = dragged is AppCell,
-                drops = currentDropTargets.map { t -> placementRect(Placement(t.col, t.row, t.cols, t.rows), currentMetrics.first, currentMetrics.second) },
+                drops = currentDropTargets.map { t -> placementRect(Placement(t.col, t.row, t.cols, t.rows), currentMetrics.first, currentMetrics.second, currentShift(t.row)) },
                 small = list.map { it.size == TileSize.Small },
             )
             when (outcome) {
@@ -497,7 +547,7 @@ private fun TileGridView(
             val outline = LocalMetroColors.current.foreground.copy(alpha = 0.35f)
             val dropStyle = LocalStyle.current
             dropTargets.forEach { t ->
-                val r = placementRect(Placement(t.col, t.row, t.cols, t.rows), unitPx, gapPx)
+                val r = placementRect(Placement(t.col, t.row, t.cols, t.rows), unitPx, gapPx, shiftOf(t.row))
                 Box(
                     Modifier
                         .offset { IntOffset(r.left.roundToInt(), r.top.roundToInt()) }
@@ -505,6 +555,22 @@ private fun TileGridView(
                         .testTag("drop:${t.col}:${t.row}")
                         .border(2.dp, outline, if (t.cols == 1) dropStyle.smallTileShape else dropStyle.tileShape),
                 )
+            }
+            titles.forEachIndexed { index, title ->
+                if (title.isNotEmpty()) {
+                    val row = layout.placements[index].row
+                    val top = (unitPx + gapPx) * row + shiftOf(row) - headerPx
+                    MetroText(
+                        title, size = 18.sp, maxLines = 1, color = LocalMetroColors.current.foreground.copy(alpha = 0.9f),
+                        modifier = Modifier
+                            .offset { IntOffset(0, top.roundToInt()) }
+                            .height(GROUP_HEADER)
+                            .fillMaxWidth()
+                            .wrapContentHeight(Alignment.Bottom)
+                            .padding(start = 4.dp, bottom = 6.dp)
+                            .testTag("group:$title"),
+                    )
+                }
             }
             cells.forEachIndexed { index, cell ->
                 key(cell.key) {
@@ -515,6 +581,7 @@ private fun TileGridView(
                         onDragStart, onDragBy, onDragEnd, readOnly, pickedKeys,
                         previousId = topLevel.getOrNull(at - 1).takeIf { at > 0 },
                         nextId = topLevel.getOrNull(at + 1).takeIf { at >= 0 },
+                        extraY = shiftOf(layout.placements[index].row),
                     )
                 }
             }
@@ -590,6 +657,8 @@ private fun PositionedTile(
     /** The tiles either side of this one, for the "move earlier" and "move later" actions of TalkBack. */
     previousId: String? = null,
     nextId: String? = null,
+    /** How far down the row of this tile is pushed by the titles of the groups above it, in pixels. */
+    extraY: Float = 0f,
 ) {
     val density = LocalDensity.current
     val reduced = LocalReduceMotion.current
@@ -600,7 +669,7 @@ private fun PositionedTile(
     val currentActions by rememberUpdatedState(actions)
     val currentCell by rememberUpdatedState(cell)
     val step = unit + TileGap
-    val slot = with(density) { IntOffset((step * placement.col).roundToPx(), (step * placement.row).roundToPx()) }
+    val slot = with(density) { IntOffset((step * placement.col).roundToPx(), (step * placement.row).roundToPx() + extraY.roundToInt()) }
     val width by animateDpAsState(unit * placement.cols + TileGap * (placement.cols - 1), spring(stiffness = Spring.StiffnessLow), label = "tileWidth")
     val height by animateDpAsState(unit * placement.rows + TileGap * (placement.rows - 1), spring(stiffness = Spring.StiffnessLow), label = "tileHeight")
 
@@ -627,12 +696,12 @@ private fun PositionedTile(
     LaunchedEffect(away) {
         // Reduced motion: every tile fades in at once, quickly.
         if (!reduced) delay(entryDelay(placement, index))
-        away.animateTo(0f, tween(durationMillis = if (reduced) REDUCED_FADE_MS else 420, easing = Motion.Decelerate))
+        away.animateTo(0f, metroTween(durationMillis = if (reduced) REDUCED_FADE_MS else 420, easing = Motion.Decelerate))
     }
     LaunchedEffect(exitRequest, away) {
         if (exitRequest == null) return@LaunchedEffect
         if (!reduced) delay(if (exitRequest.key == cell.key) TAPPED_EXIT_DELAY_MS else exitDelay(placement))
-        away.animateTo(1f, tween(durationMillis = if (reduced) REDUCED_FADE_MS else 240, easing = Motion.Accelerate))
+        away.animateTo(1f, metroTween(durationMillis = if (reduced) REDUCED_FADE_MS else 240, easing = Motion.Accelerate))
     }
 
     val selected = editingKey == cell.key
@@ -654,8 +723,14 @@ private fun PositionedTile(
         is FolderCell -> cell.folder.color
     }
     val transparent = hasBackground && cell is AppCell && cell.item.glyph != null && !highContrast && ownColor == 0
+    val iconColor = if (LocalTileFeatures.current.iconColors && cell is AppCell && ownColor == 0 && cell.item.glyph == null && cell.item.data == null) {
+        rememberIconTileColor(cell.item)
+    } else {
+        null
+    }
     val tileColor = when {
         ownColor != 0 -> Color(ownColor)
+        iconColor != null -> iconColor
         transparent -> Color.Black.copy(alpha = 0.12f)
         else -> colors.tileColor(index, LocalAccent.current)
     }
@@ -713,7 +788,7 @@ private fun PositionedTile(
         CompositionLocalProvider(
             LocalMetroColors provides colors.onTile(
                 when {
-                    ownColor != 0 -> TileWhite
+                    ownColor != 0 || iconColor != null -> TileWhite
                     transparent -> colors.tileContent
                     else -> colors.tileInk(index)
                 },

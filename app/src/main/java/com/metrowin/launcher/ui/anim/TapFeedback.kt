@@ -75,15 +75,17 @@ class TapFeedbackPlayer(context: Context) {
     }
 
     /** A short tap of the motor, the one Android uses for a key: whatever the touch vibration switch of the phone says. */
-    fun tick() {
+    fun tick(strength: Int = 100) {
         val motor = vibrator ?: return
+        if (strength <= 0) return
         runCatching {
             if (!motor.hasVibrator()) return
             motor.vibrate(
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
-                } else {
-                    VibrationEffect.createOneShot(TICK_MS, TICK_AMPLITUDE)
+                when {
+                    // As designed: the tap Android uses for a key.
+                    strength == 100 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+                    // Another strength: a tap of its own, longer and harder or shorter and softer.
+                    else -> VibrationEffect.createOneShot((TICK_MS * strength / 100).coerceAtLeast(4L), (TICK_AMPLITUDE * strength / 100).coerceIn(1, 255))
                 },
             )
         }
@@ -103,11 +105,12 @@ class TapFeedbackPlayer(context: Context) {
  * kept ready only while the launcher is on screen.
  */
 @Composable
-fun rememberTapFeedback(sound: Boolean, haptics: Boolean): () -> Unit {
+fun rememberTapFeedback(sound: Boolean, haptics: Boolean, strength: Int = 100): () -> Unit {
     val context = LocalContext.current
     val player = remember(context) { TapFeedbackPlayer(context) }
     val withSound by rememberUpdatedState(sound)
     val withHaptics by rememberUpdatedState(haptics)
+    val withStrength by rememberUpdatedState(strength)
     LaunchedWhileStarted(sound) {
         if (!sound) return@LaunchedWhileStarted
         try {
@@ -120,7 +123,7 @@ fun rememberTapFeedback(sound: Boolean, haptics: Boolean): () -> Unit {
     return remember(player) {
         {
             if (withSound) player.click()
-            if (withHaptics) player.tick()
+            if (withHaptics) player.tick(withStrength)
         }
     }
 }

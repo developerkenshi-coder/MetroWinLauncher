@@ -31,16 +31,16 @@ object StartEntries {
     /** Turns a folder back into the tiles it holds, in its place. */
     fun release(entries: List<StartEntry>, folderId: String): List<StartEntry> =
         entries.flatMap { entry ->
-            if (entry is Folder && entry.id == folderId) entry.children.map { Tile(it, TileSize.Medium) }
+            if (entry is Folder && entry.id == folderId) entry.children.mapIndexed { i, child -> Tile(child, TileSize.Medium, group = if (i == 0) entry.group else "") }
             else listOf(entry)
         }
 
-    fun resize(entries: List<StartEntry>, id: String): List<StartEntry> =
+    fun resize(entries: List<StartEntry>, id: String, allowLarge: Boolean = true): List<StartEntry> =
         entries.map { entry ->
             when {
                 entry.id != id -> entry
-                entry is Tile -> entry.copy(size = entry.size.next())
-                entry is Folder -> entry.copy(size = entry.size.next())
+                entry is Tile -> entry.copy(size = entry.size.next(allowLarge))
+                entry is Folder -> entry.copy(size = entry.size.next(allowLarge))
                 else -> entry
             }
         }
@@ -110,7 +110,7 @@ object StartEntries {
             when {
                 entry.id != target.id -> entry
                 entry is Folder -> entry.copy(children = entry.children + dragged.id)
-                else -> Folder(newFolderId(), name = "", size = TileSize.Medium, children = listOf(entry.id, dragged.id))
+                else -> Folder(newFolderId(), name = "", size = TileSize.Medium, children = listOf(entry.id, dragged.id), group = entry.group)
             }
         }
     }
@@ -137,7 +137,7 @@ object StartEntries {
                 .map { if (it.id == folder.id) folder.copy(children = folder.children + tiles.map(Tile::id)) else it }
         }
         if (tiles.size < 2) return entries
-        val folder = Folder(newFolderId(), name = "", size = TileSize.Medium, children = tiles.map(Tile::id))
+        val folder = Folder(newFolderId(), name = "", size = TileSize.Medium, children = tiles.map(Tile::id), group = tiles.first().group)
         val first = tiles.first().id
         val others = tiles.drop(1).mapTo(HashSet()) { it.id }
         return buildList {
@@ -164,6 +164,21 @@ object StartEntries {
             }
         }
 
+    /** Gives the tile or folder [id] the title of the group it starts, or none when [title] is blank. */
+    fun setGroup(entries: List<StartEntry>, id: String, title: String): List<StartEntry> {
+        val clean = title.trim().take(MAX_GROUP)
+        return entries.map { entry ->
+            when {
+                entry.id != id -> entry
+                entry is Tile -> entry.copy(group = clean)
+                entry is Folder -> entry.copy(group = clean)
+                else -> entry
+            }
+        }
+    }
+
+    const val MAX_GROUP = 32
+
     fun rename(entries: List<StartEntry>, folderId: String, name: String): List<StartEntry> =
         entries.map { if (it is Folder && it.id == folderId) it.copy(name = name.trim()) else it }
 
@@ -179,7 +194,7 @@ object StartEntries {
     /** A folder needs two apps: with one it is just a tile, with none it is gone. */
     private fun dissolveIfTooSmall(folder: Folder): List<StartEntry> = when (folder.children.size) {
         0 -> emptyList()
-        1 -> listOf(Tile(folder.children.single(), TileSize.Medium))
+        1 -> listOf(Tile(folder.children.single(), TileSize.Medium, group = folder.group))
         else -> listOf(folder)
     }
 }

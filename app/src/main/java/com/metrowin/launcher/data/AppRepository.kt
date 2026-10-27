@@ -130,6 +130,8 @@ class AppRepository(private val context: Context) {
             isPrivate = type == ProfileType.Private,
             category = AppCategory.fromAndroid(info.applicationInfo.category),
             installedAt = info.firstInstallTime,
+            // Whichever weather app is pinned, its tile shows the forecast of the launcher.
+            live = if (isOwner && WeatherApps.matches(component.packageName)) LiveKind.Weather else null,
         )
     }
 
@@ -161,6 +163,14 @@ class AppRepository(private val context: Context) {
                         // A speed dial tile: it calls at once when the phone permission was given, else it opens the dialer.
                         val direct = LivePermissions.isGranted(context, PhoneCalls.permission)
                         context.startActivity(PhoneCalls.intent(number, direct), options)
+                    } else if (target.uri.startsWith("content://media/")) {
+                        // A file the search found: opened by the app that handles its kind, which is let read it this once.
+                        val file = target.uri.toUri()
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW).setDataAndType(file, context.contentResolver.getType(file))
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION),
+                            options,
+                        )
                     } else {
                         // A navigation address tries Google Maps, then any map app, then the page of Google Maps; the others open as they are.
                         val opened = Places.fallbacks(target.uri).any { address ->
@@ -298,6 +308,12 @@ class AppRepository(private val context: Context) {
         const val ROUTE_DIALGRID = "dialgrid"
         const val ROUTE_PEOPLEHUB = "peoplehub"
         const val ROUTE_REMINDERS = "reminders"
+        const val ROUTE_STEPS = "steps"
+        const val ROUTE_TOGGLE = "toggle"
+        const val ROUTE_RECORDER = "recorder"
+        const val ROUTE_WALLET = "wallet"
+        const val ROUTE_WHEREAMI = "whereami"
+        const val ROUTE_PARKING = "parking"
         const val WEATHER_ID = "launcher:weather"
         const val ROUTE_WEATHER = "weather"
     }

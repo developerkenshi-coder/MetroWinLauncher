@@ -63,6 +63,8 @@ data class LiveTileData(
     val photos: List<ImageBitmap> = emptyList(),
     val people: List<LivePerson> = emptyList(),
     val nextEvent: LiveEvent? = null,
+    /** The next few events, for the agenda of a wide or large Calendar tile (the first is [nextEvent]). */
+    val events: List<LiveEvent> = emptyList(),
     val missedCalls: Int = 0,
     /** The flashlight is on, for the torch tile. Not read from the phone with the rest: it comes from the torch callback. */
     val torchOn: Boolean = false,
@@ -85,6 +87,8 @@ data class LiveTileData(
     val finance: FinanceData? = null,
     /** The reminders, for the Reminders tile. */
     val reminders: List<Reminder> = emptyList(),
+    /** What the steps, camera, recorder, wallet, place, person and site tiles show (see [TileExtras]). */
+    val extras: TileExtras = TileExtras(),
 )
 
 /**
@@ -95,6 +99,7 @@ fun LiveTileData.keeping(kinds: Set<LiveKind>, albumIds: Set<String> = emptySet(
     photos = if (LiveKind.Photos in kinds) photos else emptyList(),
     people = if (LiveKind.People in kinds) people else emptyList(),
     nextEvent = if (LiveKind.Calendar in kinds) nextEvent else null,
+    events = if (LiveKind.Calendar in kinds) events else emptyList(),
     missedCalls = if (LiveKind.Phone in kinds) missedCalls else 0,
     storage = if (LiveKind.Storage in kinds) storage else null,
     nextAlarm = if (LiveKind.Alarm in kinds) nextAlarm else 0L,
@@ -110,6 +115,7 @@ fun LiveTileData.updatedWith(fresh: LiveTileData, kinds: Set<LiveKind>) = copy(
     photos = if (LiveKind.Photos in kinds) fresh.photos else photos,
     people = if (LiveKind.People in kinds) fresh.people else people,
     nextEvent = if (LiveKind.Calendar in kinds) fresh.nextEvent else nextEvent,
+    events = if (LiveKind.Calendar in kinds) fresh.events else events,
     missedCalls = if (LiveKind.Phone in kinds) fresh.missedCalls else missedCalls,
     storage = if (LiveKind.Storage in kinds) fresh.storage else storage,
     nextAlarm = if (LiveKind.Alarm in kinds) fresh.nextAlarm else nextAlarm,
@@ -125,17 +131,21 @@ class LiveTileRepository(private val context: Context) {
      * Blocking, call it off the main thread. Reads the data of the kinds in [wanted] only: a Start with no photo tile has no use
      * for the photos. [albumIds] and [groupIds] are the albums and the groups whose tiles are pinned.
      */
-    fun load(wanted: Set<LiveKind> = LiveSources.all, albumIds: Set<String> = emptySet(), groupIds: Set<Long> = emptySet()) = LiveTileData(
+    fun load(wanted: Set<LiveKind> = LiveSources.all, albumIds: Set<String> = emptySet(), groupIds: Set<Long> = emptySet()): LiveTileData {
+        val events = if (LiveKind.Calendar in wanted) CalendarSearch(context).upcoming() else emptyList()
+        return LiveTileData(
         photos = if (LiveKind.Photos in wanted) photos() else emptyList(),
         people = if (LiveKind.People in wanted) people() else emptyList(),
-        nextEvent = if (LiveKind.Calendar in wanted) nextEvent() else null,
+        nextEvent = events.firstOrNull(),
+        events = events,
         missedCalls = if (LiveKind.Phone in wanted) missedCalls() else 0,
         storage = if (LiveKind.Storage in wanted) StorageInfo.read() else null,
         nextAlarm = if (LiveKind.Alarm in wanted) NextAlarm.read(context) else 0L,
         birthdays = if (LiveKind.Birthdays in wanted) birthdays() else emptyList(),
         albums = if (LiveKind.Album in wanted) albumIds.associateWith { album(it) } else emptyMap(),
         groups = if (LiveKind.Group in wanted) groupIds.associateWith { group(it) } else emptyMap(),
-    )
+        )
+    }
 
     private fun granted(permission: String) = LivePermissions.isGranted(context, permission)
 

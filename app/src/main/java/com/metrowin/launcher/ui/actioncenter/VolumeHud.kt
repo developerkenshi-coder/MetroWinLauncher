@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.actioncenter
 
+import com.metrowin.launcher.ui.anim.metroTween
 import android.media.AudioManager
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -64,7 +65,7 @@ fun VolumeHudPanel(
     val reduced = LocalReduceMotion.current
     val shown = remember { Animatable(0f) }
     val currentDismiss by rememberUpdatedState(onDismiss)
-    LaunchedEffect(Unit) { shown.animateTo(1f, tween(durationMillis = if (reduced) 60 else 200, easing = Motion.Decelerate)) }
+    LaunchedEffect(Unit) { shown.animateTo(1f, metroTween(durationMillis = if (reduced) 60 else 200, easing = Motion.Decelerate)) }
     // Every key press (a new token) and every touch of a slider starts the wait again.
     LaunchedEffect(hud.token, hud.expanded) {
         delay(if (hud.expanded) VOLUME_HUD_EXPANDED_MS else VOLUME_HUD_MS)

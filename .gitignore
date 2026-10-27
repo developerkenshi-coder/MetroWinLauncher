@@ -15,3 +15,4 @@ app/build/
 .kotlin/
 /keystore.properties
 keystore/
+/graphify-out/

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.components.hideKeyboardWhenGone
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -50,9 +51,9 @@ import com.metrowin.launcher.data.SystemSettingDef
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroButton
+import com.metrowin.launcher.ui.components.MetroDatePicker
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
-import com.metrowin.launcher.ui.settings.StepperSetting
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.MetroAccents
@@ -109,7 +110,7 @@ fun NoteDialog(initial: String, onDone: (String) -> Unit, onCancel: () -> Unit, 
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default),
             minLines = 3,
             maxLines = 8,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 96.dp).focusRequester(focus).testTag("note:field"),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 96.dp).focusRequester(focus).testTag("note:field").hideKeyboardWhenGone(),
         )
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("note:ok")) { onDone(text) }
@@ -140,25 +141,8 @@ fun CountdownDialog(
             date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(locale)), size = 22.sp,
             modifier = Modifier.testTag("countdown:date"),
         )
-        Countdown.Field.entries.forEach { field ->
-            StepperSetting(
-                label = stringResource(
-                    when (field) {
-                        Countdown.Field.Day -> R.string.countdown_day
-                        Countdown.Field.Month -> R.string.countdown_month
-                        Countdown.Field.Year -> R.string.countdown_year
-                    },
-                ),
-                value = when (field) {
-                    Countdown.Field.Day -> date.dayOfMonth.toString()
-                    Countdown.Field.Month -> date.monthValue.toString()
-                    Countdown.Field.Year -> date.year.toString()
-                },
-                onDecrement = { date = Countdown.step(date, field, -1) },
-                onIncrement = { date = Countdown.step(date, field, 1) },
-                tag = "countdown:${field.name.lowercase()}",
-            )
-        }
+        // The date is chosen on three wheels, as on Windows Phone.
+        MetroDatePicker(date, { date = it }, tag = "countdown")
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("countdown:ok")) { onDone(title, date.toEpochDay()) }
             MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag("countdown:cancel"), onClick = onCancel)

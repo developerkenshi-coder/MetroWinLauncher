@@ -1,8 +1,29 @@
 package com.metrowin.launcher.ui.actioncenter
 
+import com.metrowin.launcher.ui.theme.frame
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import com.metrowin.launcher.ui.anim.metroTween
+import com.metrowin.launcher.notifications.Mute
+import androidx.compose.animation.core.animateFloatAsState
 import com.metrowin.launcher.ui.theme.pageBackground
 import com.metrowin.launcher.ui.theme.squareClip
 import android.text.format.DateUtils
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import com.metrowin.launcher.notifications.NotifAction
+import com.metrowin.launcher.ui.anim.Motion
+import com.metrowin.launcher.ui.anim.featherIn
+import com.metrowin.launcher.ui.anim.flipIn
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -15,6 +36,7 @@ import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -117,6 +139,15 @@ fun ActionCenter(
     onSnooze: ((NotificationEntry, Snooze.Option) -> Unit)? = null,
     /** Opens the notification settings of the app a notification came from. */
     onAppNotificationSettings: ((NotificationEntry) -> Unit)? = null,
+    /** Silences the app of a notification for a while (a long press on it shows the way); null leaves the choice out. */
+    onMute: ((NotificationEntry, Mute.Option) -> Unit)? = null,
+    /** What the button an app put on a notification does (archive, mark as read…); null leaves those buttons out. */
+    onNotificationAction: ((NotificationEntry, NotifAction) -> Unit)? = null,
+    /** What was dismissed lately, to look at and open again; empty leaves that part out. */
+    history: List<NotificationEntry> = emptyList(),
+    onClearHistory: (() -> Unit)? = null,
+    /** The room to leave for the bars and the camera cut-out when the window does not get the insets itself (a window over other apps); null takes them from the window. */
+    contentPadding: PaddingValues? = null,
 ) {
     val colors = LocalMetroColors.current
     var expanded by remember { mutableStateOf(false) }
@@ -139,18 +170,31 @@ fun ActionCenter(
             // Swallow touches so Start underneath does not react.
             .pointerInput(Unit) { detectTapGestures { } },
     ) {
-        Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().cutoutSidesPadding()) {
+        Column(
+            Modifier.fillMaxSize().then(
+                if (contentPadding != null) Modifier.padding(contentPadding) else Modifier.statusBarsPadding().navigationBarsPadding().cutoutSidesPadding(),
+            ),
+        ) {
             // The buttons, the sliders and the notifications are one list that scrolls together: on a short screen or with big
             // text the notifications are reached by scrolling, not squeezed out of the panel.
             LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
                 item(key = "quick") {
                     Column(Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         QuickRow(slots, states, onAction, timeout)
-                        if (expanded) {
-                            val others = QuickAction.entries.filter { it !in slots }
-                            others.chunked(QuickAction.SLOTS).forEach { row -> QuickRow(row, states, onAction, timeout) }
+                        // The rest of the buttons open out, and turn in one after the other like the tiles of Start.
+                        AnimatedVisibility(
+                            expanded,
+                            enter = expandVertically(metroTween(durationMillis = 320, easing = Motion.Decelerate)) + fadeIn(metroTween(220)),
+                            exit = shrinkVertically(metroTween(durationMillis = 220, easing = Motion.Accelerate)) + fadeOut(metroTween(150)),
+                        ) {
+                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                val others = QuickAction.entries.filter { it !in slots }
+                                others.chunked(QuickAction.SLOTS).forEachIndexed { rowIndex, row ->
+                                    QuickRow(row, states, onAction, timeout, firstIndex = rowIndex * QuickAction.SLOTS)
+                                }
+                            }
                         }
-                        if (controls != null) ControlsBlock(controls)
+                        if (controls != null) ControlsBlock(controls, expanded)
                         Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                             ExpandChevron(expanded) { expanded = !expanded }
                             Spacer(Modifier.weight(1f))
@@ -193,22 +237,34 @@ fun ActionCenter(
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
                         )
                     }
-                    else -> items(listed, key = { it.key }) { item ->
+                    else -> itemsIndexed(listed, key = { _, item -> item.key }) { index, item ->
+                        // New ones come in as they arrive, and the others move over to make room.
+                        val enter = Modifier.animateItem().featherIn(index, item.key)
                         when (item) {
                             is NotificationItem.Single ->
-                                NotificationRow(item.entry, appsByPackage[item.entry.packageName], onOpenNotification, onDismissNotification, onReply, onSnooze, onAppNotificationSettings)
+                                NotificationRow(
+                                    item.entry, appsByPackage[item.entry.packageName], onOpenNotification, onDismissNotification, onReply, onSnooze,
+                                    onAppNotificationSettings, onNotificationAction, enter, onMute = onMute,
+                                )
                             is NotificationItem.Group -> {
                                 val open = item.packageName in openGroups
-                                Column {
+                                Column(enter) {
                                     GroupRow(
                                         item, appsByPackage[item.packageName], open,
                                         onToggle = { openGroups = if (open) openGroups - item.packageName else openGroups + item.packageName },
                                         onDismiss = { item.entries.forEach(onDismissNotification) },
                                     )
-                                    if (open) {
-                                        item.entries.forEach { entry ->
-                                            Box(Modifier.padding(start = 24.dp)) {
-                                                NotificationRow(entry, null, onOpenNotification, onDismissNotification, onReply, onSnooze, onAppNotificationSettings)
+                                    // The notifications of the app open out under its line, and come in one after the other.
+                                    AnimatedVisibility(
+                                        open,
+                                        enter = expandVertically(metroTween(durationMillis = 320, easing = Motion.Decelerate)) + fadeIn(metroTween(220)),
+                                        exit = shrinkVertically(metroTween(durationMillis = 220, easing = Motion.Accelerate)) + fadeOut(metroTween(150)),
+                                    ) {
+                                        Column(Modifier.testTag("notification:group:list:${item.packageName}")) {
+                                            item.entries.forEachIndexed { slot, entry ->
+                                                Box(Modifier.padding(start = 24.dp).featherIn(slot, entry.key)) {
+                                                    NotificationRow(entry, null, onOpenNotification, onDismissNotification, onReply, onSnooze, onAppNotificationSettings, onNotificationAction, onMute = onMute)
+                                                }
                                             }
                                         }
                                     }
@@ -216,6 +272,9 @@ fun ActionCenter(
                             }
                         }
                     }
+                }
+                if (history.isNotEmpty()) {
+                    item(key = "history") { HistoryBlock(history, appsByPackage, onOpenNotification, onClearHistory) }
                 }
             }
 
@@ -239,11 +298,19 @@ class ActionControls(
     /** How strong the flashlight shines, 0 to 1; null while it is off or has only one strength. */
     val torch: Float? = null,
     val onTorch: (Float) -> Unit = {},
+    /** The volume of the ringtone and of the alarms, 0 to 1, shown when the panel is opened out; null leaves one out. */
+    val ringVolume: Float? = null,
+    val alarmVolume: Float? = null,
+    val onRingVolume: (Float) -> Unit = {},
+    val onAlarmVolume: (Float) -> Unit = {},
+    /** The names of the volume presets, shown as buttons under the sound modes, and what a touch on one does. */
+    val profiles: List<String> = emptyList(),
+    val onProfile: (Int) -> Unit = {},
 )
 
 /** The volume and the brightness as sliders, and the three sound modes as buttons. */
 @Composable
-private fun ControlsBlock(controls: ActionControls) {
+private fun ControlsBlock(controls: ActionControls, expanded: Boolean = false) {
     val colors = LocalMetroColors.current
     Column(Modifier.padding(top = 6.dp).testTag("ac:controls"), verticalArrangement = Arrangement.spacedBy(2.dp)) {
         controls.volume?.let { volume ->
@@ -251,6 +318,31 @@ private fun ControlsBlock(controls: ActionControls) {
                 GlyphIcon(Glyph.Bell, 26.dp, color = colors.subtle)
                 Box(Modifier.weight(1f).padding(start = 12.dp).testTag("ac:volume")) {
                     MetroSlider(volume, controls.onVolume, stringResource(R.string.ac_volume))
+                }
+            }
+        }
+        // The other volumes, apart from that of the media: the ringtone and the alarms, when the panel is opened out.
+        AnimatedVisibility(
+            expanded && (controls.ringVolume != null || controls.alarmVolume != null),
+            enter = expandVertically(metroTween(durationMillis = 300, easing = Motion.Decelerate)) + fadeIn(metroTween(200)),
+            exit = shrinkVertically(metroTween(durationMillis = 200, easing = Motion.Accelerate)) + fadeOut(metroTween(140)),
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                controls.ringVolume?.let { ring ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        GlyphIcon(Glyph.Phone, 26.dp, color = colors.subtle)
+                        Box(Modifier.weight(1f).padding(start = 12.dp).testTag("ac:ringvolume")) {
+                            MetroSlider(ring, controls.onRingVolume, stringResource(R.string.ac_ring_volume))
+                        }
+                    }
+                }
+                controls.alarmVolume?.let { alarm ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        GlyphIcon(Glyph.Alarm, 26.dp, color = colors.subtle)
+                        Box(Modifier.weight(1f).padding(start = 12.dp).testTag("ac:alarmvolume")) {
+                            MetroSlider(alarm, controls.onAlarmVolume, stringResource(R.string.ac_alarm_volume))
+                        }
+                    }
                 }
             }
         }
@@ -278,6 +370,26 @@ private fun ControlsBlock(controls: ActionControls) {
                 }
             }
         }
+        if (controls.profiles.isNotEmpty()) {
+            Row(
+                Modifier.fillMaxWidth().padding(top = 4.dp).horizontalScroll(rememberScrollState()).testTag("ac:profiles"),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                controls.profiles.forEachIndexed { index, name ->
+                    Box(
+                        Modifier
+                            .height(36.dp)
+                            .testTag("ac:profile:$index")
+                            .metroPress(onClick = { controls.onProfile(index) })
+                            .frame(2.dp, colors.subtle, LocalStyle.current.cardShape)
+                            .padding(horizontal = 14.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        MetroText(name, size = 15.sp, weight = FontWeight.Normal, maxLines = 1)
+                    }
+                }
+            }
+        }
         controls.ringer?.let { ringer ->
             Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 RingerMode.entries.forEach { mode ->
@@ -300,10 +412,18 @@ private fun ControlsBlock(controls: ActionControls) {
 }
 
 @Composable
-private fun QuickRow(actions: List<QuickAction>, states: Map<QuickAction, Boolean?>, onAction: (QuickAction) -> Unit, timeout: Int?) {
+private fun QuickRow(
+    actions: List<QuickAction>,
+    states: Map<QuickAction, Boolean?>,
+    onAction: (QuickAction) -> Unit,
+    timeout: Int?,
+    /** The place of the first button among those that turn in when the row appears; negative for a row that is always there. */
+    firstIndex: Int = -1,
+) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        actions.forEach { action ->
-            QuickButton(action, states[action], onAction, Modifier.weight(1f), detail = if (action == QuickAction.ScreenTimeout) timeout else null)
+        actions.forEachIndexed { column, action ->
+            val turn = if (firstIndex >= 0) Modifier.flipIn(firstIndex + column) else Modifier
+            QuickButton(action, states[action], onAction, Modifier.weight(1f).then(turn), detail = if (action == QuickAction.ScreenTimeout) timeout else null)
         }
         repeat(QuickAction.SLOTS - actions.size) { Spacer(Modifier.weight(1f)) }
     }
@@ -362,10 +482,12 @@ private fun Modifier.squareUpTo(max: Dp): Modifier = layout { measurable, constr
 @Composable
 private fun ExpandChevron(expanded: Boolean, onClick: () -> Unit) {
     val color = LocalMetroColors.current.foreground
+    // The arrow turns over as the part it opens comes out.
+    val turn by animateFloatAsState(if (expanded) 1f else 0f, metroTween(durationMillis = 240, easing = Motion.Decelerate), label = "chevron")
     Box(Modifier.size(44.dp).metroPress(onClick = onClick), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(18.dp, 10.dp)) {
             val stroke = 2.4.dp.toPx()
-            val tipY = if (expanded) 0f else size.height
+            val tipY = size.height * (1f - turn)
             val baseY = size.height - tipY
             drawLine(color, Offset(0f, baseY), Offset(size.width / 2, tipY), stroke, StrokeCap.Round)
             drawLine(color, Offset(size.width, baseY), Offset(size.width / 2, tipY), stroke, StrokeCap.Round)
@@ -417,11 +539,12 @@ private fun GroupRow(group: NotificationItem.Group, app: AppItem?, open: Boolean
                 size = 15.sp, color = LocalAccent.current,
                 modifier = Modifier.testTag("notification:group:count:${group.packageName}"),
             )
-            if (!open) {
+            AnimatedVisibility(!open, enter = expandVertically(metroTween(260)) + fadeIn(metroTween(200)), exit = shrinkVertically(metroTween(200)) + fadeOut(metroTween(120))) {
                 val latest = group.latest
                 MetroText(listOf(latest.title, latest.text).filter { it.isNotBlank() }.joinToString(": "), size = 15.sp, color = colors.subtle, maxLines = 2)
             }
         }
+        ExpandChevron(open, onToggle)
     }
 }
 
@@ -434,16 +557,24 @@ private fun NotificationRow(
     onReply: ((NotificationEntry, String) -> Boolean)? = null,
     onSnooze: ((NotificationEntry, Snooze.Option) -> Unit)? = null,
     onAppSettings: ((NotificationEntry) -> Unit)? = null,
+    onAction: ((NotificationEntry, NotifAction) -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    onMute: ((NotificationEntry, Mute.Option) -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
     // A long press shows what else can be done with it: put it away for a while, or open the settings of its app.
     var more by remember { mutableStateOf(false) }
-    val hasMore = onSnooze != null || onAppSettings != null
+    // A long text is read in full by a touch on the link under it.
+    var wholeText by remember { mutableStateOf(false) }
+    val canExpand = entry.longText != null || entry.text.length > LONG_TEXT
+    val hasMore = onSnooze != null || onAppSettings != null || onMute != null
     // The part that opens the notification is one button for TalkBack; the reply, which has controls of its own, is
     // below it and not inside it, so that those controls can be reached.
     Column(
-        Modifier
+        modifier
             .fillMaxWidth()
+            // Whatever opens or closes in the notification (the whole text, the options, the answer) takes the room smoothly.
+            .animateContentSize(metroTween(durationMillis = 280, easing = Motion.Decelerate))
             .testTag("notification:${entry.key}")
             .swipeToDismiss { onDismiss(entry) },
     ) {
@@ -469,7 +600,16 @@ private fun NotificationRow(
             Column(Modifier.weight(1f)) {
                 if (entry.title.isNotBlank()) MetroText(entry.title, size = 18.sp, weight = FontWeight.Normal)
                 if (entry.text.isNotBlank()) {
-                    MetroText(entry.text, size = 15.sp, color = colors.subtle, maxLines = 2)
+                    MetroText(
+                        if (wholeText) entry.longText ?: entry.text else entry.text, size = 15.sp, color = colors.subtle,
+                        maxLines = if (wholeText) Int.MAX_VALUE else 2, modifier = Modifier.animateContentSize(),
+                    )
+                }
+                entry.picture?.let { picture ->
+                    Image(
+                        picture.asImageBitmap(), contentDescription = null, contentScale = ContentScale.Crop,
+                        modifier = Modifier.padding(top = 6.dp).fillMaxWidth().heightIn(max = 160.dp).testTag("notification:picture:${entry.key}"),
+                    )
                 }
                 MetroText(
                     text = DateUtils.getRelativeTimeSpanString(
@@ -480,10 +620,42 @@ private fun NotificationRow(
                 )
             }
         }
+        if (canExpand) {
+            Box(
+                Modifier.padding(start = 12.dp + 44.dp + 14.dp).testTag("notification:expand:${entry.key}")
+                    .metroPress(onClick = { wholeText = !wholeText }).padding(vertical = 6.dp, horizontal = 2.dp),
+            ) {
+                MetroText(
+                    stringResource(if (wholeText) R.string.notif_less_text else R.string.notif_more_text),
+                    size = 14.sp, weight = FontWeight.Normal, color = LocalAccent.current,
+                )
+            }
+        }
+        if (onAction != null && entry.actions.isNotEmpty()) {
+            Row(
+                Modifier.padding(start = 12.dp + 44.dp + 14.dp, end = 12.dp, bottom = 6.dp).testTag("notification:actions:${entry.key}"),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                entry.actions.forEachIndexed { slot, action ->
+                    Box(
+                        Modifier
+                            .testTag("notification:action:$slot:${entry.key}")
+                            .metroPress(onClick = { onAction(entry, action) })
+                            .litFill(false, LocalStyle.current.cardShape)
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center,
+                    ) { MetroText(action.title, size = 14.sp, weight = FontWeight.Normal, maxLines = 1) }
+                }
+            }
+        }
         if (entry.reply != null && onReply != null) {
             Box(Modifier.padding(start = 12.dp + 44.dp + 14.dp, end = 12.dp, bottom = 6.dp)) { ReplyBox(entry, onReply) }
         }
-        if (more && hasMore) {
+        AnimatedVisibility(
+            more && hasMore,
+            enter = expandVertically(metroTween(durationMillis = 280, easing = Motion.Decelerate)) + fadeIn(metroTween(200)),
+            exit = shrinkVertically(metroTween(durationMillis = 200, easing = Motion.Accelerate)) + fadeOut(metroTween(120)),
+        ) {
             Column(Modifier.padding(start = 12.dp + 44.dp + 14.dp, end = 12.dp, bottom = 6.dp).testTag("notification:more:${entry.key}")) {
                 if (onSnooze != null) {
                     MetroText(stringResource(R.string.notif_snooze), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle)
@@ -500,9 +672,79 @@ private fun NotificationRow(
                         }
                     }
                 }
+                if (onMute != null) {
+                    MetroText(stringResource(R.string.notif_mute), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.padding(top = 8.dp))
+                    Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Mute.Option.entries.forEach { option ->
+                            Box(
+                                Modifier
+                                    .testTag("notification:mute:${option.name}:${entry.key}")
+                                    .metroPress(onClick = { onMute(entry, option) })
+                                    .litFill(false, LocalStyle.current.cardShape)
+                                    .padding(horizontal = 9.dp, vertical = 8.dp),
+                                contentAlignment = Alignment.Center,
+                            ) { MetroText(stringResource(option.label), size = 14.sp, weight = FontWeight.Normal, maxLines = 1) }
+                        }
+                    }
+                }
                 if (onAppSettings != null) {
                     Box(Modifier.testTag("notification:appsettings:${entry.key}").metroPress(onClick = { onAppSettings(entry) }).padding(vertical = 10.dp)) {
                         MetroText(stringResource(R.string.notif_app_settings), size = 16.sp, weight = FontWeight.Normal, color = LocalAccent.current)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** What was dismissed lately: a line that opens out into the list, each of which opens what it was; a link clears them. */
+@Composable
+private fun HistoryBlock(
+    history: List<NotificationEntry>,
+    appsByPackage: Map<String, AppItem>,
+    onOpen: (NotificationEntry) -> Unit,
+    onClear: (() -> Unit)?,
+) {
+    val colors = LocalMetroColors.current
+    var open by remember { mutableStateOf(false) }
+    Column(Modifier.padding(top = 10.dp).testTag("ac:history")) {
+        Row(
+            Modifier.fillMaxWidth().testTag("ac:history:toggle").metroPress(onClick = { open = !open }).padding(start = 24.dp, end = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            MetroText(stringResource(R.string.notif_history, history.size), size = 18.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.weight(1f))
+            ExpandChevron(open) { open = !open }
+        }
+        AnimatedVisibility(
+            open,
+            enter = expandVertically(metroTween(durationMillis = 300, easing = Motion.Decelerate)) + fadeIn(metroTween(220)),
+            exit = shrinkVertically(metroTween(durationMillis = 200, easing = Motion.Accelerate)) + fadeOut(metroTween(140)),
+        ) {
+            Column {
+                history.forEachIndexed { index, entry ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .featherIn(index, entry.key)
+                            .testTag("ac:history:${entry.key}")
+                            .metroPress(onClick = { onOpen(entry) })
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        appsByPackage[entry.packageName]?.let { AppSquare(it, 32.dp) } ?: Box(Modifier.size(32.dp).squareClip().background(colors.surface))
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            MetroText(listOf(entry.title, entry.text).filter { it.isNotBlank() }.joinToString(": "), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
+                            MetroText(
+                                DateUtils.getRelativeTimeSpanString(entry.postTime, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE).toString(),
+                                size = 12.sp, weight = FontWeight.Normal, color = colors.subtle,
+                            )
+                        }
+                    }
+                }
+                if (onClear != null) {
+                    Box(Modifier.padding(start = 12.dp).testTag("ac:history:clear").metroPress(onClick = onClear).padding(horizontal = 12.dp, vertical = 10.dp)) {
+                        MetroText(stringResource(R.string.notif_history_clear), size = 16.sp, weight = FontWeight.Normal, color = LocalAccent.current)
                     }
                 }
             }
@@ -533,7 +775,12 @@ private fun ReplyBox(entry: NotificationEntry, onReply: (NotificationEntry, Stri
         ) {
             MetroText(stringResource(R.string.notif_reply), size = 16.sp, weight = FontWeight.Normal, color = LocalAccent.current)
         }
-    } else {
+    }
+    AnimatedVisibility(
+        typing,
+        enter = expandVertically(metroTween(durationMillis = 260, easing = Motion.Decelerate)) + fadeIn(metroTween(200)),
+        exit = shrinkVertically(metroTween(durationMillis = 180)) + fadeOut(metroTween(120)),
+    ) {
         Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             MetroTextField(
                 text, { text = it; failed = false }, stringResource(R.string.notif_reply_hint),
@@ -563,7 +810,7 @@ private fun Modifier.swipeToDismiss(onDismissed: () -> Unit): Modifier {
             },
             onDragStopped = { velocity ->
                 if (offset.value > width * SWIPE_FRACTION || velocity > SWIPE_VELOCITY) {
-                    offset.animateTo(width, tween(durationMillis = 180))
+                    offset.animateTo(width, metroTween(durationMillis = 180))
                     currentDismissed()
                 } else {
                     offset.animateTo(0f, spring())
@@ -576,6 +823,9 @@ private fun Modifier.swipeToDismiss(onDismissed: () -> Unit): Modifier {
             alpha = 1f - (abs(offset.value) / width).coerceIn(0f, 1f)
         }
 }
+
+/** A text longer than this gets the link that reads it in full. */
+private const val LONG_TEXT = 90
 
 private const val SWIPE_FRACTION = 0.35f
 private const val SWIPE_VELOCITY = 1_500f

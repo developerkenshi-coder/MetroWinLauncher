@@ -1,11 +1,39 @@
 package com.metrowin.launcher
 
+import com.metrowin.launcher.data.VolumeProfiles
+import com.metrowin.launcher.data.ParkedCarStore
+import com.metrowin.launcher.data.ParkedCar
+import com.metrowin.launcher.data.WeatherBlock
+import com.metrowin.launcher.data.RestorePart
+import com.metrowin.launcher.data.BackupCopies
+import com.metrowin.launcher.notifications.Mute
+import com.metrowin.launcher.data.ShortcutCodec
+import com.metrowin.launcher.data.TileCodec
+import com.metrowin.launcher.data.SavedLayout
+import com.metrowin.launcher.data.Layouts
+import com.metrowin.launcher.data.LayoutStore
+import com.metrowin.launcher.data.FileType
+import com.metrowin.launcher.data.FileSearch
+import com.metrowin.launcher.data.FileMatch
+import com.metrowin.launcher.data.SavedApp
+import com.metrowin.launcher.data.AppListBackup
+import com.metrowin.launcher.data.SavedCity
+import com.metrowin.launcher.data.SavedCities
+import com.metrowin.launcher.model.TileData
+import com.metrowin.launcher.data.WhereAmI
+import com.metrowin.launcher.data.WalletStore
+import com.metrowin.launcher.data.WalletCard
+import com.metrowin.launcher.data.TileExtras
+import com.metrowin.launcher.data.Steps
+import com.metrowin.launcher.data.SiteHeadlines
+import com.metrowin.launcher.data.Recordings
+import com.metrowin.launcher.data.PlaceFinder
+import com.metrowin.launcher.data.Code128
 import com.metrowin.launcher.data.DeferWhileAway
 import com.metrowin.launcher.data.Throttle
 import com.metrowin.launcher.data.PowerPolicy
 import com.metrowin.launcher.data.LiveSources
 import com.metrowin.launcher.data.LivePermissions
-import android.app.ActivityOptions
 import android.app.WallpaperManager
 import android.app.Application
 import android.content.BroadcastReceiver
@@ -132,6 +160,7 @@ import com.metrowin.launcher.model.StopwatchState
 import com.metrowin.launcher.model.TimerState
 import com.metrowin.launcher.model.TimerStatus
 import com.metrowin.launcher.notifications.Alerts
+import com.metrowin.launcher.notifications.BannerGate
 import com.metrowin.launcher.notifications.MediaSessions
 import com.metrowin.launcher.data.VolumeControl
 import com.metrowin.launcher.data.VolumeHud
@@ -140,6 +169,7 @@ import com.metrowin.launcher.data.VolumeRouting
 import com.metrowin.launcher.data.VolumeRow
 import com.metrowin.launcher.data.VolumeStream
 import android.media.AudioManager
+import com.metrowin.launcher.notifications.NotifAction
 import com.metrowin.launcher.notifications.NotificationControl
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.LiveKind
@@ -256,13 +286,43 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val canSetBrightness: Boolean = false,
         /** How strong the flashlight shines, 0 to 1: only while it is on and the phone can change it. */
         val torch: Float? = null,
+        /** The volume of the ringtone and of the alarms, 0 to 1. */
+        val ringVolume: Float? = null,
+        val alarmVolume: Float? = null,
     )
 
     private val _controls = MutableStateFlow(PanelControls())
     val controls: StateFlow<PanelControls> = _controls.asStateFlow()
 
     fun refreshControls() {
-        _controls.value = PanelControls(sound.volume(), sound.ringer(), brightnessControl.brightness(), brightnessControl.canWrite(), quickActions.torchStrength())
+        _controls.value = PanelControls(
+            sound.volume(), sound.ringer(), brightnessControl.brightness(), brightnessControl.canWrite(), quickActions.torchStrength(),
+            sound.ringVolume(), sound.alarmVolume(),
+        )
+    }
+
+    /** Sets the three volumes to those of the preset at [index] of the settings, and the sliders with them. */
+    fun applyVolumeProfile(index: Int) {
+        val profile = _settings.value.volumeProfiles.getOrNull(index) ?: return
+        VolumeProfiles.apply(sound, profile)
+        _controls.value = _controls.value.copy(volume = profile.media / 100f, ringVolume = profile.ring / 100f, alarmVolume = profile.alarm / 100f)
+    }
+
+    /** Keeps the volumes the phone has now under [name]; false when the name is blank. */
+    fun saveVolumeProfile(name: String): Boolean {
+        val profile = VolumeProfiles.capture(name, sound.ringVolume(), sound.volume(), sound.alarmVolume()) ?: return false
+        updateSettings { it.copy(volumeProfiles = VolumeProfiles.add(it.volumeProfiles, profile)) }
+        return true
+    }
+
+    fun setRingVolume(fraction: Float) {
+        sound.setRingVolume(fraction)
+        _controls.value = _controls.value.copy(ringVolume = fraction)
+    }
+
+    fun setAlarmVolume(fraction: Float) {
+        sound.setAlarmVolume(fraction)
+        _controls.value = _controls.value.copy(alarmVolume = fraction)
     }
 
     fun setVolume(fraction: Float) {
@@ -377,6 +437,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 saveNoteText(answer.text)
                 return
             }
+            is QuickAnswer.Command -> {
+                answer.ringer?.let(::setRinger) ?: answer.action?.let { activateQuickAction(it) }
+                return
+            }
             else -> Unit
         }
         var intent = QuickAnswerActions.intent(answer) ?: return
@@ -416,6 +480,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val _weather = MutableStateFlow(weatherRepository.cached())
     val weather: StateFlow<WeatherData?> = _weather.asStateFlow()
     private var weatherJob: Job? = null
+
+    // The photo of each Start screen that has one of its own; declared here because the setup below reads it.
+    private val pageBackgroundStores = HashMap<Int, StartBackgroundStore>()
+    private fun pageBackgroundStore(page: Int) = pageBackgroundStores.getOrPut(page) { StartBackgroundStore(getApplication(), "start_background_p$page.jpg") }
+    private val _pageBackgrounds = MutableStateFlow<Map<Int, ImageBitmap>>(emptyMap())
+    val pageBackgrounds: StateFlow<Map<Int, ImageBitmap>> = _pageBackgrounds.asStateFlow()
 
     private val _battery = MutableStateFlow(BatteryInfo.read(application))
     val battery: StateFlow<BatteryInfo?> = _battery.asStateFlow()
@@ -485,7 +555,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val _banners = kotlinx.coroutines.flow.MutableSharedFlow<NotificationEntry>(extraBufferCapacity = 4, onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST)
     val banners: kotlinx.coroutines.flow.SharedFlow<NotificationEntry> = _banners
 
-    private var seenNotifications: Set<String> = emptySet()
+    private var seenNotifications: Map<String, String> = emptyMap()
     private var bannersFrom = 0L
 
     /** What the user lets the live tiles of other apps show (see [LiveCards]). */
@@ -564,6 +634,18 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val _homePresses = MutableStateFlow(HomePress())
     val homePresses: StateFlow<HomePress> = _homePresses.asStateFlow()
 
+    /** Asked from outside the launcher (the Action Center over other apps) to open its settings: counts the requests, back to 0 once they are met. */
+    private val _settingsRequests = MutableStateFlow(0)
+    val settingsRequests: StateFlow<Int> = _settingsRequests.asStateFlow()
+
+    fun requestSettings() {
+        _settingsRequests.value += 1
+    }
+
+    fun settingsRequestMet() {
+        _settingsRequests.value = 0
+    }
+
     private var tilesReady = false
     private var loadedLocale: Locale? = null
     private var reloadJob: Job? = null
@@ -581,6 +663,21 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             _settings.map { it.notificationPeek to it.livePictures }.distinctUntilChanged()
                 .collect { (on, pictures) -> NotificationHub.useForLiveTiles(on, pictures) }
         }
+        // The photos of the Start screens are read when the setting is on, and let go when it is turned off.
+        viewModelScope.launch {
+            _settings.map { it.pageBackgrounds to it.startPages }.distinctUntilChanged().collect { (on, _) ->
+                if (on) loadPageBackgrounds() else _pageBackgrounds.value = emptyMap()
+            }
+        }
+        // Turning on "hide the notifications of Android" moves what is in the shade now to the Action Center.
+        viewModelScope.launch {
+            _settings.map { Triple(it.hideSystemNotifications, it.notifFilterOn, it.notifFilterWords) }.distinctUntilChanged().drop(1)
+                .collect { (hide, filter, _) -> if (hide || filter) NotificationHub.sweep() }
+        }
+        // The strip of the Action Center over other apps comes and goes with its switch.
+        viewModelScope.launch {
+            _settings.map { it.edgeActionCenter }.distinctUntilChanged().collect { NotificationHub.edgeChanged() }
+        }
         // A notification that arrives while the launcher is on screen gets a banner. What was up when the launcher came back, and
         // what the service reads again at that moment, does not: it is old news.
         viewModelScope.launch {
@@ -590,13 +687,16 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 if (listening && android.os.SystemClock.elapsedRealtime() >= bannersFrom && s.toastBanner) {
                     entries
                         .filter {
-                            it.key !in seenNotifications && wall - it.postTime < BANNER_MAX_AGE_MS && it.packageName != application.packageName &&
-                                NotificationControl.showsBanner(it.packageName, s)
+                            BannerGate.isNew(seenNotifications, it) && wall - it.postTime < BANNER_MAX_AGE_MS && it.packageName != application.packageName &&
+                                NotificationControl.showsBanner(it.packageName, s, wall) && !NotificationControl.filtered(it, s)
                         }
                         .maxByOrNull { it.postTime }
-                        ?.let { _banners.tryEmit(it) }
+                        ?.let {
+                            _banners.tryEmit(it)
+                            if (s.hideSystemNotifications) NotificationHub.hold(it)
+                        }
                 }
-                seenNotifications = entries.mapTo(HashSet()) { it.key }
+                seenNotifications = BannerGate.seen(entries)
             }
         }
         // A new name for an app changes the list: the order of the letters too.
@@ -609,8 +709,18 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 listOf(
                     LiveSources.wanted(pages, items), LiveSources.albumIds(pages, items), LiveSources.groupIds(pages, items),
                     LiveSources.feedsWanted(pages, items),
+                    // The steps, place and site tiles read for themselves as soon as one is pinned.
+                    StartPages.pinnedIds(pages).let { pinned -> items.filter { it.id in pinned && it.data != null }.map { it.id }.toSet() },
                 )
             }.distinctUntilChanged().collect { if (listening) refreshLive() }
+        }
+        // The last message of each person with a tile on Start, from the notifications that wait.
+        viewModelScope.launch {
+            combine(notifications, _items) { waiting, items ->
+                items.filter { it.data is TileData.Contact }.mapNotNull { person ->
+                    waiting.firstOrNull { it.title.equals(person.label, ignoreCase = true) }?.let { person.id to (it.longText ?: it.text) }
+                }.toMap()
+            }.distinctUntilChanged().collect { messages -> setExtras { it.copy(messages = messages) } }
         }
         // A new source of news, other currencies: the tiles read again, now.
         viewModelScope.launch {
@@ -663,11 +773,20 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** Called every time the launcher goes off screen: behind another app, or the screen turned off. */
     fun onStop() {
         _volumeHud.value = null
+        leftAt = android.os.SystemClock.elapsedRealtime()
         stopListening()
     }
 
+    /** When the launcher last went off screen (elapsed time), for [onStart] to tell how long the phone was elsewhere. */
+    private var leftAt = 0L
+
     /** Called every time the launcher comes back on screen. */
     fun onStart() {
+        val away = if (leftAt == 0L) 0L else android.os.SystemClock.elapsedRealtime() - leftAt
+        leftAt = 0L
+        val limit = _settings.value.startTopAfterMin
+        // Long enough away: Start is at the top, as after Home.
+        if (limit > 0 && away >= limit * 60_000L) _homePresses.value = HomePress(_homePresses.value.count + 1, fromBackground = true)
         startListening()
         val saving = powerSaving.value
         // The profiles are a cheap question and show whether work apps are paused, so they are always asked; the icon packs
@@ -681,6 +800,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         reminderStore.load().let { kept -> if (kept != _live.value.reminders) _live.update { it.copy(reminders = kept) } }
         refreshLive()
         refreshWeather()
+        applyScheduledLayout()
+        forgetEndedMutes()
         val access = hasNotificationAccess()
         _notificationAccess.value = access
         // After the process was killed Android does not always bind the service again by itself.
@@ -702,9 +823,19 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
      * of Android opened for it. Quiet hours without the "do not disturb" access ask for that access first.
      */
     fun activateQuickAction(action: QuickAction): Boolean {
-        val inPlace = quickActions.activate(action)
-        if (action == QuickAction.QuietHours && !inPlace) tell(R.string.qa_quiet_allow)
+        val inPlace = quickActions.activate(action, _settings.value.dndMinutes, _settings.value.torchAutoOffMin)
+        if ((action == QuickAction.QuietHours || action == QuickAction.QuietTimed) && !inPlace) tell(R.string.qa_quiet_allow)
         return inPlace
+    }
+
+    /** The touch on a switch kept on Start: it does what the button of the Action Center does, and its state is read again a moment later. */
+    fun toggleTile(actionId: String) {
+        val action = QuickAction.fromId(actionId) ?: return
+        activateQuickAction(action)
+        viewModelScope.launch {
+            delay(TOGGLE_SETTLE_MS)
+            refreshExtras(force = true)
+        }
     }
 
     /** The strength of the flashlight, 0 to 1, when the phone can change it (Android 13 and later) and the light is on. */
@@ -713,6 +844,19 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun setTorchStrength(fraction: Float) {
         quickActions.setTorchStrength(fraction)
         _controls.value = _controls.value.copy(torch = fraction)
+    }
+
+    /** Silences the app of [entry] for [option]: its notifications and banners stay out of sight until then (the copies are kept). */
+    fun muteApp(entry: NotificationEntry, option: Mute.Option) {
+        val until = Mute.until(option, java.time.Instant.now(), java.time.ZoneId.systemDefault())
+        updateSettings { it.copy(mutedUntil = it.mutedUntil + (entry.packageName to until)) }
+        tell(R.string.mute_done)
+    }
+
+    /** Ends the silence of the apps whose time is up, so the settings do not keep what is over. */
+    private fun forgetEndedMutes() {
+        val now = System.currentTimeMillis()
+        if (_settings.value.mutedUntil.any { it.value <= now }) updateSettings { s -> s.copy(mutedUntil = s.mutedUntil.filterValues { it > now }) }
     }
 
     /** Puts a notification away for a while. */
@@ -730,19 +874,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     )
 
     /** Runs what the notification does when tapped, then removes it if the app asked for that. */
-    fun openNotification(entry: NotificationEntry) {
-        runCatching {
-            val options = if (Build.VERSION.SDK_INT >= 34) {
-                @Suppress("DEPRECATION") // replaced on Android 16 by finer modes, this one still works there
-                val allowed = ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-                ActivityOptions.makeBasic().setPendingIntentBackgroundActivityStartMode(allowed).toBundle()
-            } else {
-                null
-            }
-            entry.contentIntent?.send(getApplication(), 0, null, null, null, null, options)
-        }
-        if (entry.autoCancel) NotificationHub.dismiss(entry.key)
-    }
+    fun openNotification(entry: NotificationEntry) = NotificationHub.open(getApplication(), entry)
 
     /** Sends the typed answer to a notification. False (and says so) when the app does not take it. */
     fun replyToNotification(entry: NotificationEntry, text: String): Boolean {
@@ -754,6 +886,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun dismissNotification(entry: NotificationEntry) = NotificationHub.dismiss(entry.key)
 
     fun clearNotifications() = NotificationHub.dismissAll()
+
+    /** What the notifications dismissed lately were, newest first (in memory only). */
+    val notificationHistory: StateFlow<List<NotificationEntry>> = NotificationHub.history
+
+    fun clearNotificationHistory() = NotificationHub.clearHistory()
+
+    /** Runs the button an app put on its notification. */
+    fun runNotificationAction(entry: NotificationEntry, action: NotifAction) = NotificationHub.run(getApplication(), entry, action)
 
     fun openNotificationAccessSettings() = startSettings(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
 
@@ -809,6 +949,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
      */
     fun refreshLive(force: Boolean = false) {
         refreshFeeds(force)
+        refreshExtras(force)
         val wanted = LiveSources.wanted(_pages.value, _items.value)
         val albumIds = LiveSources.albumIds(_pages.value, _items.value)
         val groupIds = LiveSources.groupIds(_pages.value, _items.value)
@@ -950,6 +1091,39 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    /** The weather of the other cities that are followed, by [SavedCity.key]; what is not there yet is being fetched. */
+    private val _cityWeather = MutableStateFlow<Map<String, WeatherData>>(emptyMap())
+    val cityWeather: StateFlow<Map<String, WeatherData>> = _cityWeather.asStateFlow()
+
+    /** Reads the weather of the followed cities when the Forecast page is opened: not before, and not again within a few minutes. */
+    fun refreshCities(force: Boolean = false) {
+        val s = _settings.value
+        _cityWeather.update { old -> old.filterKeys { key -> s.weatherCities.any { it.key == key } } }
+        if (s.weatherCities.isEmpty()) return
+        val saving = powerSaving.value
+        if (!force && !throttle.due("cities", PowerPolicy.weatherRetryMs(saving))) return
+        viewModelScope.launch {
+            s.weatherCities.forEach { city ->
+                val fetched = withContext(Dispatchers.IO) { weatherRepository.fetch(city.latitude, city.longitude, s.weatherFahrenheit) }
+                if (fetched != null) _cityWeather.update { it + (city.key to fetched) }
+            }
+        }
+    }
+
+    /** Follows [place] as well: the Forecast page shows it under the city of the tile. */
+    fun followPlace(place: PlaceMatch) {
+        updateSettings { s ->
+            if (s.weatherCities.size >= SavedCities.MAX || s.weatherCities.any { it.latitude == place.latitude && it.longitude == place.longitude }) s
+            else s.copy(weatherCities = s.weatherCities + SavedCity(place.displayName, place.latitude, place.longitude))
+        }
+        refreshCities(force = true)
+    }
+
+    fun unfollowCity(city: SavedCity) {
+        updateSettings { s -> s.copy(weatherCities = s.weatherCities - city) }
+        _cityWeather.update { it - city.key }
+    }
+
     /** Fetches the weather of the chosen city, unless what is there is recent. [force] fetches in any case. */
     fun refreshWeather(force: Boolean = false) {
         val s = _settings.value
@@ -961,14 +1135,19 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val current = _weather.value
         val saving = powerSaving.value
         val unitChanged = current != null && current.fahrenheit != s.weatherFahrenheit
-        val stale = current == null || OpenMeteo.isStale(current, System.currentTimeMillis(), PowerPolicy.weatherMaxAgeMs(saving))
+        val wantsAir = WeatherBlock.Air.code in s.weatherBlocks || WeatherBlock.Pollen.code in s.weatherBlocks
+        // The air is a second answer: switched on later, it is asked for at the next visit even if the forecast is recent.
+        val stale = current == null || OpenMeteo.isStale(current, System.currentTimeMillis(), PowerPolicy.weatherMaxAgeMs(saving)) ||
+            (wantsAir && current.air == null)
         if (!force && !unitChanged && !stale) return
         // Done or not, the next try waits: with no connection every return to Start would otherwise go to the network again.
         if (!force && !unitChanged && !throttle.due("weather", PowerPolicy.weatherRetryMs(saving))) return
         weatherJob?.cancel()
         weatherJob = viewModelScope.launch {
             val fetched = withContext(Dispatchers.IO) {
-                weatherRepository.fetch(s.weatherLatitude, s.weatherLongitude, s.weatherFahrenheit)
+                weatherRepository.fetch(s.weatherLatitude, s.weatherLongitude, s.weatherFahrenheit)?.let { forecast ->
+                    if (wantsAir) forecast.copy(air = weatherRepository.fetchAir(s.weatherLatitude, s.weatherLongitude)) else forecast
+                }
             }
             // Nothing new (no connection): the weather already there stays, however old.
             if (fetched != null) {
@@ -1019,6 +1198,21 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         } else {
             ContactSearch(getApplication()).search(query)
         }
+    }
+
+    /** The files whose name matches [query], of the kinds the user chose in the settings. */
+    suspend fun searchFiles(query: String): List<FileMatch> = withContext(Dispatchers.IO) {
+        FileSearch(getApplication()).search(query, _settings.value.searchFileTypes.mapNotNullTo(HashSet(), FileType::fromCode))
+    }
+
+    /** The notifications that wait in the Action Center whose title or text has every word of [query]. */
+    fun searchNotifications(query: String): List<NotificationEntry> {
+        val words = AppSections.fold(query).split(' ').filter { it.isNotEmpty() }
+        if (words.isEmpty() || query.trim().length < 2) return emptyList()
+        return notifications.value.filter { entry ->
+            val text = AppSections.fold(listOf(entry.title, entry.text, entry.longText.orEmpty()).joinToString(" "))
+            words.all { it in text }
+        }.take(NOTIFICATION_RESULTS)
     }
 
     suspend fun searchEvents(query: String): List<EventMatch> =
@@ -1075,6 +1269,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             val movedWeather = updated.weatherLatitude != previous.weatherLatitude && !(updated.weatherLatitude.isNaN() && previous.weatherLatitude.isNaN()) ||
                 updated.weatherLongitude != previous.weatherLongitude && !(updated.weatherLongitude.isNaN() && previous.weatherLongitude.isNaN()) ||
                 updated.weatherFahrenheit != previous.weatherFahrenheit
+            if (updated.weatherFahrenheit != previous.weatherFahrenheit) _cityWeather.value = emptyMap()
             if (movedWeather) {
                 // Another city or another unit: the weather on show is not the one asked for.
                 _weather.value = null
@@ -1176,7 +1371,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         if (_shortcuts.value.any { it.id == id }) removeShortcut(id) else updatePages(R.string.undo_removed) { StartPages.unpin(it, id) }
     }
 
-    fun resize(id: String) = updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.resize(page, id) } }
+    fun resize(id: String) {
+        val allowLarge = _settings.value.largeTiles
+        updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.resize(page, id, allowLarge) } }
+    }
 
     fun setSize(id: String, size: TileSize) =
         updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.setSize(page, id, size) } }
@@ -1222,6 +1420,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun removeFromFolder(folderId: String, childId: String) =
         updatePages(R.string.undo_folder) { StartPages.update(it, folderId) { page -> StartEntries.removeFromFolder(page, folderId, childId) } }
+
+    /** Writes [title] above the tile or folder [id] as the title of the group it starts; blank takes the title away. */
+    fun setGroupTitle(id: String, title: String) =
+        updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.setGroup(page, id, title) } }
 
     fun renameFolder(folderId: String, name: String) =
         updatePages { StartPages.update(it, folderId) { page -> StartEntries.rename(page, folderId, name) } }
@@ -1344,7 +1546,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun removeShortcut(id: String) {
         val removed = _shortcuts.value.firstOrNull { it.id == id } ?: return
         // A widget gives its place back to Android at once, so it cannot be put back; the others can.
-        if (removed.kind == ShortcutKind.Widget) dismissUndo() else rememberForUndo(R.string.undo_removed)
+        if (removed.kind == ShortcutKind.Widget) clearUndo() else rememberForUndo(R.string.undo_removed)
         _shortcuts.value = _shortcuts.value.filter { it.id != id }
         shortcutStore.save(_shortcuts.value)
         shortcutStore.deletePhoto(removed.photoFile)
@@ -1506,6 +1708,115 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         page, TileSize.Medium,
     )
 
+    // --- steps, recorder, camera, wallet, where am I
+
+    private fun addTile(kind: ShortcutKind, @androidx.annotation.StringRes label: Int, page: Int, size: TileSize = TileSize.Medium) =
+        addShortcut(ShortcutDef(ShortcutDef.newId(kind, kind.code), kind, getApplication<Application>().getString(label)), page, size)
+
+    fun addSteps(page: Int) = addTile(ShortcutKind.Steps, R.string.steps_default_label, page)
+    fun addRecorder(page: Int) = addTile(ShortcutKind.Recorder, R.string.recorder_default_label, page)
+    fun addCamera(page: Int) = addTile(ShortcutKind.Camera, R.string.camera_default_label, page)
+    fun addWallet(page: Int) = addTile(ShortcutKind.Wallet, R.string.wallet_default_label, page)
+    fun addWhereAmI(page: Int) = addTile(ShortcutKind.WhereAmI, R.string.whereami_default_label, page)
+    fun addParking(page: Int) = addTile(ShortcutKind.Parking, R.string.parking_default_label, page)
+    fun addAnalogClock(page: Int) = addTile(ShortcutKind.AnalogClock, R.string.analogclock_default_label, page)
+    fun addSun(page: Int) = addTile(ShortcutKind.Sun, R.string.sun_default_label, page)
+
+    /** Keeps the switch [action] of the Action Center on Start as a small tile. */
+    fun addToggle(action: QuickAction, page: Int) = addShortcut(
+        ShortcutDef(ShortcutDef.newId(ShortcutKind.Toggle, action.id), ShortcutKind.Toggle, getApplication<Application>().getString(action.label), action.id),
+        page, TileSize.Small,
+    )
+
+    private val walletStore = WalletStore(application)
+    private val _wallet = MutableStateFlow(walletStore.load())
+    val wallet: StateFlow<List<WalletCard>> = _wallet.asStateFlow()
+
+    /** Keeps a card; false when the name is empty, the code cannot be drawn as a barcode or the wallet is full. */
+    fun addCard(name: String, code: String): Boolean {
+        val clean = name.trim()
+        val digits = code.trim()
+        if (clean.isEmpty() || !Code128.valid(digits) || _wallet.value.size >= WalletStore.MAX_CARDS) return false
+        saveWallet(_wallet.value + WalletCard("card:" + System.nanoTime().toString(36), clean, digits))
+        return true
+    }
+
+    fun removeCard(id: String) = saveWallet(_wallet.value.filter { it.id != id })
+
+    private fun saveWallet(cards: List<WalletCard>) {
+        _wallet.value = cards
+        walletStore.save(cards)
+        setExtras { it.copy(cards = cards.size) }
+    }
+
+    private val recordings = Recordings(application)
+    private val parkedCarStore = ParkedCarStore(application)
+    private var extrasJob: Job? = null
+
+    private fun setExtras(change: (TileExtras) -> TileExtras) = _live.update { it.copy(extras = change(it.extras)) }
+
+    /** Keeps where the phone is as the place of the car; null when the place could not be found. */
+    suspend fun parkHere(): ParkedCar? {
+        val here = withContext(Dispatchers.IO) { PlaceFinder.find(getApplication()) } ?: return null
+        val car = ParkedCar(here.latitude, here.longitude, here.address, System.currentTimeMillis())
+        parkedCarStore.save(car)
+        setExtras { it.copy(parked = car) }
+        return car
+    }
+
+    fun forgetCar() {
+        parkedCarStore.save(null)
+        setExtras { it.copy(parked = null) }
+    }
+
+    /** Where the phone is, found now and kept for the tile that shows it. */
+    suspend fun locate(): WhereAmI? {
+        val here = withContext(Dispatchers.IO) { PlaceFinder.find(getApplication()) }
+        here?.address?.let { street -> setExtras { it.copy(place = street) } }
+        return here
+    }
+
+    /**
+     * Reads what the steps, place, recorder, wallet, person and site tiles on Start show. Only the tiles that are pinned cost anything:
+     * the step sensor and the position are asked once, and the pages of the sites only while the launcher is on screen.
+     */
+    fun refreshExtras(force: Boolean = false) {
+        val app = getApplication<Application>()
+        val pinned = StartPages.pinnedIds(_pages.value)
+        val tiles = _items.value.filter { it.id in pinned }
+        val kinds = tiles.mapNotNull { it.data }
+        val sites = tiles.filter { it.data is TileData.Site }
+        setExtras { old ->
+            old.copy(
+                cards = if (kinds.any { it is TileData.Wallet }) _wallet.value.size else 0,
+                recordings = if (kinds.any { it is TileData.Recorder }) recordings.list().size else 0,
+                parked = if (kinds.any { it is TileData.Parking }) parkedCarStore.load() else null,
+                sites = old.sites.filterKeys { id -> sites.any { it.id == id } },
+                toggles = kinds.filterIsInstance<TileData.Toggle>().mapNotNull { tile ->
+                    QuickAction.fromId(tile.action)?.let { action -> quickActions.isOn(action)?.let { tile.action to it } }
+                }.toMap(),
+            )
+        }
+        // A read that is on its way is not cut short by the next return to Start: its throttle slot is already used.
+        if (!force && extrasJob?.isActive == true) return
+        extrasJob?.cancel()
+        extrasJob = viewModelScope.launch {
+            if (kinds.any { it is TileData.Steps } && (force || throttle.due("extra:steps", 60_000L))) {
+                Steps.read(app)?.let { n -> setExtras { it.copy(steps = n, stepDays = Steps.history(app)) } }
+            }
+            if (kinds.any { it is TileData.WhereAmI } && (force || throttle.due("extra:where", 15 * 60_000L))) {
+                locate()
+            }
+            val retry = PowerPolicy.feedRetryMs(powerSaving.value)
+            sites.forEach { site ->
+                val url = (site.data as TileData.Site).url
+                if (force || throttle.due("extra:site:${site.id}", retry)) {
+                    withContext(Dispatchers.IO) { SiteHeadlines.latest(url) }?.let { news -> setExtras { it.copy(sites = it.sites + (site.id to news)) } }
+                }
+            }
+        }
+    }
+
     // --- timer: a moment kept in the tile and one alarm of Android; nothing runs while it counts
 
     /** Pins a timer of five minutes and gives back its id, so its page can open on it. */
@@ -1600,13 +1911,6 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun removeReminder(id: Long) {
         saveReminders(Reminders.remove(_live.value.reminders, id))
         Alerts.cancelReminder(getApplication(), id)
-    }
-
-    /** Another time for a reminder; it is not done any more. */
-    fun rescheduleReminder(id: Long, at: Long) {
-        val after = Reminders.reschedule(_live.value.reminders, id, at)
-        saveReminders(after)
-        after.firstOrNull { it.id == id }?.let { Alerts.scheduleReminder(getApplication(), it) }
     }
 
     fun clearDoneReminders() = saveReminders(Reminders.clearDone(_live.value.reminders))
@@ -1829,13 +2133,123 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun backupNow(announce: Boolean = true) {
         val folder = _settings.value.backupFolder
         if (folder.isBlank()) return
+        val keep = _settings.value.backupCopies
         viewModelScope.launch {
             val saved = withContext(Dispatchers.IO) {
-                val text = LayoutBackupCodec.encode(currentBackup(), System.currentTimeMillis())
-                SafFolder(getApplication(), folder.toUri()).write(SafFolder.BACKUP_FILE, "application/json", text.toByteArray())
+                val bytes = LayoutBackupCodec.encode(currentBackup(), System.currentTimeMillis()).toByteArray()
+                val files = SafFolder(getApplication(), folder.toUri())
+                val written = files.write(SafFolder.BACKUP_FILE, "application/json", bytes)
+                // With more than one copy asked for, the same file is also kept under the minute it was made, and the oldest ones go.
+                if (written && keep > 1) {
+                    val copy = BackupCopies.name(java.time.LocalDateTime.now())
+                    if (files.write(copy, "application/json", bytes)) BackupCopies.excess(files.names() + copy, keep).forEach(files::delete)
+                }
+                written
             }
             if (saved) updateSettings { it.copy(lastBackupAt = System.currentTimeMillis()) }
             if (announce) tell(if (saved) R.string.backup_saved else R.string.backup_failed)
+            if (saved) refreshBackupCopies()
+        }
+    }
+
+    private val _backupCopies = MutableStateFlow<List<String>>(emptyList())
+
+    /** The names of the copies of the backup in the folder, the newest first (read when the page of the backup opens and after a backup). */
+    val backupCopies: StateFlow<List<String>> = _backupCopies.asStateFlow()
+
+    fun refreshBackupCopies() {
+        val folder = _settings.value.backupFolder
+        if (folder.isBlank()) {
+            _backupCopies.value = emptyList()
+            return
+        }
+        viewModelScope.launch {
+            _backupCopies.value = withContext(Dispatchers.IO) { BackupCopies.newestFirst(SafFolder(getApplication(), folder.toUri()).names()) }
+        }
+    }
+
+    /** Reads one of the copies and asks which parts of it to put back. */
+    fun restoreFromCopy(name: String) {
+        val folder = _settings.value.backupFolder
+        if (folder.isBlank() || BackupCopies.parse(name) == null) return
+        viewModelScope.launch {
+            val bytes = withContext(Dispatchers.IO) { SafFolder(getApplication(), folder.toUri()).read(name) }
+            val backup = bytes?.let { LayoutBackupCodec.decode(it.decodeToString(), _settings.value) }
+            when {
+                bytes == null -> tell(R.string.backup_no_file)
+                backup == null -> tell(R.string.backup_not_layout)
+                else -> _pendingRestore.value = backup
+            }
+        }
+    }
+
+    /** A backup that has been read and waits for the user to say which parts of it to put back. */
+    private val _pendingRestore = MutableStateFlow<LayoutBackup?>(null)
+    val pendingRestore: StateFlow<LayoutBackup?> = _pendingRestore.asStateFlow()
+
+    fun cancelRestore() {
+        _pendingRestore.value = null
+    }
+
+    fun applyRestore(parts: Set<RestorePart>) {
+        val backup = _pendingRestore.value ?: return
+        _pendingRestore.value = null
+        restoreBackupParts(backup, parts)
+        tell(R.string.backup_imported)
+    }
+
+    /**
+     * Puts back only [parts] of [backup]: the Start screens with their shortcuts, the settings (all but how the launcher looks, unless
+     * the look is chosen too), or the look alone (see [ThemeCodec]).
+     */
+    fun restoreBackupParts(backup: LayoutBackup, parts: Set<RestorePart>) {
+        val current = _settings.value
+        var settings = current
+        if (RestorePart.Settings in parts) {
+            settings = backup.settings
+            if (RestorePart.Theme !in parts) settings = ThemeCodec.decode(ThemeCodec.encode(current), settings) ?: settings
+        } else if (RestorePart.Theme in parts) {
+            settings = ThemeCodec.decode(ThemeCodec.encode(backup.settings), current) ?: current
+        }
+        if (RestorePart.Start in parts) {
+            settings = settings.copy(startPages = backup.pages.size.coerceIn(1, LauncherSettings.MAX_START_PAGES))
+            _shortcuts.value = backup.shortcuts
+            shortcutStore.save(backup.shortcuts)
+            rebuildItems()
+        }
+        if (settings != current) updateSettings { settings }
+        if (RestorePart.Start in parts) {
+            val known = _items.value.mapTo(HashSet()) { it.id }
+            val pages = StartPages.prune(StartPages.resize(backup.pages, _settings.value.startPages), known)
+            _pages.value = pages
+            store.savePages(pages)
+        }
+    }
+
+    /** Sends the layout (see [LayoutBackupCodec]) to another app or person as a file, through the share sheet. */
+    fun shareLayout() = shareFile("metrowin-layout.json") { LayoutBackupCodec.encode(currentBackup(), System.currentTimeMillis()) }
+
+    /** The same for the look alone (see [ThemeCodec]): the file the Icons & themes page also reads. */
+    fun shareTheme() = shareFile("metrowin-theme.json") { ThemeCodec.encode(_settings.value) }
+
+    private fun shareFile(name: String, text: () -> String) {
+        viewModelScope.launch {
+            val app = getApplication<Application>()
+            val uri = withContext(Dispatchers.IO) {
+                runCatching {
+                    val dir = java.io.File(app.cacheDir, "shared").apply { mkdirs() }
+                    val file = java.io.File(dir, name).apply { writeText(text()) }
+                    androidx.core.content.FileProvider.getUriForFile(app, app.packageName + ".files", file)
+                }.getOrNull()
+            }
+            if (uri == null) {
+                tell(R.string.backup_failed)
+                return@launch
+            }
+            val send = Intent(Intent.ACTION_SEND).setType("application/json").putExtra(Intent.EXTRA_STREAM, uri)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            val chooser = Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (runCatching { app.startActivity(chooser) }.isFailure) tell(R.string.launch_failed)
         }
     }
 
@@ -1933,11 +2347,104 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             when {
                 bytes == null -> tell(R.string.backup_no_file)
                 backup == null -> tell(R.string.backup_not_layout)
-                else -> {
-                    restoreBackup(backup)
-                    tell(R.string.backup_imported)
-                }
+                else -> _pendingRestore.value = backup
             }
+        }
+    }
+
+    // --- named layouts of Start
+
+    private val layoutStore = LayoutStore(application)
+    private val _layouts = MutableStateFlow(layoutStore.load())
+    val layouts: StateFlow<List<SavedLayout>> = _layouts.asStateFlow()
+
+    private fun saveLayouts(list: List<SavedLayout>) {
+        _layouts.value = list
+        layoutStore.save(list)
+    }
+
+    /** Start as it is now (the pages and the shortcuts they hold), as a layout. */
+    private fun snapshotLayout(id: String, name: String, hour: Int): SavedLayout {
+        val pinned = StartPages.pinnedIds(_pages.value)
+        val used = _shortcuts.value.filter { it.id in pinned }
+        return SavedLayout(id, name, hour, TileCodec.encodePages(_pages.value), ShortcutCodec.encode(ShortcutCodec.portable(used)))
+    }
+
+    /** Keeps Start as it is now under [name]; false when the name is empty or there are already as many layouts as allowed. */
+    fun saveLayout(name: String): Boolean {
+        val clean = name.trim().take(Layouts.MAX_NAME)
+        if (clean.isEmpty() || _layouts.value.size >= Layouts.MAX) return false
+        val layout = snapshotLayout(java.util.UUID.randomUUID().toString(), clean, -1)
+        saveLayouts(_layouts.value + layout)
+        updateSettings { it.copy(activeLayout = layout.id) }
+        return true
+    }
+
+    /** Brings a layout up to date with what is on Start now. */
+    fun resaveLayout(id: String) = saveLayouts(_layouts.value.map { if (it.id == id) snapshotLayout(it.id, it.name, it.hour) else it })
+
+    fun deleteLayout(id: String) {
+        saveLayouts(_layouts.value.filterNot { it.id == id })
+        if (_settings.value.activeLayout == id) updateSettings { it.copy(activeLayout = "") }
+    }
+
+    fun setLayoutHour(id: String, hour: Int) = saveLayouts(_layouts.value.map { if (it.id == id) it.copy(hour = hour.takeIf { h -> h in 0..23 } ?: -1) else it })
+
+    /**
+     * Puts a layout on Start. What is on Start now first goes back into the layout that was on, so what was changed during the day is not
+     * lost. The shortcuts the layout needs and this phone no longer has come back from it.
+     */
+    fun applyLayout(id: String) {
+        val layout = _layouts.value.firstOrNull { it.id == id } ?: return
+        val pages = TileCodec.decodePages(layout.pages) ?: return
+        val active = _settings.value.activeLayout
+        val kept = _layouts.value.map { if (it.id == active && active != id) snapshotLayout(it.id, it.name, it.hour) else it }
+        val have = _shortcuts.value.mapTo(HashSet()) { it.id }
+        val back = ShortcutCodec.decode(layout.shortcuts).orEmpty().filter { it.id !in have }
+        if (back.isNotEmpty()) {
+            _shortcuts.value = _shortcuts.value + back
+            shortcutStore.save(_shortcuts.value)
+            rebuildItems()
+        }
+        updateSettings { it.copy(startPages = pages.size.coerceIn(1, LauncherSettings.MAX_START_PAGES), activeLayout = id) }
+        val known = _items.value.mapTo(HashSet()) { it.id }
+        val shown = StartPages.prune(StartPages.resize(pages, _settings.value.startPages), known)
+        _pages.value = shown
+        store.savePages(shown)
+        saveLayouts(kept)
+    }
+
+    /** With the schedule on, the layout whose hour came last takes Start once, when its hour comes; a layout chosen by hand stays until the next hour. */
+    private fun applyScheduledLayout() {
+        if (!_settings.value.layoutSchedule) return
+        val due = Layouts.due(_layouts.value, java.time.LocalTime.now().hour) ?: return
+        if (due.id == layoutStore.lastScheduled) return
+        layoutStore.lastScheduled = due.id
+        if (due.id != _settings.value.activeLayout) applyLayout(due.id)
+    }
+
+    // --- a photo for each Start screen
+
+    private fun loadPageBackgrounds() {
+        viewModelScope.launch {
+            val screens = _settings.value.startPages
+            _pageBackgrounds.value = withContext(Dispatchers.IO) {
+                (0 until screens).mapNotNull { page -> pageBackgroundStore(page).load()?.let { page to it.asImageBitmap() } }.toMap()
+            }
+        }
+    }
+
+    fun setPageBackground(page: Int, uri: Uri) {
+        viewModelScope.launch {
+            val saved = withContext(Dispatchers.IO) { pageBackgroundStore(page).save(uri) }
+            if (saved) loadPageBackgrounds() else Toast.makeText(getApplication(), R.string.photo_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun clearPageBackground(page: Int) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { pageBackgroundStore(page).clear() }
+            loadPageBackgrounds()
         }
     }
 
@@ -1954,6 +2461,51 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    /** The apps of a saved list that this phone does not have (yet), for the page of the backup. */
+    private val _savedApps = MutableStateFlow<List<SavedApp>>(emptyList())
+    val missingApps: StateFlow<List<SavedApp>> =
+        combine(_savedApps, _items) { saved, items -> AppListBackup.missing(saved, items.mapNotNullTo(HashSet()) { it.packageName }) }
+            .distinctUntilChanged().stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /** Writes the list of the apps the user installed to [uri]. */
+    fun exportApps(uri: Uri) {
+        viewModelScope.launch {
+            val apps = _items.value.filter { it.removable && it.packageName != null }.map { SavedApp(it.packageName!!, it.label) }.distinctBy { it.packageName }
+            val written = withContext(Dispatchers.IO) {
+                runCatching {
+                    val text = AppListBackup.encode(apps, System.currentTimeMillis())
+                    getApplication<Application>().contentResolver.openOutputStream(uri, "wt")!!.use { it.write(text.toByteArray()) }
+                }.isSuccess
+            }
+            tell(if (written) R.string.apps_backup_saved else R.string.backup_failed)
+        }
+    }
+
+    /** Reads a saved list of apps; the ones not installed here are then offered, each with its page in the store. */
+    fun importApps(uri: Uri) {
+        viewModelScope.launch {
+            val saved = withContext(Dispatchers.IO) {
+                runCatching {
+                    AppListBackup.decode(getApplication<Application>().contentResolver.openInputStream(uri)!!.use { it.readAtMost(MAX_LAYOUT_BYTES) }!!.decodeToString())
+                }.getOrNull()
+            }
+            if (saved == null) {
+                tell(R.string.apps_backup_not_list)
+            } else {
+                _savedApps.value = saved
+                tell(R.string.apps_backup_read)
+            }
+        }
+    }
+
+    /** Opens the page of an app in the store, or on the web when the store is not on the phone. */
+    fun openStore(packageName: String) {
+        val opened = runCatching {
+            getApplication<Application>().startActivity(Intent(Intent.ACTION_VIEW, AppListBackup.storeUri(packageName).toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }.isSuccess
+        if (!opened) openUrl(AppListBackup.webStoreUri(packageName))
+    }
+
     /** Reads a layout file and puts it in place. */
     fun importLayout(uri: Uri) {
         viewModelScope.launch {
@@ -1964,12 +2516,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                     LayoutBackupCodec.decode(text, _settings.value)
                 }.getOrNull()
             }
-            if (backup == null) {
-                tell(R.string.backup_not_layout)
-            } else {
-                restoreBackup(backup)
-                tell(R.string.backup_imported)
-            }
+            if (backup == null) tell(R.string.backup_not_layout) else _pendingRestore.value = backup
         }
     }
 
@@ -1999,23 +2546,46 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** The last change the user made to Start, kept to be undone: how it is told, and what Start was before. */
     data class UndoState(val message: Int, val pages: List<List<StartEntry>>, val shortcuts: List<ShortcutDef>, val token: Int)
 
+    /** The change the "Undo" message offers now: the last one, or the one before it right after an undo. */
     private val _undo = MutableStateFlow<UndoState?>(null)
     val undo: StateFlow<UndoState?> = _undo.asStateFlow()
     private var undoToken = 0
 
-    /** Keeps Start as it is now, to give back if the change that follows is undone. Only the last change is kept. */
+    /** The changes that can still be undone, the last on top; no more than [LauncherSettings.undoSteps]. */
+    private val undoStack = ArrayDeque<UndoState>()
+    private val _undoDepth = MutableStateFlow(0)
+    val undoDepth: StateFlow<Int> = _undoDepth.asStateFlow()
+
+    /** Keeps Start as it is now, to give back if the change that follows is undone. */
     private fun rememberForUndo(message: Int) {
-        _undo.value = UndoState(message, _pages.value, _shortcuts.value, ++undoToken)
+        undoStack.addLast(UndoState(message, _pages.value, _shortcuts.value, ++undoToken))
+        while (undoStack.size > _settings.value.undoSteps.coerceAtLeast(1)) undoStack.removeFirst()
+        _undo.value = undoStack.last()
+        _undoDepth.value = undoStack.size
     }
 
+    /** Hides the "Undo" message; the changes stay, and the settings can still undo them. */
     fun dismissUndo() {
         _undo.value = null
     }
 
-    /** Gives back Start as it was before the last change. */
-    fun undoLast() {
-        val state = _undo.value ?: return
+    /** Forgets every change that could be undone (after a widget is removed, whose place on Start cannot come back). */
+    private fun clearUndo() {
+        undoStack.clear()
         _undo.value = null
+        _undoDepth.value = 0
+    }
+
+    /** The "Undo" message was touched: gives back Start as it was before the last change. Nothing once the message is gone. */
+    fun undoLast() {
+        if (_undo.value != null) undoStep()
+    }
+
+    /** Gives back Start as it was before the last change that is still kept, and offers the one before it. */
+    fun undoStep() {
+        val state = undoStack.removeLastOrNull() ?: return
+        _undoDepth.value = undoStack.size
+        _undo.value = undoStack.lastOrNull()?.copy(token = ++undoToken)
         // A tile removed with its note, its date or its number comes back with it; a photo already deleted does not.
         _shortcuts.value = state.shortcuts
         shortcutStore.save(state.shortcuts)
@@ -2039,6 +2609,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
         /** After the launcher comes on screen, this long nothing is announced: the service is reading what is up. */
         const val BANNER_SETTLE_MS = 1_500L
+        const val NOTIFICATION_RESULTS = 4
+
+        /** How long a switch of Android takes to show its new state, before the tile reads it again. */
+        const val TOGGLE_SETTLE_MS = 700L
         const val SYNC_MIN_GAP_ON_LEAVE_MS = 15 * 60_000L
         const val MAX_LAYOUT_BYTES = 2 * 1024 * 1024
     }

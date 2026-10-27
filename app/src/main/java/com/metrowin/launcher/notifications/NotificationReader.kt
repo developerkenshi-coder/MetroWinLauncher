@@ -58,6 +58,10 @@ class NotificationReader(private val context: Context) {
 
     private class Line(val sender: String, val text: String, val time: Long, val icon: Icon?)
 
+    /** The newest message of a conversation notification, null for any other: the line to show for it, since its plain text can be an older one. */
+    fun latestMessage(notification: Notification): MessageLine? =
+        messagesOf(notification.extras ?: Bundle.EMPTY).lastOrNull()?.let { MessageLine(it.sender, it.text, it.time) }
+
     /**
      * The messages of a conversation notification (MessagingStyle), oldest first; empty for any other. Read from the bundles
      * by hand: the framework call that does it is public only from Android 11, and the keys have been the same since 7.

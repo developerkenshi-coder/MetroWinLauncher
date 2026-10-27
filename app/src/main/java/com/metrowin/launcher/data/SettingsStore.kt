@@ -8,6 +8,28 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.gestures.SystemAction
 import androidx.core.content.edit
 
+/** How the photo of Start fills the screen. */
+enum class PhotoFit(val code: String) {
+    /** Covers the screen, cropped; the zoom and the point in view apply. */
+    Fill("fill"),
+
+    /** All of the photo, with bars where it does not reach the edges. */
+    Fit("fit"),
+
+    /** All of the photo, stretched to the screen. */
+    Stretch("stretch"),
+
+    /** The photo at its size, repeated to cover the screen. */
+    Tile("tile"),
+
+    /** The photo at its size, in the middle. */
+    Center("center");
+
+    companion object {
+        fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: Fill
+    }
+}
+
 /** Light, dark, or one of the two automatic modes. */
 enum class ThemeMode(val code: String) {
     Dark("dark"),
@@ -130,6 +152,18 @@ enum class TileSpacing(val code: String, val factor: Float, @param:StringRes val
     }
 }
 
+/** The shape of the icon of an app: the one the look has, or one of your own. */
+enum class IconShape(val code: String, @param:StringRes val label: Int) {
+    Style("style", R.string.shape_style),
+    Square("square", R.string.shape_square),
+    Circle("circle", R.string.shape_circle),
+    Squircle("squircle", R.string.shape_squircle);
+
+    companion object {
+        fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: Style
+    }
+}
+
 /** How an app opens: the Metro turnstile, or the tile growing into the window of the app. */
 enum class LaunchAnimation(val code: String, @param:StringRes val label: Int) {
     Turnstile("turnstile", R.string.launch_turnstile),
@@ -210,6 +244,53 @@ data class LauncherSettings(
     val clockAlarm: Boolean = false,
     /** The number of the week next to the date. */
     val clockWeek: Boolean = false,
+    /** The id of a time zone shown under the date of the clock, or empty for none. */
+    val clockZone: String = "",
+    /** The Large size is offered to the tiles, and cycled to by the resize arrow. */
+    val largeTiles: Boolean = true,
+    /** The titles of groups of tiles are shown above them. */
+    val groupTitles: Boolean = true,
+    /** The Collection style (a collage of pictures) is offered to the tiles that have pictures. */
+    val collectionTiles: Boolean = true,
+    /** The layouts that have an hour set take Start over at that hour each day. */
+    val layoutSchedule: Boolean = false,
+    /** A wide Calendar tile lists the next events, a large one shows the month. */
+    val calendarAgenda: Boolean = true,
+    /** The Battery tile says how long the charge should last. */
+    val batteryEstimate: Boolean = true,
+    /** The Music tile has buttons to skip and pause. */
+    val tileMusicControls: Boolean = true,
+    /** Each page of Start can have a photo of its own. */
+    val pageBackgrounds: Boolean = false,
+    /** The search also looks in the notifications that wait in the Action Center. */
+    val searchNotifications: Boolean = true,
+    /** A long press on a notification offers to silence its app for a while. */
+    val muteFromPanel: Boolean = true,
+    /** The apps silenced for a while: package to the moment (epoch milliseconds) the silence ends. */
+    val mutedUntil: Map<String, Long> = emptyMap(),
+    /** Notifications with one of [notifFilterWords] in them are left out of the Action Center and the banners. */
+    val notifFilterOn: Boolean = false,
+    val notifFilterWords: List<String> = emptyList(),
+    /** Messages and calls come first in the Action Center. */
+    val notifPriority: Boolean = false,
+    /** How long the timed quiet mode lasts, in minutes. */
+    val dndMinutes: Int = 60,
+    /** How fast the animations go, in percent: 100 as designed, 200 twice as fast. */
+    val animationSpeed: Int = 100,
+    /** How far the tiles tilt when pressed, in percent of the design (0 is not at all). */
+    val tiltStrength: Int = 100,
+    /** How strong the vibration of a tap is, in percent of the design (0 is none). */
+    val vibrationStrength: Int = 100,
+    /** The search understands prefixes such as `app:` and `contact:`. */
+    val searchOperators: Boolean = true,
+    /** How many backup files are kept in the backup folder (the newest ones). */
+    val backupCopies: Int = 1,
+    /** The About page tells about the phone itself (model, Android, memory, space, how long it has been on). */
+    val showPhoneInfo: Boolean = true,
+    /** The id of the saved layout that was applied last by the schedule (empty when none). */
+    val activeLayout: String = "",
+    /** Cities followed besides the one of the tile: the Forecast page shows them. */
+    val weatherCities: List<SavedCity> = emptyList(),
     /** The name of the app under its tile. */
     val showTileNames: Boolean = true,
     /** Heavier text everywhere in the launcher. */
@@ -225,6 +306,7 @@ data class LauncherSettings(
     /** The status bar of Android is out of the way on Start; a swipe from the top edge brings it back for a moment. */
     val hideStatusBar: Boolean = false,
     /** How the Start photo is framed: zoom in percent (100 to 300), and the point of the photo that stays in view, in percent. */
+    val startPhotoFit: PhotoFit = PhotoFit.Fill,
     val startPhotoZoom: Int = 100,
     val startPhotoX: Int = 50,
     val startPhotoY: Int = 50,
@@ -279,6 +361,18 @@ data class LauncherSettings(
     val volumePanel: Boolean = true,
     /** A banner at the top of the launcher for each new notification, while the launcher is on screen. */
     val toastBanner: Boolean = true,
+    /** The same banner over other apps, while the launcher is not on screen (needs "display over other apps"). Off until asked for. */
+    val overlayBanner: Boolean = false,
+    /** Where the colour of the accent is used: the tiles of Start, the Action Center with the banners, and the app list with the settings. Grey where it is off. */
+    val accentStart: Boolean = true,
+    val accentPanel: Boolean = true,
+    val accentApps: Boolean = true,
+    /** The little Metro sounds: a chime for a new notification, a glide when the Action Center comes down or goes. Off until asked for. */
+    val metroSounds: Boolean = false,
+    /** Android's own notification is taken away when the Metro banner shows for it, and kept in the Action Center. Off until asked for. */
+    val hideSystemNotifications: Boolean = false,
+    /** A swipe down from the very top edge opens the Action Center of the launcher over any app (needs "display over other apps"). Off until asked for. */
+    val edgeActionCenter: Boolean = false,
     /** The choices made for each app below (what it may show in the Action Center, on the lock screen and as a banner) are applied. */
     val notifControl: Boolean = true,
     /** Apps (package names) whose notifications are left out of the Action Center / of the lock screen / of the banner. */
@@ -291,6 +385,38 @@ data class LauncherSettings(
     val weatherLatitude: Double = Double.NaN,
     val weatherLongitude: Double = Double.NaN,
     val weatherFahrenheit: Boolean = false,
+    /** What the forecast shows besides the temperature (codes of [WeatherBlock]); the air and the pollen ask for one more answer. */
+    val weatherBlocks: Set<String> = WeatherBlock.DEFAULT,
+    /** The steps to take in a day (0: no goal). */
+    val stepGoal: Int = Steps.GOAL,
+
+    // --- Start behaviour
+    /** Start goes back to the top after the phone was in another app for this many minutes (0: never). */
+    val startTopAfterMin: Int = 0,
+    /** Tiles cannot be moved, resized, removed or added. */
+    val lockStart: Boolean = false,
+    /** Start begins this percent of the screen lower, so the tiles are under the thumb (0: as it is). */
+    val startLowerPercent: Int = 0,
+    val iconShape: IconShape = IconShape.Style,
+    /** An app tile takes the colour of its icon instead of the accent. */
+    val iconTileColors: Boolean = false,
+    /** Index into the accent colours used while the dark theme is on (-1: the same as by day). */
+    val accentNightIndex: Int = -1,
+
+    // --- Action Center
+    /** The volumes kept under a name, and whether the Action Center shows them as buttons. */
+    val volumeProfiles: List<VolumeProfile> = emptyList(),
+    val volumeProfilesShow: Boolean = true,
+    /** The flashlight switches itself off after this many minutes (0: never). */
+    val torchAutoOffMin: Int = 0,
+
+    // --- search, tips, undo
+    /** The search box works the switches and sound modes it is asked for by name. */
+    val searchCommands: Boolean = true,
+    /** The Today card tells a different tip every day. */
+    val tipOfDay: Boolean = true,
+    /** How many changes to Start can be undone, one after the other. */
+    val undoSteps: Int = 1,
     /** Apps may show their own content on their tile through the launcher's content provider. */
     val thirdPartyTiles: Boolean = true,
     /** How the faces of a live tile follow one another. */
@@ -322,6 +448,8 @@ data class LauncherSettings(
     val searchCurrency: Boolean = false,
     /** The events of the calendar whose title matches the search. */
     val searchCalendar: Boolean = false,
+    /** The kinds of file the search looks for by name (see [FileType.code]); none means the search does not look for files. */
+    val searchFileTypes: Set<String> = emptySet(),
     /** The app list with smaller squares and tighter rows. */
     val compactList: Boolean = false,
     /** The last searches are kept on the phone and offered when the search box is touched. */
@@ -426,10 +554,20 @@ class SettingsStore(context: Context) {
     fun save(settings: LauncherSettings) = prefs.edit { putString(KEY_JSON, SettingsCodec.encode(settings)) }
 
     /** Only the switch of the tiles that apps publish: other apps call the provider that asks, and the whole settings are not decoded for each call. */
-    fun thirdPartyTilesOn(): Boolean {
-        val json = prefs.getString(KEY_JSON, null) ?: return LauncherSettings().thirdPartyTiles
-        return runCatching { org.json.JSONObject(json).optBoolean("thirdPartyTiles", LauncherSettings().thirdPartyTiles) }
-            .getOrDefault(LauncherSettings().thirdPartyTiles)
+    fun thirdPartyTilesOn(): Boolean = switchOn("thirdPartyTiles", LauncherSettings().thirdPartyTiles)
+
+    /** One switch of the settings without decoding all the others: what the notification service asks, at each notification and each time the launcher leaves the screen. */
+    fun overlayBannerOn(): Boolean = switchOn("overlayBanner", false)
+
+    fun edgeActionCenterOn(): Boolean = switchOn("edgeActionCenter", false)
+
+    fun hideSystemOn(): Boolean = switchOn("hideSystemNotifications", false)
+
+    fun filterOn(): Boolean = switchOn("notifFilterOn", false)
+
+    private fun switchOn(key: String, default: Boolean): Boolean {
+        val json = prefs.getString(KEY_JSON, null) ?: return default
+        return runCatching { org.json.JSONObject(json).optBoolean(key, default) }.getOrDefault(default)
     }
 
     /** The settings of the first versions, one key each. */

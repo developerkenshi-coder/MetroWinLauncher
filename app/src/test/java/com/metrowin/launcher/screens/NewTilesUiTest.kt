@@ -60,6 +60,7 @@ class NewTilesUiTest : ScreenshotBase() {
         TileSize.Small -> 96.dp
         TileSize.Medium -> 200.dp
         TileSize.Wide -> 408.dp
+        TileSize.Large -> 408.dp
     }
 
     private fun heightOf(size: TileSize): Dp = if (size == TileSize.Small) 96.dp else 200.dp

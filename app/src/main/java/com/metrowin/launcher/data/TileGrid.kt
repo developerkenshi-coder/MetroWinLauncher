@@ -130,7 +130,11 @@ object TileGrid {
         return found.toList()
     }
 
-    fun place(sizes: List<TileSize>, columns: Int = DEFAULT_COLUMNS): GridLayout {
+    /**
+     * Where each tile goes. A tile that is a start of a group ([breaks]) goes on a row of blocks that nothing before it uses, so a
+     * title can be written above the row; the others follow as they always did.
+     */
+    fun place(sizes: List<TileSize>, columns: Int = DEFAULT_COLUMNS, breaks: List<Boolean> = emptyList()): GridLayout {
         require(columns % BLOCK == 0) { "columns must be a whole number of blocks" }
         val blocksPerRow = columns / BLOCK
         val occupied = ArrayList<BooleanArray>()
@@ -155,6 +159,10 @@ object TileGrid {
                         if (blockCol + 1 < blocksPerRow && isFree(col, row, size.cols, BLOCK)) {
                             return Placement(col, row, size.cols, BLOCK)
                         }
+                    TileSize.Large ->
+                        if (blockCol + 1 < blocksPerRow && isFree(col, row, size.cols, size.rows)) {
+                            return Placement(col, row, size.cols, size.rows)
+                        }
                     TileSize.Medium ->
                         if (isFree(col, row, BLOCK, BLOCK)) return Placement(col, row, BLOCK, BLOCK)
                     TileSize.Small ->
@@ -167,10 +175,13 @@ object TileGrid {
         }
 
         var cursor = 0
-        val placements = sizes.map { size ->
+        var usedRows = 0
+        val placements = sizes.mapIndexed { index, size ->
+            if (breaks.getOrElse(index) { false } && usedRows > 0) cursor = (usedRows + BLOCK - 1) / BLOCK * blocksPerRow
             find(size, cursor).also { p ->
                 for (r in p.row until p.row + p.rows) for (c in p.col until p.col + p.cols) occupied[r][c] = true
                 cursor = p.row / BLOCK * blocksPerRow + p.col / BLOCK
+                usedRows = maxOf(usedRows, p.row + p.rows)
             }
         }
         return GridLayout(placements, placements.maxOfOrNull { it.row + it.rows } ?: 0)

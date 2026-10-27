@@ -1,5 +1,8 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.data.SavedLayout
+import com.metrowin.launcher.data.SavedApp
+import com.metrowin.launcher.data.SavedCity
 import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
@@ -58,6 +61,7 @@ enum class SettingsSection(
     Backup(SettingsGroup.Tools, R.string.sec_backup, R.string.sec_backup_desc),
     Kids(SettingsGroup.Tools, R.string.kids_title, R.string.sec_kids_desc),
     About(SettingsGroup.Tools, R.string.sec_about, R.string.sec_about_desc),
+    Debug(SettingsGroup.Tools, R.string.sec_debug, R.string.sec_debug_desc),
 }
 
 /**
@@ -84,6 +88,11 @@ class SettingsEnv(
     /** Every app, including the hidden ones and the launcher's own entries. */
     val apps: List<AppItem> = emptyList(),
     val onStartKidsCorner: () -> Unit = {},
+    /** How many changes to Start can be undone now, and a way to undo the last one. */
+    val undoDepth: Int = 0,
+    val onUndo: () -> Unit = {},
+    /** Keeps the volumes the phone has now as a preset with this name; false when the name is blank. */
+    val onSaveVolumeProfile: (String) -> Boolean = { false },
     /** Forgets the recent searches of the search box. */
     val onClearSearches: () -> Unit = {},
     /** Puts Start back as it was at the start (see LauncherViewModel.resetStart). */
@@ -96,9 +105,34 @@ class SettingsEnv(
     val onExportLayout: (Uri) -> Unit = {},
     /** Reads a layout from a file the user picked. */
     val onImportLayout: (Uri) -> Unit = {},
+    /** The list of the installed apps: saved to a file, read from one, and the apps of it this phone does not have. */
+    /** The copies kept in the backup folder (their file names, the newest first), and what the page does with them. */
+    val backupCopies: List<String> = emptyList(),
+    val onRefreshCopies: () -> Unit = {},
+    val onRestoreCopy: (String) -> Unit = {},
+    val onShareLayout: () -> Unit = {},
+    val onShareTheme: () -> Unit = {},
+    val onExportApps: (Uri) -> Unit = {},
+    val onImportApps: (Uri) -> Unit = {},
+    /** The Start screens kept under a name: saved from what is on Start now, put back, brought up to date, deleted, given an hour. */
+    val layouts: List<SavedLayout> = emptyList(),
+    val onSaveLayout: (String) -> Boolean = { false },
+    val onApplyLayout: (String) -> Unit = {},
+    val onResaveLayout: (String) -> Unit = {},
+    val onDeleteLayout: (String) -> Unit = {},
+    val onLayoutHour: (String, Int) -> Unit = { _, _ -> },
+    /** The photo of each Start screen that has one of its own, by the number of the screen (from 0). */
+    val pageBackgrounds: Map<Int, ImageBitmap> = emptyMap(),
+    val onPickPageBackground: (Int, Uri) -> Unit = { _, _ -> },
+    val onClearPageBackground: (Int) -> Unit = {},
+    val missingApps: List<SavedApp> = emptyList(),
+    val onOpenStore: (String) -> Unit = {},
     /** Looks for cities by name: null when the search could not be made, an empty list when nothing matches. */
     val searchPlaces: suspend (String) -> List<PlaceMatch>? = { emptyList() },
     val onChoosePlace: (PlaceMatch) -> Unit = {},
+    /** Follows a city besides the one of the tile, and stops following it. */
+    val onFollowPlace: (PlaceMatch) -> Unit = {},
+    val onUnfollowCity: (SavedCity) -> Unit = {},
     val onUseLocation: () -> Unit = {},
     /** The service that lets the launcher lock the screen is turned on. */
     val lockServiceEnabled: Boolean = false,

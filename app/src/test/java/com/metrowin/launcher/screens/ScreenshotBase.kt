@@ -72,7 +72,7 @@ abstract class ScreenshotBase {
      * Swipes the page up until the control is on screen. (performScrollTo animates its scroll, which never finishes
      * while the test clock is paused, so the page is scrolled with a finger instead.)
      */
-    protected fun scrollIntoView(tag: String, topMargin: Float = 0f) {
+    protected fun scrollIntoView(tag: String, topMargin: Float = 0f, swipeMs: Long = 300) {
         val screenHeight = compose.onRoot().fetchSemanticsNode().size.height
         repeat(12) {
             // Position and size are not clipped to the screen, unlike boundsInRoot, which is empty off screen.
@@ -84,16 +84,42 @@ abstract class ScreenshotBase {
             // Bring the control towards the middle of the screen; a fling can carry it past, so look again afterwards.
             val toMiddle = ((top + bottom) / 2f - screenHeight / 2f).coerceIn(-0.6f * screenHeight, 0.6f * screenHeight)
             compose.onAllNodes(hasScrollAction()).onLast().performTouchInput {
-                swipe(Offset(centerX, height / 2f + toMiddle / 2f), Offset(centerX, height / 2f - toMiddle / 2f), durationMillis = 300)
+                swipe(Offset(centerX, height / 2f + toMiddle / 2f), Offset(centerX, height / 2f - toMiddle / 2f), durationMillis = swipeMs)
             }
             // A touch on a page that is still flinging only stops it: wait for it to settle.
             advance(2_500)
         }
     }
 
+    /**
+     * Taps a control inside the last scrolling list when that list does not fill the screen (a sheet): it has to be inside the list, not only
+     * on the screen. Scrolled with a slow finger, like [scrollIntoView].
+     */
+    protected fun tapInScroller(tag: String) {
+        repeat(12) {
+            val box = compose.onAllNodes(hasScrollAction()).onLast().fetchSemanticsNode()
+            val node = compose.onNodeWithTag(tag).fetchSemanticsNode()
+            val top = box.positionInRoot.y
+            val bottom = top + box.size.height
+            val nodeTop = node.positionInRoot.y
+            val nodeBottom = nodeTop + node.size.height
+            if (nodeTop >= top && nodeBottom <= bottom) {
+                compose.onNodeWithTag(tag).performClick()
+                compose.waitForIdle()
+                return
+            }
+            val toMiddle = ((nodeTop + nodeBottom) / 2f - (top + bottom) / 2f).coerceIn(-0.6f * box.size.height, 0.6f * box.size.height)
+            compose.onAllNodes(hasScrollAction()).onLast().performTouchInput {
+                swipe(Offset(centerX, height / 2f + toMiddle / 2f), Offset(centerX, height / 2f - toMiddle / 2f), durationMillis = 1_200)
+            }
+            advance(2_500)
+        }
+        throw AssertionError("$tag did not come into the list")
+    }
+
     /** Scrolls the control into view, then taps it. */
-    protected fun tapScrolled(tag: String) {
-        scrollIntoView(tag)
+    protected fun tapScrolled(tag: String, swipeMs: Long = 300) {
+        scrollIntoView(tag, swipeMs = swipeMs)
         compose.onNodeWithTag(tag).performClick()
         // The state written by the click reaches the composition only once the test thread is idle.
         compose.waitForIdle()

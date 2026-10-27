@@ -1,7 +1,6 @@
 package com.metrowin.launcher.ui.pages
 
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -66,5 +65,3 @@ fun PageChip(text: String, selected: Boolean, tag: String, modifier: Modifier = 
 fun PageNote(text: String, modifier: Modifier = Modifier) {
     MetroText(text, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, maxLines = Int.MAX_VALUE, lineHeight = 19.sp, modifier = modifier)
 }
-
-internal val SpacedRows = Arrangement.spacedBy(12.dp)

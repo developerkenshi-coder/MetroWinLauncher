@@ -437,7 +437,7 @@ class NewPagesUiTest : ScreenshotBase() {
         }
         advance(300)
         val names = listOf("place", "album", "group", "timer", "stopwatch", "news", "finance", "reminders", "dialgrid", "peoplehub")
-        names.forEach { tapScrolled("add:$it") }
+        names.forEach { tapInScroller("add:$it") }
         assertEquals(names, done)
     }
 

@@ -183,7 +183,17 @@ tocco li cambierebbe), i contatti, le impostazioni di Android (anche in italiano
 
 Quattro pulsanti rapidi a scelta (sugli altri otto si apre il resto), notifiche che si scartano a destra o tutte insieme,
 **risposta rapida** dai messaggi a cui l'app permette di rispondere, **raggruppamento per app** (una riga che si apre; scorrerla via
-le scarta tutte). Wi-Fi, Bluetooth, aereo ecc. mostrano lo stato e aprono la schermata di sistema giusta (da Android 10
+le scarta tutte). Il **banner Metro** compare anche **sopra le altre app** quando il launcher non è sullo schermo, se lo accendi
+(*notifiche+azioni → banner sopra le altre app*, spento di base) e consenti «Mostra sopra altre app»: non sul blocco schermo, non per le notifiche
+silenziose, non quando Non disturbare le blocca, e per le app che scegli con l'interruttore *banner* di ognuna. Il banner di Android compare comunque, a meno che accenda *nascondi la notifica di Android* (spento di base): quando compare il banner Metro, la notifica
+di Android viene tolta e resta nell'Action Center finché non la scarti (Android la mostra per un istante e il suono è dell'app; l'app viene avvisata che
+è stata scartata). Il banner si mostra a ogni nuovo messaggio di una chat, non solo al primo, e la riga di una chat è il suo ultimo messaggio.
+
+L'**Action Center sopra le altre app** (*notifiche+azioni*, spento di base; usa il servizio di blocco schermo dell'accessibilità, perché solo le finestre di un servizio di accessibilità possono stare sopra la barra di stato, dove deve cominciare lo swipe): uno swipe verso il basso dal bordo più alto
+dello schermo, su una striscia sottile di 20 dp, apre lo stesso Action Center del launcher (pulsanti, cursori, notifiche, risposta rapida,
+posticipa) in una finestra sopra l'app in cui sei. Un tocco sulla striscia non fa niente, e il pannello di Android resta raggiungibile da
+subito sotto. La striscia è una finestra che non disegna e non sveglia niente; non c'è sul
+blocco schermo né mentre il pannello è aperto, e funziona anche dentro il launcher (è più bassa della barra di stato). Il pulsante *impostazioni del launcher* apre il launcher. Wi-Fi, Bluetooth, aereo ecc. mostrano lo stato e aprono la schermata di sistema giusta (da Android 10
 un'app non può più accenderli da sola); la torcia si accende davvero.
 
 ### Voce
@@ -467,6 +477,95 @@ click sintetizzato (`ClickSound`, nel canale dei suoni di interfaccia: segue il 
 - **Il click** usa un `SoundPool` caricato solo mentre il launcher è davanti; la vibrazione è un unico `Vibrator` breve.
 - **Scheda *Oggi***: calendario e sveglia si interrogano alla comparsa della lista app, mai più spesso di `PowerPolicy.todayMaxAgeMs`; il resto è già in memoria.
 
+### Altre funzioni, quarto giro
+
+**Animazioni nello stile di Windows Phone**
+- **Continuum**: toccando una sezione delle impostazioni il titolo vola su dal punto toccato e le impostazioni scivolano dentro; le liste (impostazioni, menu *aggiungi*, Action Center) entrano a piume, una riga dopo l'altra (`featherIn`); gli interruttori dell'Action Center aperti si ribaltano dall'alto (`flipIn`). Tutto si ferma con *movimento ridotto*.
+- **Selettori a ruota** (giorno, mese, anno; ore e minuti) per il conto alla rovescia e per i promemoria, al posto dei pulsanti più e meno (`LoopingSelector`).
+- **Suoni di sistema Metro**, spenti di base (*azioni → suoni Metro*): un due note per la notifica e un glissando in su e in giù per l'Action Center. Sono generati dal codice (come il click), nessun file.
+
+**Menu *aggiungi* in ordine**: un tocco lungo su uno spazio vuoto apre un menu per tipo di utilità (persone, luoghi, tempo, appunti, informazioni, media, sistema) con una **ricerca rapida** in alto: scrivendo restano solo le voci che corrispondono, anche per parole in italiano o inglese (`AddMenuIndex`).
+
+**Aspetto**: *dove usare il colore d'accento* (riquadri di Start, Action Center e banner, elenco app e impostazioni: dove è spento diventa grigio) e *adattamento della foto di Start* (riempi, adatta, allunga, affianca, centra).
+
+**Notifiche**: pulsanti d'azione dell'app (senza testo da scrivere), testo lungo con *leggi tutto*, immagine della notifica, cronologia delle ultime 30 scartate (solo in memoria), cursori separati di suoneria e sveglia nell'Action Center.
+
+**Nuovi riquadri** (menu *aggiungi*)
+- **Passi**: i passi di oggi dal sensore del telefono (`ACTIVITY_RECOGNITION`). Il contatore del sensore cresce dall'avvio: si parte dal valore che aveva alla prima lettura del giorno, quindi i passi fatti prima della *prima* lettura non si contano.
+- **Registratore**: registra in `m4a` nella memoria dell'app e riascolta; niente esce dal telefono.
+- **Fotocamera**: apre la fotocamera del telefono e mostra l'ultima foto (serve il permesso foto).
+- **Portafoglio**: carte fedeltà e biglietti con il numero del codice, mostrati come **Code 128** grande su bianco. *Non legge ancora il codice con la fotocamera e non disegna QR*: il numero si scrive a mano, e il Code 128 è letto dalla maggior parte dei lettori dei negozi, non da tutti (un lettore che vuole EAN-13 o QR non lo legge).
+- **Dove sono**: via e coordinate (`ACCESS_FINE_LOCATION`), aprire sulla mappa o inviare; la via sul riquadro è l'ultima trovata.
+- **Persona viva**: il riquadro di un contatto mostra, girando, l'ultimo messaggio ricevuto da quella persona (dalle notifiche, per nome: funziona con le app che mettono il nome come titolo).
+- **Sito vivo**: il riquadro di un sito mostra il titolo più recente del suo feed RSS/Atom (cercato nella pagina), solo https e solo sullo stesso host. Funziona con **qualunque browser**: *Condividi* → *Fissa su Start* (il launcher compare tra le app di condivisione) fissa la pagina; il tocco la apre nel browser predefinito.
+
+**Meteo**: previsione **ora per ora** (24 ore) nella pagina e su una faccia del riquadro; **più città** (*impostazioni → riquadri live → segui anche questa città*, al massimo 5, lette solo quando apri la pagina); il riquadro Meteo mostra la previsione anche per **qualunque app di meteo** messa su Start (riconosciuta dal nome del pacchetto: `…weather…`, `…meteo…` e le più note). **Secondo fuso orario** sotto la data dell'orologio di Start (*impostazioni → start*).
+
+**Ricerca di file per tipo**: *impostazioni → ricerca → file nella ricerca*: si scelgono i tipi (immagini, video, musica, documenti) e per ognuno si dà il permesso; la ricerca cerca per nome nell'indice media del telefono. *Da Android 13 i documenti non sono visibili alle app senza accesso a tutti i file*, quindi **Documenti** trova poco o nulla su un telefono recente: lo dice il testo dell'impostazione.
+
+**Elenco delle app installate** (*impostazioni → backup*): salva in un file i nomi delle app che hai installato; su un telefono nuovo *Configura da un elenco di app* mostra quelle che mancano e ognuna apre la sua pagina nello store. Il launcher non installa nulla da solo.
+
+### Altre funzioni, quinto giro
+
+Ognuna ha il suo interruttore (o la sua scelta) nelle impostazioni, e si trova con la ricerca delle impostazioni.
+
+**Start e riquadri**
+- **Dimensione grande** (4x4, come Windows 10 Mobile) nella barra di modifica e nella freccia di ridimensionamento (*start screen → extra dei riquadri*). Sul riquadro Calendario mostra il mese con i prossimi eventi.
+- **Titoli di gruppi di riquadri**: il pulsante *titolo* della barra di modifica scrive un titolo sopra il riquadro scelto, che apre un gruppo su una riga di blocchi a sé. Spento, Start torna una griglia semplice (i titoli restano salvati).
+- **Layout di Start con nome** (Casa, Lavoro, Viaggio): si salvano con un tocco e si rimettono con un tocco; prima di mettere un layout, quello che c'è su Start torna nel layout che era attivo. Con *cambia layout a orario* ognuno può prendere il posto di Start a un'ora, una volta al giorno. I riquadri di contatti, note e simili tornano dal layout; **i widget no** (l'id di un widget è di un solo telefono).
+- **Stile collage** (mosaico di foto) per i riquadri Foto e Album.
+- **Calendario**: il riquadro largo elenca i prossimi eventi, il grande mostra il mese.
+- **Interruttori su Start** (Wi-Fi, Bluetooth, aereo, torcia, silenzioso, silenzioso a tempo, rotazione, posizione, luminosità automatica): un tocco fa quello che fa il pulsante dell'Action Center. *Android non lascia accendere Wi-Fi e Bluetooth a un'app*: il riquadro mostra lo stato e apre il pannello di Android; la torcia e il silenzioso cambiano sul posto.
+- **Batteria**: dice quanto dovrebbe durare la carica (previsione di Android, da Android 12). **Musica**: pulsanti precedente, play o pausa, successivo sul riquadro. **Sole**: alba, tramonto e durata del giorno, dai dati del meteo.
+- **Una foto per ogni schermata di Start** (*start+theme*); quella senza foto mostra la foto di tutti.
+
+**Notifiche**
+- **Nascondi la notifica di Android** ora toglie dalla tendina *ogni* notifica che l'Action Center può mostrare, non solo quelle che hanno avuto il banner. Prima restavano le silenziose, i riepiloghi di gruppo e quelle arrivate a schermo spento o bloccato (si vedeva nei log: arrivavano e nessuno le cancellava). Anche quelle già presenti passano all'Action Center quando accendi l'opzione o il servizio si collega. Restano dove sono chiamate, sveglie, navigazione, la musica, ciò che è «in corso» o non cancellabile, le notifiche a schermo intero e le app che tieni fuori dall'Action Center.
+- **Silenzia un'app dal pannello** (pressione lunga: 1 ora, 8 ore, fino a mattina); le copie restano e tornano alla scadenza. Solo nel launcher, non nel pannello sopra le altre app.
+- **Parole da escludere**: una notifica con una di queste parole è tolta da Android e non si vede da nessuna parte (mai chiamate, sveglie, musica).
+- **Prima messaggi e chiamate** nell'Action Center. **Silenzioso a tempo** (15 minuti – 4 ore) come pulsante dell'Action Center: si spegne da solo con una sveglia di Android (un po' in ritardo, se Android la sposta).
+- **Cerca nelle notifiche** in attesa, dalla ricerca delle app.
+- **Animazioni**: le notifiche raggruppate si aprono con una discesa e le righe entrano a piume; la freccia gira; il testo lungo, le opzioni e la risposta si aprono con un movimento (prima comparivano di colpo).
+
+**Come si sente**: *velocità delle animazioni* (50%–200%; le molle, come il rimbalzo di un riquadro, non cambiano passo), *inclinazione alla pressione* (0%–150%) e *forza della vibrazione* (0%–200%) in *gesti*. **Operatori nella ricerca**: `app:`, `contatto:`, `imp:`, `file:`, `evento:`, `notifica:`, `riquadro:`, `web:` (e le forme brevi `a: c: s: f: e: n: t: w:`).
+
+**Informazioni** sul telefono nella pagina *informazioni* (modello, Android, patch, memoria, spazio, schermo, da quanto è acceso): nulla esce dal telefono.
+
+**Backup**: più copie nella cartella (le ultime 2, 3, 5 o 10, con data e ora) e *ripristino parziale* (solo Start, solo impostazioni, solo aspetto) per ogni ripristino; *Invia il layout* e *Invia l'aspetto* con il menu Condividi (un file senza passphrase né cartella).
+
+**Tastiera**: non resta più aperta quando si torna al launcher da un'altra app, né quando la pagina con la casella di testo cambia (il campo, andando via, porta con sé la tastiera).
+
+### Altre funzioni, sesto giro
+
+Anche qui ogni cosa ha il suo interruttore (o la sua scelta) nelle impostazioni, e si trova con la ricerca delle impostazioni.
+
+**Meteo, molto più completo** (*riquadri dinamici → Cosa mostrano le previsioni*, un interruttore per parte; la pagina e il riquadro li seguono):
+- **Pioggia in arrivo**: una riga in cima dice «pioggia prevista tra 3 h», «dovrebbe smettere di piovere tra 2 h» o «nessuna pioggia nelle prossime 24 ore»; il riquadro prende una faccia con la stessa frase, ma solo se piove o sta per piovere.
+- **Ora per ora**, **grafico della temperatura** (linea e barre della probabilità di pioggia), **dettagli** (percepita, vento, umidità, probabilità di pioggia, alba, tramonto, UV), **raffiche e direzione del vento**, **pressione**, **nuvole**, **visibilità**, **punto di rugiada**, **pioggia prevista oggi** (mm), **ore di sole**, **durata del giorno**, **fase lunare**, **pioggia e vento nei prossimi giorni**.
+- **Qualità dell'aria** (indice europeo con la parola, PM2.5, PM10, ozono, NO₂; anche come faccia del riquadro) e **pollini** (ontano, betulla, graminacee, artemisia, olivo, ambrosia; *solo in Europa*) sono **spenti di base**: accesi, il launcher fa una seconda richiesta a Open-Meteo (`air-quality-api.open-meteo.com`, solo https, stessa regola delle altre). Le altre parti arrivano con la richiesta che c'era già, con qualche campo in più.
+
+**Start e riquadri**
+- **Passi**: obiettivo a scelta (da 5 000 a 20 000, o nessuno), storico di 60 giorni tenuto sul telefono, ultimi 7 giorni a barre con la riga dell'obiettivo, media, giorno migliore, **giorni di fila** con l'obiettivo raggiunto; il riquadro ha la barra dell'obiettivo. Il contapassi di Android conta da quando il riquadro lo legge la prima volta ogni giorno: un telefono riavviato a metà giornata non cancella i passi già contati.
+- **Auto parcheggiata** (*aggiungi → luoghi*): un pulsante salva la posizione del telefono (una volta, solo quando lo premi); la pagina mostra la via, da quanto tempo, **Vai all'auto a piedi** (la mappa di Android con la strada a piedi, o la posizione se non c'è) e **Dimentica**. La posizione resta sul telefono.
+- **Orologio analogico**, che si aggiorna ogni minuto finché il launcher è sullo schermo.
+- **Colore del riquadro dall'icona** (*icone*): un riquadro di un'app prende il colore principale della sua icona, scurito quanto basta per il testo bianco; le icone grigie tengono l'accento.
+- **Forma delle icone** (*icone*): come l'aspetto, quadrata, cerchio o quadrato arrotondato.
+- **Come si comporta Start** (*start*): **torna in cima** dopo 1–60 minuti lontano dal launcher (come dopo Home), **blocca la disposizione** (nessun riquadro si sposta, ridimensiona, toglie o aggiunge per sbaglio; si sblocca da qui), **Start più in basso** (15–45% dello schermo, per usarlo con una mano), **annulla a più passi** (1, 3, 5 o 10 modifiche, una dopo l'altra; la voce nelle impostazioni annulla l'ultima anche dopo che il messaggio è sparito). Togliere un widget azzera la cronologia dell'annulla: il suo posto non può tornare.
+- **Un altro accento di notte** (*start + tema*): vale mentre il tema scuro è acceso, a orario, col sole o sempre scuro.
+
+**Action Center**
+- **Trascina per riordinare** i quattro pulsanti in alto (tieni premuto un pulsante nelle impostazioni dell'Action Center, poi trascinalo).
+- **La torcia si spegne da sola** dopo 1–30 minuti (una sveglia di Android: se Android la sposta, arriva un po' in ritardo).
+- **Volumi preimpostati**: metti suoneria, contenuti multimediali e sveglie come vuoi, dai un nome e salva (fino a 6); nell'Action Center (anche quello sopra le altre app) compaiono come pulsanti sotto i modi del suono.
+
+**Ricerca**
+- **Interruttori e modi del suono per nome**: «torcia», «spegni la torcia», «silenzioso», «vibra», «wifi», «bluetooth», «non disturbare»… il primo risultato lo fa. *Android non lascia accendere Wi-Fi, Bluetooth e simili a un'app*: per quelli il risultato apre la schermata di Android, come il pulsante. Conta solo il testo intero, quindi un'app con una di queste parole nel nome si trova lo stesso.
+- **Suggerimento del giorno** nella scheda Oggi (24 consigli sul launcher, uno al giorno).
+
+**Impostazioni**: **riporta una pagina all'inizio**. La voce compare sotto il titolo solo se la pagina è stata cambiata; il primo tocco chiede, il secondo lo fa. Non tocca ciò che è tuo e non sta nella pagina: app nascoste e bloccate, volumi preimpostati, numero di schermate di Start. Le pagine Backup, Profili, Bambini, Informazioni e Debug non si riportano.
+
+**Registratore**: ogni registrazione si **rinomina** (il nome sta dopo la data, quindi l'ordine resta) e si **invia** con il menu Condividi; il file sta nella memoria dell'app e solo l'app che scegli lo legge, una volta.
+
 ### Orizzontale
 
 Si sceglie in *schermo+lingua*: **solo verticale** (come prima), **segui la rotazione del telefono** (rispetta il blocco di Android)
@@ -613,6 +712,7 @@ dell'indice: una impostazione nuova non indicizzata, o spostata senza aggiornarl
 | backup+sync | file o cartella, ogni quanto, ripristina; sincronizzazione con passphrase; esporta e importa |
 | angolo bambini | app e avvio |
 | informazioni | versione e dettagli del launcher; rivedi il tutorial; crediti |
+| Debug developer | quattro report in file di testo, ognuno a parte e salvato dove scegli: **stato batteria dell'app**, **stato batteria di tutto il telefono**, **log di sistema di tutto il telefono**, **log dell'app** (dall'avvio del processo, finché i buffer di Android lo hanno ancora). I dump di sistema e il log degli altri richiedono `adb shell pm grant com.metrowin.launcher android.permission.DUMP` e `…READ_LOGS` più l'accesso all'uso nelle impostazioni di Android; senza, il file lo dice e contiene il resto. I file possono contenere dati privati |
 
 ## Cosa non si può fare da un launcher, e come l'ho aggirato
 
@@ -640,15 +740,21 @@ si possono dare anche dopo, quando serve la funzione.
 | `QUERY_ALL_PACKAGES` | vedere tutte le app. Google Play ne limita l'uso e chiede una giustificazione: da verificare se pubblichi l'app |
 | `READ_MEDIA_IMAGES` (+ `READ_MEDIA_VISUAL_USER_SELECTED` su Android 14, `READ_EXTERNAL_STORAGE` fino ad Android 12L) | riquadro Foto |
 | `READ_CALENDAR`, `READ_CONTACTS`, `READ_CALL_LOG` | riquadri Calendario, Persone (e ricerca contatti), Telefono; la ricerca negli eventi e il prossimo evento sul blocco (`READ_CALENDAR`, spenti); i **compleanni** (`READ_CONTACTS`) |
-| `INTERNET` | il meteo (solo Open-Meteo, solo https, risposta limitata a 256 KB) e la ricerca di una città; i tassi di cambio (solo `api.frankfurter.dev`, https, spenti di base); **solo se hai messo il riquadro su Start**: i titoli di Notizie (Google News, o il feed che scegli) e le quotazioni di Finanza (`api.frankfurter.dev`, `api.coingecko.com`) |
+| `INTERNET` | il meteo (solo Open-Meteo, solo https, risposta limitata a 256 KB), **qualità dell'aria e pollini** (`air-quality-api.open-meteo.com`, solo se li accendi) e la ricerca di una città; i tassi di cambio (solo `api.frankfurter.dev`, https, spenti di base); **solo se hai messo il riquadro su Start**: i titoli di Notizie (Google News, o il feed che scegli) e le quotazioni di Finanza (`api.frankfurter.dev`, `api.coingecko.com`) |
 | `ACCESS_COARSE_LOCATION` | "usa la mia posizione" del meteo (l'ultima nota, una volta) |
-| `RECORD_AUDIO` | la voce, quando la usi la prima volta |
+| `ACTIVITY_RECOGNITION` | il riquadro **Passi** (il contapassi del telefono); si chiede quando lo metti |
+| `ACCESS_FINE_LOCATION` | il riquadro **Dove sono**, una lettura sola quando apri la pagina, e al massimo ogni 15 minuti con il riquadro su Start e il launcher davanti: mai in continuo |
+| `READ_MEDIA_VIDEO`, `READ_MEDIA_AUDIO` | la ricerca di file video e musica, solo per i tipi che accendi |
+| *(nessun permesso)* `FileProvider` | *Invia il layout* e *Invia* una registrazione: il file sta nella cache o nella memoria dell'app e solo l'app che scegli lo legge, una volta |
+| `RECORD_AUDIO` | la voce, quando la usi la prima volta; il riquadro **Registratore** |
 | `CALL_PHONE` | chiamare **subito** (riquadro chiamata rapida, voce con *chiama subito*). Si chiede quando metti un riquadro di chiamata rapida o accendi l'interruttore; senza, si apre il tastierino con il numero |
 | `com.android.alarm.permission.SET_ALARM` | timer e sveglie dalla ricerca e dalla voce (permesso normale, concesso all'installazione) |
 | `POST_NOTIFICATIONS` (Android 13 e successivi) | l'avviso quando un **timer** finisce o un **promemoria** scatta; si chiede la prima volta che ne avvii uno |
 | `SCHEDULE_EXACT_ALARM` | far suonare timer e promemoria **all'ora esatta**; senza (Android lo può togliere) suonano con un piccolo ritardo, e il launcher se ne accorge e usa la sveglia meno precisa |
 | `RECEIVE_BOOT_COMPLETED` | riarmare la sveglia di timer e promemoria dopo un riavvio o un aggiornamento: il ricevitore si sveglia una volta e finisce |
 | `VIBRATE` | la breve vibrazione al tocco, se la accendi |
+| `DUMP`, `READ_LOGS`, `PACKAGE_USAGE_STATS` | solo la sezione **Debug developer**: Android le dà solo tramite adb e le impostazioni, quindi non si chiedono mai e l'app funziona senza |
+| `SYSTEM_ALERT_WINDOW` (accesso speciale) | solo il **banner sopra le altre app**: spento di base, lo dai tu in una schermata di Android; senza, il banner resta quello del launcher |
 | `WRITE_SETTINGS` (accesso speciale) | solo il cursore della **luminosità** dell'Action Center: lo dai tu, in una schermata di Android, e il cursore lo dice finché non c'è |
 | `SET_WALLPAPER` | la foto nella schermata di blocco di Android, quando lo chiedi |
 | `ACCESS_WIFI_STATE`, `REQUEST_DELETE_PACKAGES` | stato del Wi-Fi, *disinstalla* nel menu |

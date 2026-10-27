@@ -37,7 +37,7 @@ object QuickAnswerActions {
             // These are done by the launcher itself, not by another app.
             is QuickAnswer.Calculation, is QuickAnswer.Conversion, is QuickAnswer.Currency,
             is QuickAnswer.WorldTime, is QuickAnswer.DateOffset, is QuickAnswer.DaysUntil,
-            is QuickAnswer.Dice, is QuickAnswer.Coin, is QuickAnswer.Reminder, is QuickAnswer.Note,
+            is QuickAnswer.Dice, is QuickAnswer.Coin, is QuickAnswer.Reminder, is QuickAnswer.Note, is QuickAnswer.Command,
             -> return null
         }
         return intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

@@ -176,6 +176,29 @@
     <string name="backup_not_layout">This is not a MetroWin layout file</string>
     <string name="sec_about">about</string>
     <string name="sec_about_desc">Version, credits and licenses</string>
+    <string name="sec_debug">Debug developer</string>
+    <string name="sec_debug_desc">Battery and log reports, saved as text files</string>
+    <string name="dbg_access">Permissions of the reports</string>
+    <string name="dbg_dump">System dumps (DUMP)</string>
+    <string name="dbg_logs">System log (READ_LOGS)</string>
+    <string name="dbg_usage">Usage access</string>
+    <string name="dbg_allowed">allowed</string>
+    <string name="dbg_missing">not allowed</string>
+    <string name="dbg_privacy">The files can hold private things: names, notifications, addresses, what the other apps wrote in the log. Look at a file before you send it to anyone.</string>
+    <string name="dbg_adb">Android gives the system dumps and the log of the whole phone only through adb. From a computer, with the phone connected:</string>
+    <string name="dbg_usage_open">Allow the usage access</string>
+    <string name="dbg_usage_hint">The dumps of the battery need it too: allow MetroWin in the screen that opens.</string>
+    <string name="dbg_app_battery">Battery state of the app</string>
+    <string name="dbg_app_battery_hint">The battery and the power saving now, the standby bucket, the CPU and memory of the process, how it was stopped before, what the launcher has on, and the statistics of Android for this app.</string>
+    <string name="dbg_device_battery">Battery state of the whole phone</string>
+    <string name="dbg_device_battery_hint">The battery now and the statistics of Android for every app: consumption, wakelocks, alarms, screen. It can take a few seconds.</string>
+    <string name="dbg_device_log">System log of the whole phone</string>
+    <string name="dbg_device_log_hint">Everything Android has in its log buffers now, from every app. Without the READ_LOGS permission it holds only the lines of this app.</string>
+    <string name="dbg_app_log">Log of the app</string>
+    <string name="dbg_app_log_hint">Everything this app wrote in the log since it was started, as far as the buffers of Android still have it (they are circular: the file says from when it starts).</string>
+    <string name="dbg_working">Writing the file…</string>
+    <string name="dbg_saved">Saved (%1$s)</string>
+    <string name="dbg_failed">Failed: %1$s</string>
     <string name="about_version">version</string>
     <string name="about_android">android</string>
     <string name="about_device">device</string>
@@ -311,7 +334,7 @@
     <string name="gest_lock_service_hint">Android only lets an app lock the screen or open the recent apps through an accessibility service. This one does nothing else: it reads nothing from the screen and asks for no events. The recent apps open at once, without the wait that the swipe of Android\'s gesture navigation can have with a launcher that is not the phone\'s own.</string>
     <string name="gest_lock_needs_service">Turn on the screen lock service in the accessibility settings first</string>
     <string name="lock_service_label">MetroWin screen lock</string>
-    <string name="lock_service_description">Lets the MetroWin launcher lock the screen, open the recent apps, take a screenshot, open the power menu or split the screen when you choose that for a gesture or a button. It does not read or change anything on the screen.</string>
+    <string name="lock_service_description">Lets the MetroWin launcher lock the screen, open the recent apps, take a screenshot, open the power menu or split the screen when you choose that for a gesture or a button. If you turn on the Action Center over other apps, it also holds a thin strip at the top edge of the screen that waits for a swipe down. It does not read or change anything on the screen.</string>
 
     <!-- scheduled backup -->
     <string name="backup_folder">backup folder</string>
@@ -1101,6 +1124,39 @@
     <string name="add_dialgrid">Speed dial page</string>
     <string name="add_peoplehub">People hub</string>
     <string name="add_reminders">Reminders</string>
+    <string name="accent_use">Where the accent colour is used</string>
+    <string name="accent_use_start">Tiles of Start</string>
+    <string name="accent_use_panel">Action Center and banners</string>
+    <string name="accent_use_apps">App list and settings</string>
+    <string name="accent_use_hint">Where a part is off, the colour is a grey that suits the theme.</string>
+    <string name="photo_fit">How the photo fills the screen</string>
+    <string name="photo_fit_fill">fill</string>
+    <string name="photo_fit_fit">fit</string>
+    <string name="photo_fit_stretch">stretch</string>
+    <string name="photo_fit_tile">tile</string>
+    <string name="photo_fit_center">center</string>
+    <string name="ac_sounds">Metro sounds</string>
+    <string name="ac_sounds_hint">A chime for a new notification and a short glide when the Action Center comes down or goes, also over other apps. They follow the volume of the phone.</string>
+    <string name="notif_history">dismissed lately (%1$d)</string>
+    <string name="notif_history_clear">clear the list</string>
+    <string name="notif_more_text">read it all</string>
+    <string name="notif_less_text">show less</string>
+    <string name="ac_ring_volume">Ringtone volume</string>
+    <string name="ac_alarm_volume">Alarm volume</string>
+    <string name="add_cat_people">People</string>
+    <string name="add_cat_places">Places and web</string>
+    <string name="add_cat_time">Time</string>
+    <string name="add_cat_notes">Notes and lists</string>
+    <string name="add_cat_info">Information</string>
+    <string name="add_cat_media">Photos and sound</string>
+    <string name="add_cat_system">System</string>
+    <string name="add_search">search what to add</string>
+    <string name="add_nothing">nothing found</string>
+    <string name="add_steps">Steps</string>
+    <string name="add_recorder">Voice recorder</string>
+    <string name="add_camera">Camera</string>
+    <string name="add_wallet">Wallet (cards)</string>
+    <string name="add_whereami">Where am I</string>
     <string name="place_title">A place to go to</string>
     <string name="place_name_hint">Name (Home, Work…)</string>
     <string name="place_address_hint">Address</string>
@@ -1161,6 +1217,13 @@
     <string name="lock_music_hint">While a song plays: its cover, its name and the buttons to skip and pause.</string>
     <string name="ac_volume_panel_hint">The volume keys draw a Metro panel over the launcher for what is sounding now: the call, the music (with the name of the app) or the ringer. Android does not let an app lower the volume of another app by itself; for a player that has a volume of its own (a cast, a speaker) the panel moves that one.</string>
     <string name="ac_banner">Banner for new notifications</string>
+    <string name="ac_overlay">Banner over other apps</string>
+    <string name="ac_overlay_hint">The same banner over the app you are in, when the launcher is not on screen. Not on the lock screen, not for silent notifications, not when Do Not Disturb blocks them. Android\'s own banner still shows. Choose the apps with the banner switch of each app.</string>
+    <string name="ac_hide_system">Hide the notification of Android</string>
+    <string name="ac_hide_system_hint">Every notification that arrives goes from the shade of Android to the Action Center: the quiet ones, those that come with the screen off or locked, and those already there when you turn this on. Calls, alarms, music and anything ongoing stay where they are, and so do the apps you keep out of the Action Center. It stays in the Action Center until you dismiss it. Android shows its own for an instant first and the app makes its sound: neither can be stopped. The app is told the notification was dismissed.</string>
+    <string name="ac_edge">Action Center over other apps</string>
+    <string name="ac_edge_hint">A swipe down from the very top edge of the screen (a thin strip, 20 dp) opens the Action Center of the launcher over the app you are in. It needs the screen lock service in the accessibility settings, the only kind of window that can be over the status bar. A touch on the strip does nothing, and the panel of Android stays reachable from just below it. Not on the lock screen.</string>
+    <string name="ac_overlay_needs">Needs \"Display over other apps\" for MetroWin: turn the switch on to allow it.</string>
     <string name="ac_banner_hint">A Metro banner at the top while the launcher is on screen. The banner of Android may show too: turn it off for an app in the notification settings of that app.</string>
     <string name="ac_notifcontrol">Notifications app by app</string>
     <string name="ac_notifcontrol_hint">Choose for each app where its notifications show: the Action Center, the lock screen, the banner. The sound is Android\'s: the page of each app opens from here.</string>
@@ -1222,4 +1285,326 @@
         <item quantity="one">%d reminder missed</item>
         <item quantity="other">%d reminders missed</item>
     </plurals>
+
+    <string name="steps_default_label">Steps</string>
+    <string name="steps_today">steps today</string>
+    <string name="steps_header">STEPS</string>
+    <string name="steps_need_permission">The step counter of the phone needs the permission for physical activity. Nothing leaves the phone.</string>
+    <string name="steps_allow">Allow</string>
+    <string name="steps_goal">Goal: %d steps</string>
+    <string name="steps_since_note">Counted by the step sensor of the phone, from the first time the tile read it today.</string>
+    <string name="recorder_default_label">Recorder</string>
+    <string name="recorder_header">VOICE RECORDER</string>
+    <string name="recorder_need_permission">The recorder needs the permission to use the microphone. Recordings stay in the storage of the app.</string>
+    <string name="recorder_allow">Allow</string>
+    <string name="recorder_start">Record</string>
+    <string name="recorder_stop">Stop</string>
+    <string name="recorder_failed">The microphone could not be opened. Is a call going on?</string>
+    <string name="recorder_delete">delete</string>
+    <plurals name="recordings_count">
+        <item quantity="one">%d recording</item>
+        <item quantity="other">%d recordings</item>
+    </plurals>
+    <string name="camera_default_label">Camera</string>
+    <string name="wallet_default_label">Wallet</string>
+    <string name="wallet_header">WALLET</string>
+    <string name="wallet_empty">No cards yet. Add a loyalty card or a ticket with the number under its barcode.</string>
+    <string name="wallet_add">Add a card</string>
+    <string name="wallet_name">Name</string>
+    <string name="wallet_code">Number of the barcode</string>
+    <string name="wallet_refused">The name is empty or the number cannot be drawn: letters, digits and signs only.</string>
+    <string name="wallet_save">Save</string>
+    <string name="wallet_back">Back</string>
+    <string name="wallet_remove">Remove</string>
+    <plurals name="wallet_count">
+        <item quantity="one">%d card</item>
+        <item quantity="other">%d cards</item>
+    </plurals>
+    <string name="whereami_default_label">Where am I</string>
+    <string name="where_header">WHERE AM I</string>
+    <string name="where_need_permission">To say where you are the phone needs the permission for its position.</string>
+    <string name="where_allow">Allow</string>
+    <string name="where_no_address">No street found here</string>
+    <string name="where_map">Map</string>
+    <string name="where_share">Send</string>
+    <string name="where_searching">Looking for the position…</string>
+    <string name="where_missed">The position could not be found. Is the location on?</string>
+    <string name="where_again">Find again</string>
+    <string name="share_pin_label">Pin to Start</string>
+    <string name="share_pinned">Pinned to Start</string>
+    <string name="share_not_a_link">That is not a web address</string>
+
+    <string name="weather_hourly">Next hours</string>
+    <string name="weather_other_cities">Other cities</string>
+    <string name="weather_loading">Loading…</string>
+    <string name="weather_follow">+ also follow this city</string>
+    <string name="weather_followed">Cities you follow</string>
+    <string name="weather_unfollow">remove</string>
+    <string name="clock_second_zone">Second time zone under the date</string>
+    <string name="clock_second_none">None</string>
+
+    <string name="search_section_files">files</string>
+    <string name="search_files_title">Files in the search</string>
+    <string name="search_files_hint">Choose the kinds of file the search looks for by name. Each one asks for its permission; the names are read on the phone and nothing leaves it. From Android 13 the phone shows documents only to the app that made them, so Documents may find nothing there.</string>
+    <string name="file_type_images">Pictures</string>
+    <string name="file_type_video">Videos</string>
+    <string name="file_type_audio">Music and sounds</string>
+    <string name="file_type_documents">Documents</string>
+
+    <string name="apps_backup_heading">Installed apps</string>
+    <string name="apps_backup_save">Save the list of my apps</string>
+    <string name="apps_backup_save_hint">Writes the names of the apps you installed to a file. Nothing else leaves the phone.</string>
+    <string name="apps_backup_read_action">Set up from a list of apps</string>
+    <string name="apps_backup_read_hint">Reads a saved list and shows the apps this phone does not have; each one opens its page in the store, where you install it.</string>
+    <string name="apps_backup_saved">List of apps saved</string>
+    <string name="apps_backup_read">List read</string>
+    <string name="apps_backup_not_list">That file is not a list of apps</string>
+    <string name="apps_backup_missing">Missing on this phone: %d (touch one to open the store)</string>
+    <string name="edit_label_large">large</string>
+    <string name="edit_size_large">Large tile</string>
+    <string name="edit_style_collection">Style: collage</string>
+    <string name="edit_style_short_collection">Collage</string>
+    <string name="add_toggle">Switch (Wi-Fi, silent…)</string>
+    <string name="add_toggle_title">Which switch</string>
+    <string name="add_sun">Sunrise and sunset</string>
+    <string name="sun_default_label">Sun</string>
+    <string name="sun_day_length">Day: %s</string>
+    <string name="qa_quiet_timed">Quiet for a while</string>
+    <string name="battery_time_left">About %s left</string>
+    <string name="edit_label_group">title</string>
+    <string name="edit_group">Title of a group of tiles</string>
+    <string name="group_title_prompt">Title of the group that starts here (empty for none)</string>
+    <string name="start_features_title">Extras of the tiles</string>
+    <string name="start_large">Large size</string>
+    <string name="start_large_hint">Offers the Large size (four tiles across and four down) in the edit bar and the resize arrow. Tiles already large stay large.</string>
+    <string name="start_groups">Titles of groups of tiles</string>
+    <string name="start_groups_hint">Shows the titles written above groups of tiles, and starts each group on a row of its own. Off: Start is one plain grid; the titles are kept.</string>
+    <string name="start_collection">Collage style</string>
+    <string name="start_collection_hint">Offers the collage (many small pictures side by side) to the tiles that have photos.</string>
+    <string name="start_agenda">Agenda on the Calendar tile</string>
+    <string name="start_agenda_hint">A wide Calendar tile lists the next events; a large one shows the month and the next events.</string>
+    <string name="start_battery_left">Time left on the Battery tile</string>
+    <string name="start_battery_left_hint">Says how long the charge should last, as Android predicts it (Android 12 and later).</string>
+    <string name="start_music_controls">Buttons on the Music tile</string>
+    <string name="start_music_controls_hint">Previous, play or pause and next, on the Music tile while something plays. They need the notification access.</string>
+    <string name="layouts_title">Layouts of Start</string>
+    <string name="layouts_hint">Keep the Start screens under a name (Home, Work, Travel) and put one back with a touch. Putting a layout on first saves what is on Start into the layout that was on.</string>
+    <string name="layouts_hour">Takes over at</string>
+    <string name="layouts_no_hour">No hour</string>
+    <string name="layouts_apply">Use</string>
+    <string name="layouts_update">Update</string>
+    <string name="layouts_delete">Delete</string>
+    <string name="layouts_name_hint">Name of the layout</string>
+    <string name="layouts_save">Keep Start as a layout</string>
+    <string name="layouts_schedule">Change layout by the hour</string>
+    <string name="layouts_schedule_hint">Each layout with an hour takes Start over at that hour, once. One you choose by hand stays until the next hour comes.</string>
+    <string name="page_photos">A photo for each Start screen</string>
+    <string name="page_photos_hint">Each Start screen can have its own photo. One without shows the photo chosen for all.</string>
+    <string name="page_photo_label">Start screen %d</string>
+    <string name="page_photo_shared">same as the others</string>
+    <string name="mute_hour">1 hour</string>
+    <string name="mute_8h">8 hours</string>
+    <string name="mute_morning">Until morning</string>
+    <string name="notif_mute">Silence this app</string>
+    <string name="mute_done">App silenced for now. Its notifications come back when the time is up.</string>
+    <string name="search_section_notifications">notifications</string>
+    <string name="ac_mute">Silence an app from the panel</string>
+    <string name="ac_mute_hint">A long press on a notification offers to silence its app for an hour, eight hours or until morning: its notifications and banners stay out of sight and come back when the time is up.</string>
+    <string name="ac_priority">Messages and calls first</string>
+    <string name="ac_priority_hint">In the Action Center the messages and the calls come before the other notifications.</string>
+    <string name="ac_filter">Leave out notifications with some words</string>
+    <string name="ac_filter_hint">A notification that has one of the words below is taken away from Android and shown nowhere: not in the Action Center, not as a banner, not on the lock screen. Calls, alarms and music are never touched.</string>
+    <string name="ac_filter_words">Words to leave out</string>
+    <string name="ac_filter_hint_field">A word or a piece of one</string>
+    <string name="ac_filter_add">Add the word</string>
+    <string name="ac_dnd_minutes">Length of the timed quiet mode</string>
+    <string name="dnd_minutes">%d minutes</string>
+    <string name="dnd_hours">%d h</string>
+    <string name="feel_speed">Speed of the animations</string>
+    <string name="feel_speed_hint">100% is as designed; 200% is twice as fast. The springs (the bounce of a tile) keep their own pace.</string>
+    <string name="feel_tilt">Tilt of the press</string>
+    <string name="feel_tilt_hint">How far a tile or a button leans away from the finger. 0% keeps only the sinking. It is the press of the Classic look.</string>
+    <string name="feel_vibration">Strength of the vibration of a tap</string>
+    <string name="feel_percent">%d%%</string>
+    <string name="search_notifications">Search the notifications</string>
+    <string name="search_notifications_hint">Also looks in the notifications that wait in the Action Center. They are read on the phone, only while you search.</string>
+    <string name="search_operators">Operators in the search</string>
+    <string name="search_operators_hint">A word and a colon in front narrow the search: app:, contact:, setting:, file:, event:, notif:, tile:, web: (or a:, c:, s:, f:, e:, n:, t:, w:).</string>
+    <string name="about_phone_toggle">Tell about the phone</string>
+    <string name="about_phone_toggle_hint">Model, Android, memory, space and how long the phone has been on, on this page. Nothing leaves the phone.</string>
+    <string name="about_phone_title">This phone</string>
+    <string name="about_phone_model">Model</string>
+    <string name="about_phone_patch">Security patch</string>
+    <string name="about_phone_ram">Memory</string>
+    <string name="about_phone_storage">Space (free / total)</string>
+    <string name="about_phone_screen">Screen</string>
+    <string name="about_phone_uptime">On for</string>
+    <string name="about_phone_abi">Processor</string>
+    <string name="backup_copies">Backups kept</string>
+    <string name="backup_copies_one">Only the last one</string>
+    <string name="backup_copies_n">The last %d</string>
+    <string name="backup_copies_hint">Each backup is also kept under the minute it was made, and the oldest ones go once there are more than this. Touch one below to put it back.</string>
+    <string name="backup_copies_list">Backups in the folder</string>
+    <string name="backup_share_layout">Send the layout</string>
+    <string name="backup_share_hint">Sends the Start screens, the shortcuts and the settings, as a file, to the app or the person you choose. Nothing of this phone alone goes in it (no passphrase, no folder).</string>
+    <string name="backup_share_theme">Send the look</string>
+    <string name="restore_title">Put back what?</string>
+    <string name="restore_hint">Choose the parts of the backup to put in place of what is on the phone now.</string>
+    <string name="restore_start">The Start screens and their shortcuts</string>
+    <string name="restore_settings">The settings</string>
+    <string name="restore_theme">How the launcher looks</string>
+    <string name="restore_go">Put back</string>
+
+    <!-- Weather: what the forecast page and the tile can show -->
+    <string name="wx_heading">What the forecast shows</string>
+    <string name="wx_intro">Each part has its own switch. The page and the weather tile follow them.</string>
+    <string name="wx_rain">Rain soon (and on the tile)</string>
+    <string name="wx_hourly">Hour by hour</string>
+    <string name="wx_chart">Temperature chart</string>
+    <string name="wx_details">Feels like, wind, humidity, sun and UV</string>
+    <string name="wx_wind">Gusts and wind direction</string>
+    <string name="wx_pressure">Air pressure</string>
+    <string name="wx_clouds">Cloud cover</string>
+    <string name="wx_visibility">Visibility</string>
+    <string name="wx_dew">Dew point</string>
+    <string name="wx_rainmm">Rain expected today</string>
+    <string name="wx_sunshine">Hours of sun</string>
+    <string name="wx_daylength">Length of the day</string>
+    <string name="wx_moon">Moon phase</string>
+    <string name="wx_daily">Rain and wind in the next days</string>
+    <string name="wx_air">Air quality (and on the tile)</string>
+    <string name="wx_pollen">Pollen</string>
+    <string name="wx_air_hint">The air and the pollen are a second request to Open-Meteo, sent only while one of the two is on. Pollen is given in Europe only.</string>
+    <string name="weather_rain_in">Rain expected in %1$d h</string>
+    <string name="weather_rain_stops">It should stop raining in %1$d h</string>
+    <string name="weather_rain_all_day">Rain for the next 24 hours</string>
+    <string name="weather_rain_none">No rain in the next 24 hours</string>
+    <string name="weather_rain_amount">Rain today</string>
+    <string name="weather_day_length">Day length</string>
+    <string name="weather_hours_minutes">%1$d h %2$d min</string>
+    <string name="weather_sunshine">Sun</string>
+    <string name="weather_gusts">Gusts</string>
+    <string name="weather_direction">Wind from</string>
+    <string name="weather_pressure">Pressure</string>
+    <string name="weather_clouds">Clouds</string>
+    <string name="weather_visibility">Visibility</string>
+    <string name="weather_dew">Dew point</string>
+    <string name="weather_moon">Moon</string>
+    <string name="weather_chart_description">Temperature of the next hours, from %1$d° to %2$d°</string>
+    <string name="weather_air_title">Air</string>
+    <string name="weather_pollen_title">Pollen</string>
+    <string-array name="wind_compass">
+        <item>N</item><item>NE</item><item>E</item><item>SE</item><item>S</item><item>SW</item><item>W</item><item>NW</item>
+    </string-array>
+    <string-array name="aqi_levels">
+        <item>Good</item><item>Fair</item><item>Moderate</item><item>Poor</item><item>Very poor</item><item>Extremely poor</item>
+    </string-array>
+    <string-array name="pollen_names">
+        <item>Alder</item><item>Birch</item><item>Grass</item><item>Mugwort</item><item>Olive</item><item>Ragweed</item>
+    </string-array>
+    <string-array name="pollen_levels">
+        <item>Low</item><item>Moderate</item><item>High</item><item>Very high</item>
+    </string-array>
+
+    <!-- Steps: goal and history -->
+    <string name="steps_streak">%1$d days in a row at the goal</string>
+    <string name="steps_week">Last 7 days</string>
+    <string name="steps_stats">Average %1$d · best day %2$d</string>
+    <string name="steps_goal_setting">Daily step goal</string>
+    <string name="steps_goal_off">No goal</string>
+
+    <!-- Parked car and analog clock -->
+    <string name="add_parking">Parked car</string>
+    <string name="add_analogclock">Analog clock</string>
+    <string name="parking_default_label">My car</string>
+    <string name="analogclock_default_label">Clock</string>
+    <string name="parking_header">PARKED CAR</string>
+    <string name="parking_need_permission">To save where the car is, the launcher needs the location of the phone, once, when you press the button. It goes nowhere.</string>
+    <string name="parking_none">No place saved. When you park, press the button.</string>
+    <string name="parking_here">I parked here</string>
+    <string name="parking_here_again">Save this place instead</string>
+    <string name="parking_walk">Walk to the car</string>
+    <string name="parking_forget">Forget</string>
+
+    <!-- Start behaviour and icons -->
+    <string name="shape_style">As the look has it</string>
+    <string name="shape_square">Square</string>
+    <string name="shape_circle">Circle</string>
+    <string name="shape_squircle">Rounded square</string>
+
+    <!-- Round 4 settings -->
+    <string name="r4_off">Off</string>
+    <string name="r4_minutes">%1$d min</string>
+    <string name="start_behaviour_title">How Start behaves</string>
+    <string name="start_top_after">Back to the top after</string>
+    <string name="start_top_after_hint">When you come back from another app after this long, Start is at the top, as after Home.</string>
+    <string name="start_lock">Lock the layout</string>
+    <string name="start_lock_hint">Tiles cannot be moved, resized, removed or added by mistake. Switch it off here to change them again.</string>
+    <string name="start_lower">Start lower down (one hand)</string>
+    <string name="start_lower_hint">The clock and the tiles begin lower on the screen, within reach of the thumb. Scroll to see the rest.</string>
+    <string name="icons_shape">Shape of the icons</string>
+    <string name="icons_tile_colors">Tile colour from the icon</string>
+    <string name="icons_tile_colors_hint">An app tile takes the main colour of its icon instead of the accent. Grey icons keep the accent.</string>
+    <string name="theme_night_accent">Another accent at night</string>
+    <string name="theme_night_accent_hint">Used while the dark theme is on (by the hours, the sun, or always dark).</string>
+
+    <!-- Action Center: order, flashlight timer, volume presets -->
+    <string name="ac_reorder_hint">Press and hold a button of the row, then drag it to where you want it.</string>
+    <string name="ac_torch_off">Put the flashlight out after</string>
+    <string name="ac_torch_off_hint">The flashlight lit from the Action Center or from Start goes out by itself (an alarm of Android: it may be a little late).</string>
+    <string name="ac_profiles">Volume presets in the Action Center</string>
+    <string name="ac_profiles_hint">Buttons under the sound modes: a touch sets the ringtone, media and alarm volumes to those of the preset.</string>
+    <string name="ac_profile_line">%1$s · ring %2$d%% · media %3$d%% · alarm %4$d%%</string>
+    <string name="ac_profile_name">Name of the preset</string>
+    <string name="ac_profile_save">Save the volumes as they are now</string>
+    <string name="ac_profile_save_hint">Set the three volumes the way you want them (from the Action Center), give a name, and save. The same name replaces the old preset.</string>
+
+    <!-- Search commands, tip of the day, undo, reset a page, recordings -->
+    <string name="apps_commands">Switches and sound modes by name</string>
+    <string name="apps_commands_hint">Type torch, silent, vibrate, wifi, bluetooth... and the first result does it, as the button of the Action Center does.</string>
+    <string name="apps_tip">Tip of the day</string>
+    <string name="apps_tip_hint">A different hint about the launcher each day, in the Today card of the app list (needs the Today card).</string>
+    <string name="answer_command_here">Command · touch to do it</string>
+    <string name="answer_command_panel">Command · opens the screen of Android for it</string>
+    <string name="today_tip">Tip: %1$s</string>
+    <string name="start_undo_steps">Changes to Start you can undo</string>
+    <string name="start_undo_now">Undo the last change to Start (%1$d to undo)</string>
+    <string name="start_undo_now_title">Undo the last change to Start</string>
+    <string name="start_undo_hint">Moves, sizes, colours, folders and removals of tiles come back one after the other.</string>
+    <string name="reset_page">Put this page back to the start</string>
+    <string name="reset_page_confirm">Touch again to put it back</string>
+    <string name="recorder_rename">Rename</string>
+    <string name="recorder_share">Send</string>
+    <string name="recorder_name_hint">Name of the recording</string>
+    <string name="recorder_rename_save">Save the name</string>
+    <string name="recorder_rename_cancel">Cancel</string>
+    <string name="recorder_rename_failed">That name is taken or cannot be used.</string>
+    <string-array name="tips">
+        <item>Press and hold a tile to move it, make it bigger or smaller, or take it off Start.</item>
+        <item>Press and hold an empty place on Start to add a tile: contacts, notes, timers, the weather and many more.</item>
+        <item>Pull down from the top of the screen to open the Action Center.</item>
+        <item>Type a sum like 12*3+4 in the search box and the answer is there.</item>
+        <item>Put app: or contact: before a word in the search box to look for just that kind of result.</item>
+        <item>Press and hold a notification in the Action Center to mute its app for an hour, eight hours or until morning.</item>
+        <item>Save your Start as Home, Work or Trip in the Start settings, and put one back with a touch.</item>
+        <item>The settings have a search of their own: type what you are looking for at the top.</item>
+        <item>A group title above a row of tiles keeps Start tidy: use the title button in the edit bar.</item>
+        <item>Type torch, silent or vibrate in the search box to switch it on the spot.</item>
+        <item>Add a Steps tile and choose your daily goal in the Start settings.</item>
+        <item>Add a Parked car tile and press the button when you leave the car: it shows the way back.</item>
+        <item>Lock the layout in the Start settings so a tile never moves by mistake.</item>
+        <item>Start lower down brings the tiles under your thumb when you use the phone with one hand.</item>
+        <item>A Recorder tile keeps your voice notes: rename them and send them from its page.</item>
+        <item>The Action Center can show volume presets: save the volumes you like under a name.</item>
+        <item>The flashlight can put itself out after a few minutes: choose how long in the Action Center settings.</item>
+        <item>Press and hold a button in the top row of the Action Center settings and drag it to another place.</item>
+        <item>A tile can take the colour of its icon instead of the accent: see the icon settings.</item>
+        <item>Choose round or rounded icons in the icon settings.</item>
+        <item>The accent colour can be different at night: see the Start and theme settings.</item>
+        <item>The weather page shows the rain, the air, the pollen and more: choose what you want to see in the live tiles settings.</item>
+        <item>Keep several copies of your backup in the folder, and restore only Start, the settings or the look.</item>
+        <item>Undo can go back more than one change to Start: choose how many in the Start settings.</item>
+    </string-array>
+
+    <string name="start_locked_notice">Start is locked. Unlock it in the Start settings.</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.apps
 
+import com.metrowin.launcher.ui.anim.metroTween
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -100,7 +101,7 @@ private fun JumpCell(key: String, enabled: Boolean, order: Int, onPick: (String)
     val away = remember { Animatable(1f) }
     LaunchedEffect(Unit) {
         delay(order * 16L)
-        away.animateTo(0f, tween(durationMillis = 300, easing = Motion.Decelerate))
+        away.animateTo(0f, metroTween(durationMillis = 300, easing = Motion.Decelerate))
     }
     Box(
         modifier

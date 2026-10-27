@@ -350,11 +350,8 @@ class StartMoreUiTest : ScreenshotBase() {
         listOf("counter", "checklist", "worldclock", "moon", "birthdays").forEach { compose.onNodeWithTag("add:$it").assertExists() }
         compose.onNodeWithTag("add:contact").performClick()
         assertEquals("contact", chosen)
-        // The menu scrolls: the last entries are reached with a swipe.
-        compose.onRoot().performTouchInput { swipeUp(startY = height * 0.85f, endY = height * 0.3f) }
-        compose.waitForIdle()
-        advance(500)
-        compose.onNodeWithTag("add:birthdays").performClick()
+        // The menu scrolls: the last entries are reached by scrolling to them.
+        tapInScroller("add:birthdays")
         assertEquals("birthdays", chosen)
     }
 

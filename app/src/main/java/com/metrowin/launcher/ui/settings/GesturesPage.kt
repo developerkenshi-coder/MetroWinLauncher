@@ -108,5 +108,6 @@ fun GesturesPage(env: SettingsEnv) {
             hint = stringResource(R.string.gest_tap_hint),
             tag = "gestures:haptics", id = "gest.taphaptics",
         )
+        FeelSettings(env)
     }
 }
