@@ -1,8 +1,6 @@
 package com.metrowin.launcher.screens
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.test.assertExists
-import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
