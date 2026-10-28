@@ -1,1 +1,1 @@
-The tiles for Microsoft apps now have generic names (Game hub, Video calls, Documents...), and the browser tile has a new icon.
+Updates from GitHub with the release notes, photo tiles in high quality, notifications that go away when you open the app, arrange every Action Center button, flashlight strength, a full weather tile, and more.

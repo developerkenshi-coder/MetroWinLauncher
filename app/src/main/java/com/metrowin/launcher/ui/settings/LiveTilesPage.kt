@@ -139,6 +139,7 @@ fun LiveTilesPage(env: SettingsEnv) {
             hint = stringResource(R.string.weather_hint),
             tag = "weather:fahrenheit", id = "live.fahrenheit",
         )
+        GallerySettings(env)
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             SettingHeading(stringResource(R.string.wx_heading))
             SettingHint(stringResource(R.string.wx_intro))

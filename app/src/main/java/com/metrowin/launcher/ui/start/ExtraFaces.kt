@@ -47,6 +47,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -94,7 +95,7 @@ internal fun CameraFace(item: AppItem, size: TileSize, width: Dp, height: Dp, ph
         return
     }
     Box(Modifier.fillMaxSize()) {
-        Image(photo, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().testTag("camera:photo"))
+        Image(photo, contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.High, modifier = Modifier.fillMaxSize().testTag("camera:photo"))
         if (size != TileSize.Small) PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
     }
 }

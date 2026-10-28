@@ -87,6 +87,6 @@ class ContactReader(private val context: Context) {
     }
 
     private companion object {
-        const val MAX_SIDE = 512
+        const val MAX_SIDE = 1024
     }
 }

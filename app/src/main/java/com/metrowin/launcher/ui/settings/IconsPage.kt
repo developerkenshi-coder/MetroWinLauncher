@@ -5,6 +5,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
 import com.metrowin.launcher.R
 
 /** Icon packs, and the theme file: how the launcher looks, to share. */
@@ -17,6 +20,7 @@ fun IconsPage(env: SettingsEnv) {
         if (uri != null) env.onImportTheme(uri)
     }
     val packs = env.iconPacks
+    val context = LocalContext.current
     SettingsPage {
         IconLookSettings(env)
         if (packs.isEmpty()) {
@@ -34,6 +38,19 @@ fun IconsPage(env: SettingsEnv) {
                 tag = "icons:pack", id = "icons.pack",
             )
         }
+        ActionSetting(
+            text = stringResource(R.string.icons_pack_find),
+            onClick = {
+                // The store app first; a phone without it gets the web page of the store.
+                val store = Intent(Intent.ACTION_VIEW, "market://search?q=icon%20pack&c=apps".toUri())
+                val web = Intent(Intent.ACTION_VIEW, "https://play.google.com/store/search?q=icon%20pack&c=apps".toUri())
+                if (runCatching { context.startActivity(store.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isFailure) {
+                    runCatching { context.startActivity(web.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                }
+            },
+            hint = stringResource(R.string.icons_pack_find_hint),
+            tag = "icons:find", id = "icons.find",
+        )
         SettingHeading(stringResource(R.string.theme_heading))
         ActionSetting(
             text = stringResource(R.string.theme_export),

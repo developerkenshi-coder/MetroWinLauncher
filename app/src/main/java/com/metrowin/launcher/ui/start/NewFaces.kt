@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -117,7 +118,7 @@ internal fun AlbumFace(item: AppItem, size: TileSize, width: Dp, height: Dp, pho
             StaticFace(item, size, width, height)
         } else {
             Box(Modifier.fillMaxSize()) {
-                Image(photos[(face - 1) % photos.size], contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                Image(photos[(face - 1) % photos.size], contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.High, modifier = Modifier.fillMaxSize())
                 PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
             }
         }
@@ -133,7 +134,7 @@ internal fun GroupFace(item: AppItem, size: TileSize, width: Dp, height: Dp, peo
         } else {
             val person = people[(face - 1) % people.size]
             Box(Modifier.fillMaxSize()) {
-                Image(person.photo, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                Image(person.photo, contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.High, modifier = Modifier.fillMaxSize())
                 PhotoLabel(person.name, Modifier.align(Alignment.BottomStart))
             }
         }

@@ -503,6 +503,23 @@ data class LauncherSettings(
     val searchSmartDial: Boolean = true,
     /** A card above the search box: the day, the next event, the weather, the reminders. */
     val searchToday: Boolean = true,
+    /** The parts of the Today card that can be hidden one by one (also with a long press on them): the weather, the places near me, the date, the next alarm. */
+    val todayWeather: Boolean = true,
+    val todayNear: Boolean = true,
+    val todayDate: Boolean = true,
+    val todayAlarm: Boolean = true,
+    /** The gallery app the Photos tile opens ("" leaves the choice to the phone). */
+    val galleryApp: String = "",
+    /** The albums (ids of the folders of the phone) the Photos tile takes its pictures from; none chosen: every album. */
+    val galleryAlbums: Set<String> = emptySet(),
+    /** The glide sound of the Action Center coming down and going up, while the Metro sounds are on. */
+    val panelSounds: Boolean = true,
+    /** Looks for a new release on GitHub every 12 hours (see AppUpdate). */
+    val updateAuto: Boolean = true,
+    /** How strong the flashlight shines when it is switched on, 0.05 to 1 (only where the phone has several strengths); chosen with a long press on its button. */
+    val torchStrength: Float = 1f,
+    /** The microphone on Start that starts the voice assistant. */
+    val assistantIcon: Boolean = true,
 
     // --- accessibility
     /** Fades instead of turnstiles, flips and springs. */

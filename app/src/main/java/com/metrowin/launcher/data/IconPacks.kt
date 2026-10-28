@@ -9,6 +9,8 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import androidx.compose.runtime.Immutable
@@ -35,7 +37,18 @@ data class IconPackMap(
     val upon: String? = null,
     /** How much of the background the app's own icon fills (1 = all of it). */
     val scale: Float = 1f,
+    /** Cuts the icon of an app the pack does not know to the shape of the pack (the opaque part of the picture is taken away). */
+    val mask: String? = null,
+    /** Icons that show the day of the month: `package/class` to the start of the drawable names, which end with the day (1 to 31). */
+    val calendars: Map<String, String> = emptyMap(),
 ) {
+    /** The first icon of each app, for an app whose activity the pack does not list (the name of an activity changes between versions). */
+    val byPackage: Map<String, String> by lazy {
+        val result = LinkedHashMap<String, String>()
+        icons.forEach { (component, drawable) -> result.putIfAbsent(component.substringBefore('/'), drawable) }
+        result
+    }
+
     /** The pack can dress icons it has no drawable for. */
     val dressesOthers: Boolean get() = backs.isNotEmpty()
 }
@@ -54,7 +67,9 @@ object AppFilterXml {
     fun parse(parser: XmlPullParser): IconPackMap {
         val icons = LinkedHashMap<String, String>()
         val backs = mutableListOf<String>()
+        val calendars = LinkedHashMap<String, String>()
         var upon: String? = null
+        var mask: String? = null
         var scale = 1f
         var event = parser.eventType
         while (event != XmlPullParser.END_DOCUMENT) {
@@ -63,21 +78,30 @@ object AppFilterXml {
                 when (parser.name) {
                     "item" -> {
                         val key = attribute("component")?.let(::componentKey)
-                        val drawable = attribute("drawable")
+                        val drawable = attribute("drawable")?.let(::drawableName)
                         // The first entry for a component wins; packs list calendar and clock variants after it.
                         if (key != null && !drawable.isNullOrBlank()) icons.putIfAbsent(key, drawable)
                     }
                     "iconback" -> for (i in 0 until parser.attributeCount) {
-                        if (parser.getAttributeName(i).startsWith("img")) backs += parser.getAttributeValue(i)
+                        if (parser.getAttributeName(i).startsWith("img")) backs += drawableName(parser.getAttributeValue(i))
                     }
-                    "iconupon" -> upon = attribute("img1") ?: upon
+                    "iconupon" -> upon = attribute("img1")?.let(::drawableName) ?: upon
+                    "iconmask" -> mask = attribute("img1")?.let(::drawableName) ?: mask
+                    "calendar" -> {
+                        val key = attribute("component")?.let(::componentKey)
+                        val prefix = attribute("prefix")?.let(::drawableName)
+                        if (key != null && !prefix.isNullOrBlank()) calendars.putIfAbsent(key, prefix)
+                    }
                     "scale" -> scale = attribute("factor")?.toFloatOrNull()?.coerceIn(MIN_SCALE, MAX_SCALE) ?: scale
                 }
             }
             event = parser.next()
         }
-        return IconPackMap(icons, backs, upon, scale)
+        return IconPackMap(icons, backs, upon, scale, mask, calendars)
     }
+
+    /** `@drawable/name` (some packs write it so) as `name`. */
+    fun drawableName(raw: String): String = raw.trim().substringAfterLast('/').removeSuffix(".png")
 
     private const val MIN_SCALE = 0.3f
     private const val MAX_SCALE = 1.5f
@@ -90,14 +114,18 @@ class IconPack(private val resources: Resources, val packageName: String, privat
     // An icon pack is another app: its drawables can only be found by name.
     @SuppressLint("DiscouragedApi")
     private fun drawable(name: String): Drawable? {
-        val id = resources.getIdentifier(name, "drawable", packageName)
+        val id = resources.getIdentifier(name, "drawable", packageName).takeIf { it != 0 } ?: resources.getIdentifier(name, "mipmap", packageName)
         if (id == 0) return null
         return runCatching { ResourcesCompat.getDrawable(resources, id, null) }.getOrNull()
     }
 
     /** The pack's icon for [component], if it has one. */
-    fun iconFor(component: ComponentName): Drawable? =
-        map.icons[component.flattenToString()]?.let(::drawable)
+    fun iconFor(component: ComponentName, today: java.time.LocalDate = java.time.LocalDate.now()): Drawable? {
+        val key = component.flattenToString()
+        // The calendar shows the day of the month, when the pack has a picture of each day.
+        map.calendars[key]?.let { prefix -> drawable(prefix + today.dayOfMonth)?.let { return it } }
+        return (map.icons[key] ?: map.byPackage[component.packageName])?.let(::drawable)
+    }
 
     /**
      * [original] (already drawn, [size] square) of the app [appPackage] on one of the pack's backgrounds, with its
@@ -112,7 +140,19 @@ class IconPack(private val resources: Resources, val packageName: String, privat
         back?.apply { setBounds(0, 0, size, size) }?.draw(canvas)
         val inner = (size * map.scale).toInt()
         val offset = (size - inner) / 2
-        canvas.drawBitmap(original, null, Rect(offset, offset, offset + inner, offset + inner), Paint(Paint.FILTER_BITMAP_FLAG))
+        val shaped = map.mask?.let(::drawable)?.let { mask ->
+            // The mask takes away the corners the pack does not want.
+            val layer = createBitmap(size, size)
+            val layerCanvas = Canvas(layer)
+            layerCanvas.drawBitmap(original, null, Rect(offset, offset, offset + inner, offset + inner), Paint(Paint.FILTER_BITMAP_FLAG))
+            mask.setBounds(0, 0, size, size)
+            layerCanvas.saveLayer(null, Paint().apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT) })
+            mask.draw(layerCanvas)
+            layerCanvas.restore()
+            layer
+        }
+        if (shaped != null) canvas.drawBitmap(shaped, 0f, 0f, null)
+        else canvas.drawBitmap(original, null, Rect(offset, offset, offset + inner, offset + inner), Paint(Paint.FILTER_BITMAP_FLAG))
         map.upon?.let(::drawable)?.apply { setBounds(0, 0, size, size) }?.draw(canvas)
         return result
     }
@@ -125,7 +165,11 @@ class IconPackRepository(private val context: Context) {
     /** The installed packs, by name. A pack declares itself with one of the intents the big launchers use. */
     @Suppress("DEPRECATION")
     fun installed(): List<IconPackInfo> =
-        answering(ACTIONS, { pm.resolveActivity(Intent(it), 0) != null }, { pm.queryIntentActivities(Intent(it), 0) })
+        (
+            answering(ACTIONS, { pm.resolveActivity(Intent(it), 0) != null }, { pm.queryIntentActivities(Intent(it), 0) }) +
+                // Apex and Nova packs also announce themselves with a category of the main intent.
+                answering(CATEGORIES, { pm.resolveActivity(categoryIntent(it), 0) != null }, { pm.queryIntentActivities(categoryIntent(it), 0) })
+            )
             .distinctBy { it.activityInfo.packageName }
             .map { IconPackInfo(it.activityInfo.packageName, it.loadLabel(pm).toString()) }
             .sortedBy { it.label.lowercase() }
@@ -150,11 +194,28 @@ class IconPackRepository(private val context: Context) {
     companion object {
         val ACTIONS = listOf(
             "org.adw.launcher.THEMES",
+            "org.adw.launcher.icons.ACTION_PICK_ICON",
             "com.novalauncher.THEME",
             "com.anddoes.launcher.THEME",
             "com.fede.launcher.THEME_ICONPACK",
             "com.gau.go.launcherex.theme",
+            "ginlemon.smartlauncher.THEMES",
+            "home.solo.launcher.free.THEMES",
+            "com.dlto.atom.launcher.THEME",
+            "com.lge.launcher2.THEME",
+            "net.oneplus.launcher.icons.ACTION_PICK_ICON",
+            "app.lawnchair.icons.THEMED_ICON",
+            "com.gridappsinc.launcher.theme.apk_action",
+            "com.phonemetra.turbo.launcher.THEMES",
         )
+
+        /** The categories packs put on the main intent of an activity to say they are icon packs. */
+        val CATEGORIES = listOf(
+            "com.anddoes.launcher.THEME",
+            "com.novalauncher.category.CUSTOM_ICON_PICKER",
+        )
+
+        private fun categoryIntent(category: String) = Intent(Intent.ACTION_MAIN).addCategory(category)
 
         /**
          * The activities that answer [actions]. The list is only asked for an action that [anyAnswer] says someone answers: on a

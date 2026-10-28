@@ -40,6 +40,10 @@ class AppRepository(private val context: Context) {
     private val owner = Process.myUserHandle()
     private val profiles = ProfilesController(context)
 
+    /** The gallery the Photos tile opens (see [LauncherSettings.galleryApp]); empty leaves the choice to the phone. */
+    @Volatile
+    var galleryApp: String = ""
+
     /** Blocking, call it off the main thread. Returns the list in alphabetical order. */
     fun load(): List<AppItem> {
         val own = context.packageName
@@ -228,6 +232,9 @@ class AppRepository(private val context: Context) {
         byPackage: Map<String, List<LauncherActivityInfo>>,
         claimed: Set<ComponentName>,
     ): LauncherActivityInfo? {
+        if (stock.id == PHOTOS_STOCK && galleryApp.isNotEmpty()) {
+            byPackage[galleryApp]?.firstOrNull { it.componentName !in claimed }?.let { return it }
+        }
         for (pkg in candidatePackages(stock)) {
             byPackage[pkg]?.firstOrNull { it.componentName !in claimed }?.let { return it }
         }
@@ -315,6 +322,7 @@ class AppRepository(private val context: Context) {
         const val ROUTE_WHEREAMI = "whereami"
         const val ROUTE_PARKING = "parking"
         const val WEATHER_ID = "launcher:weather"
+        private const val PHOTOS_STOCK = "photos"
         const val ROUTE_WEATHER = "weather"
     }
 }

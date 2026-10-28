@@ -29,7 +29,7 @@ Start in orizzontale, con più colonne e riquadri della stessa dimensione che in
 
 <img src="screenshots/start_landscape.png" alt="Start in orizzontale" width="480">
 
-> Le immagini sono disegnate dai test di screenshot su JVM (vedi [Test](#test)), non catturate da un telefono.
+> Le immagini sono disegnate dai test di screenshot su JVM (vedi [Test](#test)), non catturate da un telefono; il launcher è stato provato per intero su un Vivo X300 Pro.
 
 ## Indice
 
@@ -126,7 +126,7 @@ launcher, e il pulsante diventa "consentito". Un permesso che Android non chiede
   resta sulla sua riga. Un riquadro largo non ci sta, e per un riquadro che sta più in alto del vuoto si riordina dal bordo
   (togliendolo, quelli dopo risalirebbero e lo spazio si sposterebbe, quindi non si può mostrare con sicurezza dove finisce).
 - **Stili dei riquadri**: standard (con flip), **Iconic** (grande numero e icona) e **Cycle** (foto che si alternano).
-- **Live tile**: Calendario, Foto, Persone, Telefono, **Meteo** (Open-Meteo), **Batteria** (carica, tempo alla ricarica),
+- **Live tile**: Calendario, Foto (si sceglie l'**app galleria** che il riquadro apre e gli **album** da cui prende le immagini, in *live tile*), Persone, Telefono, **Meteo** (Open-Meteo; il riquadro **Meteo completo** del menu *aggiungi*, solo medio e largo, mostra temperatura, massima e minima, sensazione, vento, umidità, pioggia, UV, alba e tramonto, aria e, in largo, i prossimi giorni, secondo i blocchi del meteo accesi), **Batteria** (carica, tempo alla ricarica),
   **Torcia** (si accende davvero), e le **notifiche** che girano sul riquadro dell'app (*notification peek*).
 - **Trascina per riordinare**, modifica con rimuovi, ridimensiona, rinomina, e la barra di modifica con il pulsante *aggiungi*.
 - **Cartelle con più app**: tre modi. Un riquadro tenuto sul centro di un altro; il pulsante cartella della barra di modifica,
@@ -196,7 +196,7 @@ dello schermo, su una striscia sottile di 20 dp, apre lo stesso Action Center de
 posticipa) in una finestra sopra l'app in cui sei. Un tocco sulla striscia non fa niente, e il pannello di Android resta raggiungibile da
 subito sotto. La striscia è una finestra che non disegna e non sveglia niente; non c'è sul
 blocco schermo né mentre il pannello è aperto, e funziona anche dentro il launcher (è più bassa della barra di stato). Il pulsante *impostazioni del launcher* apre il launcher. Wi-Fi, Bluetooth, aereo ecc. mostrano lo stato e aprono la schermata di sistema giusta (da Android 10
-un'app non può più accenderli da sola); la torcia si accende davvero.
+un'app non può più accenderli da sola); la torcia si accende davvero. Il pulsante *ordina* in fondo al pannello (e in *azioni → pulsanti rapidi*, trascinando) sposta **qualsiasi** pulsante, non solo i quattro in alto: si tocca un pulsante e poi il posto dove deve andare; i primi quattro sono quelli sempre visibili. Il pulsante **MetroWin** (i riquadri) apre le impostazioni del launcher, **Impostazioni di Android** (un telefono con un ingranaggio, uguale al link in fondo al pannello) quelle del telefono. Un **tocco lungo sulla torcia** apre una barra per scegliere con che intensità si accende (dove il telefono ha più livelli, Android 13 e successivi): l'intensità si ricorda per la volta dopo. Ogni pulsante ha anche un **tocco lungo** suo: Wi-Fi e Bluetooth aprono la lista, gli altri la schermata di Android più vicina (reti, fotocamera, Non disturbare, schermo, posizione…); la rotazione si cambia sul posto con il permesso di modificare le impostazioni, come la luminosità automatica.
 
 ### Voce
 
@@ -276,8 +276,8 @@ app, che non ci sono):
 
 ### Icone e temi
 
-**Icon pack** di ADW, Nova, Apex e Go Launcher (si legge l'`appfilter.xml`): sostituiscono le icone delle app per cui
-hanno un'icona; le app senza icona nel pack possono essere vestite con il suo sfondo (`iconback`, `iconupon`, `scale`). Le app
+**Icon pack** del Play Store fatti per ADW, Nova, Apex, Smart, Solo, Atom, OnePlus, Lawnchair e Go Launcher (si legge l'`appfilter.xml`; i pack si trovano per azione o per categoria, e *icone* ha il pulsante che li cerca sul Play Store): sostituiscono le icone delle app per cui
+hanno un'icona (anche per un'app la cui attività è cambiata, se il pack ha un'altra icona dello stesso pacchetto), il calendario mostra il giorno del mese se il pack ha le icone dei giorni (`calendar`); le app senza icona nel pack possono essere vestite con il suo sfondo (`iconback`, `iconmask`, `iconupon`, `scale`). Le app
 Metro del telefono tengono i loro glifi. **File tema**: colori, scuro/chiaro/a orario, orologio, dimensione dei riquadri e icon
 pack in un piccolo file JSON da condividere, che applica solo quelle chiavi e non tocca altro.
 
@@ -454,7 +454,7 @@ Le app di Google si usano dove ci sono (Maps, Calendar, Keep, Lens, News, Financ
 22. **Chiamata intelligente T9**: nella casella, le cifre trovano i contatti per le lettere dei tasti (`2662` = *Anna*) e per il numero; un tocco chiama. Il lavoro è fatto una volta, sui nomi in memoria.
 23. **Vicino a me**: `farmacia vicino a me`, `nearest petrol station` aprono **Google Maps** con la ricerca intorno a dove sei (il launcher non legge la posizione).
 24. **Scheda *Oggi*** sopra la casella di ricerca: la data, il meteo già salvato, il prossimo evento, i prossimi due promemoria (e quanti sono scaduti), la prossima sveglia e quattro
-    ricerche *vicino a me* (farmacia, ristoranti, benzina, bancomat). Si legge solo quando si apre la lista app (al massimo ogni due minuti, 20 col risparmio): niente gira in sottofondo.
+    ricerche *vicino a me* (farmacia, ristoranti, benzina, bancomat). Meteo, *vicino a me*, data e prossima sveglia si spengono uno per uno in *ricerca* e anche **tenendoli premuti** sulla scheda. Si legge solo quando si apre la lista app (al massimo ogni due minuti, 20 col risparmio): niente gira in sottofondo.
 
 **Interfaccia**
 25. **Barra con "…"** nella modifica dei riquadri: il pulsante a tre puntini scrive il nome sotto ogni pulsante (*aggiungi, cartella, piccolo, medio, largo*), come la barra delle app di Windows Phone.
@@ -484,7 +484,7 @@ click sintetizzato (`ClickSound`, nel canale dei suoni di interfaccia: segue il 
 **Animazioni nello stile di Windows Phone**
 - **Continuum**: toccando una sezione delle impostazioni il titolo vola su dal punto toccato e le impostazioni scivolano dentro; le liste (impostazioni, menu *aggiungi*, Action Center) entrano a piume, una riga dopo l'altra (`featherIn`); gli interruttori dell'Action Center aperti si ribaltano dall'alto (`flipIn`). Tutto si ferma con *movimento ridotto*.
 - **Selettori a ruota** (giorno, mese, anno; ore e minuti) per il conto alla rovescia e per i promemoria, al posto dei pulsanti più e meno (`LoopingSelector`).
-- **Suoni di sistema Metro**, spenti di base (*azioni → suoni Metro*): un due note per la notifica e un glissando in su e in giù per l'Action Center. Sono generati dal codice (come il click), nessun file.
+- **Suoni di sistema Metro**, spenti di base (*azioni → suoni Metro*): un due note per la notifica e un glissando in su e in giù per l'Action Center (che si può spegnere da solo con *suono dell'Action Center*). Sono generati dal codice (come il click), nessun file.
 
 **Menu *aggiungi* in ordine**: un tocco lungo su uno spazio vuoto apre un menu per tipo di utilità (persone, luoghi, tempo, appunti, informazioni, media, sistema) con una **ricerca rapida** in alto: scrivendo restano solo le voci che corrispondono, anche per parole in italiano o inglese (`AddMenuIndex`).
 
@@ -530,6 +530,12 @@ Ognuna ha il suo interruttore (o la sua scelta) nelle impostazioni, e si trova c
 - **Animazioni**: le notifiche raggruppate si aprono con una discesa e le righe entrano a piume; la freccia gira; il testo lungo, le opzioni e la risposta si aprono con un movimento (prima comparivano di colpo).
 
 **Come si sente**: *velocità delle animazioni* (50%–200%; le molle, come il rimbalzo di un riquadro, non cambiano passo), *inclinazione alla pressione* (0%–150%) e *forza della vibrazione* (0%–200%) in *gesti*. **Operatori nella ricerca**: `app:`, `contatto:`, `imp:`, `file:`, `evento:`, `notifica:`, `riquadro:`, `web:` (e le forme brevi `a: c: s: f: e: n: t: w:`).
+
+**Foto dei riquadri**: le immagini dei riquadri Foto, Album, Fotocamera, Persone e Gruppo si leggono alla dimensione con cui il riquadro le disegna (1280 px sul lato lungo, 512 per i volti, che si prendono a piena risoluzione e non dalla miniatura di 96 px) e si scalano con il filtro migliore.
+
+**Notifiche e app aperte**: aprendo un'app (da Start, dalla lista, da un riquadro, da una notifica del pannello) le sue notifiche si tolgono, comprese quelle che arrivano nei 8 secondi dopo (il servizio le legge un momento dopo che sono state pubblicate). Non vale per le app aperte da fuori (le recenti, la tendina di Android): il servizio di accessibilità non chiede eventi, per non svegliare il launcher a ogni cambio di app.
+
+**Aggiornamenti da GitHub** (*informazioni*): ogni 12 ore (un lavoro di Android con connessione, anche a launcher chiuso, e al più una volta all'apertura se l'ultimo controllo è più vecchio) il launcher chiede a GitHub l'ultima release di MetroWin; se è più nuova di quella installata lo dice con una notifica, una volta per versione. *Scarica e installa* scarica l'APK solo dagli indirizzi HTTPS di GitHub, ne controlla la dimensione e la somma SHA-256 scritta nella release (`SHA256SUMS`) e lo passa all'installatore di Android, che si apre da solo per la conferma; Android installa solo un APK firmato con la stessa chiave di quello presente. La prima volta Android chiede di consentire a MetroWin di installare app. Prima di aggiornare si leggono le **novità** della versione (il testo della release su GitHub, ripulito dai segni di Markdown), come in un aggiornamento di Android. Si spegne con *cerca aggiornamenti ogni 12 ore*; il pulsante *cerca adesso* funziona comunque.
 
 **Informazioni** sul telefono nella pagina *informazioni* (modello, Android, patch, memoria, spazio, schermo, da quanto è acceso): nulla esce dal telefono.
 
@@ -695,7 +701,7 @@ dell'indice: una impostazione nuova non indicizzata, o spostata senza aggiornarl
 | schermo+lingua | rotazione (verticale, segui il telefono, orizzontale); animazione di apertura; massima frequenza di aggiornamento (120 Hz, tolta mentre si risparmia batteria); **lingua del launcher** |
 | gesti | tirata dal bordo, indietro dal bordo, doppio tocco, **Home premuto due volte**, due dita in giù e in su (*app recenti*, screenshot, menu di spegnimento, schermo diviso, pannelli di Android, **un'app a scelta**), app recenti, servizio di accessibilità, suono e vibrazione al tocco |
 | notifiche+azioni | **Action Center**: i quattro pulsanti, **volume, luminosità, suoneria e torcia** nel pannello; **notifiche**: accesso, mostrale sui riquadri, risposta rapida, raggruppamento |
-| voce | microfono nella ricerca; riconoscimento sul telefono; *chiama subito*; prova; cosa si può dire |
+| voce | **icona dell'assistente** su Start (un microfono in cima, oltre al gesto); microfono nella ricerca; riconoscimento sul telefono; *chiama subito*; prova; cosa si può dire |
 | batteria | risparmio energetico (automatico, sempre, mai) e cosa cambia; cosa il launcher non fa quando non è sullo schermo |
 
 **app**
@@ -713,8 +719,7 @@ dell'indice: una impostazione nuova non indicizzata, o spostata senza aggiornarl
 |---|---|
 | backup+sync | file o cartella, ogni quanto, ripristina; sincronizzazione con passphrase; esporta e importa |
 | angolo bambini | app e avvio |
-| informazioni | versione e dettagli del launcher; rivedi il tutorial; crediti |
-| Debug developer | quattro report in file di testo, ognuno a parte e salvato dove scegli: **stato batteria dell'app**, **stato batteria di tutto il telefono**, **log di sistema di tutto il telefono**, **log dell'app** (dall'avvio del processo, finché i buffer di Android lo hanno ancora). I dump di sistema e il log degli altri richiedono `adb shell pm grant com.metrowin.launcher android.permission.DUMP` e `…READ_LOGS` più l'accesso all'uso nelle impostazioni di Android; senza, il file lo dice e contiene il resto. I file possono contenere dati privati |
+| informazioni | versione e dettagli del launcher; **aggiornamenti da GitHub** (cerca adesso, scarica e installa, controllo ogni 12 ore); rivedi il tutorial; crediti |
 
 ## Cosa non si può fare da un launcher, e come l'ho aggirato
 
@@ -731,22 +736,6 @@ dell'indice: una impostazione nuova non indicizzata, o spostata senza aggiornarl
 | Start e lista app affiancati in orizzontale | Non fatto: in orizzontale sono due pagine come in verticale, con più colonne |
 | Ritaglio con pizzico della foto di sfondo | Fatto in altro modo: **zoom e due cursori di posizione** con anteprima (non il pizzico) |
 | Sincronizzare la foto di Start e quella del blocco | Non fatto: le foto sono file di questo telefono |
-
-## Pubblicare su F-Droid
-
-Il progetto è pronto per F-Droid (licenza GPL-3.0-or-later nel file `LICENSE`, solo dipendenze libere di AndroidX e Compose, nessun
-servizio di Google, metadati in `fastlane/metadata/android/`, ricetta in [`docs/fdroid/com.metrowin.launcher.yml`](fdroid/com.metrowin.launcher.yml)).
-F-Droid compila dal sorgente **e firma con la propria chiave**: la build senza `keystore.properties` esce non firmata, come serve.
-
-1. Il repository deve essere pubblico, con il lavoro su `main` e un tag per ogni versione, col nome della versione preceduto da `v`
-   (`v26.3S` per `versionName 26.3S`, `versionCode 4`). Il tag deve puntare a un commit in cui `app/build.gradle.kts` ha già quella versione.
-2. A ogni rilascio: alza `versionCode` e `versionName` in `app/build.gradle.kts`, aggiungi `fastlane/metadata/android/<lingua>/changelogs/<versionCode>.txt`
-   (al massimo 500 byte) e crea il tag.
-3. Fai il fork di <https://gitlab.com/fdroid/fdroiddata>, copia la ricetta in `metadata/com.metrowin.launcher.yml`, prova con `fdroid lint`,
-   `fdroid rewritemeta` e `fdroid build -v -l com.metrowin.launcher` (`pip install fdroidserver`), poi apri una merge request.
-
-La guida passo per passo (dove si cambiano nome, descrizioni, screenshot e changelog, come si rilascia una versione nuova, come funziona
-la revisione) è in [`docs/fdroid/GUIDA.md`](fdroid/GUIDA.md).
 
 Chi ha già installato una build firmata con la chiave ufficiale dovrà disinstallarla prima di passare a quella di F-Droid (firma diversa): si fa
 prima un backup dalle impostazioni.
@@ -774,11 +763,11 @@ si possono dare anche dopo, quando serve la funzione.
 | `SCHEDULE_EXACT_ALARM` | far suonare timer e promemoria **all'ora esatta**; senza (Android lo può togliere) suonano con un piccolo ritardo, e il launcher se ne accorge e usa la sveglia meno precisa |
 | `RECEIVE_BOOT_COMPLETED` | riarmare la sveglia di timer e promemoria dopo un riavvio o un aggiornamento: il ricevitore si sveglia una volta e finisce |
 | `VIBRATE` | la breve vibrazione al tocco, se la accendi |
-| `DUMP`, `READ_LOGS`, `PACKAGE_USAGE_STATS` | solo la sezione **Debug developer**: Android le dà solo tramite adb e le impostazioni, quindi non si chiedono mai e l'app funziona senza |
 | `SYSTEM_ALERT_WINDOW` (accesso speciale) | solo il **banner sopra le altre app**: spento di base, lo dai tu in una schermata di Android; senza, il banner resta quello del launcher |
 | `WRITE_SETTINGS` (accesso speciale) | solo il cursore della **luminosità** dell'Action Center: lo dai tu, in una schermata di Android, e il cursore lo dice finché non c'è |
 | `SET_WALLPAPER` | la foto nella schermata di blocco di Android, quando lo chiedi |
 | `ACCESS_WIFI_STATE`, `REQUEST_DELETE_PACKAGES` | stato del Wi-Fi, *disinstalla* nel menu |
+| `REQUEST_INSTALL_PACKAGES` | solo *informazioni → aggiornamenti*: passare l'APK scaricato all'installatore di Android, che chiede conferma; il permesso di installare app si dà una volta, nella schermata di Android che si apre |
 | `BLUETOOTH_CONNECT` (Android 12 e successivi; `BLUETOOTH` fino ad Android 11) | i dispositivi collegati e abbinati nella lista del pulsante Bluetooth dell'Action Center; si chiede dal pulsante *consenti* della lista. Il nome della rete Wi-Fi usa `ACCESS_FINE_LOCATION` |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | solo per chiedere, nel tutorial, che Android non chiuda il launcher in background. **Google Play lo consente solo ad alcuni tipi di app**: per una build non pubblicata sullo store va bene, per pubblicarla va giustificato o tolto (basta rimuovere la pagina "tienilo attivo") |
 | `com.metrowin.launcher.permission.PUBLISH_TILE` | **dichiarato dal launcher**, lo chiedono le app che vogliono un tile (vedi sotto) |
@@ -849,7 +838,7 @@ solo se il launcher c'era già.
   troppo stretto per la parola più lunga, o troppo basso per le righe, disegna il testo più piccolo (fino a metà) invece di tagliarlo;
   i riquadri e i pulsanti dell'Action Center non crescono oltre il 130% del testo; le finestre e i pannelli scorrono invece di
   uscire dallo schermo. Quello che scrive l'utente (il nome di un'app, una nota) può finire con "…" in una lista, e lì i test usano nomi brevi.
-  Provato su JVM con font di prova: non l'ho visto su un telefono.
+  Provato su JVM con font di prova, e verificato anche a mano su un Vivo X300 Pro.
 
 Anche questo giro ha trovato difetti veri, corretti: nella scheda *Oggi* la parola «Oggi» finiva spezzata in una colonna accanto al meteo; il riquadro Timer e quello dei promemoria
 sovrapponevano le righe al proprio nome; sul blocco schermo la musica si sovrapponeva all'ora (con testo grande) e in orizzontale l'ora usciva dallo schermo (ora c'è il layout affiancato e il ridimensionamento);
@@ -887,8 +876,9 @@ app/src/main/java/com/metrowin/launcher/
 
 ## Note e limiti
 
-- **Non provato su un telefono.** La verifica è stata fatta compilando (debug e release con R8), con i test e con le schermate
-  renderizzate su JVM. Vanno guardati su un dispositivo, e l'ho scritto qui perché non siano una sorpresa:
+- **Testato su un dispositivo reale: tutto è stato provato su un Vivo X300 Pro.** Ufficialmente è l'unico telefono verificato, ma
+  il launcher funziona su tutti i dispositivi Android. I test automatici su JVM non possono misurare le cose qui sotto, che sono state
+  controllate a mano sul Vivo; su altri produttori e altre versioni di Android il comportamento può cambiare:
   - la **sensazione** dei gesti e dei 120 Hz (i test controllano posizioni, soglie e che nulla lotti con il dito, non la
     fluidità), e il progresso di Indietro che dà ogni produttore;
   - il **riconoscimento vocale** vero (microfono, modello offline, lingue), il selettore dei contatti e l'apertura delle schede;
@@ -909,17 +899,10 @@ app/src/main/java/com/metrowin/launcher/
     (apre l'app messaggi: l'app che scegli decide come si comporta con il testo), le **indicazioni** a voce (dipende dall'app di mappe) e la **luna** (calcolata: un giorno di scarto vicino alle fasi);
   - i **live tile delle altre app**: foto, copertine e testi veri dipendono da cosa scrive ogni app nelle sue notifiche. La pagina *live tile*
     elenca cosa il launcher legge da ognuna: se un riquadro non mostra niente, si guarda lì.
-- **Il tutorial su un telefono vero**: le richieste (dialoghi dei permessi, dialogo dell'app Home, pagine di Android per notifiche,
-  accessibilità e batteria) sono collegate ma provate solo fin dove si arriva su JVM: i pulsanti chiamano la richiesta giusta e la
-  pagina legge cosa è concesso; cosa mostra davvero Android, e se un produttore ha un'altra pagina per la batteria, va visto.
 - **Lo swipe delle app recenti di Android** (su e tieni) lo gestisce il sistema, non il launcher: i gesti e la schermata delle
   Recenti stanno nel launcher di fabbrica, che con uno di terze parti ha meno privilegi. Su **Samsung** l'attesa è voluta: con un
   launcher di terze parti bisogna tenere lo swipe circa un secondo ([lo dice Niagara Launcher](https://help.niagaralauncher.app/article/114-recent-apps-screen-issues),
   che ha lo stesso problema), e altri produttori hanno ritardi simili ([Lawnchair](https://docs.lawnchair.app/troubleshooting/gesture-navigation-issues)); su un **vivo** con un launcher di terze parti c'è chi riferisce Recenti lente ([una segnalazione a Niagara](https://niagaralauncher.featurebase.app/p/recent-apps-navigation-is-slow-and-lagging)), e un riavvio la fa sparire per qualche ora. Con il launcher di fabbrica il ritardo non c'è perché è lui a gestire i gesti.
-  Non è nel codice di questo launcher e **non si può togliere da qui**; non l'ho misurato su un telefono. Il launcher non fa nulla
-  di suo quando parte il gesto (a quel punto è già fermo, vedi *Batteria*). Per averle subito ci sono l'azione *app recenti* (gesto,
-  pulsante o tile, richiedono il servizio di accessibilità del blocco schermo) e la navigazione a 3 pulsanti di Android, dove il
-  pulsante Recenti non ha attese (lo riferiscono utenti di launcher di terze parti; non l'ho provato).
 - **Font**: Windows Phone usa Segoe WP, proprietario. Qui c'è Open Sans (OFL). Vedi [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 - **Colori d'accento**: Microsoft ha pubblicato i 20 colori solo come immagine; i valori vengono da trascrizioni.
 - **Marchi**: i nomi delle app stock sono generici (Browser, Hub giochi, Videochiamate, Documenti…) e non quelli di Windows Phone. Stanno in

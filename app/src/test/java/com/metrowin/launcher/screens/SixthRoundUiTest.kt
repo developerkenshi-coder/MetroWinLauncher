@@ -330,7 +330,8 @@ class SixthRoundUiTest : ScreenshotBase() {
             up()
         }
         compose.waitForIdle()
-        assertEquals(listOf("bluetooth", "flashlight", "rotation", "wifi"), settings.quickActions)
+        // The whole order is kept now (the buttons that open out come after the four on top).
+        assertEquals(listOf("bluetooth", "flashlight", "rotation", "wifi"), settings.quickActions.take(4))
     }
 
     @Test

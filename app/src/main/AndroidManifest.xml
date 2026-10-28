@@ -64,14 +64,6 @@
     <!-- The Metro banner of a new notification over other apps (off until the user turns it on and allows "display over other apps"). -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
-    <!--
-        Debug developer (settings, tools): the reports of the battery and of the log of the whole phone. Android gives these three only through adb
-        (pm grant DUMP and READ_LOGS) and the usage access of its settings, so they are never asked for and the app works without them.
-    -->
-    <uses-permission android:name="android.permission.DUMP" tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.READ_LOGS" tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
-
     <!-- Wi-Fi state on the Action Center button. -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
@@ -81,6 +73,10 @@
 
     <!-- "uninstall" in the app list context menu. -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <!-- Updating from GitHub: the new APK is handed to the installer of Android, which asks the user to confirm. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- The check for a new release runs only with a connection: Android wants this permission for a job with that condition. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!--
         Package visibility (Android 11+). The launcher activities of every app are listed through
@@ -117,6 +113,41 @@
         </intent>
         <intent>
             <action android:name="com.gau.go.launcherex.theme" />
+        </intent>
+        <intent>
+            <action android:name="org.adw.launcher.icons.ACTION_PICK_ICON" />
+        </intent>
+        <intent>
+            <action android:name="ginlemon.smartlauncher.THEMES" />
+        </intent>
+        <intent>
+            <action android:name="home.solo.launcher.free.THEMES" />
+        </intent>
+        <intent>
+            <action android:name="com.dlto.atom.launcher.THEME" />
+        </intent>
+        <intent>
+            <action android:name="com.lge.launcher2.THEME" />
+        </intent>
+        <intent>
+            <action android:name="net.oneplus.launcher.icons.ACTION_PICK_ICON" />
+        </intent>
+        <intent>
+            <action android:name="app.lawnchair.icons.THEMED_ICON" />
+        </intent>
+        <intent>
+            <action android:name="com.gridappsinc.launcher.theme.apk_action" />
+        </intent>
+        <intent>
+            <action android:name="com.phonemetra.turbo.launcher.THEMES" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="com.anddoes.launcher.THEME" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="com.novalauncher.category.CUSTOM_ICON_PICKER" />
         </intent>
         <intent>
             <action android:name="android.intent.action.SHOW_ALARMS" />
@@ -218,6 +249,15 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+
+        <!-- The check for a new release on GitHub, every 12 hours while there is a connection, and the answer of the installer. -->
+        <service
+            android:name=".data.UpdateCheckJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <receiver
+            android:name=".data.UpdateResultReceiver"
+            android:exported="false" />
 
         <!--
             Wakes at the moment of a timer or a reminder (an alarm of Android, so nothing runs in between), and once after a

@@ -152,14 +152,33 @@ fun ActionCenter(
     connections: ConnectionPanel = ConnectionPanel(),
     onConnectionList: ((QuickAction) -> Unit)? = null,
     onAllowConnections: ((QuickAction) -> Unit)? = null,
+    /** A long press on any other button: it opens the screen of its own (see [QuickAction.holdScreen]); null leaves those buttons without one. */
+    onHoldAction: ((QuickAction) -> Unit)? = null,
+    /** Every button in the order the user gave them (the first four on top); null: the four of [slots], and the rest as they come. */
+    order: List<QuickAction>? = null,
+    /** Keeps a new order, made in the arrange mode of the panel; null leaves that mode out. */
+    onOrder: ((List<QuickAction>) -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
     var expanded by remember { mutableStateOf(false) }
     // The open list, and the last one opened, which stays drawn while it closes.
     var openList by remember { mutableStateOf<QuickAction?>(null) }
     var lastList by remember { mutableStateOf(QuickAction.Wifi) }
-    val holdButton: ((QuickAction) -> Unit)? = onConnectionList?.let { look ->
-        { action ->
+    // The strength of the flashlight is chosen in a strip that a long press on its button opens.
+    var torchOpen by remember { mutableStateOf(false) }
+    // The arrange mode: a touch picks a button, the next touch on another puts the first one in its place.
+    var arranging by remember { mutableStateOf(false) }
+    var picked by remember { mutableStateOf<QuickAction?>(null) }
+    val all = order ?: (slots + QuickAction.entries.filter { it !in slots })
+    val topFour = all.take(QuickAction.SLOTS)
+    val holdButton: ((QuickAction) -> Unit)? = if (arranging || (onConnectionList == null && onHoldAction == null)) null else { action ->
+        val hasList = action == QuickAction.Wifi || action == QuickAction.Bluetooth
+        if (action == QuickAction.Flashlight && controls != null && controls.torchLevels > 1) {
+            torchOpen = !torchOpen
+        } else if (!hasList) {
+            onHoldAction?.invoke(action)
+        } else {
+            val look = onConnectionList ?: {}
             if (openList == action) {
                 openList = null
             } else {
@@ -169,6 +188,22 @@ fun ActionCenter(
             }
         }
     }
+    val tap: (QuickAction) -> Unit = { action ->
+        if (!arranging) {
+            onAction(action)
+        } else {
+            val current = picked
+            when {
+                current == null -> picked = action
+                current == action -> picked = null
+                else -> {
+                    onOrder?.invoke(QuickAction.move(all, all.indexOf(current), all.indexOf(action)))
+                    picked = null
+                }
+            }
+        }
+    }
+    val shownStates = if (arranging) QuickAction.entries.associateWith { it == picked } else states
     val listed = remember(notifications, groupConversations) { NotificationGroups.build(notifications, groupConversations) }
     var openGroups by remember { mutableStateOf(emptySet<String>()) }
     val pushUp = remember(panel) { pushUpConnection(panel) }
@@ -198,7 +233,7 @@ fun ActionCenter(
             LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
                 item(key = "quick") {
                     Column(Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        QuickRow(slots, states, onAction, timeout, connections = connections, onHold = holdButton)
+                        QuickRow(topFour, shownStates, tap, timeout, connections = connections, onHold = holdButton)
                         AnimatedVisibility(
                             openList != null,
                             enter = expandVertically(metroTween(durationMillis = 320, easing = Motion.Decelerate)) + fadeIn(metroTween(220)),
@@ -211,24 +246,58 @@ fun ActionCenter(
                                 onClose = { openList = null },
                             )
                         }
+                        AnimatedVisibility(
+                            torchOpen && controls != null,
+                            enter = expandVertically(metroTween(durationMillis = 320, easing = Motion.Decelerate)) + fadeIn(metroTween(220)),
+                            exit = shrinkVertically(metroTween(durationMillis = 220, easing = Motion.Accelerate)) + fadeOut(metroTween(150)),
+                        ) {
+                            controls?.let { TorchPanel(it) }
+                        }
                         // The rest of the buttons open out, and turn in one after the other like the tiles of Start.
                         AnimatedVisibility(
-                            expanded,
+                            expanded || arranging,
                             enter = expandVertically(metroTween(durationMillis = 320, easing = Motion.Decelerate)) + fadeIn(metroTween(220)),
                             exit = shrinkVertically(metroTween(durationMillis = 220, easing = Motion.Accelerate)) + fadeOut(metroTween(150)),
                         ) {
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                val others = QuickAction.entries.filter { it !in slots }
+                                val others = all.drop(QuickAction.SLOTS)
                                 others.chunked(QuickAction.SLOTS).forEachIndexed { rowIndex, row ->
-                                    QuickRow(row, states, onAction, timeout, firstIndex = rowIndex * QuickAction.SLOTS, connections = connections, onHold = holdButton)
+                                    QuickRow(row, shownStates, tap, timeout, firstIndex = rowIndex * QuickAction.SLOTS, connections = connections, onHold = holdButton)
                                 }
                             }
+                        }
+                        if (arranging) {
+                            MetroText(
+                                stringResource(R.string.ac_arrange_hint), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE,
+                                modifier = Modifier.testTag("ac:arrange:hint"),
+                            )
                         }
                         if (controls != null) ControlsBlock(controls, expanded)
                         Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                             ExpandChevron(expanded) { expanded = !expanded }
+                            if (onOrder != null) {
+                                Box(
+                                    Modifier.testTag("ac:arrange").metroPress(onClick = {
+                                        arranging = !arranging
+                                        picked = null
+                                        torchOpen = false
+                                        openList = null
+                                    }).padding(horizontal = 8.dp, vertical = 8.dp),
+                                ) {
+                                    MetroText(
+                                        stringResource(if (arranging) R.string.ac_arrange_done else R.string.ac_arrange),
+                                        size = 17.sp, weight = FontWeight.Normal, color = LocalAccent.current,
+                                    )
+                                }
+                            }
                             Spacer(Modifier.weight(1f))
-                            Box(Modifier.metroPress(onClick = onAllSettings).padding(horizontal = 8.dp, vertical = 8.dp)) {
+                            // The settings of Android, with the picture that tells them from the settings of the launcher (the tiles).
+                            Row(
+                                Modifier.testTag("ac:allsettings").metroPress(onClick = onAllSettings).padding(horizontal = 8.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                GlyphIcon(Glyph.DeviceSettings, 22.dp, color = LocalAccent.current)
                                 MetroText(stringResource(R.string.ac_all_settings), size = 17.sp, weight = FontWeight.Normal, color = LocalAccent.current)
                             }
                         }
@@ -328,6 +397,9 @@ class ActionControls(
     /** How strong the flashlight shines, 0 to 1; null while it is off or has only one strength. */
     val torch: Float? = null,
     val onTorch: (Float) -> Unit = {},
+    /** How many strengths the flashlight has (1: only on and off) and the one the user chose for when it is switched on, 0 to 1. */
+    val torchLevels: Int = 1,
+    val torchPreferred: Float = 1f,
     /** The volume of the ringtone and of the alarms, 0 to 1, shown when the panel is opened out; null leaves one out. */
     val ringVolume: Float? = null,
     val alarmVolume: Float? = null,
@@ -337,6 +409,21 @@ class ActionControls(
     val profiles: List<String> = emptyList(),
     val onProfile: (Int) -> Unit = {},
 )
+
+/** The strength the flashlight is lit at, chosen with a slider; moving it lights the flashlight at that strength, and it is kept for the next time. */
+@Composable
+private fun TorchPanel(controls: ActionControls) {
+    val colors = LocalMetroColors.current
+    Column(Modifier.fillMaxWidth().testTag("ac:torchpanel"), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            GlyphIcon(Glyph.Flashlight, 26.dp, color = colors.subtle)
+            Box(Modifier.weight(1f).padding(start = 12.dp).testTag("ac:torchpanel:slider")) {
+                MetroSlider(controls.torch ?: controls.torchPreferred, controls.onTorch, stringResource(R.string.ac_torch))
+            }
+        }
+        MetroText(stringResource(R.string.ac_torch_hint), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE)
+    }
+}
 
 /** The volume and the brightness as sliders, and the three sound modes as buttons. */
 @Composable
@@ -455,13 +542,12 @@ private fun QuickRow(
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         actions.forEachIndexed { column, action ->
             val turn = if (firstIndex >= 0) Modifier.flipIn(firstIndex + column) else Modifier
-            val hasList = action == QuickAction.Wifi || action == QuickAction.Bluetooth
             QuickButton(
                 action, states[action], onAction, Modifier.weight(1f).then(turn),
                 detail = if (action == QuickAction.ScreenTimeout) timeout else null,
                 // Only while it is on: off, the button says what it is.
                 caption = if (states[action] == true) connections.captionFor(action) else null,
-                onLongClick = if (hasList && onHold != null) ({ onHold(action) }) else null,
+                onLongClick = if (onHold != null) ({ onHold(action) }) else null,
             )
         }
         repeat(QuickAction.SLOTS - actions.size) { Spacer(Modifier.weight(1f)) }

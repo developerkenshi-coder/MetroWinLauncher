@@ -28,6 +28,7 @@ class NotificationService : NotificationListenerService() {
 
     override fun onListenerConnected() {
         NotificationHub.service = this
+        NotificationHub.clearOnOpen = SettingsStore(this).load().clearOnOpen
         syncEdge()
         changed()
         // What is in the shade of Android already, when the setting asks for it to be moved away.

@@ -62,7 +62,7 @@ class SettingsIndexTest : ScreenshotBase() {
             SettingsSection.Gestures to "gest", SettingsSection.Actions to "ac", SettingsSection.Voice to "voice",
             SettingsSection.Battery to "battery", SettingsSection.Apps to "apps", SettingsSection.Search to "search",
             SettingsSection.LiveTiles to "live", SettingsSection.Profiles to "profile", SettingsSection.Backup to "backup",
-            SettingsSection.Kids to "kids", SettingsSection.About to "about", SettingsSection.Debug to "debug",
+            SettingsSection.Kids to "kids", SettingsSection.About to "about",
         )
         SettingsIndex.entries.forEach { entry ->
             val prefix = entry.id.substringBefore('.')

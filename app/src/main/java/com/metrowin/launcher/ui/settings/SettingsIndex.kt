@@ -23,7 +23,6 @@ import com.metrowin.launcher.ui.settings.SettingsSection.Start
 import com.metrowin.launcher.ui.settings.SettingsSection.StartTheme
 import com.metrowin.launcher.ui.settings.SettingsSection.Voice
 import com.metrowin.launcher.ui.settings.SettingsSection.About
-import com.metrowin.launcher.ui.settings.SettingsSection.Debug
 
 /**
  * One setting of the launcher, as the index knows it: the [section] it lives in, the [title] it has on its page and other words
@@ -97,6 +96,7 @@ object SettingsIndex {
         // --- icons & themes
         e("icons.shape", Icons, R.string.icons_shape, "shape", "round", "circle", "square", "squircle", "forma", "rotonde", "cerchio", "quadrate"),
         e("icons.tilecolors", Icons, R.string.icons_tile_colors, "colour", "color", "tile", "icon", "colore", "riquadro", "icona", "dominante"),
+        e("icons.find", Icons, R.string.icons_pack_find, "play store", "download", "icon pack", "install", "scarica", "cerca", "icone"),
         e("icons.pack", Icons, R.string.icons_pack, "icons", "icon pack", "nova", "adw", "apex", "go launcher", "icone"),
         e("icons.export", Icons, R.string.theme_export, "theme file", "share", "save", "file tema", "condividi", "salva"),
         e("icons.import", Icons, R.string.theme_import, "theme file", "load", "open", "file tema", "carica", "apri"),
@@ -162,6 +162,7 @@ object SettingsIndex {
         e("ac.filter", Actions, R.string.ac_filter, "filter", "words", "block", "spam", "filtro", "parole", "blocca"),
         e("ac.filterwords", Actions, R.string.ac_filter_words, "filter", "words", "add", "filtro", "parole", "aggiungi"),
         e("ac.dndminutes", Actions, R.string.ac_dnd_minutes, "do not disturb", "quiet", "timed", "minutes", "non disturbare", "silenzioso", "tempo", "minuti"),
+        e("ac.panelsounds", Actions, R.string.ac_panel_sounds, "sound", "glide", "pull", "panel", "suono", "scorrimento", "pannello", "abbassa", "alza"),
         e("ac.sounds", Actions, R.string.ac_sounds, "sound", "chime", "tone", "audio", "suono", "suoni", "notifica", "melodia"),
         e("ac.hide", Actions, R.string.ac_hide_system, "hide", "double", "duplicate", "android notification", "system notification", "nascondi", "doppie", "notifica di android", "banner"),
         e("ac.edge", Actions, R.string.ac_edge, "action center", "edge", "swipe", "pull down", "over other apps", "bordo", "sopra altre app", "centro notifiche", "striscia"),
@@ -173,6 +174,7 @@ object SettingsIndex {
         e("battery.saving", Battery, R.string.saving_title, "power", "saver", "energy", "low battery", "risparmio", "energia", "batteria scarica"),
 
         // --- voice
+        e("voice.icon", Voice, R.string.voice_set_icon, "assistant", "microphone", "icon", "start", "assistente", "microfono", "icona"),
         e("voice.button", Voice, R.string.voice_set_button, "microphone", "mic", "speech", "microfono", "parlare"),
         e("voice.offline", Voice, R.string.voice_set_offline, "on the phone", "no internet", "sul telefono", "senza rete", "offline"),
         e("voice.call", Voice, R.string.voice_set_call, "call", "dial", "phone", "chiama", "chiamata", "telefono"),
@@ -202,6 +204,10 @@ object SettingsIndex {
         e("search.assistant", Search, R.string.apps_assistant, "reminder", "event", "note", "keep", "lens", "near me", "qr", "promemoria", "evento", "nota", "vicino a me", "scansiona"),
         e("search.dial", Search, R.string.apps_dial, "t9", "dial", "keypad", "numbers", "tastierino", "chiamata", "numeri"),
         e("search.today", Search, R.string.apps_today, "card", "agenda", "today", "scheda", "oggi", "giornata"),
+        e("search.todayweather", Search, R.string.today_show_weather, "card", "today", "weather", "scheda", "oggi", "meteo"),
+        e("search.todaynear", Search, R.string.today_show_near, "card", "today", "near me", "places", "scheda", "oggi", "vicino a me", "posti", "luoghi"),
+        e("search.todaydate", Search, R.string.today_show_date, "card", "today", "date", "day", "scheda", "oggi", "data", "giorno"),
+        e("search.todayalarm", Search, R.string.today_show_alarm, "card", "today", "alarm", "clock", "scheda", "oggi", "sveglia", "allarme"),
         e("search.currency", Search, R.string.apps_currency, "money", "exchange", "euro", "dollar", "valute", "cambio", "soldi"),
         e("search.notifications", Search, R.string.search_notifications, "notifications", "messages", "notifiche", "messaggi"),
         e("search.operators", Search, R.string.search_operators, "operator", "prefix", "app:", "contact:", "operatori", "prefisso", "scorciatoie"),
@@ -212,6 +218,7 @@ object SettingsIndex {
 
         // --- live tiles
         e("live.city", LiveTiles, R.string.weather_city, "weather", "location", "gps", "meteo", "citta", "posizione", "follow", "cities", "segui", "altre citta"),
+        e("live.gallery", LiveTiles, R.string.gallery_heading, "photos", "gallery", "album", "pictures", "foto", "galleria", "immagini", "cartelle"),
         e("live.fahrenheit", LiveTiles, R.string.weather_fahrenheit, "celsius", "degrees", "units", "gradi", "unita", "temperatura"),
         *WeatherBlock.entries.map { b -> e("live.wx.${b.code}", LiveTiles, b.label, "weather", "forecast", "meteo", "previsioni", "tempo") }.toTypedArray(),
         e("live.master", LiveTiles, R.string.live_master, "whatsapp", "telegram", "instagram", "messages", "notifications", "messaggi", "notifiche"),
@@ -254,15 +261,13 @@ object SettingsIndex {
 
         // --- about
         e("about.version", About, R.string.about_version, "build", "info", "versione"),
+        e("about.update", About, R.string.update_title, "update", "github", "download", "install", "version", "aggiorna", "aggiornamento", "scarica", "installa", "versione"),
+        e("about.updatecheck", About, R.string.update_check, "update", "check", "new version", "controlla", "aggiornamenti", "nuova versione"),
+        e("about.updateauto", About, R.string.update_auto, "update", "automatic", "12 hours", "aggiornamenti", "automatico", "12 ore"),
         e("about.phoneinfo", About, R.string.about_phone_toggle, "phone", "model", "memory", "storage", "uptime", "telefono", "modello", "memoria", "spazio"),
         e("about.phone", About, R.string.about_phone_title, "phone", "model", "ram", "patch", "telefono", "modello", "informazioni"),
         e("about.tutorial", About, R.string.tut_replay, "tour", "help", "guide", "intro", "aiuto", "guida", "tutorial"),
         e("about.credits", About, R.string.about_credits, "licenses", "thanks", "open source", "licenze", "ringraziamenti"),
-        e("debug.access", Debug, R.string.dbg_access, "permissions", "adb", "dump", "read logs", "usage access", "permessi", "accesso all'uso"),
-        e("debug.appbattery", Debug, R.string.dbg_app_battery, "battery", "report", "developer", "batteria", "consumo", "sviluppatore"),
-        e("debug.devicebattery", Debug, R.string.dbg_device_battery, "battery", "batterystats", "report", "whole phone", "batteria", "telefono", "consumo"),
-        e("debug.devicelog", Debug, R.string.dbg_device_log, "log", "logcat", "system", "whole phone", "sistema", "telefono"),
-        e("debug.applog", Debug, R.string.dbg_app_log, "log", "logcat", "app", "crash", "errori"),
     )
 
     private val byId: Map<String, SettingEntry> = entries.associateBy { it.id }

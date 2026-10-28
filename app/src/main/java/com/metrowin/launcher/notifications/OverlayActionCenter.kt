@@ -143,7 +143,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                 return true
             }
         }
-        val current = Panel(root, owner, windows, settings.metroSounds)
+        val current = Panel(root, owner, windows, settings.metroSounds && settings.panelSounds)
         root.setViewTreeLifecycleOwner(owner)
         root.setViewTreeSavedStateRegistryOwner(owner)
         root.addView(ComposeView(service).apply { setContent { Host(settings, current) } })
@@ -275,6 +275,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
 
             AccentScope(settings.accentPanel) { ActionCenter(
                 slots = QuickAction.slots(settings.quickActions),
+                order = QuickAction.order(settings.quickActions),
                 states = states,
                 timeout = timeout,
                 notifications = notifications,
@@ -290,7 +291,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                         QuickAction.Recents -> system(LockAccessibilityService::recents)
                         else -> {
                             // The flashlight and the quiet hours switch on the spot and the panel stays; anything else opens a screen.
-                            if (quick.activate(action, settings.dndMinutes, settings.torchAutoOffMin)) {
+                            if (quick.activate(action, settings.dndMinutes, settings.torchAutoOffMin, settings.torchStrength)) {
                                 readStates()
                             } else {
                                 if (action == QuickAction.QuietHours) Toast.makeText(app, R.string.qa_quiet_allow, Toast.LENGTH_LONG).show()
@@ -301,6 +302,10 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                 },
                 connections = connections,
                 onConnectionList = { action -> if (action == QuickAction.Wifi) network.scan() },
+                onHoldAction = { action ->
+                    quick.hold(action)
+                    close()
+                },
                 // A window over other apps cannot ask for a permission: the app page in the settings of Android can give it.
                 onAllowConnections = { action ->
                     if (action == QuickAction.Wifi && connections.wifiAccess == ConnectionAccess.NeedsLocation) {
@@ -339,6 +344,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                         onAllowBrightness = { go(Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.fromParts("package", app.packageName, null))) },
                         torch = controls.torch.takeIf { torchOn },
                         onTorch = { quick.setTorchStrength(it); controls = controls.copy(torch = it) },
+                        torchLevels = quick.torchLevels, torchPreferred = settings.torchStrength,
                         ringVolume = controls.ringVolume, alarmVolume = controls.alarmVolume,
                         onRingVolume = { sound.setRingVolume(it); controls = controls.copy(ringVolume = it) },
                         onAlarmVolume = { sound.setAlarmVolume(it); controls = controls.copy(alarmVolume = it) },

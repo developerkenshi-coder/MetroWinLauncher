@@ -23,7 +23,7 @@ object SectionReset {
         "Search" to setOf(
             "rememberSearches", "searchAnswers", "searchAssistant", "searchCalendar", "searchCommands", "searchContacts", "searchCurrency", "searchEngine",
             "searchFileTypes", "searchLauncherSettings", "searchNotifications", "searchOperators", "searchSettings", "searchSmartDial", "searchTiles",
-            "searchToday", "searchWeb", "tipOfDay",
+            "searchToday", "searchWeb", "tipOfDay", "todayAlarm", "todayDate", "todayNear", "todayWeather",
         ),
         "Gestures" to setOf(
             "animationSpeed", "doubleTapAction", "doubleTapApp", "edgeBackPan", "edgePull", "homeDoubleAction", "homeDoubleApp", "tapHaptics", "tapSound",
@@ -32,11 +32,11 @@ object SectionReset {
         "Actions" to setOf(
             "actionSliders", "clearOnOpen", "dndMinutes", "edgeActionCenter", "groupConversations", "hideSystemNotifications", "inlineReply", "metroSounds", "muteFromPanel",
             "notifFilterOn", "notifFilterWords", "notifPriority", "notificationPeek", "overlayBanner", "quickActions", "toastBanner", "torchAutoOffMin",
-            "volumePanel", "volumeProfilesShow",
+            "panelSounds", "torchStrength", "volumePanel", "volumeProfilesShow",
         ),
         "LiveTiles" to setOf(
             "liveHideText", "liveMessages", "liveNowPlaying", "liveOffApps", "livePictures", "liveProgress", "notificationPeek", "thirdPartyTiles",
-            "weatherBlocks", "weatherFahrenheit",
+            "galleryAlbums", "galleryApp", "weatherBlocks", "weatherFahrenheit",
         ),
         "Apps" to setOf("appLabels", "compactList", "showCategories", "showFrequentApps", "showNewApps"),
         "Screen" to setOf("highRefreshRate", "launchAnimation", "orientation"),
@@ -44,7 +44,7 @@ object SectionReset {
         "Accessibility" to setOf("boldText", "highContrast", "reduceMotion", "systemFont", "textScale"),
         "Icons" to setOf("iconPack", "iconShape", "iconTileColors"),
         "Lock" to setOf("lockShowAlarm", "lockShowBattery", "lockShowEvent", "lockShowNotifications", "lockShowWeather"),
-        "Voice" to setOf("voiceButton", "voiceCallDirect", "voiceOffline"),
+        "Voice" to setOf("assistantIcon", "voiceButton", "voiceCallDirect", "voiceOffline"),
     )
 
     fun canReset(section: String) = section in keys

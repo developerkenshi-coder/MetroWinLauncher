@@ -150,6 +150,8 @@ private fun build(glyph: Glyph): Spec = when (glyph) {
     Glyph.Maps -> spec(stroke("M50 92C50 92 20 60 20 40A30 30 0 0 1 80 40C80 60 50 92 50 92Z", circle(50f, 40f, 10f)))
     Glyph.Store -> spec(stroke(rect(20f, 34f, 60f, 54f, 3f), "M36 34V28A14 14 0 0 1 64 28V34"))
     Glyph.Settings -> spec(stroke(gear(), circle(50f, 50f, 12f)))
+    Glyph.Launcher -> spec(stroke(rect(12f, 12f, 34f, 34f, 2f), rect(54f, 12f, 34f, 34f, 2f), rect(12f, 54f, 76f, 34f, 2f)))
+    Glyph.DeviceSettings -> spec(stroke(rect(26f, 6f, 48f, 88f, 8f), circle(50f, 50f, 8f), "M62.0 50.0L68.0 50.0", "M58.5 58.5L62.7 62.7", "M50.0 62.0L50.0 68.0", "M41.5 58.5L37.3 62.7", "M38.0 50.0L32.0 50.0", "M41.5 41.5L37.3 37.3", "M50.0 38.0L50.0 32.0", "M58.5 41.5L62.7 37.3"))
     Glyph.Alarm -> spec(stroke(circle(50f, 56f, 30f), "M50 56V38", "M50 56L64 64", "M14 30L28 16", "M86 30L72 16"))
     Glyph.Calculator -> spec(
         stroke(rect(22f, 10f, 56f, 80f, 4f), rect(32f, 20f, 36f, 16f)),

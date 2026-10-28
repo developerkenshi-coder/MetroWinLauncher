@@ -61,7 +61,6 @@ enum class SettingsSection(
     Backup(SettingsGroup.Tools, R.string.sec_backup, R.string.sec_backup_desc),
     Kids(SettingsGroup.Tools, R.string.kids_title, R.string.sec_kids_desc),
     About(SettingsGroup.Tools, R.string.sec_about, R.string.sec_about_desc),
-    Debug(SettingsGroup.Tools, R.string.sec_debug, R.string.sec_debug_desc),
 }
 
 /**
@@ -163,6 +162,13 @@ class SettingsEnv(
     val onOpenDreamSettings: () -> Unit = {},
     val onPreviewLock: () -> Unit = {},
     val iconPacks: List<IconPackInfo> = emptyList(),
+    /** The update from GitHub: where it is, and what the page does about it. */
+    val update: com.metrowin.launcher.data.UpdateState = com.metrowin.launcher.data.UpdateState.Idle,
+    val onCheckUpdate: () -> Unit = {},
+    val onInstallUpdate: () -> Unit = {},
+    /** The gallery apps of the phone (package and name), for the app the Photos tile opens, and the albums its pictures come from. */
+    val galleryApps: List<IconPackInfo> = emptyList(),
+    val loadAlbums: suspend () -> List<com.metrowin.launcher.data.AlbumInfo> = { emptyList() },
     val onExportTheme: (Uri) -> Unit = {},
     val onImportTheme: (Uri) -> Unit = {},
     /** The apps that have a notification up now, for the per-app notification choices (they come first). */

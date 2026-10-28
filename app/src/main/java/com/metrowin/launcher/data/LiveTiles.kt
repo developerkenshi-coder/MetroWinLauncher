@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -131,10 +132,16 @@ class LiveTileRepository(private val context: Context) {
      * Blocking, call it off the main thread. Reads the data of the kinds in [wanted] only: a Start with no photo tile has no use
      * for the photos. [albumIds] and [groupIds] are the albums and the groups whose tiles are pinned.
      */
-    fun load(wanted: Set<LiveKind> = LiveSources.all, albumIds: Set<String> = emptySet(), groupIds: Set<Long> = emptySet()): LiveTileData {
+    fun load(
+        wanted: Set<LiveKind> = LiveSources.all,
+        albumIds: Set<String> = emptySet(),
+        groupIds: Set<Long> = emptySet(),
+        /** The albums the Photos tile takes its pictures from; empty: every album. */
+        galleryAlbums: Set<String> = emptySet(),
+    ): LiveTileData {
         val events = if (LiveKind.Calendar in wanted) CalendarSearch(context).upcoming() else emptyList()
         return LiveTileData(
-        photos = if (LiveKind.Photos in wanted) photos() else emptyList(),
+        photos = if (LiveKind.Photos in wanted) photos(galleryAlbums) else emptyList(),
         people = if (LiveKind.People in wanted) people() else emptyList(),
         nextEvent = events.firstOrNull(),
         events = events,
@@ -156,14 +163,14 @@ class LiveTileRepository(private val context: Context) {
     private val faceCache = HashMap<Uri, ImageBitmap>()
 
     @Synchronized
-    private fun photos(limit: Int = 8): List<ImageBitmap> = recentPhotos(null, limit)
+    private fun photos(albums: Set<String>, limit: Int = 6): List<ImageBitmap> = recentPhotos(albums, limit)
 
     /** The latest photos of one album of the phone ([bucket] is the id of the album), as thumbnails. */
     @Synchronized
-    private fun album(bucket: String, limit: Int = 8): List<ImageBitmap> = recentPhotos(bucket, limit)
+    private fun album(bucket: String, limit: Int = 6): List<ImageBitmap> = recentPhotos(setOf(bucket), limit)
 
-    /** The latest photos of the phone, or of one of its albums, as thumbnails. */
-    private fun recentPhotos(bucket: String?, limit: Int): List<ImageBitmap> {
+    /** The latest photos of the phone, or of the albums in [buckets] (their ids; none: every album), as thumbnails. */
+    private fun recentPhotos(buckets: Set<String>, limit: Int): List<ImageBitmap> {
         if (!LivePermissions.canReadPhotos(context)) return emptyList()
         return runCatching {
             val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
@@ -171,9 +178,9 @@ class LiveTileRepository(private val context: Context) {
                 putInt(ContentResolver.QUERY_ARG_LIMIT, limit)
                 putStringArray(ContentResolver.QUERY_ARG_SORT_COLUMNS, arrayOf(MediaStore.Images.Media.DATE_ADDED))
                 putInt(ContentResolver.QUERY_ARG_SORT_DIRECTION, ContentResolver.QUERY_SORT_DIRECTION_DESCENDING)
-                if (bucket != null) {
-                    putString(ContentResolver.QUERY_ARG_SQL_SELECTION, "${MediaStore.Images.Media.BUCKET_ID}=?")
-                    putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, arrayOf(bucket))
+                if (buckets.isNotEmpty()) {
+                    putString(ContentResolver.QUERY_ARG_SQL_SELECTION, "${MediaStore.Images.Media.BUCKET_ID} IN (${buckets.joinToString(",") { "?" }})")
+                    putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, buckets.toTypedArray())
                 }
             }
             val uris = ArrayList<Uri>(limit)
@@ -189,10 +196,10 @@ class LiveTileRepository(private val context: Context) {
     private fun group(groupId: Long, limit: Int = 8): List<LivePerson> {
         if (!granted(LivePermissions.contacts)) return emptyList()
         return runCatching {
-            val rows = ArrayList<Pair<String, Uri>>()
+            val rows = ArrayList<Triple<String, Uri, Uri?>>()
             resolver.query(
                 ContactsContract.Data.CONTENT_URI,
-                arrayOf(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY, ContactsContract.Contacts.PHOTO_THUMBNAIL_URI),
+                arrayOf(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY, ContactsContract.Contacts.PHOTO_THUMBNAIL_URI, ContactsContract.Contacts.PHOTO_URI),
                 "${ContactsContract.Data.MIMETYPE}=? AND ${ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID}=? AND " +
                     "${ContactsContract.Contacts.PHOTO_THUMBNAIL_URI} IS NOT NULL",
                 arrayOf(ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE, groupId.toString()),
@@ -201,13 +208,13 @@ class LiveTileRepository(private val context: Context) {
                 while (cursor.moveToNext() && rows.size < MAX_GROUP_ROWS) {
                     val name = cursor.getString(0)?.takeIf { it.isNotBlank() } ?: continue
                     val photo = cursor.getString(1)?.let(Uri::parse) ?: continue
-                    rows += name to photo
+                    rows += Triple(name, photo, cursor.getString(2)?.let(Uri::parse))
                 }
             }
             if (faceCache.size > MAX_FACES) faceCache.clear()
-            rows.distinctBy { it.second }.shuffled().take(limit).mapNotNull { (name, uri) ->
+            rows.distinctBy { it.second }.shuffled().take(limit).mapNotNull { (name, uri, full) ->
                 val face = faceCache[uri]
-                    ?: resolver.openInputStream(uri)?.use(BitmapFactory::decodeStream)?.asImageBitmap()?.also { faceCache[uri] = it }
+                    ?: face(full, uri)?.asImageBitmap()?.also { faceCache[uri] = it }
                     ?: return@mapNotNull null
                 LivePerson(name, face)
             }
@@ -233,20 +240,21 @@ class LiveTileRepository(private val context: Context) {
                 ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
                 ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
                 ContactsContract.Contacts.STARRED,
+                ContactsContract.Contacts.PHOTO_URI,
             )
-            val starred = ArrayList<Pair<String, Uri>>()
-            val others = ArrayList<Pair<String, Uri>>()
+            val starred = ArrayList<Triple<String, Uri, Uri?>>()
+            val others = ArrayList<Triple<String, Uri, Uri?>>()
             resolver.query(ContactsContract.Contacts.CONTENT_URI, projection, args, null)?.use { cursor ->
                 while (cursor.moveToNext()) {
                     val name = cursor.getString(0)?.takeIf { it.isNotBlank() } ?: continue
                     val photo = cursor.getString(1)?.let(Uri::parse) ?: continue
-                    (if (cursor.getInt(2) == 1) starred else others) += name to photo
+                    (if (cursor.getInt(2) == 1) starred else others) += Triple(name, photo, cursor.getString(3)?.let(Uri::parse))
                 }
             }
             if (faceCache.size > MAX_FACES) faceCache.clear()
-            (starred.shuffled() + others.shuffled()).take(limit).mapNotNull { (name, uri) ->
+            (starred.shuffled() + others.shuffled()).take(limit).mapNotNull { (name, uri, full) ->
                 val face = faceCache[uri]
-                    ?: resolver.openInputStream(uri)?.use(BitmapFactory::decodeStream)?.asImageBitmap()?.also { faceCache[uri] = it }
+                    ?: face(full, uri)?.asImageBitmap()?.also { faceCache[uri] = it }
                     ?: return@mapNotNull null
                 LivePerson(name, face)
             }
@@ -289,10 +297,28 @@ class LiveTileRepository(private val context: Context) {
         }.getOrDefault(0)
     }
 
+    /**
+     * The picture at [size] pixels on its longer side (a thumbnail of the media store is too small for a tile: it is 512 pixels
+     * or less and blurs when it fills a wide tile). The photo itself is decoded already scaled, turned the right way up. Without
+     * the photo to read, the thumbnail of the media store is the fallback.
+     */
     private fun thumbnail(uri: Uri, size: Int): Bitmap? = runCatching {
-        if (Build.VERSION.SDK_INT >= 29) resolver.loadThumbnail(uri, Size(size, size), null)
-        else decodeSampled(uri, size)
+        if (Build.VERSION.SDK_INT >= 28) {
+            ImageDecoder.decodeBitmap(ImageDecoder.createSource(resolver, uri)) { decoder, info, _ ->
+                val longest = maxOf(info.size.width, info.size.height)
+                if (longest > size) decoder.setTargetSize(info.size.width * size / longest, info.size.height * size / longest)
+            }
+        } else {
+            decodeSampled(uri, size)
+        }
+    }.getOrNull() ?: runCatching {
+        if (Build.VERSION.SDK_INT >= 29) resolver.loadThumbnail(uri, Size(size, size), null) else null
     }.getOrNull()
+
+    /** A contact photo: the full-size one when the contact has it, else its small thumbnail; at most [FACE_PX] pixels on a side. */
+    private fun face(full: Uri?, thumbnail: Uri): Bitmap? =
+        (full?.let { runCatching { decodeSampled(it, FACE_PX) }.getOrNull() })
+            ?: runCatching { resolver.openInputStream(thumbnail)?.use(BitmapFactory::decodeStream) }.getOrNull()
 
     private fun decodeSampled(uri: Uri, size: Int): Bitmap? {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
@@ -304,10 +330,11 @@ class LiveTileRepository(private val context: Context) {
     }
 
     private companion object {
-        const val PHOTO_PX = 512
+        const val PHOTO_PX = 1280
+        const val FACE_PX = 512
         const val MAX_BIRTHDAYS = 2_000
         const val MAX_FACES = 40
-        const val MAX_PHOTOS = 32
+        const val MAX_PHOTOS = 18
         const val MAX_GROUP_ROWS = 2_000
         const val WEEK_MILLIS = 7L * 24 * 60 * 60 * 1000
     }

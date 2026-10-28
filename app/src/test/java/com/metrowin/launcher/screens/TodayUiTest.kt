@@ -20,6 +20,9 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.performTouchInput
+import com.metrowin.launcher.data.TodayPart
 import androidx.compose.ui.test.onRoot
 import com.metrowin.launcher.data.AppSections
 import com.metrowin.launcher.data.LiveEvent
@@ -93,6 +96,36 @@ class TodayUiTest : ScreenshotBase() {
         NearPlace.entries.forEach { compose.onNodeWithTag("today:near:${it.name}").assertExists() }
         compose.onNodeWithText("Call Anna", substring = true).assertExists()
         compose.onNodeWithText("18°", substring = true).assertExists()
+    }
+
+    @Test
+    fun thePartsTheUserSwitchedOffAreNotOnTheCard() {
+        val off = fullDay().copy(weather = null, alarmMillis = null, showDate = false, showNear = false)
+        show { List(info = off) }
+        advance(900)
+        listOf("today:weather", "today:alarm", "today:date", "today:near:title", "today:near:Pharmacy").forEach {
+            compose.onAllNodesWithTag(it).assertCountEquals(0)
+        }
+        // What was not switched off stays.
+        compose.onNodeWithTag("today:event").assertExists()
+    }
+
+    @Test
+    fun aLongPressOnAPartOfTheCardSwitchesItOff() {
+        val done = mutableListOf<TodayAction>()
+        show { List(onToday = { done += it }) }
+        advance(900)
+        listOf("today:weather", "today:date", "today:alarm", "today:near:Pharmacy", "today:near:title").forEach {
+            compose.onNodeWithTag(it).performTouchInput { longClick() }
+            advance(100)
+        }
+        assertEquals(
+            listOf(
+                TodayAction.Hide(TodayPart.Weather), TodayAction.Hide(TodayPart.Date), TodayAction.Hide(TodayPart.Alarm),
+                TodayAction.Hide(TodayPart.Near), TodayAction.Hide(TodayPart.Near),
+            ),
+            done,
+        )
     }
 
     @Test

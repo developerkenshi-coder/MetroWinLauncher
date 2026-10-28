@@ -76,6 +76,7 @@ fun AddMenu(
     onAnalogClock: (() -> Unit)? = null,
     onToggle: (() -> Unit)? = null,
     onSun: (() -> Unit)? = null,
+    onWeatherPlus: (() -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
     val currentDismiss by rememberUpdatedState(onDismiss)
@@ -86,6 +87,7 @@ fun AddMenu(
         "stopwatch" to onStopwatch, "reminders" to onReminders, "news" to onNews, "finance" to onFinance, "dialgrid" to onDialGrid,
         "peoplehub" to onPeopleHub, "steps" to onSteps, "recorder" to onRecorder, "camera" to onCamera, "wallet" to onWallet,
         "whereami" to onWhereAmI, "parking" to onParking, "analogclock" to onAnalogClock, "widget" to onWidget, "toggle" to onToggle, "sun" to onSun,
+        "weatherplus" to onWeatherPlus,
     )
     val available = AddMenuIndex.kinds.filter { given[it.id] != null }
     var query by remember { mutableStateOf("") }

@@ -122,6 +122,8 @@ object SearchAliases {
         Glyph.Vpn -> listOf("vpn", "private", "network", "privata")
         Glyph.Cast -> listOf("cast", "mirror", "screen", "trasmetti", "schermo")
         Glyph.Brightness -> listOf("brightness", "screen", "luminosita", "schermo")
+        Glyph.Launcher -> listOf("launcher", "metrowin", "home", "start")
+        Glyph.DeviceSettings -> listOf("android", "device", "phone settings", "system", "impostazioni di android", "telefono", "sistema")
         Glyph.Bell -> listOf("sound", "volume", "ringtone", "suoni", "suoneria")
         Glyph.Kids -> listOf("kids", "children", "child", "bambini", "figli")
         Glyph.Globe -> listOf("world", "web", "mondo", "sito")

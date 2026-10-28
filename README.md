@@ -108,14 +108,17 @@ Every one is optional and reads data only while it is pinned to Start.
 
 ### Looks and colors
 - **Classic** (flat Windows Phone), **Modern Glass** (frosted, rounded glass over a glowing backdrop) and **Modern Droid** (Material You), each in dark, light, by-the-hour or sunset-to-sunrise.
-- The **20 Windows Phone colors** or a color of your own, a different accent at night, **OLED black**, text size and weight, icon shape, **icon packs** (ADW, Nova, Apex, Go) and **theme files** you can share.
+- The **20 Windows Phone colors** or a color of your own, a different accent at night, **OLED black**, text size and weight, icon shape, **icon packs** from the Play Store (ADW, Nova, Apex, Smart, Go) and **theme files** you can share.
 
 ### Backup, profiles and accessibility
 - **Backup** of the layout to a file or a folder (any folder Android can open), by hand or every 1, 7 or 30 days, and **encrypted sync between phones** through that folder (AES-256-GCM, key from your passphrase with PBKDF2-SHA256).
 - **Work profile** and **private space** (Android 15), **Kids Corner**, and accessibility: TalkBack for every tile and row, text size, reduced motion, stronger contrast.
 
-### For app developers
-An app can write a title, a line of text and a number on **its own** tile, like a Windows Phone live tile. See *"Per chi sviluppa un'app"* in the [full documentation](docs/DOCUMENTAZIONE.md#per-chi-sviluppa-unapp-un-tile-tuo-su-start).
+### For app developers: your own tile on Start
+
+If you develop an app, it can show a title, a short text and a counter on its own Start tile, like the live tiles of
+Windows Phone. The tile flips to show the text, and the counter appears as a number. An app can only write to **its own**
+tile, never to another app's: the launcher checks which app is actually calling, whatever the call claims.
 
 ## Privacy and permissions
 

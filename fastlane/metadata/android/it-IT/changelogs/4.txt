@@ -1,1 +1,1 @@
-I riquadri delle app Microsoft ora hanno nomi generici (Hub giochi, Videochiamate, Documenti...) e il riquadro del browser ha una nuova icona.
+Aggiornamenti da GitHub con le novità della versione, riquadri foto in alta qualità, notifiche che spariscono aprendo l’app, tutti i pulsanti dell’Action Center spostabili, intensità della torcia, riquadro meteo completo e altro.

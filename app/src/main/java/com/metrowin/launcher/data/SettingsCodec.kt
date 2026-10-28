@@ -172,6 +172,16 @@ object SettingsCodec {
         put("searchAssistant", s.searchAssistant)
         put("searchSmartDial", s.searchSmartDial)
         put("searchToday", s.searchToday)
+        put("todayWeather", s.todayWeather)
+        put("todayNear", s.todayNear)
+        put("todayDate", s.todayDate)
+        put("todayAlarm", s.todayAlarm)
+        put("galleryApp", s.galleryApp)
+        put("galleryAlbums", JSONArray(s.galleryAlbums.sorted()))
+        put("panelSounds", s.panelSounds)
+        put("assistantIcon", s.assistantIcon)
+        put("torchStrength", s.torchStrength.toDouble())
+        put("updateAuto", s.updateAuto)
         put("reduceMotion", s.reduceMotion)
         put("highContrast", s.highContrast)
 
@@ -375,6 +385,16 @@ object SettingsCodec {
             searchAssistant = o.optBoolean("searchAssistant", base.searchAssistant),
             searchSmartDial = o.optBoolean("searchSmartDial", base.searchSmartDial),
             searchToday = o.optBoolean("searchToday", base.searchToday),
+            todayWeather = o.optBoolean("todayWeather", base.todayWeather),
+            todayNear = o.optBoolean("todayNear", base.todayNear),
+            todayDate = o.optBoolean("todayDate", base.todayDate),
+            todayAlarm = o.optBoolean("todayAlarm", base.todayAlarm),
+            galleryApp = o.optString("galleryApp", base.galleryApp).take(256),
+            galleryAlbums = strings("galleryAlbums", base.galleryAlbums).take(200).toSet(),
+            panelSounds = o.optBoolean("panelSounds", base.panelSounds),
+            assistantIcon = o.optBoolean("assistantIcon", base.assistantIcon),
+            torchStrength = o.optDouble("torchStrength", base.torchStrength.toDouble()).toFloat().coerceIn(0.05f, 1f),
+            updateAuto = o.optBoolean("updateAuto", base.updateAuto),
             reduceMotion = o.optBoolean("reduceMotion", base.reduceMotion),
             highContrast = o.optBoolean("highContrast", base.highContrast),
 
