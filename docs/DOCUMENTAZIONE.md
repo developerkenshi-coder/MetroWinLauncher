@@ -892,17 +892,10 @@ app/src/main/java/com/metrowin/launcher/
     (apre l'app messaggi: l'app che scegli decide come si comporta con il testo), le **indicazioni** a voce (dipende dall'app di mappe) e la **luna** (calcolata: un giorno di scarto vicino alle fasi);
   - i **live tile delle altre app**: foto, copertine e testi veri dipendono da cosa scrive ogni app nelle sue notifiche. La pagina *live tile*
     elenca cosa il launcher legge da ognuna: se un riquadro non mostra niente, si guarda lì.
-- **Il tutorial su un telefono vero**: le richieste (dialoghi dei permessi, dialogo dell'app Home, pagine di Android per notifiche,
-  accessibilità e batteria) sono collegate ma provate solo fin dove si arriva su JVM: i pulsanti chiamano la richiesta giusta e la
-  pagina legge cosa è concesso; cosa mostra davvero Android, e se un produttore ha un'altra pagina per la batteria, va visto.
 - **Lo swipe delle app recenti di Android** (su e tieni) lo gestisce il sistema, non il launcher: i gesti e la schermata delle
   Recenti stanno nel launcher di fabbrica, che con uno di terze parti ha meno privilegi. Su **Samsung** l'attesa è voluta: con un
   launcher di terze parti bisogna tenere lo swipe circa un secondo ([lo dice Niagara Launcher](https://help.niagaralauncher.app/article/114-recent-apps-screen-issues),
   che ha lo stesso problema), e altri produttori hanno ritardi simili ([Lawnchair](https://docs.lawnchair.app/troubleshooting/gesture-navigation-issues)); su un **vivo** con un launcher di terze parti c'è chi riferisce Recenti lente ([una segnalazione a Niagara](https://niagaralauncher.featurebase.app/p/recent-apps-navigation-is-slow-and-lagging)), e un riavvio la fa sparire per qualche ora. Con il launcher di fabbrica il ritardo non c'è perché è lui a gestire i gesti.
-  Non è nel codice di questo launcher e **non si può togliere da qui**; non l'ho misurato su un telefono. Il launcher non fa nulla
-  di suo quando parte il gesto (a quel punto è già fermo, vedi *Batteria*). Per averle subito ci sono l'azione *app recenti* (gesto,
-  pulsante o tile, richiedono il servizio di accessibilità del blocco schermo) e la navigazione a 3 pulsanti di Android, dove il
-  pulsante Recenti non ha attese (lo riferiscono utenti di launcher di terze parti; non l'ho provato).
 - **Font**: Windows Phone usa Segoe WP, proprietario. Qui c'è Open Sans (OFL). Vedi [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 - **Colori d'accento**: Microsoft ha pubblicato i 20 colori solo come immagine; i valori vengono da trascrizioni.
 - **Marchi**: i nomi delle app stock sono generici (Browser, Hub giochi, Videochiamate, Documenti…) e non quelli di Windows Phone. Stanno in
