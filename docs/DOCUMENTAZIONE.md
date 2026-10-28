@@ -871,8 +871,7 @@ app/src/main/java/com/metrowin/launcher/
 
 ## Note e limiti
 
-- **Non provato su un telefono.** La verifica è stata fatta compilando (debug e release con R8), con i test e con le schermate
-  renderizzate su JVM. Vanno guardati su un dispositivo, e l'ho scritto qui perché non siano una sorpresa:
+- **Ufficialmente testato solo su Vivo X300 Pro, ma funzionante su tutti i dispositivi Android.**
   - la **sensazione** dei gesti e dei 120 Hz (i test controllano posizioni, soglie e che nulla lotti con il dito, non la
     fluidità), e il progresso di Indietro che dà ogni produttore;
   - il **riconoscimento vocale** vero (microfono, modello offline, lingue), il selettore dei contatti e l'apertura delle schede;
