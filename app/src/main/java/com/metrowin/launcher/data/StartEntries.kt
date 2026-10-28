@@ -35,12 +35,14 @@ object StartEntries {
             else listOf(entry)
         }
 
-    fun resize(entries: List<StartEntry>, id: String, allowLarge: Boolean = true): List<StartEntry> =
+    /** [onlyMediumOrWide]: the cycle skips the small and the large size (the full weather tile has no face for them). */
+    fun resize(entries: List<StartEntry>, id: String, allowLarge: Boolean = true, onlyMediumOrWide: Boolean = false): List<StartEntry> =
         entries.map { entry ->
+            fun next(size: TileSize) = if (onlyMediumOrWide) (if (size == TileSize.Medium) TileSize.Wide else TileSize.Medium) else size.next(allowLarge)
             when {
                 entry.id != id -> entry
-                entry is Tile -> entry.copy(size = entry.size.next(allowLarge))
-                entry is Folder -> entry.copy(size = entry.size.next(allowLarge))
+                entry is Tile -> entry.copy(size = next(entry.size))
+                entry is Folder -> entry.copy(size = next(entry.size))
                 else -> entry
             }
         }

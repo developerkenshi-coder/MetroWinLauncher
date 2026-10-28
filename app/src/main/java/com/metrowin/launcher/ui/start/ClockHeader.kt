@@ -1,7 +1,11 @@
 package com.metrowin.launcher.ui.start
 
 import android.text.format.DateFormat
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -31,6 +35,22 @@ import com.metrowin.launcher.ui.theme.LocalMetroColors
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 import java.util.Locale
+
+/** The microphone at the top of Start: one touch starts the voice assistant, as the gesture for it does. */
+@Composable
+fun AssistantIcon(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val label = stringResource(R.string.assistant_icon)
+    Box(
+        modifier
+            .size(48.dp)
+            .testTag("start:assistant")
+            .semantics { contentDescription = label }
+            .metroPress(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        GlyphIcon(Glyph.Mic, 26.dp)
+    }
+}
 
 /** The time in large light type with the date under it, above the tiles. Redrawn when the minute changes. */
 @Composable

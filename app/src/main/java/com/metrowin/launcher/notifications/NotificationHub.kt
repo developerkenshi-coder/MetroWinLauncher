@@ -128,6 +128,35 @@ object NotificationHub {
             if (held.isEmpty()) entries else (entries + held.values).sortedByDescending { it.postTime }
         }
         _entries.value = shown
+        clearJustOpened(shown)
+    }
+
+    /** Whether opening an app takes away its notifications (see [LauncherSettings.clearOnOpen]); said by the settings and read by the service. */
+    @Volatile
+    var clearOnOpen = false
+
+    /** When each app was opened lately, by package: a notification of an app the user is in front of is not news. */
+    private val openedAt = HashMap<String, Long>()
+
+    /**
+     * An app was opened (from Start, the list, a tile, a notification): its notifications go now, and the ones that come in the next
+     * few seconds too. They are read a moment after they are posted (the service paces its reads), so a notification of the app that
+     * was already there when it was opened could reach the list only after that, and stay.
+     */
+    fun appOpened(packageName: String, now: Long = android.os.SystemClock.elapsedRealtime()) {
+        if (!clearOnOpen) return
+        synchronized(openedAt) { openedAt[packageName] = now }
+        dismissApp(packageName)
+    }
+
+    private fun clearJustOpened(shown: List<NotificationEntry>, now: Long = android.os.SystemClock.elapsedRealtime()) {
+        if (!clearOnOpen) return
+        val packages = synchronized(openedAt) {
+            openedAt.values.removeAll { now - it > JUST_OPENED_MS }
+            openedAt.keys.toList()
+        }
+        if (packages.isEmpty()) return
+        shown.mapTo(HashSet()) { it.packageName }.filter { it in packages }.forEach(::dismissApp)
     }
 
     /**
@@ -248,10 +277,12 @@ object NotificationHub {
             }
             entry.contentIntent?.send(context, 0, null, null, null, null, options)
         }
-        if (entry.autoCancel) {
+        // Opened from the list, the app is seen: the notification goes, whatever the app asked for, and the others of that app with it.
+        if (entry.autoCancel || clearOnOpen) {
             forget(entry.key)
             service?.cancelNotification(entry.key)
         }
+        appOpened(entry.packageName)
     }
 
     /** The accessibility service came or went: the strip of the Action Center over other apps needs it. */
@@ -292,5 +323,6 @@ object NotificationHub {
     }
 
     private const val MAX_HELD = 200
+    private const val JUST_OPENED_MS = 8_000L
     private const val MAX_HISTORY = 30
 }

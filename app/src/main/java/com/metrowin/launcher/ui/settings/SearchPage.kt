@@ -126,6 +126,27 @@ fun SearchPage(env: SettingsEnv) {
                 hint = stringResource(R.string.apps_today_hint), tag = "search:today", id = "search.today",
             )
             ToggleSetting(
+                stringResource(R.string.today_show_weather), env.settings.todayWeather,
+                onChange = { value -> env.onChange { it.copy(todayWeather = value) } },
+                enabled = env.settings.searchToday,
+                hint = stringResource(R.string.today_parts_hint), tag = "search:today:weather", id = "search.todayweather",
+            )
+            ToggleSetting(
+                stringResource(R.string.today_show_near), env.settings.todayNear,
+                onChange = { value -> env.onChange { it.copy(todayNear = value) } },
+                enabled = env.settings.searchToday, tag = "search:today:near", id = "search.todaynear",
+            )
+            ToggleSetting(
+                stringResource(R.string.today_show_date), env.settings.todayDate,
+                onChange = { value -> env.onChange { it.copy(todayDate = value) } },
+                enabled = env.settings.searchToday, tag = "search:today:date", id = "search.todaydate",
+            )
+            ToggleSetting(
+                stringResource(R.string.today_show_alarm), env.settings.todayAlarm,
+                onChange = { value -> env.onChange { it.copy(todayAlarm = value) } },
+                enabled = env.settings.searchToday, tag = "search:today:alarm", id = "search.todayalarm",
+            )
+            ToggleSetting(
                 stringResource(R.string.apps_currency), env.settings.searchCurrency,
                 onChange = { value -> env.onChange { it.copy(searchCurrency = value) } },
                 enabled = env.settings.searchAnswers,

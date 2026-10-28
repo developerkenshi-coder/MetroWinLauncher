@@ -46,7 +46,8 @@ import com.metrowin.launcher.ui.theme.frame
 @Composable
 fun ActionsPage(env: SettingsEnv) {
     val colors = LocalMetroColors.current
-    val slots = QuickAction.slots(env.settings.quickActions)
+    val order = QuickAction.order(env.settings.quickActions)
+    val slots = order.take(QuickAction.SLOTS)
     var selected by remember { mutableIntStateOf(0) }
     // The button held and dragged along the row, and how far it has gone.
     var dragIndex by remember { mutableIntStateOf(-1) }
@@ -81,7 +82,7 @@ fun ActionsPage(env: SettingsEnv) {
                                             dragIndex = -1
                                             dragX = 0f
                                             if (to != index) {
-                                                env.onChange { s -> s.copy(quickActions = QuickAction.move(slots, index, to).map { it.id }) }
+                                                env.onChange { s -> s.copy(quickActions = QuickAction.move(order, index, to).map { it.id }) }
                                                 selected = to
                                             }
                                         },
@@ -106,7 +107,7 @@ fun ActionsPage(env: SettingsEnv) {
                             QuickButton(
                                 action, on = action in slots,
                                 onClick = {
-                                    env.onChange { s -> s.copy(quickActions = QuickAction.assign(slots, selected, action).map { it.id }) }
+                                    env.onChange { s -> s.copy(quickActions = QuickAction.assign(order, selected, action).map { it.id }) }
                                 },
                                 modifier = Modifier.weight(1f),
                             )
@@ -178,6 +179,14 @@ fun ActionsPage(env: SettingsEnv) {
                 onChange = { value -> env.onChange { it.copy(metroSounds = value) } },
                 hint = stringResource(R.string.ac_sounds_hint),
                 tag = "notifications:sounds", id = "ac.sounds",
+            )
+            ToggleSetting(
+                label = stringResource(R.string.ac_panel_sounds),
+                checked = env.settings.panelSounds,
+                onChange = { value -> env.onChange { it.copy(panelSounds = value) } },
+                hint = stringResource(R.string.ac_panel_sounds_hint),
+                enabled = env.settings.metroSounds,
+                tag = "notifications:panelsounds", id = "ac.panelsounds",
             )
             ToggleSetting(
                 label = stringResource(R.string.ac_hide_system),

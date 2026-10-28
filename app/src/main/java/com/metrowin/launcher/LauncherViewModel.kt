@@ -139,6 +139,15 @@ import com.metrowin.launcher.data.TileStore
 import com.metrowin.launcher.data.WeatherData
 import com.metrowin.launcher.data.WeatherRepository
 import com.metrowin.launcher.data.AlbumInfo
+import com.metrowin.launcher.data.AppUpdate
+import com.metrowin.launcher.data.GalleryApps
+import com.metrowin.launcher.data.Levels
+import com.metrowin.launcher.data.UpdateCheckJob
+import com.metrowin.launcher.data.UpdateChecker
+import com.metrowin.launcher.data.UpdateInstaller
+import com.metrowin.launcher.data.UpdateState
+import com.metrowin.launcher.data.UpdateStore
+import com.metrowin.launcher.data.TodayPart
 import com.metrowin.launcher.data.NextAlarm
 import com.metrowin.launcher.data.TodayExtras
 import com.metrowin.launcher.data.BootCount
@@ -245,6 +254,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     val settings: StateFlow<LauncherSettings> = _settings.asStateFlow()
 
     /** The icon packs installed on the phone. */
+    private val _galleryApps = MutableStateFlow<List<IconPackInfo>>(emptyList())
+    val galleryApps: StateFlow<List<IconPackInfo>> = _galleryApps.asStateFlow()
     private val _iconPacks = MutableStateFlow<List<IconPackInfo>>(emptyList())
     val installedIconPacks: StateFlow<List<IconPackInfo>> = _iconPacks.asStateFlow()
 
@@ -651,6 +662,13 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         _settingsRequests.value = 0
     }
 
+    private val updateStore = UpdateStore(application)
+    private fun installedVersion() = UpdateChecker.installedVersion(getApplication())
+    private val _update = MutableStateFlow<UpdateState>(
+        updateStore.release?.takeIf { AppUpdate.isNewer(it.version, UpdateChecker.installedVersion(application)) }?.let { UpdateState.Available(it.version, it.notes) } ?: UpdateState.Idle,
+    )
+    val update: StateFlow<UpdateState> = _update.asStateFlow()
+
     private var tilesReady = false
     private var loadedLocale: Locale? = null
     private var reloadJob: Job? = null
@@ -659,6 +677,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     init {
         TileFeed.load(application)
         applyIconPack(_settings.value.iconPack)
+        apps.galleryApp = _settings.value.galleryApp
+        NotificationHub.clearOnOpen = _settings.value.clearOnOpen
+        UpdateCheckJob.schedule(application, _settings.value.updateAuto)
+        checkUpdateIfDue()
         reloadApps()
         if (_settings.value.hasStartBackground) loadBackground()
         if (_settings.value.hasLockPhoto) loadLockPhoto()
@@ -838,10 +860,71 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
      * of Android opened for it. Quiet hours without the "do not disturb" access ask for that access first.
      */
     fun activateQuickAction(action: QuickAction): Boolean {
-        val inPlace = quickActions.activate(action, _settings.value.dndMinutes, _settings.value.torchAutoOffMin)
+        val inPlace = quickActions.activate(action, _settings.value.dndMinutes, _settings.value.torchAutoOffMin, _settings.value.torchStrength)
         if ((action == QuickAction.QuietHours || action == QuickAction.QuietTimed) && !inPlace) tell(R.string.qa_quiet_allow)
         return inPlace
     }
+
+    // --- updates from GitHub
+
+    private fun updateBusy() = _update.value is UpdateState.Checking || _update.value is UpdateState.Downloading
+
+    /** Asks GitHub whether there is a newer release; the answer is the [update] state. */
+    fun checkForUpdate() {
+        if (updateBusy()) return
+        _update.value = UpdateState.Checking
+        viewModelScope.launch {
+            val answered = withContext(Dispatchers.IO) { runCatching { UpdateChecker.check(getApplication(), installedVersion()) }.getOrDefault(false) }
+            val found = updateStore.release
+            _update.value = when {
+                !answered -> UpdateState.Failed
+                found != null -> UpdateState.Available(found.version, found.notes)
+                else -> UpdateState.UpToDate
+            }
+        }
+    }
+
+    /** The check every 12 hours also runs when the launcher comes up and the last one is older than that (the job may wait for Android). */
+    private fun checkUpdateIfDue() {
+        if (_settings.value.updateAuto && !updateBusy() && System.currentTimeMillis() - updateStore.lastCheck > AppUpdate.CHECK_EVERY_MS) checkForUpdate()
+    }
+
+    /** Downloads the newer release and hands it to the installer of Android, which opens its confirmation screen by itself. */
+    fun installUpdate() {
+        val release = updateStore.release ?: return
+        if (updateBusy()) return
+        val app = getApplication<Application>()
+        if (!UpdateInstaller.mayInstall(app)) {
+            // Android asks the user once to allow this app to install apps; the next touch goes on from here.
+            _update.value = UpdateState.NeedsPermission
+            UpdateInstaller.openPermissionScreen(app)
+            return
+        }
+        _update.value = UpdateState.Downloading(0)
+        viewModelScope.launch {
+            val file = UpdateInstaller.cacheFile(app)
+            val done = withContext(Dispatchers.IO) {
+                AppUpdate.download(release, file) { percent -> _update.value = UpdateState.Downloading(percent) } && UpdateInstaller.install(app, file)
+            }
+            _update.value = if (done) UpdateState.Available(release.version, release.notes) else UpdateState.Failed
+        }
+    }
+
+    /** A long press on a part of the Today card switches that part off; the settings of the search bring it back. */
+    fun hideTodayPart(part: TodayPart) {
+        updateSettings {
+            when (part) {
+                TodayPart.Weather -> it.copy(todayWeather = false)
+                TodayPart.Near -> it.copy(todayNear = false)
+                TodayPart.Date -> it.copy(todayDate = false)
+                TodayPart.Alarm -> it.copy(todayAlarm = false)
+            }
+        }
+        tell(R.string.today_hidden)
+    }
+
+    /** The long press on a button of the Action Center: the screen of its own. */
+    fun holdQuickAction(action: QuickAction) = quickActions.hold(action)
 
     /** The touch on a switch kept on Start: it does what the button of the Action Center does, and its state is read again a moment later. */
     fun toggleTile(actionId: String) {
@@ -856,7 +939,18 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** The strength of the flashlight, 0 to 1, when the phone can change it (Android 13 and later) and the light is on. */
     fun torchStrength(): Float? = quickActions.torchStrength()
 
+    /** How many strengths the flashlight has (1: only on and off). */
+    fun torchLevels(): Int = quickActions.torchLevels
+
+    /** Keeps [order] as the order of the buttons of the Action Center (the first four on top). */
+    fun setQuickOrder(order: List<QuickAction>) = updateSettings { it.copy(quickActions = order.map(QuickAction::id)) }
+
     fun setTorchStrength(fraction: Float) {
+        // The strength chosen is kept for when the flashlight is switched on next time; only a change of step is written down.
+        val levels = quickActions.torchLevels
+        if (levels > 1 && Levels.level(fraction, levels, min = 1) != Levels.level(_settings.value.torchStrength, levels, min = 1)) {
+            updateSettings { it.copy(torchStrength = Levels.fraction(Levels.level(fraction, levels, min = 1), levels)) }
+        }
         quickActions.setTorchStrength(fraction)
         _controls.value = _controls.value.copy(torch = fraction)
     }
@@ -986,7 +1080,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         loadedAlbums = albumIds
         loadedGroups = groupIds
         viewModelScope.launch {
-            val fresh = if (toRead.isEmpty()) LiveTileData() else withContext(Dispatchers.IO) { liveTiles.load(toRead, albumIds, groupIds) }
+            val fresh = if (toRead.isEmpty()) LiveTileData() else withContext(Dispatchers.IO) { liveTiles.load(toRead, albumIds, groupIds, _settings.value.galleryAlbums) }
             _live.update { it.keeping(wanted + feeds, albumIds, groupIds).updatedWith(fresh, toRead) }
         }
     }
@@ -1048,6 +1142,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             val found = withContext(Dispatchers.IO) { runCatching { iconPacks.installed() }.getOrDefault(emptyList()) }
             _iconPacks.value = found
+            _galleryApps.value = withContext(Dispatchers.IO) { runCatching { GalleryApps.installed(getApplication()) }.getOrDefault(emptyList()) }
             // A pack that was uninstalled: back to the icons of the apps.
             val chosen = _settings.value.iconPack
             if (chosen.isNotEmpty() && found.none { it.packageName == chosen }) updateSettings { it.copy(iconPack = "") }
@@ -1281,6 +1376,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         if (updated != previous) {
             _settings.value = updated
             settingsStore.save(updated)
+            NotificationHub.clearOnOpen = updated.clearOnOpen
             val movedWeather = updated.weatherLatitude != previous.weatherLatitude && !(updated.weatherLatitude.isNaN() && previous.weatherLatitude.isNaN()) ||
                 updated.weatherLongitude != previous.weatherLongitude && !(updated.weatherLongitude.isNaN() && previous.weatherLongitude.isNaN()) ||
                 updated.weatherFahrenheit != previous.weatherFahrenheit
@@ -1291,6 +1387,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 refreshWeather(force = true)
             }
             if (updated.iconPack != previous.iconPack) applyIconPack(updated.iconPack)
+            if (updated.updateAuto != previous.updateAuto) UpdateCheckJob.schedule(getApplication(), updated.updateAuto)
+            if (updated.galleryApp != previous.galleryApp) {
+                apps.galleryApp = updated.galleryApp
+                reloadApps()
+            }
+            if (updated.galleryAlbums != previous.galleryAlbums) refreshLive(force = true)
             if (updated.startPages != previous.startPages && tilesReady) {
                 updatePages { StartPages.resize(it, updated.startPages) }
             }
@@ -1388,11 +1490,15 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun resize(id: String) {
         val allowLarge = _settings.value.largeTiles
-        updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.resize(page, id, allowLarge) } }
+        val onlyMediumOrWide = isFullWeather(id)
+        updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.resize(page, id, allowLarge, onlyMediumOrWide) } }
     }
 
+    /** The full weather tile exists in medium and wide only. */
+    private fun isFullWeather(id: String) = _shortcuts.value.any { it.id == id && it.kind == ShortcutKind.WeatherPlus }
+
     fun setSize(id: String, size: TileSize) =
-        updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.setSize(page, id, size) } }
+        updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.setSize(page, id, if (isFullWeather(id)) size.mediumOrWide() else size) } }
 
     fun setStyle(id: String, style: TileStyle) =
         updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.setStyle(page, id, style) } }
@@ -1455,7 +1561,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 store.appUsage = _usage.value
                 // Opening the app clears its notifications, and the number on its tile with them.
                 val target = item.launch
-                if (_settings.value.clearOnOpen && target is Launch.Activity) NotificationHub.dismissApp(target.component.packageName)
+                val opened = (target as? Launch.Activity)?.component?.packageName ?: item.packageName
+                if (opened != null) NotificationHub.appOpened(opened)
             }
         } else {
             Toast.makeText(getApplication(), R.string.launch_failed, Toast.LENGTH_SHORT).show()
@@ -1739,6 +1846,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun addParking(page: Int) = addTile(ShortcutKind.Parking, R.string.parking_default_label, page)
     fun addAnalogClock(page: Int) = addTile(ShortcutKind.AnalogClock, R.string.analogclock_default_label, page)
     fun addSun(page: Int) = addTile(ShortcutKind.Sun, R.string.sun_default_label, page)
+    fun addWeatherPlus(page: Int) = addTile(ShortcutKind.WeatherPlus, R.string.weatherplus_default_label, page, TileSize.Wide)
 
     /** Keeps the switch [action] of the Action Center on Start as a small tile. */
     fun addToggle(action: QuickAction, page: Int) = addShortcut(

@@ -88,6 +88,9 @@ enum class ShortcutKind(val code: String) {
     /** When the sun rises and sets today. */
     Sun("sun"),
 
+    /** The weather of today in full, on a medium or wide tile. */
+    WeatherPlus("weatherplus"),
+
     /** The steps of today. */
     Steps("steps"),
 
@@ -159,7 +162,7 @@ data class ShortcutDef(
             ShortcutKind.PeopleHub -> Launch.Internal(AppRepository.ROUTE_PEOPLEHUB)
             ShortcutKind.Reminders -> Launch.Internal(AppRepository.ROUTE_REMINDERS)
             ShortcutKind.Toggle -> Launch.Internal(AppRepository.ROUTE_TOGGLE)
-            ShortcutKind.Sun -> Launch.Internal(AppRepository.ROUTE_WEATHER)
+            ShortcutKind.Sun, ShortcutKind.WeatherPlus -> Launch.Internal(AppRepository.ROUTE_WEATHER)
             ShortcutKind.Steps -> Launch.Internal(AppRepository.ROUTE_STEPS)
             ShortcutKind.Recorder -> Launch.Internal(AppRepository.ROUTE_RECORDER)
             ShortcutKind.Camera -> Launch.Action(CAMERA_ACTION)
@@ -193,7 +196,7 @@ data class ShortcutDef(
             ShortcutKind.PeopleHub -> Glyph.People
             ShortcutKind.Reminders -> Glyph.Bell
             ShortcutKind.Toggle -> QuickAction.fromId(uri)?.glyph ?: Glyph.Settings
-            ShortcutKind.Sun -> Glyph.Weather
+            ShortcutKind.Sun, ShortcutKind.WeatherPlus -> Glyph.Weather
             ShortcutKind.Steps -> Glyph.Sports
             ShortcutKind.Recorder -> Glyph.Mic
             ShortcutKind.Camera -> Glyph.Camera
@@ -235,6 +238,7 @@ data class ShortcutDef(
             ShortcutKind.Reminders -> TileData.Reminders
             ShortcutKind.Toggle -> TileData.Toggle(uri)
             ShortcutKind.Sun -> TileData.Sun
+            ShortcutKind.WeatherPlus -> TileData.WeatherPlus
             ShortcutKind.Steps -> TileData.Steps
             ShortcutKind.Recorder -> TileData.Recorder
             ShortcutKind.Camera -> TileData.Camera

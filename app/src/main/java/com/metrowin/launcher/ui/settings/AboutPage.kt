@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.R
+import com.metrowin.launcher.ui.components.SettingLabel
+import com.metrowin.launcher.data.UpdateState
 
 /** The version of the app, the phone it runs on, and who made what it is built from. */
 @Composable
@@ -27,6 +29,7 @@ fun AboutPage(env: SettingsEnv) {
             InfoSetting(stringResource(R.string.about_device), about.device)
             if (about.refreshHz > 0) InfoSetting(stringResource(R.string.about_refresh), "${about.refreshHz} Hz")
         }
+        UpdateBlock(env)
         ToggleSetting(
             label = stringResource(R.string.about_phone_toggle), checked = env.settings.showPhoneInfo,
             onChange = { v -> env.onChange { it.copy(showPhoneInfo = v) } },
@@ -46,6 +49,49 @@ fun AboutPage(env: SettingsEnv) {
             SettingHint(stringResource(R.string.about_weather))
         }
     }
+}
+
+/** The updates from GitHub: the check every 12 hours, the check now, and the download that goes on to the installer. */
+@Composable
+private fun UpdateBlock(env: SettingsEnv) {
+    val state = env.update
+    val busy = state is UpdateState.Checking || state is UpdateState.Downloading
+    Column(Modifier.settingAnchor("about.update").testTag("about:update"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        SettingHeading(stringResource(R.string.update_title))
+        SettingHint(
+            when (state) {
+                UpdateState.Idle -> stringResource(R.string.update_idle)
+                UpdateState.Checking -> stringResource(R.string.update_checking)
+                UpdateState.UpToDate -> stringResource(R.string.update_up_to_date)
+                is UpdateState.Available -> stringResource(R.string.update_available, state.version)
+                is UpdateState.Downloading -> stringResource(R.string.update_downloading, state.percent)
+                UpdateState.NeedsPermission -> stringResource(R.string.update_needs_permission)
+                UpdateState.Failed -> stringResource(R.string.update_failed)
+            },
+            Modifier.testTag("about:update:state"),
+        )
+        ActionSetting(
+            stringResource(R.string.update_check), onClick = env.onCheckUpdate, enabled = !busy,
+            tag = "about:update:check", id = "about.updatecheck",
+        )
+        // What the new version brings, to read before updating.
+        if (state is UpdateState.Available && state.notes.isNotBlank()) {
+            SettingLabel(stringResource(R.string.update_notes_title, state.version))
+            SettingHint(state.notes, Modifier.testTag("about:update:notes"))
+        }
+        if (state is UpdateState.Available || state is UpdateState.NeedsPermission) {
+            val version = (state as? UpdateState.Available)?.version.orEmpty()
+            ActionSetting(
+                stringResource(R.string.update_install, version), onClick = env.onInstallUpdate,
+                hint = stringResource(R.string.update_install_hint), tag = "about:update:install",
+            )
+        }
+    }
+    ToggleSetting(
+        label = stringResource(R.string.update_auto), checked = env.settings.updateAuto,
+        onChange = { v -> env.onChange { it.copy(updateAuto = v) } },
+        hint = stringResource(R.string.update_auto_hint), tag = "about:updateauto", id = "about.updateauto",
+    )
 }
 
 /** The phone itself: what it is, what it runs, how much memory and space it has, and how long it has been on. */

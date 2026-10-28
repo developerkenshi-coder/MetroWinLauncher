@@ -42,7 +42,7 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
     Camera("camera", R.string.qa_camera, Glyph.Camera),
 
     /** Opens the settings of the launcher itself, which are otherwise only an entry in the app list. */
-    LauncherSettings("launcher", R.string.qa_launcher_settings, Glyph.Settings),
+    LauncherSettings("launcher", R.string.qa_launcher_settings, Glyph.Launcher),
 
     /** Opens the recent apps at once, through the accessibility service (the same one that locks the screen). */
     Recents("recents", R.string.qa_recents, Glyph.Recents),
@@ -54,7 +54,10 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
     ScreenTimeout("timeout", R.string.qa_timeout, Glyph.Timeout),
 
     /** The brightness that follows the light of the room, on or off. */
-    AutoBrightness("autobrightness", R.string.qa_auto_brightness, Glyph.AutoBrightness);
+    AutoBrightness("autobrightness", R.string.qa_auto_brightness, Glyph.AutoBrightness),
+
+    /** The settings of Android itself, as against [LauncherSettings] (the settings of this launcher): another picture and another name. */
+    DeviceSettings("device", R.string.qa_device_settings, Glyph.DeviceSettings);
 
     companion object {
         /** The four buttons on top until the user chooses others. */
@@ -71,11 +74,37 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
 
         fun fromId(id: String): QuickAction? = entries.firstOrNull { it.id == id }
 
-        /** [ids] as the four buttons: unknown ids are dropped, the gaps filled from the defaults. */
-        fun slots(ids: List<String>): List<QuickAction> {
-            val chosen = ids.mapNotNull(::fromId).distinct().take(SLOTS)
-            return (chosen + (defaults + entries).filter { it !in chosen }).take(SLOTS)
+        /**
+         * The screen a long press on [action] opens: every button has one of its own, next to what a touch does. Null for Wi-Fi and
+         * Bluetooth, whose long press opens the list of networks and devices in the panel.
+         */
+        fun holdScreen(action: QuickAction): String? = when (action) {
+            Wifi, Bluetooth -> null
+            Airplane, Hotspot -> Settings.ACTION_WIRELESS_SETTINGS
+            Flashlight -> MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA
+            QuietHours, QuietTimed -> "android.settings.ZEN_MODE_SETTINGS"
+            Rotation, Brightness, ScreenTimeout, AutoBrightness -> Settings.ACTION_DISPLAY_SETTINGS
+            Location -> Settings.ACTION_PRIVACY_SETTINGS
+            Vpn -> "android.settings.PRIVATE_DNS_SETTINGS"
+            Cast -> Settings.ACTION_DISPLAY_SETTINGS
+            Camera -> MediaStore.INTENT_ACTION_VIDEO_CAMERA
+            LauncherSettings -> Settings.ACTION_HOME_SETTINGS
+            Recents -> Settings.ACTION_MANAGE_ALL_APPLICATIONS_SETTINGS
+            Screenshot -> Settings.ACTION_ACCESSIBILITY_SETTINGS
+            DeviceSettings -> Settings.ACTION_DEVICE_INFO_SETTINGS
         }
+
+        /**
+         * Every button in the order the user gave them: the four on top first, then the rest that opens out. Unknown ids are dropped;
+         * what the list does not name follows, the defaults first.
+         */
+        fun order(ids: List<String>): List<QuickAction> {
+            val chosen = ids.mapNotNull(::fromId).distinct()
+            return chosen + (defaults + entries).distinct().filter { it !in chosen }
+        }
+
+        /** [ids] as the four buttons on top: unknown ids are dropped, the gaps filled from the defaults. */
+        fun slots(ids: List<String>): List<QuickAction> = order(ids).take(SLOTS)
 
         /** Puts [action] in [slot], swapping with the slot it was in so no button shows twice. */
         fun assign(current: List<QuickAction>, slot: Int, action: QuickAction): List<QuickAction> {
@@ -171,7 +200,7 @@ class QuickActionsController(private val context: Context) {
     fun screenTimeout(): Int? = runCatching { Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT) }.getOrNull()
 
     /** How many strengths the flashlight has (1 when it only goes on and off, and before Android 13). */
-    private val torchLevels: Int =
+    val torchLevels: Int =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && torchId != null) strengthLevelsOf(torchId) else 1
 
     @androidx.annotation.RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -196,11 +225,13 @@ class QuickActionsController(private val context: Context) {
      * Switches the flashlight or the quiet hours on the spot, or opens the system screen of the button. True when it was
      * done on the spot. Quiet hours need the "do not disturb" access: without it the screen that gives it opens.
      */
-    fun activate(action: QuickAction, quietMinutes: Int = 60, torchMinutes: Int = 0): Boolean {
+    fun activate(action: QuickAction, quietMinutes: Int = 60, torchMinutes: Int = 0, torchStrength: Float = 1f): Boolean {
         val torch = torchId
         if (action == QuickAction.Flashlight && torch != null) {
             val turnOn = !_torchOn.value
-            runCatching { cameras.setTorchMode(torch, turnOn) }
+            // Lit at the strength the user chose (where the phone has several), else as bright as it goes.
+            if (turnOn && torchStrength < 1f && torchLevels > 1 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) setTorchStrength(torchStrength)
+            else runCatching { cameras.setTorchMode(torch, turnOn) }
             // An alarm of Android puts it out when the time is up; switching it off by hand cancels that.
             if (turnOn && torchMinutes > 0) com.metrowin.launcher.notifications.Alerts.scheduleTorchOff(context, torchMinutes)
             else com.metrowin.launcher.notifications.Alerts.cancelTorchOff(context)
@@ -223,8 +254,8 @@ class QuickActionsController(private val context: Context) {
             }
             return start(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS).let { false }
         }
-        if (action == QuickAction.ScreenTimeout || action == QuickAction.AutoBrightness) {
-            // Both are system settings an app may only write once the user has allowed it, in a screen of Android (never in a dialog).
+        if (action == QuickAction.ScreenTimeout || action == QuickAction.AutoBrightness || action == QuickAction.Rotation) {
+            // These are system settings an app may only write once the user has allowed it, in a screen of Android (never in a dialog).
             if (!Settings.System.canWrite(context)) {
                 runCatching {
                     context.startActivity(
@@ -236,7 +267,9 @@ class QuickActionsController(private val context: Context) {
             }
             runCatching {
                 val resolver = context.contentResolver
-                if (action == QuickAction.AutoBrightness) {
+                if (action == QuickAction.Rotation) {
+                    Settings.System.putInt(resolver, Settings.System.ACCELEROMETER_ROTATION, if (isOn(QuickAction.Rotation) == true) 1 else 0)
+                } else if (action == QuickAction.AutoBrightness) {
                     val auto = isOn(QuickAction.AutoBrightness) == true
                     Settings.System.putInt(
                         resolver, Settings.System.SCREEN_BRIGHTNESS_MODE,
@@ -253,7 +286,7 @@ class QuickActionsController(private val context: Context) {
             QuickAction.Bluetooth -> Settings.ACTION_BLUETOOTH_SETTINGS
             QuickAction.Airplane -> Settings.ACTION_AIRPLANE_MODE_SETTINGS
             QuickAction.QuietHours, QuickAction.QuietTimed -> "android.settings.ZEN_MODE_SETTINGS"
-            QuickAction.Rotation, QuickAction.Brightness, QuickAction.Flashlight -> Settings.ACTION_DISPLAY_SETTINGS
+            QuickAction.Brightness, QuickAction.Flashlight -> Settings.ACTION_DISPLAY_SETTINGS
             QuickAction.Location -> Settings.ACTION_LOCATION_SOURCE_SETTINGS
             QuickAction.Hotspot -> "android.settings.TETHER_SETTINGS"
             QuickAction.Vpn -> Settings.ACTION_VPN_SETTINGS
@@ -261,10 +294,17 @@ class QuickActionsController(private val context: Context) {
             QuickAction.Camera -> MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA
             // Not screens of Android: the launcher opens its own settings and the recent apps itself (see LauncherApp).
             QuickAction.LauncherSettings, QuickAction.Recents, QuickAction.Screenshot -> return false
-            QuickAction.ScreenTimeout, QuickAction.AutoBrightness -> return false
+            QuickAction.DeviceSettings -> Settings.ACTION_SETTINGS
+            QuickAction.ScreenTimeout, QuickAction.AutoBrightness, QuickAction.Rotation -> return false
         }
         if (!start(intentAction)) start(Settings.ACTION_SETTINGS)
         return false
+    }
+
+    /** A long press on a button: the screen of its own (see [QuickAction.holdScreen]), or the settings of Android when the phone has no such screen. */
+    fun hold(action: QuickAction) {
+        val screen = QuickAction.holdScreen(action) ?: return
+        if (!start(screen)) start(Settings.ACTION_SETTINGS)
     }
 
     private fun start(intentAction: String): Boolean =

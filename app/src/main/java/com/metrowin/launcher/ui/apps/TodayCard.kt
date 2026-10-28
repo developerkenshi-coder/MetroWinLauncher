@@ -29,6 +29,7 @@ import com.metrowin.launcher.data.LockText
 import com.metrowin.launcher.data.NearPlace
 import com.metrowin.launcher.data.TodayAction
 import com.metrowin.launcher.data.TodayInfo
+import com.metrowin.launcher.data.TodayPart
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.anim.turnstile
@@ -88,7 +89,9 @@ internal fun TodayCard(
             )
             info.weather?.let { weather ->
                 Row(
-                    Modifier.weight(1f, fill = false).testTag("today:weather").metroPress(enabled = !exiting, onClick = { onAction(TodayAction.Weather) }).padding(vertical = 2.dp),
+                    Modifier.weight(1f, fill = false).testTag("today:weather")
+                        .metroPress(enabled = !exiting, onClick = { onAction(TodayAction.Weather) }, onLongClick = { onAction(TodayAction.Hide(TodayPart.Weather)) })
+                        .padding(vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
@@ -100,10 +103,13 @@ internal fun TodayCard(
                 }
             }
         }
-        MetroText(
-            date, size = 26.sp, maxLines = 2,
-            modifier = Modifier.fillMaxWidth().testTag("today:date").metroPress(enabled = !exiting, onClick = { onAction(TodayAction.Calendar) }),
-        )
+        if (info.showDate) {
+            MetroText(
+                date, size = 26.sp, maxLines = 2,
+                modifier = Modifier.fillMaxWidth().testTag("today:date")
+                    .metroPress(enabled = !exiting, onClick = { onAction(TodayAction.Calendar) }, onLongClick = { onAction(TodayAction.Hide(TodayPart.Date)) }),
+            )
+        }
 
         info.event?.let { event ->
             TodayLine(Glyph.Calendar, LockText.event(event, info.nowMillis, zone, is24, locale), "today:event", exiting) { onAction(TodayAction.Calendar) }
@@ -121,6 +127,7 @@ internal fun TodayCard(
         info.alarmMillis?.let { alarm ->
             TodayLine(
                 Glyph.Alarm, stringResource(R.string.today_alarm, LockText.alarm(alarm, info.nowMillis, zone, is24, locale)), "today:alarm", exiting,
+                onLongClick = { onAction(TodayAction.Hide(TodayPart.Alarm)) },
             ) { onAction(TodayAction.Clock) }
         }
 
@@ -131,14 +138,17 @@ internal fun TodayCard(
                 MetroText(stringResource(R.string.today_tip, tips[tip.coerceIn(tips.indices)]), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 4, modifier = Modifier.weight(1f))
             }
         }
-        MetroText(stringResource(R.string.today_near), size = 13.sp, weight = FontWeight.Normal, color = colors.subtle)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (info.showNear) MetroText(
+            stringResource(R.string.today_near), size = 13.sp, weight = FontWeight.Normal, color = colors.subtle,
+            modifier = Modifier.testTag("today:near:title").metroPress(enabled = !exiting, onClick = {}, onLongClick = { onAction(TodayAction.Hide(TodayPart.Near)) }),
+        )
+        if (info.showNear) FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             NearPlace.entries.forEach { place ->
                 val label = stringResource(place.label)
                 Box(
                     Modifier
                         .testTag("today:near:${place.name}")
-                        .metroPress(enabled = !exiting, onClick = { onAction(TodayAction.Near(label)) })
+                        .metroPress(enabled = !exiting, onClick = { onAction(TodayAction.Near(label)) }, onLongClick = { onAction(TodayAction.Hide(TodayPart.Near)) })
                         .litFill(false)
                         .padding(horizontal = 14.dp, vertical = 7.dp),
                     contentAlignment = Alignment.Center,
@@ -152,13 +162,13 @@ internal fun TodayCard(
 
 /** One line of the card: a small glyph, what it says, and what a touch on it opens. */
 @Composable
-private fun TodayLine(glyph: Glyph, text: String, tag: String, exiting: Boolean, accent: Boolean = false, onClick: () -> Unit) {
+private fun TodayLine(glyph: Glyph, text: String, tag: String, exiting: Boolean, accent: Boolean = false, onLongClick: (() -> Unit)? = null, onClick: () -> Unit) {
     val colors = LocalMetroColors.current
     Row(
         Modifier
             .fillMaxWidth()
             .testTag(tag)
-            .metroPress(enabled = !exiting, onClick = onClick)
+            .metroPress(enabled = !exiting, onClick = onClick, onLongClick = onLongClick)
             .padding(vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),

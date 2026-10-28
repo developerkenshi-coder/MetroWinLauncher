@@ -270,7 +270,6 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, fromTop: Flo
                 SettingsSection.Backup -> BackupPage(env)
                 SettingsSection.Kids -> KidsPage(env)
                 SettingsSection.About -> AboutPage(env)
-                SettingsSection.Debug -> DebugPage(env)
             }
             }
         }

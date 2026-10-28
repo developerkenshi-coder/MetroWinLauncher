@@ -257,6 +257,35 @@ class ExtraTilesUiTest : ScreenshotBase() {
     }
 
     @Test
+    fun theFullWeatherTileGivesTheDetailsAndTheNextDaysWhenWide() {
+        val weather = WeatherData(
+            temperature = 14, condition = WeatherCondition.Clear, isDay = true, fahrenheit = false, fetchedAt = 0L,
+            days = listOf(
+                com.metrowin.launcher.data.DayForecast(java.time.LocalDate.of(2026, 10, 28), WeatherCondition.Clear, 17, 8),
+                com.metrowin.launcher.data.DayForecast(java.time.LocalDate.of(2026, 10, 29), WeatherCondition.Rain, 15, 9),
+                com.metrowin.launcher.data.DayForecast(java.time.LocalDate.of(2026, 10, 30), WeatherCondition.Clear, 16, 7),
+            ),
+            details = com.metrowin.launcher.data.WeatherDetails(
+                feelsLike = 12, humidity = 60, wind = 11, rainChance = 20, uvIndex = 3, sunrise = LocalTime.of(6, 52), sunset = LocalTime.of(17, 3),
+            ),
+        )
+        showFace(item("wp", TileData.WeatherPlus, Glyph.Weather), LiveTileData(weather = weather), TileSize.Wide)
+        advance(300)
+        listOf("weatherplus:temp", "weatherplus:condition", "weatherplus:range", "weatherplus:day").forEach { compose.onAllNodesWithTag(it)[0].assertExists() }
+        assert(compose.onAllNodesWithTag("weatherplus:line").fetchSemanticsNodes().isNotEmpty())
+    }
+
+    @Test
+    fun theFullWeatherTileHasNoSmallFaceAndWaitsForTheWeather() {
+        showFace(item("wp", TileData.WeatherPlus, Glyph.Weather), LiveTileData(), TileSize.Wide)
+        advance(300)
+        compose.onAllNodesWithTag("weatherplus:temp").assertCountEquals(0)
+        assertEquals(TileSize.Medium, TileSize.Small.mediumOrWide())
+        assertEquals(TileSize.Wide, TileSize.Large.mediumOrWide())
+        assertEquals(TileSize.Wide, TileSize.Wide.mediumOrWide())
+    }
+
+    @Test
     fun theCollageFillsATileWithPictures() {
         fun solid(argb: Int) = android.graphics.Bitmap.createBitmap(8, 8, android.graphics.Bitmap.Config.ARGB_8888).apply { eraseColor(argb) }.asImageBitmap()
         val photos = listOf(0xFFCC0000.toInt(), 0xFF00CC00.toInt(), 0xFF0000CC.toInt()).map(::solid)

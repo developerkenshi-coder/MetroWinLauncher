@@ -24,6 +24,9 @@ data class TodayInfo(
     val missed: Int = 0,
     /** The tip of the day (a place in the list of tips), or -1 for none. */
     val tip: Int = -1,
+    /** The date and the places near me are lines of their own that the user may switch off (the weather and the alarm are simply left out). */
+    val showDate: Boolean = true,
+    val showNear: Boolean = true,
 ) {
     /** Nothing but the date: no event, no alarm, no weather and no reminder. */
     val isQuiet: Boolean get() = event == null && alarmMillis == null && weather == null && reminders.isEmpty() && missed == 0
@@ -38,7 +41,13 @@ sealed interface TodayAction {
 
     /** A search "near me" for the words in [what]. */
     data class Near(val what: String) : TodayAction
+
+    /** A long press on a part of the card: it is switched off (it comes back in the settings of the search). */
+    data class Hide(val part: TodayPart) : TodayAction
 }
+
+/** The parts of the Today card the user can switch off. */
+enum class TodayPart { Weather, Near, Date, Alarm }
 
 /** The places the chips of the Today card look for, around where the user is. */
 enum class NearPlace(@param:StringRes val label: Int) {

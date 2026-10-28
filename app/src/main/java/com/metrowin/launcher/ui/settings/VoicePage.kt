@@ -16,6 +16,11 @@ fun VoicePage(env: SettingsEnv) {
     SettingsPage {
         Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
             ToggleSetting(
+                stringResource(R.string.voice_set_icon), settings.assistantIcon,
+                onChange = { value -> env.onChange { it.copy(assistantIcon = value) } },
+                hint = stringResource(R.string.voice_set_icon_hint), tag = "voice:icon", id = "voice.icon",
+            )
+            ToggleSetting(
                 stringResource(R.string.voice_set_button), settings.voiceButton,
                 onChange = { value -> env.onChange { it.copy(voiceButton = value) } },
                 hint = stringResource(R.string.voice_set_button_hint), tag = "voice:button", id = "voice.button",

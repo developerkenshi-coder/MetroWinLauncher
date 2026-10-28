@@ -108,7 +108,7 @@ Every one is optional and reads data only while it is pinned to Start.
 
 ### Looks and colors
 - **Classic** (flat Windows Phone), **Modern Glass** (frosted, rounded glass over a glowing backdrop) and **Modern Droid** (Material You), each in dark, light, by-the-hour or sunset-to-sunrise.
-- The **20 Windows Phone colors** or a color of your own, a different accent at night, **OLED black**, text size and weight, icon shape, **icon packs** (ADW, Nova, Apex, Go) and **theme files** you can share.
+- The **20 Windows Phone colors** or a color of your own, a different accent at night, **OLED black**, text size and weight, icon shape, **icon packs** from the Play Store (ADW, Nova, Apex, Smart, Go) and **theme files** you can share.
 
 ### Backup, profiles and accessibility
 - **Backup** of the layout to a file or a folder (any folder Android can open), by hand or every 1, 7 or 30 days, and **encrypted sync between phones** through that folder (AES-256-GCM, key from your passphrase with PBKDF2-SHA256).

@@ -23,6 +23,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -166,6 +168,7 @@ import com.metrowin.launcher.ui.settings.SettingsScreen
 import com.metrowin.launcher.ui.settings.SettingsSection
 import com.metrowin.launcher.ui.start.AppCell
 import com.metrowin.launcher.ui.start.AddMenu
+import com.metrowin.launcher.ui.start.AssistantIcon
 import com.metrowin.launcher.ui.start.ClockHeader
 import com.metrowin.launcher.ui.start.EditBar
 import com.metrowin.launcher.ui.start.ExitRequest
@@ -331,6 +334,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     val profiles by vm.profiles.collectAsStateWithLifecycle()
     val publishedTiles by vm.publishedTiles.collectAsStateWithLifecycle()
     val installedIconPacks by vm.installedIconPacks.collectAsStateWithLifecycle()
+    val galleryApps by vm.galleryApps.collectAsStateWithLifecycle()
+    val updateState by vm.update.collectAsStateWithLifecycle()
     val backupFolderName by vm.backupFolderName.collectAsStateWithLifecycle()
     val weather by vm.weather.collectAsStateWithLifecycle()
     val missingApps by vm.missingApps.collectAsStateWithLifecycle()
@@ -541,8 +546,9 @@ fun LauncherApp(vm: LauncherViewModel) {
     val panel = rememberPullPanel()
     // The glide of the Action Center as it comes down and goes, and the chime of a banner, when the sounds are on.
     val metroSound = rememberMetroSounds(settings.metroSounds)
+    val panelSounds by rememberUpdatedState(settings.panelSounds)
     LaunchedEffect(panel) {
-        snapshotFlow { panel.isShown }.drop(1).collect { metroSound(if (it) MetroSound.Open else MetroSound.Close) }
+        snapshotFlow { panel.isShown }.drop(1).collect { if (panelSounds) metroSound(if (it) MetroSound.Open else MetroSound.Close) }
     }
     LaunchedEffect(banner?.key) { if (banner != null) metroSound(MetroSound.Notify) }
     // The status bar of Android out of the way on Start; a swipe from the top edge brings it back for a moment.
@@ -1302,10 +1308,17 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     // The Today card is written from what the launcher already holds, and again whenever the list comes up. The calendar and the
     // alarm are read only when the app list page is the one on screen (and not more often than PowerPolicy.todayMaxAgeMs).
-    val todayInfo = remember(todayExtras, weather, reminders, listReplay, settings.searchToday, settings.tipOfDay) {
+    val todayInfo = remember(
+        todayExtras, weather, reminders, listReplay, settings.searchToday, settings.tipOfDay,
+        settings.todayWeather, settings.todayNear, settings.todayDate, settings.todayAlarm,
+    ) {
         if (settings.searchToday) {
-            Today.info(todayExtras, weather, reminders, System.currentTimeMillis()).let { info ->
-                if (settings.tipOfDay) info.copy(tip = Tips.indexFor(java.time.LocalDate.now())) else info
+            Today.info(todayExtras, weather.takeIf { settings.todayWeather }, reminders, System.currentTimeMillis()).let { info ->
+                info.copy(
+                    tip = if (settings.tipOfDay) Tips.indexFor(java.time.LocalDate.now()) else -1,
+                    alarmMillis = info.alarmMillis.takeIf { settings.todayAlarm },
+                    showDate = settings.todayDate, showNear = settings.todayNear,
+                )
             }
         } else {
             null
@@ -1386,14 +1399,21 @@ fun LauncherApp(vm: LauncherViewModel) {
                             showGroups = settings.groupTitles,
                             locked = settings.lockStart,
                             topInset = (screenHeightDp * settings.startLowerPercent / 100f).dp,
-                            header = if (settings.showClock && page == 0) {
+                            header = if ((settings.showClock || settings.assistantIcon) && page == 0) {
                                 {
-                                    ClockHeader(
-                                        hours = settings.clockHours, showAlarm = settings.clockAlarm, showWeek = settings.clockWeek,
-                                        zone = settings.clockZone,
-                                        onTimeClick = if (settings.clockTaps) ({ vm.openClock() }) else null,
-                                        onDateClick = if (settings.clockTaps) ({ vm.openCalendar() }) else null,
-                                    )
+                                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+                                        Box(Modifier.weight(1f)) {
+                                            if (settings.showClock) {
+                                                ClockHeader(
+                                                    hours = settings.clockHours, showAlarm = settings.clockAlarm, showWeek = settings.clockWeek,
+                                                    zone = settings.clockZone,
+                                                    onTimeClick = if (settings.clockTaps) ({ vm.openClock() }) else null,
+                                                    onDateClick = if (settings.clockTaps) ({ vm.openCalendar() }) else null,
+                                                )
+                                            }
+                                        }
+                                        if (settings.assistantIcon) AssistantIcon(onClick = { voiceRequest++ })
+                                    }
                                 }
                             } else {
                                 null
@@ -1463,6 +1483,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                                     TodayAction.Reminders -> panels.open(Panel.Reminders())
                                     TodayAction.Clock -> vm.openClock()
                                     is TodayAction.Near -> vm.perform(QuickAnswer.NearMe(action.what))
+                                    is TodayAction.Hide -> vm.hideTodayPart(action.part)
                                 }
                             },
                         )
@@ -1654,7 +1675,11 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onLabels = if (settings.appBar) ({ editLabels = !editLabels }) else null,
                             labels = editLabels,
                             style = (cell as? AppCell)?.tile?.style,
-                            sizes = if (settings.largeTiles) TileSize.entries else TileSize.entries - TileSize.Large,
+                            sizes = when {
+                                (cell as? AppCell)?.item?.data is TileData.WeatherPlus -> listOf(TileSize.Medium, TileSize.Wide)
+                                settings.largeTiles -> TileSize.entries
+                                else -> TileSize.entries - TileSize.Large
+                            },
                             onGroup = if (settings.groupTitles) ({ groupEditingId = cell.entryId }) else null,
                             onStyle = {
                                 val tile = cell as? AppCell ?: return@EditBar
@@ -1675,6 +1700,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                 if (panel.isShown) {
                     AccentScope(settings.accentPanel) { ActionCenter(
                         slots = QuickAction.slots(settings.quickActions),
+                        order = QuickAction.order(settings.quickActions),
+                        onOrder = vm::setQuickOrder,
                         states = quickStates,
                         timeout = screenTimeout,
                         notifications = notifications,
@@ -1711,6 +1738,10 @@ fun LauncherApp(vm: LauncherViewModel) {
                         },
                         connections = connectionPanel,
                         onConnectionList = { action -> if (action == QuickAction.Wifi) vm.scanNetworks() },
+                        onHoldAction = { action ->
+                            panel.close()
+                            vm.holdQuickAction(action)
+                        },
                         onAllowConnections = { action ->
                             if (action == QuickAction.Wifi && connectionPanel.wifiAccess == ConnectionAccess.NeedsLocation) {
                                 // The permission is given but the location is off.
@@ -1742,6 +1773,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                                 },
                                 torch = panelControls.torch.takeIf { torchOn },
                                 onTorch = vm::setTorchStrength,
+                                torchLevels = vm.torchLevels(), torchPreferred = settings.torchStrength,
                                 ringVolume = panelControls.ringVolume, alarmVolume = panelControls.alarmVolume,
                                 onRingVolume = vm::setRingVolume, onAlarmVolume = vm::setAlarmVolume,
                                 profiles = if (settings.volumeProfilesShow) settings.volumeProfiles.map { it.name } else emptyList(),
@@ -1866,6 +1898,11 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onOpenDreamSettings = vm::openDreamSettings,
                             onPreviewLock = { lockPreviewOpen = true },
                             iconPacks = installedIconPacks,
+                            update = updateState,
+                            onCheckUpdate = vm::checkForUpdate,
+                            onInstallUpdate = vm::installUpdate,
+                            galleryApps = galleryApps,
+                            loadAlbums = vm::albums,
                             onExportTheme = vm::exportTheme,
                             onImportTheme = vm::importTheme,
                             backupFolderName = backupFolderName,
@@ -2059,6 +2096,10 @@ fun LauncherApp(vm: LauncherViewModel) {
                         onSun = {
                             addMenuOpen = false
                             vm.addSun(addPage)
+                        },
+                        onWeatherPlus = {
+                            addMenuOpen = false
+                            vm.addWeatherPlus(addPage)
                         },
                         onToggle = {
                             addMenuOpen = false

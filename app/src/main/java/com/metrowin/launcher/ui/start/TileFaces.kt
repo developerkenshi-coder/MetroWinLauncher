@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -181,6 +182,7 @@ fun TileFace(
                 item.data is TileData.Steps -> StepsFace(item, size, width, height, live.extras.steps, LocalTileFeatures.current.stepGoal)
                 item.data is TileData.Toggle -> ToggleFace(item, size, width, height, live.extras.toggles[item.data.action])
                 item.data is TileData.Sun -> SunFace(item, size, width, height, live.weather)
+                item.data is TileData.WeatherPlus -> WeatherPlusFace(item, size, width, height, live.weather)
                 item.data is TileData.Camera -> CameraFace(item, size, width, height, live.photos.firstOrNull())
                 item.data is TileData.Recorder -> NoteLineFace(item, size, width, height, recordingsLine(live.extras.recordings), "recorder:count")
                 item.data is TileData.Wallet -> NoteLineFace(item, size, width, height, cardsLine(live.extras.cards), "wallet:count")
@@ -575,7 +577,7 @@ internal fun CycleFace(item: AppItem, photos: List<ImageBitmap>, seed: Int) {
     }
     Box(Modifier.fillMaxSize()) {
         Crossfade(targetState = index % photos.size, animationSpec = metroTween(durationMillis = 900), label = "cycle") { shown ->
-            Image(bitmap = photos[shown], contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+            Image(bitmap = photos[shown], contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.High, modifier = Modifier.fillMaxSize())
         }
         PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
     }
@@ -639,7 +641,7 @@ internal fun PhotoShortcutFace(item: AppItem, size: TileSize, width: Dp, height:
         StaticFace(item, size, width, height)
     } else {
         Box(Modifier.fillMaxSize()) {
-            Image(bitmap = bitmap, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+            Image(bitmap = bitmap, contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.High, modifier = Modifier.fillMaxSize())
             if (size != TileSize.Small) PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
         }
     }
@@ -731,7 +733,7 @@ private fun DigestCard(card: LiveCard.Digest) {
 @Composable
 private fun PictureCard(card: LiveCard.Picture) {
     Box(Modifier.fillMaxSize()) {
-        Image(card.picture, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+        Image(card.picture, contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.High, modifier = Modifier.fillMaxSize())
         if (card.caption.isNotBlank()) {
             // Its words sit in a shade over the picture, clear of the name of the app at the bottom.
             Box(
@@ -1120,6 +1122,7 @@ private fun PhotosFace(item: AppItem, size: TileSize, width: Dp, height: Dp, liv
                     bitmap = photos[(face - 1) % photos.size],
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
+                    filterQuality = FilterQuality.High,
                     modifier = Modifier.fillMaxSize(),
                 )
                 PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
@@ -1141,6 +1144,7 @@ private fun PeopleFace(item: AppItem, size: TileSize, width: Dp, height: Dp, liv
                     bitmap = person.photo,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
+                    filterQuality = FilterQuality.High,
                     modifier = Modifier.fillMaxSize(),
                 )
                 PhotoLabel(person.name, Modifier.align(Alignment.BottomStart))

@@ -21,6 +21,13 @@ enum class TileSize(val cols: Int, val rows: Int, val code: String) {
         return if (next == Large && !allowLarge) entries.first() else next
     }
 
+    /** The nearest of the two sizes some tiles have: small becomes medium, large becomes wide. */
+    fun mediumOrWide(): TileSize = when (this) {
+        Small -> Medium
+        Large -> Wide
+        else -> this
+    }
+
     companion object {
         fun fromCode(code: String?): TileSize = entries.firstOrNull { it.code == code } ?: Medium
     }
@@ -202,6 +209,9 @@ sealed interface TileData {
     /** The sun today: when it rises and sets, and how long the day is. */
     data object Sun : TileData
 
+    /** The full weather: today with as many details as the tile has room for (medium and wide only). */
+    data object WeatherPlus : TileData
+
     /** The steps taken today. */
     data object Steps : TileData
 
@@ -257,4 +267,10 @@ enum class Glyph {
     Weather, Word, Xbox, Theme, Search, Wifi, Bluetooth, Airplane, Moon, Flashlight, Rotation, Hotspot, Vpn,
     Cast, Brightness, Bell, Kids, Globe, Widget, Lock, Star, Home, Gesture, Folder, Recents,
     Hourglass, Stopwatch, Timeout, AutoBrightness,
+
+    /** The Metro tiles: the settings of this launcher. */
+    Launcher,
+
+    /** A phone with a gear in it: the settings of Android. */
+    DeviceSettings,
 }
