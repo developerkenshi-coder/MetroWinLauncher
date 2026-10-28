@@ -29,7 +29,7 @@ Start in orizzontale, con più colonne e riquadri della stessa dimensione che in
 
 <img src="screenshots/start_landscape.png" alt="Start in orizzontale" width="480">
 
-> Le immagini sono disegnate dai test di screenshot su JVM (vedi [Test](#test)), non catturate da un telefono.
+> Le immagini sono disegnate dai test di screenshot su JVM (vedi [Test](#test)), non catturate da un telefono; il launcher è stato provato per intero su un Vivo X300 Pro.
 
 ## Indice
 
@@ -833,7 +833,7 @@ solo se il launcher c'era già.
   troppo stretto per la parola più lunga, o troppo basso per le righe, disegna il testo più piccolo (fino a metà) invece di tagliarlo;
   i riquadri e i pulsanti dell'Action Center non crescono oltre il 130% del testo; le finestre e i pannelli scorrono invece di
   uscire dallo schermo. Quello che scrive l'utente (il nome di un'app, una nota) può finire con "…" in una lista, e lì i test usano nomi brevi.
-  Provato su JVM con font di prova: non l'ho visto su un telefono.
+  Provato su JVM con font di prova, e verificato anche a mano su un Vivo X300 Pro.
 
 Anche questo giro ha trovato difetti veri, corretti: nella scheda *Oggi* la parola «Oggi» finiva spezzata in una colonna accanto al meteo; il riquadro Timer e quello dei promemoria
 sovrapponevano le righe al proprio nome; sul blocco schermo la musica si sovrapponeva all'ora (con testo grande) e in orizzontale l'ora usciva dallo schermo (ora c'è il layout affiancato e il ridimensionamento);
@@ -871,7 +871,9 @@ app/src/main/java/com/metrowin/launcher/
 
 ## Note e limiti
 
-- **Ufficialmente testato solo su Vivo X300 Pro, ma funzionante su tutti i dispositivi Android.**
+- **Testato su un dispositivo reale: tutto è stato provato su un Vivo X300 Pro.** Ufficialmente è l'unico telefono verificato, ma
+  il launcher funziona su tutti i dispositivi Android. I test automatici su JVM non possono misurare le cose qui sotto, che sono state
+  controllate a mano sul Vivo; su altri produttori e altre versioni di Android il comportamento può cambiare:
   - la **sensazione** dei gesti e dei 120 Hz (i test controllano posizioni, soglie e che nulla lotti con il dito, non la
     fluidità), e il progresso di Indietro che dà ogni produttore;
   - il **riconoscimento vocale** vero (microfono, modello offline, lingue), il selettore dei contatti e l'apertura delle schede;
