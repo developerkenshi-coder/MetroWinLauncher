@@ -732,22 +732,6 @@ dell'indice: una impostazione nuova non indicizzata, o spostata senza aggiornarl
 | Ritaglio con pizzico della foto di sfondo | Fatto in altro modo: **zoom e due cursori di posizione** con anteprima (non il pizzico) |
 | Sincronizzare la foto di Start e quella del blocco | Non fatto: le foto sono file di questo telefono |
 
-## Pubblicare su F-Droid
-
-Il progetto è pronto per F-Droid (licenza GPL-3.0-or-later nel file `LICENSE`, solo dipendenze libere di AndroidX e Compose, nessun
-servizio di Google, metadati in `fastlane/metadata/android/`, ricetta in [`docs/fdroid/com.metrowin.launcher.yml`](fdroid/com.metrowin.launcher.yml)).
-F-Droid compila dal sorgente **e firma con la propria chiave**: la build senza `keystore.properties` esce non firmata, come serve.
-
-1. Il repository deve essere pubblico, con il lavoro su `main` e un tag per ogni versione, col nome della versione preceduto da `v`
-   (`v26.3S` per `versionName 26.3S`, `versionCode 4`). Il tag deve puntare a un commit in cui `app/build.gradle.kts` ha già quella versione.
-2. A ogni rilascio: alza `versionCode` e `versionName` in `app/build.gradle.kts`, aggiungi `fastlane/metadata/android/<lingua>/changelogs/<versionCode>.txt`
-   (al massimo 500 byte) e crea il tag.
-3. Fai il fork di <https://gitlab.com/fdroid/fdroiddata>, copia la ricetta in `metadata/com.metrowin.launcher.yml`, prova con `fdroid lint`,
-   `fdroid rewritemeta` e `fdroid build -v -l com.metrowin.launcher` (`pip install fdroidserver`), poi apri una merge request.
-
-La guida passo per passo (dove si cambiano nome, descrizioni, screenshot e changelog, come si rilascia una versione nuova, come funziona
-la revisione) è in [`docs/fdroid/GUIDA.md`](fdroid/GUIDA.md).
-
 Chi ha già installato una build firmata con la chiave ufficiale dovrà disinstallarla prima di passare a quella di F-Droid (firma diversa): si fa
 prima un backup dalle impostazioni.
 
