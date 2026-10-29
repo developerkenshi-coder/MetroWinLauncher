@@ -39,8 +39,6 @@
 2. Open it. When Android asks, allow your browser or file manager to install unknown apps.
 3. Press Home and choose **MetroWin Launcher** as the Home app. The first start shows a short tour, and every permission is optional.
 
-**F-Droid:** the author will submit the app to F-Droid. If you would like to package it for F-Droid yourself, please write in an [issue](https://github.com/developerkenshi-coder/MetroWinLauncher/issues) first.
-
 <details>
 <summary>Check the download</summary>
 
