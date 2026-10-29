@@ -32,7 +32,7 @@ object SectionReset {
         "Actions" to setOf(
             "actionSliders", "clearOnOpen", "dndMinutes", "edgeActionCenter", "groupConversations", "hideSystemNotifications", "inlineReply", "metroSounds", "muteFromPanel",
             "notifFilterOn", "notifFilterWords", "notifPriority", "notificationPeek", "overlayBanner", "quickActions", "toastBanner", "torchAutoOffMin",
-            "panelSounds", "torchStrength", "volumePanel", "volumeProfilesShow",
+            "panelSounds", "torchStrength", "volumePanel", "volumeProfilesShow", "vpnApp",
         ),
         "LiveTiles" to setOf(
             "liveHideText", "liveMessages", "liveNowPlaying", "liveOffApps", "livePictures", "liveProgress", "notificationPeek", "thirdPartyTiles",

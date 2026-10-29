@@ -31,8 +31,17 @@ object PhoneCalls {
     fun numberOf(address: String): String? =
         address.takeIf { it.startsWith("tel:") }?.removePrefix("tel:")?.let(::clean)?.takeIf { it.isNotEmpty() }
 
+    /** A number of a contact as it is stored: its type (see [ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE]) and whether it is the default. */
+    class Row(val number: String, val type: Int, val primary: Boolean)
+
+    /** The number to call among [rows] (the default ones first): the default, else a mobile, else the first. */
+    fun choose(rows: List<Row>): String? {
+        val usable = rows.mapNotNull { row -> clean(row.number).takeIf { it.isNotEmpty() }?.let { Row(it, row.type, row.primary) } }
+        return (usable.firstOrNull { it.primary } ?: usable.firstOrNull { it.type == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE } ?: usable.firstOrNull())?.number
+    }
+
     /**
-     * The phone number of a contact: the one marked as the default, else the first. Blocking, call it off the main
+     * The phone number of a contact: the one marked as the default, else the mobile one, else the first. Blocking, call it off the main
      * thread; needs the contacts permission and finds nothing without it.
      */
     fun numberOfContact(context: Context, lookupUri: String): String? {
@@ -43,11 +52,18 @@ object PhoneCalls {
             val id = ContentUris.parseId(contact)
             resolver.query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
+                arrayOf(
+                    ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.TYPE,
+                    ContactsContract.CommonDataKinds.Phone.IS_PRIMARY, ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY,
+                ),
                 "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?", arrayOf(id.toString()),
                 "${ContactsContract.CommonDataKinds.Phone.IS_SUPER_PRIMARY} DESC, ${ContactsContract.CommonDataKinds.Phone.IS_PRIMARY} DESC",
             )?.use { cursor ->
-                if (cursor.moveToFirst()) cursor.getString(0)?.let(::clean)?.takeIf { it.isNotEmpty() } else null
+                val rows = ArrayList<Row>()
+                while (cursor.moveToNext()) {
+                    rows += Row(cursor.getString(0).orEmpty(), cursor.getInt(1), cursor.getInt(2) > 0 || cursor.getInt(3) > 0)
+                }
+                choose(rows)
             }
         }.getOrNull()
     }

@@ -1,6 +1,12 @@
 package com.metrowin.launcher
 
 import com.metrowin.launcher.data.VolumeProfiles
+import com.metrowin.launcher.data.AppStats
+import com.metrowin.launcher.data.DataStats
+import com.metrowin.launcher.data.MemoryStats
+import com.metrowin.launcher.data.UsageAccess
+import com.metrowin.launcher.data.VpnApp
+import com.metrowin.launcher.data.VpnApps
 import com.metrowin.launcher.data.ParkedCarStore
 import com.metrowin.launcher.data.ParkedCar
 import com.metrowin.launcher.data.WeatherBlock
@@ -125,6 +131,7 @@ import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.data.BackupSchedule
 import com.metrowin.launcher.data.ContactMatch
 import com.metrowin.launcher.data.ContactReader
+import com.metrowin.launcher.data.ContactPick
 import com.metrowin.launcher.data.ContactSearch
 import com.metrowin.launcher.data.ShortcutDef
 import com.metrowin.launcher.data.ShortcutKind
@@ -662,6 +669,21 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         _settingsRequests.value = 0
     }
 
+    /** Asked by the VPN button (which may be in the Action Center over other apps) to choose the VPN app; same counting as [settingsRequests]. */
+    private val _vpnChoiceRequests = MutableStateFlow(0)
+    val vpnChoiceRequests: StateFlow<Int> = _vpnChoiceRequests.asStateFlow()
+
+    fun requestVpnChoice() {
+        _vpnChoiceRequests.value += 1
+    }
+
+    fun vpnChoiceMet() {
+        _vpnChoiceRequests.value = 0
+    }
+
+    /** The VPN apps of the phone, for the choice. */
+    fun vpnApps(): List<VpnApp> = VpnApps.installed(getApplication())
+
     private val updateStore = UpdateStore(application)
     private fun installedVersion() = UpdateChecker.installedVersion(getApplication())
     private val _update = MutableStateFlow<UpdateState>(
@@ -842,7 +864,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun quickActionState(action: QuickAction): Boolean? = quickActions.isOn(action)
 
-    suspend fun readConnections(previous: ConnectionPanel, devices: Boolean): ConnectionPanel = connections.read(previous, devices)
+    suspend fun readConnections(previous: ConnectionPanel, devices: Boolean): ConnectionPanel {
+        connections.vpnApp = _settings.value.vpnApp
+        return connections.read(previous, devices)
+    }
 
     fun scanNetworks() = connections.scan()
 
@@ -860,7 +885,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
      * of Android opened for it. Quiet hours without the "do not disturb" access ask for that access first.
      */
     fun activateQuickAction(action: QuickAction): Boolean {
-        val inPlace = quickActions.activate(action, _settings.value.dndMinutes, _settings.value.torchAutoOffMin, _settings.value.torchStrength)
+        val inPlace = quickActions.activate(action, _settings.value.dndMinutes, _settings.value.torchAutoOffMin, _settings.value.torchStrength, _settings.value.vpnApp)
         if ((action == QuickAction.QuietHours || action == QuickAction.QuietTimed) && !inPlace) tell(R.string.qa_quiet_allow)
         return inPlace
     }
@@ -1298,6 +1323,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun dial(number: String, direct: Boolean) {
         val opened = runCatching { getApplication<Application>().startActivity(PhoneCalls.intent(number, direct)) }.isSuccess
         if (!opened) tell(R.string.launch_failed)
+    }
+
+    /** The contact that a spoken name asks for: the first of [names] that finds one. By name only, never as a dial. */
+    suspend fun pickContact(names: List<String>): ContactPick = withContext(Dispatchers.IO) {
+        val search = ContactSearch(getApplication())
+        names.firstNotNullOfOrNull { name ->
+            ContactSearch.pick(name, search.search(name, ContactSearch.SPOKEN_LIMIT)).takeIf { it != ContactPick.None }
+        } ?: ContactPick.None
     }
 
     suspend fun searchContacts(query: String): List<ContactMatch> = withContext(Dispatchers.IO) {
@@ -1839,6 +1872,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         addShortcut(ShortcutDef(ShortcutDef.newId(kind, kind.code), kind, getApplication<Application>().getString(label)), page, size)
 
     fun addSteps(page: Int) = addTile(ShortcutKind.Steps, R.string.steps_default_label, page)
+    fun addAppsRecap(page: Int) = addTile(ShortcutKind.AppsRecap, R.string.add_appsrecap, page)
+    fun addBatteryGraph(page: Int) = addTile(ShortcutKind.BatteryGraph, R.string.add_batterygraph, page)
+    fun addDataUse(page: Int) = addTile(ShortcutKind.DataUse, R.string.add_datause, page)
+    fun addMemoryUse(page: Int) = addTile(ShortcutKind.MemoryUse, R.string.add_memoryuse, page)
     fun addRecorder(page: Int) = addTile(ShortcutKind.Recorder, R.string.recorder_default_label, page)
     fun addCamera(page: Int) = addTile(ShortcutKind.Camera, R.string.camera_default_label, page)
     fun addWallet(page: Int) = addTile(ShortcutKind.Wallet, R.string.wallet_default_label, page)
@@ -1916,6 +1953,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             old.copy(
                 cards = if (kinds.any { it is TileData.Wallet }) _wallet.value.size else 0,
                 recordings = if (kinds.any { it is TileData.Recorder }) recordings.list().size else 0,
+                battery = if (kinds.any { it is TileData.BatteryGraph }) _battery.value else null,
+                usageAllowed = UsageAccess.granted(app),
                 parked = if (kinds.any { it is TileData.Parking }) parkedCarStore.load() else null,
                 sites = old.sites.filterKeys { id -> sites.any { it.id == id } },
                 toggles = kinds.filterIsInstance<TileData.Toggle>().mapNotNull { tile ->
@@ -1932,6 +1971,20 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             }
             if (kinds.any { it is TileData.WhereAmI } && (force || throttle.due("extra:where", 15 * 60_000L))) {
                 locate()
+            }
+            // These three read what the usage access gives: the slot of the throttle depends on it, so giving the access shows at the next return to Start.
+            val allowed = UsageAccess.granted(app)
+            if (kinds.any { it is TileData.AppsRecap } && (force || throttle.due("extra:apps:$allowed", 5 * 60_000L))) {
+                val stats = withContext(Dispatchers.IO) { AppStats.read(app, _items.value) }
+                setExtras { it.copy(apps = stats) }
+            }
+            if (kinds.any { it is TileData.DataUse } && (force || throttle.due("extra:data:$allowed", 5 * 60_000L))) {
+                val usage = withContext(Dispatchers.IO) { DataStats.read(app) }
+                setExtras { it.copy(dataUsage = usage) }
+            }
+            if (kinds.any { it is TileData.MemoryUse } && (force || throttle.due("extra:memory:$allowed", 10 * 60_000L))) {
+                val memory = withContext(Dispatchers.IO) { MemoryStats.read(app) }
+                setExtras { it.copy(memory = memory) }
             }
             val retry = PowerPolicy.feedRetryMs(powerSaving.value)
             sites.forEach { site ->

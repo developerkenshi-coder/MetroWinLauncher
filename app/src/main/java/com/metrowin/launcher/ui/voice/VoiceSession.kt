@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import com.metrowin.launcher.R
 import com.metrowin.launcher.data.VoiceError
 import com.metrowin.launcher.data.VoiceListener
 import com.metrowin.launcher.data.VoiceRecognizer
@@ -26,7 +27,13 @@ sealed interface VoiceUiState {
      * Nothing to carry out. [message] may take [argument] (the name that was not found); with [webQuery] the screen
      * also offers to look for it on the web.
      */
-    data class Problem(@param:StringRes val message: Int, val argument: String? = null, val webQuery: String? = null) : VoiceUiState
+    data class Problem(
+        @param:StringRes val message: Int,
+        val argument: String? = null,
+        val webQuery: String? = null,
+        /** Trying again would not help: the screen offers no retry. */
+        val final: Boolean = false,
+    ) : VoiceUiState
 }
 
 /**
@@ -57,20 +64,33 @@ class VoiceSession(context: Context) {
             }
 
             override fun onResult(alternatives: List<String>) {
+                failures = 0
                 state = VoiceUiState.Understood(alternatives.first())
                 onHeard(alternatives)
             }
 
-            override fun onError(error: VoiceError) {
-                state = VoiceUiState.Problem(error.message)
-            }
+            override fun onError(error: VoiceError) = fail(error)
         },
     )
 
     val isOpen: Boolean get() = state != null
 
+    private var failures = 0
+
+    /** Listening ended without a phrase. After [MAX_TRIES] in a row, or with no recognizer at all, the screen stops offering to try again. */
+    internal fun fail(error: VoiceError) {
+        failures++
+        state = when {
+            error == VoiceError.Unavailable -> VoiceUiState.Problem(error.message, final = true)
+            failures >= MAX_TRIES -> VoiceUiState.Problem(R.string.voice_gave_up, final = true)
+            else -> VoiceUiState.Problem(error.message)
+        }
+    }
+
     /** Opens the screen and starts listening. */
     fun open() {
+        // A retry from the problem screen goes on counting; anything else starts afresh.
+        if (state !is VoiceUiState.Problem) failures = 0
         state = VoiceUiState.Listening()
         recognizer.start(preferOffline)
     }
@@ -82,10 +102,13 @@ class VoiceSession(context: Context) {
     }
 
     fun close() {
+        failures = 0
         recognizer.release()
         state = null
     }
 }
+
+private const val MAX_TRIES = 3
 
 @Composable
 fun rememberVoiceSession(): VoiceSession {

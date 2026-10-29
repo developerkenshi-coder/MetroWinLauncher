@@ -110,7 +110,19 @@ enum class ShortcutKind(val code: String) {
     Parking("parking"),
 
     /** A clock with hands. */
-    AnalogClock("analogclock");
+    AnalogClock("analogclock"),
+
+    /** The number of apps of the phone and the ones used most this week. */
+    AppsRecap("appsrecap"),
+
+    /** The battery with the graph of its estimated duration. */
+    BatteryGraph("batterygraph"),
+
+    /** The data used today and the average of a month. */
+    DataUse("datause"),
+
+    /** The memory used and free, and what takes it. */
+    MemoryUse("memoryuse");
 
     companion object {
         fun fromCode(code: String?) = entries.firstOrNull { it.code == code }
@@ -169,6 +181,9 @@ data class ShortcutDef(
             ShortcutKind.Wallet -> Launch.Internal(AppRepository.ROUTE_WALLET)
             ShortcutKind.WhereAmI -> Launch.Internal(AppRepository.ROUTE_WHEREAMI)
             ShortcutKind.Parking -> Launch.Internal(AppRepository.ROUTE_PARKING)
+            // These read the use of the phone: a touch asks for the access that gives it, until it is given.
+            ShortcutKind.AppsRecap, ShortcutKind.DataUse, ShortcutKind.MemoryUse -> Launch.Internal(AppRepository.ROUTE_USAGE)
+            ShortcutKind.BatteryGraph -> Launch.Action(BATTERY_ACTION)
             else -> Launch.Link(uri)
         },
         glyph = when (kind) {
@@ -204,6 +219,10 @@ data class ShortcutDef(
             ShortcutKind.WhereAmI -> Glyph.Maps
             ShortcutKind.Parking -> Glyph.Maps
             ShortcutKind.AnalogClock -> Glyph.Alarm
+            ShortcutKind.AppsRecap -> Glyph.Store
+            ShortcutKind.BatteryGraph -> Glyph.Battery
+            ShortcutKind.DataUse -> Glyph.Data
+            ShortcutKind.MemoryUse -> Glyph.Storage
         },
         pinOnly = true,
         photoPath = photoPath,
@@ -246,6 +265,10 @@ data class ShortcutDef(
             ShortcutKind.WhereAmI -> TileData.WhereAmI
             ShortcutKind.Parking -> TileData.Parking
             ShortcutKind.AnalogClock -> TileData.AnalogClock
+            ShortcutKind.AppsRecap -> TileData.AppsRecap
+            ShortcutKind.BatteryGraph -> TileData.BatteryGraph
+            ShortcutKind.DataUse -> TileData.DataUse
+            ShortcutKind.MemoryUse -> TileData.MemoryUse
             ShortcutKind.Contact -> TileData.Contact
             ShortcutKind.Site -> TileData.Site(uri)
             else -> null
@@ -258,6 +281,9 @@ data class ShortcutDef(
 
         /** What opens the camera app of the phone, whichever it is. */
         const val CAMERA_ACTION = "android.media.action.STILL_IMAGE_CAMERA"
+
+        /** What opens the battery usage screen of the phone. */
+        const val BATTERY_ACTION = "android.intent.action.POWER_USAGE_SUMMARY"
 
         /** `appshortcut:package:user:id` as (package, user serial number, shortcut id), or null when [uri] is not one. */
         fun appShortcutParts(uri: String): Triple<String, Long, String>? {

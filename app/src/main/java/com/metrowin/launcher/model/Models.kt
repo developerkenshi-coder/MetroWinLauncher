@@ -215,6 +215,18 @@ sealed interface TileData {
     /** The steps taken today. */
     data object Steps : TileData
 
+    /** How many apps the phone has, and (wide and large) the five used most this week. */
+    data object AppsRecap : TileData
+
+    /** The charge of the battery with a graph of how long it should last. */
+    data object BatteryGraph : TileData
+
+    /** The data used today over Wi-Fi and mobile, and (wide and large) the average of a month. */
+    data object DataUse : TileData
+
+    /** The memory used and free, and (wide and large) what takes it: apps, photos, videos, music, the rest. */
+    data object MemoryUse : TileData
+
     /** The voice recorder. */
     data object Recorder : TileData
 

@@ -76,10 +76,12 @@ fun AppContextMenu(
     onShare: (() -> Unit)? = null,
     /** The list the row comes from is the compact one. */
     compact: Boolean = false,
+    /** Null when there is no list to put the app in. */
+    onAddToList: (() -> Unit)? = null,
 ) {
     val entries = MenuEntries(
         pinned, onPinToggle, onUninstall, onHide, onAddToFolder, shortcuts, onShortcut, onRename, onResetName, onInfo, locked, onToggleLock, onPinShortcut,
-        onStore, onShare,
+        onStore, onShare, onAddToList,
     )
     val currentDismiss by rememberUpdatedState(onDismiss)
     BoxWithConstraints(
@@ -130,6 +132,7 @@ private class MenuEntries(
     val onPinShortcut: ((AppShortcut) -> Unit)?,
     val onStore: (() -> Unit)?,
     val onShare: (() -> Unit)?,
+    val onAddToList: (() -> Unit)?,
 )
 
 @Composable
@@ -155,6 +158,7 @@ private fun Menu(item: AppItem, e: MenuEntries) {
         }
         MenuEntry(stringResource(if (e.pinned) R.string.menu_unpin else R.string.menu_pin), e.onPinToggle)
         if (e.onAddToFolder != null) MenuEntry(stringResource(R.string.menu_add_to_folder), e.onAddToFolder, Modifier.testTag("menu:folder"))
+        if (e.onAddToList != null) MenuEntry(stringResource(R.string.menu_add_to_list), e.onAddToList, Modifier.testTag("menu:list"))
         if (e.onRename != null) MenuEntry(stringResource(R.string.menu_rename), e.onRename, Modifier.testTag("menu:rename"))
         if (e.onResetName != null) MenuEntry(stringResource(R.string.menu_reset_name), e.onResetName, Modifier.testTag("menu:resetname"))
         if (e.locked != null) {

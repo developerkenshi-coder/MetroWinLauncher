@@ -12,6 +12,9 @@ sealed interface VoiceCommand {
     /** Opens the card of a contact; Android does not let a launcher place a call by itself. */
     data class Call(val name: String) : VoiceCommand
 
+    /** A number said in digits ("chiama 333 1234567"): it is dialed as it is, never looked for among the names. */
+    data class CallNumber(val number: String) : VoiceCommand
+
     data class Web(val query: String) : VoiceCommand
 
     /** [on] is null when the phrase did not say, and the light is simply switched. */
@@ -110,6 +113,9 @@ object VoiceCommands {
     )
     private val trailingFillers = listOf("per favore", "per piacere", "please", "grazie", "thanks", "thank you", "adesso", "ora", "now")
     private val articles = setOf("il", "lo", "la", "l", "i", "gli", "le", "un", "uno", "una", "the", "a", "an", "to", "al", "alla", "allo", "su", "di", "per", "for", "my")
+
+    // Fewer digits are more likely a word misheard than a number to call.
+    private const val MIN_NUMBER_DIGITS = 5
 
     private val separators = Regex("[^\\p{L}\\p{N}]+")
 
@@ -302,7 +308,12 @@ object VoiceCommands {
         }
         afterAny(text, callVerbs)?.let { rest ->
             val name = stripArticles(rest)
-            return if (name.isEmpty()) VoiceCommand.Unclear else VoiceCommand.Call(name)
+            val digits = name.replace(" ", "")
+            return when {
+                name.isEmpty() -> VoiceCommand.Unclear
+                digits.length >= MIN_NUMBER_DIGITS && digits.all { it.isDigit() } -> VoiceCommand.CallNumber(digits)
+                else -> VoiceCommand.Call(name)
+            }
         }
 
         // The sentences the search box turns into a reminder, an event, a note, "near me" or the camera. As they were said, with their
@@ -355,6 +366,16 @@ object VoiceCommands {
             ?: commands.firstOrNull()
             ?: VoiceCommand.Unclear
     }
+
+    /** The names that [alternatives] ask to call or write to, [first] ahead of the others: a contact missed by one hearing may be found by another. */
+    fun contactNames(alternatives: List<String>, apps: List<AppItem>, settingLabel: (SystemSettingDef) -> String, first: String): List<String> =
+        (listOf(first) + alternatives.mapNotNull {
+            when (val command = parse(it, apps, settingLabel)) {
+                is VoiceCommand.Call -> command.name
+                is VoiceCommand.Message -> command.name
+                else -> null
+            }
+        }).distinct()
 
     /** The app that [target] names: the exact name first, then the first one the search ranks highest. */
     fun findApp(apps: List<AppItem>, target: String): AppItem? {

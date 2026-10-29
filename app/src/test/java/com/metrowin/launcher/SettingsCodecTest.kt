@@ -37,7 +37,8 @@ class SettingsCodecTest {
         searchEngine = com.metrowin.launcher.data.SearchEngine.Brave, searchAnswers = false, rememberSearches = false,
         showFrequentApps = false, showNewApps = false, showCategories = false,
         appLabels = mapOf("app:a" to "Alfa"), lockedApps = setOf("app:b"),
-        searchLauncherSettings = false, searchTiles = false,
+        searchLauncherSettings = false, searchTiles = false, vpnApp = "com.nordvpn.android",
+        appLists = listOf(com.metrowin.launcher.data.AppList("game", "Play"), com.metrowin.launcher.data.AppList("u1", "Work", null, setOf("app:a"))),
     )
 
     @Test

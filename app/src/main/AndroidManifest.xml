@@ -51,6 +51,13 @@
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
+    <!--
+        The usage access: a switch the user turns on in a screen of Android. It lets the Apps, Data usage and Memory tiles read the time
+        each app was used, the data used and the size of the apps. Nothing is read until the user gives it, and the tiles work without it.
+    -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
 
     <!--
         The weather tile asks Open-Meteo for the forecast of one city (nothing else is sent), and can use the last

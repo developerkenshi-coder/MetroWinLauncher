@@ -1,0 +1,1 @@
+Le chiamate a voce trovano il contatto giusto per nome (e chiedono quando ne combaciano più), i numeri detti a cifre si compongono così come sono, il riconoscimento vocale passa al servizio online se manca il modello offline e smette il ciclo infinito di riprova, e altro.

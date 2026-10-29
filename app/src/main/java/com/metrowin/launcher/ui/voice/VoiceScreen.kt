@@ -87,7 +87,7 @@ fun VoiceScreen(
                     MetroText(text, size = 28.sp, modifier = Modifier.testTag("voice:message"))
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        MetroButton(stringResource(R.string.voice_try_again), Modifier.testTag("voice:retry"), onRetry)
+                        if (!state.final) MetroButton(stringResource(R.string.voice_try_again), Modifier.testTag("voice:retry"), onRetry)
                         state.webQuery?.let { query ->
                             MetroButton(stringResource(R.string.voice_search_web), Modifier.testTag("voice:web")) { onSearchWeb(query) }
                         }
@@ -113,7 +113,7 @@ fun VoiceScreen(
                     }
                     .clip(CircleShape)
                     .border(3.dp, if (listening) accent else colors.subtle, CircleShape)
-                    .metroPress(onClick = { if (!listening) onRetry() })
+                    .metroPress(onClick = { if (!listening && !(state is VoiceUiState.Problem && state.final)) onRetry() })
                     .testTag("voice:mic"),
                 contentAlignment = Alignment.Center,
             ) {

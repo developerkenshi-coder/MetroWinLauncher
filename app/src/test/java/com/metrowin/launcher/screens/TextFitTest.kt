@@ -87,7 +87,7 @@ import com.metrowin.launcher.data.Tutorial
 import com.metrowin.launcher.data.WeatherCondition
 import com.metrowin.launcher.data.WeatherData
 import com.metrowin.launcher.data.WeatherDetails
-import com.metrowin.launcher.model.AppCategory
+import com.metrowin.launcher.data.AppLists
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.model.Launch
@@ -353,11 +353,11 @@ abstract class TextFitBase(private val scale: Float, private val style: ThemeSty
 
     @Composable
     private fun List(query: String, answers: List<QuickAnswer> = emptyList(), global: GlobalResults = GlobalResults.Empty, recent: List<String> = emptyList()) {
-        val model = remember { AppListModel(AppSections.group(AppSections.sort(apps)), frequent = apps.take(1), fresh = apps.take(1), categories = AppCategory.entries.take(4)) }
+        val model = remember { AppListModel(AppSections.group(AppSections.sort(apps)), frequent = apps.take(1), fresh = apps.take(1), lists = AppLists.DEFAULTS.take(4)) }
         AppListScreen(
             model = model, listState = rememberLazyListState(), replayToken = 0, exiting = false, onLaunch = {}, onLongPress = { _, _, _ -> },
             onHeaderClick = {}, query = query, onQueryChange = {}, results = apps.take(1), global = global, answers = answers,
-            recentSearches = recent, categories = AppCategory.entries.take(4),
+            recentSearches = recent, lists = AppLists.DEFAULTS.take(4),
         )
     }
 

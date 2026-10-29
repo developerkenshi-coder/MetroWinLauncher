@@ -321,6 +321,7 @@ class AppRepository(private val context: Context) {
         const val ROUTE_WALLET = "wallet"
         const val ROUTE_WHEREAMI = "whereami"
         const val ROUTE_PARKING = "parking"
+        const val ROUTE_USAGE = "usage"
         const val WEATHER_ID = "launcher:weather"
         private const val PHOTOS_STOCK = "photos"
         const val ROUTE_WEATHER = "weather"

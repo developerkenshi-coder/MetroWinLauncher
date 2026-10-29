@@ -50,6 +50,10 @@ object AddMenuIndex {
         AddKind("toggle", R.string.add_toggle, AddCategory.System, listOf("switch", "wifi", "bluetooth", "silent", "rotation", "flashlight", "interruttore", "silenzioso", "rotazione", "torcia")),
         AddKind("sun", R.string.add_sun, AddCategory.Info, listOf("sunrise", "sunset", "daylight", "alba", "tramonto", "sole", "luce")),
         AddKind("weatherplus", R.string.add_weatherplus, AddCategory.Info, listOf("weather", "forecast", "temperature", "rain", "meteo", "previsioni", "temperatura", "pioggia", "tempo")),
+        AddKind("appsrecap", R.string.add_appsrecap, AddCategory.System, listOf("apps", "installed", "most used", "top", "app", "installate", "usate", "classifica")),
+        AddKind("batterygraph", R.string.add_batterygraph, AddCategory.System, listOf("battery", "charge", "power", "batteria", "carica", "durata", "autonomia")),
+        AddKind("datause", R.string.add_datause, AddCategory.System, listOf("data", "internet", "mobile", "wifi", "traffic", "dati", "consumo", "traffico")),
+        AddKind("memoryuse", R.string.add_memoryuse, AddCategory.System, listOf("storage", "memory", "space", "free", "memoria", "spazio", "archiviazione", "libero")),
         AddKind("setting", R.string.add_setting, AddCategory.System, listOf("settings", "wifi", "bluetooth", "battery", "impostazioni", "batteria")),
         AddKind("widget", R.string.add_widget, AddCategory.System, listOf("widget", "app", "gadget")),
     )

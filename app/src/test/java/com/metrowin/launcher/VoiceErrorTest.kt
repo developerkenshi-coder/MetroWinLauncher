@@ -3,6 +3,8 @@ package com.metrowin.launcher
 import android.speech.SpeechRecognizer
 import com.metrowin.launcher.data.VoiceError
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class VoiceErrorTest {
@@ -23,6 +25,16 @@ class VoiceErrorTest {
             SpeechRecognizer.ERROR_NETWORK, SpeechRecognizer.ERROR_NETWORK_TIMEOUT, SpeechRecognizer.ERROR_SERVER,
             10, 11, 12, 13,
         ).forEach { assertEquals("code $it", VoiceError.Network, VoiceError.fromCode(it)) }
+    }
+
+    @Test
+    fun aMissingLanguageModelAndAHiccupAreToldApartFromRealFailures() {
+        assertTrue(VoiceError.isLanguageGap(12))
+        assertTrue(VoiceError.isLanguageGap(13))
+        assertFalse(VoiceError.isLanguageGap(SpeechRecognizer.ERROR_NETWORK))
+        assertTrue(VoiceError.isTransient(SpeechRecognizer.ERROR_RECOGNIZER_BUSY))
+        assertTrue(VoiceError.isTransient(SpeechRecognizer.ERROR_CLIENT))
+        assertFalse(VoiceError.isTransient(SpeechRecognizer.ERROR_NO_MATCH))
     }
 
     @Test

@@ -1,0 +1,1 @@
+Calling by voice finds the right contact by name (and asks when several fit), numbers said in digits are dialed as they are, voice recognition falls back to the online service and stops the endless try again, and more.

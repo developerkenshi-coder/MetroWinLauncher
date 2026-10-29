@@ -67,6 +67,24 @@ class VoiceCommandsTest {
     }
 
     @Test
+    fun aNumberSaidInDigitsIsDialedAndNotLookedForAmongTheNames() {
+        assertEquals(VoiceCommand.CallNumber("3331234567"), parse("chiama 333 1234567"))
+        assertEquals(VoiceCommand.CallNumber("0114567890"), parse("telefona a 011 456 7890"))
+        // A short run of digits or a name with a digit in it is still a name.
+        assertEquals(VoiceCommand.Call("42"), parse("chiama 42"))
+        assertEquals(VoiceCommand.Call("ufficio 2"), parse("chiama ufficio 2"))
+    }
+
+    @Test
+    fun everyHearingOfTheNameIsTriedWhenLookingForAContact() {
+        val heard = listOf("chiama Mario", "chiama Maria", "apri fotocamera", "scrivi a Marco ciao")
+        assertEquals(
+            listOf("mario", "maria", "marco"),
+            VoiceCommands.contactNames(heard, apps, { it.id }, first = "mario"),
+        )
+    }
+
+    @Test
     fun theTorchHasOnOffAndToggle() {
         assertEquals(VoiceCommand.Torch(true), parse("accendi la torcia"))
         assertEquals(VoiceCommand.Torch(false), parse("spegni la torcia"))

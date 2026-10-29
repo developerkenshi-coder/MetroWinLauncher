@@ -7,10 +7,13 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
+import com.metrowin.launcher.notifications.NotificationHub
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
@@ -29,6 +32,8 @@ data class ConnectionPanel(
     val wifiAccess: ConnectionAccess = ConnectionAccess.Ok,
     val devices: List<BluetoothPeer> = emptyList(),
     val bluetoothAccess: ConnectionAccess = ConnectionAccess.Ok,
+    /** The server the connected VPN says it is on (read from its notification), or null. */
+    val vpnServer: String? = null,
 ) {
     val wifiCaption: String? get() = wifiName
 
@@ -37,6 +42,7 @@ data class ConnectionPanel(
     fun captionFor(action: QuickAction): String? = when (action) {
         QuickAction.Wifi -> wifiCaption
         QuickAction.Bluetooth -> bluetoothCaption
+        QuickAction.Vpn -> vpnServer
         else -> null
     }
 }
@@ -78,6 +84,13 @@ object Connections {
         return all.distinctBy { it.address }.sortedWith(compareByDescending<BluetoothPeer> { it.connected }.thenBy { it.name.lowercase() })
     }
 
+    /**
+     * The server of a VPN from the notification its app keeps while connected: the text, else the title unless that is only the app's name.
+     * Apps word these differently ("Connected to Milan"), so it is shown as the app wrote it; null when it says nothing.
+     */
+    fun vpnServer(title: String, text: String, appLabel: String): String? =
+        text.trim().takeIf { it.isNotEmpty() } ?: title.trim().takeIf { it.isNotEmpty() && !it.equals(appLabel, ignoreCase = true) }
+
     fun bluetoothCaption(connectedNames: List<String>): String? {
         val names = connectedNames.filter { it.isNotBlank() }
         return when (names.size) {
@@ -95,6 +108,9 @@ class ConnectionController(private val context: Context) {
     private val wifi get() = context.applicationContext.getSystemService(WifiManager::class.java)
     private val bluetooth get() = context.getSystemService(BluetoothManager::class.java)?.adapter
 
+    /** The VPN app whose notification names the server (see [LauncherSettings.vpnApp]); empty: the only VPN app of the phone, if there is one. */
+    var vpnApp: String = ""
+
     /** The Bluetooth devices are read only when [devices] is true: Android answers for each profile in turn. */
     suspend fun read(previous: ConnectionPanel, devices: Boolean): ConnectionPanel = previous.copy(
         wifiName = wifiName(),
@@ -102,7 +118,17 @@ class ConnectionController(private val context: Context) {
         wifiAccess = wifiAccess(),
         devices = if (devices) bluetoothDevices() else previous.devices,
         bluetoothAccess = bluetoothAccess(),
+        vpnServer = vpnServer(),
     )
+
+    /** Only while a VPN is up, and only from the notifications the launcher is already given (without that access there is no name). */
+    private fun vpnServer(): String? {
+        val cm = context.getSystemService(ConnectivityManager::class.java)
+        if (cm.getNetworkCapabilities(cm.activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) != true) return null
+        val app = VpnApps.pick(vpnApp, VpnApps.installed(context)) ?: return null
+        val entry = NotificationHub.entries.value.filter { it.packageName == app.packageName }.maxByOrNull { it.postTime } ?: return null
+        return Connections.vpnServer(entry.title, entry.text, app.label)
+    }
 
     /** Wi-Fi names need the location access, and Android 8.1 and later also want the location switched on. */
     fun wifiAccess(): ConnectionAccess = when {

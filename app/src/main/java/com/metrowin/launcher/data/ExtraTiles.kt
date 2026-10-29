@@ -42,6 +42,12 @@ data class TileExtras(
     /** The steps of the days before, by day number (see [Steps.record]), and the car that was parked, if one was. */
     val stepDays: Map<Long, Int> = emptyMap(),
     val parked: ParkedCar? = null,
+    /** What the Apps, Battery, Data usage and Memory tiles show; null while it is not known. [usageAllowed] says whether the usage access is given. */
+    val apps: AppsStats? = null,
+    val battery: BatteryInfo? = null,
+    val dataUsage: DataUsage? = null,
+    val memory: MemoryStats? = null,
+    val usageAllowed: Boolean = false,
 )
 
 /** The steps of a day, from the counter of the sensor, which only goes up since the phone started. */

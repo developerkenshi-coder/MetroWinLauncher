@@ -255,6 +255,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                 while (true) {
                     readStates()
                     // Bluetooth devices are read every few seconds.
+                    network.vpnApp = settings.vpnApp
                     connections = network.read(connections, devices = round % CONNECTION_DEVICES_EVERY == 0)
                     round++
                     delay(1_000)
@@ -291,7 +292,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                         QuickAction.Recents -> system(LockAccessibilityService::recents)
                         else -> {
                             // The flashlight and the quiet hours switch on the spot and the panel stays; anything else opens a screen.
-                            if (quick.activate(action, settings.dndMinutes, settings.torchAutoOffMin, settings.torchStrength)) {
+                            if (quick.activate(action, settings.dndMinutes, settings.torchAutoOffMin, settings.torchStrength, settings.vpnApp)) {
                                 readStates()
                             } else {
                                 if (action == QuickAction.QuietHours) Toast.makeText(app, R.string.qa_quiet_allow, Toast.LENGTH_LONG).show()

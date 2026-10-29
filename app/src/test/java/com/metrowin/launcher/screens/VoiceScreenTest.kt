@@ -82,6 +82,15 @@ class VoiceScreenTest : ScreenshotBase() {
     }
 
     @Test
+    fun aFinalProblemOffersNoRetry() {
+        showState(VoiceUiState.Problem(R.string.voice_gave_up, final = true))
+        advance(200)
+        compose.onAllNodesWithTag("voice:retry").assertCountEquals(0)
+        compose.onNodeWithTag("voice:mic").performClick()
+        assertEquals(0, retried)
+    }
+
+    @Test
     fun aProblemWithNothingToSearchHasNoWebButton() {
         showState(VoiceUiState.Problem(R.string.voice_nothing))
         advance(200)

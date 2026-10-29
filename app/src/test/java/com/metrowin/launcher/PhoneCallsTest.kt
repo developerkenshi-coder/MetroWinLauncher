@@ -1,6 +1,7 @@
 package com.metrowin.launcher
 
 import android.content.Intent
+import android.provider.ContactsContract
 import com.metrowin.launcher.data.PhoneCalls
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -34,6 +35,18 @@ class PhoneCallsTest {
         assertEquals(Intent.ACTION_DIAL, intent.action)
         assertEquals("3331234567", intent.data!!.schemeSpecificPart)
         assertEquals(Intent.FLAG_ACTIVITY_NEW_TASK, intent.flags and Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+
+    @Test
+    fun theNumberToCallIsTheDefaultThenTheMobileThenTheFirst() {
+        val mobile = ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE
+        val home = ContactsContract.CommonDataKinds.Phone.TYPE_HOME
+        val rows = listOf(PhoneCalls.Row("011 111", home, false), PhoneCalls.Row("333 222", mobile, false), PhoneCalls.Row("02 333", home, true))
+        assertEquals("02333", PhoneCalls.choose(rows))
+        assertEquals("333222", PhoneCalls.choose(rows.take(2)))
+        assertEquals("011111", PhoneCalls.choose(rows.take(1)))
+        assertEquals("a number with nothing dialable is skipped", "333222", PhoneCalls.choose(listOf(PhoneCalls.Row("ext.", mobile, true), rows[1])))
+        assertNull(PhoneCalls.choose(emptyList()))
     }
 
     @Test

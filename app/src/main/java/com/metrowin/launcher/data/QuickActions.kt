@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Handler
@@ -80,12 +82,13 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
          */
         fun holdScreen(action: QuickAction): String? = when (action) {
             Wifi, Bluetooth -> null
-            Airplane, Hotspot -> Settings.ACTION_WIRELESS_SETTINGS
+            Airplane -> Settings.ACTION_WIRELESS_SETTINGS
+            Hotspot -> "android.settings.TETHER_SETTINGS"
             Flashlight -> MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA
             QuietHours, QuietTimed -> "android.settings.ZEN_MODE_SETTINGS"
             Rotation, Brightness, ScreenTimeout, AutoBrightness -> Settings.ACTION_DISPLAY_SETTINGS
             Location -> Settings.ACTION_PRIVACY_SETTINGS
-            Vpn -> "android.settings.PRIVATE_DNS_SETTINGS"
+            Vpn -> Settings.ACTION_VPN_SETTINGS // only when the phone has no VPN app: otherwise a long press chooses the app, see hold()
             Cast -> Settings.ACTION_DISPLAY_SETTINGS
             Camera -> MediaStore.INTENT_ACTION_VIDEO_CAMERA
             LauncherSettings -> Settings.ACTION_HOME_SETTINGS
@@ -182,6 +185,9 @@ class QuickActionsController(private val context: Context) {
             QuickAction.Bluetooth -> context.getSystemService(BluetoothManager::class.java).adapter?.isEnabled
             QuickAction.Airplane -> Settings.Global.getInt(context.contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) == 1
             QuickAction.Flashlight -> if (torchId == null) null else _torchOn.value
+            QuickAction.Vpn -> context.getSystemService(ConnectivityManager::class.java).let { cm ->
+                cm.getNetworkCapabilities(cm.activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true
+            }
             QuickAction.QuietHours, QuickAction.QuietTimed ->
                 context.getSystemService(android.app.NotificationManager::class.java).currentInterruptionFilter !=
                     android.app.NotificationManager.INTERRUPTION_FILTER_ALL
@@ -225,12 +231,23 @@ class QuickActionsController(private val context: Context) {
      * Switches the flashlight or the quiet hours on the spot, or opens the system screen of the button. True when it was
      * done on the spot. Quiet hours need the "do not disturb" access: without it the screen that gives it opens.
      */
-    fun activate(action: QuickAction, quietMinutes: Int = 60, torchMinutes: Int = 0, torchStrength: Float = 1f): Boolean {
+    fun activate(action: QuickAction, quietMinutes: Int = 60, torchMinutes: Int = 0, torchStrength: Float = 1f, vpnApp: String = ""): Boolean {
         val torch = torchId
+        if (action == QuickAction.Vpn) {
+            // Android cannot connect another app's VPN: the app that does is opened (most connect by themselves), or the choice of it.
+            val apps = VpnApps.installed(context)
+            val app = VpnApps.pick(vpnApp, apps)
+            when {
+                app != null -> if (!openApp(app.packageName)) start(Settings.ACTION_VPN_SETTINGS)
+                apps.isEmpty() -> start(Settings.ACTION_VPN_SETTINGS)
+                else -> askVpnChoice()
+            }
+            return false
+        }
         if (action == QuickAction.Flashlight && torch != null) {
             val turnOn = !_torchOn.value
-            // Lit at the strength the user chose (where the phone has several), else as bright as it goes.
-            if (turnOn && torchStrength < 1f && torchLevels > 1 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) setTorchStrength(torchStrength)
+            // Lit at the strength the user chose, the maximum included: setTorchMode would light it at the phone's default level, below the maximum.
+            if (turnOn && torchLevels > 1 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) setTorchStrength(torchStrength)
             else runCatching { cameras.setTorchMode(torch, turnOn) }
             // An alarm of Android puts it out when the time is up; switching it off by hand cancels that.
             if (turnOn && torchMinutes > 0) com.metrowin.launcher.notifications.Alerts.scheduleTorchOff(context, torchMinutes)
@@ -303,8 +320,23 @@ class QuickActionsController(private val context: Context) {
 
     /** A long press on a button: the screen of its own (see [QuickAction.holdScreen]), or the settings of Android when the phone has no such screen. */
     fun hold(action: QuickAction) {
+        if (action == QuickAction.Vpn && VpnApps.installed(context).isNotEmpty()) return askVpnChoice()
         val screen = QuickAction.holdScreen(action) ?: return
         if (!start(screen)) start(Settings.ACTION_SETTINGS)
+    }
+
+    private fun openApp(packageName: String): Boolean = runCatching {
+        context.startActivity(context.packageManager.getLaunchIntentForPackage(packageName)!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }.isSuccess
+
+    /** The launcher comes to the front and lists the VPN apps (from the Action Center over other apps too). */
+    private fun askVpnChoice() {
+        runCatching {
+            context.startActivity(
+                Intent(context, com.metrowin.launcher.MainActivity::class.java).putExtra(com.metrowin.launcher.MainActivity.EXTRA_VPN_CHOICE, true)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+        }
     }
 
     private fun start(intentAction: String): Boolean =

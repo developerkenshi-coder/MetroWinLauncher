@@ -3,6 +3,23 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
+## 26.4S: 2026-10-29
+
+- **Calling by voice**: "call Mario" looks for the name among your contacts, by name only, and takes the closest one (the exact name first). It no longer picks a contact because of a number or an e-mail, or the first one in alphabetical order. If several fit equally well it says which and asks for the full name. It tries the other ways the phone heard the name too, and the same goes for "write to…". With several numbers it takes the default one, else the mobile.
+- **Numbers said in digits** ("call 333 1234567") are dialed as they are, and no longer looked up among the names.
+- **Voice recognition**: where the phone has no offline model for your language it now uses the online service instead of failing every time; a busy or stuck recognizer is tried again once; if the phone gives up after having heard words, those words are used; it keeps more alternatives and waits a little longer for the end of the phrase.
+- **Try again ends**: after three failures in a row the voice screen says so and stops offering to try again.
+- **Flashlight**: at the top of the slider it now shines at its true maximum (it was lit at the phone's default level, dimmer than just below the top).
+- **VPN button**: opens the VPN app of the phone. With one VPN app it takes that; with several it asks which one, and a long press chooses again. It lights while a VPN is connected and shows the server when the app names it in its notification.
+- **Hotspot**: the button is called "Hotspot"; a touch or a long press opens the hotspot screen of Android (Android does not let an app switch it on).
+- **Apps tile**: how many apps are installed; wide and large also show the five used most this week (needs the usage access, a switch in the settings of Android).
+- **Battery tile**: the charge with a graph of how long it should last by the estimate Android already keeps, small on medium and extended on wide and large.
+- **Data usage tile**: what went over Wi-Fi and mobile data today; wide and large add the monthly average (needs the usage access).
+- **Memory tile**: used and free with a bar; wide and large add what takes the space: apps, photos, videos, music, other files.
+- **Lists in the app list**: the chips under the search box are lists now. The categories are the lists you start with and any of them can be deleted; *+* makes a new one, a long press on a chip renames or deletes it, and *add to list* in the menu of an app puts it in one.
+
+Download: [`MetroWinLauncher-26.4S.apk`](https://github.com/developerkenshi-coder/MetroWinLauncher/releases/tag/v26.4S).
+
 ## 26.3S: 2026-10-28
 
 - **Updates from GitHub**: *settings, about, updates* looks for a new release now and every 12 hours, tells you what is new before you update, downloads the APK (checked against the checksum of the release) and starts the installer by itself. It can be switched off.

@@ -154,6 +154,7 @@ object SettingsCodec {
         put("showCategories", s.showCategories)
         put("appLabels", AppLabels.encode(s.appLabels))
         put("lockedApps", JSONArray(s.lockedApps.sorted()))
+        put("appLists", AppLists.encode(s.appLists))
 
         put("showWorkApps", s.showWorkApps)
         put("showPrivateApps", s.showPrivateApps)
@@ -181,6 +182,7 @@ object SettingsCodec {
         put("panelSounds", s.panelSounds)
         put("assistantIcon", s.assistantIcon)
         put("torchStrength", s.torchStrength.toDouble())
+        put("vpnApp", s.vpnApp)
         put("updateAuto", s.updateAuto)
         put("reduceMotion", s.reduceMotion)
         put("highContrast", s.highContrast)
@@ -366,6 +368,8 @@ object SettingsCodec {
             showCategories = o.optBoolean("showCategories", base.showCategories),
             appLabels = if (o.has("appLabels")) AppLabels.decode(o.optJSONObject("appLabels")) else base.appLabels,
             lockedApps = strings("lockedApps", base.lockedApps).toSet(),
+            // Present in the file means the user's lists, even none at all: a deleted list does not come back.
+            appLists = if (o.has("appLists")) AppLists.decode(o.optJSONArray("appLists") ?: JSONArray()) else base.appLists,
 
             showWorkApps = o.optBoolean("showWorkApps", base.showWorkApps),
             showPrivateApps = o.optBoolean("showPrivateApps", base.showPrivateApps),
@@ -394,6 +398,7 @@ object SettingsCodec {
             panelSounds = o.optBoolean("panelSounds", base.panelSounds),
             assistantIcon = o.optBoolean("assistantIcon", base.assistantIcon),
             torchStrength = o.optDouble("torchStrength", base.torchStrength.toDouble()).toFloat().coerceIn(0.05f, 1f),
+            vpnApp = o.optString("vpnApp", base.vpnApp).take(256),
             updateAuto = o.optBoolean("updateAuto", base.updateAuto),
             reduceMotion = o.optBoolean("reduceMotion", base.reduceMotion),
             highContrast = o.optBoolean("highContrast", base.highContrast),

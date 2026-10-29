@@ -8,6 +8,8 @@ import android.content.pm.ShortcutInfo
 import android.os.Process
 import androidx.test.core.app.ApplicationProvider
 import com.metrowin.launcher.data.AppCategories
+import com.metrowin.launcher.data.AppList
+import com.metrowin.launcher.data.AppLists
 import com.metrowin.launcher.data.AppLabels
 import com.metrowin.launcher.data.AppLock
 import com.metrowin.launcher.data.AppSections
@@ -119,6 +121,44 @@ class AppListGroupsTest {
         assertEquals(listOf("a", "d"), AppCategories.filter(items, AppCategory.Social).map { it.id })
     }
 
+    // --- the lists
+
+    @Test
+    fun theListsOfTheFirstStartAreTheCategoriesAndShowOnlyWhileAnAppBelongsToThem() {
+        val items = listOf(app("a", category = AppCategory.Social), app("b"))
+        assertEquals(AppCategory.entries.size, AppLists.DEFAULTS.size)
+        assertEquals(listOf("social"), AppLists.visible(AppLists.DEFAULTS, items).map { it.id })
+        // A list the user made shows even while it is empty, and takes the apps put in by hand.
+        val mine = AppLists.create(AppLists.DEFAULTS, "  Work  ", "u1")
+        assertEquals(listOf("social", "u1"), AppLists.visible(mine, items).map { it.id })
+        val filled = AppLists.toggle(mine, "u1", "b")
+        assertEquals(listOf("b"), AppLists.members(filled.last(), items).map { it.id })
+        // The same touch takes it out again.
+        assertEquals(emptySet<String>(), AppLists.toggle(filled, "u1", "b").last().items)
+    }
+
+    @Test
+    fun aListNeedsANameAndAnyListCanBeRenamedOrDeleted() {
+        assertEquals(AppLists.DEFAULTS, AppLists.create(AppLists.DEFAULTS, "   ", "u1"))
+        assertEquals("a".repeat(AppLists.MAX_NAME), AppLists.create(emptyList(), "a".repeat(100), "u1").single().name)
+        val renamed = AppLists.rename(AppLists.DEFAULTS, "game", "Play")
+        assertEquals("Play", renamed.first { it.id == "game" }.name)
+        // An empty name gives a list of a category its own name back; a made list keeps the one it had.
+        assertEquals("", AppLists.rename(renamed, "game", " ").first { it.id == "game" }.name)
+        assertEquals("Work", AppLists.rename(AppLists.create(emptyList(), "Work", "u1"), "u1", "").single().name)
+        assertEquals(AppLists.DEFAULTS.size - 1, AppLists.delete(AppLists.DEFAULTS, "game").size)
+    }
+
+    @Test
+    fun theListsSurviveSavingAndADeletedDefaultStaysDeleted() {
+        val lists = AppLists.toggle(AppLists.create(AppLists.delete(AppLists.DEFAULTS, "game"), "Work", "u1"), "u1", "app:x")
+        val saved = SettingsCodec.decode(SettingsCodec.encode(LauncherSettings(appLists = lists)))!!
+        assertEquals(lists, saved.appLists)
+        assertEquals(emptyList<AppList>(), SettingsCodec.decode(SettingsCodec.encode(LauncherSettings(appLists = emptyList())))!!.appLists)
+        // A file from before the lists has none of them: the first start's lists.
+        assertEquals(AppLists.DEFAULTS, SettingsCodec.decode("{}")!!.appLists)
+    }
+
     @Test
     fun androidsCategoryNumbersMapToOurs() {
         assertEquals(AppCategory.Game, AppCategory.fromAndroid(0))
@@ -135,7 +175,7 @@ class AppListGroupsTest {
         val items = AppSections.sort(listOf(app("a", "Alpha"), app("b", "Bravo")))
         val model = AppListModel(
             AppSections.group(items), frequent = listOf(items[1]), fresh = listOf(items[0]),
-            categories = listOf(AppCategory.Game),
+            lists = AppLists.DEFAULTS.take(1),
         )
         val kinds = model.rows.map { it::class.simpleName }
         assertEquals(listOf("Search", "Categories", "Section", "App", "Section", "App", "Header", "App", "Header", "App"), kinds)

@@ -203,7 +203,7 @@ un'app non può più accenderli da sola); la torcia si accende davvero. Il pulsa
 Il microfono nella casella di ricerca (o un gesto a scelta) apre una schermata di ascolto in stile Metro. Il
 riconoscimento è quello del telefono (`SpeechRecognizer`), con preferenza per il modello **sul telefono** se esiste per la
 tua lingua; il launcher capisce i comandi da solo (`data/VoiceCommands.kt`, italiano e inglese, nessuna rete):
-*apri Mappe*, *chiama Anna* (trova il numero e apre il tastierino con il numero già scritto, a un tocco dalla chiamata; con l'interruttore
+*apri Mappe*, *chiama Anna* (cerca il nome in rubrica, solo per nome e prendendo il più vicino; se ne combacia più di uno chiede il nome completo; con più numeri sceglie il predefinito, poi il cellulare; *chiama 333 1234567* compone le cifre dette. Apre il tastierino con il numero già scritto, a un tocco dalla chiamata; con l'interruttore
 *chiama subito* e il permesso del telefono, che Android chiede la prima volta, la chiamata parte da sola), *timer 10 minuti*, *sveglia alle 7 e 30*,
 *accendi / spegni la torcia*, *cerca ricette di pizza* (o una frase qualsiasi, che va alla ricerca web), *meteo*,
 *blocca lo schermo*, *centro notifiche*, *tutte le app*, *impostazioni del launcher*, *apri Wi-Fi* (le impostazioni di Android);

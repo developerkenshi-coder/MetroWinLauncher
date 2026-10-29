@@ -70,7 +70,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.metrowin.launcher.data.AboutInfo
 import com.metrowin.launcher.data.AppFilter
-import com.metrowin.launcher.data.AppCategories
+import com.metrowin.launcher.data.AppLists
 import com.metrowin.launcher.data.AppLabels
 import com.metrowin.launcher.data.AppLock
 import com.metrowin.launcher.data.AppUsage
@@ -85,6 +85,9 @@ import com.metrowin.launcher.data.CONNECTION_DEVICES_EVERY
 import com.metrowin.launcher.data.ConnectionAccess
 import com.metrowin.launcher.data.ConnectionPanel
 import com.metrowin.launcher.data.QuickAction
+import com.metrowin.launcher.data.UsageAccess
+import com.metrowin.launcher.data.VpnApp
+import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.data.GestureAction
 import com.metrowin.launcher.ui.start.FolderChoice
 import com.metrowin.launcher.ui.start.FolderChooser
@@ -95,6 +98,8 @@ import androidx.compose.ui.platform.LocalView
 import com.metrowin.launcher.data.TileGrid
 import androidx.compose.ui.platform.LocalWindowInfo
 import com.metrowin.launcher.data.SystemSettingDef
+import com.metrowin.launcher.data.ContactMatch
+import com.metrowin.launcher.data.ContactPick
 import com.metrowin.launcher.data.VoiceCommand
 import com.metrowin.launcher.data.VoiceCommands
 import com.metrowin.launcher.data.VoiceError
@@ -290,11 +295,17 @@ fun LauncherApp(vm: LauncherViewModel) {
     var openFolderId by remember { mutableStateOf<String?>(null) }
     val cellsByPage = remember(pages, items, openFolderId) { pages.map { buildStartCells(it, items, openFolderId) } }
     val usage by vm.usage.collectAsStateWithLifecycle()
-    var category by remember { mutableStateOf<AppCategory?>(null) }
-    val categories = remember(listItems, settings.showCategories) {
-        if (settings.showCategories) AppCategories.present(listItems) else emptyList()
+    // The list chosen under the search box (its id; null is "all"), and the dialogs that make, rename, delete and fill the lists.
+    var selectedList by remember { mutableStateOf<String?>(null) }
+    var newListOpen by remember { mutableStateOf(false) }
+    var listMenuFor by remember { mutableStateOf<String?>(null) }
+    var renamingListId by remember { mutableStateOf<String?>(null) }
+    var addToListFor by remember { mutableStateOf<AppItem?>(null) }
+    val visibleLists = remember(listItems, settings.appLists, settings.showCategories) {
+        if (settings.showCategories) AppLists.visible(settings.appLists, listItems) else null
     }
-    LaunchedEffect(categories) { if (category != null && category !in categories) category = null }
+    val chosenList = remember(visibleLists, selectedList) { visibleLists?.firstOrNull { it.id == selectedList } }
+    LaunchedEffect(chosenList) { if (selectedList != null && chosenList == null) selectedList = null }
     val frequent = remember(usage, listItems, settings.showFrequentApps) {
         if (!settings.showFrequentApps) {
             emptyList()
@@ -306,13 +317,13 @@ fun LauncherApp(vm: LauncherViewModel) {
     val fresh = remember(listItems, settings.showNewApps) {
         if (settings.showNewApps) NewApps.recent(listItems, System.currentTimeMillis()) else emptyList()
     }
-    val shownSections = remember(sections, listItems, category) {
-        category?.let { AppSections.group(AppCategories.filter(listItems, it)) } ?: sections
+    val shownSections = remember(sections, listItems, chosenList) {
+        chosenList?.let { AppSections.group(AppLists.members(it, listItems)) } ?: sections
     }
-    val appList = remember(shownSections, frequent, fresh, categories, category, settings.searchToday) {
-        // A chosen category shows only its apps, in letters; the groups at the top are for the whole list.
+    val appList = remember(shownSections, frequent, fresh, visibleLists, chosenList, settings.searchToday) {
+        // A chosen list shows only its apps, in letters; the groups at the top are for the whole list.
         AppListModel(
-            shownSections, if (category == null) frequent else emptyList(), if (category == null) fresh else emptyList(), categories,
+            shownSections, if (chosenList == null) frequent else emptyList(), if (chosenList == null) fresh else emptyList(), visibleLists,
             today = settings.searchToday,
         )
     }
@@ -426,6 +437,14 @@ fun LauncherApp(vm: LauncherViewModel) {
     // The tiles picked so far while several are chosen for a folder (null: not choosing), and the app being put in one.
     var folderPick by remember { mutableStateOf<Set<String>?>(null) }
     var folderChooserFor by remember { mutableStateOf<AppItem?>(null) }
+    // The VPN apps to choose from while the choice is open (null: not choosing); asked by the VPN button, which may be in the Action Center over other apps.
+    var vpnChoices by remember { mutableStateOf<List<VpnApp>?>(null) }
+    val vpnChoiceRequest by vm.vpnChoiceRequests.collectAsStateWithLifecycle()
+    LaunchedEffect(vpnChoiceRequest) {
+        if (vpnChoiceRequest == 0) return@LaunchedEffect
+        vpnChoices = vm.vpnApps()
+        vm.vpnChoiceMet()
+    }
     var query by remember { mutableStateOf("") }
     var settingsSection by remember { mutableStateOf<SettingsSection?>(null) }
     // Asked from outside (the Action Center over other apps): the settings of the launcher.
@@ -704,6 +723,11 @@ fun LauncherApp(vm: LauncherViewModel) {
             addMenuOpen -> InstantBack { addMenuOpen = false }
             renamingFolderId != null -> InstantBack { renamingFolderId = null }
             folderChooserFor != null -> InstantBack { folderChooserFor = null }
+            vpnChoices != null -> InstantBack { vpnChoices = null }
+            addToListFor != null -> InstantBack { addToListFor = null }
+            renamingListId != null -> InstantBack { renamingListId = null }
+            listMenuFor != null -> InstantBack { listMenuFor = null }
+            newListOpen -> InstantBack { newListOpen = false }
             jumpOpen -> InstantBack { jumpOpen = false }
             menu != null -> InstantBack { menu = null }
             weatherOpen -> TurnstileBack(weatherAway, scope, ::closeWeather)
@@ -853,6 +877,11 @@ fun LauncherApp(vm: LauncherViewModel) {
                 return
             }
             AppRepository.ROUTE_NONE -> return
+            // The tiles that read the use of the phone: until the usage access is given, a touch opens the screen of Android that gives it.
+            AppRepository.ROUTE_USAGE -> {
+                if (!UsageAccess.granted(appContext)) UsageAccess.openSettings(appContext)
+                return
+            }
             // The tiles with a page of their own: the page opens over Start, nothing leaves.
             AppRepository.ROUTE_TIMER -> {
                 panels.open(Panel.Timer(item.id))
@@ -1051,6 +1080,24 @@ fun LauncherApp(vm: LauncherViewModel) {
     /** Carries out what was said. The session is closed here, unless there is a problem to show. */
     fun carryOut(heard: List<String>) {
         val label = { def: SystemSettingDef -> appContext.getString(def.label) }
+        /** The contact that was named, found by name in each of the ways it was heard; else the screen says why not, and this is null. */
+        suspend fun contactFor(name: String): ContactMatch? =
+            when (val pick = vm.pickContact(VoiceCommands.contactNames(heard, listItems, label, name))) {
+                is ContactPick.One -> pick.contact
+                is ContactPick.Ambiguous -> null.also { voice.problem(R.string.voice_many_contacts, pick.contacts.joinToString(", ") { it.name }) }
+                ContactPick.None -> null.also { voice.problem(R.string.voice_no_contact, name) }
+            }
+        fun placeCall(number: String) {
+            when {
+                !settings.voiceCallDirect -> vm.dial(number, direct = false)
+                ContextCompat.checkSelfPermission(appContext, PhoneCalls.permission) == PackageManager.PERMISSION_GRANTED ->
+                    vm.dial(number, direct = true)
+                else -> {
+                    pendingCall = number
+                    callPermission.launch(PhoneCalls.permission)
+                }
+            }
+        }
         when (val command = VoiceCommands.best(heard, listItems, label)) {
             is VoiceCommand.OpenApp -> {
                 voice.close()
@@ -1065,24 +1112,15 @@ fun LauncherApp(vm: LauncherViewModel) {
                 vm.launch(AppItem("search:web", command.query, Launch.Link(GlobalSearch.webUrl(command.query, settings.searchEngine))))
             }
             is VoiceCommand.Call -> scope.launch {
-                val contact = vm.searchContacts(command.name).firstOrNull()
-                if (contact == null) {
-                    voice.problem(R.string.voice_no_contact, command.name)
-                } else {
-                    val number = vm.phoneNumberOf(contact.lookupUri)
-                    voice.close()
-                    when {
-                        // No number to call: the card of the contact is the next best thing.
-                        number == null -> vm.launch(AppItem("search:contact", contact.name, Launch.Link(contact.lookupUri)))
-                        !settings.voiceCallDirect -> vm.dial(number, direct = false)
-                        ContextCompat.checkSelfPermission(appContext, PhoneCalls.permission) == PackageManager.PERMISSION_GRANTED ->
-                            vm.dial(number, direct = true)
-                        else -> {
-                            pendingCall = number
-                            callPermission.launch(PhoneCalls.permission)
-                        }
-                    }
-                }
+                val contact = contactFor(command.name) ?: return@launch
+                val number = vm.phoneNumberOf(contact.lookupUri)
+                voice.close()
+                // No number to call: the card of the contact is the next best thing.
+                if (number == null) vm.launch(AppItem("search:contact", contact.name, Launch.Link(contact.lookupUri))) else placeCall(number)
+            }
+            is VoiceCommand.CallNumber -> {
+                voice.close()
+                placeCall(command.number)
             }
             is VoiceCommand.Clock -> {
                 voice.close()
@@ -1111,17 +1149,13 @@ fun LauncherApp(vm: LauncherViewModel) {
                 vm.navigate(command.destination)
             }
             is VoiceCommand.Message -> scope.launch {
-                val contact = vm.searchContacts(command.name).firstOrNull()
-                if (contact == null) {
-                    voice.problem(R.string.voice_no_contact, command.name)
+                val contact = contactFor(command.name) ?: return@launch
+                val number = vm.phoneNumberOf(contact.lookupUri)
+                voice.close()
+                if (number == null) {
+                    vm.launch(AppItem("search:contact", contact.name, Launch.Link(contact.lookupUri)))
                 } else {
-                    val number = vm.phoneNumberOf(contact.lookupUri)
-                    voice.close()
-                    if (number == null) {
-                        vm.launch(AppItem("search:contact", contact.name, Launch.Link(contact.lookupUri)))
-                    } else {
-                        vm.composeMessage(number, command.text)
-                    }
+                    vm.composeMessage(number, command.text)
                 }
             }
             is VoiceCommand.System -> {
@@ -1260,7 +1294,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     // Pull down from the top of Start, or from the top edge of any page, to open the Action Center.
     val pullBlocked = kidsMode || voice.isOpen || lockPreviewOpen || launching || settingsOpen || weatherOpen || panels.isOpen ||
         placeDialogOpen || albumPickerOpen || groupPickerOpen || menu != null || jumpOpen || editingKey != null ||
-        folderPick != null || folderChooserFor != null || renamingFolderId != null || tutorialVisible
+        folderPick != null || folderChooserFor != null || vpnChoices != null || newListOpen || listMenuFor != null || renamingListId != null || addToListFor != null ||
+        renamingFolderId != null || tutorialVisible
     val currentPullBlocked by rememberUpdatedState(pullBlocked)
     val pullConnections = List(LauncherSettings.MAX_START_PAGES) { page ->
         remember(panel, page) {
@@ -1442,9 +1477,11 @@ fun LauncherApp(vm: LauncherViewModel) {
                             global = globalResults,
                             searchFocus = searchFocus,
                             onVoice = if (settings.voiceButton) ({ voiceRequest++ }) else null,
-                            categories = categories,
-                            category = category,
-                            onCategory = { category = it },
+                            lists = visibleLists.orEmpty(),
+                            selectedList = selectedList,
+                            onList = { selectedList = it },
+                            onNewList = { newListOpen = true },
+                            onListLongPress = { listMenuFor = it.id },
                             answers = answers,
                             onAnswer = { answer ->
                                 if (answer is QuickAnswer.Dice || answer is QuickAnswer.Coin) {
@@ -1586,6 +1623,14 @@ fun LauncherApp(vm: LauncherViewModel) {
                         } else {
                             null
                         },
+                        onAddToList = if (settings.appLists.isNotEmpty()) {
+                            {
+                                menu = null
+                                addToListFor = state.item
+                            }
+                        } else {
+                            null
+                        },
                         onDismiss = { menu = null },
                     )
                 }
@@ -1616,6 +1661,21 @@ fun LauncherApp(vm: LauncherViewModel) {
                             Toast.makeText(appContext, R.string.folder_added, Toast.LENGTH_SHORT).show()
                         },
                         onCancel = { folderChooserFor = null },
+                    )
+                }
+
+                vpnChoices?.let { apps ->
+                    ChoiceSheet(
+                        title = stringResource(R.string.vpn_choose_title),
+                        choices = apps.map { Choice(it.packageName, Glyph.Vpn, it.label) },
+                        onPick = { choice ->
+                            // Chosen once: from now on the button opens this app, and a long press chooses again.
+                            vm.updateSettings { it.copy(vpnApp = choice.id) }
+                            vpnChoices = null
+                            vm.activateQuickAction(QuickAction.Vpn)
+                        },
+                        onDismiss = { vpnChoices = null },
+                        tagPrefix = "vpnchoice",
                     )
                 }
 
@@ -2068,6 +2128,22 @@ fun LauncherApp(vm: LauncherViewModel) {
                             vm.addSteps(addPage)
                             Steps.permission()?.takeIf { !LivePermissions.isGranted(appContext, it) }?.let(birthdaysPermission::launch)
                         },
+                        onAppsRecap = {
+                            addMenuOpen = false
+                            vm.addAppsRecap(addPage)
+                        },
+                        onBatteryGraph = {
+                            addMenuOpen = false
+                            vm.addBatteryGraph(addPage)
+                        },
+                        onDataUse = {
+                            addMenuOpen = false
+                            vm.addDataUse(addPage)
+                        },
+                        onMemoryUse = {
+                            addMenuOpen = false
+                            vm.addMemoryUse(addPage)
+                        },
                         onRecorder = {
                             addMenuOpen = false
                             vm.addRecorder(addPage)
@@ -2327,6 +2403,75 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onCancel = { renamingAppId = null },
                         )
                     }
+                }
+
+                if (newListOpen) {
+                    FolderNameDialog(
+                        initial = "",
+                        title = R.string.list_new_prompt,
+                        maxLength = AppLists.MAX_NAME,
+                        onDone = { name ->
+                            val id = "u" + System.currentTimeMillis().toString(36)
+                            vm.updateSettings { it.copy(appLists = AppLists.create(it.appLists, name, id)) }
+                            if (AppLists.clean(name) != null) selectedList = id
+                            newListOpen = false
+                        },
+                        onCancel = { newListOpen = false },
+                    )
+                }
+
+                listMenuFor?.let { id ->
+                    ChoiceSheet(
+                        title = stringResource(R.string.list_options),
+                        choices = listOf(
+                            Choice("rename", null, stringResource(R.string.list_rename)),
+                            Choice("delete", null, stringResource(R.string.list_delete)),
+                        ),
+                        onPick = { choice ->
+                            listMenuFor = null
+                            if (choice.id == "rename") {
+                                renamingListId = id
+                            } else {
+                                // The apps stay where they are: only the chip goes, and a deleted list does not come back.
+                                vm.updateSettings { it.copy(appLists = AppLists.delete(it.appLists, id)) }
+                                Toast.makeText(appContext, R.string.list_deleted, Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        onDismiss = { listMenuFor = null },
+                        tagPrefix = "listmenu",
+                    )
+                }
+
+                renamingListId?.let { id ->
+                    val list = settings.appLists.firstOrNull { it.id == id }
+                    if (list != null) {
+                        FolderNameDialog(
+                            initial = list.name.ifBlank { list.category?.let { stringResource(it.label) }.orEmpty() },
+                            title = R.string.list_rename_prompt,
+                            maxLength = AppLists.MAX_NAME,
+                            onDone = { name ->
+                                vm.updateSettings { it.copy(appLists = AppLists.rename(it.appLists, id, name)) }
+                                renamingListId = null
+                            },
+                            onCancel = { renamingListId = null },
+                        )
+                    }
+                }
+
+                addToListFor?.let { item ->
+                    ChoiceSheet(
+                        title = stringResource(R.string.list_add_title),
+                        choices = settings.appLists.map { list ->
+                            val name = list.name.ifBlank { list.category?.let { stringResource(it.label) }.orEmpty() }
+                            Choice(list.id, null, (if (item.id in list.items) "✓ " else "") + name)
+                        },
+                        onPick = { choice ->
+                            vm.updateSettings { it.copy(appLists = AppLists.toggle(it.appLists, choice.id, item.id)) }
+                            addToListFor = null
+                        },
+                        onDismiss = { addToListFor = null },
+                        tagPrefix = "addtolist",
+                    )
                 }
 
                 if (lockPreviewOpen) {

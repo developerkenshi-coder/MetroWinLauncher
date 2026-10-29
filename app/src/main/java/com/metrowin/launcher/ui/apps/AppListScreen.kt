@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.apps
 
+import com.metrowin.launcher.data.AppList
 import com.metrowin.launcher.data.SystemCommands
 import com.metrowin.launcher.ui.components.hideKeyboardWhenGone
 import com.metrowin.launcher.ui.anim.metroTween
@@ -198,14 +199,15 @@ sealed interface ListRow {
 
 /**
  * The alphabetical app list flattened into rows: a letter header, then the apps under it. Above the letters: the chips of
- * the [categories], the apps opened most often ([frequent]) and the ones installed lately ([fresh]), when there are any.
+ * the [lists], the apps opened most often ([frequent]) and the ones installed lately ([fresh]), when there are any.
  */
 @Immutable
 class AppListModel(
     sections: List<AppSection>,
     frequent: List<AppItem> = emptyList(),
     fresh: List<AppItem> = emptyList(),
-    categories: List<AppCategory> = emptyList(),
+    /** The lists of the chips: null hides the row, even none (only "all" and "+") shows it. */
+    lists: List<AppList>? = null,
     /** The Today card goes above the search box. */
     today: Boolean = false,
 ) {
@@ -215,7 +217,7 @@ class AppListModel(
     val rows: List<ListRow> = buildList {
         if (today) add(ListRow.Today)
         add(ListRow.Search)
-        if (categories.isNotEmpty()) add(ListRow.Categories)
+        if (lists != null) add(ListRow.Categories)
         if (frequent.isNotEmpty()) {
             add(ListRow.Section(R.string.list_frequent))
             frequent.forEach { add(ListRow.App(it, GROUP_FREQUENT)) }
@@ -279,10 +281,12 @@ fun AppListScreen(
     searchFocus: Int = 0,
     /** Shown as a microphone in the search box while it is empty; null for no microphone. */
     onVoice: (() -> Unit)? = null,
-    /** The categories of the chips under the search box (the model decides whether they show), the chosen one, and a choice. */
-    categories: List<AppCategory> = emptyList(),
-    category: AppCategory? = null,
-    onCategory: (AppCategory?) -> Unit = {},
+    /** The lists of the chips under the search box (the model decides whether they show), the chosen one, a choice, "new list" and a long press on a list. */
+    lists: List<AppList> = emptyList(),
+    selectedList: String? = null,
+    onList: (String?) -> Unit = {},
+    onNewList: () -> Unit = {},
+    onListLongPress: (AppList) -> Unit = {},
     /** What the search box answers by itself for the typed text, and what touching an answer does. */
     answers: List<QuickAnswer> = emptyList(),
     onAnswer: (QuickAnswer) -> Unit = {},
@@ -388,7 +392,7 @@ fun AppListScreen(
                 is ListRow.Recent -> ResultRow(
                     Glyph.Search, row.query, null, index, listState, openedAt, exiting, tag = "recent:${row.query}",
                 ) { onQueryChange(row.query) }
-                ListRow.Categories -> CategoryChips(categories, category, onCategory)
+                ListRow.Categories -> ListChips(lists, selectedList, onList, onNewList, onListLongPress)
                 is ListRow.Header -> HeaderRow(row.letter, index, listState, openedAt, exiting, onHeaderClick)
                 is ListRow.App -> AppRow(
                     row.item, index, listState, openedAt, exiting, onLaunch, onLongPress,
@@ -617,25 +621,27 @@ private fun AppRow(
     )
 }
 
-/** The categories as chips in a row that scrolls sideways: "all", then the ones the installed apps belong to. */
+/** The lists as chips in a row that scrolls sideways: "all", the lists (a long press renames or deletes one) and "+" for a new one. */
 @Composable
-private fun CategoryChips(categories: List<AppCategory>, selected: AppCategory?, onSelect: (AppCategory?) -> Unit) {
+private fun ListChips(lists: List<AppList>, selected: String?, onSelect: (String?) -> Unit, onNew: () -> Unit, onLongPress: (AppList) -> Unit) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth().testTag("categories"),
     ) {
         item(key = "all") { Chip(stringResource(R.string.cat_all), selected == null, "cat:all") { onSelect(null) } }
-        items(categories, key = { it.code }) { category ->
-            Chip(stringResource(category.label), selected == category, "cat:${category.code}") { onSelect(if (selected == category) null else category) }
+        items(lists, key = { it.id }) { list ->
+            val name = list.name.ifBlank { list.category?.let { stringResource(it.label) }.orEmpty() }
+            Chip(name, selected == list.id, "cat:${list.id}", onLongClick = { onLongPress(list) }) { onSelect(if (selected == list.id) null else list.id) }
         }
+        item(key = "new") { Chip("+", false, "cat:new", onClick = onNew) }
     }
 }
 
 @Composable
-private fun Chip(text: String, selected: Boolean, tag: String, onClick: () -> Unit) {
+private fun Chip(text: String, selected: Boolean, tag: String, onLongClick: (() -> Unit)? = null, onClick: () -> Unit) {
     Box(
-        Modifier.testTag(tag).metroPress(onClick = onClick).litFill(selected).padding(horizontal = 14.dp, vertical = 7.dp),
+        Modifier.testTag(tag).metroPress(onClick = onClick, onLongClick = onLongClick).litFill(selected).padding(horizontal = 14.dp, vertical = 7.dp),
         contentAlignment = Alignment.Center,
     ) {
         MetroText(text, size = 16.sp, weight = FontWeight.Normal, color = if (selected) onAccent() else LocalMetroColors.current.foreground)

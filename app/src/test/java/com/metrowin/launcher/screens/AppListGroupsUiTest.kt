@@ -11,7 +11,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import com.metrowin.launcher.data.AppCategories
+import com.metrowin.launcher.data.AppLists
 import com.metrowin.launcher.data.AppSections
 import com.metrowin.launcher.data.AppShortcut
 import com.metrowin.launcher.data.LauncherSettings
@@ -49,22 +49,23 @@ class AppListGroupsUiTest : ScreenshotBase() {
 
     @Composable
     private fun List(
-        category: AppCategory?, onCategory: (AppCategory?) -> Unit,
+        chosen: String?, onList: (String?) -> Unit,
         frequent: List<AppItem> = emptyList(), fresh: List<AppItem> = emptyList(),
     ) {
-        val shown = if (category == null) all else AppCategories.filter(all, category)
-        val model = remember(category) { AppListModel(AppSections.group(shown), frequent, fresh, AppCategories.present(all)) }
+        val lists = AppLists.visible(AppLists.DEFAULTS, all)
+        val shown = lists.firstOrNull { it.id == chosen }?.let { AppLists.members(it, all) } ?: all
+        val model = remember(chosen) { AppListModel(AppSections.group(shown), frequent, fresh, lists) }
         AppListScreen(
             model = model, listState = rememberLazyListState(), replayToken = 0, exiting = false,
             onLaunch = {}, onLongPress = { _, _, _ -> }, onHeaderClick = {},
             query = "", onQueryChange = {}, results = emptyList(),
-            categories = AppCategories.present(all), category = category, onCategory = onCategory,
+            lists = lists, selectedList = chosen, onList = onList,
         )
     }
 
     @Test
     fun theChipsFilterTheListByCategory() {
-        var chosen: AppCategory? = null
+        var chosen: String? = null
         show { List(chosen, { chosen = it }) }
         advance(900)
         capture("list_categories")
@@ -76,12 +77,12 @@ class AppListGroupsUiTest : ScreenshotBase() {
 
         compose.onNodeWithTag("cat:social").performClick()
         compose.waitForIdle()
-        assertEquals(AppCategory.Social, chosen)
+        assertEquals("social", chosen)
     }
 
     @Test
     fun aChosenCategoryShowsOnlyItsAppsAndATouchOnTheChipTakesItOff() {
-        var chosen: AppCategory? = AppCategory.Game
+        var chosen: String? = "game"
         show { List(chosen, { chosen = it }) }
         advance(900)
         compose.onNodeWithTag("app:app:alpha").assertExists()

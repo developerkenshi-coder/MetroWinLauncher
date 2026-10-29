@@ -468,6 +468,8 @@ data class LauncherSettings(
     val appLabels: Map<String, String> = emptyMap(),
     /** Apps that ask for the screen lock before they open, as app ids. */
     val lockedApps: Set<String> = emptySet(),
+    /** The lists under the search box of the app list: the ones from the start (one for each category, which can be deleted) and the user's own. */
+    val appLists: List<AppList> = AppLists.DEFAULTS,
 
     // --- profiles
     val showWorkApps: Boolean = true,
@@ -518,6 +520,8 @@ data class LauncherSettings(
     val updateAuto: Boolean = true,
     /** How strong the flashlight shines when it is switched on, 0.05 to 1 (only where the phone has several strengths); chosen with a long press on its button. */
     val torchStrength: Float = 1f,
+    /** The VPN app the VPN button opens (its package); empty: the only VPN app of the phone, or a choice when there are several. */
+    val vpnApp: String = "",
     /** The microphone on Start that starts the voice assistant. */
     val assistantIcon: Boolean = true,
 
