@@ -26,6 +26,11 @@
   <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/7.png" width="24%" alt="Metro lock screen">
 </p>
 
+> [!CAUTION]
+> **Important Installation Notice:**
+> 
+> In recent versions of Google Play Services / Google Play Store, Google has begun restricting sideloading for apps not distributed through its official store, flagging them as potentially harmful. I am actively working on resolving this issue, and updates will follow soon. If you wish to install the app and are blocked from doing so, you can temporarily disable Google Play Protect in the Google Play Store settings.
+
 ## Download
 
 **[⬇ Get the latest release](https://github.com/developerkenshi-coder/MetroWinLauncher/releases/latest)**: `MetroWinLauncher-26.4S.apk`, for Android 8.0 (API 26) or newer.
