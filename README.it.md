@@ -26,6 +26,11 @@
   <img src="fastlane/metadata/android/it-IT/images/phoneScreenshots/7.png" width="24%" alt="Blocco schermo Metro">
 </p>
 
+> [!CAUTION]
+> **Avviso importante sull'installazione:**
+> 
+> Nelle ultime versioni di Google Play Services/Google Play Store, Google sta limitando l'installazione in sideload delle applicazioni che non provengono dallo store proprietario, segnalando l'app come potenzialmente pericolosa. Sono già al lavoro per risolvere questo problema, seguiranno aggiornamenti. Se volete installare l'app ma non vi viene permesso, disattivate momentaneamente il Google Play Protect dalle impostazioni del Google Play Store.
+
 ## Download
 
 **[⬇ Scarica l'ultima versione](https://github.com/developerkenshi-coder/MetroWinLauncher/releases/latest)**: `MetroWinLauncher-26.4S.apk`, per Android 8.0 (API 26) o successivo.
