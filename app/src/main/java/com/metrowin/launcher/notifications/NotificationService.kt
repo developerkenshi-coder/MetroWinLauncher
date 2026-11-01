@@ -4,6 +4,10 @@ import com.metrowin.launcher.data.LauncherSettings
 import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -31,6 +35,7 @@ class NotificationService : NotificationListenerService() {
     override fun onListenerConnected() {
         Log.i(TAG, "listener connected")
         NotificationHub.service = this
+        runCatching { registerReceiver(screenWatch, IntentFilter(Intent.ACTION_SCREEN_ON).apply { addAction(Intent.ACTION_USER_PRESENT) }) }
         NotificationHub.clearOnOpen = SettingsStore(this).load().clearOnOpen
         syncEdge()
         changed()
@@ -41,6 +46,7 @@ class NotificationService : NotificationListenerService() {
     override fun onListenerDisconnected() {
         Log.i(TAG, "listener disconnected")
         if (NotificationHub.service === this) NotificationHub.service = null
+        runCatching { unregisterReceiver(screenWatch) }
         handler.removeCallbacks(readLater)
         overlay.hide()
         overlaySeen.clear()
@@ -79,12 +85,26 @@ class NotificationService : NotificationListenerService() {
 
     /**
      * With "hide the notifications of Android" on, a notification goes from the shade of Android to the Action Center whether or not it
-     * got a banner: a quiet one (a silent channel, a group summary), one that came with the screen off or locked. The banner decides what
-     * is shown, never what is taken away.
+     * got a banner: a quiet one (a silent channel, a group summary). The banner decides what is shown, never what is taken away.
+     * With the screen off or locked it stays where it is for now: Android stops the sound and the vibration of a notification the moment
+     * it is cancelled, so the ones that came while you were away would be silent. [screenWatch] moves them when you look at the phone.
      */
     private fun hideSystemCopy(sbn: StatusBarNotification) {
         val store = SettingsStore(this)
-        if (store.hideSystemOn()) hideFromAndroid(sbn, store.load())
+        if (!store.hideSystemOn() || awayFromScreen()) return
+        hideFromAndroid(sbn, store.load())
+    }
+
+    private fun awayFromScreen() = NotificationHub.keepForSound(
+        interactive = getSystemService(PowerManager::class.java).isInteractive,
+        locked = getSystemService(KeyguardManager::class.java).isKeyguardLocked,
+    )
+
+    /** When the screen comes on unlocked (or the phone is unlocked), what waited in the shade of Android for its sound is moved. */
+    private val screenWatch = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (!awayFromScreen()) handler.post { hideAllNow() }
+        }
     }
 
     /**

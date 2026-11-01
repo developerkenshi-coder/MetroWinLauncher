@@ -118,4 +118,13 @@ class NotificationFixesTest {
         assertFalse("a ringing call opens a full screen", may(fullScreen = true))
         assertFalse("an app kept out of the Action Center would be lost", may(hidden = true))
     }
+
+    // --- the sound of a notification that comes with the screen off
+
+    @Test
+    fun `a notification stays in Android while the screen is off or locked so its sound is not cut`() {
+        assertTrue("screen off", NotificationHub.keepForSound(interactive = false, locked = false))
+        assertTrue("locked", NotificationHub.keepForSound(interactive = true, locked = true))
+        assertFalse("screen on and unlocked", NotificationHub.keepForSound(interactive = true, locked = false))
+    }
 }

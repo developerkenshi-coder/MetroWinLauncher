@@ -173,8 +173,8 @@ object NotificationHub {
 
     /**
      * The launcher shows this notification in its own banner and takes the one of Android away, so it does not come twice. It stays in the
-     * Action Center. Android shows its own for an instant first and the app makes its sound: neither can be stopped. The app is told the
-     * notification was dismissed.
+     * Action Center. Android shows its own for an instant first. Cancelling it also stops its sound and vibration, so this is
+     * only done while the screen is on (see [keepForSound]). The app is told the notification was dismissed.
      */
     fun hold(entry: NotificationEntry) {
         synchronized(held) {
@@ -247,6 +247,9 @@ object NotificationHub {
      */
     fun mayHide(ongoing: Boolean, clearable: Boolean, fromUs: Boolean, category: String?, fullScreen: Boolean, hiddenFromCenter: Boolean): Boolean =
         !ongoing && clearable && !fromUs && !fullScreen && !hiddenFromCenter && category !in KEPT_CATEGORIES
+
+    /** With the screen off or locked a notification is left in the shade of Android: taking it away would cut its sound. */
+    fun keepForSound(interactive: Boolean, locked: Boolean): Boolean = !interactive || locked
 
     /** Every notification up now that may be hidden is moved to the Action Center: at once, when the setting is turned on. */
     fun sweep() {
