@@ -1,0 +1,18 @@
+MetroWin Launcher bringt den Start-Bildschirm von Windows Phone (Metro, 8 und 8.1) auf Android: flache Kacheln, die sich mit Live-Inhalten umdrehen, eine alphabetische App-Liste, Turnstile- und Neigungsanimationen sowie die Systemfunktionen, die ein Launcher wirklich bieten kann. Solange er nicht auf dem Bildschirm ist, tut er nichts.
+
+<b>Start</b>
+- Live-Kacheln für Fotos, Kalender, Kontakte, Telefon, Wetter, Nachrichten, Finanzen, Schritte und mehr, jede davon optional.
+- Mehrere Start-Seiten, Ordner, Kachelgrößen, Gruppen mit Titel und Widgets.
+- Drei Designs (Classic, Modern Glass, Modern Droid) mit anpassbaren Farben und ein Querformat-Layout.
+
+<b>Action Center</b>
+- Schnellschalter nach Wahl, wobei das verbundene WLAN und das verbundene Bluetooth-Gerät auf dem Schalter angezeigt werden. Ein langer Druck zeigt die WLANs in der Nähe oder die verbundenen und gekoppelten Bluetooth-Geräte.
+- Regler für Lautstärke, Klingelton und Helligkeit, Stärke der Taschenlampe und Ruhezeiten.
+- Benachrichtigungen, die du wegwischen, beantworten, nach App gruppieren, zurückstellen oder stummschalten kannst. Beim Öffnen einer App verschwinden ihre Benachrichtigungen und die Zahl auf ihrer Kachel.
+
+<b>Und mehr</b>
+- Suche in Apps, Kontakten, Dateien, Kalender und Einstellungen, mit Schnellantworten und einem Assistenten.
+- Sprachbefehle, ein Metro-Sperrbildschirm, die Kinderecke und Bedienungshilfen.
+- Verschlüsselte Synchronisierung deines Layouts und Backups.
+
+Jede Berechtigung ist optional und steuert nur eine Live-Kachel oder eine Funktion. Der Netzwerkzugriff wird für das Wetter (Open-Meteo) genutzt, und für die Nachrichten- und Finanzkacheln nur, wenn du sie hinzufügst. Es ist kein Google-Dienst nötig: Die Nachrichtenkachel liest standardmäßig Google News oder einen beliebigen RSS-Feed deiner Wahl, die Websuche nutzt die Suchmaschine, die du auswählst (standardmäßig DuckDuckGo), und Links zu Karten, Notizen oder Kalender öffnen die App, die du dafür installiert hast.

@@ -107,7 +107,7 @@ class AppearanceUiTest : ScreenshotBase() {
     @Test
     fun theClockOptionsAndTheStatusBarSwitchInTheSettings() {
         current = LauncherSettings(showClock = true)
-        show { Page(SettingsSection.Start) }
+        show { Page(SettingsSection.StartBars) }
         advance(500)
         tap("start:clockalarm")
         assertTrue(current.clockAlarm)
@@ -123,7 +123,7 @@ class AppearanceUiTest : ScreenshotBase() {
     @Test
     fun theClockOptionsAreOffWhileThereIsNoClock() {
         current = LauncherSettings(showClock = false)
-        show { Page(SettingsSection.Start) }
+        show { Page(SettingsSection.StartBars) }
         advance(500)
         tap("start:clockalarm")
         assertFalse("a switch that is off does nothing", current.clockAlarm)

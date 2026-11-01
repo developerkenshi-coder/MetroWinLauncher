@@ -42,7 +42,7 @@ import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.theme.frame
 
-/** Which four buttons sit on top of the Action Center, and whether notifications can be read. */
+/** The Action Center: which four buttons sit on top of it, its sliders, sounds and the volume panel. */
 @Composable
 fun ActionsPage(env: SettingsEnv) {
     val colors = LocalMetroColors.current
@@ -125,6 +125,20 @@ fun ActionsPage(env: SettingsEnv) {
             )
             ActionCenterExtrasSettings(env)
         }
+        ToggleSetting(
+            label = stringResource(R.string.ac_volume_panel),
+            checked = env.settings.volumePanel,
+            onChange = { value -> env.onChange { it.copy(volumePanel = value) } },
+            hint = stringResource(R.string.ac_volume_panel_hint),
+            tag = "actions:volumepanel", id = "ac.volume",
+        )
+    }
+}
+
+/** What is done with the notifications that arrive: who reads them, which show, which are held, and for which apps. */
+@Composable
+fun NotificationsPage(env: SettingsEnv) {
+    SettingsPage {
         Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
             SettingHeading(stringResource(R.string.actions_notifications_title))
             Column(Modifier.settingAnchor("ac.access")) {
@@ -198,13 +212,6 @@ fun ActionsPage(env: SettingsEnv) {
             )
             NotificationExtrasSettings(env)
         }
-        ToggleSetting(
-            label = stringResource(R.string.ac_volume_panel),
-            checked = env.settings.volumePanel,
-            onChange = { value -> env.onChange { it.copy(volumePanel = value) } },
-            hint = stringResource(R.string.ac_volume_panel_hint),
-            tag = "actions:volumepanel", id = "ac.volume",
-        )
         NotificationAppsSetting(env)
     }
 }

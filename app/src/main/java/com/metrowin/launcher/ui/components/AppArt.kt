@@ -56,7 +56,7 @@ fun rememberIconTileColor(item: AppItem): Color? {
 fun AppIcon(item: AppItem, size: Dp, modifier: Modifier = Modifier) {
     val loader = LocalIconLoader.current
     val px = with(LocalDensity.current) { size.roundToPx() }
-    val bitmap by produceState<ImageBitmap?>(null, item.id, px, loader, loader?.revision) {
+    val bitmap by produceState(loader?.peek(item, px)?.asImageBitmap(), item.id, px, loader, loader?.revision) {
         value = loader?.load(item, px)?.asImageBitmap()
     }
     val shape = LocalIconShape.current

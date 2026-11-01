@@ -81,6 +81,25 @@ fun GesturesPage(env: SettingsEnv) {
                 hint = stringResource(R.string.gest_lock_service_hint), tag = "gestures:lockservice", id = "gest.lockservice",
             )
         }
+        val context = androidx.compose.ui.platform.LocalContext.current
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            ToggleSetting(
+                label = stringResource(R.string.gest_navbar),
+                checked = settings.metroNavBar && env.lockServiceEnabled,
+                onChange = { value -> env.onChange { it.copy(metroNavBar = value) }; if (value && !env.lockServiceEnabled) env.onOpenAccessibilitySettings() },
+                hint = stringResource(R.string.gest_navbar_hint), tag = "gestures:navbar", id = "gest.navbar",
+            )
+            if (!com.metrowin.launcher.gestures.NavBarOverlay.threeButtons(context)) SettingHint(stringResource(R.string.gest_navbar_needs_buttons))
+            StepperSetting(
+                label = stringResource(R.string.gest_navbar_hold),
+                value = "%.1f s".format(settings.navHoldMs / 1000f),
+                onDecrement = { env.onChange { it.copy(navHoldMs = (it.navHoldMs - NAV_HOLD_STEP).coerceAtLeast(com.metrowin.launcher.data.LauncherSettings.NAV_HOLD_MIN_MS)) } },
+                onIncrement = { env.onChange { it.copy(navHoldMs = (it.navHoldMs + NAV_HOLD_STEP).coerceAtMost(com.metrowin.launcher.data.LauncherSettings.NAV_HOLD_MAX_MS)) } },
+                canDecrement = settings.navHoldMs > com.metrowin.launcher.data.LauncherSettings.NAV_HOLD_MIN_MS,
+                canIncrement = settings.navHoldMs < com.metrowin.launcher.data.LauncherSettings.NAV_HOLD_MAX_MS,
+                hint = stringResource(R.string.gest_navbar_hold_hint), tag = "gestures:navbarhold", id = "gest.navbarhold",
+            )
+        }
         ToggleSetting(
             label = stringResource(R.string.gest_edge_pull),
             checked = settings.edgePull,
@@ -111,3 +130,6 @@ fun GesturesPage(env: SettingsEnv) {
         FeelSettings(env)
     }
 }
+
+/** One step of the time the logo is held, in milliseconds. */
+private const val NAV_HOLD_STEP = 100

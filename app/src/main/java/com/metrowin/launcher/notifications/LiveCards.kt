@@ -42,8 +42,16 @@ data class AppNotification(
     val playing: NowPlaying? = null,
 )
 
+/** One line of the list a tile shows when an app has several notifications: who, what, and when. */
+@Immutable
+data class InboxRow(val sender: String, val text: String, val time: Long)
+
 /** One face of a live tile. */
 sealed interface LiveCard {
+    /** Everything waiting in the app, newest first, one line each: the face of the bigger tiles (a small one has no room for it). */
+    @Immutable
+    data class Inbox(val rows: List<InboxRow>) : LiveCard
+
     /** Someone wrote: the last message of a conversation. [more] is how many more of that conversation wait. */
     @Immutable
     data class Message(val sender: String, val text: String, val conversation: String?, val avatar: ImageBitmap?, val more: Int) : LiveCard
@@ -67,7 +75,7 @@ sealed interface LiveCard {
 
 /** What a tile of an app shows: its faces, newest first, and the number for its counter (0 when there is none to add). */
 @Immutable
-data class LiveTileInfo(val cards: List<LiveCard>, val unread: Int)
+data class LiveTileInfo(val cards: List<LiveCard>, val unread: Int, val inbox: LiveCard.Inbox? = null)
 
 /**
  * What the notification service found for one app, counted before the user's choices apply: it tells what the tile could
@@ -105,12 +113,16 @@ data class LiveCardOptions(
 object LiveCards {
     const val MAX_CARDS = 5
 
+    /** The most lines the list face of a tile can hold: a large tile shows them all. */
+    const val MAX_ROWS = 8
+
     /** What ongoing notifications of these categories are about: something going on now, worth a face. */
     private val liveCategories = setOf("navigation", "call", "stopwatch", "transport_ride", "workout", "location_sharing")
 
     fun build(notifications: List<AppNotification>, options: LiveCardOptions = LiveCardOptions()): Map<String, LiveTileInfo> {
         val byPackage = notifications
-            .filter { it.packageName != options.ownPackage && it.packageName !in options.offApps }
+            // The launcher's own notifications are left out, except the messages it receives as the messaging app: its Messages tile shows them.
+            .filter { (it.packageName != options.ownPackage || it.category == "msg") && it.packageName !in options.offApps }
             .groupBy { it.packageName }
         val result = LinkedHashMap<String, LiveTileInfo>()
         for ((pkg, all) in byPackage) {
@@ -118,6 +130,7 @@ object LiveCards {
             val children = all.filterNot { it.groupSummary }
             val used = (children.ifEmpty { all }).sortedByDescending { it.postTime }
             val cards = ArrayList<LiveCard>()
+            val rows = ArrayList<InboxRow>()
             var unread = 0
             var seenPlaying = false
             for (n in used) {
@@ -137,6 +150,13 @@ object LiveCards {
                             cards += LiveCard.Digest(n.title, text(n.text, options), n.avatar, live = true)
                     }
                     continue
+                }
+                if (options.messages) {
+                    if (n.messages.isNotEmpty()) {
+                        n.messages.asReversed().mapTo(rows) { InboxRow(it.sender.ifBlank { n.title }, text(it.text, options), it.time.takeIf { t -> t > 0 } ?: n.postTime) }
+                    } else if (n.title.isNotBlank() || n.text.isNotBlank()) {
+                        rows += InboxRow(n.title, text(n.text, options), n.postTime)
+                    }
                 }
                 if (n.messages.isNotEmpty()) {
                     unread += n.messages.size
@@ -169,9 +189,11 @@ object LiveCards {
                     is LiveCard.Picture -> Triple("p", c.caption, c.picture)
                     is LiveCard.Progress -> Triple("g", c.title, c.percent)
                     is LiveCard.Playing -> Triple("n", c.title, c.artist)
+                    is LiveCard.Inbox -> Triple("i", c.rows.size, c.rows.firstOrNull())
                 }
             }.take(MAX_CARDS)
-            if (distinct.isNotEmpty() || unread > 0) result[pkg] = LiveTileInfo(distinct, unread)
+            val inbox = rows.sortedByDescending { it.time }.distinct().take(MAX_ROWS).takeIf { it.size >= 2 }?.let { LiveCard.Inbox(it) }
+            if (distinct.isNotEmpty() || unread > 0) result[pkg] = LiveTileInfo(distinct, unread, inbox)
         }
         return result
     }

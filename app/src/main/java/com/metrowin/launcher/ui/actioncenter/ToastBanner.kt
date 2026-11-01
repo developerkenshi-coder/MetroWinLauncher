@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
+import com.metrowin.launcher.ui.components.topBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,6 +54,8 @@ fun ToastBanner(
     onOpen: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The room to leave at the top when the window is given no insets (a window over other apps); null to read them. */
+    topInset: androidx.compose.ui.unit.Dp? = null,
 ) {
     val scope = rememberCoroutineScope()
     val offset = remember(entry.key) { Animatable(0f) }
@@ -71,7 +73,7 @@ fun ToastBanner(
     val colors = LocalMetroColors.current
     Row(
         modifier
-            .statusBarsPadding()
+            .then(if (topInset != null) Modifier.padding(top = topInset) else Modifier.topBarsPadding())
             .padding(horizontal = 12.dp, vertical = 8.dp)
             .fillMaxWidth()
             .onSizeChanged { height = it.height.coerceAtLeast(1) }

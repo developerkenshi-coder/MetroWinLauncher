@@ -33,7 +33,8 @@ class NotificationFixesTest {
         val seen = BannerGate.seen(listOf(first))
         assertFalse("the same post is not news", BannerGate.isNew(seen, first))
         assertTrue("another text", BannerGate.isNew(seen, entry("k", "second", postTime = 200)))
-        assertTrue("the same text said again", BannerGate.isNew(seen, entry("k", "first", postTime = 300)))
+        assertTrue("the same text said again later", BannerGate.isNew(seen, entry("k", "first", postTime = 100 + BannerGate.REPOST_MS)))
+        assertFalse("posted again at once by the app", BannerGate.isNew(seen, entry("k", "first", postTime = 300)))
         assertTrue("another chat", BannerGate.isNew(seen, entry("other", "first", postTime = 100)))
     }
 
@@ -65,6 +66,17 @@ class NotificationFixesTest {
         // Once the app's own is gone it is not brought back.
         NotificationHub.update(emptyList())
         assertTrue(NotificationHub.entries.value.isEmpty())
+    }
+
+    @Test
+    fun aHeldNotificationTheAppTakesBackGoesFromTheActionCenter() {
+        NotificationHub.hold(entry("a"))
+        NotificationHub.hold(entry("b"))
+        NotificationHub.update(emptyList())
+        NotificationHub.removedByApp("a")
+        NotificationHub.update(emptyList())
+        assertEquals(listOf("b"), NotificationHub.entries.value.map { it.key })
+        assertEquals(mapOf("chat" to 1), NotificationHub.countsByPackage(NotificationHub.entries.value))
     }
 
     @Test

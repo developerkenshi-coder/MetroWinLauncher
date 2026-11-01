@@ -354,13 +354,13 @@ class SixthRoundUiTest : ScreenshotBase() {
     @Test
     fun aChangedPageOffersToBePutBackWithTwoTouches() {
         var settings = LauncherSettings(lockStart = true)
-        assertTrue(SectionReset.changed(settings, "Start"))
+        assertTrue(SectionReset.changed(settings, "StartBehaviour"))
         val state = mutableStateOf(settings)
         show {
             val away = androidx.compose.runtime.remember { androidx.compose.animation.core.Animatable(0f) }
             com.metrowin.launcher.ui.settings.SettingsScreen(
                 env = SettingsEnv(settings = state.value, onChange = { change -> settings = change(state.value); state.value = settings }),
-                section = com.metrowin.launcher.ui.settings.SettingsSection.Start, onSectionChange = {}, sectionAway = away,
+                section = com.metrowin.launcher.ui.settings.SettingsSection.StartBehaviour, onSectionChange = {}, sectionAway = away,
             )
         }
         advance(600)

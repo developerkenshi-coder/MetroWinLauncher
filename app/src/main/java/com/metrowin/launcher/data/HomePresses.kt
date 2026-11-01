@@ -11,7 +11,7 @@ object HomePresses {
 
 /** The languages the launcher can be switched to (Android 13 and later), as language tags; the empty one follows the phone. */
 object AppLanguages {
-    val tags = listOf("", "en", "it")
+    val tags = listOf("", "en", "it", "fr", "es", "de", "pt")
 
     /** The tag of [language] among [tags] (the empty one for any language the launcher does not have). */
     fun normalize(language: String?): String = tags.firstOrNull { it.isNotEmpty() && it == language?.lowercase()?.substringBefore('-') } ?: ""

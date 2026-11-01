@@ -1,0 +1,18 @@
+MetroWin Launcher apporte l’écran Start de Windows Phone (Metro, 8 et 8.1) sur Android : des tuiles plates qui se retournent pour afficher du contenu en direct, une liste d’applications alphabétique, des animations de tourniquet et d’inclinaison, et les fonctions système qu’un launcher peut réellement offrir. Il ne fait rien lorsqu’il n’est pas à l’écran.
+
+<b>Start</b>
+- Des tuiles dynamiques pour les photos, l’agenda, les contacts, le téléphone, la météo, les actualités, la finance, les pas et plus encore, chacune facultative.
+- Plusieurs pages Start, des dossiers, plusieurs tailles de tuiles, des groupes avec titre et des widgets.
+- Trois styles (Classic, Modern Glass, Modern Droid) aux couleurs personnalisables, et une disposition paysage.
+
+<b>Action Center</b>
+- Des boutons rapides de votre choix, avec le réseau Wi-Fi et l’appareil Bluetooth connectés affichés sur le bouton. Un appui long liste les réseaux alentour, ou les appareils Bluetooth connectés et associés.
+- Commandes du volume, de la sonnerie et de la luminosité, intensité de la lampe torche et heures calmes.
+- Des notifications que vous écartez d’un geste, auxquelles vous répondez, que vous regroupez par application, reportez ou mettez en sourdine. Ouvrir une application efface ses notifications et le nombre affiché sur sa tuile.
+
+<b>Et aussi</b>
+- Une recherche dans les applications, les contacts, les fichiers, l’agenda et les paramètres, avec des réponses rapides et un assistant.
+- Des commandes vocales, un écran de verrouillage Metro, l’Espace enfants et des options d’accessibilité.
+- Synchronisation chiffrée de votre disposition, et sauvegardes.
+
+Chaque autorisation est facultative et ne sert qu’à une tuile dynamique ou à une fonction. L’accès au réseau sert à la météo (Open-Meteo), et aux tuiles d’actualités et de finance uniquement si vous les ajoutez. Aucun service Google n’est requis : la tuile d’actualités lit Google Actualités par défaut ou n’importe quel flux RSS de votre choix, la recherche web utilise le moteur que vous choisissez (DuckDuckGo par défaut), et les liens vers les cartes, les notes ou l’agenda ouvrent l’application que vous avez pour cela.

@@ -12,6 +12,8 @@ import android.os.SystemClock
 import android.provider.Settings
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.util.Log
+import androidx.core.graphics.drawable.toBitmap
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.gestures.LockAccessibilityService
 
@@ -27,6 +29,7 @@ class NotificationService : NotificationListenerService() {
     private val readLater = Runnable { refresh() }
 
     override fun onListenerConnected() {
+        Log.i(TAG, "listener connected")
         NotificationHub.service = this
         NotificationHub.clearOnOpen = SettingsStore(this).load().clearOnOpen
         syncEdge()
@@ -36,6 +39,7 @@ class NotificationService : NotificationListenerService() {
     }
 
     override fun onListenerDisconnected() {
+        Log.i(TAG, "listener disconnected")
         if (NotificationHub.service === this) NotificationHub.service = null
         handler.removeCallbacks(readLater)
         overlay.hide()
@@ -51,6 +55,8 @@ class NotificationService : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
+        // What the bug report shows of a notification that did not arrive: where it came from and how Android flagged it, never what it says.
+        if (!sbn.isOngoing) Log.i(TAG, "posted ${sbn.packageName} channel=${sbn.notification.channelId} group=${sbn.notification.group != null} summary=${sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY != 0} watched=${NotificationHub.watched}")
         if (dropFiltered(sbn)) {
             changed()
             return
@@ -58,6 +64,17 @@ class NotificationService : NotificationListenerService() {
         showOverBanner(sbn)
         hideSystemCopy(sbn)
         changed()
+        clearIfSeen(sbn)
+    }
+
+    /**
+     * A notification of the app you are in is read where it is: if that app is still in front a moment later, the notification (and the
+     * number on its tile) goes, without a touch on it.
+     */
+    private fun clearIfSeen(sbn: StatusBarNotification) {
+        val pkg = sbn.packageName
+        if (pkg != NotificationHub.foregroundPackage) return
+        handler.postDelayed({ if (NotificationHub.foregroundPackage == pkg) NotificationHub.appOpened(pkg) }, SEEN_MS)
     }
 
     /**
@@ -111,14 +128,23 @@ class NotificationService : NotificationListenerService() {
         if (!allowed) return
         val entry = toEntry(sbn)
         when {
-            entry != null -> NotificationHub.hold(entry)
+            entry != null -> {
+                keepForLive(sbn)
+                NotificationHub.hold(entry)
+            }
             // A bundle ("5 new messages"): its notifications are moved one by one, so the heading has nothing left to head.
             notification.flags and Notification.FLAG_GROUP_SUMMARY != 0 -> cancelNotification(sbn.key)
         }
     }
 
-    override fun onNotificationRemoved(sbn: StatusBarNotification) {
-        overlaySeen.remove(sbn.key)
+    override fun onNotificationRemoved(sbn: StatusBarNotification, rankingMap: RankingMap, reason: Int) {
+        if (!sbn.isOngoing) Log.i(TAG, "removed ${sbn.packageName} reason=$reason")
+        // The launcher's own cancel (see NotificationHub.hold) keeps its copy and what the banner said, so a repost is not a new banner;
+        // any other end of the notification (the app took it back, a timeout) takes the copy with it.
+        if (reason != REASON_LISTENER_CANCEL && reason != REASON_LISTENER_CANCEL_ALL) {
+            NotificationHub.removedByApp(sbn.key)
+            overlaySeen.remove(sbn.key)
+        }
         changed()
     }
 
@@ -134,13 +160,13 @@ class NotificationService : NotificationListenerService() {
      */
     private fun showOverBanner(sbn: StatusBarNotification) {
         if (NotificationHub.watched || sbn.packageName == packageName) return
-        if (!Settings.canDrawOverlays(this)) return
+        if (!Settings.canDrawOverlays(this)) return skipped(sbn, "no permission to draw over apps")
         val store = SettingsStore(this)
         if (!store.overlayBannerOn()) return
         val ranking = NotificationListenerService.Ranking()
         val known = runCatching { currentRanking.getRanking(sbn.key, ranking) }.getOrDefault(false)
-        val entry = toEntry(sbn) ?: return
-        if (overlaySeen[sbn.key] == BannerGate.signature(entry)) return
+        val entry = toEntry(sbn) ?: return skipped(sbn, "not worth showing (ongoing, group summary or empty)")
+        if (BannerGate.same(overlaySeen[sbn.key], entry)) return skipped(sbn, "the same post again")
         val settings = store.load()
         val allowed = OverlayRules.shows(
             settings, sbn.packageName,
@@ -150,11 +176,18 @@ class NotificationService : NotificationListenerService() {
             importance = if (known) ranking.importance else NotificationManager.IMPORTANCE_DEFAULT,
             passesDoNotDisturb = !known || ranking.matchesInterruptionFilter(),
         )
-        if (!allowed) return
+        if (!allowed) return skipped(sbn, "rules: importance=${if (known) ranking.importance else -1} interactive/locked/DnD")
         if (overlaySeen.size >= MAX_OVERLAY_KEYS) overlaySeen.clear()
         overlaySeen[sbn.key] = BannerGate.signature(entry)
         overlay.show(entry, settings)
-        if (settings.hideSystemNotifications) NotificationHub.hold(entry)
+        if (settings.hideSystemNotifications) {
+            keepForLive(sbn)
+            NotificationHub.hold(entry)
+        }
+    }
+
+    private fun skipped(sbn: StatusBarNotification, why: String) {
+        Log.i(TAG, "no banner for ${sbn.packageName}: $why")
     }
 
     private fun changed() = act(pacer.changed(SystemClock.elapsedRealtime(), NotificationHub.watched))
@@ -191,9 +224,17 @@ class NotificationService : NotificationListenerService() {
         if (wanted) (edge ?: OverlayActionCenter(this, LockAccessibilityService::host, ::syncEdge).also { edge = it }).showStrip() else edge?.dispose()
     }
 
+    private var failedReads = 0
+
     private fun refresh() {
         pacer.read(SystemClock.elapsedRealtime())
-        val active = runCatching { activeNotifications }.getOrNull() ?: return
+        val active = runCatching { activeNotifications }.getOrNull()
+        if (active == null) {
+            // Android refused (the listener is still connecting, or busy): try again a few times, so the list is not left out of date.
+            if (failedReads++ < MAX_READ_RETRIES) act(pacer.changed(SystemClock.elapsedRealtime(), NotificationHub.watched))
+            return
+        }
+        failedReads = 0
         NotificationHub.update(
             active.mapNotNull(::toEntry).sortedByDescending { it.postTime },
         )
@@ -213,6 +254,27 @@ class NotificationService : NotificationListenerService() {
 
     private class Read(val app: AppNotification, val at: Long)
 
+    private fun readLive(sbn: StatusBarNotification) = Read(
+        reader.read(
+            key = sbn.key, packageName = sbn.packageName, postTime = sbn.postTime, notification = sbn.notification,
+            ongoing = sbn.isOngoing || !sbn.isClearable,
+            groupSummary = sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY != 0,
+            withPictures = NotificationHub.livePictures,
+        ),
+        SystemClock.elapsedRealtime(),
+    )
+
+    /**
+     * A notification the launcher takes off the shade of Android is no longer in [getActiveNotifications], but its tile must still say what
+     * it is about (the number on the tile comes from the copy the launcher keeps): it is read now, while it is in hand.
+     */
+    private fun keepForLive(sbn: StatusBarNotification) {
+        if (NotificationHub.liveContent && sbn.packageName != packageName) seen[sbn.key] = readLive(sbn)
+    }
+
+    /** The copies the launcher keeps changed (one was dismissed or opened): the tiles are worked out again. */
+    internal fun heldChanged() = changed()
+
     private fun refreshLive(active: Array<StatusBarNotification>) {
         if (!NotificationHub.liveContent) {
             seen.clear()
@@ -224,19 +286,15 @@ class NotificationService : NotificationListenerService() {
             // A notification is read again when it is posted again, as a song's is at each song. The music is also read
             // again after a while without a new post (its picture can come late), but not at every change of the others.
             before?.takeIf { it.app.postTime == sbn.postTime && (it.app.playing == null || now - it.at < NotificationPacer.MEDIA_FRESH_MS) }
-                ?: Read(
-                    reader.read(
-                        key = sbn.key, packageName = sbn.packageName, postTime = sbn.postTime, notification = sbn.notification,
-                        ongoing = sbn.isOngoing || !sbn.isClearable,
-                        groupSummary = sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY != 0,
-                        withPictures = NotificationHub.livePictures,
-                    ),
-                    now,
-                )
+                ?: readLive(sbn)
         }
-        seen.keys.retainAll(reads.map { it.app.key }.toSet())
+        val upKeys = reads.mapTo(HashSet()) { it.app.key }
+        // What the launcher took off the shade is still news for its tile, until it is dismissed or opened.
+        val heldKeys = NotificationHub.heldKeys()
+        val taken = seen.values.filter { it.app.key !in upKeys && it.app.key in heldKeys }
+        seen.keys.retainAll(upKeys + heldKeys)
         reads.forEach { seen[it.app.key] = it }
-        NotificationHub.updateApps(reads.map { it.app })
+        NotificationHub.updateApps((reads + taken).map { it.app })
     }
 
     private fun toEntry(sbn: StatusBarNotification): NotificationEntry? {
@@ -276,16 +334,24 @@ class NotificationService : NotificationListenerService() {
             actions = actions,
             picture = pictureOf(extras),
             urgent = notification.category == Notification.CATEGORY_MESSAGE || notification.category == Notification.CATEGORY_CALL || replyOf(notification) != null,
+            icon = runCatching { notification.smallIcon?.loadDrawable(this)?.toBitmap(ICON_PX, ICON_PX)?.let(::EntryIcon) }.getOrNull(),
         )
     }
 
-    /** The picture of a notification with one (a photo that came in a chat, a screenshot), or null. */
+    /** The picture of a notification with one (a photo that came in a chat, a screenshot), or null. Kept at most [PICTURE_MAX_PX] wide: held entries keep it for good. */
     private fun pictureOf(extras: android.os.Bundle): android.graphics.Bitmap? = runCatching {
-        if (Build.VERSION.SDK_INT >= 33) {
+        val bitmap = if (Build.VERSION.SDK_INT >= 33) {
             extras.getParcelable(Notification.EXTRA_PICTURE, android.graphics.Bitmap::class.java)
         } else {
             @Suppress("DEPRECATION")
             extras.getParcelable<android.os.Parcelable>(Notification.EXTRA_PICTURE) as? android.graphics.Bitmap
+        }
+        val longest = maxOf(bitmap?.width ?: 0, bitmap?.height ?: 0)
+        if (bitmap == null || longest <= PICTURE_MAX_PX) {
+            bitmap
+        } else {
+            val scale = PICTURE_MAX_PX.toFloat() / longest
+            android.graphics.Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt().coerceAtLeast(1), (bitmap.height * scale).toInt().coerceAtLeast(1), true)
         }
     }.getOrNull()
 
@@ -303,7 +369,18 @@ class NotificationService : NotificationListenerService() {
     }
 
     private companion object {
+        const val TAG = "MetroNotif"
+
+        /** How long an app stays in front after a notification of it came, for the notification to count as seen. */
+        const val SEEN_MS = 2_500L
+
+        const val PICTURE_MAX_PX = 800
+
+        /** The small icon is kept this big: it is drawn at 24dp or so on the lock screen. */
+        const val ICON_PX = 64
+
         const val MAX_OVERLAY_KEYS = 64
         const val MAX_ACTIONS = 3
+        const val MAX_READ_RETRIES = 3
     }
 }

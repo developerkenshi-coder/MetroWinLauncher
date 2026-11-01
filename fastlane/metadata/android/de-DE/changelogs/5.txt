@@ -1,0 +1,1 @@
+Anrufen per Sprache findet den richtigen Kontakt anhand des Namens (und fragt nach, wenn mehrere passen), in Ziffern gesprochene Nummern werden unverändert gewählt, die Spracherkennung weicht auf den Online-Dienst aus und beendet das endlose „Versuch es noch einmal“, und mehr.

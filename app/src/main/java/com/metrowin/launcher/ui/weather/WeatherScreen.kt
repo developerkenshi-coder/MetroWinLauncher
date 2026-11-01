@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.weather
 
+import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.data.WeatherBlock
 import com.metrowin.launcher.data.OpenMeteo
 import com.metrowin.launcher.ui.theme.pageBackground
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -61,7 +61,7 @@ fun WeatherScreen(
             .pageBackground()
             // Swallow touches so nothing underneath reacts while this page is up.
             .pointerInput(Unit) { detectTapGestures { } }
-            .statusBarsPadding()
+            .topBarsPadding()
             .navigationBarsPadding()
             .cutoutSidesPadding()
             .verticalScroll(rememberScrollState())

@@ -122,19 +122,21 @@ class TileFacesTest : ScreenshotBase() {
     @Test
     fun aTileWithANotificationFlipsToItsText() {
         showTile(chat, peek = TilePeek("Giulia", "Ci vediamo alle otto?"))
+        // What is new comes first, as on the phone, and the plain face comes after it.
         advance(300)
-        compose.onAllNodesWithText("Giulia").assertCountEquals(0)
-        advance(4_000)
         capture("tile_peek")
         compose.onAllNodesWithText("Giulia").assertCountEquals(1)
         compose.onAllNodesWithText("Ci vediamo alle otto?").assertCountEquals(1)
+        advance(4_000)
+        compose.onAllNodesWithText("Giulia").assertCountEquals(0)
     }
 
     @Test
-    fun aSmallTileDoesNotFlipToANotification() {
+    fun aSmallTileShowsWhoWroteAndTheFirstWords() {
         showTile(chat, size = TileSize.Small, peek = TilePeek("Giulia", "Ciao"))
-        advance(5_000)
-        compose.onAllNodesWithText("Giulia").assertCountEquals(0)
+        advance(300)
+        compose.onAllNodesWithText("Giulia").assertCountEquals(1)
+        compose.onAllNodesWithText("Ciao").assertCountEquals(1)
     }
 
     @Test

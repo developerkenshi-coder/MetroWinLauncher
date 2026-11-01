@@ -337,7 +337,7 @@ fun DialGridPage(
 
 /** One person as a square: the photo (or the first letter) and the name over it. */
 @Composable
-private fun FavouriteSquare(person: Favourite, tag: String, onCall: (String) -> Unit, modifier: Modifier = Modifier) {
+internal fun FavouriteSquare(person: Favourite, tag: String, onCall: (String) -> Unit, modifier: Modifier = Modifier) {
     Box(
         modifier.fillMaxWidth().aspectRatio(1f).testTag(tag).metroPress(onClick = { onCall(person.number) }).background(LocalAccent.current),
     ) {

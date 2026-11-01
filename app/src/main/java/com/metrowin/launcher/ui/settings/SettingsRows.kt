@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.DEFAULT_MIN_SCALE
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -75,10 +77,17 @@ fun SettingsPage(modifier: Modifier = Modifier, content: @Composable ColumnScope
 
 /** A line under a setting that says what it does. */
 @Composable
-fun SettingHint(text: String, modifier: Modifier = Modifier) {
+fun SettingHint(
+    text: String,
+    modifier: Modifier = Modifier,
+    size: TextUnit = 14.sp,
+    lineHeight: TextUnit = 19.sp,
+    /** How far the text may shrink when a word does not fit the width: a long text with a long word (a path, a link) must not shrink all of it. */
+    minScale: Float = DEFAULT_MIN_SCALE,
+) {
     MetroText(
-        text, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
-        maxLines = Int.MAX_VALUE, lineHeight = 19.sp, modifier = modifier,
+        text, size = size, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+        maxLines = Int.MAX_VALUE, lineHeight = lineHeight, minScale = minScale, modifier = modifier,
     )
 }
 

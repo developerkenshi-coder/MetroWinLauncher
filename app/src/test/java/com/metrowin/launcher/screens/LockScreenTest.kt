@@ -16,6 +16,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.swipe
 import androidx.compose.ui.geometry.Offset
 import com.metrowin.launcher.data.BatteryInfo
@@ -51,9 +52,12 @@ class LockScreenTest : ScreenshotBase() {
     )
 
     private var unlocked = 0
+    private var finished = 0
+    private val signal = androidx.compose.runtime.mutableIntStateOf(0)
 
     private fun showLock(
         info: LockInfo = this.info, options: LockOptions = LockOptions(), withPhoto: Boolean = false, canUnlock: Boolean = true,
+        status: com.metrowin.launcher.data.LockStatus = com.metrowin.launcher.data.LockStatus(),
     ) = show {
         val photo = if (withPhoto) {
             remember { Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888).apply { eraseColor(0xFF3A7D44.toInt()) }.asImageBitmap() }
@@ -63,6 +67,7 @@ class LockScreenTest : ScreenshotBase() {
         MetroLockScreen(
             info = info, photo = photo, options = options,
             onUnlock = if (canUnlock) ({ unlocked++ }) else null,
+            unlockSignal = signal.intValue, onUnlocked = { finished++ }, status = status,
             is24Hour = true, zone = utc, locale = Locale.US,
         )
     }
@@ -142,6 +147,50 @@ class LockScreenTest : ScreenshotBase() {
         advance(300)
         swipeUp(0.7f)
         assertEquals(0, unlocked)
+    }
+
+    @Test
+    fun aTapMakesTheScreenHopWithoutUnlocking() {
+        showLock()
+        advance(300)
+        compose.onNodeWithTag("lock:screen").performTouchInput { click() }
+        advance(1_500)
+        assertEquals(0, unlocked)
+        compose.onNodeWithTag("lock:time").assertExists()
+    }
+
+    @Test
+    fun androidUnlockingByItselfLiftsTheScreenOffAndTellsIt() {
+        showLock()
+        advance(300)
+        assertEquals(0, finished)
+        compose.runOnIdle { signal.intValue++; androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications() }
+        advance(1_500)
+        assertEquals(1, finished)
+        assertEquals("the swipe is not what unlocked it", 0, unlocked)
+    }
+
+    @Test
+    fun theAppsWithNewsShowAsIconsWithTheirCounters() {
+        val icon = Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888).apply { eraseColor(0xFFFFFFFF.toInt()) }
+        val status = com.metrowin.launcher.data.LockStatus(
+            listOf(com.metrowin.launcher.data.QuickBadge("chat", 3, icon), com.metrowin.launcher.data.QuickBadge("mail", 120, icon)),
+        )
+        showLock(options = LockOptions(showStatus = true), status = status)
+        advance(300)
+        compose.onNodeWithTag("lock:badge:chat:icon").assertExists()
+        compose.onNodeWithTag("lock:badge:chat:count").assertExists()
+        compose.onNodeWithTag("lock:badge:mail:count").assertExists()
+    }
+
+    @Test
+    fun theSpotForTheFingerKeepsTheTimeAboveIt() {
+        show {
+            MetroLockScreen(info = info, photo = null, sensorY = 0.765f, is24Hour = true, zone = utc, locale = Locale.US)
+        }
+        advance(300)
+        compose.onNodeWithTag("lock:time").assertExists()
+        compose.onNodeWithTag("lock:date").assertExists()
     }
 
     // --- the settings page

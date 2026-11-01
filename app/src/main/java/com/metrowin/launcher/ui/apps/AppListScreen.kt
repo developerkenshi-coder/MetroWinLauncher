@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -308,8 +309,11 @@ fun AppListScreen(
     /** What the Today card (the model decides whether it shows) tells, and what a touch on one of its lines does. */
     today: TodayInfo? = null,
     onToday: (TodayAction) -> Unit = {},
+    /** The apps picked to pin together (a touch picks or drops one); null when nothing is being picked. */
+    picked: Set<String>? = null,
 ) {
-    val insets = WindowInsets.systemBars.asPaddingValues()
+    // The camera hole counts at the top too: with the status bar turned off the bar leaves no room, the hole is still there.
+    val insets = WindowInsets.systemBars.union(WindowInsets.displayCutout.only(WindowInsetsSides.Top)).asPaddingValues()
     // In landscape the camera cutout sits on a side.
     val sides = WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal).asPaddingValues()
     val direction = LocalLayoutDirection.current
@@ -397,6 +401,7 @@ fun AppListScreen(
                 is ListRow.App -> AppRow(
                     row.item, index, listState, openedAt, exiting, onLaunch, onLongPress,
                     highlight?.takeIf { it.appId == row.item.id && row.group.isEmpty() }, row.group,
+                    picked = picked != null && row.item.id in picked,
                 )
                 is ListRow.Section -> SectionRow(row.title, if (row.title == R.string.search_section_recent) onClearRecents else null)
                 is ListRow.Contact -> ResultRow(
@@ -460,6 +465,7 @@ private fun momentText(millis: Long, allDay: Boolean): String {
 }
 
 private const val GLOW_START = 0.5f
+private const val PICKED_ALPHA = 0.45f
 private const val GLOW_MS = 1_400
 
 private fun isEntering(openedAt: Long) = System.nanoTime() - openedAt < ENTRY_WINDOW_NANOS
@@ -591,6 +597,7 @@ private fun AppRow(
     onLongPress: (AppItem, Float, Float) -> Unit,
     highlight: ListHighlight?,
     group: String = "",
+    picked: Boolean = false,
 ) {
     val reduced = LocalReduceMotion.current
     val away = rememberRowAway(index, listState, openedAt, exiting)
@@ -609,7 +616,7 @@ private fun AppRow(
             .testTag(if (group.isEmpty()) "app:${item.id}" else "app:$group:${item.id}")
             .onGloballyPositioned { coordinates = it }
             .graphicsLayer { turnstile(away.value, reduced) }
-            .drawBehind { if (glow.value > 0f) drawRect(accent.copy(alpha = glow.value)) }
+            .drawBehind { if (picked) drawRect(accent.copy(alpha = PICKED_ALPHA)) else if (glow.value > 0f) drawRect(accent.copy(alpha = glow.value)) }
             .metroPress(
                 onClick = { onLaunch(item) },
                 onLongClick = {

@@ -1,0 +1,18 @@
+O MetroWin Launcher traz a tela Start do Windows Phone (Metro, 8 e 8.1) para o Android: blocos planos que giram mostrando conteúdo ao vivo, uma lista de aplicativos em ordem alfabética, animações de catraca e de inclinação, e os recursos de sistema que um launcher realmente pode oferecer. Ele não faz nada enquanto não está na tela.
+
+<b>Start</b>
+- Blocos dinâmicos para fotos, agenda, contatos, telefone, clima, notícias, finanças, passos e mais, todos opcionais.
+- Várias páginas Start, pastas, tamanhos de bloco, grupos com título e widgets.
+- Três estilos (Classic, Modern Glass, Modern Droid) com cores personalizáveis e um layout em paisagem.
+
+<b>Action Center</b>
+- Botões rápidos à sua escolha, com a rede Wi-Fi e o dispositivo Bluetooth conectados mostrados no próprio botão. Um toque longo lista as redes ao redor, ou os dispositivos Bluetooth conectados e pareados.
+- Controles de volume, toque e brilho, intensidade da lanterna e horários de silêncio.
+- Notificações que você dispensa deslizando, responde, agrupa por aplicativo, adia ou silencia. Abrir um aplicativo limpa as notificações dele e o número no bloco.
+
+<b>E mais</b>
+- Busca em aplicativos, contatos, arquivos, agenda e configurações, com respostas rápidas e um assistente.
+- Comandos de voz, uma tela de bloqueio Metro, o Cantinho infantil e opções de acessibilidade.
+- Sincronização criptografada do seu layout e backups.
+
+Toda permissão é opcional e serve apenas a um bloco dinâmico ou a um recurso. O acesso à rede é usado para o clima (Open-Meteo) e, para os blocos de notícias e finanças, somente se você os adicionar. Nenhum serviço do Google é necessário: o bloco de notícias lê o Google Notícias por padrão ou qualquer feed RSS que você escolher, a busca na web usa o mecanismo que você escolher (DuckDuckGo por padrão), e os links para mapas, notas ou agenda abrem o aplicativo que você tiver para isso.

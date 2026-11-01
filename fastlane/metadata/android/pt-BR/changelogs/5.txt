@@ -1,0 +1,1 @@
+Ligar por voz encontra o contato certo pelo nome (e pergunta quando vários combinam), números falados em dígitos são discados como estão, o reconhecimento de voz recorre ao serviço on-line e acaba com o eterno “tente de novo”, e mais.

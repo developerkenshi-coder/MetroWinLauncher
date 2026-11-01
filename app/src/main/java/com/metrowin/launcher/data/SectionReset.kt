@@ -16,23 +16,31 @@ object SectionReset {
             "themeMode", "themeStyle",
         ),
         "Start" to setOf(
-            "appBar", "batteryEstimate", "calendarAgenda", "clockAlarm", "clockHours", "clockTaps", "clockWeek", "clockZone", "collectionTiles",
-            "groupTitles", "hideStatusBar", "largeTiles", "layoutSchedule", "lockStart", "moreTiles", "showClock", "showTileNames", "startLowerPercent",
-            "startTopAfterMin", "stepGoal", "tileMusicControls", "tileSpacing", "undoSteps",
+            "batteryEstimate", "calendarAgenda", "collectionTiles", "groupTitles", "largeTiles", "layoutSchedule", "moreTiles", "showTileNames",
+            "tileMusicControls", "tileSpacing",
         ),
+        "StartBars" to setOf(
+            "appBar", "clockAlarm", "clockHours", "clockTaps", "clockWeek", "clockZone", "hideStatusBar", "showClock",
+        ),
+        "StatusBar" to setOf("metroStatusBar", "metroStatusBarOverApps", "statusBarHidden"),
+        "StartBehaviour" to setOf("antiBurnIn", "lockStart", "startLowerPercent", "startTopAfterMin", "stepGoal", "undoSteps"),
         "Search" to setOf(
             "rememberSearches", "searchAnswers", "searchAssistant", "searchCalendar", "searchCommands", "searchContacts", "searchCurrency", "searchEngine",
             "searchFileTypes", "searchLauncherSettings", "searchNotifications", "searchOperators", "searchSettings", "searchSmartDial", "searchTiles",
             "searchToday", "searchWeb", "tipOfDay", "todayAlarm", "todayDate", "todayNear", "todayWeather",
         ),
         "Gestures" to setOf(
-            "animationSpeed", "doubleTapAction", "doubleTapApp", "edgeBackPan", "edgePull", "homeDoubleAction", "homeDoubleApp", "tapHaptics", "tapSound",
+            "animationSpeed", "doubleTapAction", "doubleTapApp", "edgeBackPan", "edgePull", "homeDoubleAction", "homeDoubleApp", "metroNavBar", "lockOverlay", "antiBurnIn", "navHoldMs", "tapHaptics", "tapSound",
             "tiltStrength", "twoFingerDownAction", "twoFingerDownApp", "twoFingerUpAction", "twoFingerUpApp", "vibrationStrength",
         ),
         "Actions" to setOf(
-            "actionSliders", "clearOnOpen", "dndMinutes", "edgeActionCenter", "groupConversations", "hideSystemNotifications", "inlineReply", "metroSounds", "muteFromPanel",
-            "notifFilterOn", "notifFilterWords", "notifPriority", "notificationPeek", "overlayBanner", "quickActions", "toastBanner", "torchAutoOffMin",
-            "panelSounds", "torchStrength", "volumePanel", "volumeProfilesShow", "vpnApp",
+            "actionSliders", "quickActions", "torchAutoOffMin", "torchStrength", "volumePanel",
+            "volumeProfilesShow", "vpnApp",
+        ),
+        "Notifications" to setOf(
+            "edgeActionCenter", "metroSounds", "panelSounds",
+            "clearOnOpen", "dndMinutes", "groupConversations", "hideSystemNotifications", "inlineReply", "muteFromPanel", "notifFilterOn", "notifFilterWords",
+            "notifPriority", "notificationPeek", "overlayBanner", "toastBanner",
         ),
         "LiveTiles" to setOf(
             "liveHideText", "liveMessages", "liveNowPlaying", "liveOffApps", "livePictures", "liveProgress", "notificationPeek", "thirdPartyTiles",
@@ -42,8 +50,8 @@ object SectionReset {
         "Screen" to setOf("highRefreshRate", "launchAnimation", "orientation"),
         "Battery" to setOf("batterySaving"),
         "Accessibility" to setOf("boldText", "highContrast", "reduceMotion", "systemFont", "textScale"),
-        "Icons" to setOf("iconPack", "iconShape", "iconTileColors"),
-        "Lock" to setOf("lockShowAlarm", "lockShowBattery", "lockShowEvent", "lockShowNotifications", "lockShowWeather"),
+        "Icons" to setOf("iconPack", "iconShape", "iconTileColors", "largeTileIcons"),
+        "Lock" to setOf("lockShowAlarm", "lockShowBattery", "lockShowEvent", "lockShowNotifications", "lockShowWeather", "lockSensorUnderScreen", "lockSensorY", "lockSensorOwnIcon"),
         "Voice" to setOf("assistantIcon", "voiceButton", "voiceCallDirect", "voiceOffline"),
     )
 

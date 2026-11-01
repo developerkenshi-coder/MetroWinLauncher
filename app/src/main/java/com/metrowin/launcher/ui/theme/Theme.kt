@@ -68,8 +68,9 @@ val MetroAccents: List<Color> = listOf(
 )
 
 /** The two Windows Phone backgrounds: dark (the default) and light. */
+// A data class: onTile() builds a new instance on every recomposition, and a static local only skips when the value is equal.
 @Immutable
-class MetroColors(
+data class MetroColors(
     val dark: Boolean,
     val background: Color,
     val foreground: Color,

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.tutorial
 
+import com.metrowin.launcher.ui.components.topBarsPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -77,7 +77,7 @@ fun TutorialScreen(
             .pointerInput(Unit) { detectTapGestures { } }
             .testTag("tutorial:screen"),
     ) {
-        Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().cutoutSidesPadding()) {
+        Column(Modifier.fillMaxSize().topBarsPadding().navigationBarsPadding().cutoutSidesPadding()) {
             HorizontalPager(pager, Modifier.weight(1f).testTag("tutorial:pager"), key = { steps[it].id }) { page ->
                 Box(Modifier.fillMaxSize().pageTurnstile(pager, page, reduced)) {
                     StepPage(steps[page], met, denied, onRequest)

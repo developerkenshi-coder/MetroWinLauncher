@@ -5,6 +5,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import com.metrowin.launcher.data.ClockHands
+import com.metrowin.launcher.data.ClockHours
 import com.metrowin.launcher.data.ParkedCar
 import androidx.compose.foundation.layout.width
 import com.metrowin.launcher.data.Steps
@@ -55,6 +56,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
@@ -169,6 +171,10 @@ data class TileFeatures(
     val stepGoal: Int = Steps.GOAL,
     /** An app tile takes the colour of its icon. */
     val iconColors: Boolean = false,
+    /** How the hours are written (the Alarm tile follows the Start clock). */
+    val clockHours: ClockHours = ClockHours.System,
+    /** The icon of an app fills its tile. */
+    val largeIcons: Boolean = false,
 )
 
 val LocalTileFeatures = staticCompositionLocalOf { TileFeatures() }
@@ -233,7 +239,7 @@ internal fun SunFace(item: AppItem, size: TileSize, width: Dp, height: Dp, weath
     }
 }
 
-private enum class Transport { Previous, Play, Pause, Next }
+internal enum class Transport { Previous, Play, Pause, Next }
 
 /** Previous, play or pause, next: sent to the music that plays in any app (the same control the lock screen uses). */
 @Composable
@@ -250,8 +256,7 @@ internal fun MusicControls(playing: Boolean, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun TransportButton(kind: Transport, tag: String, onClick: () -> Unit) {
-    val ink = LocalMetroColors.current.tileContent
+internal fun TransportButton(kind: Transport, tag: String, ink: Color = LocalMetroColors.current.tileContent, onClick: () -> Unit) {
     Box(Modifier.size(40.dp).testTag(tag).metroPress(onClick = onClick), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(18.dp)) {
             val w = size.width

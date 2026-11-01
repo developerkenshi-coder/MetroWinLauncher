@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.theme.LocalAccent
 import kotlinx.coroutines.delay
 import com.metrowin.launcher.data.SectionReset
@@ -27,7 +28,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -109,7 +109,7 @@ fun SettingsScreen(
             .pageBackground()
             // Swallow touches so nothing underneath reacts while this page is up.
             .pointerInput(Unit) { detectTapGestures { } }
-            .statusBarsPadding()
+            .topBarsPadding()
             .navigationBarsPadding()
             .cutoutSidesPadding(),
     ) {
@@ -255,6 +255,10 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, fromTop: Flo
             when (section) {
                 SettingsSection.StartTheme -> StartThemePage(env)
                 SettingsSection.Start -> StartPage(env)
+                SettingsSection.StartBars -> StartBarsPage(env)
+                SettingsSection.StatusBar -> StatusBarPage(env)
+                SettingsSection.StartBehaviour -> StartBehaviourPage(env)
+                SettingsSection.Notifications -> NotificationsPage(env)
                 SettingsSection.Search -> SearchPage(env)
                 SettingsSection.Gestures -> GesturesPage(env)
                 SettingsSection.Actions -> ActionsPage(env)
@@ -269,6 +273,7 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, fromTop: Flo
                 SettingsSection.Profiles -> ProfilesPage(env)
                 SettingsSection.Backup -> BackupPage(env)
                 SettingsSection.Kids -> KidsPage(env)
+                SettingsSection.BugReport -> BugReportPage(env)
                 SettingsSection.About -> AboutPage(env)
             }
             }

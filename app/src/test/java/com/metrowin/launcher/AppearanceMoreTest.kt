@@ -195,9 +195,11 @@ class AppearanceMoreTest {
     fun theLanguageOfThePhoneAndTheTwoOfTheLauncherAreTold() {
         assertEquals("it", AppLanguages.normalize("it"))
         assertEquals("en", AppLanguages.normalize("EN-gb"))
-        assertEquals("", AppLanguages.normalize("fr"))
+        assertEquals("fr", AppLanguages.normalize("fr-CA"))
+        assertEquals("pt", AppLanguages.normalize("PT-br"))
+        assertEquals("", AppLanguages.normalize("ja"))
         assertEquals("", AppLanguages.normalize(null))
-        assertEquals(listOf("", "en", "it"), AppLanguages.tags)
+        assertEquals(listOf("", "en", "it", "fr", "es", "de", "pt"), AppLanguages.tags)
     }
 
     @Test

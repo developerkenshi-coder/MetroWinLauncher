@@ -330,11 +330,11 @@ class LiveTileRepository(private val context: Context) {
     }
 
     private companion object {
-        const val PHOTO_PX = 1280
-        const val FACE_PX = 512
+        const val PHOTO_PX = 720
+        const val FACE_PX = 256
         const val MAX_BIRTHDAYS = 2_000
-        const val MAX_FACES = 40
-        const val MAX_PHOTOS = 18
+        const val MAX_FACES = 16
+        const val MAX_PHOTOS = 8
         const val MAX_GROUP_ROWS = 2_000
         const val WEEK_MILLIS = 7L * 24 * 60 * 60 * 1000
     }

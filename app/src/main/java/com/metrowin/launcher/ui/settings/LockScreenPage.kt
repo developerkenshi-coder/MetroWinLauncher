@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.ui.components.MetroButton
+import com.metrowin.launcher.ui.components.MetroSlider
 import com.metrowin.launcher.ui.components.SettingLabel
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 
@@ -93,6 +94,26 @@ fun LockScreenPage(env: SettingsEnv) {
         }
         LockQuickSettings(env)
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            SettingHeading(stringResource(R.string.lock_sensor_title))
+            ToggleSetting(
+                stringResource(R.string.lock_sensor), settings.lockSensorUnderScreen,
+                onChange = { value -> env.onChange { it.copy(lockSensorUnderScreen = value) } },
+                hint = stringResource(R.string.lock_sensor_hint), tag = "lock:sensor", id = "lock.sensor",
+            )
+            if (settings.lockSensorUnderScreen) {
+                val name = stringResource(R.string.lock_sensor_position)
+                Column(Modifier.testTag("lock:sensorY").settingAnchor("lock.sensorY")) {
+                    SettingLabel(name)
+                    MetroSlider((settings.lockSensorY - SENSOR_MIN) / (SENSOR_MAX - SENSOR_MIN), { v -> env.onChange { it.copy(lockSensorY = SENSOR_MIN + v * (SENSOR_MAX - SENSOR_MIN)) } }, name)
+                }
+                ToggleSetting(
+                    stringResource(R.string.lock_sensor_own), settings.lockSensorOwnIcon,
+                    onChange = { value -> env.onChange { it.copy(lockSensorOwnIcon = value) } },
+                    hint = stringResource(R.string.lock_sensor_own_hint), tag = "lock:sensorOwn", id = "lock.sensorOwn",
+                )
+            }
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.lock_dream))
             ActionSetting(
                 stringResource(R.string.lock_dream_button), onClick = env.onOpenDreamSettings,
@@ -101,3 +122,7 @@ fun LockScreenPage(env: SettingsEnv) {
         }
     }
 }
+
+/** The range of heights the slider puts the fingerprint sensor in, as shares of the screen (the codec keeps it in the same range). */
+private const val SENSOR_MIN = 0.3f
+private const val SENSOR_MAX = 0.95f

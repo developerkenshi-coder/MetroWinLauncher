@@ -17,7 +17,7 @@ import kotlin.math.abs
  * the position is only read while drawing, so a swipe does not recompose anything.
  */
 @Composable
-fun PageDots(state: PagerState, count: Int, modifier: Modifier = Modifier) {
+fun PageDots(state: PagerState, count: Int, modifier: Modifier = Modifier, reverse: Boolean = false) {
     val color = LocalMetroColors.current.foreground
     Canvas(modifier.width(DOT_SPACING * count).height(12.dp)) {
         val position = state.currentPage + state.currentPageOffsetFraction
@@ -27,7 +27,7 @@ fun PageDots(state: PagerState, count: Int, modifier: Modifier = Modifier) {
             drawCircle(
                 color = lerp(color.copy(alpha = 0.3f), color, near),
                 radius = (3f + 1.8f * near).dp.toPx(),
-                center = Offset(spacing * (index + 0.5f), size.height / 2),
+                center = Offset(spacing * ((if (reverse) count - 1 - index else index) + 0.5f), size.height / 2),
             )
         }
     }

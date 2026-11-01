@@ -12,14 +12,14 @@ import kotlinx.coroutines.launch
  * screen yet, so the tiles can swing in on the right page. Otherwise the page and the scroll glide at the
  * same time (not one after the other), and any touch on the screen takes over from the glide.
  */
-suspend fun returnToStart(pager: PagerState, starts: List<ScrollState>, instant: Boolean) {
+suspend fun returnToStart(pager: PagerState, starts: List<ScrollState>, instant: Boolean, home: Int = PAGE_START) {
     if (instant) {
-        pager.scrollToPage(PAGE_START)
+        pager.scrollToPage(home)
         starts.forEach { it.scrollTo(0) }
         return
     }
     coroutineScope {
-        launch { if (pager.currentPage != PAGE_START || pager.currentPageOffsetFraction != 0f) pager.animateScrollToPage(PAGE_START) }
+        launch { if (pager.currentPage != home || pager.currentPageOffsetFraction != 0f) pager.animateScrollToPage(home) }
         starts.forEach { start -> launch { if (start.value != 0) start.animateScrollTo(0) } }
     }
 }

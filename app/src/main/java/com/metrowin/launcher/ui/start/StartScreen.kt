@@ -40,7 +40,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import com.metrowin.launcher.ui.components.topBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import com.metrowin.launcher.model.TileData
@@ -50,6 +50,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -96,6 +98,7 @@ import com.metrowin.launcher.ui.theme.LocalHighContrast
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
@@ -271,7 +274,7 @@ fun StartScreen(
                     )
                 }
                 .verticalScroll(scrollState)
-                .statusBarsPadding()
+                .topBarsPadding()
                 .cutoutSidesPadding()
                 .padding(horizontal = 12.dp),
         ) {
@@ -572,9 +575,13 @@ private fun TileGridView(
                     )
                 }
             }
+            // The apps of a folder that was just closed fold back into it: a ghost of each, drawn until it has arrived.
+            var ghosts by remember { mutableStateOf(emptyList<FolderGhost>()) }
+            fun slotOf(p: Placement) = IntOffset(((unitPx + gapPx) * p.col).roundToInt(), ((unitPx + gapPx) * p.row + shiftOf(p.row)).roundToInt())
             cells.forEachIndexed { index, cell ->
                 key(cell.key) {
                     val at = topLevel.indexOf(cell.entryId).takeIf { cell.isTopLevel } ?: -1
+                    val folderIndex = (cell as? AppCell)?.folderId?.let { id -> cells.indexOfFirst { it is FolderCell && it.folder.id == id } } ?: -1
                     PositionedTile(
                         cell, index, layout.placements[index], unit, live, badges, peeks, hasBackground,
                         enterToken, exitRequest, editingKey, drag, actions,
@@ -582,12 +589,59 @@ private fun TileGridView(
                         previousId = topLevel.getOrNull(at - 1).takeIf { at > 0 },
                         nextId = topLevel.getOrNull(at + 1).takeIf { at >= 0 },
                         extraY = shiftOf(layout.placements[index].row),
+                        origin = folderIndex.takeIf { it >= 0 }?.let { slotOf(layout.placements[it]) },
+                        childOrder = if (folderIndex >= 0) index - folderIndex else 0,
+                        onChildGone = { ghost -> if (cell is AppCell) ghosts = ghosts + ghost.copy(folderId = cell.folderId.orEmpty()) },
                     )
+                }
+            }
+            ghosts.forEach { ghost ->
+                key(ghost.id) {
+                    val folder = cells.indexOfFirst { it is FolderCell && it.folder.id == ghost.folderId }
+                    if (folder < 0) {
+                        SideEffect { ghosts = ghosts - ghost }
+                    } else {
+                        FolderGhostTile(ghost, slotOf(layout.placements[folder])) { ghosts = ghosts - ghost }
+                    }
                 }
             }
         }
     }
 }
+
+/** An app of a folder that just left, at [from] and of [size], on its way back into the folder [folderId]. */
+@Immutable
+data class FolderGhost(val id: String, val folderId: String, val from: IntOffset, val size: IntSize)
+
+/** The square of an app folding back into its folder: it shrinks and fades as it slides to the place of the folder, then calls [onDone]. */
+@Composable
+private fun FolderGhostTile(ghost: FolderGhost, to: IntOffset, onDone: () -> Unit) {
+    val progress = remember { Animatable(0f) }
+    val currentDone by rememberUpdatedState(onDone)
+    LaunchedEffect(Unit) {
+        progress.animateTo(1f, metroTween(durationMillis = FOLD_MS, easing = Motion.Accelerate))
+        currentDone()
+    }
+    val density = LocalDensity.current
+    Box(
+        Modifier
+            // Under the tiles that slide up into its place, and gone before they have arrived.
+            .zIndex(-1f)
+            .offset { IntOffset(ghost.from.x + ((to.x - ghost.from.x) * progress.value).roundToInt(), ghost.from.y + ((to.y - ghost.from.y) * progress.value).roundToInt()) }
+            .size(with(density) { ghost.size.width.toDp() }, with(density) { ghost.size.height.toDp() })
+            .graphicsLayer {
+                val scale = 1f - (1f - BLOOM_FROM) * progress.value
+                scaleX = scale
+                scaleY = scale
+                alpha = (1f - 1.6f * progress.value).coerceAtLeast(0f)
+            }
+            .background(LocalMetroColors.current.tileColor(0, LocalAccent.current)),
+    )
+}
+
+private const val BLOOM_FROM = 0.4f
+private const val BLOOM_STEP_MS = 45L
+private const val FOLD_MS = 220
 
 /** What dropping the dragged tile right now would do, given where its centre is. */
 internal sealed interface DragOutcome {
@@ -659,6 +713,11 @@ private fun PositionedTile(
     nextId: String? = null,
     /** How far down the row of this tile is pushed by the titles of the groups above it, in pixels. */
     extraY: Float = 0f,
+    /** For an app of an open folder: where its folder is, which it comes out of; and its place among the apps, to come out one after the other. */
+    origin: IntOffset? = null,
+    childOrder: Int = 0,
+    /** Called when an app of a folder goes away (the folder was closed), to fold it back into the folder. */
+    onChildGone: (FolderGhost) -> Unit = {},
 ) {
     val density = LocalDensity.current
     val reduced = LocalReduceMotion.current
@@ -675,7 +734,21 @@ private fun PositionedTile(
 
     val dragging = drag.draggedKey == cell.key
     var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
-    val position = remember { Animatable(slot, IntOffset.VectorConverter) }
+    val position = remember { Animatable(origin ?: slot, IntOffset.VectorConverter) }
+    // An app of a folder grows out of the folder, one after the other; the others have nothing of this.
+    val bloom = remember { Animatable(if (origin != null && !reduced) 0f else 1f) }
+    LaunchedEffect(bloom) {
+        if (bloom.value >= 1f) return@LaunchedEffect
+        delay(childOrder.coerceAtLeast(0) * BLOOM_STEP_MS)
+        bloom.animateTo(1f, spring(dampingRatio = 0.78f, stiffness = Spring.StiffnessMediumLow))
+    }
+    if (origin != null) {
+        val currentGone by rememberUpdatedState(onChildGone)
+        val key = cell.key
+        DisposableEffect(Unit) {
+            onDispose { if (!reduced) currentGone(FolderGhost(key, "", position.value, with(density) { IntSize(width.roundToPx(), height.roundToPx()) })) }
+        }
+    }
     var wasDragging by remember { mutableStateOf(false) }
     LaunchedEffect(slot, dragging) {
         if (dragging) {
@@ -686,14 +759,15 @@ private fun PositionedTile(
                 wasDragging = false
                 position.snapTo(drag.position.round())
             }
-            position.animateTo(slot, spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessLow))
+            position.animateTo(slot, spring(dampingRatio = if (origin != null) 0.8f else 0.85f, stiffness = if (origin != null) Spring.StiffnessMediumLow else Spring.StiffnessLow))
         }
     }
 
     // 1 = turned away, 0 = facing the screen. A new token makes a new Animatable that starts turned away:
     // resetting an existing one from an effect would only happen after the frame that shows the tiles in place.
-    val away = remember(enterToken) { Animatable(1f) }
+    val away = remember(enterToken) { Animatable(if (origin != null) 0f else 1f) }
     LaunchedEffect(away) {
+        if (origin != null) return@LaunchedEffect
         // Reduced motion: every tile fades in at once, quickly.
         if (!reduced) delay(entryDelay(placement, index))
         away.animateTo(0f, metroTween(durationMillis = if (reduced) REDUCED_FADE_MS else 420, easing = Motion.Decelerate))
@@ -723,7 +797,7 @@ private fun PositionedTile(
         is FolderCell -> cell.folder.color
     }
     val transparent = hasBackground && cell is AppCell && cell.item.glyph != null && !highContrast && ownColor == 0
-    val iconColor = if (LocalTileFeatures.current.iconColors && cell is AppCell && ownColor == 0 && cell.item.glyph == null && cell.item.data == null) {
+    val iconColor = if ((LocalTileFeatures.current.iconColors || LocalTileFeatures.current.largeIcons) && cell is AppCell && ownColor == 0 && cell.item.glyph == null && cell.item.data == null) {
         rememberIconTileColor(cell.item)
     } else {
         null
@@ -747,9 +821,11 @@ private fun PositionedTile(
             .onGloballyPositioned { coordinates = it }
             .graphicsLayer {
                 turnstile(away.value, reduced)
-                val scale = editScale * lift * (if (armedForFolder) 1.06f else 1f)
+                val grow = BLOOM_FROM + (1f - BLOOM_FROM) * bloom.value.coerceIn(0f, 1f)
+                val scale = editScale * lift * grow * (if (armedForFolder) 1.06f else 1f)
                 scaleX = scale
                 scaleY = scale
+                alpha *= bloom.value.coerceIn(0f, 1f)
             }
             .metroPress(
                 onClick = {
@@ -810,36 +886,42 @@ private fun PositionedTile(
         }
         if (picked) PickMark(Modifier.align(Alignment.TopEnd))
         if (selected) {
+            // On a small tile the four buttons would overlap: they shrink, and on the smallest the color and rename ones
+            // are left out (the size and the style are in the edit bar).
+            val shortSide = minOf(width, height)
+            val diameter = if (shortSide < COMPACT_TILE) 26.dp else 34.dp
+            val edgePad = if (shortSide < COMPACT_TILE) 3.dp else 6.dp
+            val corners = shortSide >= TINY_TILE
             EditButton(
-                EditButtonKind.Remove,
+                EditButtonKind.Remove, diameter,
                 onClick = { currentActions.onUnpin(currentCell) },
-                modifier = Modifier.align(Alignment.TopEnd).padding(6.dp),
+                modifier = Modifier.align(Alignment.TopEnd).padding(edgePad),
             )
             if (cell.isTopLevel) {
                 EditButton(
-                    EditButtonKind.Resize,
+                    EditButtonKind.Resize, diameter,
                     onClick = { currentActions.onResize(currentCell) },
-                    modifier = Modifier.align(Alignment.BottomEnd).padding(6.dp),
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(edgePad),
                 )
             }
-            if (cell.isTopLevel) {
+            if (cell.isTopLevel && corners) {
                 EditButton(
-                    EditButtonKind.Color,
+                    EditButtonKind.Color, diameter,
                     onClick = { currentActions.onColor(currentCell) },
-                    modifier = Modifier.align(Alignment.BottomStart).padding(6.dp).testTag("tile:color"),
+                    modifier = Modifier.align(Alignment.BottomStart).padding(edgePad).testTag("tile:color"),
                 )
             }
-            if (cell is FolderCell) {
+            if (corners && cell is FolderCell) {
                 EditButton(
-                    EditButtonKind.Rename,
+                    EditButtonKind.Rename, diameter,
                     onClick = { (currentCell as? FolderCell)?.let(currentActions.onRename) },
-                    modifier = Modifier.align(Alignment.TopStart).padding(6.dp),
+                    modifier = Modifier.align(Alignment.TopStart).padding(edgePad),
                 )
-            } else if (cell is AppCell && cell.hasContentToEdit) {
+            } else if (corners && cell is AppCell && cell.hasContentToEdit) {
                 EditButton(
-                    EditButtonKind.Rename,
+                    EditButtonKind.Rename, diameter,
                     onClick = { currentActions.onEditContent(currentCell) },
-                    modifier = Modifier.align(Alignment.TopStart).padding(6.dp).testTag("tile:edit"),
+                    modifier = Modifier.align(Alignment.TopStart).padding(edgePad).testTag("tile:edit"),
                 )
             }
         }
@@ -875,6 +957,9 @@ private fun exitDelay(placement: Placement): Long =
     ((placement.row / 2) * 18L + (placement.col / 2) * 10L).coerceAtMost(120L)
 
 private const val MAX_ENTRY_DELAY_MS = 450L
+/** Short sides under which the edit buttons shrink, and the smallest under which only remove and resize stay. */
+private val COMPACT_TILE = 100.dp
+private val TINY_TILE = 60.dp
 private const val REDUCED_FADE_MS = 120
 private val HIGH_CONTRAST_FRAME = 2.dp
 
@@ -928,12 +1013,12 @@ private enum class EditButtonKind { Remove, Resize, Rename, Color }
 
 /** The round buttons of a selected tile: remove on the top right, resize at the bottom right, rename (folders) on the top left. */
 @Composable
-private fun EditButton(kind: EditButtonKind, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun EditButton(kind: EditButtonKind, diameter: Dp, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val currentClick by rememberUpdatedState(onClick)
     val currentFeedback by rememberUpdatedState(LocalTapFeedback.current)
     Box(
         modifier
-            .size(34.dp)
+            .size(diameter)
             .clip(CircleShape)
             .background(Color.White)
             .pointerInput(Unit) {

@@ -16,6 +16,9 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import com.metrowin.launcher.ui.components.BurnInShift
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -50,12 +53,17 @@ class MainActivity : ComponentActivity() {
         }
         // Started by something that asked for a screen (the settings): a recreated activity gets the same intent again, and does not ask twice.
         if (savedInstanceState == null) openWhatTheIntentAsks(intent)
-        setContent { LauncherApp(viewModel) }
+        setContent {
+            val settings by viewModel.settings.collectAsStateWithLifecycle()
+            // Against burn-in: everything moves a few pixels every minute (see [BurnIn]).
+            BurnInShift(settings.antiBurnIn) { LauncherApp(viewModel) }
+        }
     }
 
     private fun openWhatTheIntentAsks(intent: Intent) {
         if (intent.getBooleanExtra(EXTRA_SETTINGS, false)) viewModel.requestSettings()
         if (intent.getBooleanExtra(EXTRA_VPN_CHOICE, false)) viewModel.requestVpnChoice()
+        if (intent.getBooleanExtra(EXTRA_SEARCH, false)) viewModel.requestSearch()
         // "Share" in any browser lists the launcher: the page is pinned to Start.
         if (intent.action == Intent.ACTION_SEND && intent.type == "text/plain") {
             val shared = intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
@@ -95,6 +103,12 @@ class MainActivity : ComponentActivity() {
         // Coming on screen is the time of the entry animations: the same as a touch. The display can also change under us
         // (a foldable opened, an external screen).
         touched()
+        com.metrowin.launcher.gestures.LockAccessibilityService.launcherFront(true)
+    }
+
+    override fun onPause() {
+        com.metrowin.launcher.gestures.LockAccessibilityService.launcherFront(false)
+        super.onPause()
     }
 
     override fun onStop() {
@@ -184,6 +198,9 @@ class MainActivity : ComponentActivity() {
 
         /** Boolean extra of the intent that starts the launcher: open its settings. */
         const val EXTRA_SETTINGS = "open_settings"
+
+        /** Boolean extra of the intent that starts the launcher: open the search. */
+        const val EXTRA_SEARCH = "open_search"
 
         /** Boolean extra of the intent that starts the launcher: ask which VPN app the VPN button opens. */
         const val EXTRA_VPN_CHOICE = "vpn_choice"

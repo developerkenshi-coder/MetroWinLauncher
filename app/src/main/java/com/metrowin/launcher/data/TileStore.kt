@@ -135,7 +135,13 @@ class TileStore(context: Context) {
         get() = prefs.getBoolean(KEY_TUTORIAL_DONE, false)
         set(value) = prefs.edit { putBoolean(KEY_TUTORIAL_DONE, value) }
 
+    /** Whether the pinned phone, contacts, messages and mail apps already became the mini apps (see [MiniAppMigration]). */
+    var miniAppsMigrated: Boolean
+        get() = prefs.getBoolean(KEY_MINI_APPS_MIGRATED, false)
+        set(value) = prefs.edit { putBoolean(KEY_MINI_APPS_MIGRATED, value) }
+
     private companion object {
+        const val KEY_MINI_APPS_MIGRATED = "mini_apps_migrated"
         const val KEY_TILES = "tiles"
         const val KEY_PAGES = "pages"
         const val KEY_RECENT = "recent_apps"

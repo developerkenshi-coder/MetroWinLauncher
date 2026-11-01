@@ -1,11 +1,12 @@
 package com.metrowin.launcher.data
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.Immutable
 import com.metrowin.launcher.notifications.NotificationEntry
 
-/** An app of the quick status of the lock screen: its icon and the number of its notifications (0 shows the icon alone). */
+/** An app of the quick status of the lock screen: the number of its notifications (0 shows the icon alone) and the small icon of its last one, when there is one (else the icon of the app shows). */
 @Immutable
-data class QuickBadge(val packageName: String, val count: Int)
+data class QuickBadge(val packageName: String, val count: Int, val icon: Bitmap? = null)
 
 /** The last notification of the app chosen for the detailed status: who it is from, what it says ([text] is empty when the text is kept private). */
 @Immutable
@@ -36,12 +37,13 @@ object LockStatusBuilder {
     ): LockStatus {
         val counts = LinkedHashMap<String, Int>()
         for (entry in entries) counts[entry.packageName] = (counts[entry.packageName] ?: 0) + 1
+        fun iconOf(pkg: String) = entries.firstOrNull { it.packageName == pkg && it.icon != null }?.icon?.bitmap
         val quick = when {
             !quickOn -> emptyList()
-            quickApps.isNotEmpty() -> quickApps.distinct().take(MAX).map { QuickBadge(it, counts[it] ?: 0) }
+            quickApps.isNotEmpty() -> quickApps.distinct().take(MAX).map { QuickBadge(it, counts[it] ?: 0, iconOf(it)) }
             else -> counts.entries.filter { it.key != own }
                 // LinkedHashMap keeps the order of the newest first, and a stable sort keeps it among equal counts.
-                .sortedByDescending { it.value }.take(MAX).map { QuickBadge(it.key, it.value) }
+                .sortedByDescending { it.value }.take(MAX).map { QuickBadge(it.key, it.value, iconOf(it.key)) }
         }
         val detail = detailApp.takeIf { it.isNotEmpty() }?.let { pkg ->
             entries.firstOrNull { it.packageName == pkg }?.let { DetailLine(pkg, it.title, if (hideText) "" else it.text) }

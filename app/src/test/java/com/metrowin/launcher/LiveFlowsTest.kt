@@ -50,8 +50,9 @@ class LiveFlowsTest {
     private fun entry() = NotificationEntry("k1", whatsapp, "Giulia", "ultimo", 10L, null, true)
 
     @Test
-    fun nothingIsShownUntilTheMainSwitchIsOn() {
+    fun nothingIsShownWhileTheMainSwitchIsOff() {
         val vm = LauncherViewModel(app)
+        vm.updateSettings { it.copy(notificationPeek = false) }
         idle()
         NotificationHub.updateApps(listOf(chat("Giulia" to "Ciao")))
         NotificationHub.update(listOf(entry()))
@@ -70,7 +71,10 @@ class LiveFlowsTest {
         NotificationHub.updateApps(listOf(chat("Giulia" to "Ciao", "Giulia" to "Ci sei?", "Giulia" to "Ti aspetto")))
         NotificationHub.update(listOf(entry()))
         idle()
-        val card = vm.peeks.value[whatsapp]!!.single() as LiveCard.Message
+        // The list of everything waiting comes first, newest first, then the face of the last message.
+        val (inbox, last) = vm.peeks.value[whatsapp]!!
+        assertEquals(listOf("Ti aspetto", "Ci sei?", "Ciao"), (inbox as LiveCard.Inbox).rows.map { it.text })
+        val card = last as LiveCard.Message
         assertEquals("Giulia", card.sender)
         assertEquals("Ti aspetto", card.text)
         // One notification, three messages.

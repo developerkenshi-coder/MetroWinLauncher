@@ -153,7 +153,7 @@ class SettingsPagesTest : ScreenshotBase() {
 
     @Test
     fun theClockIsASwitch() {
-        open(SettingsSection.Start)
+        open(SettingsSection.StartBars)
         tap("start:clock")
         assertTrue(current.showClock)
     }

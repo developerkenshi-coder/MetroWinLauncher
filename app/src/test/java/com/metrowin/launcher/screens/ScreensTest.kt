@@ -31,8 +31,12 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.centerY
 import androidx.compose.ui.test.down
 import androidx.compose.ui.test.moveBy
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.onRoot
@@ -380,8 +384,10 @@ class ScreensTest : ScreenshotBase() {
         advance(300)
         val screen = capture("action_center")
         // Four buttons across the top: Wi-Fi is lit in the accent colour, Bluetooth is the grey of an off button.
-        assertTrue("Wi-Fi is on", isAccent(screen.getPixel(60, 110)))
-        assertFalse("Bluetooth is off", isAccent(screen.getPixel(60 + 342, 110)))
+        // The buttons sit under the clock of the panel: their place is asked, not counted.
+        fun inside(id: String) = compose.onNodeWithTag("quick:$id").fetchSemanticsNode().boundsInRoot.let { screen.getPixel(it.left.toInt() + 12, it.top.toInt() + 12) }
+        assertTrue("Wi-Fi is on", isAccent(inside("wifi")))
+        assertFalse("Bluetooth is off", isAccent(inside("bluetooth")))
         compose.onNodeWithTag("notification:n1").assertExists()
         compose.onNodeWithTag("notification:n2").assertExists()
     }
@@ -508,8 +514,8 @@ class ScreensTest : ScreenshotBase() {
         assertEquals(0, started)
         // The built-in launcher pages are not offered to children.
         compose.onNodeWithTag("kids:app:launcher:settings").assertDoesNotExist()
-        compose.onNodeWithTag("kids:app:stock:calendar").performClick()
-        assertEquals(setOf("stock:calendar"), current.kidsApps)
+        compose.onNodeWithTag("kids:app:stock:alarms").performClick()
+        assertEquals(setOf("stock:alarms"), current.kidsApps)
     }
 
     @Test

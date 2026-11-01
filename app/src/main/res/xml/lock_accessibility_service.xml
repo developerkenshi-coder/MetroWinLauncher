@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    The screen lock service reads nothing: it asks for no window content and for no events at all, so Android never
-    wakes the launcher for it (a service that asked for window changes would be woken at every app switch). It only
-    exists because Android lets a service, and nothing else, lock the screen (GLOBAL_ACTION_LOCK_SCREEN).
+    The service reads nothing from the screen: it asks for no window content. It asks for one kind of event, a window that changes,
+    only to know which app is in front: the notifications of the app you are looking at are taken away (see NotificationHub). It exists
+    because Android lets a service, and nothing else, lock the screen (GLOBAL_ACTION_LOCK_SCREEN) and open the recent apps.
 -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accessibilityEventTypes=""
+    android:accessibilityEventTypes="typeWindowStateChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
     android:canRetrieveWindowContent="false"
     android:description="@string/lock_service_description"

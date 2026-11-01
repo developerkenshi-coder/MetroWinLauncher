@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.actioncenter
 
+import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.theme.frame
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
@@ -22,6 +23,8 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import com.metrowin.launcher.notifications.NotifAction
 import com.metrowin.launcher.ui.anim.Motion
+import com.metrowin.launcher.ui.anim.metroCollapse
+import com.metrowin.launcher.ui.anim.metroExpand
 import com.metrowin.launcher.ui.anim.featherIn
 import com.metrowin.launcher.ui.anim.flipIn
 import androidx.compose.animation.core.Animatable
@@ -45,7 +48,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -103,6 +105,22 @@ import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.theme.litFill
 import com.metrowin.launcher.ui.theme.onAccent
 import kotlinx.coroutines.launch
+import com.metrowin.launcher.notifications.MessageLine
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.CompositionLocalProvider
+import android.text.format.DateFormat
+import androidx.compose.foundation.Image
+import androidx.compose.ui.platform.LocalContext
+import com.metrowin.launcher.data.ClockFormat
+import com.metrowin.launcher.data.ClockHours
+import com.metrowin.launcher.notifications.MediaInfo
+import com.metrowin.launcher.notifications.rememberMediaInfo
+import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
+import com.metrowin.launcher.ui.start.Transport
+import com.metrowin.launcher.ui.start.TransportButton
+import kotlinx.coroutines.delay
+import java.time.LocalDateTime
+import java.util.Locale
 import kotlin.math.abs
 
 /**
@@ -158,7 +176,13 @@ fun ActionCenter(
     order: List<QuickAction>? = null,
     /** Keeps a new order, made in the arrange mode of the panel; null leaves that mode out. */
     onOrder: ((List<QuickAction>) -> Unit)? = null,
+    /** How the time at the top of the panel is written. */
+    clockHours: ClockHours = ClockHours.System,
+    /** The messages of the conversations that have more than one, by the key of their notification: the earlier ones are under the newest, one touch away. */
+    messageLines: Map<String, List<MessageLine>> = emptyMap(),
 ) {
+    // The music that plays in any app, with its buttons, while the panel is up.
+    val media = rememberMediaInfo(true)
     val colors = LocalMetroColors.current
     var expanded by remember { mutableStateOf(false) }
     // The open list, and the last one opened, which stays drawn while it closes.
@@ -207,6 +231,7 @@ fun ActionCenter(
     val listed = remember(notifications, groupConversations) { NotificationGroups.build(notifications, groupConversations) }
     var openGroups by remember { mutableStateOf(emptySet<String>()) }
     val pushUp = remember(panel) { pushUpConnection(panel) }
+    CompositionLocalProvider(LocalMessageLines provides messageLines) {
     Box(
         modifier
             .fillMaxSize()
@@ -225,7 +250,7 @@ fun ActionCenter(
     ) {
         Column(
             Modifier.fillMaxSize().then(
-                if (contentPadding != null) Modifier.padding(contentPadding) else Modifier.statusBarsPadding().navigationBarsPadding().cutoutSidesPadding(),
+                if (contentPadding != null) Modifier.padding(contentPadding) else Modifier.topBarsPadding().navigationBarsPadding().cutoutSidesPadding(),
             ),
         ) {
             // The buttons, the sliders and the notifications are one list that scrolls together: on a short screen or with big
@@ -233,11 +258,12 @@ fun ActionCenter(
             LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
                 item(key = "quick") {
                     Column(Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        PanelClock(clockHours, Modifier.padding(start = 12.dp, bottom = 4.dp))
                         QuickRow(topFour, shownStates, tap, timeout, connections = connections, onHold = holdButton)
                         AnimatedVisibility(
                             openList != null,
-                            enter = expandVertically(metroTween(durationMillis = 320, easing = Motion.Decelerate)) + fadeIn(metroTween(220)),
-                            exit = shrinkVertically(metroTween(durationMillis = 220, easing = Motion.Accelerate)) + fadeOut(metroTween(150)),
+                            enter = metroExpand,
+                            exit = metroCollapse,
                         ) {
                             ConnectionList(
                                 action = lastList, panel = connections, on = states[lastList],
@@ -248,16 +274,16 @@ fun ActionCenter(
                         }
                         AnimatedVisibility(
                             torchOpen && controls != null,
-                            enter = expandVertically(metroTween(durationMillis = 320, easing = Motion.Decelerate)) + fadeIn(metroTween(220)),
-                            exit = shrinkVertically(metroTween(durationMillis = 220, easing = Motion.Accelerate)) + fadeOut(metroTween(150)),
+                            enter = metroExpand,
+                            exit = metroCollapse,
                         ) {
                             controls?.let { TorchPanel(it) }
                         }
                         // The rest of the buttons open out, and turn in one after the other like the tiles of Start.
                         AnimatedVisibility(
                             expanded || arranging,
-                            enter = expandVertically(metroTween(durationMillis = 320, easing = Motion.Decelerate)) + fadeIn(metroTween(220)),
-                            exit = shrinkVertically(metroTween(durationMillis = 220, easing = Motion.Accelerate)) + fadeOut(metroTween(150)),
+                            enter = metroExpand,
+                            exit = metroCollapse,
                         ) {
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 val others = all.drop(QuickAction.SLOTS)
@@ -273,8 +299,17 @@ fun ActionCenter(
                             )
                         }
                         if (controls != null) ControlsBlock(controls, expanded)
+                        if (media != null) MediaCard(media)
                         Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                            ExpandChevron(expanded) { expanded = !expanded }
+                            // As on the phone: the link to all the settings on the left, the arrow that opens the rest of the buttons on the right.
+                            Row(
+                                Modifier.testTag("ac:allsettings").metroPress(onClick = onAllSettings).padding(horizontal = 8.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                GlyphIcon(Glyph.DeviceSettings, 22.dp, color = LocalAccent.current)
+                                MetroText(stringResource(R.string.ac_all_settings), size = 17.sp, weight = FontWeight.Normal, color = LocalAccent.current)
+                            }
                             if (onOrder != null) {
                                 Box(
                                     Modifier.testTag("ac:arrange").metroPress(onClick = {
@@ -291,15 +326,7 @@ fun ActionCenter(
                                 }
                             }
                             Spacer(Modifier.weight(1f))
-                            // The settings of Android, with the picture that tells them from the settings of the launcher (the tiles).
-                            Row(
-                                Modifier.testTag("ac:allsettings").metroPress(onClick = onAllSettings).padding(horizontal = 8.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                GlyphIcon(Glyph.DeviceSettings, 22.dp, color = LocalAccent.current)
-                                MetroText(stringResource(R.string.ac_all_settings), size = 17.sp, weight = FontWeight.Normal, color = LocalAccent.current)
-                            }
+                            ExpandChevron(expanded) { expanded = !expanded }
                         }
                     }
                 }
@@ -356,8 +383,8 @@ fun ActionCenter(
                                     // The notifications of the app open out under its line, and come in one after the other.
                                     AnimatedVisibility(
                                         open,
-                                        enter = expandVertically(metroTween(durationMillis = 320, easing = Motion.Decelerate)) + fadeIn(metroTween(220)),
-                                        exit = shrinkVertically(metroTween(durationMillis = 220, easing = Motion.Accelerate)) + fadeOut(metroTween(150)),
+                                        enter = metroExpand,
+                                        exit = metroCollapse,
                                     ) {
                                         Column(Modifier.testTag("notification:group:list:${item.packageName}")) {
                                             item.entries.forEachIndexed { slot, entry ->
@@ -379,6 +406,59 @@ fun ActionCenter(
 
             PullUpHandle(onClose)
         }
+    }
+    }
+}
+
+/** The messages of the notifications that hold several (see [ActionCenter]); read by each row. */
+private val LocalMessageLines = staticCompositionLocalOf<Map<String, List<MessageLine>>> { emptyMap() }
+
+/** The time in large light type with the date next to it, at the top of the panel; redrawn when the minute changes. */
+@Composable
+private fun PanelClock(hours: ClockHours, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    var now by remember { mutableStateOf(LocalDateTime.now()) }
+    LaunchedWhileStarted(Unit) {
+        while (true) {
+            val current = LocalDateTime.now()
+            now = current
+            delay((60 - current.second) * 1_000L - current.nano / 1_000_000 + 50)
+        }
+    }
+    val locale = Locale.getDefault()
+    val is24 = hours.is24(DateFormat.is24HourFormat(context))
+    val meridiem = ClockFormat.meridiem(now.toLocalTime(), is24, locale)
+    Column(modifier.fillMaxWidth().testTag("ac:clock")) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            MetroText(ClockFormat.time(now.toLocalTime(), is24, locale), size = 44.sp)
+            if (meridiem.isNotEmpty()) MetroText(meridiem, size = 16.sp, weight = FontWeight.Normal, modifier = Modifier.padding(start = 6.dp, bottom = 8.dp))
+        }
+        MetroText(
+            ClockFormat.date(now.toLocalDate(), locale), size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+            maxLines = Int.MAX_VALUE,
+        )
+    }
+}
+
+/** The song that plays in any app: its picture, its name and who plays it, with previous, play or pause, and next. */
+@Composable
+private fun MediaCard(media: MediaInfo) {
+    val colors = LocalMetroColors.current
+    Row(
+        Modifier.fillMaxWidth().testTag("ac:music").background(colors.containers.getOrElse(0) { colors.surface }).padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (media.art != null) {
+            Image(media.art, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(56.dp))
+            Spacer(Modifier.width(10.dp))
+        }
+        Column(Modifier.weight(1f)) {
+            MetroText(media.title, size = 18.sp, maxLines = 1, modifier = Modifier.testTag("ac:music:title"))
+            if (media.artist.isNotBlank()) MetroText(media.artist, size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
+        }
+        TransportButton(Transport.Previous, "ac:music:prev", colors.foreground) { media.previous() }
+        TransportButton(if (media.playing) Transport.Pause else Transport.Play, "ac:music:toggle", colors.foreground) { media.playPause() }
+        TransportButton(Transport.Next, "ac:music:next", colors.foreground) { media.next() }
     }
 }
 
@@ -704,6 +784,7 @@ private fun NotificationRow(
     var more by remember { mutableStateOf(false) }
     // A long text is read in full by a touch on the link under it.
     var wholeText by remember { mutableStateOf(false) }
+    var earlier by remember { mutableStateOf(false) }
     val canExpand = entry.longText != null || entry.text.length > LONG_TEXT
     val hasMore = onSnooze != null || onAppSettings != null || onMute != null
     // The part that opens the notification is one button for TalkBack; the reply, which has controls of its own, is
@@ -756,6 +837,29 @@ private fun NotificationRow(
                     size = 12.sp, weight = FontWeight.Normal, color = colors.subtle,
                     modifier = Modifier.padding(top = 2.dp),
                 )
+            }
+        }
+        // A conversation with several messages says so under the newest one, and the earlier ones open out below it.
+        val lines = LocalMessageLines.current[entry.key].orEmpty()
+        if (lines.size > 1) {
+            Box(
+                Modifier.padding(start = 12.dp + 44.dp + 14.dp).testTag("notification:earlier:${entry.key}")
+                    .metroPress(onClick = { earlier = !earlier }).padding(vertical = 6.dp, horizontal = 2.dp),
+            ) {
+                MetroText(
+                    if (earlier) stringResource(R.string.notif_earlier_hide) else stringResource(R.string.notif_earlier, lines.size - 1),
+                    size = 14.sp, weight = FontWeight.Normal, color = LocalAccent.current,
+                )
+            }
+            if (earlier) {
+                Column(Modifier.padding(start = 12.dp + 44.dp + 14.dp, end = 12.dp, bottom = 6.dp).testTag("notification:earlier:list:${entry.key}")) {
+                    lines.dropLast(1).asReversed().forEach { line ->
+                        MetroText(
+                            if (line.sender.isBlank()) line.text else "${line.sender}: ${line.text}", size = 15.sp, weight = FontWeight.Normal, color = colors.subtle,
+                            maxLines = 3, modifier = Modifier.padding(bottom = 4.dp),
+                        )
+                    }
+                }
             }
         }
         if (canExpand) {

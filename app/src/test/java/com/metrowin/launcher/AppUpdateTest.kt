@@ -15,6 +15,8 @@ class AppUpdateTest {
         assertEquals(listOf(26, 3), AppUpdate.numbers("26.3S"))
         assertNull(AppUpdate.numbers("beta"))
         assertTrue(AppUpdate.isNewer("v26.4S", "26.3S"))
+        assertTrue("26.5.5S is later than 26.5S and 26.4S", AppUpdate.isNewer("v26.5.5S", "26.5S") && AppUpdate.isNewer("v26.5.5S", "26.4S"))
+        assertFalse(AppUpdate.isNewer("v26.5S", "26.5.5S"))
         assertTrue(AppUpdate.isNewer("27.0S", "26.9S"))
         assertTrue(AppUpdate.isNewer("26.10S", "26.9S"))
         assertFalse(AppUpdate.isNewer("26.3S", "26.3S"))

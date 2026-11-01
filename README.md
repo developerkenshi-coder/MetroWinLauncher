@@ -33,7 +33,7 @@
 
 ## Download
 
-**[⬇ Get the latest release](https://github.com/developerkenshi-coder/MetroWinLauncher/releases/latest)**: `MetroWinLauncher-26.4S.apk`, for Android 8.0 (API 26) or newer.
+**[⬇ Get the latest release](https://github.com/developerkenshi-coder/MetroWinLauncher/releases/latest)**: `MetroWinLauncher-26.5.5S.apk`, for Android 8.0 (API 26) or newer.
 
 1. Download the APK on your phone.
 2. Open it. When Android asks, allow your browser or file manager to install unknown apps.
@@ -52,7 +52,7 @@ Each release also has a `SHA256SUMS` file. To check both:
 
 ```sh
 shasum -a 256 -c SHA256SUMS
-apksigner verify --print-certs MetroWinLauncher-26.4S.apk
+apksigner verify --print-certs MetroWinLauncher-26.5.5S.apk
 ```
 
 Android keeps the app updatable only with the same signing key, so install updates from this page. An F-Droid release is planned

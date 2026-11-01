@@ -21,6 +21,8 @@ import androidx.core.net.toUri
 import com.metrowin.launcher.R
 import com.metrowin.launcher.model.AppCategory
 import com.metrowin.launcher.model.AppItem
+import com.metrowin.launcher.calls.DialerRole
+import com.metrowin.launcher.dialer.DialerActivity
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.model.Launch
 import com.metrowin.launcher.model.LiveKind
@@ -62,6 +64,39 @@ class AppRepository(private val context: Context) {
         for (stock in MetroCatalog.apps) {
             val id = MetroCatalog.idOf(stock)
             val label = context.getString(stock.label)
+            if (stock.id == "mail") {
+                items += AppItem(
+                    id = id,
+                    label = label,
+                    launch = Launch.Activity(ComponentName(context, com.metrowin.launcher.mail.MailActivity::class.java), owner),
+                    glyph = stock.glyph,
+                    live = stock.live,
+                    packageName = context.packageName,
+                )
+                continue
+            }
+            if (stock.id == "messaging") {
+                items += AppItem(
+                    id = id,
+                    label = label,
+                    launch = Launch.Activity(ComponentName(context, com.metrowin.launcher.messages.MessagesActivity::class.java), owner),
+                    glyph = stock.glyph,
+                    live = stock.live,
+                    packageName = context.packageName,
+                )
+                continue
+            }
+            if (stock.id == "phone" || stock.id == "people") {
+                items += AppItem(
+                    id = id,
+                    label = label,
+                    launch = Launch.Activity(ComponentName(context, com.metrowin.launcher.dialer.DialerActivity::class.java), owner),
+                    glyph = stock.glyph,
+                    live = stock.live,
+                    packageName = context.packageName,
+                )
+                continue
+            }
             val action = stock.settingsAction
             if (action != null) {
                 if (queryActivities(Intent(action)).isNotEmpty()) {
@@ -166,7 +201,7 @@ class AppRepository(private val context: Context) {
                     } else if (number != null) {
                         // A speed dial tile: it calls at once when the phone permission was given, else it opens the dialer.
                         val direct = LivePermissions.isGranted(context, PhoneCalls.permission)
-                        context.startActivity(PhoneCalls.intent(number, direct), options)
+                        com.metrowin.launcher.calls.DialerRole.call(context, number, direct)
                     } else if (target.uri.startsWith("content://media/")) {
                         // A file the search found: opened by the app that handles its kind, which is let read it this once.
                         val file = target.uri.toUri()
@@ -190,6 +225,11 @@ class AppRepository(private val context: Context) {
     }
 
     private fun startActivity(target: Launch.Activity, sourceBounds: Rect?, options: android.os.Bundle) {
+        if (target.component.packageName == context.packageName) {
+            val intent = Intent().setComponent(target.component).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent, options)
+            return
+        }
         try {
             launcherApps.startMainActivity(target.component, target.user, sourceBounds, options)
         } catch (e: RuntimeException) {
@@ -234,6 +274,13 @@ class AppRepository(private val context: Context) {
     ): LauncherActivityInfo? {
         if (stock.id == PHOTOS_STOCK && galleryApp.isNotEmpty()) {
             byPackage[galleryApp]?.firstOrNull { it.componentName !in claimed }?.let { return it }
+        }
+        // Once the launcher is the phone app of the phone, the Phone tile opens its own dialer.
+        if (stock.id == "phone" && DialerRole.isDefault(context)) {
+            byPackage[context.packageName]?.firstOrNull { it.name == DialerActivity::class.java.name }?.let { return it }
+        }
+        if (stock.id == "mail") {
+            byPackage[context.packageName]?.firstOrNull { it.name == com.metrowin.launcher.mail.MailActivity::class.java.name }?.let { return it }
         }
         for (pkg in candidatePackages(stock)) {
             byPackage[pkg]?.firstOrNull { it.componentName !in claimed }?.let { return it }

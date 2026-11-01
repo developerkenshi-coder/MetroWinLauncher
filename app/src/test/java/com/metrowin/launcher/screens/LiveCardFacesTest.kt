@@ -50,16 +50,14 @@ class LiveCardFacesTest : ScreenshotBase() {
         }
     }
 
-    /** Turns the tile over to its first card: the first flip comes after about a second and a half. */
-    private fun firstCard() = advance(4_000)
+    /** The tile says what is new at once (as on the phone): the card is there from the start, and the plain face comes later. */
+    private fun firstCard() = advance(300)
 
     // --- conversations
 
     @Test
     fun aTileTurnsOverToWhoWroteAndWhat() {
         showTile(whatsapp, listOf(LiveCard.Message("Giulia", "Ci vediamo alle otto?", null, null, 0)))
-        advance(300)
-        compose.onAllNodesWithText("Giulia").assertCountEquals(0)
         firstCard()
         capture("card_message")
         compose.onAllNodesWithText("Giulia").assertCountEquals(1)
@@ -112,10 +110,11 @@ class LiveCardFacesTest : ScreenshotBase() {
     }
 
     @Test
-    fun aSmallTileDoesNotTurnOver() {
+    fun aSmallTileSaysWhoWroteAndTheFirstWordsButNotTheList() {
         showTile(whatsapp, listOf(LiveCard.Message("Giulia", "Ciao", null, null, 0)), size = TileSize.Small)
-        advance(8_000)
-        compose.onAllNodesWithText("Giulia").assertCountEquals(0)
+        advance(300)
+        compose.onAllNodesWithText("Giulia").assertCountEquals(1)
+        compose.onAllNodesWithText("Ciao").assertCountEquals(1)
     }
 
     // --- other notifications
@@ -191,8 +190,6 @@ class LiveCardFacesTest : ScreenshotBase() {
     @Test
     fun theMusicTileShowsTheSongThatPlaysInAnyApp() {
         showTile(music, emptyList(), live = LiveTileData(nowPlaying = NowPlaying("Song", "Artist", null, true)))
-        advance(300)
-        compose.onAllNodesWithText("Song").assertCountEquals(0)
         firstCard()
         capture("card_music_tile")
         compose.onAllNodesWithText("Song").assertCountEquals(1)

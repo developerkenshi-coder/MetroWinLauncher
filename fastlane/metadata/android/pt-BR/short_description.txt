@@ -1,0 +1,1 @@
+Tela Start no estilo Windows Phone com blocos dinâmicos e Action Center

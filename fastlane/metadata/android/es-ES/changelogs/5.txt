@@ -1,0 +1,1 @@
+Llamar por voz encuentra el contacto correcto por su nombre (y pregunta cuando coinciden varios), los números dichos en cifras se marcan tal cual, el reconocimiento de voz recurre al servicio en línea y acaba con el eterno «inténtalo de nuevo», y más.

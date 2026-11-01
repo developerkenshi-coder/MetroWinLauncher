@@ -7,6 +7,8 @@
         Metro-style page, and every permission only powers one live tile:
         Photos, Calendar, People and Phone (missed calls).
     -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
@@ -25,11 +27,20 @@
 
     <!-- What an app asks for to put its own live content on its tile (see TilePublishProvider). -->
     <permission
-        android:name="com.metrowin.launcher.permission.PUBLISH_TILE"
+        android:name="${applicationId}.permission.PUBLISH_TILE"
         android:description="@string/permission_publish_tile_description"
         android:label="@string/permission_publish_tile_label"
         android:protectionLevel="normal" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!-- The screen of a call keeps the proximity lock that turns the screen off against the ear; without it that screen fails to open and Android uses another one. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Text messages: read and send them in the messages app of the launcher, and receive them once it is the messaging app of the phone. -->
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_MMS" />
+    <uses-permission android:name="android.permission.RECEIVE_WAP_PUSH" />
     <!-- The short vibration of a tap, when the launcher's setting for it is on. -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Timer and reminders: the notification when they come due, the alarm that wakes it, and setting the alarms again after a reboot. -->
@@ -39,6 +50,8 @@
     <!-- A phone that cannot call (a tablet) still runs the launcher: the dialer-based paths do not need it. -->
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
+    <!-- The screen of a call coming in over the lock screen, once the launcher is the phone app. -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <!-- Only to move the brightness slider of the Action Center: the user gives it in a screen of Android, never by a dialog. -->
     <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions" />
@@ -257,6 +270,121 @@
             </intent-filter>
         </activity>
 
+        <!-- The dialer: opened for "dial" and tel: links, and listed as an app of its own. Android needs both tel: filters to offer the launcher as the phone app. -->
+        <activity
+            android:name=".dialer.DialerActivity"
+            android:exported="true"
+            android:label="@string/dialer_app_name"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.DIAL" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.DIAL" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="tel" />
+            </intent-filter>
+        </activity>
+
+        <!-- The messages app: opened for "send a message" links, and listed as an app of its own. Android needs all of the parts below to offer the launcher as the messaging app. -->
+        <activity
+            android:name=".messages.MessagesActivity"
+            android:exported="true"
+            android:label="@string/messages_app_name"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SENDTO" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="sms" />
+                <data android:scheme="smsto" />
+                <data android:scheme="mms" />
+                <data android:scheme="mmsto" />
+            </intent-filter>
+        </activity>
+        <receiver
+            android:name=".messages.SmsReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_DELIVER" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".messages.MmsReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_WAP_PUSH">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" />
+                <data android:mimeType="application/vnd.wap.mms-message" />
+            </intent-filter>
+        </receiver>
+        <service
+            android:name=".messages.RespondViaMessageService"
+            android:exported="true"
+            android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.RESPOND_VIA_MESSAGE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="sms" />
+                <data android:scheme="smsto" />
+                <data android:scheme="mms" />
+                <data android:scheme="mmsto" />
+            </intent-filter>
+        </service>
+
+        <!-- Takes the lock screen of Android away after the Metro one is swiped up (the fingerprint is read there). -->
+        <activity
+            android:name=".gestures.UnlockActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:showWhenLocked="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!-- The Metro Mail app -->
+        <activity
+            android:name=".mail.MailActivity"
+            android:exported="true"
+            android:label="@string/mail_app_title"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden">
+            <!-- Where the page of Microsoft sends the browser back after the sign in (see MicrosoftOAuth). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.metrowin.launcher" android:host="oauth" />
+            </intent-filter>
+        </activity>
+
+        <!-- The screen of the calls, shown by the in-call service below. -->
+        <activity
+            android:name=".calls.InCallActivity"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:taskAffinity="${applicationId}.incall" />
+
+        <!-- Android hands every call to this service while the launcher is the phone app (see DialerRole). It rings the phone itself. -->
+        <service
+            android:name=".calls.MetroInCallService"
+            android:exported="true"
+            android:permission="android.permission.BIND_INCALL_SERVICE">
+            <meta-data android:name="android.telecom.IN_CALL_SERVICE_UI" android:value="true" />
+            <intent-filter>
+                <action android:name="android.telecom.InCallService" />
+            </intent-filter>
+        </service>
+
         <!-- The check for a new release on GitHub, every 12 hours while there is a connection, and the answer of the installer. -->
         <service
             android:name=".data.UpdateCheckJob"
@@ -294,7 +422,7 @@
             android:name=".data.TilePublishProvider"
             android:authorities="${applicationId}.tiles"
             android:exported="true"
-            android:permission="com.metrowin.launcher.permission.PUBLISH_TILE" />
+            android:permission="${applicationId}.permission.PUBLISH_TILE" />
 
         <!-- The Metro lock screen, offered to Android as a screen saver. -->
         <service

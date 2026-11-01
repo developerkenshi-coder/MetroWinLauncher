@@ -8,6 +8,10 @@ plugins {
 }
 
 android {
+    // The two mail libraries each carry the same licence files.
+    packaging {
+        resources.excludes += setOf("META-INF/NOTICE.md", "META-INF/LICENSE.md", "META-INF/NOTICE", "META-INF/LICENSE", "META-INF/DEPENDENCIES")
+    }
     namespace = "com.metrowin.launcher"
     compileSdk = 36
 
@@ -15,8 +19,8 @@ android {
         applicationId = "com.metrowin.launcher"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "26.4S"
+        versionCode = 17
+        versionName = "26.5.5S"
     }
 
     // The key of the official release comes from keystore.properties in the root of the project (never committed: it is in
@@ -33,6 +37,10 @@ android {
     }
 
     buildTypes {
+        // -PidSuffix=.test builds a debug app with an id of its own, to try on a phone that has the real one, which it must not replace.
+        getByName("debug") {
+            providers.gradleProperty("idSuffix").orNull?.let { applicationIdSuffix = it }
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -89,6 +97,8 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.animation)
+    implementation(libs.android.mail)
+    implementation(libs.android.activation)
 
     testImplementation(libs.junit)
     testImplementation(libs.org.json)

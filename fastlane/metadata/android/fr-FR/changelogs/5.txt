@@ -1,0 +1,1 @@
+L’appel vocal trouve le bon contact par son nom (et demande lequel quand plusieurs correspondent), les numéros dictés en chiffres sont composés tels quels, la reconnaissance vocale bascule sur le service en ligne et met fin aux « réessayez » sans fin, et plus encore.

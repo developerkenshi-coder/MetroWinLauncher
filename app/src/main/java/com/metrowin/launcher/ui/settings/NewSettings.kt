@@ -195,6 +195,11 @@ fun LockQuickSettings(env: SettingsEnv) {
             onChange = { value -> env.onChange { it.copy(lockShowMusic = value) } },
             hint = stringResource(R.string.lock_music_hint), tag = "lock:music", id = "lock.music",
         )
+        ToggleSetting(
+            stringResource(R.string.lock_overlay), settings.lockOverlay,
+            onChange = { value -> env.onChange { it.copy(lockOverlay = value) } },
+            hint = stringResource(R.string.lock_overlay_hint), tag = "lock:overlay", id = "lock.overlay",
+        )
     }
 }
 

@@ -54,5 +54,9 @@ fun ScreenPage(env: SettingsEnv) {
 private fun languageName(tag: String): Int = when (tag) {
     "en" -> R.string.language_en
     "it" -> R.string.language_it
+    "fr" -> R.string.language_fr
+    "es" -> R.string.language_es
+    "de" -> R.string.language_de
+    "pt" -> R.string.language_pt
     else -> R.string.language_system
 }

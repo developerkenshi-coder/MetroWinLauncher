@@ -39,7 +39,7 @@ fun KidsPage(env: SettingsEnv) {
     val choosable = remember(env.apps) { env.apps.filter { it.launch !is Launch.Internal && !it.pinOnly } }
     val ready = settings.kidsApps.any { id -> choosable.any { it.id == id } }
     LazyColumn(
-        Modifier.fillMaxSize(),
+        Modifier.fillMaxSize().testTag("kids:list"),
         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
     ) {
         item {

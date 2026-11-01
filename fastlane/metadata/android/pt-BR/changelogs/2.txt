@@ -1,0 +1,1 @@
+Primeira versão pública: a tela Start com blocos dinâmicos, o Action Center, a lista de aplicativos em ordem alfabética, a tela de bloqueio Metro e três estilos (Classic, Modern Glass, Modern Droid).

@@ -15,7 +15,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.data.ClockHours
 import com.metrowin.launcher.data.TileSpacing
 
-/** The Start screen itself: its tiles, the clock and date above them, the status bar, and putting it all back as it was. */
+/** The Start screen itself: its tiles, how many screens there are and where home is, the layouts, and putting it all back as it was. */
 @Composable
 fun StartPage(env: SettingsEnv) {
     val settings = env.settings
@@ -55,10 +55,61 @@ fun StartPage(env: SettingsEnv) {
                 tag = "start:pages",
                 id = "start.pages",
             )
+            // With several screens, one of them is home; the ones before it are to its left, so Start can have a screen on each side.
+            if (settings.startPages > 1) {
+                // Where the other Start screens are, as seen from the one the launcher opens on: to its right, to its left, or one on each side.
+                val last = settings.startPages - 1
+                val home = settings.homePage.coerceIn(0, last)
+                val options = listOfNotNull(
+                    stringResource(R.string.theme_secondary_right),
+                    stringResource(R.string.theme_secondary_left),
+                    stringResource(R.string.theme_secondary_both).takeIf { settings.startPages > 2 },
+                )
+                DropdownSetting(
+                    label = stringResource(R.string.theme_home_page),
+                    options = options,
+                    selected = when {
+                        home == 0 -> 0
+                        home == last -> 1
+                        else -> 2
+                    },
+                    onSelect = { i -> env.onChange { it.copy(homePage = when (i) { 0 -> 0; 1 -> last; else -> 1 }) } },
+                    tag = "start:home",
+                    id = "start.home",
+                )
+                SettingHint(stringResource(R.string.theme_home_page_hint))
+            }
         }
+        ToggleSetting(
+            label = stringResource(R.string.theme_apps_left),
+            checked = settings.appListLeft,
+            onChange = { value -> env.onChange { it.copy(appListLeft = value) } },
+            hint = stringResource(R.string.theme_apps_left_hint),
+            tag = "start:appsleft",
+            id = "start.appsleft",
+        )
         StartFeaturesSettings(env)
-        StartBehaviourSettings(env)
         LayoutsSettings(env)
+        // Two touches: the first one asks, the second one restores.
+        var confirmReset by remember { mutableStateOf(false) }
+        ActionSetting(
+            text = stringResource(if (confirmReset) R.string.theme_reset_start_confirm else R.string.theme_reset_start),
+            onClick = {
+                if (confirmReset) env.onResetStart()
+                confirmReset = !confirmReset
+            },
+            hint = stringResource(R.string.theme_reset_start_hint),
+            tag = "start:resetstart",
+            id = "start.reset",
+        )
+    }
+}
+
+/** The strip at the top of the screen: the clock and date above the tiles, the status bar (Android's, hidden, or the one of Windows Phone) and the app bar. */
+@Composable
+fun StartBarsPage(env: SettingsEnv) {
+    val settings = env.settings
+    SettingsPage {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.start_clock_title))
             ToggleSetting(
@@ -128,17 +179,22 @@ fun StartPage(env: SettingsEnv) {
             tag = "start:appbar",
             id = "start.appbar",
         )
-        // Two touches: the first one asks, the second one restores.
-        var confirmReset by remember { mutableStateOf(false) }
-        ActionSetting(
-            text = stringResource(if (confirmReset) R.string.theme_reset_start_confirm else R.string.theme_reset_start),
-            onClick = {
-                if (confirmReset) env.onResetStart()
-                confirmReset = !confirmReset
-            },
-            hint = stringResource(R.string.theme_reset_start_hint),
-            tag = "start:resetstart",
-            id = "start.reset",
+    }
+}
+
+/** How Start behaves: when it goes back to the top, what it locks, the undo, and the care of the screen. */
+@Composable
+fun StartBehaviourPage(env: SettingsEnv) {
+    val settings = env.settings
+    SettingsPage {
+        StartBehaviourSettings(env)
+        ToggleSetting(
+            label = stringResource(R.string.theme_anti_burn_in),
+            checked = settings.antiBurnIn,
+            onChange = { value -> env.onChange { it.copy(antiBurnIn = value) } },
+            hint = stringResource(R.string.theme_anti_burn_in_hint),
+            tag = "start:antiburnin",
+            id = "start.antiburnin",
         )
     }
 }

@@ -118,7 +118,7 @@ internal fun AlbumFace(item: AppItem, size: TileSize, width: Dp, height: Dp, pho
             StaticFace(item, size, width, height)
         } else {
             Box(Modifier.fillMaxSize()) {
-                Image(photos[(face - 1) % photos.size], contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.High, modifier = Modifier.fillMaxSize())
+                Image(photos[(face - 1) % photos.size], contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.Low, modifier = Modifier.fillMaxSize())
                 PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
             }
         }
@@ -134,7 +134,7 @@ internal fun GroupFace(item: AppItem, size: TileSize, width: Dp, height: Dp, peo
         } else {
             val person = people[(face - 1) % people.size]
             Box(Modifier.fillMaxSize()) {
-                Image(person.photo, contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.High, modifier = Modifier.fillMaxSize())
+                Image(person.photo, contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.Low, modifier = Modifier.fillMaxSize())
                 PhotoLabel(person.name, Modifier.align(Alignment.BottomStart))
             }
         }

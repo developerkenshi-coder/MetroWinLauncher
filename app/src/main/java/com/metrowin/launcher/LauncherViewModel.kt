@@ -1,6 +1,9 @@
 package com.metrowin.launcher
 
 import com.metrowin.launcher.data.VolumeProfiles
+import com.metrowin.launcher.data.AboutInfo
+import com.metrowin.launcher.gestures.LockAccessibilityService
+import com.metrowin.launcher.data.BugReport
 import com.metrowin.launcher.data.AppStats
 import com.metrowin.launcher.data.DataStats
 import com.metrowin.launcher.data.MemoryStats
@@ -15,6 +18,7 @@ import com.metrowin.launcher.data.BackupCopies
 import com.metrowin.launcher.notifications.Mute
 import com.metrowin.launcher.data.ShortcutCodec
 import com.metrowin.launcher.data.TileCodec
+import com.metrowin.launcher.data.MiniAppMigration
 import com.metrowin.launcher.data.SavedLayout
 import com.metrowin.launcher.data.Layouts
 import com.metrowin.launcher.data.LayoutStore
@@ -526,6 +530,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    /** The Alarm tile shows the alarm the clock has now, not the one read at the last refresh. */
+    private fun syncAlarm() {
+        if (loadedLive?.contains(LiveKind.Alarm) == true) _live.update { it.copy(nextAlarm = NextAlarm.read(getApplication())) }
+    }
+    private val alarmReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) = syncAlarm()
+    }
+
     /**
      * Whether the launcher is sparing the battery now (see [PowerPolicy]): the screens stop what moves by itself, the
      * 120 Hz request is dropped and the data is refreshed less often.
@@ -580,6 +592,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     private var seenNotifications: Map<String, String> = emptyMap()
     private var bannersFrom = 0L
+    private var listeningSince = 0L
 
     /** What the user lets the live tiles of other apps show (see [LiveCards]). */
     private val liveOptions = _settings
@@ -623,7 +636,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** The faces of the tiles that flip to show what is going on in their app. Empty unless the setting is on. */
     val peeks: StateFlow<Map<String, List<LiveCard>>> =
         combine(liveInfo, TileFeed.tiles, _settings) { info, published, settings ->
-            val fromNotifications = info.mapValues { it.value.cards }.filterValues { it.isNotEmpty() }
+            val fromNotifications = info.mapValues { listOfNotNull(it.value.inbox) + it.value.cards }.filterValues { it.isNotEmpty() }
             // What an app published for its own tile is what it wants the tile to say.
             if (settings.thirdPartyTiles) {
                 fromNotifications + ThirdPartyTiles.peeks(published).mapValues { listOf(LiveCard.Digest(it.value.title, it.value.text)) }
@@ -667,6 +680,18 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun settingsRequestMet() {
         _settingsRequests.value = 0
+    }
+
+    /** Asked by the search button of the navigation bar to open the search; same counting as [settingsRequests]. */
+    private val _searchRequests = MutableStateFlow(0)
+    val searchRequests: StateFlow<Int> = _searchRequests.asStateFlow()
+
+    fun requestSearch() {
+        _searchRequests.value += 1
+    }
+
+    fun searchRequestMet() {
+        _searchRequests.value = 0
     }
 
     /** Asked by the VPN button (which may be in the Action Center over other apps) to choose the VPN app; same counting as [settingsRequests]. */
@@ -727,16 +752,26 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _settings.map { it.edgeActionCenter }.distinctUntilChanged().collect { NotificationHub.edgeChanged() }
         }
+        // The Windows Phone buttons over the navigation bar come and go with their switch.
+        viewModelScope.launch {
+            _settings.map { Pair(it.metroNavBar, it.navHoldMs) }.distinctUntilChanged().collect { LockAccessibilityService.syncNavBar() }
+        }
+        // The Windows Phone status bar over other apps comes and goes with its switch.
+        viewModelScope.launch {
+            _settings.map { Triple(it.metroStatusBarOverApps, it.statusBarHidden, it.metroStatusBar) }.distinctUntilChanged().collect { LockAccessibilityService.syncStatusBar() }
+        }
         // A notification that arrives while the launcher is on screen gets a banner. What was up when the launcher came back, and
         // what the service reads again at that moment, does not: it is old news.
         viewModelScope.launch {
             NotificationHub.entries.collect { entries ->
                 val s = _settings.value
                 val wall = System.currentTimeMillis()
-                if (listening && android.os.SystemClock.elapsedRealtime() >= bannersFrom && s.toastBanner) {
+                if (listening && s.toastBanner) {
+                    // Right after the launcher came back the service reads everything again: only what was posted since then is news.
+                    val settled = android.os.SystemClock.elapsedRealtime() >= bannersFrom
                     entries
                         .filter {
-                            BannerGate.isNew(seenNotifications, it) && wall - it.postTime < BANNER_MAX_AGE_MS && it.packageName != application.packageName &&
+                            (settled || it.postTime >= listeningSince) && BannerGate.isNew(seenNotifications, it) && wall - it.postTime < BANNER_MAX_AGE_MS && it.packageName != application.packageName &&
                                 NotificationControl.showsBanner(it.packageName, s, wall) && !NotificationControl.filtered(it, s)
                         }
                         .maxByOrNull { it.postTime }
@@ -794,9 +829,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val app = getApplication<Application>()
         ContextCompat.registerReceiver(app, batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(app, powerSaveReceiver, IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
+        ContextCompat.registerReceiver(app, alarmReceiver, IntentFilter(android.app.AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
+        syncAlarm()
         quickActions.start()
         // The service reads the notifications again when a screen comes on: a moment of quiet, so they are not all announced.
         bannersFrom = android.os.SystemClock.elapsedRealtime() + BANNER_SETTLE_MS
+        listeningSince = System.currentTimeMillis()
         if (!watchingNotifications) {
             watchingNotifications = true
             NotificationHub.startWatching()
@@ -812,6 +850,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val app = getApplication<Application>()
         runCatching { app.unregisterReceiver(batteryReceiver) }
         runCatching { app.unregisterReceiver(powerSaveReceiver) }
+        runCatching { app.unregisterReceiver(alarmReceiver) }
         quickActions.stop()
         if (watchingNotifications) {
             watchingNotifications = false
@@ -1321,7 +1360,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     /** Calls [number] at once ([direct], the phone permission is granted) or opens the dialer with it written in. */
     fun dial(number: String, direct: Boolean) {
-        val opened = runCatching { getApplication<Application>().startActivity(PhoneCalls.intent(number, direct)) }.isSuccess
+        val app = getApplication<Application>()
+        val opened = runCatching { com.metrowin.launcher.calls.DialerRole.call(app, number, direct) }.isSuccess
         if (!opened) tell(R.string.launch_failed)
     }
 
@@ -1408,6 +1448,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val updated = change(previous)
         if (updated != previous) {
             _settings.value = updated
+            // Written at once: what reads the settings back right after (the services, see syncNavBar) must see this change, not the last.
             settingsStore.save(updated)
             NotificationHub.clearOnOpen = updated.clearOnOpen
             val movedWeather = updated.weatherLatitude != previous.weatherLatitude && !(updated.weatherLatitude.isNaN() && previous.weatherLatitude.isNaN()) ||
@@ -1478,11 +1519,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch { _lockPhoto.value = withContext(Dispatchers.IO) { lockStore.load() }?.asImageBitmap() }
     }
 
-    /** Sets the lock screen photo (or the Start photo) as the wallpaper of the lock screen of Android. */
+    /** Sets the lock screen photo (or the Start photo, or black) as the wallpaper of the lock screen of Android. */
     fun applyLockPhotoToSystem() {
         viewModelScope.launch {
             val outcome = withContext(Dispatchers.IO) {
-                val photo = lockStore.load() ?: backgroundStore.load() ?: return@withContext R.string.lock_no_photo
+                // With no photo the lock screen of Android gets a black one: it shows through the hole of the fingerprint, and it must not be seen.
+                val photo = lockStore.load() ?: backgroundStore.load() ?: getApplication<Application>().resources.displayMetrics.let {
+                    Bitmap.createBitmap(it.widthPixels, it.heightPixels, Bitmap.Config.ARGB_8888).apply { eraseColor(android.graphics.Color.BLACK) }
+                }
                 val done = runCatching {
                     WallpaperManager.getInstance(getApplication()).setBitmap(photo, null, true, WallpaperManager.FLAG_LOCK)
                 }.isSuccess
@@ -1515,6 +1559,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     /** Pins [item] at the end of Start screen [page]. */
     fun pin(item: AppItem, page: Int = 0) = updatePages { StartPages.pin(it, item.id, page) }
+
+    /** Pins [items] together at the end of Start screen [page]; one step to undo. */
+    fun pinAll(items: List<AppItem>, page: Int = 0) =
+        updatePages(R.string.undo_changed) { pages -> items.fold(pages) { acc, item -> StartPages.pin(acc, item.id, page) } }
 
     fun unpin(id: String) {
         // A shortcut has no other life than its tile: taking it off Start deletes it.
@@ -2411,6 +2459,31 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** The same for the look alone (see [ThemeCodec]): the file the Icons & themes page also reads. */
     fun shareTheme() = shareFile("metrowin-theme.json") { ThemeCodec.encode(_settings.value) }
 
+    /** Opens the mail app with the bug ticket ready: to the author, with the text of the user and the log of the app attached. */
+    fun sendBugReport(description: String, about: AboutInfo) {
+        viewModelScope.launch {
+            val app = getApplication<Application>()
+            val uri = withContext(Dispatchers.IO) {
+                runCatching {
+                    val file = BugReport.writeLog(java.io.File(app.cacheDir, "shared"), about) ?: return@runCatching null
+                    androidx.core.content.FileProvider.getUriForFile(app, app.packageName + ".files", file)
+                }.getOrNull()
+            }
+            val send = Intent(Intent.ACTION_SEND).setType("message/rfc822")
+                .putExtra(Intent.EXTRA_EMAIL, arrayOf(BugReport.TO))
+                .putExtra(Intent.EXTRA_SUBJECT, BugReport.SUBJECT)
+                .putExtra(Intent.EXTRA_TEXT, BugReport.body(description, about))
+            if (uri != null) {
+                send.putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                send.clipData = android.content.ClipData.newRawUri("", uri)
+            } else {
+                tell(R.string.bug_log_failed)
+            }
+            val chooser = Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (runCatching { app.startActivity(chooser) }.isFailure) tell(R.string.launch_failed)
+        }
+    }
+
     private fun shareFile(name: String, text: () -> String) {
         viewModelScope.launch {
             val app = getApplication<Application>()
@@ -2704,7 +2777,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private fun syncTiles(items: List<AppItem>) {
         if (items.isEmpty()) return // never prune the Start screen on a failed or empty load
         val known = items.mapTo(HashSet()) { it.id }
-        val base = if (tilesReady) _pages.value else store.loadPages() ?: listOf(DefaultStart.build(items))
+        val base = if (tilesReady) _pages.value else {
+            val saved = store.loadPages()
+            when {
+                saved == null -> listOf(DefaultStart.build(items))
+                store.miniAppsMigrated -> saved
+                else -> MiniAppMigration.apply(saved)
+            }.also { store.miniAppsMigrated = true }
+        }
         val kept = StartPages.prune(StartPages.resize(base, _settings.value.startPages), known)
         tilesReady = true
         if (kept != _pages.value) {

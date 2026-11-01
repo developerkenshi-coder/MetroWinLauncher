@@ -4,6 +4,10 @@ import com.metrowin.launcher.data.Tips
 import com.metrowin.launcher.data.SystemCommands
 import com.metrowin.launcher.ui.components.asShape
 import com.metrowin.launcher.ui.components.LocalIconShape
+import com.metrowin.launcher.ui.components.LocalMetroStatusBar
+import com.metrowin.launcher.ui.components.MetroStatusBar
+import com.metrowin.launcher.ui.components.metroStatusBarHeight
+import com.metrowin.launcher.data.StatusItem
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.metrowin.launcher.ui.settings.RestoreDialog
 import com.metrowin.launcher.data.SearchOperators
@@ -26,6 +30,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -43,6 +49,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -55,6 +62,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -144,6 +152,7 @@ import com.metrowin.launcher.ui.components.LocalIconLoader
 import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
 import com.metrowin.launcher.ui.anim.LocalPowerSaving
 import com.metrowin.launcher.ui.anim.LocalTapFeedback
+import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.rememberMetroSounds
 import com.metrowin.launcher.ui.anim.rememberTapFeedback
 import com.metrowin.launcher.data.MetroSound
@@ -193,6 +202,7 @@ import com.metrowin.launcher.data.Assistant
 import com.metrowin.launcher.ui.actioncenter.ToastBanner
 import com.metrowin.launcher.ui.actioncenter.VolumeHudPanel
 import com.metrowin.launcher.notifications.NotificationEntry
+import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.notifications.rememberMediaInfo
 import com.metrowin.launcher.ui.lock.hiddenOnLock
 import com.metrowin.launcher.ui.lock.lockOptions
@@ -225,7 +235,9 @@ import com.metrowin.launcher.ui.theme.Palettes
 import com.metrowin.launcher.data.ThemeStyle
 import androidx.compose.ui.graphics.Color
 import com.metrowin.launcher.ui.theme.rememberIsDark
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 
 /** Time for the tiles (or rows) to turn away before the app opens. */
@@ -280,6 +292,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     val tutorialPager = rememberPagerState { Tutorial.steps.size }
     val homePress by vm.homePresses.collectAsStateWithLifecycle()
     val notifications by vm.notifications.collectAsStateWithLifecycle()
+    val appNotifications by NotificationHub.apps.collectAsStateWithLifecycle()
+    val appNotificationLines = remember(appNotifications) { appNotifications.filter { it.messages.size > 1 }.associate { it.key to it.messages } }
     val notificationHistory by vm.notificationHistory.collectAsStateWithLifecycle()
     val badges by vm.badges.collectAsStateWithLifecycle()
     val peeks by vm.peeks.collectAsStateWithLifecycle()
@@ -292,6 +306,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     var editingKey by remember { mutableStateOf<String?>(null) }
     // The "…" of the edit bar: its buttons show their names. It stays as it was left while the launcher is open.
     var editLabels by rememberSaveable { mutableStateOf(false) }
+    /** The height of the edit bar as drawn (it has as many lines as the width needs), so the undo bar sits right over it. */
+    var editBarHeight by remember { mutableIntStateOf(0) }
     var openFolderId by remember { mutableStateOf<String?>(null) }
     val cellsByPage = remember(pages, items, openFolderId) { pages.map { buildStartCells(it, items, openFolderId) } }
     val usage by vm.usage.collectAsStateWithLifecycle()
@@ -373,10 +389,19 @@ fun LauncherApp(vm: LauncherViewModel) {
     val density = LocalDensity.current
     val haptics = LocalHapticFeedback.current
     val tapFeedback = rememberTapFeedback(settings.tapSound, settings.tapHaptics, settings.vibrationStrength)
-    val pagerState = rememberPagerState { pages.size + 1 }
+    // The Start screen that is home: the app opens on it and the Windows button returns to it. The screens before it are to its left.
+    val homePage = settings.homePage.coerceIn(0, (pages.size - 1).coerceAtLeast(0))
+    val pagerState = rememberPagerState(initialPage = homePage) { pages.size + 1 }
+    // The Start screens are read after the launcher is up: until then there is one, and home is not there yet.
+    var homeShown by remember { mutableStateOf(false) }
+    LaunchedEffect(pages.size) {
+        if (homeShown || pages.size < 2) return@LaunchedEffect
+        homeShown = true
+        if (pagerState.currentPage == 0 && !pagerState.isScrollInProgress) pagerState.scrollToPage(homePage)
+    }
     val startScrolls = List(LauncherSettings.MAX_START_PAGES) { rememberScrollState() }
     // The Start screen last seen: where a new tile is pinned and where Back from the app list returns.
-    var lastStartPage by remember { mutableIntStateOf(0) }
+    var lastStartPage by remember { mutableIntStateOf(homePage) }
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collect { if (it < pages.size) lastStartPage = it }
     }
@@ -436,6 +461,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     var pendingLocked by remember { mutableStateOf<Pair<AppItem, String?>?>(null) }
     // The tiles picked so far while several are chosen for a folder (null: not choosing), and the app being put in one.
     var folderPick by remember { mutableStateOf<Set<String>?>(null) }
+    /** The ids of the apps picked in the app list to pin to Start together. */
+    var appPick by remember { mutableStateOf<Set<String>?>(null) }
     var folderChooserFor by remember { mutableStateOf<AppItem?>(null) }
     // The VPN apps to choose from while the choice is open (null: not choosing); asked by the VPN button, which may be in the Action Center over other apps.
     var vpnChoices by remember { mutableStateOf<List<VpnApp>?>(null) }
@@ -569,15 +596,16 @@ fun LauncherApp(vm: LauncherViewModel) {
     LaunchedEffect(panel) {
         snapshotFlow { panel.isShown }.drop(1).collect { if (panelSounds) metroSound(if (it) MetroSound.Open else MetroSound.Close) }
     }
-    LaunchedEffect(banner?.key) { if (banner != null) metroSound(MetroSound.Notify) }
+    // A chat posts again with the same key at each message: the post time tells the messages apart.
+    LaunchedEffect(banner?.key, banner?.postTime) { if (banner != null) metroSound(MetroSound.Notify) }
     // The status bar of Android out of the way on Start; a swipe from the top edge brings it back for a moment.
     val hostView = LocalView.current
-    DisposableEffect(settings.hideStatusBar) {
+    DisposableEffect(settings.hideStatusBar || settings.metroStatusBar) {
         val window = (appContext as? Activity)?.window
         if (window != null) {
             val controller = WindowCompat.getInsetsController(window, hostView)
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            if (settings.hideStatusBar) controller.hide(WindowInsetsCompat.Type.statusBars()) else controller.show(WindowInsetsCompat.Type.statusBars())
+            if (settings.hideStatusBar || settings.metroStatusBar) controller.hide(WindowInsetsCompat.Type.statusBars()) else controller.show(WindowInsetsCompat.Type.statusBars())
         }
         onDispose { }
     }
@@ -661,7 +689,7 @@ fun LauncherApp(vm: LauncherViewModel) {
         albumPickerOpen = false
         groupPickerOpen = false
         if (instant) panel.snapTo(0f) else panel.close()
-        returnToStart(pagerState, startScrolls.take(pages.size), instant)
+        returnToStart(pagerState, startScrolls.take(pages.size), instant, homePage)
     }
 
     // A section left open when the settings close must not be half open the next time.
@@ -736,13 +764,14 @@ fun LauncherApp(vm: LauncherViewModel) {
             settingsOpen -> TurnstileBack(settingsAway, scope, ::closeSettings)
             kidsMode -> InstantBack { } // only a grown-up, with the screen lock, gets out of the Kid's Corner
             folderPick != null -> InstantBack { folderPick = null }
+            appPick != null -> InstantBack { appPick = null }
             editingKey != null -> InstantBack { editingKey = null }
             openFolderId != null -> InstantBack { openFolderId = null }
             query.isNotEmpty() -> InstantBack { query = "" }
             pagerState.currentPage >= appsPage -> PagerBack(pagerState, scope, appsPage - 1)
             // On Start, Back has nowhere to go. A swipe from the edge, which the system takes for Back, turns the
             // page instead: from the right to the next one, from the left to the previous one.
-            settings.edgeBackPan -> EdgePageBack(pagerState, scope, pages.size + 1)
+            settings.edgeBackPan -> EdgePageBack(pagerState, scope, pages.size + 1, settings.appListLeft)
             else -> InstantBack { }
         }
     }
@@ -1021,6 +1050,15 @@ fun LauncherApp(vm: LauncherViewModel) {
         }
     }
 
+    // Asked from outside (the search button of the navigation bar): the search of the app list.
+    val searchRequest by vm.searchRequests.collectAsStateWithLifecycle()
+    LaunchedEffect(searchRequest) {
+        if (searchRequest == 0) return@LaunchedEffect
+        pagerState.animateScrollToPage(appsPage)
+        searchFocus++
+        vm.searchRequestMet()
+    }
+
     /** What a gesture does, as the settings chose. */
     fun perform(action: GestureAction, appId: String = "") {
         // Screenshot, power menu, split screen and Android's own panels: the accessibility service does them.
@@ -1223,6 +1261,13 @@ fun LauncherApp(vm: LauncherViewModel) {
         }
     }
 
+    /** Adds the app to the picked ones, or takes it out; the rows of the search that are not apps are left alone. */
+    fun togglePick(item: AppItem) {
+        val picked = appPick ?: return
+        if (items.none { it.id == item.id }) return
+        appPick = if (item.id in picked) picked - item.id else picked + item.id
+    }
+
     val startActions = StartActions(
         onClick = { cell ->
             when {
@@ -1302,17 +1347,27 @@ fun LauncherApp(vm: LauncherViewModel) {
             pullDownConnection(panel, startScrolls[page]) { currentPullBlocked || pagerState.currentPage != page }
         }
     }
-    val edgeZone = WindowInsets.statusBars.getTop(density) + with(density) { EDGE_PULL_ZONE.toPx() }
+    val edgeZone = WindowInsets.statusBars.union(WindowInsets.displayCutout).getTop(density) + with(density) { EDGE_PULL_ZONE.toPx() }
 
     // While the panel is up, the state of its buttons is read again every second.
     val actionCenterShown = panel.isShown
     LaunchedWhileStarted(actionCenterShown to torchOn) {
         var round = 0
         while (actionCenterShown) {
-            quickStates = QuickAction.entries.associateWith(vm::quickActionState)
-            screenTimeout = vm.quickActionTimeout(QuickAction.ScreenTimeout)
+            // These are binder calls (Wi-Fi scan list, VPN apps, 19 buttons): off the main thread, or the panel drops frames as it opens.
+            val previous = connectionPanel
+            val devices = round % CONNECTION_DEVICES_EVERY == 0
+            val (states, timeout, panelNow) = withContext(Dispatchers.Default) {
+                Triple(
+                    QuickAction.entries.associateWith(vm::quickActionState),
+                    vm.quickActionTimeout(QuickAction.ScreenTimeout),
+                    vm.readConnections(previous, devices = devices),
+                )
+            }
+            quickStates = states
+            screenTimeout = timeout
             // Bluetooth devices are read every few seconds, the Wi-Fi network and list every second.
-            connectionPanel = vm.readConnections(connectionPanel, devices = round % CONNECTION_DEVICES_EVERY == 0)
+            connectionPanel = panelNow
             round++
             delay(1_000)
         }
@@ -1365,8 +1420,12 @@ fun LauncherApp(vm: LauncherViewModel) {
     }
     LifecycleEventEffect(Lifecycle.Event.ON_START) { if (pagerState.currentPage == appsPage) vm.refreshToday() }
 
+    val ownBar = if (settings.metroStatusBar) metroStatusBarHeight() else 0.dp
+    // The tiles that flip and cycle by themselves stand still while the apps list or Settings is in front: every flip keeps the frame clock running.
+    val tilesHidden by remember(appsPage) { derivedStateOf { pagerState.settledPage == appsPage || settingsOpen } }
     CompositionLocalProvider(
-        LocalIconLoader provides vm.icons, LocalIconShape provides settings.iconShape.asShape(), LocalWidgetHost provides vm.widgets, LocalPowerSaving provides powerSaving,
+        LocalMetroStatusBar provides ownBar,
+        LocalIconLoader provides vm.icons, LocalIconShape provides settings.iconShape.asShape(), LocalWidgetHost provides vm.widgets, LocalPowerSaving provides (powerSaving || tilesHidden),
         LocalTapFeedback provides tapFeedback,
     ) {
         MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode, textScale = settings.textScale / 100f, boldText = settings.boldText, systemFont = settings.systemFont, tilt = settings.tiltStrength / 100f, speed = settings.animationSpeed / 100f) {
@@ -1388,7 +1447,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 val panorama = settings.panoramaTitles && !kidsMode
                 val panoramaStart = stringResource(R.string.panorama_start)
                 val panoramaApps = stringResource(R.string.panorama_apps)
-                if (panorama && !settings.hasStartBackground) PanoramaTitles(pagerState, pages.size, panoramaStart, panoramaApps)
+                if (panorama && !settings.hasStartBackground) PanoramaTitles(pagerState, pages.size, panoramaStart, panoramaApps, reverse = settings.appListLeft)
                 if (kidsMode) {
                     StartScreen(
                         cells = kidsCells,
@@ -1407,9 +1466,18 @@ fun LauncherApp(vm: LauncherViewModel) {
                 } else LauncherPager(
                     startAccent = settings.accentStart,
                     appsAccent = settings.accentApps,
+                    reverse = settings.appListLeft,
                     state = pagerState,
                     startPages = pages.size,
                     userScrollEnabled = !launching && menu == null && !jumpOpen && !tutorialVisible && folderPick == null,
+                    // Start steps back while the settings swing in, and comes forward as they leave.
+                    modifier = Modifier.graphicsLayer {
+                        if (reduceMotion) return@graphicsLayer
+                        val front = 1f - settingsAway.value
+                        scaleX = 1f - Motion.TURNSTILE_RECEDE * front
+                        scaleY = scaleX
+                        alpha = 1f - Motion.TURNSTILE_DIM * front
+                    },
                     start = { page ->
                         StartScreen(
                             cells = cellsByPage.getOrElse(page) { emptyList() },
@@ -1430,7 +1498,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             photoFit = settings.startPhotoFit,
                             showNames = settings.showTileNames,
                             spacing = settings.tileSpacing.factor,
-                            features = TileFeatures(settings.tileMusicControls, settings.batteryEstimate, settings.calendarAgenda, settings.weatherBlocks, settings.stepGoal, settings.iconTileColors),
+                            features = TileFeatures(settings.tileMusicControls, settings.batteryEstimate, settings.calendarAgenda, settings.weatherBlocks, settings.stepGoal, settings.iconTileColors, settings.clockHours, settings.largeTileIcons),
                             showGroups = settings.groupTitles,
                             locked = settings.lockStart,
                             topInset = (screenHeightDp * settings.startLowerPercent / 100f).dp,
@@ -1462,13 +1530,18 @@ fun LauncherApp(vm: LauncherViewModel) {
                             replayToken = listReplay,
                             exiting = listExiting,
                             onLaunch = { item ->
-                                vm.rememberSearch(query)
-                                open(item, null)
+                                if (appPick != null) {
+                                    togglePick(item)
+                                } else {
+                                    vm.rememberSearch(query)
+                                    open(item, null)
+                                }
                             },
                             onLongPress = { item, top, height ->
                                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                menu = MenuState(item, top, height)
+                                if (appPick != null) togglePick(item) else menu = MenuState(item, top, height)
                             },
+                            picked = appPick,
                             onHeaderClick = { jumpOpen = true },
                             query = query,
                             onQueryChange = { query = it },
@@ -1527,7 +1600,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                     },
                 )
 
-                if (panorama && settings.hasStartBackground) PanoramaTitles(pagerState, pages.size, panoramaStart, panoramaApps)
+                if (panorama && settings.hasStartBackground) PanoramaTitles(pagerState, pages.size, panoramaStart, panoramaApps, reverse = settings.appListLeft)
 
                 menu?.let { state ->
                     // What the app itself offers on a long press: asked once for each menu that opens.
@@ -1623,6 +1696,14 @@ fun LauncherApp(vm: LauncherViewModel) {
                         } else {
                             null
                         },
+                        onSelect = if (state.item.id !in pinnedIds && !settings.lockStart) {
+                            {
+                                menu = null
+                                appPick = setOf(state.item.id)
+                            }
+                        } else {
+                            null
+                        },
                         onAddToList = if (settings.appLists.isNotEmpty()) {
                             {
                                 menu = null
@@ -1649,6 +1730,28 @@ fun LauncherApp(vm: LauncherViewModel) {
                         },
                         onCancel = { folderPick = null },
                         modifier = Modifier.align(Alignment.BottomCenter),
+                    )
+                }
+
+                appPick?.let { picked ->
+                    FolderPickBar(
+                        picked = picked.size,
+                        canCreate = picked.isNotEmpty(),
+                        joining = false,
+                        onCreate = {
+                            val page = lastStartPage.coerceIn(0, pages.size - 1)
+                            vm.pinAll(items.filter { it.id in picked }, page)
+                            appPick = null
+                            scope.launch {
+                                pagerState.animateScrollToPage(page)
+                                delay(120)
+                                startScrolls[page].animateScrollTo(startScrolls[page].maxValue)
+                            }
+                        },
+                        onCancel = { appPick = null },
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                        hint = stringResource(R.string.apps_pick_hint),
+                        createLabel = stringResource(R.string.apps_pick_pin),
                     )
                 }
 
@@ -1723,7 +1826,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                                 scope.launch { pagerState.animateScrollToPage(target) }
                             },
                             onDone = { editingKey = null },
-                            modifier = Modifier.align(Alignment.BottomCenter),
+                            modifier = Modifier.align(Alignment.BottomCenter).onSizeChanged { editBarHeight = it.height },
                             onAdd = {
                                 addPage = selectedPage
                                 addMenuOpen = true
@@ -1754,6 +1857,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                     PageDots(
                         pagerState, pages.size + 1,
                         Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 6.dp),
+                        reverse = settings.appListLeft,
                     )
                 }
 
@@ -1762,6 +1866,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         slots = QuickAction.slots(settings.quickActions),
                         order = QuickAction.order(settings.quickActions),
                         onOrder = vm::setQuickOrder,
+                        clockHours = settings.clockHours,
                         states = quickStates,
                         timeout = screenTimeout,
                         notifications = notifications,
@@ -1822,6 +1927,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         onDismissNotification = vm::dismissNotification,
                         onReply = if (settings.inlineReply) vm::replyToNotification else null,
                         groupConversations = settings.groupConversations,
+                        messageLines = appNotificationLines,
                         controls = if (settings.actionSliders) {
                             ActionControls(
                                 volume = panelControls.volume, ringer = panelControls.ringer, brightness = panelControls.brightness,
@@ -1945,6 +2051,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             profiles = profiles,
                             onSetProfilePaused = vm::setProfilePaused,
                             onTryVoice = { voiceRequest++ },
+                            onSendBugReport = { vm.sendBugReport(it, about) },
                             onShowTutorial = {
                                 scope.launch { tutorialPager.scrollToPage(0) }
                                 tutorialReplay = true
@@ -2024,7 +2131,11 @@ fun LauncherApp(vm: LauncherViewModel) {
                                 vm.undoLast()
                                 editingKey = null
                             },
-                            modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = if (selectedCell != null) 84.dp else 16.dp),
+                            modifier = Modifier.align(Alignment.BottomCenter).then(
+                                // The edit bar already counts the navigation bar in its height.
+                                if (selectedCell != null) Modifier.padding(bottom = with(density) { editBarHeight.toDp() } + 8.dp)
+                                else Modifier.navigationBarsPadding().padding(bottom = 16.dp),
+                            ),
                         )
                     }
                 }
@@ -2495,6 +2606,11 @@ fun LauncherApp(vm: LauncherViewModel) {
                             vm.launch(AppItem("search:web", query, Launch.Link(GlobalSearch.webUrl(query, settings.searchEngine))))
                         },
                     )
+                }
+
+                // With the bar over the apps on (it is on the launcher as well, without a background) this one would be a second copy under it.
+                if (settings.metroStatusBar && !(settings.metroStatusBarOverApps && lockServiceEnabled)) {
+                    MetroStatusBar(battery, Modifier.align(Alignment.TopStart), hidden = StatusItem.hiddenIds(settings.statusBarHidden))
                 }
 
                 if (tutorialVisible) {

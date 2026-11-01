@@ -104,7 +104,10 @@ class SettingsCodecTest {
     @Test
     fun theLiveTilesOfOtherAppsShowEverythingExceptTheTextIsNotHiddenByDefault() {
         val d = LauncherSettings()
-        assertFalse("off until asked for: it puts the text of messages on Start", d.notificationPeek)
+        assertTrue("on by default", d.notificationPeek)
+        // An old file holds an "off" nobody chose: on once. A file saved since keeps what the user picked.
+        assertTrue(SettingsCodec.decode("""{"notificationPeek":false}""")!!.notificationPeek)
+        assertFalse(SettingsCodec.decode(SettingsCodec.encode(d.copy(notificationPeek = false)))!!.notificationPeek)
         assertTrue(d.liveMessages && d.livePictures && d.liveNowPlaying && d.liveProgress)
         assertFalse(d.liveHideText)
         assertEquals(emptySet<String>(), d.liveOffApps)

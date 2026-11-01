@@ -1,5 +1,11 @@
 package com.metrowin.launcher.ui.anim
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.Animatable
@@ -44,8 +50,30 @@ object Motion {
     val Decelerate = CubicBezierEasing(0.1f, 0.9f, 0.2f, 1f)
     val Accelerate = CubicBezierEasing(0.7f, 0f, 0.9f, 0.1f)
 
+    /** How long a part of a screen takes to open out and to close, and the fades that go with them. */
+    const val EXPAND_MS = 320
+    const val COLLAPSE_MS = 220
+    const val FADE_IN_MS = 220
+    const val FADE_OUT_MS = 150
+
+    /** A live tile turning over: each half of the turn, and how each eases (quadratic, in and then out). The slide takes [SLIDE_MS]. */
+    const val FLIP_HALF_MS = 330
+    const val SLIDE_MS = 600
+    val FlipAway = CubicBezierEasing(0.55f, 0.085f, 0.68f, 0.53f)
+    val FlipIn = CubicBezierEasing(0.25f, 0.46f, 0.45f, 0.94f)
+
     /** Rotation of an element that is fully "turned away" in the turnstile transition. */
     const val TURNSTILE_DEGREES = 80f
+
+    /** How long a page takes to swing in and out (the host of the settings and of the pages of the tiles), and how it eases. */
+    const val TURNSTILE_IN_MS = 520
+    const val TURNSTILE_OUT_MS = 340
+    val TurnstileIn = CubicBezierEasing(0.2f, 0f, 0f, 1f)
+    val TurnstileOut = CubicBezierEasing(0.3f, 0f, 0.8f, 0.15f)
+
+    /** What Start under a page that swings in gives up: its size and its light, when the page faces the screen. */
+    const val TURNSTILE_RECEDE = 0.06f
+    const val TURNSTILE_DIM = 0.5f
 
     /** Camera distance, in multiples of the screen density, so rotated elements keep a natural perspective. */
     const val CAMERA = 14f
@@ -118,7 +146,7 @@ object MotionSpeed {
 }
 
 /** The same as `tween`, with the duration and the delay divided by [MotionSpeed.factor]. */
-fun <T> metroTween(durationMillis: Int = 300, delayMillis: Int = 0, easing: Easing = FastOutSlowInEasing): TweenSpec<T> =
+fun <T> metroTween(durationMillis: Int = 300, delayMillis: Int = 0, easing: Easing = Motion.Decelerate): TweenSpec<T> =
     androidx.compose.animation.core.tween(
         (durationMillis / MotionSpeed.factor).toInt().coerceAtLeast(1), (delayMillis / MotionSpeed.factor).toInt(), easing,
     )
@@ -225,11 +253,14 @@ fun FlipContainer(
     faces: Int,
     seed: Int,
     modifier: Modifier = Modifier,
+    /** The face the tile starts on, and starts on again whenever [resetKey] changes (a new message: it is the first thing the tile says). */
+    startFace: Int = 0,
+    resetKey: Any? = null,
     content: @Composable (face: Int) -> Unit,
 ) {
-    var index by remember { mutableIntStateOf(0) }
+    var index by remember(resetKey) { mutableIntStateOf(startFace) }
     // 0 to 180: how far the change has gone, whichever way the tile changes.
-    val angle = remember { Animatable(0f) }
+    val angle = remember(resetKey) { Animatable(0f) }
     val showingNext by remember { derivedStateOf { angle.value >= 90f } }
     val moving by remember { derivedStateOf { angle.value > 0f } }
     val slide = when (LocalTileTransition.current) {
@@ -241,7 +272,7 @@ fun FlipContainer(
 
     val reduced = LocalReduceMotion.current
     val saving = LocalPowerSaving.current
-    LaunchedWhileStarted(Triple(faces, reduced || saving, slide)) {
+    LaunchedWhileStarted(listOf(faces, reduced || saving, slide, resetKey)) {
         // With reduced motion, or while saving battery, the tile keeps its face: nothing flips by itself.
         if (faces <= 1 || reduced || saving) return@LaunchedWhileStarted
         // Coming back after being off screen in the middle of a change: settle on the face that was coming in.
@@ -249,7 +280,13 @@ fun FlipContainer(
         angle.snapTo(0f)
         delay(1_500L + (seed.mod(6)) * 800L)
         while (true) {
-            angle.animateTo(180f, if (slide) metroTween(durationMillis = 600, easing = Motion.Decelerate) else metroTween(durationMillis = 700, easing = FastOutSlowInEasing))
+            if (slide) {
+                angle.animateTo(180f, metroTween(durationMillis = Motion.SLIDE_MS, easing = Motion.Decelerate))
+            } else {
+                // As on the phone, the face speeds up as it turns away and the next one slows down as it settles.
+                angle.animateTo(90f, metroTween(durationMillis = Motion.FLIP_HALF_MS, easing = Motion.FlipAway))
+                angle.animateTo(180f, metroTween(durationMillis = Motion.FLIP_HALF_MS, easing = Motion.FlipIn))
+            }
             index = (index + 1) % faces
             angle.snapTo(0f)
             delay(5_000L + (seed.mod(4)) * 900L)
@@ -278,3 +315,11 @@ fun FlipContainer(
 }
 
 private const val FLIP_SIGN = 1f
+
+/** A part of a screen that opens out (the rest of the buttons, the notifications of an app): it grows and fades in, long and soft. */
+val metroExpand: EnterTransition
+    get() = expandVertically(metroTween(durationMillis = Motion.EXPAND_MS, easing = Motion.Decelerate)) + fadeIn(metroTween(Motion.FADE_IN_MS))
+
+/** The same part closing: shorter than it took to open, and speeding up as it goes. */
+val metroCollapse: ExitTransition
+    get() = shrinkVertically(metroTween(durationMillis = Motion.COLLAPSE_MS, easing = Motion.Accelerate)) + fadeOut(metroTween(Motion.FADE_OUT_MS))

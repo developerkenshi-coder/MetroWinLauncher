@@ -1,0 +1,1 @@
+Erste öffentliche Version: der Start-Bildschirm mit Live-Kacheln, das Action Center, die alphabetische App-Liste, der Metro-Sperrbildschirm und drei Designs (Classic, Modern Glass, Modern Droid).

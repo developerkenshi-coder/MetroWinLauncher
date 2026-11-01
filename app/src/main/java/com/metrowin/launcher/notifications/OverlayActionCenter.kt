@@ -271,12 +271,15 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
 
             val all by NotificationHub.entries.collectAsState()
             val history by NotificationHub.history.collectAsState()
+            val detailed by NotificationHub.apps.collectAsState()
+            val lines = remember(detailed) { detailed.filter { it.messages.size > 1 }.associate { it.key to it.messages } }
             val notifications = remember(all, settings) { NotificationControl.forActionCenter(all, settings) }
             val apps = remember(notifications) { notifications.map { it.packageName }.distinct().associateWith(::overlayAppItem) }
 
             AccentScope(settings.accentPanel) { ActionCenter(
                 slots = QuickAction.slots(settings.quickActions),
                 order = QuickAction.order(settings.quickActions),
+                clockHours = settings.clockHours,
                 states = states,
                 timeout = timeout,
                 notifications = notifications,
@@ -331,6 +334,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                     null
                 },
                 groupConversations = settings.groupConversations,
+                messageLines = lines,
                 controls = if (settings.actionSliders) {
                     ActionControls(
                         volume = controls.volume, ringer = controls.ringer, brightness = controls.brightness,

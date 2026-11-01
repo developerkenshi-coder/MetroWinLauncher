@@ -376,6 +376,8 @@ fun MetroTextField(
     password: Boolean = false,
     /** The keyboard to show: digits for a number, the letters otherwise. */
     keyboardType: KeyboardType = KeyboardType.Text,
+    /** False for a text of several lines: the field grows and the keyboard has a new line key instead of search. */
+    singleLine: Boolean = true,
 ) {
     val colors = LocalMetroColors.current
     val style = LocalStyle.current
@@ -394,11 +396,11 @@ fun MetroTextField(
             BasicTextField(
                 value = value,
                 onValueChange = onValueChange,
-                singleLine = true,
+                singleLine = singleLine,
                 textStyle = fieldTextStyle(colors.foreground, 20.sp),
                 cursorBrush = SolidColor(LocalAccent.current),
                 keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Search,
+                    imeAction = if (singleLine) ImeAction.Search else ImeAction.Default,
                     keyboardType = if (password) KeyboardType.Password else keyboardType,
                     autoCorrectEnabled = !password,
                 ),

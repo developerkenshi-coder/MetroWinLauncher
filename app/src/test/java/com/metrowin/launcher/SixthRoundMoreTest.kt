@@ -205,13 +205,13 @@ class SixthRoundMoreTest {
     @Test
     fun resettingAPageTouchesThatPageOnly() {
         val changed = LauncherSettings(
-            lockStart = true, startTopAfterMin = 10, stepGoal = 5000, // Start
+            lockStart = true, startTopAfterMin = 10, stepGoal = 5000, // Start behaviour
             iconShape = IconShape.Circle, // Icons
             searchWeb = false, // Search
             hiddenApps = setOf("com.example.hidden"), startPages = 3, // not on any page that can be reset
         )
-        assertTrue(SectionReset.changed(changed, "Start"))
-        val back = SectionReset.reset(changed, "Start")
+        assertTrue(SectionReset.changed(changed, "StartBehaviour"))
+        val back = SectionReset.reset(changed, "StartBehaviour")
         assertFalse(back.lockStart)
         assertEquals(0, back.startTopAfterMin)
         assertEquals(Steps.GOAL, back.stepGoal)
@@ -220,7 +220,7 @@ class SixthRoundMoreTest {
         assertFalse(back.searchWeb)
         assertEquals(setOf("com.example.hidden"), back.hiddenApps)
         assertEquals(3, back.startPages)
-        assertFalse(SectionReset.changed(back, "Start"))
+        assertFalse(SectionReset.changed(back, "StartBehaviour"))
         assertTrue(SectionReset.changed(back, "Icons"))
     }
 

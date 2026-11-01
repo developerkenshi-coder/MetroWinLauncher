@@ -64,6 +64,9 @@ class IconLoader(context: Context) {
         revision++
     }
 
+    /** The icon if it is already in memory, so a list can draw it in its first frame. */
+    fun peek(item: AppItem, sizePx: Int): Bitmap? = cache.get("${item.id}@$sizePx")
+
     /** Null for entries that have no icon of their own (stock apps drawn with a glyph). */
     suspend fun load(item: AppItem, sizePx: Int): Bitmap? {
         val activity = item.launch as? Launch.Activity ?: return loadPackageIcon(item, sizePx)
@@ -148,7 +151,8 @@ class IconLoader(context: Context) {
     private companion object {
         private const val COLOR_SAMPLE = 24
 
-        const val CACHE_BYTES = 16 * 1024 * 1024
+        // A sixteenth of the heap: 300 apps do not fit in a fixed 16 MB, and icons drawn again while scrolling stutter on weak phones.
+        val CACHE_BYTES = (Runtime.getRuntime().maxMemory() / 16).toInt().coerceIn(16 * 1024 * 1024, 48 * 1024 * 1024)
         const val ADAPTIVE_CANVAS = 108f
         const val ADAPTIVE_VISIBLE = 72f
         const val WORK_BADGE = 0.36f

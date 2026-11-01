@@ -62,7 +62,8 @@ class SettingsIndexTest : ScreenshotBase() {
             SettingsSection.Gestures to "gest", SettingsSection.Actions to "ac", SettingsSection.Voice to "voice",
             SettingsSection.Battery to "battery", SettingsSection.Apps to "apps", SettingsSection.Search to "search",
             SettingsSection.LiveTiles to "live", SettingsSection.Profiles to "profile", SettingsSection.Backup to "backup",
-            SettingsSection.Kids to "kids", SettingsSection.About to "about",
+            SettingsSection.Kids to "kids", SettingsSection.About to "about", SettingsSection.BugReport to "bugreport",
+            SettingsSection.StartBars to "start", SettingsSection.StatusBar to "statusbar", SettingsSection.StartBehaviour to "start", SettingsSection.Notifications to "ac",
         )
         SettingsIndex.entries.forEach { entry ->
             val prefix = entry.id.substringBefore('.')
@@ -153,7 +154,12 @@ class SettingsIndexTest : ScreenshotBase() {
         ),
     )
 
-    @Test fun theStartPageIsTheIndex() = assertPageHasExactly(SettingsSection.Start, anchorsOf(SettingsSection.Start))
+    // The home screen is asked about only when there is more than one Start screen.
+    @Test fun theStartPageIsTheIndex() = assertPageHasExactly(SettingsSection.Start, anchorsOf(SettingsSection.Start, LauncherSettings(startPages = 2)))
+    @Test fun theStartBarsPageIsTheIndex() = assertPageHasExactly(SettingsSection.StartBars, anchorsOf(SettingsSection.StartBars))
+    @Test fun theStatusBarPageIsTheIndex() = assertPageHasExactly(SettingsSection.StatusBar, anchorsOf(SettingsSection.StatusBar))
+    @Test fun theStartBehaviourPageIsTheIndex() = assertPageHasExactly(SettingsSection.StartBehaviour, anchorsOf(SettingsSection.StartBehaviour))
+    @Test fun theNotificationsPageIsTheIndex() = assertPageHasExactly(SettingsSection.Notifications, anchorsOf(SettingsSection.Notifications))
     @Test fun theIconsPageIsTheIndex() = assertPageHasExactly(SettingsSection.Icons, anchorsOf(SettingsSection.Icons))
     @Test fun theAccessibilityPageIsTheIndex() = assertPageHasExactly(SettingsSection.Accessibility, anchorsOf(SettingsSection.Accessibility))
     @Test fun theLockPageIsTheIndex() = assertPageHasExactly(SettingsSection.Lock, anchorsOf(SettingsSection.Lock))

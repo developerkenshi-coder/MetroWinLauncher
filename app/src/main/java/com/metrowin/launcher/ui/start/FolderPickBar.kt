@@ -46,6 +46,9 @@ fun FolderPickBar(
     onCreate: () -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Other texts for the same bar (the apps picked to pin to Start); null keeps the folder ones. */
+    hint: String? = null,
+    createLabel: String? = null,
 ) {
     val colors = LocalMetroColors.current
     Column(
@@ -59,7 +62,7 @@ fun FolderPickBar(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         MetroText(
-            stringResource(if (joining) R.string.folder_pick_hint_folder else R.string.folder_pick_hint),
+            hint ?: stringResource(if (joining) R.string.folder_pick_hint_folder else R.string.folder_pick_hint),
             size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 2,
             modifier = Modifier.testTag("folderpick:hint"),
         )
@@ -75,7 +78,7 @@ fun FolderPickBar(
                 MetroText(stringResource(R.string.folder_pick_cancel), size = 18.sp, weight = FontWeight.Normal, color = colors.subtle)
             }
             MetroButton(
-                stringResource(R.string.folder_pick_create),
+                createLabel ?: stringResource(R.string.folder_pick_create),
                 Modifier.alpha(if (canCreate) 1f else 0.4f).semantics { if (!canCreate) disabled() }.testTag("folderpick:create"),
             ) { if (canCreate) onCreate() }
         }

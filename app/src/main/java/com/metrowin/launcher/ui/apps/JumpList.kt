@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.apps
 
+import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.anim.metroTween
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -72,7 +72,7 @@ fun JumpList(
             Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .statusBarsPadding()
+                .topBarsPadding()
                 .navigationBarsPadding()
                 .padding(horizontal = 12.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.Center,

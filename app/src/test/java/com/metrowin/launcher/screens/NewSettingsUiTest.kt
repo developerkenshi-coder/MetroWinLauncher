@@ -91,7 +91,7 @@ class NewSettingsUiTest : ScreenshotBase() {
 
     @Test
     fun theBarWithTheDotsCanBeSwitchedOff() {
-        open(SettingsSection.Start)
+        open(SettingsSection.StartBars)
         assertTrue(current.appBar)
         tap("start:appbar")
         assertFalse(current.appBar)
@@ -111,13 +111,18 @@ class NewSettingsUiTest : ScreenshotBase() {
     }
 
     @Test
-    fun theVolumePanelAndTheBannerCanBeSwitchedOff() {
+    fun theVolumePanelCanBeSwitchedOff() {
         open(SettingsSection.Actions)
         assertTrue(current.volumePanel)
-        assertTrue(current.toastBanner)
         tap("actions:volumepanel")
-        tap("notifications:banner")
         assertFalse(current.volumePanel)
+    }
+
+    @Test
+    fun theBannerCanBeSwitchedOff() {
+        open(SettingsSection.Notifications)
+        assertTrue(current.toastBanner)
+        tap("notifications:banner")
         assertFalse(current.toastBanner)
     }
 
@@ -217,7 +222,7 @@ class NewSettingsUiTest : ScreenshotBase() {
 
     @Test
     fun anAppIsKeptOutOfTheCenterTheLockScreenAndTheBannerOneAtATime() {
-        open(SettingsSection.Actions)
+        open(SettingsSection.Notifications)
         tap("actions:notifapp:com.example.chat:header")
         tap("actions:notifapp:com.example.chat:center")
         assertEquals(setOf("com.example.chat"), current.notifHideCenter)
@@ -232,7 +237,7 @@ class NewSettingsUiTest : ScreenshotBase() {
 
     @Test
     fun theSoundOfAnAppIsChangedWhereAndroidKeepsIt() {
-        open(SettingsSection.Actions)
+        open(SettingsSection.Notifications)
         tap("actions:notifapp:com.example.mail:header")
         tap("actions:notifapp:com.example.mail:sound")
         assertEquals("com.example.mail", soundOf)
@@ -240,7 +245,7 @@ class NewSettingsUiTest : ScreenshotBase() {
 
     @Test
     fun withTheMasterSwitchOffTheAppsAreHiddenAndTheChoicesKept() {
-        open(SettingsSection.Actions, LauncherSettings(notifHideCenter = setOf("com.example.chat")))
+        open(SettingsSection.Notifications, LauncherSettings(notifHideCenter = setOf("com.example.chat")))
         compose.onNodeWithTag("actions:notifapps:query").assertExists()
         tap("actions:notifcontrol")
         assertFalse(current.notifControl)
@@ -250,7 +255,7 @@ class NewSettingsUiTest : ScreenshotBase() {
 
     @Test
     fun theAppsWithANotificationUpComeFirst() {
-        open(SettingsSection.Actions)
+        open(SettingsSection.Notifications)
         // "Mail" has a notification up, "Chat" does not: Mail is above, though Chat comes first in the alphabet.
         val mailTop = compose.onNodeWithTag("actions:notifapp:com.example.mail").fetchSemanticsNode().positionInRoot.y
         val chatTop = compose.onNodeWithTag("actions:notifapp:com.example.chat").fetchSemanticsNode().positionInRoot.y

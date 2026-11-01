@@ -40,6 +40,8 @@ enum class SettingsSection(
     // look: what you see
     StartTheme(SettingsGroup.Look, R.string.settings_start_theme, R.string.sec_start_theme_desc),
     Start(SettingsGroup.Look, R.string.sec_start, R.string.sec_start_desc),
+    StartBars(SettingsGroup.Look, R.string.sec_bars, R.string.sec_bars_desc),
+    StatusBar(SettingsGroup.Look, R.string.sec_statusbar, R.string.sec_statusbar_desc),
     Icons(SettingsGroup.Look, R.string.sec_icons, R.string.sec_icons_desc),
     Accessibility(SettingsGroup.Look, R.string.sec_access, R.string.sec_access_desc),
     Lock(SettingsGroup.Look, R.string.sec_lock, R.string.sec_lock_desc),
@@ -47,7 +49,9 @@ enum class SettingsSection(
     // behavior: how it moves and answers
     Screen(SettingsGroup.Behavior, R.string.sec_screen, R.string.sec_screen_desc),
     Gestures(SettingsGroup.Behavior, R.string.sec_gestures, R.string.sec_gestures_desc),
-    Actions(SettingsGroup.Behavior, R.string.settings_actions, R.string.sec_actions_desc),
+    StartBehaviour(SettingsGroup.Behavior, R.string.sec_start_behaviour, R.string.sec_start_behaviour_desc),
+    Actions(SettingsGroup.Behavior, R.string.sec_action_center, R.string.sec_action_center_desc),
+    Notifications(SettingsGroup.Behavior, R.string.sec_notifications, R.string.sec_notifications_desc),
     Voice(SettingsGroup.Behavior, R.string.sec_voice, R.string.sec_voice_desc),
     Battery(SettingsGroup.Behavior, R.string.sec_battery, R.string.sec_battery_desc),
 
@@ -60,6 +64,7 @@ enum class SettingsSection(
     // tools
     Backup(SettingsGroup.Tools, R.string.sec_backup, R.string.sec_backup_desc),
     Kids(SettingsGroup.Tools, R.string.kids_title, R.string.sec_kids_desc),
+    BugReport(SettingsGroup.Tools, R.string.sec_bug, R.string.sec_bug_desc),
     About(SettingsGroup.Tools, R.string.sec_about, R.string.sec_about_desc),
 }
 
@@ -151,6 +156,8 @@ class SettingsEnv(
     val onTryVoice: () -> Unit = {},
     /** Shows the tutorial again. */
     val onShowTutorial: () -> Unit = {},
+    /** Prepares the bug ticket mail with the text of the user and the log of the app. */
+    val onSendBugReport: (String) -> Unit = {},
     /** The tiles apps have published, and a way to clear one. */
     val publishedTiles: List<ThirdPartyTile> = emptyList(),
     val onClearPublishedTile: (String) -> Unit = {},

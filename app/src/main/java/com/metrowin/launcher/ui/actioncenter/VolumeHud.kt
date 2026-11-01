@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import com.metrowin.launcher.ui.components.topBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -76,7 +76,7 @@ fun VolumeHudPanel(
     FontScaleAtMost(VOLUME_FONT_SCALE) {
         Column(
             modifier
-                .statusBarsPadding()
+                .topBarsPadding()
                 .padding(horizontal = 12.dp, vertical = 8.dp)
                 .fillMaxWidth()
                 .graphicsLayer { translationY = -(1f - shown.value) * 120.dp.toPx(); alpha = shown.value }

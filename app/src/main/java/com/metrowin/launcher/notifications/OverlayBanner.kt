@@ -3,7 +3,11 @@ package com.metrowin.launcher.notifications
 import android.app.NotificationManager
 import android.content.Context
 import android.graphics.PixelFormat
+import android.annotation.SuppressLint
 import android.os.Build
+import android.view.WindowInsets
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import android.os.Handler
 import android.os.Looper
 import android.view.Gravity
@@ -82,6 +86,8 @@ internal class OverlayBanner(context: Context, private val host: () -> Context? 
         // A window of the accessibility service brings no "shown over other apps" notice; one of the app does.
         val service = host()
         val windows = (service ?: app).getSystemService(WindowManager::class.java)
+        // The window is given no insets: it is told how much the status bar and the camera hole take at the top.
+        val topInset = topInset(windows)
         val view = ComposeView(service ?: app).apply {
             setViewTreeLifecycleOwner(owner)
             setViewTreeSavedStateRegistryOwner(owner)
@@ -89,7 +95,7 @@ internal class OverlayBanner(context: Context, private val host: () -> Context? 
                 OverlayTheme(settings, icons) {
                     val item = remember(entry.packageName) { overlayAppItem(entry.packageName) }
                     AccentScope(settings.accentPanel) { ToastBanner(
-                        entry = entry, app = item, hideText = settings.liveHideText,
+                        entry = entry, app = item, hideText = settings.liveHideText, topInset = topInset,
                         onOpen = { NotificationHub.open(app, entry); handler.post(hideLater) },
                         onDismiss = { handler.post(hideLater) },
                     ) }
@@ -111,6 +117,16 @@ internal class OverlayBanner(context: Context, private val host: () -> Context? 
         if (settings.metroSounds) sounds.play(MetroSound.Notify)
         shown = Shown(view, owner, windows)
         handler.postDelayed(hideLater, BANNER_MS + SAFETY_MS)
+    }
+
+    @SuppressLint("DiscouragedApi") // before Android 11 the size of the bar can only be asked by the name of the resource
+    private fun topInset(windows: WindowManager): Dp {
+        val px = if (Build.VERSION.SDK_INT >= 30) {
+            windows.maximumWindowMetrics.windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars() or WindowInsets.Type.displayCutout()).top
+        } else {
+            app.resources.getIdentifier("status_bar_height", "dimen", "android").takeIf { it > 0 }?.let(app.resources::getDimensionPixelSize) ?: 0
+        }
+        return (px / app.resources.displayMetrics.density).dp
     }
 
     fun hide() {

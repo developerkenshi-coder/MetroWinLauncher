@@ -1,9 +1,9 @@
 package com.metrowin.launcher.ui.gesture
 
+import com.metrowin.launcher.ui.components.topBarsPadding
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -32,7 +32,17 @@ private val TITLE_SIZE = 150.sp
  * the next one that has come into view): at the edge while its page is in view, and moving [speed] times as fast as the pages on
  * the way in and out. Pure, so it is tested.
  */
-fun panoramaOffset(anchor: Int, position: Float, pageWidth: Float, speed: Float = PANORAMA_SPEED): Float = (anchor - position) * pageWidth * speed
+fun panoramaOffset(anchor: Int, position: Float, pageWidth: Float, speed: Float = PANORAMA_SPEED, reverse: Boolean = false): Float =
+    (anchor - position) * pageWidth * speed * (if (reverse) -1f else 1f)
+
+/**
+ * How much of a title is seen: all of it while the pager is on one of its pages ([anchor] to [last]), none from half a page away. The
+ * titles run on a strip that is slower than the pages, so two of them would otherwise cross; this way one is gone before the other is there.
+ */
+fun panoramaVisibility(anchor: Int, last: Int, position: Float): Float {
+    val distance = if (position < anchor) anchor - position else if (position > last) position - last else 0f
+    return (1f - 2f * distance).coerceIn(0f, 1f)
+}
 
 /**
  * The big titles of the pages ("start" behind the Start screens, "apps" behind the app list) as one strip that moves slower than
@@ -47,18 +57,20 @@ fun PanoramaTitles(
     startTitle: String,
     appsTitle: String,
     modifier: Modifier = Modifier,
+    /** The pages run from the right (see [LauncherPager]). */
+    reverse: Boolean = false,
 ) {
     val color = LocalMetroColors.current.foreground.copy(alpha = PANORAMA_ALPHA)
     val speed = if (LocalReduceMotion.current) 1f else PANORAMA_SPEED
     Box(modifier.fillMaxSize().clipToBounds()) {
-        PanoramaTitle(startTitle, 0, state, speed, color, "panorama:start")
-        PanoramaTitle(appsTitle, startPages, state, speed, color, "panorama:apps")
+        PanoramaTitle(startTitle, 0, startPages - 1, state, speed, color, "panorama:start", reverse)
+        PanoramaTitle(appsTitle, startPages, startPages, state, speed, color, "panorama:apps", reverse)
     }
 }
 
 /** One title of the strip, anchored at the page [anchor]: as wide as its letters need, and moved in the draw phase only. */
 @Composable
-private fun PanoramaTitle(text: String, anchor: Int, state: PagerState, speed: Float, color: Color, tag: String) {
+private fun PanoramaTitle(text: String, anchor: Int, last: Int, state: PagerState, speed: Float, color: Color, tag: String, reverse: Boolean) {
     MetroText(
         text,
         Modifier
@@ -68,13 +80,15 @@ private fun PanoramaTitle(text: String, anchor: Int, state: PagerState, speed: F
                 val pageWidth = constraints.maxWidth
                 layout(pageWidth, placeable.height) {
                     placeable.placeWithLayer(0, 0) {
-                        translationX = panoramaOffset(anchor, state.currentPage + state.currentPageOffsetFraction, pageWidth.toFloat(), speed)
+                        val position = state.currentPage + state.currentPageOffsetFraction
+                        translationX = panoramaOffset(anchor, position, pageWidth.toFloat(), speed, reverse) + if (reverse) pageWidth - placeable.width.toFloat() else 0f
+                        alpha = panoramaVisibility(anchor, last, position)
                     }
                 }
             }
             // After the layout above, so that the tag is on the part that moves.
             .testTag(tag)
-            .statusBarsPadding()
+            .topBarsPadding()
             .padding(start = 8.dp, top = 4.dp),
         size = TITLE_SIZE, weight = FontWeight.Light, color = color, maxLines = 1, minScale = 1f,
     )

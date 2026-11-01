@@ -1,0 +1,18 @@
+MetroWin Launcher lleva la pantalla Start de Windows Phone (Metro, 8 y 8.1) a Android: mosaicos planos que giran para mostrar contenido en vivo, una lista de aplicaciones alfabética, animaciones de torniquete e inclinación, y las funciones del sistema que un launcher puede ofrecer de verdad. No hace nada mientras no está en pantalla.
+
+<b>Start</b>
+- Mosaicos dinámicos para fotos, calendario, contactos, teléfono, tiempo, noticias, finanzas, pasos y más, todos opcionales.
+- Varias páginas Start, carpetas, tamaños de mosaico, grupos con título y widgets.
+- Tres estilos (Classic, Modern Glass, Modern Droid) con colores personalizables, y un diseño horizontal.
+
+<b>Action Center</b>
+- Botones rápidos a tu elección, con la red Wi-Fi y el dispositivo Bluetooth conectados que se muestran en el propio botón. Una pulsación larga lista las redes de alrededor, o los dispositivos Bluetooth conectados y emparejados.
+- Controles de volumen, tono de llamada y brillo, intensidad de la linterna y horas de silencio.
+- Notificaciones que descartas deslizando, a las que respondes, que agrupas por aplicación, pospones o silencias. Al abrir una aplicación se borran sus notificaciones y el número de su mosaico.
+
+<b>Y más</b>
+- Búsqueda en aplicaciones, contactos, archivos, calendario y ajustes, con respuestas rápidas y un asistente.
+- Comandos de voz, una pantalla de bloqueo Metro, el Rincón infantil y opciones de accesibilidad.
+- Sincronización cifrada de tu diseño y copias de seguridad.
+
+Todos los permisos son opcionales y solo activan un mosaico dinámico o una función. El acceso a la red se usa para el tiempo (Open-Meteo), y para los mosaicos de noticias y finanzas solo si los añades. No hace falta ningún servicio de Google: el mosaico de noticias lee Google Noticias por defecto o cualquier fuente RSS que elijas, la búsqueda web usa el motor que elijas (DuckDuckGo por defecto), y los enlaces a mapas, notas o calendario abren la aplicación que tengas para ello.

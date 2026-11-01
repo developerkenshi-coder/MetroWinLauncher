@@ -60,12 +60,15 @@ fun LauncherPager(
     /** Where the accent colour is used (see the settings): the tiles of Start, and the app list. */
     startAccent: Boolean = true,
     appsAccent: Boolean = true,
+    /** The pages in the other order, from the right: the app list is then to the left of Start instead of to its right. */
+    reverse: Boolean = false,
 ) {
     val reduced = LocalReduceMotion.current
     HorizontalPager(
         state = state,
         modifier = modifier.fillMaxSize(),
         userScrollEnabled = userScrollEnabled,
+        reverseLayout = reverse,
         beyondViewportPageCount = 1,
         flingBehavior = PagerDefaults.flingBehavior(state, snapPositionalThreshold = 0.3f),
         key = { it },

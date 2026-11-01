@@ -1,0 +1,1 @@
+Première version publique : l’écran Start avec tuiles dynamiques, l’Action Center, la liste d’applications alphabétique, l’écran de verrouillage Metro et trois styles (Classic, Modern Glass, Modern Droid).

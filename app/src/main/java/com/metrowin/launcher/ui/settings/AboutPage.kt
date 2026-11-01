@@ -77,7 +77,7 @@ private fun UpdateBlock(env: SettingsEnv) {
         // What the new version brings, to read before updating.
         if (state is UpdateState.Available && state.notes.isNotBlank()) {
             SettingLabel(stringResource(R.string.update_notes_title, state.version))
-            SettingHint(state.notes, Modifier.testTag("about:update:notes"))
+            SettingHint(state.notes, Modifier.testTag("about:update:notes"), size = 17.sp, lineHeight = 24.sp, minScale = 1f)
         }
         if (state is UpdateState.Available || state is UpdateState.NeedsPermission) {
             val version = (state as? UpdateState.Available)?.version.orEmpty()

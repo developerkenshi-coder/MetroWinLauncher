@@ -133,6 +133,8 @@ class EdgePageBack(
     private val state: PagerState,
     private val scope: CoroutineScope,
     private val pageCount: Int,
+    /** The pages run from the right (see [LauncherPager]): the next one is to the left. */
+    private val reverse: Boolean = false,
 ) : BackDriver {
     private val fromPage = state.currentPage
     private var target: Int? = null
@@ -142,11 +144,11 @@ class EdgePageBack(
     override suspend fun onProgress(progress: Float, fromRight: Boolean) {
         if (!decided) {
             decided = true
-            target = (if (fromRight) fromPage + 1 else fromPage - 1).takeIf { it in 0 until pageCount }
+            target = (if (fromRight != reverse) fromPage + 1 else fromPage - 1).takeIf { it in 0 until pageCount }
         }
         val to = target ?: return
         val pageSize = state.layoutInfo.pageSize + state.layoutInfo.pageSpacing
-        val direction = if (to > fromPage) 1f else -1f
+        val direction = (if (to > fromPage) 1f else -1f) * (if (reverse) -1f else 1f)
         state.dispatchRawDelta(direction * (progress - last) * pageSize)
         last = progress
     }

@@ -1,0 +1,1 @@
+Écran Start façon Windows Phone avec tuiles dynamiques et Action Center

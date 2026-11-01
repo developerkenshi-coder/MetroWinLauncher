@@ -36,9 +36,9 @@ fun TurnstileHost(
     LaunchedEffect(show) {
         if (show) {
             composed = true
-            away.animateTo(0f, metroTween(durationMillis = if (reduced) REDUCED_MS else 380, easing = Motion.Decelerate))
+            away.animateTo(0f, metroTween(durationMillis = if (reduced) REDUCED_MS else Motion.TURNSTILE_IN_MS, easing = Motion.TurnstileIn))
         } else {
-            away.animateTo(1f, metroTween(durationMillis = if (reduced) REDUCED_MS else 240, easing = Motion.Accelerate))
+            away.animateTo(1f, metroTween(durationMillis = if (reduced) REDUCED_MS else Motion.TURNSTILE_OUT_MS, easing = Motion.TurnstileOut))
             composed = false
         }
     }

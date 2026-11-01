@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import com.metrowin.launcher.ui.components.AppIcon
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,7 +42,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.graphics.FilterQuality
@@ -229,7 +235,7 @@ fun TileFace(
                     LiveKind.Finance -> FinanceFace(item, size, width, height, live.finance)
                     LiveKind.Phone, LiveKind.Messages, null ->
                         if (item.photoPath != null) PhotoShortcutFace(item, size, width, height)
-                        else if (faces.isNotEmpty() && size != TileSize.Small) CardsFace(item, size, width, height, faces, seed)
+                        else if (faces.isNotEmpty()) CardsFace(item, size, width, height, faces, seed)
                         else StaticFace(item, size, width, height)
                 }
             }
@@ -380,7 +386,7 @@ private fun WorldClockFace(item: AppItem, size: TileSize, width: Dp, height: Dp,
     }
     val there = WorldCities.timeIn(zoneId, now, java.time.ZoneId.systemDefault())
     val locale = Locale.getDefault()
-    val is24 = android.text.format.DateFormat.is24HourFormat(context)
+    val is24 = LocalTileFeatures.current.clockHours.is24(android.text.format.DateFormat.is24HourFormat(context))
     Box(Modifier.fillMaxSize()) {
         val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.26f else 0.3f).toSp() }
         Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -581,7 +587,7 @@ internal fun CycleFace(item: AppItem, photos: List<ImageBitmap>, seed: Int) {
     }
     Box(Modifier.fillMaxSize()) {
         Crossfade(targetState = index % photos.size, animationSpec = metroTween(durationMillis = 900), label = "cycle") { shown ->
-            Image(bitmap = photos[shown], contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.High, modifier = Modifier.fillMaxSize())
+            Image(bitmap = photos[shown], contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.Low, modifier = Modifier.fillMaxSize())
         }
         PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
     }
@@ -613,16 +619,37 @@ private fun WidgetFace(
         return
     }
     val currentLongClick by rememberUpdatedState(onLongClick)
-    Box(Modifier.fillMaxSize()) {
-        AndroidView(
-            factory = { context ->
-                (host.createView(context, appWidgetId) ?: View(context)).also { view ->
-                    view.setOnLongClickListener {
-                        currentLongClick()
+    Box(
+        Modifier.fillMaxSize().then(
+            if (!interactive) Modifier else Modifier.pointerInput(Unit) {
+                // The widget's own views take the touches, so the long press is read before them (Initial pass) over the whole tile.
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                    val held = try {
+                        withTimeout(viewConfiguration.longPressTimeoutMillis) {
+                            while (true) {
+                                val change = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id } ?: return@withTimeout
+                                if (!change.pressed || (change.position - down.position).getDistance() > viewConfiguration.touchSlop) return@withTimeout
+                            }
+                        }
+                        false
+                    } catch (_: PointerEventTimeoutCancellationException) {
                         true
+                    }
+                    if (held) {
+                        currentLongClick()
+                        // Consumed, so the widget gets a cancel and does not take the lift of the finger for a tap.
+                        do {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            event.changes.forEach { it.consume() }
+                        } while (event.changes.any { it.pressed })
                     }
                 }
             },
+        ),
+    ) {
+        AndroidView(
+            factory = { context -> host.createView(context, appWidgetId) ?: View(context) },
             modifier = Modifier.fillMaxSize(),
             update = { view ->
                 // Widgets that adapt their layout to their size need to be told it.
@@ -645,7 +672,7 @@ internal fun PhotoShortcutFace(item: AppItem, size: TileSize, width: Dp, height:
         StaticFace(item, size, width, height)
     } else {
         Box(Modifier.fillMaxSize()) {
-            Image(bitmap = bitmap, contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.High, modifier = Modifier.fillMaxSize())
+            Image(bitmap = bitmap, contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.Low, modifier = Modifier.fillMaxSize())
             if (size != TileSize.Small) PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
         }
     }
@@ -657,24 +684,62 @@ internal fun PhotoShortcutFace(item: AppItem, size: TileSize, width: Dp, height:
  */
 @Composable
 private fun CardsFace(item: AppItem, size: TileSize, width: Dp, height: Dp, cards: List<LiveCard>, seed: Int) {
-    val shown = cards.take(LiveCards.MAX_CARDS)
-    FlipContainer(1 + shown.size, seed) { face ->
+    // The list of everything waiting comes first and does not count among the faces of the app.
+    val all = cards.filterIsInstance<LiveCard.Inbox>() + cards.filter { it !is LiveCard.Inbox }.take(LiveCards.MAX_CARDS)
+    // A small tile has room for who wrote and a few words: the messages, the notifications and the pictures, not the list or the songs.
+    val shown = if (size == TileSize.Small) all.filter { it is LiveCard.Message || it is LiveCard.Digest || it is LiveCard.Picture } else all
+    // What the app has to say comes first, as on the phone: the tile shows the newest thing at once, and again whenever something new comes in.
+    FlipContainer(1 + shown.size, seed, startFace = if (shown.isNotEmpty()) 1 else 0, resetKey = shown.firstOrNull()) { face ->
         if (face == 0) {
             StaticFace(item, size, width, height)
         } else {
             Box(Modifier.fillMaxSize().testTag("card:${shown[face - 1]::class.simpleName}")) {
                 when (val card = shown[face - 1]) {
-                    is LiveCard.Message -> MessageCard(card, size)
-                    is LiveCard.Digest -> DigestCard(card)
+                    is LiveCard.Message -> if (size == TileSize.Small) SmallCard(card.sender, card.text) else MessageCard(card, size)
+                    is LiveCard.Digest -> if (size == TileSize.Small) SmallCard(card.title, card.text) else DigestCard(card)
                     is LiveCard.Picture -> PictureCard(card)
                     is LiveCard.Progress -> ProgressCard(card, width)
                     is LiveCard.Playing -> PlayingCard(card, size, height)
+                    is LiveCard.Inbox -> InboxCard(card, height)
                 }
-                TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+                if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
             }
         }
     }
 }
+
+/** What a small tile says of a notification: who, in a line, and the first words of it. */
+@Composable
+private fun SmallCard(title: String, text: String) {
+    val ink = LocalMetroColors.current.tileContent
+    Column(Modifier.fillMaxSize().padding(start = 7.dp, top = 6.dp, end = 17.dp, bottom = 5.dp)) {
+        MetroText(title, size = 13.sp, maxLines = 1)
+        if (text.isNotBlank()) {
+            MetroText(text, size = 11.sp, weight = FontWeight.Normal, maxLines = 5, lineHeight = 14.sp, color = ink.copy(alpha = 0.9f), modifier = Modifier.padding(top = 2.dp))
+        }
+    }
+}
+
+/** The notifications waiting in the app, newest first: who, when, and the first line of what they said, as many as the tile holds. */
+@Composable
+private fun InboxCard(card: LiveCard.Inbox, height: Dp) {
+    val ink = LocalMetroColors.current.tileContent
+    val fit = ((height - INBOX_LABEL) / INBOX_ROW).toInt().coerceIn(1, LiveCards.MAX_ROWS)
+    Column(Modifier.fillMaxSize().padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = INBOX_LABEL), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        card.rows.take(fit).forEach { row ->
+            Column(Modifier.testTag("card:row")) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    MetroText(row.sender, size = 16.sp, maxLines = 1, modifier = Modifier.weight(1f))
+                    MetroText(whenText(row.time), size = 11.sp, weight = FontWeight.Normal, color = ink.copy(alpha = 0.75f), maxLines = 1, modifier = Modifier.padding(start = 6.dp))
+                }
+                if (row.text.isNotBlank()) MetroText(row.text, size = 13.sp, weight = FontWeight.Normal, maxLines = 1, color = ink.copy(alpha = 0.85f))
+            }
+        }
+    }
+}
+
+private val INBOX_ROW = 40.dp
+private val INBOX_LABEL = 28.dp
 
 /** Someone wrote: their picture (when there is one), their name, the chat it came in, and the last line. */
 @Composable
@@ -737,7 +802,7 @@ private fun DigestCard(card: LiveCard.Digest) {
 @Composable
 private fun PictureCard(card: LiveCard.Picture) {
     Box(Modifier.fillMaxSize()) {
-        Image(card.picture, contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.High, modifier = Modifier.fillMaxSize())
+        Image(card.picture, contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.Low, modifier = Modifier.fillMaxSize())
         if (card.caption.isNotBlank()) {
             // Its words sit in a shade over the picture, clear of the name of the app at the bottom.
             Box(
@@ -1047,6 +1112,15 @@ private fun TorchFace(item: AppItem, size: TileSize, width: Dp, height: Dp, on: 
 /** Glyph or icon in the middle, name in the bottom left corner, like every Windows Phone tile. */
 @Composable
 internal fun StaticFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
+    // As on Windows Phone, the picture of an app can be the tile: its icon fills the tile (a wide tile has it in the middle), with the name over it.
+    if (LocalTileFeatures.current.largeIcons && item.glyph == null) {
+        Box(Modifier.fillMaxSize().clipToBounds()) {
+            // On the colour of the icon (the tile takes it), big, with room around it; the name stays small in the corner.
+            AppIcon(item, minOf(width, height) * if (size == TileSize.Small) 0.82f else 0.7f, Modifier.align(Alignment.Center))
+            if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+        }
+        return
+    }
     Box(Modifier.fillMaxSize()) {
         val art = minOf(width, height) * if (size == TileSize.Small) 0.5f else 0.42f
         AppArt(item, art, Modifier.align(Alignment.Center))

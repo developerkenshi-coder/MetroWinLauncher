@@ -12,6 +12,10 @@ import com.metrowin.launcher.ui.settings.SettingsSection.Apps
 import com.metrowin.launcher.ui.settings.SettingsSection.Backup
 import com.metrowin.launcher.ui.settings.SettingsSection.Battery
 import com.metrowin.launcher.ui.settings.SettingsSection.Gestures
+import com.metrowin.launcher.ui.settings.SettingsSection.Notifications
+import com.metrowin.launcher.ui.settings.SettingsSection.StartBars
+import com.metrowin.launcher.ui.settings.SettingsSection.StatusBar
+import com.metrowin.launcher.ui.settings.SettingsSection.StartBehaviour
 import com.metrowin.launcher.ui.settings.SettingsSection.Icons
 import com.metrowin.launcher.ui.settings.SettingsSection.Kids
 import com.metrowin.launcher.ui.settings.SettingsSection.LiveTiles
@@ -23,6 +27,7 @@ import com.metrowin.launcher.ui.settings.SettingsSection.Start
 import com.metrowin.launcher.ui.settings.SettingsSection.StartTheme
 import com.metrowin.launcher.ui.settings.SettingsSection.Voice
 import com.metrowin.launcher.ui.settings.SettingsSection.About
+import com.metrowin.launcher.ui.settings.SettingsSection.BugReport
 
 /**
  * One setting of the launcher, as the index knows it: the [section] it lives in, the [title] it has on its page and other words
@@ -66,21 +71,43 @@ object SettingsIndex {
         e("theme.parallax", StartTheme, R.string.theme_parallax, "parallax", "parallasse", "scroll", "depth", "motion", "scorrimento", "profondita", "movimento"),
         e("theme.panorama", StartTheme, R.string.theme_panorama, "panorama", "title", "big title", "parallax", "titolo", "titoli", "parallasse", "pagine"),
 
-        // --- start: tiles, clock and the Start screens
+        // --- start: tiles and screens (clock, bars and behaviour are listed with their own sections below)
         e("start.moretiles", Start, R.string.theme_more_tiles, "columns", "smaller", "bigger", "colonne", "piu riquadri", "piccoli"),
         e("start.tilenames", Start, R.string.theme_tile_names, "labels", "titles", "etichette", "titoli", "nomi"),
         e("start.spacing", Start, R.string.theme_tile_spacing, "gap", "margin", "narrow", "wide", "margine", "stretta", "larga", "spaziatura"),
         e("start.pages", Start, R.string.theme_start_pages, "screens", "pages", "schermate", "pagine", "quante"),
-        e("start.hidestatus", Start, R.string.theme_hide_status_bar, "fullscreen", "full screen", "status bar", "notch", "schermo intero", "barra"),
+        e("lock.overlay", Lock, R.string.lock_overlay, "lock", "screen", "standby", "wake", "blocco", "schermo", "standby", "accensione"),
+        e("start.home", Start, R.string.theme_home_page, "home", "main", "second", "left", "secondary", "principale", "secondario", "sinistra", "destra"),
+        e("start.appsleft", Start, R.string.theme_apps_left, "left", "apps", "list", "side", "sinistra", "elenco", "app", "lato"),
+        e("start.antiburnin", StartBehaviour, R.string.theme_anti_burn_in, "burn", "burn-in", "oled", "amoled", "screen", "pixel", "schermo", "bruciare", "ritenzione", "immagine fantasma"),
+        e("start.hidestatus", StartBars, R.string.theme_hide_status_bar, "fullscreen", "full screen", "status bar", "notch", "schermo intero", "barra"),
+        e("statusbar.metro", StatusBar, R.string.theme_metro_status_bar, "windows phone", "status bar", "signal", "wifi", "battery", "percentage", "clock", "barra di stato", "segnale", "batteria", "percentuale", "orario"),
+        e("statusbar.apps", StatusBar, R.string.theme_metro_status_bar_apps, "windows phone", "status bar", "other apps", "over apps", "barra di stato", "altre app", "sopra le app"),
+        e("statusbar.notifications", StatusBar, R.string.statusbar_notifications, "status bar", "notifications", "bell", "barra di stato", "notifiche", "campanella"),
+        e("statusbar.airplane", StatusBar, R.string.statusbar_airplane, "status bar", "airplane", "flight", "barra di stato", "aereo", "volo"),
+        e("statusbar.hotspot", StatusBar, R.string.statusbar_hotspot, "status bar", "hotspot", "tethering", "barra di stato", "condivisione"),
+        e("statusbar.vpn", StatusBar, R.string.statusbar_vpn, "status bar", "vpn", "barra di stato"),
+        e("statusbar.location", StatusBar, R.string.statusbar_location, "status bar", "location", "gps", "barra di stato", "posizione"),
+        e("statusbar.bluetooth", StatusBar, R.string.statusbar_bluetooth, "status bar", "bluetooth", "barra di stato"),
+        e("statusbar.alarm", StatusBar, R.string.statusbar_alarm, "status bar", "alarm", "barra di stato", "sveglia"),
+        e("statusbar.sound", StatusBar, R.string.statusbar_sound, "status bar", "silent", "vibrate", "ringer", "barra di stato", "silenzioso", "vibrazione", "suoneria"),
+        e("statusbar.dnd", StatusBar, R.string.statusbar_dnd, "status bar", "do not disturb", "dnd", "barra di stato", "non disturbare"),
+        e("statusbar.saver", StatusBar, R.string.statusbar_saver, "status bar", "battery saver", "barra di stato", "risparmio energetico", "risparmio batteria"),
+        e("statusbar.signal", StatusBar, R.string.statusbar_signal, "status bar", "signal", "mobile", "bars", "barra di stato", "segnale", "rete mobile", "tacche"),
+        e("statusbar.network", StatusBar, R.string.statusbar_network, "status bar", "5g", "4g", "3g", "lte", "edge", "network type", "barra di stato", "tipo di rete", "connettività"),
+        e("statusbar.wifi", StatusBar, R.string.statusbar_wifi, "status bar", "wifi", "wi-fi", "barra di stato"),
+        e("statusbar.batteryPercent", StatusBar, R.string.statusbar_battery_percent, "status bar", "battery", "percentage", "barra di stato", "batteria", "percentuale"),
+        e("statusbar.battery", StatusBar, R.string.statusbar_battery, "status bar", "battery", "barra di stato", "batteria", "carica"),
+        e("statusbar.time", StatusBar, R.string.statusbar_time, "status bar", "time", "clock", "barra di stato", "ora", "orologio"),
         e("start.reset", Start, R.string.theme_reset_start, "restore", "default", "original", "undo", "ripristina", "predefinito", "originale", "reset"),
-        e("start.clock", Start, R.string.theme_show_clock, "time", "date", "ora", "data", "orologio"),
-        e("start.hours", Start, R.string.clock_hours, "12", "24", "am", "pm", "format", "formato", "ore"),
-        e("start.alarm", Start, R.string.clock_show_alarm, "next alarm", "sveglia", "prossima sveglia"),
-        e("start.zone", Start, R.string.clock_second_zone, "clock", "time", "zone", "world", "timezone", "orologio", "fuso", "ora", "secondo"),
-        e("start.stepgoal", Start, R.string.steps_goal_setting, "steps", "goal", "walk", "passi", "obiettivo", "contapassi"),
-        e("start.topafter", Start, R.string.start_top_after, "top", "scroll", "return", "minutes", "cima", "torna", "minuti", "inizio"),
-        e("start.lock", Start, R.string.start_lock, "lock", "layout", "fixed", "move", "blocca", "fisso", "sposta", "disposizione"),
-        e("start.lower", Start, R.string.start_lower, "one hand", "thumb", "reach", "lower", "una mano", "pollice", "raggiungere", "piu in basso"),
+        e("start.clock", StartBars, R.string.theme_show_clock, "time", "date", "ora", "data", "orologio"),
+        e("start.hours", StartBars, R.string.clock_hours, "12", "24", "am", "pm", "format", "formato", "ore"),
+        e("start.alarm", StartBars, R.string.clock_show_alarm, "next alarm", "sveglia", "prossima sveglia"),
+        e("start.zone", StartBars, R.string.clock_second_zone, "clock", "time", "zone", "world", "timezone", "orologio", "fuso", "ora", "secondo"),
+        e("start.stepgoal", StartBehaviour, R.string.steps_goal_setting, "steps", "goal", "walk", "passi", "obiettivo", "contapassi"),
+        e("start.topafter", StartBehaviour, R.string.start_top_after, "top", "scroll", "return", "minutes", "cima", "torna", "minuti", "inizio"),
+        e("start.lock", StartBehaviour, R.string.start_lock, "lock", "layout", "fixed", "move", "blocca", "fisso", "sposta", "disposizione"),
+        e("start.lower", StartBehaviour, R.string.start_lower, "one hand", "thumb", "reach", "lower", "una mano", "pollice", "raggiungere", "piu in basso"),
         e("start.large", Start, R.string.start_large, "large", "size", "4x4", "big", "grande", "dimensione", "riquadro grande"),
         e("start.groups", Start, R.string.start_groups, "group", "title", "heading", "gruppo", "titolo", "gruppi"),
         e("start.collection", Start, R.string.start_collection, "collage", "collection", "photos", "mosaico", "foto"),
@@ -89,13 +116,15 @@ object SettingsIndex {
         e("start.musiccontrols", Start, R.string.start_music_controls, "music", "play", "pause", "skip", "musica", "pausa", "controlli"),
         e("start.layouts", Start, R.string.layouts_title, "layout", "profile", "home", "work", "travel", "casa", "lavoro", "viaggio", "profili"),
         e("start.layoutschedule", Start, R.string.layouts_schedule, "schedule", "hour", "automatic", "orario", "automatico", "ora"),
-        e("start.week", Start, R.string.clock_show_week, "week number", "numero della settimana", "settimana"),
-        e("start.clocktaps", Start, R.string.theme_clock_taps, "tap", "open clock", "open calendar", "tocca", "apri", "calendario"),
-        e("start.appbar", Start, R.string.theme_app_bar, "bar", "ellipsis", "dots", "labels", "buttons", "edit", "barra", "puntini", "etichette", "pulsanti", "modifica"),
+        e("start.week", StartBars, R.string.clock_show_week, "week number", "numero della settimana", "settimana"),
+        e("start.clocktaps", StartBars, R.string.theme_clock_taps, "tap", "open clock", "open calendar", "tocca", "apri", "calendario"),
+        e("start.appbar", StartBars, R.string.theme_app_bar, "bar", "ellipsis", "dots", "labels", "buttons", "edit", "barra", "puntini", "etichette", "pulsanti", "modifica"),
 
         // --- icons & themes
         e("icons.shape", Icons, R.string.icons_shape, "shape", "round", "circle", "square", "squircle", "forma", "rotonde", "cerchio", "quadrate"),
         e("icons.tilecolors", Icons, R.string.icons_tile_colors, "colour", "color", "tile", "icon", "colore", "riquadro", "icona", "dominante"),
+        e("gest.navbarhold", Gestures, R.string.gest_navbar_hold, "navigation", "bar", "hold", "recent", "long", "barra", "tieni", "recenti", "lunga"),
+        e("icons.largetiles", Icons, R.string.icons_large_tiles, "large", "big", "tile", "icon", "full", "grandi", "grande", "riquadro", "icona", "riempie"),
         e("icons.find", Icons, R.string.icons_pack_find, "play store", "download", "icon pack", "install", "scarica", "cerca", "icone"),
         e("icons.pack", Icons, R.string.icons_pack, "icons", "icon pack", "nova", "adw", "apex", "go launcher", "icone"),
         e("icons.export", Icons, R.string.theme_export, "theme file", "share", "save", "file tema", "condividi", "salva"),
@@ -122,6 +151,9 @@ object SettingsIndex {
         e("lock.quick", Lock, R.string.lock_quick, "status", "counters", "badges", "icons", "stato", "contatori", "icone", "notifiche"),
         e("lock.quickapps", Lock, R.string.lock_quick_apps, "choose apps", "five", "scegli le app", "cinque"),
         e("lock.detail", Lock, R.string.lock_detail, "detailed", "last notification", "message", "dettagliato", "ultima notifica", "messaggio"),
+        e("lock.sensor", Lock, R.string.lock_sensor, "fingerprint", "biometric", "finger", "impronta", "sensore", "biometria"),
+        e("lock.sensorY", Lock, R.string.lock_sensor_position, "fingerprint position", "sensor height", "posizione impronta", "altezza sensore"),
+        e("lock.sensorOwn", Lock, R.string.lock_sensor_own, "fingerprint icon", "draw", "icona impronta", "disegna"),
         e("lock.music", Lock, R.string.lock_music, "music", "player", "cover", "skip", "pause", "musica", "copertina", "pausa"),
 
         // --- screen: rotation, opening animation, refresh rate, language
@@ -137,6 +169,7 @@ object SettingsIndex {
         e("gest.twoup", Gestures, R.string.gest_two_up, "two finger", "swipe", "due dita", "scorri"),
         e("gest.recents", Gestures, R.string.gest_recents_title, "recent apps", "overview", "quick settings tile", "app recenti", "impostazioni rapide"),
         e("gest.lockservice", Gestures, R.string.gest_lock_service, "accessibility service", "lock screen", "servizio di accessibilita", "blocca lo schermo"),
+        e("gest.navbar", Gestures, R.string.gest_navbar, "navigation bar", "buttons", "back", "home", "three buttons", "windows", "barra di navigazione", "pulsanti", "indietro", "tre tasti"),
         e("gest.edgepull", Gestures, R.string.gest_edge_pull, "action center", "notifications", "pull", "top", "tirata", "bordo", "notifiche"),
         e("gest.edgeback", Gestures, R.string.gest_edge_back_pan, "back", "swipe", "indietro", "bordo", "pagine"),
         e("gest.tapsound", Gestures, R.string.gest_tap_sound, "click", "sound", "audio", "suono", "tocco"),
@@ -150,25 +183,25 @@ object SettingsIndex {
         e("ac.torchoff", Actions, R.string.ac_torch_off, "flashlight", "torch", "timer", "automatic", "torcia", "spegni", "automatico", "minuti"),
         e("ac.profiles", Actions, R.string.ac_profiles, "volume", "presets", "profiles", "sound", "ringtone", "volumi", "profili", "suoneria", "preimpostazioni"),
         e("ac.sliders", Actions, R.string.ac_sliders, "volume", "brightness", "torch", "luminosita", "torcia"),
-        e("ac.peek", Actions, R.string.notif_peek, "notifications on tiles", "peek", "live tiles", "notifiche", "riquadri"),
-        e("ac.reply", Actions, R.string.notif_inline_reply, "reply", "answer", "message", "rispondi", "risposta", "messaggio"),
-        e("ac.group", Actions, R.string.notif_group, "group", "stack", "raggruppa", "raggruppamento"),
-        e("ac.access", Actions, R.string.settings_notification_access, "permission", "listener", "permesso", "accesso", "notifiche"),
-        e("ac.banner", Actions, R.string.ac_banner, "toast", "heads up", "popup", "notifications", "avviso", "notifiche", "banner"),
-        e("ac.overlay", Actions, R.string.ac_overlay, "overlay", "over other apps", "display over", "draw over", "sopra altre app", "fuori dal launcher", "notifiche", "banner"),
-        e("ac.mute", Actions, R.string.ac_mute, "mute", "silence", "app", "hour", "silenzia", "zittisci", "ora", "notifiche"),
-        e("ac.clearonopen", Actions, R.string.ac_clear_on_open, "open", "opening", "clear", "badge", "number", "aprire", "apri", "numero", "pulisci"),
-        e("ac.priority", Actions, R.string.ac_priority, "priority", "messages", "calls", "first", "priorita", "messaggi", "chiamate", "prima"),
-        e("ac.filter", Actions, R.string.ac_filter, "filter", "words", "block", "spam", "filtro", "parole", "blocca"),
-        e("ac.filterwords", Actions, R.string.ac_filter_words, "filter", "words", "add", "filtro", "parole", "aggiungi"),
-        e("ac.dndminutes", Actions, R.string.ac_dnd_minutes, "do not disturb", "quiet", "timed", "minutes", "non disturbare", "silenzioso", "tempo", "minuti"),
-        e("ac.panelsounds", Actions, R.string.ac_panel_sounds, "sound", "glide", "pull", "panel", "suono", "scorrimento", "pannello", "abbassa", "alza"),
-        e("ac.sounds", Actions, R.string.ac_sounds, "sound", "chime", "tone", "audio", "suono", "suoni", "notifica", "melodia"),
-        e("ac.hide", Actions, R.string.ac_hide_system, "hide", "double", "duplicate", "android notification", "system notification", "nascondi", "doppie", "notifica di android", "banner"),
-        e("ac.edge", Actions, R.string.ac_edge, "action center", "edge", "swipe", "pull down", "over other apps", "bordo", "sopra altre app", "centro notifiche", "striscia"),
+        e("ac.peek", Notifications, R.string.notif_peek, "notifications on tiles", "peek", "live tiles", "notifiche", "riquadri"),
+        e("ac.reply", Notifications, R.string.notif_inline_reply, "reply", "answer", "message", "rispondi", "risposta", "messaggio"),
+        e("ac.group", Notifications, R.string.notif_group, "group", "stack", "raggruppa", "raggruppamento"),
+        e("ac.access", Notifications, R.string.settings_notification_access, "permission", "listener", "permesso", "accesso", "notifiche"),
+        e("ac.banner", Notifications, R.string.ac_banner, "toast", "heads up", "popup", "notifications", "avviso", "notifiche", "banner"),
+        e("ac.overlay", Notifications, R.string.ac_overlay, "overlay", "over other apps", "display over", "draw over", "sopra altre app", "fuori dal launcher", "notifiche", "banner"),
+        e("ac.mute", Notifications, R.string.ac_mute, "mute", "silence", "app", "hour", "silenzia", "zittisci", "ora", "notifiche"),
+        e("ac.clearonopen", Notifications, R.string.ac_clear_on_open, "open", "opening", "clear", "badge", "number", "aprire", "apri", "numero", "pulisci"),
+        e("ac.priority", Notifications, R.string.ac_priority, "priority", "messages", "calls", "first", "priorita", "messaggi", "chiamate", "prima"),
+        e("ac.filter", Notifications, R.string.ac_filter, "filter", "words", "block", "spam", "filtro", "parole", "blocca"),
+        e("ac.filterwords", Notifications, R.string.ac_filter_words, "filter", "words", "add", "filtro", "parole", "aggiungi"),
+        e("ac.dndminutes", Notifications, R.string.ac_dnd_minutes, "do not disturb", "quiet", "timed", "minutes", "non disturbare", "silenzioso", "tempo", "minuti"),
+        e("ac.panelsounds", Notifications, R.string.ac_panel_sounds, "sound", "glide", "pull", "panel", "suono", "scorrimento", "pannello", "abbassa", "alza"),
+        e("ac.sounds", Notifications, R.string.ac_sounds, "sound", "chime", "tone", "audio", "suono", "suoni", "notifica", "melodia"),
+        e("ac.hide", Notifications, R.string.ac_hide_system, "hide", "double", "duplicate", "android notification", "system notification", "nascondi", "doppie", "notifica di android", "banner"),
+        e("ac.edge", Notifications, R.string.ac_edge, "action center", "edge", "swipe", "pull down", "over other apps", "bordo", "sopra altre app", "centro notifiche", "striscia"),
         e("ac.volume", Actions, R.string.ac_volume_panel, "volume keys", "panel", "hud", "sound", "tasti del volume", "pannello", "suono"),
-        e("ac.notifcontrol", Actions, R.string.ac_notifcontrol, "per app", "app by app", "mute", "silence", "block", "app per app", "silenzia", "blocca"),
-        e("ac.notifapps", Actions, R.string.ac_notifapps_title, "apps", "action center", "lock screen", "banner", "sound", "centro azioni", "blocco", "suono"),
+        e("ac.notifcontrol", Notifications, R.string.ac_notifcontrol, "per app", "app by app", "mute", "silence", "block", "app per app", "silenzia", "blocca"),
+        e("ac.notifapps", Notifications, R.string.ac_notifapps_title, "apps", "action center", "lock screen", "banner", "sound", "centro azioni", "blocco", "suono"),
 
         // --- battery
         e("battery.saving", Battery, R.string.saving_title, "power", "saver", "energy", "low battery", "risparmio", "energia", "batteria scarica"),
@@ -199,8 +232,8 @@ object SettingsIndex {
         e("search.answers", Search, R.string.apps_answers, "calculator", "convert", "units", "timer", "calcolatrice", "conversioni", "unita", "risposte"),
         e("search.commands", Search, R.string.apps_commands, "torch", "wifi", "silent", "switch", "command", "toggle", "torcia", "silenzioso", "comando", "interruttore", "accendi", "spegni"),
         e("search.tip", Search, R.string.apps_tip, "tip", "hint", "daily", "suggerimento", "consiglio", "giorno", "trucco"),
-        e("start.undosteps", Start, R.string.start_undo_steps, "undo", "history", "steps", "annulla", "cronologia", "passaggi"),
-        e("start.undonow", Start, R.string.start_undo_now_title, "undo", "last change", "annulla", "ultima modifica"),
+        e("start.undosteps", StartBehaviour, R.string.start_undo_steps, "undo", "history", "steps", "annulla", "cronologia", "passaggi"),
+        e("start.undonow", StartBehaviour, R.string.start_undo_now_title, "undo", "last change", "annulla", "ultima modifica"),
         e("search.assistant", Search, R.string.apps_assistant, "reminder", "event", "note", "keep", "lens", "near me", "qr", "promemoria", "evento", "nota", "vicino a me", "scansiona"),
         e("search.dial", Search, R.string.apps_dial, "t9", "dial", "keypad", "numbers", "tastierino", "chiamata", "numeri"),
         e("search.today", Search, R.string.apps_today, "card", "agenda", "today", "scheda", "oggi", "giornata"),
@@ -258,6 +291,10 @@ object SettingsIndex {
         // --- kid's corner
         e("kids.start", Kids, R.string.kids_start, "child", "children", "kid", "bambino", "bambini", "figli"),
         e("kids.apps", Kids, R.string.kids_apps, "allowed", "child", "consentite", "scegli", "bambino"),
+
+        // --- bug ticket
+        e("bugreport.describe", BugReport, R.string.bug_field, "bug", "problem", "error", "report", "describe", "problema", "errore", "segnalazione", "descrivi"),
+        e("bugreport.send", BugReport, R.string.bug_send, "bug", "ticket", "log", "mail", "email", "send", "segnala", "invia", "errore"),
 
         // --- about
         e("about.version", About, R.string.about_version, "build", "info", "versione"),

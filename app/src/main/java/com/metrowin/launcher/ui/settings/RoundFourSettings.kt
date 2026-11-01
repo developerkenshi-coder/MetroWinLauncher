@@ -101,6 +101,11 @@ fun IconLookSettings(env: SettingsEnv) {
             onChange = { v -> env.onChange { it.copy(iconTileColors = v) } },
             hint = stringResource(R.string.icons_tile_colors_hint), tag = "icons:tilecolors", id = "icons.tilecolors",
         )
+        ToggleSetting(
+            label = stringResource(R.string.icons_large_tiles), checked = s.largeTileIcons,
+            onChange = { v -> env.onChange { it.copy(largeTileIcons = v) } },
+            hint = stringResource(R.string.icons_large_tiles_hint), tag = "icons:largetiles", id = "icons.largetiles",
+        )
     }
 }
 

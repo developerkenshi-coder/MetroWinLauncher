@@ -31,6 +31,12 @@ class ReplyAction(
 @Immutable
 class NotifAction(val title: String, val intent: PendingIntent)
 
+/** A small icon held by an entry without counting in its equality: a new bitmap is drawn at every read, and a list that "changed" only for that would redraw the screens. */
+class EntryIcon(val bitmap: Bitmap) {
+    override fun equals(other: Any?) = other is EntryIcon
+    override fun hashCode() = 0
+}
+
 /** One notification as the Action Center shows it. */
 @Immutable
 data class NotificationEntry(
@@ -52,6 +58,8 @@ data class NotificationEntry(
     val picture: Bitmap? = null,
     /** A message or a call: these come first when the Action Center is set to put them first. */
     val urgent: Boolean = false,
+    /** The small icon of the notification (a white shape on nothing, like the ones of the status bar) for the lock screen's row of icons, when the app has one. */
+    val icon: EntryIcon? = null,
 )
 
 /** What a tile shows when it flips to the latest notification of its app. */
@@ -143,6 +151,10 @@ object NotificationHub {
      * few seconds too. They are read a moment after they are posted (the service paces its reads), so a notification of the app that
      * was already there when it was opened could reach the list only after that, and stay.
      */
+    /** The app in front, as the accessibility service sees windows change; null when not known. Its notifications are read as they come. */
+    @Volatile
+    var foregroundPackage: String? = null
+
     fun appOpened(packageName: String, now: Long = android.os.SystemClock.elapsedRealtime()) {
         if (!clearOnOpen) return
         synchronized(openedAt) { openedAt[packageName] = now }
@@ -204,10 +216,17 @@ object NotificationHub {
     /** The copies kept for the Action Center are let go: the service went away and what it knew with it. */
     internal fun clearHeld() = synchronized(held) { held.clear() }
 
+    /** The app or the system took the notification away (not the launcher, see [hold]): the copy kept for the Action Center goes too. */
+    fun removedByApp(key: String) = forget(key)
+
+    /** The keys of the copies the launcher keeps for the Action Center (see [hold]). */
+    internal fun heldKeys(): Set<String> = synchronized(held) { held.keys.toSet() }
+
     /** The notification is gone for good: dismissed, or its place taken. */
     private fun forget(key: String) {
         synchronized(held) { held.remove(key) }
         _entries.value = _entries.value.filterNot { it.key == key }
+        service?.heldChanged()
     }
 
     /** How many notifications each app has: the counters on the tiles. */

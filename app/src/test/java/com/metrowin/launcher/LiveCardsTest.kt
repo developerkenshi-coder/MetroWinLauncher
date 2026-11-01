@@ -256,4 +256,11 @@ class LiveCardsTest {
         assertEquals("Newer", LiveCards.nowPlaying(all)!!.title)
         assertNull(LiveCards.nowPlaying(listOf(n("1", reddit))))
     }
+
+    @Test
+    fun severalNotificationsMakeAListNewestFirstAndOneDoesNot() {
+        val list = LiveCards.build(listOf(n("1", instagram, time = 1, title = "a", text = "x"), n("2", instagram, time = 3, title = "c", text = "z"), n("3", instagram, time = 2, title = "b", text = "y")))[instagram]!!
+        assertEquals(listOf("c", "b", "a"), list.inbox!!.rows.map { it.sender })
+        assertNull(LiveCards.build(listOf(n("1", instagram)))[instagram]!!.inbox)
+    }
 }

@@ -235,6 +235,10 @@ data class LauncherSettings(
     val parallax: Boolean = true,
     /** How many Start screens there are, 1 to [MAX_START_PAGES]. */
     val startPages: Int = 1,
+    /** Which of the Start screens is home, 0 for the first: where the app opens and where the Windows button returns. Screens before it are to its left. */
+    val homePage: Int = 0,
+    /** The app list is to the left of Start (the pages run from the right), instead of to its right. */
+    val appListLeft: Boolean = false,
     /** The time and date above the tiles. */
     val showClock: Boolean = false,
     /** A touch on the time opens the clock, on the date the calendar. */
@@ -305,6 +309,12 @@ data class LauncherSettings(
     val textScale: Int = 100,
     /** The status bar of Android is out of the way on Start; a swipe from the top edge brings it back for a moment. */
     val hideStatusBar: Boolean = false,
+    /** The status bar of Windows Phone (signal, Wi-Fi, battery, time, notifications) drawn by the launcher in place of the one of Android. */
+    val metroStatusBar: Boolean = false,
+    /** The same bar drawn over the apps outside the launcher, by the accessibility service. */
+    val metroStatusBarOverApps: Boolean = false,
+    /** The ids of [StatusItem] the user turned off in the status bar, comma-separated; empty shows them all. */
+    val statusBarHidden: String = "",
     /** How the Start photo is framed: zoom in percent (100 to 300), and the point of the photo that stays in view, in percent. */
     val startPhotoFit: PhotoFit = PhotoFit.Fill,
     val startPhotoZoom: Int = 100,
@@ -339,8 +349,8 @@ data class LauncherSettings(
     // --- notifications and actions
     /** The four buttons on top of the Action Center, as [QuickAction.id]s. */
     val quickActions: List<String> = QuickAction.defaults.map { it.id },
-    /** Tiles flip to show the latest notification of their app. Off until asked for: it puts the text of messages on Start. */
-    val notificationPeek: Boolean = false,
+    /** Tiles flip to show the latest notification of their app. On by default (the text of messages on Start can be left off with [liveHideText]). */
+    val notificationPeek: Boolean = true,
     val inlineReply: Boolean = true,
     val groupConversations: Boolean = true,
     /** Opening an app from Start or the app list takes away its notifications, and the number on its tile. */
@@ -375,6 +385,16 @@ data class LauncherSettings(
     val hideSystemNotifications: Boolean = false,
     /** A swipe down from the very top edge opens the Action Center of the launcher over any app (needs "display over other apps"). Off until asked for. */
     val edgeActionCenter: Boolean = false,
+    /** The three buttons of Windows Phone are drawn over the navigation bar of Android (needs the accessibility service and the three-button navigation). Off until asked for. */
+    val metroNavBar: Boolean = false,
+    /** The Metro lock screen shows over the lock screen of Android when the screen comes on (needs the accessibility service). */
+    val lockOverlay: Boolean = true,
+    /** The screen moves a few pixels every minute, so that nothing that stays the same for hours burns into the panel. */
+    val antiBurnIn: Boolean = true,
+    /** How long the logo of the navigation buttons is held to open the recent apps, 300 to 1500 ms. */
+    val navHoldMs: Int = NAV_HOLD_DEFAULT_MS,
+    /** The places (see [ContactSource]) whose contacts the address book of the dialer shows, as a mask. */
+    val dialerSources: Int = ContactSource.ALL,
     /** The choices made for each app below (what it may show in the Action Center, on the lock screen and as a banner) are applied. */
     val notifControl: Boolean = true,
     /** Apps (package names) whose notifications are left out of the Action Center / of the lock screen / of the banner. */
@@ -402,6 +422,8 @@ data class LauncherSettings(
     val iconShape: IconShape = IconShape.Style,
     /** An app tile takes the colour of its icon instead of the accent. */
     val iconTileColors: Boolean = false,
+    /** The icon of an app fills its tile, as the pictures of the tiles did on Windows Phone, instead of sitting small in the middle. */
+    val largeTileIcons: Boolean = false,
     /** Index into the accent colours used while the dark theme is on (-1: the same as by day). */
     val accentNightIndex: Int = -1,
 
@@ -492,6 +514,12 @@ data class LauncherSettings(
     val lockDetailApp: String = "",
     /** The song that plays, its cover and the buttons to skip and pause, on the lock screen. */
     val lockShowMusic: Boolean = true,
+    /** The fingerprint sensor is under the screen: the lock screen leaves a spot for the finger at [lockSensorY]. Off for a sensor on the side or the back. */
+    val lockSensorUnderScreen: Boolean = true,
+    /** Where the sensor is, as a share of the screen's height from the top. */
+    val lockSensorY: Float = 0.765f,
+    /** Experimental: the lock screen draws its own fingerprint over the one of Android instead of leaving a hole. Some phones then stop reading the finger. */
+    val lockSensorOwnIcon: Boolean = false,
 
     // --- voice
     val voiceOffline: Boolean = true,
@@ -559,6 +587,9 @@ data class LauncherSettings(
         const val DEFAULT_ACCENT = 4
         const val DEFAULT_COLUMNS = 4
         const val MAX_START_PAGES = 3
+        const val NAV_HOLD_MIN_MS = 300
+        const val NAV_HOLD_MAX_MS = 1500
+        const val NAV_HOLD_DEFAULT_MS = 500
 
         /** The most apps the quick status of the lock screen holds. */
         const val MAX_QUICK_APPS = 5
@@ -584,13 +615,31 @@ class SettingsStore(context: Context) {
 
     fun edgeActionCenterOn(): Boolean = switchOn("edgeActionCenter", false)
 
+    fun metroNavBarOn(): Boolean = switchOn("metroNavBar", false)
+
+    fun metroStatusBarOverAppsOn(): Boolean = switchOn("metroStatusBarOverApps", false)
+
+    fun antiBurnInOn(): Boolean = switchOn("antiBurnIn", true)
+
+    fun lockOverlayOn(): Boolean = switchOn("lockOverlay", true)
+
+    /** How long the logo of the navigation bar is held to open the recent apps, in milliseconds. */
+    fun navHoldMs(): Int = prefs.getString(KEY_JSON, null)?.let { runCatching { parsed(it).optInt("navHoldMs", LauncherSettings.NAV_HOLD_DEFAULT_MS) }.getOrNull() }
+        ?.coerceIn(LauncherSettings.NAV_HOLD_MIN_MS, LauncherSettings.NAV_HOLD_MAX_MS) ?: LauncherSettings.NAV_HOLD_DEFAULT_MS
+
     fun hideSystemOn(): Boolean = switchOn("hideSystemNotifications", false)
 
     fun filterOn(): Boolean = switchOn("notifFilterOn", false)
 
     private fun switchOn(key: String, default: Boolean): Boolean {
         val json = prefs.getString(KEY_JSON, null) ?: return default
-        return runCatching { org.json.JSONObject(json).optBoolean(key, default) }.getOrDefault(default)
+        return runCatching { parsed(json).optBoolean(key, default) }.getOrDefault(default)
+    }
+
+    /** Prefs hand back the same String until the settings are saved again, so a notification burst parses the JSON once, not once per switch. */
+    private fun parsed(json: String): org.json.JSONObject {
+        last?.let { if (it.first === json) return it.second }
+        return org.json.JSONObject(json).also { last = json to it }
     }
 
     /** The settings of the first versions, one key each. */
@@ -608,5 +657,7 @@ class SettingsStore(context: Context) {
 
     private companion object {
         const val KEY_JSON = "settings_json"
-    }
+
+        @Volatile
+        var last: Pair<String, org.json.JSONObject>? = null    }
 }

@@ -11,6 +11,9 @@ import org.json.JSONObject
 object SettingsCodec {
     private const val OPAQUE = 0xFF000000.toInt()
 
+    /** Written with every save: a file without it comes from before the live tiles of notifications were on by default. */
+    private const val PEEK_ON_BY_DEFAULT = "peekOnByDefault"
+
     /** The most words the notification filter keeps. */
     const val NOTIF_WORDS_MAX = 30
 
@@ -33,6 +36,8 @@ object SettingsCodec {
         put("moreTiles", s.moreTiles)
         put("parallax", s.parallax)
         put("startPages", s.startPages)
+        put("homePage", s.homePage)
+        put("appListLeft", s.appListLeft)
         put("showClock", s.showClock)
         put("clockTaps", s.clockTaps)
         put("clockHours", s.clockHours.code)
@@ -68,6 +73,9 @@ object SettingsCodec {
         put("homeDoubleApp", s.homeDoubleApp)
         put("tileSpacing", s.tileSpacing.code)
         put("hideStatusBar", s.hideStatusBar)
+        put("metroStatusBar", s.metroStatusBar)
+        put("metroStatusBarOverApps", s.metroStatusBarOverApps)
+        put("statusBarHidden", s.statusBarHidden)
 
         put("orientation", s.orientation.code)
         put("highRefreshRate", s.highRefreshRate)
@@ -88,6 +96,7 @@ object SettingsCodec {
 
         put("quickActions", JSONArray(s.quickActions))
         put("notificationPeek", s.notificationPeek)
+        put(PEEK_ON_BY_DEFAULT, true)
         put("inlineReply", s.inlineReply)
         put("groupConversations", s.groupConversations)
         put("clearOnOpen", s.clearOnOpen)
@@ -107,6 +116,11 @@ object SettingsCodec {
         put("metroSounds", s.metroSounds)
         put("hideSystemNotifications", s.hideSystemNotifications)
         put("edgeActionCenter", s.edgeActionCenter)
+        put("metroNavBar", s.metroNavBar)
+        put("lockOverlay", s.lockOverlay)
+        put("antiBurnIn", s.antiBurnIn)
+        put("navHoldMs", s.navHoldMs)
+        put("dialerSources", s.dialerSources)
         put("notifControl", s.notifControl)
         put("notifHideCenter", JSONArray(s.notifHideCenter.sorted()))
         put("notifHideLock", JSONArray(s.notifHideLock.sorted()))
@@ -121,6 +135,7 @@ object SettingsCodec {
         put("startLowerPercent", s.startLowerPercent)
         put("iconShape", s.iconShape.code)
         put("iconTileColors", s.iconTileColors)
+        put("largeTileIcons", s.largeTileIcons)
         put("accentNightIndex", s.accentNightIndex)
         put("volumeProfiles", VolumeProfiles.encode(s.volumeProfiles))
         put("volumeProfilesShow", s.volumeProfilesShow)
@@ -167,6 +182,9 @@ object SettingsCodec {
         put("lockQuickApps", JSONArray(s.lockQuickApps))
         put("lockDetailApp", s.lockDetailApp)
         put("lockShowMusic", s.lockShowMusic)
+        put("lockSensorUnderScreen", s.lockSensorUnderScreen)
+        put("lockSensorY", s.lockSensorY.toDouble())
+        put("lockSensorOwnIcon", s.lockSensorOwnIcon)
         put("voiceOffline", s.voiceOffline)
         put("voiceButton", s.voiceButton)
         put("voiceCallDirect", s.voiceCallDirect)
@@ -239,6 +257,8 @@ object SettingsCodec {
             backgroundRevision = o.optInt("backgroundRevision", base.backgroundRevision).coerceAtLeast(0),
             parallax = o.optBoolean("parallax", base.parallax),
             startPages = o.optInt("startPages", base.startPages).coerceIn(1, LauncherSettings.MAX_START_PAGES),
+            homePage = o.optInt("homePage", base.homePage).coerceIn(0, LauncherSettings.MAX_START_PAGES - 1),
+            appListLeft = o.optBoolean("appListLeft", base.appListLeft),
             showClock = o.optBoolean("showClock", base.showClock),
             clockTaps = o.optBoolean("clockTaps", base.clockTaps),
             clockHours = if (o.has("clockHours")) ClockHours.fromCode(o.optString("clockHours")) else base.clockHours,
@@ -270,6 +290,9 @@ object SettingsCodec {
             weatherCities = if (o.has("weatherCities")) SavedCities.decode(o.optString("weatherCities")) else base.weatherCities,
             textScale = o.optInt("textScale", base.textScale).let { v -> LauncherSettings.TEXT_SCALES.minByOrNull { kotlin.math.abs(it - v) } ?: 100 },
             hideStatusBar = o.optBoolean("hideStatusBar", base.hideStatusBar),
+            metroStatusBar = o.optBoolean("metroStatusBar", base.metroStatusBar),
+            metroStatusBarOverApps = o.optBoolean("metroStatusBarOverApps", base.metroStatusBarOverApps),
+            statusBarHidden = o.optString("statusBarHidden", base.statusBarHidden),
             showTileNames = o.optBoolean("showTileNames", base.showTileNames),
             boldText = o.optBoolean("boldText", base.boldText),
             systemFont = o.optBoolean("systemFont", base.systemFont),
@@ -299,7 +322,8 @@ object SettingsCodec {
             tapHaptics = o.optBoolean("tapHaptics", base.tapHaptics),
 
             quickActions = QuickAction.slots(QuickAction.migrate(strings("quickActions", base.quickActions))).map { it.id },
-            notificationPeek = o.optBoolean("notificationPeek", base.notificationPeek),
+            // Settings saved before the live tiles became the default hold an "off" nobody chose: they are turned on once.
+            notificationPeek = if (o.has(PEEK_ON_BY_DEFAULT)) o.optBoolean("notificationPeek", base.notificationPeek) else true,
             inlineReply = o.optBoolean("inlineReply", base.inlineReply),
             groupConversations = o.optBoolean("groupConversations", base.groupConversations),
             clearOnOpen = o.optBoolean("clearOnOpen", base.clearOnOpen),
@@ -319,6 +343,11 @@ object SettingsCodec {
             metroSounds = o.optBoolean("metroSounds", base.metroSounds),
             hideSystemNotifications = o.optBoolean("hideSystemNotifications", base.hideSystemNotifications),
             edgeActionCenter = o.optBoolean("edgeActionCenter", base.edgeActionCenter),
+            metroNavBar = o.optBoolean("metroNavBar", base.metroNavBar),
+            lockOverlay = o.optBoolean("lockOverlay", base.lockOverlay),
+            antiBurnIn = o.optBoolean("antiBurnIn", base.antiBurnIn),
+            navHoldMs = o.optInt("navHoldMs", base.navHoldMs).coerceIn(LauncherSettings.NAV_HOLD_MIN_MS, LauncherSettings.NAV_HOLD_MAX_MS),
+            dialerSources = o.optInt("dialerSources", base.dialerSources) and ContactSource.ALL,
             notifControl = o.optBoolean("notifControl", base.notifControl),
             notifHideCenter = strings("notifHideCenter", base.notifHideCenter).toSet(),
             notifHideLock = strings("notifHideLock", base.notifHideLock).toSet(),
@@ -335,6 +364,7 @@ object SettingsCodec {
             startLowerPercent = o.optInt("startLowerPercent", base.startLowerPercent).coerceIn(0, 60),
             iconShape = if (o.has("iconShape")) IconShape.fromCode(o.optString("iconShape")) else base.iconShape,
             iconTileColors = o.optBoolean("iconTileColors", base.iconTileColors),
+            largeTileIcons = o.optBoolean("largeTileIcons", base.largeTileIcons),
             accentNightIndex = o.optInt("accentNightIndex", base.accentNightIndex).coerceIn(-1, 19),
             volumeProfiles = if (o.has("volumeProfiles")) VolumeProfiles.decode(o.optString("volumeProfiles")) else base.volumeProfiles,
             volumeProfilesShow = o.optBoolean("volumeProfilesShow", base.volumeProfilesShow),
@@ -383,6 +413,9 @@ object SettingsCodec {
             lockQuickApps = strings("lockQuickApps", base.lockQuickApps).distinct().take(LauncherSettings.MAX_QUICK_APPS),
             lockDetailApp = o.optString("lockDetailApp", base.lockDetailApp),
             lockShowMusic = o.optBoolean("lockShowMusic", base.lockShowMusic),
+            lockSensorUnderScreen = o.optBoolean("lockSensorUnderScreen", base.lockSensorUnderScreen),
+            lockSensorOwnIcon = o.optBoolean("lockSensorOwnIcon", base.lockSensorOwnIcon),
+            lockSensorY = o.optDouble("lockSensorY", base.lockSensorY.toDouble()).toFloat().coerceIn(0.3f, 0.95f),
             voiceOffline = o.optBoolean("voiceOffline", base.voiceOffline),
             voiceButton = o.optBoolean("voiceButton", base.voiceButton),
             voiceCallDirect = o.optBoolean("voiceCallDirect", base.voiceCallDirect),
