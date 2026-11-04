@@ -50,6 +50,23 @@ class AppUpdateTest {
     }
 
     @Test
+    fun theNewestReleaseIsTheHighestVersionWhateverTheOrderOrTheLatestMark() {
+        // GitHub lists by date: an older version published later comes first, a draft and a release without an APK are in the way.
+        val noApk = """{"tag_name":"v26.9S","draft":false,"prerelease":false,"assets":[]}"""
+        val list = "[" + listOf(release(tag = "v26.5.5S"), noApk, release(tag = "v26.6.2S"), release(tag = "v26.7S", draft = true), release(tag = "v26.6S")).joinToString(",") + "]"
+        assertEquals("26.6.2S", AppUpdate.parseNewest(list)!!.version)
+        assertEquals("26.4S", AppUpdate.parseNewest("[" + release() + "]")!!.version)
+        assertNull(AppUpdate.parseNewest("[]"))
+        assertNull(AppUpdate.parseNewest("""[{"tag_name":"v27S","assets":[]}]"""))
+        assertNull(AppUpdate.parseNewest("not json"))
+    }
+
+    @Test
+    fun theCheckRunsOftenEnoughToSeeANewReleaseTheSameDay() {
+        assertTrue(AppUpdate.CHECK_EVERY_MS <= 3L * 60 * 60 * 1000)
+    }
+
+    @Test
     fun theNotesOfAReleaseAreReadAsPlainLines() {
         val md = "## What is new\r\n- **Weather** tile\r\n- Fix: [details](https://x.example/y)\r\n\r\n\r\n\r\nUse `Settings`"
         val text = AppUpdate.notesText(md)

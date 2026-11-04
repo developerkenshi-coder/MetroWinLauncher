@@ -32,12 +32,12 @@ sealed interface UpdateState {
  * the new APK is signed with the same key as the installed one.
  */
 object AppUpdate {
-    private const val RELEASES = "https://api.github.com/repos/developerkenshi-coder/MetroWinLauncher/releases/latest"
+    private const val RELEASES = "https://api.github.com/repos/developerkenshi-coder/MetroWinLauncher/releases?per_page=15"
     private const val DOWNLOADS = "https://github.com/developerkenshi-coder/MetroWinLauncher/releases/download/"
     private val API_HOSTS = setOf("api.github.com")
     private val DOWNLOAD_HOSTS = setOf("github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com")
     const val MAX_APK_BYTES = 80L * 1024 * 1024
-    const val CHECK_EVERY_MS = 12L * 60 * 60 * 1000
+    const val CHECK_EVERY_MS = 3L * 60 * 60 * 1000
 
     /** `v26.3S` or `26.3S` as its numbers (26, 3); null when it has none. The letter at the end does not count. */
     fun numbers(version: String): List<Int>? =
@@ -55,12 +55,24 @@ object AppUpdate {
         return false
     }
 
-    /** The release in the answer of GitHub (`/releases/latest`): not a draft, not a test version, with an APK that is on GitHub. */
-    fun parseLatest(json: String): UpdateRelease? = runCatching {
-        val root = JSONObject(json)
-        if (root.optBoolean("draft") || root.optBoolean("prerelease")) return null
+    /** The release in the answer of GitHub for one release: not a draft, not a test version, with an APK that is on GitHub. */
+    fun parseLatest(json: String): UpdateRelease? = runCatching { parse(JSONObject(json)) }.getOrNull()
+
+    /**
+     * The newest release in the list GitHub gives (`/releases`), by its version: the one GitHub marks as "latest" is not trusted, because
+     * it follows the date of the release and not its number (an older version published later, or a release with no APK yet, would hide
+     * the update). Releases that are not usable are skipped.
+     */
+    fun parseNewest(json: String): UpdateRelease? = runCatching {
+        val list = org.json.JSONArray(json)
+        (0 until list.length()).mapNotNull { parse(list.getJSONObject(it)) }
+            .reduceOrNull { best, next -> if (isNewer(next.version, best.version)) next else best }
+    }.getOrNull()
+
+    private fun parse(root: JSONObject): UpdateRelease? = runCatching {
+        if (root.optBoolean("draft") || root.optBoolean("prerelease")) return@runCatching null
         val version = root.getString("tag_name").removePrefix("v")
-        if (numbers(version) == null) return null
+        if (numbers(version) == null) return@runCatching null
         val assets = root.getJSONArray("assets")
         var apk: UpdateRelease? = null
         var sums: String? = null
@@ -98,7 +110,7 @@ object AppUpdate {
             ?.get(0)?.lowercase()
 
     /** Blocking, call it off the main thread. The latest release, or null when GitHub cannot be reached or has nothing usable. */
-    fun fetchLatest(): UpdateRelease? = SafeHttp.get(RELEASES, API_HOSTS, maxBytes = 512 * 1024)?.let(::parseLatest)
+    fun fetchLatest(): UpdateRelease? = SafeHttp.get(RELEASES, API_HOSTS, maxBytes = 2 * 1024 * 1024)?.let(::parseNewest)
 
     /**
      * Blocking. Downloads the APK of [release] to [target], telling [onProgress] how far it is (0 to 100). False, and no file left, when

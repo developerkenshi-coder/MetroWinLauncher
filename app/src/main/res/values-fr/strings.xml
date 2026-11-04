@@ -191,8 +191,8 @@
     <string name="bug_log_failed">Le journal n’a pas pu être lu, l’e-mail est sans pièce jointe</string>
     <string name="gest_navbar">Boutons de navigation Windows Phone</string>
     <string name="gest_navbar_hint">Affiche retour, le logo Windows et recherche par-dessus les boutons d’Android. Un appui long sur le logo ouvre les applications récentes. Nécessite le service d’accessibilité.</string>
-    <string name="gest_game_bars">Masquer les barres dans les jeux et les vidéos</string>
-    <string name="gest_game_bars_hint">Quand un jeu ou une vidéo est au premier plan en plein écran, la barre d’état et les boutons de navigation Windows Phone glissent hors de l’écran pour ne pas le couvrir. Balayez vers le haut depuis le bord inférieur pour les boutons, vers le bas depuis le bord supérieur pour la barre d’état. Nécessite le service d’accessibilité.</string>
+    <string name="gest_game_bars">Masquer les barres dans les jeux</string>
+    <string name="gest_game_bars_hint">Quand un jeu est au premier plan, la barre d’état et les boutons de navigation Windows Phone glissent hors de l’écran pour ne pas couvrir le jeu. Balayez vers le haut depuis le bord inférieur pour les boutons, vers le bas depuis le bord supérieur pour la barre d’état. Nécessite le service d’accessibilité.</string>
     <string name="gest_navbar_needs_buttons">Votre téléphone utilise la navigation par gestes : choisissez les trois boutons dans les paramètres système, sous Système, Gestes, Navigation système.</string>
     <string name="dialer_app_name">Téléphone MetroWin</string>
     <string name="dialer_tab_keypad">clavier</string>

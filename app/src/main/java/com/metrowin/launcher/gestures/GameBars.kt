@@ -5,14 +5,12 @@ import android.annotation.SuppressLint
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.PixelFormat
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
-import android.view.WindowInsets
 import android.view.WindowManager
 import com.metrowin.launcher.notifications.overBars
 
@@ -42,31 +40,6 @@ internal class GameBars(
     private val handler = Handler(Looper.getMainLooper())
     private var top: View? = null
     private var bottom: View? = null
-    private var probe: View? = null
-
-    /**
-     * Tells [onChange] whether the app in front has hidden the status bar of Android (a video or a game in full screen): a one-pixel window
-     * of the service is told the state of the system bars like any window. Needs Android 11; before it nothing is reported.
-     */
-    fun watchSystemBars(onChange: (hidden: Boolean) -> Unit) {
-        if (probe != null || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
-        val view = View(service)
-        view.setOnApplyWindowInsetsListener { v, insets ->
-            onChange(!insets.isVisible(WindowInsets.Type.statusBars()))
-            v.onApplyWindowInsets(insets)
-        }
-        val params = WindowManager.LayoutParams(
-            1, 1, WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-            PixelFormat.TRANSPARENT,
-        ).apply { gravity = Gravity.TOP or Gravity.START }.overBars()
-        probe = view.takeIf { runCatching { service.getSystemService(WindowManager::class.java).addView(it, params) }.isSuccess }
-    }
-
-    fun stopWatching() {
-        probe = remove(probe)
-    }
 
     /** A game is in front (and the user wants the bars away). */
     var active = false

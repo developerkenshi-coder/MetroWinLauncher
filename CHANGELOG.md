@@ -3,7 +3,10 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
-## Unreleased
+## 26.6.2S: 2026-11-04
+
+It replaces 26.6S, which was withdrawn the day it came out: everything of 26.6S is below, with the fixes at the end of each list.
+Sostituisce la 26.6S, ritirata il giorno stesso: qui sotto c'è tutto quello della 26.6S, con le correzioni in fondo a ogni elenco.
 
 **English:**
 - **Move several tiles at once**: in the edit bar of Start, a new select button lets you pick several tiles and folders and move them together to another Start screen. A long press takes a whole group (from its title to the next one).
@@ -60,7 +63,8 @@ La storia delle versioni; ogni versione è un tag con il nome `v` più il nome d
 - **Fonts**: Settings, Accessibility has a new **font** choice: twenty fonts that come with the launcher (Comfortaa, Dosis, Exo 2, Figtree, JetBrains Mono, Josefin Sans, Jost, Karla, Lexend, Lora, Manrope, Mulish, Nunito, Oswald, Outfit, Quicksand, Raleway, Sora, Space Grotesk, Urbanist, all under the SIL Open Font License) and **your own font file** (.ttf or .otf, kept as a copy). The font of the phone, when on, still comes first. The launcher is about 3 MB bigger.
 - **Ways to open an app**: besides the modern turnstile and expand, new styles that only change how the window of the app comes in (fade, slide from the right, rise from the bottom, zoom from the middle, or none), all in Settings, Screen and found by the search of the settings. The **original Windows Phone** turnstile is now the style a new installation starts with (what you chose stays). The speed of the animations of the launcher itself was already in Settings, Gestures (50 to 200 percent); the window animations of these styles have a fixed speed.
 - **Favourite Start screen** (Settings, Start): with two or three Start screens, choose the one the launcher returns to when you press Windows or come back from an app.
-- **Bars in full screen**: the status bar and the navigation buttons that MetroWin draws over the apps now also slide away when the app in front hides the bar of Android itself (a video in full screen, a game that is not listed as a game); they come back with the same swipes, or when the bar of Android is shown again. Needs Android 11 or later for the full screen part; the switch is now "games and videos".
+- **Fix, bars hidden in every app** (26.6S): the status bar and the navigation buttons of MetroWin were slid away in every app, not only in games, and the thin strips that call them back took the touches at the bottom edge, so the menus of other apps could not be reached. The bars now go away only for a game, as before. They are no longer hidden for videos (the navigation buttons already follow the bar of Android in full screen).
+- **Fix, updates not always found**: the app asked GitHub only for the release it marks as "latest", which follows the date and not the version number (and is nothing usable while a release has no APK yet). It now reads the last fifteen releases and takes the highest version that has an APK, and the check runs every 3 hours instead of 12.
 
 **Italiano:**
 - **Sposta più riquadri insieme**: nella barra di modifica di Start un nuovo pulsante permette di scegliere più riquadri e cartelle e spostarli insieme in un'altra schermata Start. Una pressione lunga prende un intero gruppo (dal suo titolo al successivo).
@@ -117,7 +121,8 @@ La storia delle versioni; ogni versione è un tag con il nome `v` più il nome d
 - **Caratteri**: in Impostazioni, Accessibilità c'è una nuova scelta del **carattere**: venti caratteri inclusi nel launcher (Comfortaa, Dosis, Exo 2, Figtree, JetBrains Mono, Josefin Sans, Jost, Karla, Lexend, Lora, Manrope, Mulish, Nunito, Oswald, Outfit, Quicksand, Raleway, Sora, Space Grotesk, Urbanist, tutti con licenza SIL Open Font) e **un file di carattere tuo** (.ttf o .otf, tenuto come copia). Il carattere del telefono, se attivo, ha ancora la precedenza. Il launcher pesa circa 3 MB in più.
 - **Modi di aprire un'app**: oltre al tornello moderno e all'espansione, nuovi stili che cambiano solo come entra la finestra dell'app (dissolvenza, scorrimento da destra, salita dal basso, zoom dal centro, o nessuno), tutti in Impostazioni, Schermo e trovati dalla ricerca nelle impostazioni. Il tornello **originale di Windows Phone** è ora lo stile con cui parte una nuova installazione (quello che avevi scelto resta). La velocità delle animazioni del launcher c'era già in Impostazioni, Gesti (dal 50 al 200 per cento); le animazioni della finestra di questi stili hanno velocità fissa.
 - **Start preferito** (Impostazioni, Start): con due o tre schermate Start, scegli quella a cui il launcher torna quando premi Windows o rientri da un'app.
-- **Barre a schermo intero**: la barra di stato e i pulsanti di navigazione che MetroWin disegna sopra le app ora scivolano via anche quando è l'app in primo piano a nascondere la barra di Android (un video a schermo intero, un gioco che non risulta tale); tornano con gli stessi scorrimenti, o quando la barra di Android torna visibile. La parte a schermo intero richiede Android 11 o successivo; l'interruttore ora è "giochi e video".
+- **Correzione, barre nascoste in ogni app** (26.6S): la barra di stato e i pulsanti di navigazione di MetroWin scivolavano via in ogni app, non solo nei giochi, e le strisce sottili che li richiamano prendevano i tocchi sul bordo basso, così i menu delle altre app non si raggiungevano. Ora le barre se ne vanno solo per un gioco, come prima. Non vengono più nascoste per i video (i pulsanti di navigazione seguono già la barra di Android a schermo intero).
+- **Correzione, aggiornamenti non sempre trovati**: l'app chiedeva a GitHub solo la release che questo segna come "latest", che segue la data e non il numero di versione (e non serve a nulla finché una release non ha ancora l'APK). Ora legge le ultime quindici release e prende la versione più alta che ha un APK, e il controllo avviene ogni 3 ore invece che ogni 12.
 
 ## 26.5.5S: 2026-11-01
 

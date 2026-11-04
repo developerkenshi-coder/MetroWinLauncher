@@ -191,8 +191,8 @@
     <string name="bug_log_failed">Das Protokoll konnte nicht gelesen werden, die E-Mail hat keinen Anhang</string>
     <string name="gest_navbar">Navigationstasten wie bei Windows Phone</string>
     <string name="gest_navbar_hint">Zeichnet Zurück, das Windows-Logo und Suchen über die Tasten von Android. Ein langer Druck auf das Logo öffnet die zuletzt verwendeten Apps. Erfordert den Bedienungshilfendienst.</string>
-    <string name="gest_game_bars">Leisten in Spielen und Videos ausblenden</string>
-    <string name="gest_game_bars_hint">Solange ein Spiel oder Video im Vollbild im Vordergrund ist, gleiten die Windows-Phone-Statusleiste und die Navigationstasten weg, damit sie es nicht verdecken. Vom unteren Rand nach oben wischen für die Tasten, vom oberen Rand nach unten für die Statusleiste. Erfordert den Bedienungshilfendienst.</string>
+    <string name="gest_game_bars">Leisten in Spielen ausblenden</string>
+    <string name="gest_game_bars_hint">Solange ein Spiel im Vordergrund ist, gleiten die Windows-Phone-Statusleiste und die Navigationstasten weg, damit sie das Spiel nicht verdecken. Vom unteren Rand nach oben wischen für die Tasten, vom oberen Rand nach unten für die Statusleiste. Erfordert den Bedienungshilfendienst.</string>
     <string name="gest_navbar_needs_buttons">Dein Handy verwendet die Gestennavigation: Wähle in den Systemeinstellungen unter System, Gesten, Systemnavigation die Navigation mit drei Tasten.</string>
     <string name="dialer_app_name">MetroWin Telefon</string>
     <string name="dialer_tab_keypad">Tastenfeld</string>

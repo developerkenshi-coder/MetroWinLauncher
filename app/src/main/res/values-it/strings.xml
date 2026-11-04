@@ -184,8 +184,8 @@
     <string name="bug_log_failed">Non è stato possibile leggere il log, la mail è senza allegato</string>
     <string name="gest_navbar">Pulsanti di navigazione Windows Phone</string>
     <string name="gest_navbar_hint">Disegna indietro, il logo Windows e cerca sopra i pulsanti di Android. Una pressione lunga sul logo apre le app recenti. Serve il servizio di accessibilità.</string>
-    <string name="gest_game_bars">Nascondi le barre nei giochi e nei video</string>
-    <string name="gest_game_bars_hint">Mentre un gioco o un video è in primo piano a schermo intero, la barra di stato e i pulsanti di navigazione Windows Phone scivolano via per non coprirlo. Scorri verso l’alto dal bordo basso per i pulsanti, verso il basso dal bordo alto per la barra di stato. Serve il servizio di accessibilità.</string>
+    <string name="gest_game_bars">Nascondi le barre nei giochi</string>
+    <string name="gest_game_bars_hint">Mentre un gioco è in primo piano, la barra di stato e i pulsanti di navigazione Windows Phone scivolano via per non coprire il gioco. Scorri verso l’alto dal bordo basso per i pulsanti, verso il basso dal bordo alto per la barra di stato. Serve il servizio di accessibilità.</string>
     <string name="gest_navbar_needs_buttons">Il telefono usa la navigazione a gesti: scegli i tre pulsanti nelle impostazioni di sistema, in Sistema, Gesti, Navigazione del sistema.</string>
     <string name="dialer_app_name">Telefono MetroWin</string>
     <string name="dialer_tab_keypad">tastierino</string>

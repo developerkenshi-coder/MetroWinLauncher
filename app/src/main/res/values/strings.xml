@@ -191,8 +191,8 @@
     <string name="bug_log_failed">The log could not be read, the mail has no attachment</string>
     <string name="gest_navbar">Windows Phone navigation buttons</string>
     <string name="gest_navbar_hint">Draws back, the Windows logo and search over the buttons of Android. A long press on the logo opens the recent apps. Needs the accessibility service.</string>
-    <string name="gest_game_bars">Hide the bars in games and videos</string>
-    <string name="gest_game_bars_hint">While a game or a video is in front in full screen, the Windows Phone status bar and navigation buttons slide away so they do not cover it. Swipe up from the bottom edge for the buttons, down from the top edge for the status bar. Needs the accessibility service.</string>
+    <string name="gest_game_bars">Hide the bars in games</string>
+    <string name="gest_game_bars_hint">While a game is in front, the Windows Phone status bar and navigation buttons slide away so they do not cover the game. Swipe up from the bottom edge for the buttons, down from the top edge for the status bar. Needs the accessibility service.</string>
     <string name="gest_navbar_needs_buttons">Your phone uses gesture navigation: choose the three buttons in the system settings, under System, Gestures, System navigation.</string>
     <string name="dialer_app_name">MetroWin Phone</string>
     <string name="dialer_tab_keypad">keypad</string>

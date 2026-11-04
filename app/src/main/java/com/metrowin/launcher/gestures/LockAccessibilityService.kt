@@ -37,11 +37,6 @@ class LockAccessibilityService : AccessibilityService() {
         syncStatusBar()
         scheduleNudge()
         lockScreen.start()
-        // An app that hides the status bar of Android (a video, a game in full screen) takes ours away too, whatever the app is.
-        gameBars.watchSystemBars { hidden ->
-            fullScreen = hidden
-            syncBars()
-        }
     }
 
     private val nudgeHandler = Handler(Looper.getMainLooper())
@@ -64,7 +59,6 @@ class LockAccessibilityService : AccessibilityService() {
         nudgeHandler.removeCallbacksAndMessages(null)
         lockScreen.stop()
         runCatching { contentResolver.unregisterContentObserver(navigationMode) }
-        gameBars.stopWatching()
         gameBars.set(false)
         navBar.hide()
         statusBar.hide()
@@ -107,19 +101,8 @@ class LockAccessibilityService : AccessibilityService() {
      * is asked of the package manager once, and remembered.
      */
     internal fun syncGame(pkg: String?) {
-        gameInFront = pkg != null && gamePackages.getOrPut(pkg) { GameApps.isGame(packageManager, pkg) }
-        syncBars()
-    }
-
-    private var gameInFront = false
-
-    /** The app in front has hidden the status bar of Android (see [GameBars.watchSystemBars]). */
-    private var fullScreen = false
-
-    /** The bars are away while a game is in front, or any app is in full screen outside the launcher, when the user wants them away. */
-    private fun syncBars() {
-        val away = SettingsStore(this).hideBarsInGamesOn() && (gameInFront || fullScreen && !launcherInFront)
-        gameBars.set(away)
+        val game = pkg != null && SettingsStore(this).hideBarsInGamesOn() && gamePackages.getOrPut(pkg) { GameApps.isGame(packageManager, pkg) }
+        gameBars.set(game)
         NotificationHub.edgeChanged()
     }
 
@@ -163,7 +146,6 @@ class LockAccessibilityService : AccessibilityService() {
         fun launcherFront(front: Boolean) {
             launcherInFront = front
             instance?.statusBar?.launcher(front)
-            instance?.syncBars()
         }
 
         fun syncStatusBar() {
