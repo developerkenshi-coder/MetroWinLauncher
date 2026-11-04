@@ -428,7 +428,7 @@ Le app di Google si usano dove ci sono (Maps, Calendar, Keep, Lens, News, Financ
    usa l'ora di sistema, perché quell'orologio riparte da zero (si riconosce dal contatore degli avvii). Mentre non lo guardi non gira nulla.
 6. **Transizione dei riquadri vivi**: oltre al *giro* (flip) c'è *scorri* (la faccia sale e quella nuova entra dal basso) e *misto* (metà dei riquadri gira, l'altra metà scorre); si sceglie in *live tile*. Come il giro, si ferma col movimento ridotto e col risparmio.
 7. **Notizie e Finanza**: *Notizie* legge di base **Google News** (i titoli principali del giorno, nella lingua e nel paese del telefono), con altre
-   sezioni (Mondo, Economia, Tecnologia, Sport…) o **un feed RSS/Atom a scelta**; si cambia in *live tile → notizie*. *Finanza* dà le valute della
+   sezioni (Mondo, Economia, Tecnologia, Sport…) o **un feed RSS/Atom a scelta**; la fonte del riquadro si sceglie nell'app *Notizie* (stella), non più nelle impostazioni. *Finanza* dà le valute della
    Banca centrale europea (`api.frankfurter.dev`) e alcune criptovalute (CoinGecko), fino a quattro, con la variazione; un tocco apre la pagina di
    Google Finance. **Niente prezzi di azioni**: non esiste una fonte gratuita e senza account che li dia, e non metto un servizio che chiede una chiave.
    Si legge solo se il riquadro è su Start, e solo quando il launcher è davanti.

@@ -84,6 +84,49 @@ class StartPagesTest {
     }
 
     @Test
+    fun theMainScreenFollowsTheHomeWhenTheSecondaryStartChangesSide() {
+        // Two screens, home on the first: the secondary Start to the left puts the main screen second and the other first.
+        val left = StartPages.movePage(pages, from = 0, to = 1)
+        assertEquals(ids(pages[0]), ids(left[1]))
+        assertEquals(ids(pages[1]), ids(left[0]))
+        // And back to the right.
+        assertEquals(pages, StartPages.movePage(left, from = 1, to = 0))
+        assertSame("the same place changes nothing", pages, StartPages.movePage(pages, 0, 0))
+        assertSame("a place that is not there changes nothing", pages, StartPages.movePage(pages, 0, 5))
+    }
+
+    @Test
+    fun aSectionIsFromItsTitleToTheNextOne() {
+        val entries = listOf<StartEntry>(
+            Tile("a", TileSize.Medium), Tile("b", TileSize.Medium),
+            Tile("c", TileSize.Medium, group = "Social"), Tile("d", TileSize.Medium), Folder("f", "", TileSize.Medium, listOf("x", "y")),
+            Tile("e", TileSize.Medium, group = "Work"), Tile("g", TileSize.Medium),
+        )
+        assertEquals(setOf("c", "d", "f"), StartEntries.sectionIds(entries, "d"))
+        assertEquals("the tile that carries the title", setOf("c", "d", "f"), StartEntries.sectionIds(entries, "c"))
+        assertEquals("before any title", setOf("a", "b"), StartEntries.sectionIds(entries, "b"))
+        assertEquals(setOf("e", "g"), StartEntries.sectionIds(entries, "g"))
+        assertTrue(StartEntries.sectionIds(entries, "nope").isEmpty())
+    }
+
+    @Test
+    fun severalEntriesMoveToAnotherScreenKeepingTheirOrder() {
+        val moved = StartPages.moveManyToPage(pages, setOf("b", "a", "e"), target = 2)
+        assertEquals(listOf("f"), ids(moved[0]))
+        assertTrue(moved[1].isEmpty())
+        assertEquals("in the order they had on screen, then the screen of e", listOf("a", "b", "e"), ids(moved[2]))
+        assertEquals(StartPages.all(pages).map { it.id }.sorted(), StartPages.all(moved).map { it.id }.sorted())
+        assertSame("nothing to move", pages, StartPages.moveManyToPage(pages, emptySet(), 1))
+    }
+
+    @Test
+    fun theMainScreenIsTheHomeUnlessTheHomeIsEmptyAndAnotherIsNot() {
+        assertEquals(0, StartPages.mainPage(pages, home = 0))
+        assertEquals("the home is empty, the fullest screen is the one in use", 0, StartPages.mainPage(pages, home = 2))
+        assertEquals(2, StartPages.mainPage(listOf(emptyList(), emptyList(), emptyList<StartEntry>()), home = 2))
+    }
+
+    @Test
     fun resizingTheNumberOfScreensKeepsEveryEntry() {
         val fewer = StartPages.resize(pages, 1)
         assertEquals(1, fewer.size)

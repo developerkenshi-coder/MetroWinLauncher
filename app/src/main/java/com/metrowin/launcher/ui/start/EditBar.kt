@@ -27,11 +27,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
+import com.metrowin.launcher.data.ActionBarStyle
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.model.TileStyle
 import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.GlyphIcon
+import com.metrowin.launcher.ui.components.LocalActionBar
+import com.metrowin.launcher.ui.components.RetroBar
+import com.metrowin.launcher.ui.components.retroBackground
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -69,7 +74,13 @@ fun EditBar(
     sizes: List<TileSize> = TileSize.entries,
     /** The button that writes the title of a group above the selected tile; null leaves it out. */
     onGroup: (() -> Unit)? = null,
+    /** The button that picks several tiles, or whole groups, to move to another Start screen; null leaves it out (there is only one screen). */
+    onSelectMany: (() -> Unit)? = null,
 ) {
+    if (LocalActionBar.current == ActionBarStyle.Retro) {
+        RetroEditBar(size, page, pageCount, onSize, onMovePage, onDone, modifier, style, onStyle, onAdd, onFolder, sizes, onGroup, onSelectMany)
+        return
+    }
     val colors = LocalMetroColors.current
     val named = labels && onLabels != null
     // The controls go on as many lines as the width needs: nothing is squeezed, cut or pushed off the screen.
@@ -88,6 +99,7 @@ fun EditBar(
         if (onAdd != null) Named(if (named) stringResource(R.string.edit_label_add) else null) { AddButton(onAdd) }
         if (onFolder != null) Named(if (named) stringResource(R.string.edit_label_folder) else null) { FolderButton(onFolder) }
         if (onGroup != null) Named(if (named) stringResource(R.string.edit_label_group) else null) { GroupButton(onGroup) }
+        if (onSelectMany != null) Named(if (named) stringResource(R.string.edit_label_select) else null) { SelectManyButton(onSelectMany) }
         TileSize.entries.filter { it in sizes || it == size }.forEach { option ->
             val name = when (option) {
                 TileSize.Small -> R.string.edit_label_small
@@ -143,6 +155,73 @@ fun EditBar(
                 MetroText(stringResource(R.string.edit_done), size = 18.sp, weight = FontWeight.Normal, color = LocalAccent.current)
             }
         }
+    }
+}
+
+/**
+ * The same controls in the bar of Windows Phone 8.1: the actions as round buttons (the last is "done"), and the sizes, the
+ * style, the title of a group and the screen to move to as the text items under its "…".
+ */
+@Composable
+private fun RetroEditBar(
+    size: TileSize,
+    page: Int,
+    pageCount: Int,
+    onSize: (TileSize) -> Unit,
+    onMovePage: (delta: Int) -> Unit,
+    onDone: () -> Unit,
+    modifier: Modifier,
+    style: TileStyle?,
+    onStyle: () -> Unit,
+    onAdd: (() -> Unit)?,
+    onFolder: (() -> Unit)?,
+    sizes: List<TileSize>,
+    onGroup: (() -> Unit)?,
+    onSelectMany: (() -> Unit)?,
+) {
+    val buttons = listOfNotNull(
+        onAdd?.let { AppBarItem("＋", stringResource(R.string.edit_label_add), it) },
+        onFolder?.let { AppBarItem("▣", stringResource(R.string.edit_label_folder), it) },
+        onSelectMany?.let { AppBarItem("☑", stringResource(R.string.edit_label_select), it) },
+        AppBarItem("✓", stringResource(R.string.edit_done), onDone),
+    )
+    val sizeItems = TileSize.entries.filter { it in sizes || it == size }.map { option ->
+        val name = when (option) {
+            TileSize.Small -> R.string.edit_label_small
+            TileSize.Medium -> R.string.edit_label_medium
+            TileSize.Wide -> R.string.edit_label_wide
+            TileSize.Large -> R.string.edit_label_large
+        }
+        AppBarItem("", stringResource(name)) { onSize(option) }.marked(option == size)
+    }
+    val styleItem = style?.let {
+        AppBarItem(
+            "",
+            stringResource(
+                when (it) {
+                    TileStyle.Standard -> R.string.edit_style_standard
+                    TileStyle.Iconic -> R.string.edit_style_iconic
+                    TileStyle.Cycle -> R.string.edit_style_cycle
+                    TileStyle.Collection -> R.string.edit_style_collection
+                },
+            ),
+            onStyle,
+        ).marked(it != TileStyle.Standard)
+    }
+    val pageItems = buildList {
+        if (page > 0) add(AppBarItem("", stringResource(R.string.edit_page_previous)) { onMovePage(-1) })
+        if (page < pageCount - 1) add(AppBarItem("", stringResource(R.string.edit_page_next)) { onMovePage(1) })
+    }
+    val items = listOfNotNull(onGroup?.let { AppBarItem("", stringResource(R.string.edit_label_group), it) }) + sizeItems + listOfNotNull(styleItem) + pageItems
+    Box(
+        modifier
+            .fillMaxWidth()
+            .background(retroBackground())
+            // Swallow touches so the tiles behind the bar do not react.
+            .pointerInput(Unit) { detectTapGestures { } }
+            .navigationBarsPadding(),
+    ) {
+        RetroBar(buttons, items)
     }
 }
 
@@ -212,6 +291,31 @@ private fun FolderButton(onClick: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         GlyphIcon(Glyph.Folder, 28.dp)
+    }
+}
+
+@Composable
+private fun SelectManyButton(onClick: () -> Unit) {
+    val description = stringResource(R.string.edit_select)
+    val tint = LocalMetroColors.current.foreground
+    Box(
+        Modifier
+            .size(46.dp)
+            .testTag("edit:select")
+            .semantics { contentDescription = description }
+            .metroPress(onClick = onClick)
+            .litFill(false),
+        contentAlignment = Alignment.Center,
+    ) {
+        // Two tiles, the first one ticked.
+        Canvas(Modifier.size(28.dp)) {
+            val u = this.size.width / 8f
+            val line = 1.5f * u / 2f
+            drawRect(tint, Offset(0f, 0f), Size(4.4f * u, 4.4f * u), style = androidx.compose.ui.graphics.drawscope.Stroke(line))
+            drawLine(tint, Offset(0.9f * u, 2.3f * u), Offset(1.9f * u, 3.3f * u), line)
+            drawLine(tint, Offset(1.9f * u, 3.3f * u), Offset(3.6f * u, 1.2f * u), line)
+            drawRect(tint, Offset(4.6f * u, 4.6f * u), Size(3.4f * u, 3.4f * u), style = androidx.compose.ui.graphics.drawscope.Stroke(line))
+        }
     }
 }
 

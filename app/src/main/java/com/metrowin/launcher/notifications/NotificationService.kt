@@ -35,8 +35,10 @@ class NotificationService : NotificationListenerService() {
     override fun onListenerConnected() {
         Log.i(TAG, "listener connected")
         NotificationHub.service = this
-        runCatching { registerReceiver(screenWatch, IntentFilter(Intent.ACTION_SCREEN_ON).apply { addAction(Intent.ACTION_USER_PRESENT) }) }
+        NotificationHub.attach(this)
+        runCatching { registerReceiver(screenWatch, IntentFilter(Intent.ACTION_SCREEN_ON).apply { addAction(Intent.ACTION_USER_PRESENT); addAction(Intent.ACTION_SCREEN_OFF) }) }
         NotificationHub.clearOnOpen = SettingsStore(this).load().clearOnOpen
+        NotificationHub.actionCenterOn = SettingsStore(this).actionCenterOn()
         syncEdge()
         changed()
         // What is in the shade of Android already, when the setting asks for it to be moved away.
@@ -51,7 +53,7 @@ class NotificationService : NotificationListenerService() {
         overlay.hide()
         overlaySeen.clear()
         edge?.dispose()
-        NotificationHub.clearHeld()
+        // What the register keeps stays: a listener that rebinds (or a process that dies) must not take notifications with it.
         pacer.away()
         NotificationHub.update(emptyList())
         NotificationHub.updateApps(emptyList())
@@ -67,10 +69,30 @@ class NotificationService : NotificationListenerService() {
             changed()
             return
         }
+        keepAtOnce(sbn)
         showOverBanner(sbn)
         hideSystemCopy(sbn)
         changed()
         clearIfSeen(sbn)
+    }
+
+    /**
+     * Writes the notification down now (see [NotificationHub.keep]), before anything that can take it away: the pacer does not read
+     * while no screen of the launcher is on, and an app can take a notification back a moment after it came. Only the words and the
+     * intents are read; the pictures wait for a screen that shows them.
+     */
+    private fun keepAtOnce(sbn: StatusBarNotification) {
+        if (!SettingsStore(this).actionCenterOn()) return
+        // What is only live while it lasts (a call, an alarm, a navigation, a progress) is not kept after the app ends it.
+        val notification = sbn.notification
+        val keepable = NotificationHub.mayHide(
+            ongoing = sbn.isOngoing, clearable = sbn.isClearable, fromUs = sbn.packageName == packageName,
+            category = notification.category, fullScreen = notification.fullScreenIntent != null, hiddenFromCenter = false,
+        )
+        if (!keepable) return
+        val entry = toEntry(sbn, withPictures = NotificationHub.watched, groupHeadings = true)
+        NotificationHub.note("posted ${sbn.packageName} kept=${entry != null} summary=${sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY != 0}")
+        if (entry != null) NotificationHub.keep(entry)
     }
 
     /**
@@ -79,8 +101,9 @@ class NotificationService : NotificationListenerService() {
      */
     private fun clearIfSeen(sbn: StatusBarNotification) {
         val pkg = sbn.packageName
-        if (pkg != NotificationHub.foregroundPackage) return
-        handler.postDelayed({ if (NotificationHub.foregroundPackage == pkg) NotificationHub.appOpened(pkg) }, SEEN_MS)
+        // The app that was last in front is not "in front" with the screen off or the launcher showing: that is not reading it.
+        if (pkg != NotificationHub.foregroundPackage || LockAccessibilityService.launcherInFront || awayFromScreen()) return
+        handler.postDelayed({ if (NotificationHub.foregroundPackage == pkg && !LockAccessibilityService.launcherInFront && !awayFromScreen()) NotificationHub.appOpened(pkg) }, SEEN_MS)
     }
 
     /**
@@ -91,7 +114,7 @@ class NotificationService : NotificationListenerService() {
      */
     private fun hideSystemCopy(sbn: StatusBarNotification) {
         val store = SettingsStore(this)
-        if (!store.hideSystemOn() || awayFromScreen()) return
+        if (!store.actionCenterOn() || !store.hideSystemOn() || awayFromScreen()) return
         hideFromAndroid(sbn, store.load())
     }
 
@@ -103,7 +126,9 @@ class NotificationService : NotificationListenerService() {
     /** When the screen comes on unlocked (or the phone is unlocked), what waited in the shade of Android for its sound is moved. */
     private val screenWatch = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (!awayFromScreen()) handler.post { hideAllNow() }
+            // The app that was in front when the screen went off is not in front now: nothing says which one is until a window changes.
+            if (intent.action == Intent.ACTION_SCREEN_OFF) NotificationHub.foregroundPackage = null
+            else if (!awayFromScreen()) handler.post { hideAllNow() }
         }
     }
 
@@ -113,6 +138,8 @@ class NotificationService : NotificationListenerService() {
      */
     private fun dropFiltered(sbn: StatusBarNotification, known: LauncherSettings? = null): Boolean {
         val store = SettingsStore(this)
+        // With the Action Center off nothing is taken out of the shade of Android, whatever the filter says.
+        if (!store.actionCenterOn()) return false
         if (known == null && !store.filterOn()) return false
         val settings = known ?: store.load()
         if (!settings.notifFilterOn) return false
@@ -130,7 +157,7 @@ class NotificationService : NotificationListenerService() {
     /** The same for everything in the shade now: when the listener connects and when a setting that decides it is changed. */
     internal fun hideAllNow() {
         val store = SettingsStore(this)
-        if (!store.hideSystemOn() && !store.filterOn()) return
+        if (!store.actionCenterOn() || !store.hideSystemOn() && !store.filterOn()) return
         val settings = store.load()
         runCatching { activeNotifications }.getOrNull()?.forEach { sbn ->
             if (!dropFiltered(sbn, settings) && settings.hideSystemNotifications) hideFromAndroid(sbn, settings)
@@ -152,17 +179,20 @@ class NotificationService : NotificationListenerService() {
                 keepForLive(sbn)
                 NotificationHub.hold(entry)
             }
-            // A bundle ("5 new messages"): its notifications are moved one by one, so the heading has nothing left to head.
-            notification.flags and Notification.FLAG_GROUP_SUMMARY != 0 -> cancelNotification(sbn.key)
+            // A bundle ("5 new messages"): its notifications are moved one by one, so the heading has nothing left to head. A heading that
+            // came alone, with words of its own, is kept like any notification.
+            notification.flags and Notification.FLAG_GROUP_SUMMARY != 0 -> toEntry(sbn, groupHeadings = true)?.let(NotificationHub::hold) ?: cancelNotification(sbn.key)
         }
     }
 
-    override fun onNotificationRemoved(sbn: StatusBarNotification, rankingMap: RankingMap, reason: Int) {
+    override fun onNotificationRemoved(sbn: StatusBarNotification, rankingMap: RankingMap?, reason: Int) {
         if (!sbn.isOngoing) Log.i(TAG, "removed ${sbn.packageName} reason=$reason")
-        // The launcher's own cancel (see NotificationHub.hold) keeps its copy and what the banner said, so a repost is not a new banner;
-        // any other end of the notification (the app took it back, a timeout) takes the copy with it.
+        if (!sbn.isOngoing) NotificationHub.note("removed ${sbn.packageName} reason=$reason kept=${!NotificationHub.removedByUser(reason)}")
+        // The launcher's own cancel (see NotificationHub.hold) keeps its copy and what the banner said, so a repost is not a new banner.
+        // The copy goes only when the user took the notification away in Android's shade; the app taking it back or the system ending it
+        // does not take it from the Action Center (see NotificationHub.removedByUser).
         if (reason != REASON_LISTENER_CANCEL && reason != REASON_LISTENER_CANCEL_ALL) {
-            NotificationHub.removedByApp(sbn.key)
+            if (NotificationHub.removedByUser(reason)) NotificationHub.forget(sbn.key)
             overlaySeen.remove(sbn.key)
         }
         changed()
@@ -179,10 +209,10 @@ class NotificationService : NotificationListenerService() {
      * drawing over other apps, or did not turn the banner on, stop at the first lines.
      */
     private fun showOverBanner(sbn: StatusBarNotification) {
-        if (NotificationHub.watched || sbn.packageName == packageName) return
+        if (NotificationHub.watched || sbn.packageName == packageName || LockAccessibilityService.safe) return
         if (!Settings.canDrawOverlays(this)) return skipped(sbn, "no permission to draw over apps")
         val store = SettingsStore(this)
-        if (!store.overlayBannerOn()) return
+        if (!store.actionCenterOn() || !store.overlayBannerOn()) return
         val ranking = NotificationListenerService.Ranking()
         val known = runCatching { currentRanking.getRanking(sbn.key, ranking) }.getOrDefault(false)
         val entry = toEntry(sbn) ?: return skipped(sbn, "not worth showing (ongoing, group summary or empty)")
@@ -234,12 +264,19 @@ class NotificationService : NotificationListenerService() {
 
     private var edge: OverlayActionCenter? = null
 
+    /** A bank is in front: the banner over other apps goes (the strip of the Action Center goes with [syncEdge]). */
+    internal fun hideOverlays() {
+        overlay.hide()
+        overlaySeen.clear()
+    }
+
     /**
      * The strip at the top edge that opens the Action Center over other apps: there when the user turned it on and the accessibility
      * service is on; not there otherwise. Run when one of the two changes and when the panel goes, never on a timer.
      */
     internal fun syncEdge() {
-        val wanted = LockAccessibilityService.host() != null && SettingsStore(this).edgeActionCenterOn()
+        // With a game in front the top edge belongs to the strip that calls the status bar back (see GameBars).
+        val wanted = LockAccessibilityService.host() != null && !LockAccessibilityService.safe && !LockAccessibilityService.gameBarsAway && SettingsStore(this).let { it.actionCenterOn() && it.edgeActionCenterOn() }
         // Not wanted any more (or the accessibility service went, and the system took its windows with it): nothing of it is kept.
         if (wanted) (edge ?: OverlayActionCenter(this, LockAccessibilityService::host, ::syncEdge).also { edge = it }).showStrip() else edge?.dispose()
     }
@@ -317,7 +354,8 @@ class NotificationService : NotificationListenerService() {
         NotificationHub.updateApps((reads + taken).map { it.app })
     }
 
-    private fun toEntry(sbn: StatusBarNotification): NotificationEntry? {
+    /** [groupHeadings]: a group's heading is read too (it is kept, and shown only when none of the group's own notifications is). */
+    private fun toEntry(sbn: StatusBarNotification, withPictures: Boolean = true, groupHeadings: Boolean = false): NotificationEntry? {
         val notification = sbn.notification
         val extras = notification.extras
         // Android's "shown over other apps" notice about the launcher's own windows.
@@ -327,15 +365,18 @@ class NotificationService : NotificationListenerService() {
         val text: CharSequence? = reader.latestMessage(notification)?.let { line ->
             if (line.sender.isNotBlank() && line.sender != title?.toString()) "${line.sender}: ${line.text}" else line.text
         } ?: extras.getCharSequence(Notification.EXTRA_TEXT) ?: extras.getCharSequence(Notification.EXTRA_SUB_TEXT)
+        val summary = notification.flags and Notification.FLAG_GROUP_SUMMARY != 0
         val worthShowing = NotificationHub.isWorthShowing(
             ongoing = sbn.isOngoing || !sbn.isClearable,
-            groupSummary = notification.flags and Notification.FLAG_GROUP_SUMMARY != 0,
+            groupSummary = summary && !groupHeadings,
             fromUs = sbn.packageName == packageName,
             title = title,
             text = text,
         )
         if (!worthShowing) return null
-        val longText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString()?.takeIf { it.length > (text?.length ?: 0) }
+        // A chat keeps its last messages in one notification: all of them are kept, not only the newest.
+        val chat = reader.messageLines(notification).takeIf { it.size > 1 }?.joinToString("\n")
+        val longText = chat ?: extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString()?.takeIf { it.length > (text?.length ?: 0) }
         // The buttons that need no typing (the one that takes text is the reply), the way the shade of Android shows them.
         val actions = notification.actions.orEmpty()
             .filter { it.actionIntent != null && it.remoteInputs.isNullOrEmpty() && !it.title.isNullOrBlank() }
@@ -352,9 +393,11 @@ class NotificationService : NotificationListenerService() {
             reply = replyOf(notification),
             longText = longText,
             actions = actions,
-            picture = pictureOf(extras),
+            picture = if (withPictures) pictureOf(extras) else null,
             urgent = notification.category == Notification.CATEGORY_MESSAGE || notification.category == Notification.CATEGORY_CALL || replyOf(notification) != null,
-            icon = runCatching { notification.smallIcon?.loadDrawable(this)?.toBitmap(ICON_PX, ICON_PX)?.let(::EntryIcon) }.getOrNull(),
+            icon = if (withPictures) runCatching { notification.smallIcon?.loadDrawable(this)?.toBitmap(ICON_PX, ICON_PX)?.let(::EntryIcon) }.getOrNull() else null,
+            group = notification.group,
+            summary = summary,
         )
     }
 

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.pages
 
+import com.metrowin.launcher.ui.components.pageSide
 import com.metrowin.launcher.ui.components.topBarsPadding
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
@@ -41,7 +42,7 @@ fun PageFrame(header: String, title: String, modifier: Modifier = Modifier, cont
             .navigationBarsPadding()
             .cutoutSidesPadding()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = pageSide(24.dp)),
     ) {
         MetroText(header, size = 14.sp, weight = FontWeight.SemiBold, modifier = Modifier.padding(top = 28.dp))
         MetroText(title, size = 34.sp, maxLines = 2, lineHeight = 40.sp, modifier = Modifier.padding(top = 2.dp, bottom = 12.dp).testTag("page:title"))

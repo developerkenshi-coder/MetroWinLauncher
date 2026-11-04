@@ -265,6 +265,34 @@ class GesturesTest : ScreenshotBase() {
     }
 
     @Test
+    fun scrollingStartUpToTheTopAndPastItDoesNotPullThePanel() {
+        show { Shell() }
+        advance(2_500)
+        scrollStartTo(300)
+        compose.onRoot().performTouchInput {
+            down(Offset(540f, 1200f))
+            moveBy(Offset(0f, 900f)) // 300 px to the top, 600 px more
+            up()
+        }
+        advance(1_500)
+        assertEquals(0, startScroll.value)
+        assertEquals(0f, panel.progress, 0f)
+    }
+
+    @Test
+    fun aSlantedBrushNearTheTopEdgeDoesNotPullThePanel() {
+        show { Shell() }
+        advance(2_500)
+        compose.onRoot().performTouchInput {
+            down(Offset(540f, 40f))
+            moveBy(Offset(60f, 70f))
+            up()
+        }
+        advance(1_000)
+        assertEquals(0f, panel.progress, 0f)
+    }
+
+    @Test
     fun aSidewaysSwipeFromTheTopEdgeTurnsThePageAndDoesNotPullThePanel() {
         show { Shell() }
         advance(2_500)
@@ -310,7 +338,7 @@ class GesturesTest : ScreenshotBase() {
         assertEquals(1f, panel.progress, 0.001f)
         compose.onRoot().performTouchInput {
             down(Offset(540f, 1500f))
-            moveBy(Offset(0f, -500f))
+            moveBy(Offset(0f, -800f))
             up()
         }
         advance(1_500)

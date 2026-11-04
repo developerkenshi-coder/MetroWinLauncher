@@ -101,9 +101,10 @@ fun rememberTopCutouts(band: Dp = 56.dp): TopCutouts {
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current.density
     val cutouts by produceState(TopCutouts(), configuration, band, density) {
-        while (true) {
+        // The first reading can come before the window knows its insets: asked again a little later, a few times, then it stands (a turn of the phone starts it again).
+        // shortcut: insets that appear after ~10 s stay unread until the next turn of the phone or restart of the bar.
+        repeat(5) {
             value = runCatching { readTop(context, view, density, (band.value * density).toInt()) }.getOrDefault(TopCutouts())
-            // The first reading can come before the window knows its insets: asked again a little later, then now and then.
             delay(2_000)
         }
     }

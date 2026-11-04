@@ -79,17 +79,21 @@ fun LayoutsSettings(env: SettingsEnv) {
         env.layouts.forEach { layout ->
             Column(Modifier.fillMaxWidth().testTag("layouts:row:${layout.id}"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 MetroText(
-                    (if (layout.id == s.activeLayout) "● " else "") + layout.name, size = 22.sp, maxLines = 1,
+                    (if (layout.id == s.activeLayout) "● " else "") + layout.name, size = 22.sp,
                     modifier = Modifier.padding(top = 6.dp).testTag("layouts:name:${layout.id}"),
                 )
                 DropdownSetting(
                     label = stringResource(R.string.layouts_hour), options = hours, selected = layout.hour + 1,
                     onSelect = { i -> env.onLayoutHour(layout.id, i - 1) }, tag = "layouts:hour:${layout.id}",
                 )
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    MetroButton(stringResource(R.string.layouts_apply), Modifier.weight(1f).testTag("layouts:apply:${layout.id}")) { env.onApplyLayout(layout.id) }
-                    MetroButton(stringResource(R.string.layouts_update), Modifier.weight(1f).testTag("layouts:update:${layout.id}")) { env.onResaveLayout(layout.id) }
-                    MetroButton(stringResource(R.string.layouts_delete), Modifier.weight(1f).testTag("layouts:delete:${layout.id}")) { env.onDeleteLayout(layout.id) }
+                // Wraps to a second line when the buttons do not fit side by side (long words, bigger text).
+                @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+                androidx.compose.foundation.layout.FlowRow(
+                    Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    MetroButton(stringResource(R.string.layouts_apply), Modifier.testTag("layouts:apply:${layout.id}")) { env.onApplyLayout(layout.id) }
+                    MetroButton(stringResource(R.string.layouts_update), Modifier.testTag("layouts:update:${layout.id}")) { env.onResaveLayout(layout.id) }
+                    MetroButton(stringResource(R.string.layouts_delete), Modifier.testTag("layouts:delete:${layout.id}")) { env.onDeleteLayout(layout.id) }
                 }
             }
         }
@@ -128,7 +132,7 @@ fun PageBackgroundsSettings(env: SettingsEnv) {
                 Row(Modifier.fillMaxWidth().testTag("pagephoto:row:$page"), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     MetroText(
                         stringResource(R.string.page_photo_label, page + 1) + if (has) "" else " · " + stringResource(R.string.page_photo_shared),
-                        size = 18.sp, weight = FontWeight.Normal, maxLines = 1, modifier = Modifier.weight(1f),
+                        size = 18.sp, weight = FontWeight.Normal, modifier = Modifier.weight(1f),
                     )
                     MetroButton(stringResource(R.string.theme_choose_photo), Modifier.testTag("pagephoto:choose:$page")) {
                         picking = page

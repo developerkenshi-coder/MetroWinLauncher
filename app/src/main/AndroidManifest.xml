@@ -16,7 +16,11 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <!-- The file manager: it shows and changes every file of the phone, which is the whole of its job. Android 11 and later ask the user for it in a screen of the settings. -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
@@ -231,6 +235,7 @@
     </queries>
 
     <application
+        android:requestLegacyExternalStorage="true"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="false"
@@ -289,6 +294,67 @@
                 <data android:scheme="tel" />
             </intent-filter>
         </activity>
+
+        <!-- The mini apps that are only opened from the launcher (see MiniApps): not exported, nothing else may start them. -->
+        <activity
+            android:name=".calculator.CalculatorActivity"
+            android:exported="false"
+            android:label="@string/stock_calculator"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+        <activity
+            android:name=".notes.NotesActivity"
+            android:exported="false"
+            android:label="@string/stock_notes"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+
+        <activity
+            android:name=".todo.TodoActivity"
+            android:exported="false"
+            android:label="@string/stock_todo"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+
+        <activity
+            android:name=".recorder.RecorderActivity"
+            android:exported="false"
+            android:label="@string/recorder_default_label"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+
+        <activity
+            android:name=".calendar.CalendarActivity"
+            android:exported="false"
+            android:label="@string/stock_calendar"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+
+        <activity
+            android:name=".datasense.DataSenseActivity"
+            android:exported="false"
+            android:label="@string/stock_datasense"
+            android:launchMode="singleTask" />
+
+        <activity
+            android:name=".wallet.WalletActivity"
+            android:exported="false"
+            android:label="@string/stock_wallet"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+
+        <activity
+            android:name=".news.NewsActivity"
+            android:exported="false"
+            android:label="@string/stock_news"
+            android:launchMode="singleTask" />
+
+        <activity
+            android:name=".files.FilesActivity"
+            android:exported="false"
+            android:label="@string/stock_files"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
 
         <!-- The messages app: opened for "send a message" links, and listed as an app of its own. Android needs all of the parts below to offer the launcher as the messaging app. -->
         <activity

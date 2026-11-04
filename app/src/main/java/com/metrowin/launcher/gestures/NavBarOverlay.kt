@@ -19,6 +19,8 @@ import android.view.View
 import android.view.ViewConfiguration
 import android.view.WindowManager
 import com.metrowin.launcher.MainActivity
+import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.data.NavButtons
 import com.metrowin.launcher.notifications.overBars
 
 /**
@@ -29,8 +31,37 @@ import com.metrowin.launcher.notifications.overBars
 internal class NavBarOverlay(private val service: AccessibilityService) {
     private var bar: Bar? = null
     private var holdMs = DEFAULT_HOLD_MS
+    private var spacing = LauncherSettings.NAV_SPACING_DEFAULT
     private var attempts = 0
     private val handler = Handler(Looper.getMainLooper())
+
+    /** A game is in front: the buttons are slid away, and take no touch (see [GameBars]). */
+    private var gameHidden = false
+
+    fun isShown() = bar != null
+
+    /** Slides the buttons down out of the screen (or back), and leaves the window there but untouchable and clear while they are away. */
+    fun gameHidden(hidden: Boolean) {
+        gameHidden = hidden
+        val view = bar ?: return
+        val params = view.layoutParams as? WindowManager.LayoutParams ?: return
+        val away = view.height.toFloat().coerceAtLeast(1f)
+        if (hidden) {
+            view.animate().cancel()
+            view.animate().translationY(away).alpha(0f).setDuration(SLIDE_MS).withEndAction { applyTouch(view, params) }.start()
+        } else {
+            applyTouch(view, params)
+            view.animate().cancel()
+            view.animate().translationY(0f).alpha(1f).setDuration(SLIDE_MS).start()
+        }
+    }
+
+    private fun applyTouch(view: View, params: WindowManager.LayoutParams) {
+        val flags = if (gameHidden) params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE else params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
+        if (flags == params.flags) return
+        params.flags = flags
+        runCatching { service.getSystemService(WindowManager::class.java).updateViewLayout(view, params) }
+    }
 
     private fun heightPx(): Int {
         val fallback = (48 * service.resources.displayMetrics.density).toInt()
@@ -43,10 +74,10 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
 
     private fun bleedPx() = (BLEED_DP * service.resources.displayMetrics.density).toInt()
 
-    fun show(holdMs: Int = DEFAULT_HOLD_MS) {
+    fun show(holdMs: Int = DEFAULT_HOLD_MS, spacing: Int = LauncherSettings.NAV_SPACING_DEFAULT) {
         val windows = service.getSystemService(WindowManager::class.java)
         bar?.let { view ->
-            if (this.holdMs != holdMs) {
+            if (this.holdMs != holdMs || this.spacing != spacing) {
                 hide()
             } else {
                 // Shown already: only the size can have changed (the phone turned, the bar of the system changed).
@@ -61,7 +92,8 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
             }
         }
         this.holdMs = holdMs
-        val view = Bar(service, holdMs) { visible -> bar?.let { setShown(it, visible) } }
+        this.spacing = spacing
+        val view = Bar(service, holdMs, spacing) { visible -> bar?.let { setShown(it, visible) } }
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT, heightPx(), WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
@@ -76,10 +108,12 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
             bar = view
             attempts = 0
             view.visibility = View.VISIBLE
+            // Created while a game is in front: it never shows.
+            if (gameHidden) { view.alpha = 0f; params.flags = params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE; runCatching { windows.updateViewLayout(view, params) } }
         } else if (attempts < MAX_ATTEMPTS) {
             // Right after the service connects Android may not take the window yet: it is tried again a moment later.
             attempts++
-            handler.postDelayed({ if (bar == null) show(holdMs) }, RETRY_MS * attempts)
+            handler.postDelayed({ if (bar == null) show(holdMs, spacing) }, RETRY_MS * attempts)
         }
     }
 
@@ -92,7 +126,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
         val height = if (visible) heightPx() else 1
         if (params.height == height) return
         params.height = height
-        params.flags = if (visible) params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv() else params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        params.flags = if (visible && !gameHidden) params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv() else params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
         view.visibility = if (visible) View.VISIBLE else View.INVISIBLE
         runCatching { service.getSystemService(WindowManager::class.java).updateViewLayout(view, params) }
     }
@@ -116,6 +150,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
     private class Bar(
         private val service: AccessibilityService,
         private val holdMs: Int,
+        private val spacing: Int,
         private val onSystemBar: (Boolean) -> Unit,
     ) : View(service) {
         private val density = resources.displayMetrics.density
@@ -166,11 +201,11 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
 
         override fun onDraw(canvas: Canvas) {
             canvas.translate(shiftX, shiftY)
-            val cell = width / 3f
+            val centers = NavButtons.centers(width.toFloat(), spacing)
             val cy = height / 2f
             val s = height * 0.2f
             // back: an arrow to the left
-            var cx = cell / 2
+            var cx = centers[0]
             canvas.drawLine(cx + s, cy, cx - s, cy, line)
             val head = Path().apply {
                 moveTo(cx - s + 0.75f * s, cy - 0.75f * s)
@@ -179,7 +214,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
             }
             canvas.drawPath(head, line)
             // home: the four panes of the Windows logo
-            cx = cell * 1.5f
+            cx = centers[1]
             val gap = 0.28f * s
             val pane = s - gap / 2
             for (row in 0..1) for (col in 0..1) {
@@ -188,7 +223,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
                 canvas.drawRect(left, top, left + pane, top + pane, fill)
             }
             // search: a lens and its handle
-            cx = cell * 2.5f
+            cx = centers[2]
             canvas.drawCircle(cx - 0.25f * s, cy - 0.25f * s, 0.8f * s, line)
             canvas.drawLine(cx + 0.35f * s, cy + 0.35f * s, cx + s, cy + s, line)
         }
@@ -215,7 +250,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
             return true
         }
 
-        private fun button(x: Float) = (x / (width / 3f)).toInt().coerceIn(0, 2)
+        private fun button(x: Float) = NavButtons.nearest(x, width.toFloat(), spacing)
 
         private fun press(button: Int) {
             performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
@@ -237,6 +272,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
         private const val MAX_ATTEMPTS = 5
         private const val RETRY_MS = 600L
         private const val BLEED_DP = 4
+        private const val SLIDE_MS = 220L
 
         /** Whether the phone uses the three buttons (0), not the two-button bar (1) or the gestures (2). Where it is not told, the three buttons. */
         fun threeButtons(context: Context): Boolean =

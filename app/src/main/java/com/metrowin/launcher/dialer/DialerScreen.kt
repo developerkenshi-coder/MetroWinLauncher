@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -56,7 +57,10 @@ import com.metrowin.launcher.data.RecentCall
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.ui.anim.metroPress
 import androidx.compose.runtime.rememberCoroutineScope
+import com.metrowin.launcher.ui.apps.JumpList
 import com.metrowin.launcher.ui.components.AppBar
+import com.metrowin.launcher.ui.components.sectionHeader
+import com.metrowin.launcher.ui.components.sectionStarts
 import com.metrowin.launcher.ui.components.AppBarItem
 import kotlinx.coroutines.launch
 import com.metrowin.launcher.ui.components.MetroButton
@@ -165,8 +169,8 @@ private fun KeypadPage(number: String, onNumberChange: (String) -> Unit, hasCont
             }
             suggestions.forEach { entry ->
                 Row(Modifier.fillMaxWidth().testTag("dialer:suggest").metroPress(onClick = { call(entry.number) }).padding(vertical = 5.dp)) {
-                    MetroText(entry.name, size = 20.sp, maxLines = 1, modifier = Modifier.weight(1f))
-                    MetroText(entry.number, size = 16.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
+                    MetroText(entry.name, size = 20.sp, modifier = Modifier.weight(1f))
+                    MetroText(entry.number, size = 16.sp, weight = FontWeight.Normal, color = colors.subtle)
                 }
             }
         }
@@ -201,7 +205,14 @@ private fun ContactsPage(hasPermission: Boolean, onRequest: () -> Unit, call: (S
     }
     val shown = contacts.orEmpty().filter { it.shownIn(mask) && (query.isBlank() || it.name.contains(query.trim(), ignoreCase = true)) }
     val groups = shown.groupBy { it.name.first().uppercaseChar() }
-    LazyColumn(Modifier.fillMaxSize().testTag("dialer:contacts")) {
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    var jumping by remember { mutableStateOf(false) }
+    // The list is the box with the search and the buttons, a note when there is nobody, then each letter with its people.
+    val starts = sectionStarts(groups.values.map { it.size }, first = 1 + if (contacts != null && shown.isEmpty()) 1 else 0)
+    val startOf = groups.keys.map { it.toString() }.zip(starts).toMap()
+    Box(Modifier.fillMaxSize()) {
+    LazyColumn(Modifier.fillMaxSize().testTag("dialer:contacts"), state = listState) {
         item {
             Column(Modifier.padding(bottom = 8.dp)) {
                 MetroTextField(query, { query = it }, stringResource(R.string.dialer_search_hint), Modifier.testTag("dialer:search"))
@@ -234,7 +245,7 @@ private fun ContactsPage(hasPermission: Boolean, onRequest: () -> Unit, call: (S
         }
         if (contacts != null && shown.isEmpty()) item { PageNote(stringResource(R.string.dialer_no_contacts), Modifier.padding(top = 8.dp)) }
         groups.forEach { (letter, people) ->
-            item(key = "h$letter") { MetroText(letter.toString(), size = 26.sp, color = LocalAccent.current, modifier = Modifier.padding(top = 12.dp, bottom = 2.dp)) }
+            sectionHeader("h$letter", onClick = { jumping = true }) { MetroText(letter.toString(), size = 26.sp, color = LocalAccent.current, modifier = Modifier.padding(top = 12.dp, bottom = 2.dp)) }
             items(people, key = { it.lookupUri }) { person ->
                 Column(
                     Modifier.fillMaxWidth().testTag("dialer:contact").metroPress(
@@ -242,11 +253,25 @@ private fun ContactsPage(hasPermission: Boolean, onRequest: () -> Unit, call: (S
                         onLongClick = { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, person.lookupUri.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } },
                     ).padding(vertical = 6.dp),
                 ) {
-                    MetroText(person.name, size = 22.sp, maxLines = 1)
+                    MetroText(person.name, size = 22.sp)
                     MetroText(person.number, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
                 }
             }
         }
+    }
+    if (jumping) {
+        JumpList(
+            keys = ('A'..'Z').map { it.toString() } + startOf.keys.filter { it.single() !in 'A'..'Z' },
+            available = startOf.keys,
+            onPick = { key ->
+                jumping = false
+                startOf[key]?.let { index -> scope.launch { listState.scrollToItem(index) } }
+            },
+            onDismiss = { jumping = false },
+            showRecent = false,
+            modifier = Modifier.testTag("dialer:jump"),
+        )
+    }
     }
 }
 
@@ -297,8 +322,8 @@ private fun HistoryPage(hasPermission: Boolean, onRequest: () -> Unit, call: (St
                     size = 22.sp, weight = FontWeight.Normal, color = if (item.missed) LocalAccent.current else colors.subtle, modifier = Modifier.width(34.dp),
                 )
                 Column(Modifier.weight(1f)) {
-                    MetroText(item.name, size = 21.sp, maxLines = 1)
-                    MetroText(if (item.name == item.number) whenText(item.date) else item.number + " · " + whenText(item.date), size = 13.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
+                    MetroText(item.name, size = 21.sp)
+                    MetroText(if (item.name == item.number) whenText(item.date) else item.number + " · " + whenText(item.date), size = 13.sp, weight = FontWeight.Normal, color = colors.subtle)
                 }
             }
         }

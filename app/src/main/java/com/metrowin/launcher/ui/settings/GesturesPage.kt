@@ -14,7 +14,8 @@ import com.metrowin.launcher.R
 @Composable
 fun GesturesPage(env: SettingsEnv) {
     val settings = env.settings
-    val actions = GestureAction.entries
+    // With the Action Center off there is nothing for a gesture to open.
+    val actions = GestureAction.entries.filter { settings.actionCenterEnabled || it != GestureAction.ActionCenter }
     val actionNames = actions.map { stringResource(it.label) }
     val pickable = remember(env.apps, settings) { AppFilter.visible(env.apps, settings) }
     SettingsPage {
@@ -81,6 +82,7 @@ fun GesturesPage(env: SettingsEnv) {
                 hint = stringResource(R.string.gest_lock_service_hint), tag = "gestures:lockservice", id = "gest.lockservice",
             )
         }
+        BankSafeSetting(env)
         val context = androidx.compose.ui.platform.LocalContext.current
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             ToggleSetting(
@@ -90,6 +92,21 @@ fun GesturesPage(env: SettingsEnv) {
                 hint = stringResource(R.string.gest_navbar_hint), tag = "gestures:navbar", id = "gest.navbar",
             )
             if (!com.metrowin.launcher.gestures.NavBarOverlay.threeButtons(context)) SettingHint(stringResource(R.string.gest_navbar_needs_buttons))
+            ToggleSetting(
+                label = stringResource(R.string.gest_game_bars),
+                checked = settings.hideBarsInGames,
+                onChange = { value -> env.onChange { it.copy(hideBarsInGames = value) } },
+                hint = stringResource(R.string.gest_game_bars_hint), tag = "gestures:gamebars", id = "gest.gamebars",
+            )
+            StepperSetting(
+                label = stringResource(R.string.gest_navbar_spacing),
+                value = "${settings.navSpacing}%",
+                onDecrement = { env.onChange { it.copy(navSpacing = (it.navSpacing - com.metrowin.launcher.data.LauncherSettings.NAV_SPACING_STEP).coerceAtLeast(com.metrowin.launcher.data.LauncherSettings.NAV_SPACING_MIN)) } },
+                onIncrement = { env.onChange { it.copy(navSpacing = (it.navSpacing + com.metrowin.launcher.data.LauncherSettings.NAV_SPACING_STEP).coerceAtMost(com.metrowin.launcher.data.LauncherSettings.NAV_SPACING_MAX)) } },
+                canDecrement = settings.navSpacing > com.metrowin.launcher.data.LauncherSettings.NAV_SPACING_MIN,
+                canIncrement = settings.navSpacing < com.metrowin.launcher.data.LauncherSettings.NAV_SPACING_MAX,
+                hint = stringResource(R.string.gest_navbar_spacing_hint), tag = "gestures:navbarspacing", id = "gest.navspacing",
+            )
             StepperSetting(
                 label = stringResource(R.string.gest_navbar_hold),
                 value = "%.1f s".format(settings.navHoldMs / 1000f),

@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.R
+import com.metrowin.launcher.data.ActionBarStyle
 import com.metrowin.launcher.data.ClockHours
 import com.metrowin.launcher.data.TileSpacing
 
@@ -27,6 +28,29 @@ fun StartPage(env: SettingsEnv) {
                 checked = settings.moreTiles,
                 onChange = { value -> env.onChange { it.copy(moreTiles = value) } },
                 id = "start.moretiles",
+            )
+            val widthDp = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp.toFloat()
+            // What this screen takes: a count the screen cannot hold is not offered, and a saved one it no longer holds is shown as the nearest.
+            val choices = com.metrowin.launcher.data.TileGrid.customChoices(widthDp, com.metrowin.launcher.data.TileGrid.sidesFor(settings.pagePadding, widthDp))
+            val at = choices.indexOfLast { it <= settings.tileColumns }.coerceAtLeast(0)
+            StepperSetting(
+                label = stringResource(R.string.start_columns),
+                value = if (choices[at] == 0) stringResource(R.string.start_columns_auto) else choices[at].toString(),
+                onDecrement = { env.onChange { it.copy(tileColumns = choices[(at - 1).coerceAtLeast(0)]) } },
+                onIncrement = { env.onChange { it.copy(tileColumns = choices[(at + 1).coerceAtMost(choices.lastIndex)]) } },
+                canDecrement = at > 0,
+                canIncrement = at < choices.lastIndex,
+                hint = stringResource(R.string.start_columns_hint),
+                tag = "start:columns",
+                id = "start.columns",
+            )
+            ToggleSetting(
+                label = stringResource(R.string.start_free),
+                checked = settings.freeLayout,
+                onChange = { value -> env.onChange { it.copy(freeLayout = value) } },
+                hint = stringResource(R.string.start_free_hint),
+                tag = "start:free",
+                id = "start.free",
             )
             ToggleSetting(
                 label = stringResource(R.string.theme_tile_names),
@@ -78,6 +102,17 @@ fun StartPage(env: SettingsEnv) {
                     id = "start.home",
                 )
                 SettingHint(stringResource(R.string.theme_home_page_hint))
+                // The screen it returns to, whichever is home: the first option leaves it to the home.
+                val favorite = settings.favoritePage.takeIf { it in 0..last } ?: -1
+                DropdownSetting(
+                    label = stringResource(R.string.theme_favorite_page),
+                    options = listOf(stringResource(R.string.theme_favorite_default)) + (1..settings.startPages).map { stringResource(R.string.theme_favorite_n, it) },
+                    selected = favorite + 1,
+                    onSelect = { i -> env.onChange { it.copy(favoritePage = i - 1) } },
+                    tag = "start:favorite",
+                    id = "start.favorite",
+                )
+                SettingHint(stringResource(R.string.theme_favorite_hint))
             }
         }
         ToggleSetting(
@@ -87,6 +122,14 @@ fun StartPage(env: SettingsEnv) {
             hint = stringResource(R.string.theme_apps_left_hint),
             tag = "start:appsleft",
             id = "start.appsleft",
+        )
+        ToggleSetting(
+            label = stringResource(R.string.theme_apps_arrow),
+            checked = settings.showAppsArrow,
+            onChange = { value -> env.onChange { it.copy(showAppsArrow = value) } },
+            hint = stringResource(R.string.theme_apps_arrow_hint),
+            tag = "start:appsarrow",
+            id = "start.appsarrow",
         )
         StartFeaturesSettings(env)
         LayoutsSettings(env)
@@ -178,6 +221,15 @@ fun StartBarsPage(env: SettingsEnv) {
             hint = stringResource(R.string.theme_app_bar_hint),
             tag = "start:appbar",
             id = "start.appbar",
+        )
+        OptionList(
+            label = stringResource(R.string.action_bar_title),
+            options = ActionBarStyle.entries.map { stringResource(it.label) },
+            selected = ActionBarStyle.entries.indexOf(settings.actionBar),
+            onSelect = { i -> env.onChange { it.copy(actionBar = ActionBarStyle.entries[i]) } },
+            hint = stringResource(R.string.action_bar_hint),
+            tag = "start:actionbar",
+            id = "start.actionbar",
         )
     }
 }

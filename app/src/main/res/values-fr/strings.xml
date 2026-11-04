@@ -127,6 +127,9 @@
     <string name="theme_dark_to">jusqu’à</string>
     <string name="theme_hours_hint">Le launcher est sombre entre ces heures et clair le reste de la journée.</string>
     <string name="theme_parallax">la photo défile plus lentement que les tuiles</string>
+    <string name="theme_tile_opacity">les tuiles laissent voir la photo</string>
+    <string name="theme_tile_opaque">opaques</string>
+    <string name="theme_tile_see_through">%1$d%% de la couleur</string>
     <string name="theme_start_pages">écrans start</string>
     <string name="theme_start_pages_hint">Avec plusieurs écrans, glissez sur le côté pour passer de l’un à l’autre. Les tuiles que vous retirez d’un écran y restent jusqu’à ce que vous les déplaciez.</string>
     <string name="stepper_minus">moins</string>
@@ -188,6 +191,8 @@
     <string name="bug_log_failed">Le journal n’a pas pu être lu, l’e-mail est sans pièce jointe</string>
     <string name="gest_navbar">Boutons de navigation Windows Phone</string>
     <string name="gest_navbar_hint">Affiche retour, le logo Windows et recherche par-dessus les boutons d’Android. Un appui long sur le logo ouvre les applications récentes. Nécessite le service d’accessibilité.</string>
+    <string name="gest_game_bars">Masquer les barres dans les jeux et les vidéos</string>
+    <string name="gest_game_bars_hint">Quand un jeu ou une vidéo est au premier plan en plein écran, la barre d’état et les boutons de navigation Windows Phone glissent hors de l’écran pour ne pas le couvrir. Balayez vers le haut depuis le bord inférieur pour les boutons, vers le bas depuis le bord supérieur pour la barre d’état. Nécessite le service d’accessibilité.</string>
     <string name="gest_navbar_needs_buttons">Votre téléphone utilise la navigation par gestes : choisissez les trois boutons dans les paramètres système, sous Système, Gestes, Navigation système.</string>
     <string name="dialer_app_name">Téléphone MetroWin</string>
     <string name="dialer_tab_keypad">clavier</string>
@@ -405,6 +410,14 @@
     <string name="gest_lock_service_on">Activé : le launcher peut verrouiller l’écran et ouvrir les applications récentes</string>
     <string name="gest_lock_service_off">Désactivé : le verrouillage de l’écran et le bouton des applications récentes en ont besoin</string>
     <string name="gest_lock_service_open">ouvrir les paramètres d’accessibilité</string>
+    <string name="bank_safe">applications bancaires</string>
+    <string name="bank_safe_toggle">protéger les applications bancaires</string>
+    <string name="bank_safe_hint">Tant qu’une application de banque, de carte ou de portefeuille est au premier plan, le lanceur retire toutes ses fenêtres (les boutons, la barre d’état sur les apps, les bannières, la bande du Centre de notifications) et les remet quand vous la quittez. Les banques sont reconnues par leur nom ; ajoutez ou retirez des apps ci-dessous.</string>
+    <string name="bank_safe_cannot">Ce qui ne peut pas être caché : une banque voit toujours que le service d’accessibilité est actif et que le lanceur peut s’afficher par-dessus les autres apps. Si une app refuse encore de s’ouvrir, désactivez-les un instant avec les boutons ci-dessous.</string>
+    <string name="bank_safe_service_off">éteindre le service d’accessibilité maintenant</string>
+    <string name="bank_safe_service_off_hint">Les boutons sur la barre de navigation, la barre d’état sur les apps, l’écran de verrouillage et la bande du Centre de notifications s’arrêtent jusqu’à ce que vous rallumiez le service dans les paramètres d’accessibilité.</string>
+    <string name="bank_safe_overlay_open">ouvrir l’autorisation d’affichage par-dessus les autres apps</string>
+    <string name="bank_safe_overlay_hint">Retirez-la au lanceur si une banque dit encore qu’une app recouvre son écran ; la bannière sur les autres apps s’arrête avec elle.</string>
     <string name="gest_lock_service_hint">Android ne laisse une application verrouiller l’écran ou ouvrir les applications récentes que par un service d’accessibilité. Celui-ci ne fait rien d’autre : il ne lit rien à l’écran et le seul événement qu’il demande est quelle application est au premier plan, pour retirer les notifications de celle que vous regardez. Les applications récentes s’ouvrent aussitôt, sans l’attente que peut avoir le balayage de la navigation par gestes d’Android avec un lanceur qui n’est pas celui du téléphone.</string>
     <string name="gest_lock_needs_service">Activez d’abord le service de verrouillage de l’écran dans les paramètres d’accessibilité</string>
     <string name="lock_service_label">Verrouillage d’écran MetroWin</string>
@@ -530,9 +543,15 @@
 
     <!-- animation d’ouverture -->
     <string name="screen_launch">ouverture d’une application</string>
-    <string name="launch_turnstile">tourniquet : les tuiles pivotent</string>
+    <string name="launch_turnstile">tourniquet moderne : les tuiles pivotent</string>
     <string name="launch_expand">expansion : la tuile s’agrandit en application</string>
-    <string name="screen_launch_hint">L’expansion garde l’écran Start immobile et fait grandir l’application à partir de la tuile touchée (dans la liste, à partir du milieu). Réduire les animations dans Accessibilité désactive les deux effets.</string>
+    <string name="launch_original">Windows Phone d’origine : les tuiles pivotent rangée par rangée, l’application entre en tournant</string>
+    <string name="screen_padding">marges des pages</string>
+    <string name="screen_padding_hint">L’espace que laissent sur les côtés de l’écran Start, la liste des applications et les pages. Étroites donne un peu plus de largeur aux tuiles et au texte ; larges, un peu moins. On n’arrive jamais à des pages difficiles à utiliser.</string>
+    <string name="padding_compact">étroites</string>
+    <string name="padding_normal">normales</string>
+    <string name="padding_wide">larges</string>
+    <string name="screen_launch_hint">Le tourniquet d’origine de Windows Phone fait pivoter les tuiles depuis le haut, celle touchée en dernier, et fait entrer et sortir l’application en tournant avec Retour ; le moderne est plus rapide et plus doux. L’expansion garde l’écran Start immobile et fait grandir l’application à partir de la tuile touchée (dans la liste, à partir du milieu). Réduire les animations dans Accessibilité désactive tous les effets.</string>
 
     <!-- synchronisation -->
     <string name="sync_heading">synchronisation entre téléphones</string>
@@ -1308,8 +1327,6 @@
     <string name="tiles_more_heading">Actualités, finance et animations</string>
     <string name="transition_title">Comment une tuile change de face</string>
     <string name="transition_hint">Le glissement amène la nouvelle face par le bas ; mixte utilise une façon pour certaines tuiles et l’autre pour le reste. Rien ne bouge de soi-même en économie de batterie ou avec les animations réduites.</string>
-    <string name="news_source_title">Source de la tuile Actualités</string>
-    <string name="news_source_google">Google Actualités : à la une (par défaut)</string>
     <string name="news_topic_WORLD">Google Actualités : monde</string>
     <string name="news_topic_NATION">Google Actualités : votre pays</string>
     <string name="news_topic_BUSINESS">Google Actualités : économie</string>
@@ -1318,11 +1335,8 @@
     <string name="news_topic_SPORTS">Google Actualités : sport</string>
     <string name="news_topic_SCIENCE">Google Actualités : sciences</string>
     <string name="news_topic_HEALTH">Google Actualités : santé</string>
-    <string name="news_source_custom">Un flux de votre choix (RSS ou Atom)</string>
     <string name="news_url_hint">https://example.com/feed.xml</string>
-    <string name="news_url_ok">Cette adresse sera lue.</string>
     <string name="news_url_bad">Adresse incorrecte : elle doit être une page web sur Internet, en https.</string>
-    <string name="news_source_hint">Les actualités les plus importantes du jour, dans la langue et le pays du téléphone. Elles ne sont demandées que lorsque la tuile Actualités est sur Start et que le launcher est à l’écran : au plus toutes les demi-heures, toutes les trois heures en économie de batterie.</string>
     <string name="finance_base_title">Afficher les valeurs en</string>
     <string name="finance_base_auto">La devise de la région (%1$s)</string>
     <string name="finance_items_title">Quoi suivre (jusqu’à 4)</string>
@@ -1331,6 +1345,10 @@
     <string name="theme_panorama_hint">Un grand titre (start, applications) derrière les pages, qui bouge plus lentement que la page quand elle glisse. Désactivé tant que vous ne le demandez pas.</string>
     <string name="theme_app_bar">Barre avec …</string>
     <string name="theme_app_bar_hint">En bas pendant la modification des tuiles : le bouton … affiche les noms des boutons.</string>
+    <string name="action_bar_title">Barre d’actions</string>
+    <string name="action_bar_super">Super barre d’actions</string>
+    <string name="action_bar_retro">Barre d’actions rétro</string>
+    <string name="action_bar_hint">Super : la barre de MetroWin, avec toutes ses fonctions. Rétro : la barre d’application de Windows Phone 8.1, avec des boutons ronds et un … qui montre leurs noms et les éléments de texte. Elle s’applique à Start et aux mini-applications.</string>
     <string name="lock_quick_title">État sur l’écran de verrouillage</string>
     <string name="lock_quick">État rapide (compteurs des applications)</string>
     <string name="lock_quick_hint">Jusqu’à cinq applications avec le nombre de leurs notifications, sous l’heure. Si vous ne choisissez pas, ce sont les applications qui ont le plus de notifications.</string>
@@ -1340,6 +1358,8 @@
     <string name="lock_detail_hint">La dernière notification de cette application, écrite en toutes lettres (qui et quoi) sur l’écran de verrouillage. Toute personne qui voit l’écran la lit.</string>
     <string name="lock_music">Commandes musique et pochette</string>
     <string name="lock_music_hint">Pendant la lecture d’un morceau : sa pochette, son nom et les boutons pour passer au suivant et mettre en pause.</string>
+    <string name="lock_icons_one_row">icônes de notifications sur une seule ligne, plus petites</string>
+    <string name="lock_icons_one_row_hint">Les applications avec des nouveautés sur l’écran de verrouillage restent sur une seule ligne : les icônes rétrécissent pour tenir et un +N indique combien n’ont pas de place. Désactivé : icônes plus grandes qui passent à la ligne, comme aujourd’hui.</string>
     <string name="ac_volume_panel_hint">Les touches de volume affichent un panneau Metro par-dessus le launcher pour ce qui sonne en ce moment : l’appel, la musique (avec le nom de l’application) ou la sonnerie. Android ne permet pas à une application de baisser seule le volume d’une autre ; pour un lecteur qui a son propre volume (une diffusion, une enceinte), le panneau agit sur celui-ci.</string>
     <string name="ac_banner">Bannière pour les nouvelles notifications</string>
     <string name="ac_overlay">Bannière par-dessus les autres applications</string>
@@ -1501,6 +1521,10 @@
     <string name="battery_time_left">Il reste environ %s</string>
     <string name="edit_label_group">titre</string>
     <string name="edit_group">Titre d’un groupe de tuiles</string>
+    <string name="edit_select">sélectionner plusieurs tuiles à déplacer</string>
+    <string name="edit_label_select">sélection</string>
+    <string name="move_pick_hint">Touchez les tuiles à déplacer vers un autre écran Start. Maintenez-en une pour prendre tout son groupe.</string>
+    <string name="move_pick_to">Déplacer vers Start %1$d</string>
     <string name="group_title_prompt">Titre du groupe qui commence ici (vide pour aucun)</string>
     <string name="start_features_title">Options supplémentaires des tuiles</string>
     <string name="start_large">Grande taille</string>
@@ -1772,6 +1796,14 @@
     <string name="gallery_app_hint">La tuile Photos ouvre cette application.</string>
     <string name="gallery_albums_hint">Les images de la tuile viennent uniquement des albums cochés ici, comme dans la galerie, et non de toute la mémoire du téléphone.</string>
     <string name="gallery_albums_none">Aucun album à afficher : laissez d’abord la tuile lire les photos.</string>
+    <string name="gallery_source">Les images viennent de</string>
+    <string name="gallery_source_recent">Les dernières photos du téléphone</string>
+    <string name="gallery_source_albums">Albums cochés ci-dessous</string>
+    <string name="gallery_source_chosen">Photos que je choisis</string>
+    <string name="gallery_pick">Choisir des photos</string>
+    <string name="gallery_pick_clear">Oublier les photos choisies</string>
+    <string name="gallery_chosen_none">Aucune photo choisie : la tuile affiche son icône.</string>
+    <string name="gallery_chosen_count">Photos choisies : %1$d. Une photo supprimée est ignorée.</string>
     <string name="ac_panel_sounds">Son de l’Action Center</string>
     <string name="ac_panel_sounds_hint">Le glissement entendu quand l’Action Center descend et remonte. Il nécessite les sons Metro.</string>
     <string name="voice_set_icon">Icône de l’assistant sur Start</string>
@@ -1898,4 +1930,344 @@
     <string name="sec_action_center_desc">Boutons rapides, curseurs, sons, lampe, panneau de volume</string>
     <string name="sec_notifications">notifications</string>
     <string name="sec_notifications_desc">Accès aux notifications, bannières, réponses, groupes, filtres, application par application</string>
+
+    <!-- Calculator -->
+    <string name="calc_pivot_calc">calculatrice</string>
+    <string name="calc_pivot_history">historique</string>
+    <string name="calc_pivot_convert">convertisseur</string>
+    <string name="calc_standard">standard</string>
+    <string name="calc_scientific">scientifique</string>
+    <string name="calc_degrees">degrés</string>
+    <string name="calc_radians">radians</string>
+    <string name="calc_error_syntax">Expression non valide</string>
+    <string name="calc_error_domain">Opération impossible</string>
+    <string name="calc_error_overflow">Résultat trop grand</string>
+    <string name="calc_history_empty">Aucun calcul pour le moment. Vos calculs restent ici.</string>
+    <string name="calc_history_clear">effacer</string>
+    <string name="calc_amount">Quantité</string>
+    <string name="calc_rates_missing">Les taux de change ne sont pas encore téléchargés. Connectez-vous une fois à internet.</string>
+    <string name="calc_rates_date">Taux du %1$s</string>
+    <string name="calc_kind_length">longueur</string>
+    <string name="calc_kind_area">surface</string>
+    <string name="calc_kind_volume">volume</string>
+    <string name="calc_kind_mass">masse</string>
+    <string name="calc_kind_temperature">température</string>
+    <string name="calc_kind_speed">vitesse</string>
+    <string name="calc_kind_time">temps</string>
+    <string name="calc_kind_data">données</string>
+    <string name="calc_kind_energy">énergie</string>
+    <string name="calc_kind_pressure">pression</string>
+    <string name="calc_kind_angle">angle</string>
+    <string name="calc_kind_currency">devise</string>
+
+    <!-- Notes -->
+    <string name="stock_notes">Notes</string>
+    <string name="stock_todo">À faire</string>
+    <string name="notes_title">notes</string>
+    <string name="notes_search">Rechercher dans les notes</string>
+    <string name="notes_all">toutes</string>
+    <string name="notes_empty">Pas encore de notes. Touchez + pour en écrire une, ou le crayon pour dessiner.</string>
+    <string name="notes_new">nouvelle</string>
+    <string name="notes_sketch">croquis</string>
+    <string name="notes_backup">sauvegarde</string>
+    <string name="notes_restore">restaurer</string>
+    <string name="notes_untitled">Sans titre</string>
+    <string name="notes_title_hint">Titre</string>
+    <string name="notes_body_hint">Écrivez ici…</string>
+    <string name="notes_read">lire</string>
+    <string name="notes_edit">modifier</string>
+    <string name="notes_pin">épingler</string>
+    <string name="notes_unpin">détacher</string>
+    <string name="notes_more">plus</string>
+    <string name="notes_color">Couleur</string>
+    <string name="notes_folder">Dossier</string>
+    <string name="notes_folder_hint">Nom du dossier</string>
+    <string name="notes_share">Partager en texte</string>
+    <string name="notes_export_text">Enregistrer en fichier (.md)</string>
+    <string name="notes_export_sketch">Enregistrer le croquis en image (.png)</string>
+    <string name="notes_sketch_remove">Retirer le croquis</string>
+    <string name="notes_delete">Supprimer la note</string>
+    <string name="notes_delete_confirm">Touchez à nouveau pour supprimer</string>
+    <string name="notes_backup_done">Sauvegarde enregistrée : %1$d notes</string>
+    <string name="notes_backup_failed">La sauvegarde n’a pas pu être enregistrée</string>
+    <string name="notes_restore_done">%1$d notes restaurées</string>
+    <string name="notes_restore_failed">Ce fichier n’est pas une sauvegarde des notes</string>
+    <string name="notes_save_failed">Les notes n’ont pas pu être enregistrées</string>
+    <string name="sketch_undo">annuler</string>
+    <string name="sketch_redo">rétablir</string>
+    <string name="sketch_clear">effacer</string>
+    <string name="sketch_done">terminé</string>
+    <string name="sketch_label_hint">Texte de l’étiquette</string>
+    <string name="sketch_add">Ajouter</string>
+
+    <!-- To do -->
+    <string name="todo_pivot_open">à faire</string>
+    <string name="todo_pivot_done">faites</string>
+    <string name="todo_all">toutes</string>
+    <string name="todo_empty">Rien à faire. Écrivez quelque chose ci-dessous.</string>
+    <string name="todo_late">en retard</string>
+    <string name="todo_today">aujourd’hui</string>
+    <string name="todo_later">plus tard</string>
+    <string name="todo_no_date">sans date</string>
+    <string name="todo_in_one_hour">dans 1 heure</string>
+    <string name="todo_this_evening">ce soir</string>
+    <string name="todo_tomorrow">demain</string>
+    <string name="todo_pick">choisir…</string>
+    <string name="todo_hint">Que faut-il faire ?</string>
+    <string name="todo_list_hint">Liste (facultative)</string>
+    <string name="todo_save">Enregistrer</string>
+    <string name="todo_delete">Supprimer</string>
+    <string name="todo_clear_done">effacer faites</string>
+    <string name="todo_nothing_done">Rien de fait pour le moment.</string>
+
+    <!-- Voice recorder -->
+    <string name="rec_pivot_record">enregistrer</string>
+    <string name="rec_pivot_list">enregistrements</string>
+    <string name="rec_empty">Aucun enregistrement pour le moment.</string>
+    <string name="rec_selection">Sélection : de %1$s à %2$s</string>
+    <string name="rec_play">Écouter</string>
+    <string name="rec_pause">Pause</string>
+    <string name="rec_cut">Enregistrer l’extrait</string>
+    <string name="rec_cut_done">L’extrait a été enregistré comme nouvel enregistrement</string>
+    <string name="rec_cut_failed">L’extrait n’a pas pu être enregistré</string>
+    <string name="rec_working">Un instant…</string>
+    <string name="rec_transcript">Transcription</string>
+    <string name="rec_transcribe">Transcrire ce qui est dit</string>
+    <string name="rec_transcribing">Écoute de l’enregistrement…</string>
+    <string name="rec_transcribe_unsupported">Ce téléphone ne peut pas transcrire un enregistrement : il faut Android 13 et un service de reconnaissance vocale.</string>
+    <string name="rec_transcribe_failed">Le service vocal du téléphone n’a pas pu transcrire cet enregistrement (il ne connaît peut-être pas la langue ou a besoin d’internet).</string>
+    <string name="rec_to_notes">Envoyer aux Notes</string>
+    <string name="rec_sent_to_notes">Enregistrée dans Notes</string>
+    <string name="rec_back">retour</string>
+
+    <!-- Calendar -->
+    <string name="cal_pivot_agenda">agenda</string>
+    <string name="cal_pivot_month">mois</string>
+    <string name="cal_pivot_week">semaine</string>
+    <string name="cal_all_day">toute la journée</string>
+    <string name="cal_no_events">Aucun événement.</string>
+    <string name="cal_new">nouveau</string>
+    <string name="cal_today">aujourd’hui</string>
+    <string name="cal_untitled">(sans titre)</string>
+    <string name="cal_title_hint">Titre</string>
+    <string name="cal_location_hint">Lieu</string>
+    <string name="cal_notes_hint">Notes</string>
+    <string name="cal_all_day_toggle">Toute la journée</string>
+    <string name="cal_starts">Début</string>
+    <string name="cal_ends">Fin</string>
+    <string name="cal_rem_none">pas de rappel</string>
+    <string name="cal_rem_10">10 min avant</string>
+    <string name="cal_rem_30">30 min avant</string>
+    <string name="cal_rem_60">1 h avant</string>
+    <string name="cal_rem_day">1 jour avant</string>
+    <string name="cal_repeats_note">Cet événement se répète : la modification vaut pour toutes ses dates.</string>
+    <string name="cal_need_permission">Le calendrier a besoin de l’autorisation de lire et d’écrire les événements du téléphone.</string>
+    <string name="cal_save_failed">L’événement n’a pas pu être enregistré. Existe-t-il un calendrier qui accepte les événements ?</string>
+
+    <!-- Data Sense and Storage Sense -->
+    <string name="ds_data">données</string>
+    <string name="ds_storage">stockage</string>
+    <string name="ds_time">temps</string>
+    <string name="ds_battery">batterie</string>
+    <string name="ds_network">réseau</string>
+    <string name="ds_need_access">Pour montrer l’usage du téléphone, Android demande d’activer l’« accès aux données d’utilisation » pour le launcher.</string>
+    <string name="ds_today">aujourd’hui</string>
+    <string name="ds_7days">7 jours</string>
+    <string name="ds_30days">30 jours</string>
+    <string name="ds_this_month">ce mois</string>
+    <string name="ds_mobile">Données mobiles</string>
+    <string name="ds_apps">apps</string>
+    <string name="ds_nothing">Rien à afficher pour le moment.</string>
+    <string name="ds_app_detail">Wi-Fi %1$s · mobile %2$s
+au premier plan %3$s · en arrière-plan %4$s
+%5$d%% de toutes les données</string>
+    <string name="ds_limit">limite</string>
+    <string name="ds_limit_title">Limite mensuelle des données mobiles</string>
+    <string name="ds_limit_hint">Go (0 pour aucune)</string>
+    <string name="ds_limit_used">%1$s sur %2$s ce mois-ci</string>
+    <string name="ds_photos">photos</string>
+    <string name="ds_videos">vidéos</string>
+    <string name="ds_music">musique</string>
+    <string name="ds_other">autre</string>
+    <string name="ds_of_total">sur %1$s · %2$s libres</string>
+    <string name="ds_cache">Caches des apps : %1$s</string>
+    <string name="ds_biggest">plus grosses apps</string>
+    <string name="ds_app_sizes">app %1$s · données %2$s · cache %3$s</string>
+    <string name="ds_screen_time">à l’écran</string>
+    <string name="ds_last_used">utilisée %1$s</string>
+    <string name="ds_status">État</string>
+    <string name="ds_charging">en charge</string>
+    <string name="ds_discharging">sur batterie</string>
+    <string name="ds_temperature">Température</string>
+    <string name="ds_voltage">Tension</string>
+    <string name="ds_health">Santé</string>
+    <string name="ds_health_good">bonne</string>
+    <string name="ds_health_hot">trop chaude</string>
+    <string name="ds_health_dead">épuisée</string>
+    <string name="ds_health_cold">trop froide</string>
+    <string name="ds_unknown">inconnue</string>
+    <string name="ds_technology">Technologie</string>
+    <string name="ds_current">Courant</string>
+    <string name="ds_charge">Charge</string>
+    <string name="ds_offline">Pas de connexion.</string>
+    <string name="ds_operator">Opérateur</string>
+    <string name="ds_down">Téléchargement</string>
+    <string name="ds_up">Envoi</string>
+    <string name="ds_metered">Facturée à l’usage</string>
+    <string name="ds_roaming">Itinérance</string>
+    <string name="ds_vpn">VPN</string>
+    <string name="ds_internet">Internet fonctionne</string>
+    <string name="ds_yes">oui</string>
+    <string name="ds_no">non</string>
+
+    <!-- Wallet -->
+    <string name="wal_title">portefeuille</string>
+    <string name="wal_search">Rechercher une carte</string>
+    <string name="wal_empty">Pas encore de cartes. Touchez + pour ajouter une carte de fidélité ou un billet.</string>
+    <string name="wal_kind_loyalty">fidélité</string>
+    <string name="wal_kind_ticket">billets</string>
+    <string name="wal_kind_other">autres</string>
+    <string name="wal_new">Nouvelle carte</string>
+    <string name="wal_code">Code (chiffres ou texte)</string>
+    <string name="wal_from_picture">Lire le code depuis une image</string>
+    <string name="wal_picture_failed">Aucun code n’a pu être lu dans cette image.</string>
+    <string name="wal_format_invalid">Ce code ne peut pas s’écrire dans ce format (l’EAN-13 demande 12 ou 13 chiffres).</string>
+    <string name="wal_no_expiry">sans date d’expiration</string>
+    <string name="wal_expires">valable jusqu’au %1$s</string>
+    <string name="wal_expired">expirée</string>
+    <string name="wal_save_failed">Les cartes n’ont pas pu être enregistrées</string>
+    <string name="wal_import_failed">Ce fichier ne contient aucune carte du portefeuille</string>
+    <string name="wal_imported">%1$d cartes restaurées</string>
+
+    <!-- News app -->
+    <string name="nws_tile">vignette</string>
+    <string name="nws_tile_set">La vignette Actualités de Start affiche maintenant « %1$s ».</string>
+    <string name="nws_sources">sources</string>
+    <string name="nws_offline">Les actualités n’ont pas pu être lues. Vérifiez la connexion et réessayez.</string>
+    <string name="nws_add_google">Rubriques de Google News</string>
+    <string name="nws_add_feed">Autres sources, ou un flux à vous (RSS ou Atom)</string>
+    <string name="nws_name_hint">Nom (facultatif)</string>
+    <string name="nws_add">Ajouter le flux</string>
+
+    <!-- File manager -->
+    <string name="fm_internal">Téléphone</string>
+    <string name="fm_downloads">Téléchargements</string>
+    <string name="fm_camera">Appareil photo</string>
+    <string name="fm_pictures">Images</string>
+    <string name="fm_music">Musique</string>
+    <string name="fm_movies">Films</string>
+    <string name="fm_documents">Documents</string>
+    <string name="fm_need_access">Pour afficher et modifier vos fichiers, le launcher a besoin d’accéder à tous les fichiers du téléphone. Android demande de l’autoriser dans un écran dédié.</string>
+    <string name="fm_folder_empty">Ce dossier est vide.</string>
+    <string name="fm_unreadable">Ce dossier ne peut pas être lu.</string>
+    <string name="fm_search_hint">Rechercher dans ce dossier</string>
+    <string name="fm_search_deep">Rechercher aussi dans les sous-dossiers</string>
+    <string name="fm_new">nouveau</string>
+    <string name="fm_places">lieux</string>
+    <string name="fm_sort">trier</string>
+    <string name="fm_more">plus</string>
+    <string name="fm_copy">copier</string>
+    <string name="fm_cut">couper</string>
+    <string name="fm_delete">supprimer</string>
+    <string name="fm_paste">coller</string>
+    <string name="fm_share">partager</string>
+    <string name="fm_rename">Renommer</string>
+    <string name="fm_zip">Compresser en .zip</string>
+    <string name="fm_extract_here">Extraire ici</string>
+    <string name="fm_extract_to">Extraire dans un dossier du même nom</string>
+    <string name="fm_properties">Propriétés et sommes de contrôle</string>
+    <string name="fm_select_all">Tout sélectionner</string>
+    <string name="fm_invert">Inverser la sélection</string>
+    <string name="fm_copy_to_other">Copier dans l’autre panneau</string>
+    <string name="fm_move_to_other">Déplacer dans l’autre panneau</string>
+    <string name="fm_copy_path">Copier le chemin</string>
+    <string name="fm_bookmark">Ajouter aux lieux</string>
+    <string name="fm_unbookmark">Retirer des lieux</string>
+    <string name="fm_new_folder">Nouveau dossier</string>
+    <string name="fm_new_file">Nouveau fichier texte</string>
+    <string name="fm_name">Nom</string>
+    <string name="fm_name_bad">Ce nom ne peut pas être utilisé ou est déjà pris.</string>
+    <string name="fm_trash">Corbeille</string>
+    <string name="fm_trash_empty">La corbeille est vide. Les éléments y restent 30 jours.</string>
+    <string name="fm_empty_trash">Vider la corbeille</string>
+    <string name="fm_restore">restaurer</string>
+    <string name="fm_sort_name">nom</string>
+    <string name="fm_sort_date">date</string>
+    <string name="fm_sort_size">taille</string>
+    <string name="fm_sort_type">type</string>
+    <string name="fm_descending">plus grands ou récents d’abord</string>
+    <string name="fm_hidden">Afficher les fichiers cachés</string>
+    <string name="fm_conflict_title">%1$d existent déjà dans le dossier</string>
+    <string name="fm_replace">Les remplacer</string>
+    <string name="fm_keep_both">Garder les deux</string>
+    <string name="fm_skip">Les ignorer</string>
+    <string name="fm_working">Un instant…</string>
+    <string name="fm_cancel">Annuler</string>
+    <string name="fm_to_trash">Mettre à la corbeille</string>
+    <string name="fm_delete_forever">Supprimer définitivement</string>
+    <string name="fm_delete_ask">%1$d sélectionnés</string>
+    <string name="fm_failed">%1$d n’ont pas pu être faits</string>
+    <string name="fm_checksums">Sommes de contrôle</string>
+    <string name="fm_calculate">Calculer</string>
+    <string name="fm_size">Taille</string>
+    <string name="fm_modified">Modifié</string>
+    <string name="fm_path">Chemin</string>
+    <string name="fm_type">Type</string>
+    <string name="fm_contains">Contient</string>
+    <string name="fm_items">%1$d éléments</string>
+    <string name="fm_edit_text">Modifier comme texte</string>
+    <string name="fm_saved">Enregistré</string>
+    <string name="fm_save_failed">Le fichier n’a pas pu être enregistré</string>
+    <string name="fm_too_big">Ce fichier est trop gros pour être modifié ici.</string>
+    <string name="fm_save">Enregistrer</string>
+    <string name="fm_back">retour</string>
+    <string name="fm_zip_name">Nom de l’archive</string>
+    <string name="fm_extract_bad">Cette archive n’a pas pu être extraite (endommagée ou dangereuse).</string>
+    <string name="fm_path_copied">Chemin copié</string>
+    <string name="fm_clipboard">%1$d en attente d’être collés</string>
+
+    <!-- File manager (more) -->
+    <string name="fm_open_with">Ouvrir avec une autre app</string>
+
+    <!-- Start arrow -->
+    <string name="theme_apps_arrow">Afficher la flèche sous les vignettes</string>
+    <string name="theme_apps_arrow_hint">La flèche ronde en bas à droite de Start. Désactivée, elle n’est pas dessinée, mais glisser vers la page suivante ou la liste des apps fonctionne comme avant.</string>
+
+    <!-- Action Center switch -->
+    <string name="ac_enabled">Utiliser l’Action Center</string>
+    <string name="ac_enabled_hint">Désactivé, le panneau qui descend avec les notifications et les boutons rapides disparaît (dans le launcher et sur les autres apps), les gestes qui l’ouvraient ne font rien et les notifications restent dans le volet d’Android, avec leurs sons. Celles que le launcher a déjà déplacées ne reviennent pas. Les vignettes et l’écran de verrouillage lisent toujours les notifications pour leurs compteurs et leurs listes.</string>
+
+    <!-- Wallpaper of Android -->
+    <string name="theme_system_wallpaper">Même fond pour Android</string>
+    <string name="theme_system_wallpaper_hint">Tant que MetroWin est votre app d’accueil, le fond d’Android est la photo de Start (ou sa couleur, sans photo). C’est ce que l’écran des apps récentes montre derrière les cartes, donc le fond du launcher d’origine du téléphone disparaît. Désactivé, Android retrouve son fond par défaut. L’écran de verrouillage a son propre bouton.</string>
+
+    <!-- Action Center: mobile data -->
+    <string name="qa_mobile_data">Données mobiles</string>
+
+    <!-- News app pictures -->
+    <string name="nws_pictures">Afficher les images</string>
+    <string name="start_columns">Tuiles par ligne</string>
+    <string name="start_columns_auto">auto</string>
+    <string name="start_columns_hint">Combien de petites tuiles tiennent en largeur dans Start. Automatique garde ce que donnent l’écran et \"afficher plus de tuiles\" ; un nombre est limité à ce que la largeur de l’écran contient sans rendre les tuiles trop petites pour être touchées.</string>
+    <string name="start_free">Mode libre</string>
+    <string name="start_free_hint">Une tuile reste là où vous la déposez, sur n’importe quelle case de la grille, et les autres ne remontent pas pour combler le vide. Désactivé, les tuiles s’enchaînent de nouveau dans l’ordre, comme avant ; rien de ce que vous avez placé n’est perdu.</string>
+    <string name="gest_navbar_spacing">Distance entre les boutons</string>
+    <string name="gest_navbar_spacing_hint">L’écart entre retour, le logo Windows et la recherche dans la barre de navigation, de 50 à 110 pour cent de la distance habituelle.</string>
+    <string name="launch_fade">fondu : l\'app apparaît en fondu</string>
+    <string name="launch_slide">glisser : l\'app arrive par la droite</string>
+    <string name="launch_rise">monter : l\'app monte du bas</string>
+    <string name="launch_zoom">zoom : l\'app grandit depuis le centre</string>
+    <string name="launch_instant">aucune : l\'app s\'ouvre aussitôt</string>
+    <string name="screen_launch_hint_more">Fondu, glisser, monter et zoom ne changent que la façon dont la fenêtre de l\'app arrive ; aucune ne l\'ouvre aussitôt. La vitesse des animations est dans Gestes.</string>
+    <string name="theme_favorite_page">Écran Start favori</string>
+    <string name="theme_favorite_default">le principal</string>
+    <string name="theme_favorite_n">Écran Start %1$d</string>
+    <string name="theme_favorite_hint">L\'écran Start où le lanceur revient quand on appuie sur Windows ou qu\'on revient d\'une app. Par défaut, le principal.</string>
+    <string name="access_font">Police</string>
+    <string name="access_font_default">du style (par défaut)</string>
+    <string name="access_font_custom">ma police</string>
+    <string name="access_font_pick">choisir un fichier de police</string>
+    <string name="access_font_hint">Le lanceur propose vingt polices, et on peut apporter la sienne (.ttf ou .otf). La police du téléphone, si elle est activée, passe avant.</string>
+    <string name="access_font_sample">Portez ce vieux whisky au juge blond qui fume 0123456789</string>
+    <string name="access_font_failed">Ce fichier n\'est pas une police lisible</string>
 </resources>

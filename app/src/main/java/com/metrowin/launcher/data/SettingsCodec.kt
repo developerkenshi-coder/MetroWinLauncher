@@ -16,6 +16,7 @@ object SettingsCodec {
 
     /** The most words the notification filter keeps. */
     const val NOTIF_WORDS_MAX = 30
+    const val MAX_GALLERY_PHOTOS = 60
 
     /**
      * With [portable] the settings that belong to this phone alone are left out (the backup folder, the sync
@@ -34,10 +35,16 @@ object SettingsCodec {
         put("batterySaving", s.batterySaving.code)
         put("autoAccent", s.autoAccent)
         put("moreTiles", s.moreTiles)
+        put("tileColumns", s.tileColumns)
+        put("freeLayout", s.freeLayout)
         put("parallax", s.parallax)
+        put("tileOpacity", s.tileOpacity)
         put("startPages", s.startPages)
         put("homePage", s.homePage)
+        put("favoritePage", s.favoritePage)
         put("appListLeft", s.appListLeft)
+        put("showAppsArrow", s.showAppsArrow)
+        put("systemWallpaperFollows", s.systemWallpaperFollows)
         put("showClock", s.showClock)
         put("clockTaps", s.clockTaps)
         put("clockHours", s.clockHours.code)
@@ -69,9 +76,12 @@ object SettingsCodec {
         put("showTileNames", s.showTileNames)
         put("boldText", s.boldText)
         put("systemFont", s.systemFont)
+        put("appFont", s.appFont)
+        put("fontRevision", s.fontRevision)
         put("homeDoubleAction", s.homeDoubleAction.code)
         put("homeDoubleApp", s.homeDoubleApp)
         put("tileSpacing", s.tileSpacing.code)
+        put("pagePadding", s.pagePadding.code)
         put("hideStatusBar", s.hideStatusBar)
         put("metroStatusBar", s.metroStatusBar)
         put("metroStatusBarOverApps", s.metroStatusBarOverApps)
@@ -82,8 +92,10 @@ object SettingsCodec {
         put("launchAnimation", s.launchAnimation.code)
         put("panoramaTitles", s.panoramaTitles)
         put("appBar", s.appBar)
+        put("actionBar", s.actionBar.code)
 
         put("edgePull", s.edgePull)
+        put("actionCenterEnabled", s.actionCenterEnabled)
         put("edgeBackPan", s.edgeBackPan)
         put("doubleTapAction", s.doubleTapAction.code)
         put("twoFingerDownAction", s.twoFingerDownAction.code)
@@ -117,9 +129,14 @@ object SettingsCodec {
         put("hideSystemNotifications", s.hideSystemNotifications)
         put("edgeActionCenter", s.edgeActionCenter)
         put("metroNavBar", s.metroNavBar)
+        put("hideBarsInGames", s.hideBarsInGames)
         put("lockOverlay", s.lockOverlay)
+        put("bankSafe", s.bankSafe)
+        put("bankSafeAdd", JSONArray(s.bankSafeAdd.sorted()))
+        put("bankSafeSkip", JSONArray(s.bankSafeSkip.sorted()))
         put("antiBurnIn", s.antiBurnIn)
         put("navHoldMs", s.navHoldMs)
+        put("navSpacing", s.navSpacing)
         put("dialerSources", s.dialerSources)
         put("notifControl", s.notifControl)
         put("notifHideCenter", JSONArray(s.notifHideCenter.sorted()))
@@ -175,6 +192,7 @@ object SettingsCodec {
         put("showPrivateApps", s.showPrivateApps)
         put("lockShowAlarm", s.lockShowAlarm)
         put("lockShowNotifications", s.lockShowNotifications)
+        put("lockIconsOneRow", s.lockIconsOneRow)
         put("lockShowBattery", s.lockShowBattery)
         put("lockShowWeather", s.lockShowWeather)
         put("lockShowEvent", s.lockShowEvent)
@@ -197,6 +215,8 @@ object SettingsCodec {
         put("todayAlarm", s.todayAlarm)
         put("galleryApp", s.galleryApp)
         put("galleryAlbums", JSONArray(s.galleryAlbums.sorted()))
+        put("gallerySource", s.gallerySource.code)
+        put("galleryPhotos", JSONArray(s.galleryPhotos))
         put("panelSounds", s.panelSounds)
         put("assistantIcon", s.assistantIcon)
         put("torchStrength", s.torchStrength.toDouble())
@@ -254,11 +274,17 @@ object SettingsCodec {
             batterySaving = if (o.has("batterySaving")) BatterySaving.fromCode(o.optString("batterySaving")) else base.batterySaving,
             autoAccent = o.optBoolean("autoAccent", base.autoAccent),
             moreTiles = o.optBoolean("moreTiles", base.moreTiles),
+            tileColumns = o.optInt("tileColumns", base.tileColumns).let { if (it <= 0) 0 else (it - it % 2).coerceIn(TileGrid.DEFAULT_COLUMNS, TileGrid.MAX_CUSTOM_COLUMNS) },
+            freeLayout = o.optBoolean("freeLayout", base.freeLayout),
             backgroundRevision = o.optInt("backgroundRevision", base.backgroundRevision).coerceAtLeast(0),
             parallax = o.optBoolean("parallax", base.parallax),
+            tileOpacity = o.optInt("tileOpacity", base.tileOpacity).coerceIn(30, 100),
             startPages = o.optInt("startPages", base.startPages).coerceIn(1, LauncherSettings.MAX_START_PAGES),
             homePage = o.optInt("homePage", base.homePage).coerceIn(0, LauncherSettings.MAX_START_PAGES - 1),
+            favoritePage = o.optInt("favoritePage", base.favoritePage).coerceIn(-1, LauncherSettings.MAX_START_PAGES - 1),
             appListLeft = o.optBoolean("appListLeft", base.appListLeft),
+            showAppsArrow = o.optBoolean("showAppsArrow", base.showAppsArrow),
+            systemWallpaperFollows = o.optBoolean("systemWallpaperFollows", base.systemWallpaperFollows),
             showClock = o.optBoolean("showClock", base.showClock),
             clockTaps = o.optBoolean("clockTaps", base.clockTaps),
             clockHours = if (o.has("clockHours")) ClockHours.fromCode(o.optString("clockHours")) else base.clockHours,
@@ -296,9 +322,12 @@ object SettingsCodec {
             showTileNames = o.optBoolean("showTileNames", base.showTileNames),
             boldText = o.optBoolean("boldText", base.boldText),
             systemFont = o.optBoolean("systemFont", base.systemFont),
+            appFont = o.optString("appFont", base.appFont),
+            fontRevision = o.optInt("fontRevision", base.fontRevision),
             homeDoubleAction = GestureAction.fromCode(o.optString("homeDoubleAction").ifEmpty { null }, base.homeDoubleAction),
             homeDoubleApp = o.optString("homeDoubleApp", base.homeDoubleApp),
             tileSpacing = if (o.has("tileSpacing")) TileSpacing.fromCode(o.optString("tileSpacing")) else base.tileSpacing,
+            pagePadding = if (o.has("pagePadding")) PagePadding.fromCode(o.optString("pagePadding")) else base.pagePadding,
             startPhotoFit = if (o.has("startPhotoFit")) PhotoFit.fromCode(o.optString("startPhotoFit")) else base.startPhotoFit,
             startPhotoZoom = o.optInt("startPhotoZoom", base.startPhotoZoom).coerceIn(100, 300),
             startPhotoX = o.optInt("startPhotoX", base.startPhotoX).coerceIn(0, 100),
@@ -309,8 +338,10 @@ object SettingsCodec {
             launchAnimation = if (o.has("launchAnimation")) LaunchAnimation.fromCode(o.optString("launchAnimation")) else base.launchAnimation,
             panoramaTitles = o.optBoolean("panoramaTitles", base.panoramaTitles),
             appBar = o.optBoolean("appBar", base.appBar),
+            actionBar = if (o.has("actionBar")) ActionBarStyle.fromCode(o.optString("actionBar")) else base.actionBar,
 
             edgePull = o.optBoolean("edgePull", base.edgePull),
+            actionCenterEnabled = o.optBoolean("actionCenterEnabled", base.actionCenterEnabled),
             edgeBackPan = o.optBoolean("edgeBackPan", base.edgeBackPan),
             doubleTapAction = GestureAction.fromCode(o.optString("doubleTapAction").ifEmpty { null }, base.doubleTapAction),
             twoFingerDownAction = GestureAction.fromCode(o.optString("twoFingerDownAction").ifEmpty { null }, base.twoFingerDownAction),
@@ -344,9 +375,14 @@ object SettingsCodec {
             hideSystemNotifications = o.optBoolean("hideSystemNotifications", base.hideSystemNotifications),
             edgeActionCenter = o.optBoolean("edgeActionCenter", base.edgeActionCenter),
             metroNavBar = o.optBoolean("metroNavBar", base.metroNavBar),
+            hideBarsInGames = o.optBoolean("hideBarsInGames", base.hideBarsInGames),
             lockOverlay = o.optBoolean("lockOverlay", base.lockOverlay),
+            bankSafe = o.optBoolean("bankSafe", base.bankSafe),
+            bankSafeAdd = strings("bankSafeAdd", base.bankSafeAdd).toSet(),
+            bankSafeSkip = strings("bankSafeSkip", base.bankSafeSkip).toSet(),
             antiBurnIn = o.optBoolean("antiBurnIn", base.antiBurnIn),
             navHoldMs = o.optInt("navHoldMs", base.navHoldMs).coerceIn(LauncherSettings.NAV_HOLD_MIN_MS, LauncherSettings.NAV_HOLD_MAX_MS),
+            navSpacing = o.optInt("navSpacing", base.navSpacing).coerceIn(LauncherSettings.NAV_SPACING_MIN, LauncherSettings.NAV_SPACING_MAX),
             dialerSources = o.optInt("dialerSources", base.dialerSources) and ContactSource.ALL,
             notifControl = o.optBoolean("notifControl", base.notifControl),
             notifHideCenter = strings("notifHideCenter", base.notifHideCenter).toSet(),
@@ -406,6 +442,7 @@ object SettingsCodec {
             lockPhotoRevision = o.optInt("lockPhotoRevision", base.lockPhotoRevision).coerceAtLeast(0),
             lockShowAlarm = o.optBoolean("lockShowAlarm", base.lockShowAlarm),
             lockShowNotifications = o.optBoolean("lockShowNotifications", base.lockShowNotifications),
+            lockIconsOneRow = o.optBoolean("lockIconsOneRow", base.lockIconsOneRow),
             lockShowBattery = o.optBoolean("lockShowBattery", base.lockShowBattery),
             lockShowWeather = o.optBoolean("lockShowWeather", base.lockShowWeather),
             lockShowEvent = o.optBoolean("lockShowEvent", base.lockShowEvent),
@@ -428,6 +465,10 @@ object SettingsCodec {
             todayAlarm = o.optBoolean("todayAlarm", base.todayAlarm),
             galleryApp = o.optString("galleryApp", base.galleryApp).take(256),
             galleryAlbums = strings("galleryAlbums", base.galleryAlbums).take(200).toSet(),
+            // Backups from before the source existed: albums ticked meant "only these albums".
+            gallerySource = GallerySource.fromCode(o.optString("gallerySource"))
+                ?: if ((o.optJSONArray("galleryAlbums")?.length() ?: 0) > 0) GallerySource.Albums else base.gallerySource,
+            galleryPhotos = strings("galleryPhotos", base.galleryPhotos).filter { it.startsWith("content://") }.distinct().take(MAX_GALLERY_PHOTOS),
             panelSounds = o.optBoolean("panelSounds", base.panelSounds),
             assistantIcon = o.optBoolean("assistantIcon", base.assistantIcon),
             torchStrength = o.optDouble("torchStrength", base.torchStrength.toDouble()).toFloat().coerceIn(0.05f, 1f),

@@ -88,6 +88,7 @@ class BackgroundWorkTest {
         context.getSystemService(NotificationManager::class.java)
             .createNotificationChannel(NotificationChannel("test", "test", NotificationManager.IMPORTANCE_DEFAULT))
         repeat(10) { NotificationHub.stopWatching() }
+        NotificationHub.clearHeld()
         NotificationHub.update(emptyList())
         service = Robolectric.setupService(NotificationService::class.java)
         shadow = shadowOf(service)
@@ -97,6 +98,7 @@ class BackgroundWorkTest {
     fun tearDown() {
         repeat(10) { NotificationHub.stopWatching() }
         service.onListenerDisconnected()
+        NotificationHub.clearHeld()
         NotificationHub.update(emptyList())
     }
 

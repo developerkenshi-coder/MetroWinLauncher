@@ -54,6 +54,9 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.ui.graphics.graphicsLayer
+import com.metrowin.launcher.data.WidgetSizing
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -648,14 +651,24 @@ private fun WidgetFace(
             },
         ),
     ) {
-        AndroidView(
-            factory = { context -> host.createView(context, appWidgetId) ?: View(context) },
-            modifier = Modifier.fillMaxSize(),
-            update = { view ->
-                // Widgets that adapt their layout to their size need to be told it.
-                (view as? AppWidgetHostView)?.updateAppWidgetSize(null, width.value.toInt(), height.value.toInt(), width.value.toInt(), height.value.toInt())
-            },
-        )
+        // A tile smaller than what the widget needs would cut it off: the widget is laid out at that size, and shrunk to fit the tile.
+        val density = LocalDensity.current.density
+        val info = remember(host, appWidgetId) { host.info(appWidgetId) }
+        val neededW = info?.let { WidgetSizing.needed((it.minWidth / density).toInt(), (it.minResizeWidth / density).toInt()) } ?: 0
+        val neededH = info?.let { WidgetSizing.needed((it.minHeight / density).toInt(), (it.minResizeHeight / density).toInt()) } ?: 0
+        val scale = WidgetSizing.fitScale(width.value, height.value, neededW.toFloat(), neededH.toFloat())
+        val layoutW = width.value / scale
+        val layoutH = height.value / scale
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            AndroidView(
+                factory = { context -> host.createView(context, appWidgetId) ?: View(context) },
+                modifier = if (scale >= 1f) Modifier.fillMaxSize() else Modifier.requiredSize(layoutW.dp, layoutH.dp).graphicsLayer { scaleX = scale; scaleY = scale },
+                update = { view ->
+                    // Widgets that adapt their layout to their size need to be told it.
+                    (view as? AppWidgetHostView)?.updateAppWidgetSize(null, layoutW.toInt(), layoutH.toInt(), layoutW.toInt(), layoutH.toInt())
+                },
+            )
+        }
         if (!interactive) Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { } })
     }
 }
@@ -689,22 +702,28 @@ private fun CardsFace(item: AppItem, size: TileSize, width: Dp, height: Dp, card
     // A small tile has room for who wrote and a few words: the messages, the notifications and the pictures, not the list or the songs.
     val shown = if (size == TileSize.Small) all.filter { it is LiveCard.Message || it is LiveCard.Digest || it is LiveCard.Picture } else all
     // What the app has to say comes first, as on the phone: the tile shows the newest thing at once, and again whenever something new comes in.
-    FlipContainer(1 + shown.size, seed, startFace = if (shown.isNotEmpty()) 1 else 0, resetKey = shown.firstOrNull()) { face ->
-        if (face == 0) {
-            StaticFace(item, size, width, height)
-        } else {
-            Box(Modifier.fillMaxSize().testTag("card:${shown[face - 1]::class.simpleName}")) {
-                when (val card = shown[face - 1]) {
-                    is LiveCard.Message -> if (size == TileSize.Small) SmallCard(card.sender, card.text) else MessageCard(card, size)
-                    is LiveCard.Digest -> if (size == TileSize.Small) SmallCard(card.title, card.text) else DigestCard(card)
-                    is LiveCard.Picture -> PictureCard(card)
-                    is LiveCard.Progress -> ProgressCard(card, width)
-                    is LiveCard.Playing -> PlayingCard(card, size, height)
-                    is LiveCard.Inbox -> InboxCard(card, height)
+    // Two or more things to say (WhatsApp with two chats): only the inside turns over, the name of the app stays where it is.
+    // One thing: the whole face turns, name included, as before.
+    val inner = shown.size >= 2 && size != TileSize.Small
+    Box(Modifier.fillMaxSize()) {
+        FlipContainer(1 + shown.size, seed, startFace = if (shown.isNotEmpty()) 1 else 0, resetKey = shown.firstOrNull()) { face ->
+            if (face == 0) {
+                StaticFace(item, size, width, height, label = !inner)
+            } else {
+                Box(Modifier.fillMaxSize().testTag("card:${shown[face - 1]::class.simpleName}")) {
+                    when (val card = shown[face - 1]) {
+                        is LiveCard.Message -> if (size == TileSize.Small) SmallCard(card.sender, card.text) else MessageCard(card, size)
+                        is LiveCard.Digest -> if (size == TileSize.Small) SmallCard(card.title, card.text) else DigestCard(card)
+                        is LiveCard.Picture -> PictureCard(card)
+                        is LiveCard.Progress -> ProgressCard(card, width)
+                        is LiveCard.Playing -> PlayingCard(card, size, height)
+                        is LiveCard.Inbox -> InboxCard(card, height)
+                    }
+                    if (size != TileSize.Small && !inner) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
                 }
-                if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
             }
         }
+        if (inner) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
     }
 }
 
@@ -1111,20 +1130,20 @@ private fun TorchFace(item: AppItem, size: TileSize, width: Dp, height: Dp, on: 
 
 /** Glyph or icon in the middle, name in the bottom left corner, like every Windows Phone tile. */
 @Composable
-internal fun StaticFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
+internal fun StaticFace(item: AppItem, size: TileSize, width: Dp, height: Dp, label: Boolean = true) {
     // As on Windows Phone, the picture of an app can be the tile: its icon fills the tile (a wide tile has it in the middle), with the name over it.
     if (LocalTileFeatures.current.largeIcons && item.glyph == null) {
         Box(Modifier.fillMaxSize().clipToBounds()) {
             // On the colour of the icon (the tile takes it), big, with room around it; the name stays small in the corner.
             AppIcon(item, minOf(width, height) * if (size == TileSize.Small) 0.82f else 0.7f, Modifier.align(Alignment.Center))
-            if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+            if (label && size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
         }
         return
     }
     Box(Modifier.fillMaxSize()) {
         val art = minOf(width, height) * if (size == TileSize.Small) 0.5f else 0.42f
         AppArt(item, art, Modifier.align(Alignment.Center))
-        if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+        if (label && size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
     }
 }
 

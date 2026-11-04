@@ -27,7 +27,14 @@ import kotlin.math.roundToInt
  * one peeking in at the edge. They slide with the pages, so swiping the pages moves the titles.
  */
 @Composable
-fun PivotHeader(titles: List<String>, pagerState: PagerState, modifier: Modifier = Modifier) {
+fun PivotHeader(
+    titles: List<String>,
+    pagerState: PagerState,
+    modifier: Modifier = Modifier,
+    size: androidx.compose.ui.unit.TextUnit = 44.sp,
+    /** A colour for the titles (the current one in full, the others fainter) instead of the foreground; null keeps the usual look. */
+    color: androidx.compose.ui.graphics.Color? = null,
+) {
     val colors = LocalMetroColors.current
     val widths = remember(titles) { mutableStateListOf<Int>().apply { repeat(titles.size) { add(0) } } }
     val spacing = with(LocalDensity.current) { 24.dp.roundToPx() }
@@ -54,8 +61,9 @@ fun PivotHeader(titles: List<String>, pagerState: PagerState, modifier: Modifier
         titles.forEachIndexed { index, title ->
             MetroText(
                 text = title,
-                size = 44.sp,
-                color = lerp(colors.foreground, colors.subtle, abs(position - index).coerceIn(0f, 1f)),
+                size = size,
+                color = if (color == null) lerp(colors.foreground, colors.subtle, abs(position - index).coerceIn(0f, 1f))
+                else color.copy(alpha = 1f - 0.45f * abs(position - index).coerceIn(0f, 1f)),
                 modifier = Modifier.onSizeChanged { widths[index] = it.width },
             )
         }

@@ -15,6 +15,9 @@ import com.metrowin.launcher.data.Ringer
 import com.metrowin.launcher.data.StatusIcons
 import com.metrowin.launcher.data.StatusItem
 import com.metrowin.launcher.data.StatusReading
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.foundation.layout.WindowInsets
@@ -32,7 +35,24 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import android.app.AlarmManager
+import android.app.NotificationManager
+import android.bluetooth.BluetoothAdapter
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.location.LocationManager
+import android.media.AudioManager
+import android.net.ConnectivityManager
+import android.net.wifi.WifiManager
+import android.os.PowerManager
+import androidx.core.content.ContextCompat
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -74,6 +94,34 @@ fun metroStatusBarHeight(): Dp {
 private val MIN_BAR = 24.dp
 
 /**
+ * The last broadcast of any of [actions] (null before the first), received while this is composed: a change is on the bar as the phone says
+ * it, not at the next poll. Each broadcast is a new value, so what is keyed on it starts again. A sticky one (the battery) answers at once.
+ */
+@Composable
+fun rememberBroadcast(vararg actions: String): Intent? {
+    val context = LocalContext.current
+    var last by remember { mutableStateOf<Intent?>(null) }
+    DisposableEffect(context) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                last = intent
+            }
+        }
+        ContextCompat.registerReceiver(context, receiver, IntentFilter().apply { actions.forEach(::addAction) }, ContextCompat.RECEIVER_NOT_EXPORTED)
+        onDispose { runCatching { context.unregisterReceiver(receiver) } }
+    }
+    return last
+}
+
+/** What changes the icons of the toggles and the Wi-Fi, so they follow the phone at once; the poll below stays as a net for what sends nothing. */
+private val RADIO_ACTIONS = arrayOf(
+    WifiManager.RSSI_CHANGED_ACTION, WifiManager.NETWORK_STATE_CHANGED_ACTION, WifiManager.WIFI_STATE_CHANGED_ACTION,
+    Intent.ACTION_AIRPLANE_MODE_CHANGED, BluetoothAdapter.ACTION_STATE_CHANGED, AudioManager.RINGER_MODE_CHANGED_ACTION,
+    NotificationManager.ACTION_INTERRUPTION_FILTER_CHANGED, PowerManager.ACTION_POWER_SAVE_MODE_CHANGED, LocationManager.MODE_CHANGED_ACTION,
+    AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED, @Suppress("DEPRECATION") ConnectivityManager.CONNECTIVITY_ACTION,
+)
+
+/**
  * The status bar of Windows Phone: the notifications on the left, and on the right what the phone is doing (airplane mode, hotspot, VPN,
  * location, Bluetooth, alarm, silent, do not disturb, battery saver), the mobile signal with the kind of network (5G, 4G, 3G, E), the Wi-Fi,
  * the battery with its percentage and the time, thin and white over the page. [hidden] are the ids of [StatusItem] the user turned off.
@@ -90,28 +138,39 @@ fun MetroStatusBar(
     hidden: Set<String> = emptySet(),
 ) {
     val context = LocalContext.current
-    val reading by produceState(StatusReading()) {
-        while (true) {
-            value = withContext(Dispatchers.IO) { StatusIcons.read(context) }
-            delay(RADIO_REFRESH_MS)
+    // The polls run only while the bar is on screen (started): with the screen off, as over the lock screen, they stop and the phone can sleep; back, they read at once.
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val radioChange = rememberBroadcast(*RADIO_ACTIONS)
+    val reading by produceState(StatusReading(), radioChange) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                value = withContext(Dispatchers.IO) { StatusIcons.read(context) }
+                delay(RADIO_REFRESH_MS)
+            }
         }
     }
     val cell by produceState(CellState()) {
-        val watcher = CellWatcher(context) { value = it }
-        watcher.start()
-        try {
-            while (true) {
-                watcher.poll()
-                delay(RADIO_REFRESH_MS)
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            val watcher = CellWatcher(context) { value = it }
+            watcher.start()
+            try {
+                while (true) {
+                    watcher.poll()
+                    delay(RADIO_REFRESH_MS)
+                }
+            } finally {
+                watcher.stop()
             }
-        } finally {
-            watcher.stop()
         }
     }
-    val clock by produceState(LocalTime.now()) {
-        while (true) {
-            value = LocalTime.now()
-            delay(60_000L - System.currentTimeMillis() % 60_000L)
+    // The minute is also told by the phone: a pause in the coroutine's clock (the phone asleep) or a change of the time or the zone does not leave it wrong.
+    val clockChange = rememberBroadcast(Intent.ACTION_TIME_TICK, Intent.ACTION_TIME_CHANGED, Intent.ACTION_TIMEZONE_CHANGED)
+    val clock by produceState(LocalTime.now(), clockChange) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                value = LocalTime.now()
+                delay(60_000L - System.currentTimeMillis() % 60_000L)
+            }
         }
     }
     val notifications by NotificationHub.entries.collectAsState()
@@ -290,8 +349,8 @@ private fun Bolt(color: Color) {
 
 /** The battery lying down with its nub; filled to the charge, red when it is low. */
 @Composable
-private fun BatteryCell(battery: BatteryInfo, color: Color) {
-    Canvas(Modifier.size(width = 20.dp, height = 11.dp)) {
+internal fun BatteryCell(battery: BatteryInfo, color: Color, modifier: Modifier = Modifier.size(width = 20.dp, height = 11.dp)) {
+    Canvas(modifier) {
         val stroke = 1.2.dp.toPx()
         val nub = 2.dp.toPx()
         val body = size.width - nub

@@ -64,33 +64,11 @@ class AppRepository(private val context: Context) {
         for (stock in MetroCatalog.apps) {
             val id = MetroCatalog.idOf(stock)
             val label = context.getString(stock.label)
-            if (stock.id == "mail") {
+            MiniApps.activities[stock.id]?.let { activity ->
                 items += AppItem(
                     id = id,
                     label = label,
-                    launch = Launch.Activity(ComponentName(context, com.metrowin.launcher.mail.MailActivity::class.java), owner),
-                    glyph = stock.glyph,
-                    live = stock.live,
-                    packageName = context.packageName,
-                )
-                continue
-            }
-            if (stock.id == "messaging") {
-                items += AppItem(
-                    id = id,
-                    label = label,
-                    launch = Launch.Activity(ComponentName(context, com.metrowin.launcher.messages.MessagesActivity::class.java), owner),
-                    glyph = stock.glyph,
-                    live = stock.live,
-                    packageName = context.packageName,
-                )
-                continue
-            }
-            if (stock.id == "phone" || stock.id == "people") {
-                items += AppItem(
-                    id = id,
-                    label = label,
-                    launch = Launch.Activity(ComponentName(context, com.metrowin.launcher.dialer.DialerActivity::class.java), owner),
+                    launch = Launch.Activity(ComponentName(context, activity), owner),
                     glyph = stock.glyph,
                     live = stock.live,
                     packageName = context.packageName,
@@ -174,19 +152,34 @@ class AppRepository(private val context: Context) {
         )
     }
 
+    /** How the window of an app comes in for each style; 0 is no animation at all. */
+    private fun windowEnter(style: LaunchAnimation): Int = when (style) {
+        LaunchAnimation.Fade -> R.anim.app_enter_fade
+        LaunchAnimation.Slide -> R.anim.app_enter_slide
+        LaunchAnimation.Rise -> R.anim.app_enter_rise
+        LaunchAnimation.Zoom -> R.anim.app_enter_zoom
+        LaunchAnimation.Instant -> 0
+        else -> R.anim.app_enter
+    }
+
     /**
      * [growFrom] is the place on screen (in the window of [anchor]) the app grows out of, for the expand animation;
      * without it the app opens with the fade of the launcher.
      */
-    fun launch(item: AppItem, sourceBounds: Rect?, growFrom: Rect? = null, anchor: View? = null): Boolean {
-        val options = if (growFrom != null && anchor != null) {
-            ActivityOptions.makeScaleUpAnimation(anchor, growFrom.left, growFrom.top, growFrom.width(), growFrom.height()).toBundle()
-        } else {
-            ActivityOptions.makeCustomAnimation(context, R.anim.app_enter, R.anim.launcher_hold).toBundle()
+    fun launch(item: AppItem, sourceBounds: Rect?, growFrom: Rect? = null, anchor: View? = null, original: Boolean = false, window: LaunchAnimation = LaunchAnimation.Turnstile): Boolean {
+        val ownPage = original && (item.launch as? Launch.Activity)?.component?.packageName == context.packageName
+        val options = when {
+            growFrom != null && anchor != null ->
+                ActivityOptions.makeScaleUpAnimation(anchor, growFrom.left, growFrom.top, growFrom.width(), growFrom.height()).toBundle()
+            // An activity of the launcher turns its own page in (see PageTurn): its window just stays.
+            ownPage -> ActivityOptions.makeCustomAnimation(context, 0, R.anim.launcher_hold).toBundle()
+            // The turnstile of the original Windows Phone: the window swings in around its left edge.
+            original -> ActivityOptions.makeCustomAnimation(context, R.anim.app_enter_original, R.anim.launcher_hold).toBundle()
+            else -> ActivityOptions.makeCustomAnimation(context, windowEnter(window), R.anim.launcher_hold).toBundle()
         }
         return runCatching {
             when (val target = item.launch) {
-                is Launch.Activity -> startActivity(target, sourceBounds, options)
+                is Launch.Activity -> startActivity(target, sourceBounds, options, ownPage)
                 is Launch.Action ->
                     context.startActivity(Intent(target.action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), options)
                 is Launch.Internal -> Unit // handled by the UI, there is no activity to start
@@ -224,9 +217,10 @@ class AppRepository(private val context: Context) {
         }.isSuccess
     }
 
-    private fun startActivity(target: Launch.Activity, sourceBounds: Rect?, options: android.os.Bundle) {
+    private fun startActivity(target: Launch.Activity, sourceBounds: Rect?, options: android.os.Bundle, turnPage: Boolean = false) {
         if (target.component.packageName == context.packageName) {
             val intent = Intent().setComponent(target.component).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .putExtra(com.metrowin.launcher.ui.mini.PageTurn.EXTRA, turnPage)
             context.startActivity(intent, options)
             return
         }
@@ -278,9 +272,6 @@ class AppRepository(private val context: Context) {
         // Once the launcher is the phone app of the phone, the Phone tile opens its own dialer.
         if (stock.id == "phone" && DialerRole.isDefault(context)) {
             byPackage[context.packageName]?.firstOrNull { it.name == DialerActivity::class.java.name }?.let { return it }
-        }
-        if (stock.id == "mail") {
-            byPackage[context.packageName]?.firstOrNull { it.name == com.metrowin.launcher.mail.MailActivity::class.java.name }?.let { return it }
         }
         for (pkg in candidatePackages(stock)) {
             byPackage[pkg]?.firstOrNull { it.componentName !in claimed }?.let { return it }

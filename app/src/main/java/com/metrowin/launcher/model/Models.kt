@@ -73,6 +73,10 @@ sealed interface StartEntry {
 
     /** The title of the group of tiles that starts here (it is written above, and the tile starts a new row), or empty. */
     val group: String
+
+    /** Where the user put the tile in free mode (the cell of its top left corner), or -1 for a tile that goes where the flow puts it. */
+    val col: Int
+    val row: Int
 }
 
 /** A tile pinned to Start. [id] is the [AppItem.id] it opens. */
@@ -83,6 +87,8 @@ data class Tile(
     val style: TileStyle = TileStyle.Standard,
     override val color: Int = 0,
     override val group: String = "",
+    override val col: Int = -1,
+    override val row: Int = -1,
 ) : StartEntry
 
 /** A Start folder: tiles dragged onto each other. [children] are [AppItem.id]s. */
@@ -94,6 +100,8 @@ data class Folder(
     val children: List<String>,
     override val color: Int = 0,
     override val group: String = "",
+    override val col: Int = -1,
+    override val row: Int = -1,
 ) : StartEntry
 
 sealed interface Launch {
@@ -278,7 +286,7 @@ enum class Glyph {
     Photos, Podcasts, PowerPoint, Settings, Skype, Sports, Storage, Store, Video, Wallet,
     Weather, Word, Xbox, Theme, Search, Wifi, Bluetooth, Airplane, Moon, Flashlight, Rotation, Hotspot, Vpn,
     Cast, Brightness, Bell, Kids, Globe, Widget, Lock, Star, Home, Gesture, Folder, Recents,
-    Hourglass, Stopwatch, Timeout, AutoBrightness,
+    Hourglass, Stopwatch, Timeout, AutoBrightness, Notes, Todo,
 
     /** The Metro tiles: the settings of this launcher. */
     Launcher,

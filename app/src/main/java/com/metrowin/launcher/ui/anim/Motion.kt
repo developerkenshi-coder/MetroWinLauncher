@@ -39,6 +39,7 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import kotlin.math.exp
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.theme.LocalStyle
 import kotlinx.coroutines.delay
@@ -77,6 +78,23 @@ object Motion {
 
     /** Camera distance, in multiples of the screen density, so rotated elements keep a natural perspective. */
     const val CAMERA = 14f
+
+    /**
+     * The turnstile of the original Windows Phone, as the Windows Phone Toolkit has it: an exponential ease (exponent 6), a turn of 50 degrees
+     * for what leaves and 80 for a page that comes in, around an axis a fifth of the width to the left of the left edge.
+     */
+    const val EXPO = 6f
+    const val ORIGINAL_DEGREES = 50f
+    const val ORIGINAL_PAGE_DEGREES = 80f
+    const val ORIGINAL_PIVOT_X = -0.2f
+    val ExpoIn = Easing { t -> (exp(EXPO * t) - 1f) / (exp(EXPO) - 1f) }
+    val ExpoOut = Easing { t -> 1f - (exp(EXPO * (1f - t)) - 1f) / (exp(EXPO) - 1f) }
+}
+
+/** Which turnstile is in use: the original Windows Phone one (see [LaunchAnimation.Original]) or the modern one. Set from the settings, like [MotionSpeed]. */
+object MotionStyle {
+    @Volatile
+    var original: Boolean = false
 }
 
 /**
@@ -89,9 +107,16 @@ fun GraphicsLayerScope.turnstile(away: Float, reduced: Boolean = false) {
         alpha = 1f - away
         return
     }
+    cameraDistance = Motion.CAMERA * density
+    if (MotionStyle.original) {
+        // The original one keeps the element whole until the turn is over, then it is gone.
+        transformOrigin = TransformOrigin(Motion.ORIGINAL_PIVOT_X, 0.5f)
+        rotationY = Motion.ORIGINAL_DEGREES * away
+        alpha = if (away >= 0.999f) 0f else 1f
+        return
+    }
     transformOrigin = TransformOrigin(0f, 0.5f)
     rotationY = Motion.TURNSTILE_DEGREES * away
-    cameraDistance = Motion.CAMERA * density
     alpha = 1f - away * away * away
 }
 

@@ -127,6 +127,9 @@
     <string name="theme_dark_to">bis</string>
     <string name="theme_hours_hint">Der Launcher ist zwischen diesen Uhrzeiten dunkel und den Rest des Tages hell.</string>
     <string name="theme_parallax">Foto bewegt sich langsamer als die Kacheln</string>
+    <string name="theme_tile_opacity">Kacheln lassen das Foto durchscheinen</string>
+    <string name="theme_tile_opaque">deckend</string>
+    <string name="theme_tile_see_through">%1$d%% der Farbe</string>
     <string name="theme_start_pages">Start-Bildschirme</string>
     <string name="theme_start_pages_hint">Bei mehreren Bildschirmen wischst du seitlich zwischen ihnen. Kacheln, die du von einem Bildschirm entfernst, bleiben dort, bis du sie verschiebst.</string>
     <string name="stepper_minus">Weniger</string>
@@ -188,6 +191,8 @@
     <string name="bug_log_failed">Das Protokoll konnte nicht gelesen werden, die E-Mail hat keinen Anhang</string>
     <string name="gest_navbar">Navigationstasten wie bei Windows Phone</string>
     <string name="gest_navbar_hint">Zeichnet Zurück, das Windows-Logo und Suchen über die Tasten von Android. Ein langer Druck auf das Logo öffnet die zuletzt verwendeten Apps. Erfordert den Bedienungshilfendienst.</string>
+    <string name="gest_game_bars">Leisten in Spielen und Videos ausblenden</string>
+    <string name="gest_game_bars_hint">Solange ein Spiel oder Video im Vollbild im Vordergrund ist, gleiten die Windows-Phone-Statusleiste und die Navigationstasten weg, damit sie es nicht verdecken. Vom unteren Rand nach oben wischen für die Tasten, vom oberen Rand nach unten für die Statusleiste. Erfordert den Bedienungshilfendienst.</string>
     <string name="gest_navbar_needs_buttons">Dein Handy verwendet die Gestennavigation: Wähle in den Systemeinstellungen unter System, Gesten, Systemnavigation die Navigation mit drei Tasten.</string>
     <string name="dialer_app_name">MetroWin Telefon</string>
     <string name="dialer_tab_keypad">Tastenfeld</string>
@@ -405,6 +410,14 @@
     <string name="gest_lock_service_on">An: Der Launcher kann den Bildschirm sperren und die zuletzt verwendeten Apps öffnen</string>
     <string name="gest_lock_service_off">Aus: Zum Sperren des Bildschirms und für die Taste der zuletzt verwendeten Apps nötig</string>
     <string name="gest_lock_service_open">Bedienungshilfen öffnen</string>
+    <string name="bank_safe">Banking-Apps</string>
+    <string name="bank_safe_toggle">Banking-Apps schützen</string>
+    <string name="bank_safe_hint">Solange eine Bank-, Karten- oder Wallet-App im Vordergrund ist, entfernt der Launcher alle seine Fenster (die Tasten, die Statusleiste über Apps, die Banner, den Streifen der Mitteilungszentrale) und bringt sie zurück, wenn du sie verlässt. Banken werden am Namen erkannt; unten kannst du Apps hinzufügen oder entfernen.</string>
+    <string name="bank_safe_cannot">Was sich nicht verbergen lässt: Eine Bank sieht weiterhin, dass der Bedienungshilfen-Dienst an ist und dass der Launcher über anderen Apps zeichnen darf. Öffnet sich eine App trotzdem nicht, schalte beides mit den Tasten unten kurz aus.</string>
+    <string name="bank_safe_service_off">Bedienungshilfen-Dienst jetzt ausschalten</string>
+    <string name="bank_safe_service_off_hint">Die Tasten über der Navigationsleiste, die Statusleiste über Apps, der Sperrbildschirm und der Streifen der Mitteilungszentrale ruhen, bis du den Dienst in den Bedienungshilfen wieder einschaltest.</string>
+    <string name="bank_safe_overlay_open">Berechtigung zum Einblenden über anderen Apps öffnen</string>
+    <string name="bank_safe_overlay_hint">Entziehe sie dem Launcher, wenn eine Bank weiterhin meldet, dass eine App ihren Bildschirm verdeckt; das Banner über anderen Apps ruht dann ebenfalls.</string>
     <string name="gest_lock_service_hint">Android erlaubt einer App nur über einen Bedienungshilfen-Dienst, den Bildschirm zu sperren oder die letzten Apps zu öffnen. Dieser tut nichts anderes: Er liest nichts vom Bildschirm, und das einzige Ereignis, das er anfordert, ist, welche App vorne ist, um die Benachrichtigungen der App zu entfernen, die du gerade ansiehst. Die letzten Apps öffnen sich sofort, ohne das Warten, das die Wischgeste der Android-Gestennavigation mit einem Launcher haben kann, der nicht der des Telefons ist.</string>
     <string name="gest_lock_needs_service">Aktiviere zuerst den Dienst zum Sperren des Bildschirms in den Bedienungshilfen</string>
     <string name="lock_service_label">MetroWin Bildschirmsperre</string>
@@ -530,9 +543,15 @@
 
     <!-- launch animation -->
     <string name="screen_launch">App öffnen</string>
-    <string name="launch_turnstile">Drehkreuz: Die Kacheln drehen sich weg</string>
+    <string name="launch_turnstile">Modernes Drehkreuz: Die Kacheln drehen sich weg</string>
     <string name="launch_expand">Vergrößern: Die Kachel wächst zur App</string>
-    <string name="screen_launch_hint">„Vergrößern“ hält den Start-Bildschirm still und lässt die App aus der berührten Kachel wachsen (in der Liste aus der Mitte). „Bewegung reduzieren“ in den Bedienungshilfen schaltet beide aus.</string>
+    <string name="launch_original">Windows Phone Original: Die Kacheln drehen sich Reihe für Reihe weg, die App schwenkt herein</string>
+    <string name="screen_padding">Seitenränder der Seiten</string>
+    <string name="screen_padding_hint">Wie viel Platz der Start-Bildschirm, die App-Liste und die Seiten an den Bildschirmseiten lassen. „Schmal“ gibt Kacheln und Text etwas mehr Breite, „breit“ etwas weniger. Die Seiten bleiben immer gut bedienbar.</string>
+    <string name="padding_compact">schmal</string>
+    <string name="padding_normal">normal</string>
+    <string name="padding_wide">breit</string>
+    <string name="screen_launch_hint">Das originale Drehkreuz von Windows Phone dreht die Kacheln von oben weg, die berührte zuletzt, und lässt die App mit „Zurück“ herein- und hinausschwenken; das moderne ist schneller und weicher. „Vergrößern“ hält den Start-Bildschirm still und lässt die App aus der berührten Kachel wachsen (in der Liste aus der Mitte). „Bewegung reduzieren“ in den Bedienungshilfen schaltet alle aus.</string>
 
     <!-- sync -->
     <string name="sync_heading">Sync zwischen Handys</string>
@@ -1294,8 +1313,6 @@
     <string name="tiles_more_heading">News, Finanzen und Bewegung</string>
     <string name="transition_title">Wie eine Kachel die Seite wechselt</string>
     <string name="transition_hint">„Gleiten“ bringt die neue Seite von unten herein; „Gemischt“ nutzt bei einigen Kacheln die eine Art und bei den übrigen die andere. Nichts bewegt sich von selbst, solange der Akku gespart wird oder bei reduzierter Bewegung.</string>
-    <string name="news_source_title">Quelle der News-Kachel</string>
-    <string name="news_source_google">Google News: Top-Meldungen (Standard)</string>
     <string name="news_topic_WORLD">Google News: Welt</string>
     <string name="news_topic_NATION">Google News: dein Land</string>
     <string name="news_topic_BUSINESS">Google News: Wirtschaft</string>
@@ -1304,11 +1321,8 @@
     <string name="news_topic_SPORTS">Google News: Sport</string>
     <string name="news_topic_SCIENCE">Google News: Wissenschaft</string>
     <string name="news_topic_HEALTH">Google News: Gesundheit</string>
-    <string name="news_source_custom">Ein eigener Feed (RSS oder Atom)</string>
     <string name="news_url_hint">https://example.com/feed.xml</string>
-    <string name="news_url_ok">Diese Adresse wird gelesen.</string>
     <string name="news_url_bad">Keine gültige Adresse: Es muss eine Webseite im Internet sein, über https.</string>
-    <string name="news_source_hint">Die wichtigsten Meldungen des Tages, in der Sprache und dem Land des Handys. Sie werden nur abgefragt, solange die News-Kachel auf Start ist und der Launcher auf dem Bildschirm: höchstens alle 30 Minuten, beim Akkusparen alle drei Stunden.</string>
     <string name="finance_base_title">Werte anzeigen in</string>
     <string name="finance_base_auto">Die Währung der Region (%1$s)</string>
     <string name="finance_items_title">Was verfolgt werden soll (bis zu 4)</string>
@@ -1317,6 +1331,10 @@
     <string name="theme_panorama_hint">Ein großer Titel (Start, Apps) hinter den Seiten, der sich beim Wischen langsamer bewegt als die Seite. Aus, bis du es verlangst.</string>
     <string name="theme_app_bar">Leiste mit …</string>
     <string name="theme_app_bar_hint">Unten beim Bearbeiten der Kacheln: Die Taste … zeigt die Namen der Tasten.</string>
+    <string name="action_bar_title">Aktionsleiste</string>
+    <string name="action_bar_super">Super-Aktionsleiste</string>
+    <string name="action_bar_retro">Retro-Aktionsleiste</string>
+    <string name="action_bar_hint">Super: die Leiste von MetroWin mit allen Funktionen. Retro: die App-Leiste von Windows Phone 8.1, mit runden Schaltflächen und einem …, das ihre Namen und die Textelemente zeigt. Gilt für Start und die Mini-Apps.</string>
     <string name="lock_quick_title">Status auf dem Sperrbildschirm</string>
     <string name="lock_quick">Schnellstatus (App-Zähler)</string>
     <string name="lock_quick_hint">Bis zu fünf Apps mit der Anzahl ihrer Benachrichtigungen, unter der Uhrzeit. Wenn du keine wählst, erscheinen die Apps mit den meisten Benachrichtigungen.</string>
@@ -1326,6 +1344,8 @@
     <string name="lock_detail_hint">Die letzte Benachrichtigung dieser App, ausgeschrieben (wer und was), auf dem Sperrbildschirm. Jeder, der den Bildschirm sieht, liest sie.</string>
     <string name="lock_music">Musiksteuerung und Cover</string>
     <string name="lock_music_hint">Während ein Lied läuft: sein Cover, sein Name und die Tasten zum Überspringen und Pausieren.</string>
+    <string name="lock_icons_one_row">Benachrichtigungssymbole in einer Zeile, kleiner</string>
+    <string name="lock_icons_one_row_hint">Die Apps mit Neuigkeiten auf dem Sperrbildschirm bleiben in einer Zeile: Die Symbole werden kleiner, bis sie passen, und ein +N sagt, wie viele keinen Platz haben. Aus: größere Symbole, die auf mehrere Zeilen umbrechen, wie jetzt.</string>
     <string name="ac_volume_panel_hint">Die Lautstärketasten zeichnen ein Metro-Panel über den Launcher für das, was gerade zu hören ist: den Anruf, die Musik (mit dem Namen der App) oder den Klingelton. Android erlaubt einer App nicht, die Lautstärke einer anderen App allein zu senken; bei einem Player mit eigener Lautstärke (ein Cast, ein Lautsprecher) bewegt das Panel diese.</string>
     <string name="ac_banner">Banner für neue Benachrichtigungen</string>
     <string name="ac_overlay">Banner über anderen Apps</string>
@@ -1484,6 +1504,10 @@
     <string name="battery_time_left">Noch etwa %s</string>
     <string name="edit_label_group">Titel</string>
     <string name="edit_group">Titel einer Kachelgruppe</string>
+    <string name="edit_select">mehrere Kacheln zum Verschieben auswählen</string>
+    <string name="edit_label_select">auswählen</string>
+    <string name="move_pick_hint">Tippe auf die Kacheln, die auf einen anderen Start-Bildschirm sollen. Halte eine gedrückt, um die ganze Gruppe zu nehmen.</string>
+    <string name="move_pick_to">Auf Start %1$d verschieben</string>
     <string name="group_title_prompt">Titel der Gruppe, die hier beginnt (leer für keinen)</string>
     <string name="start_features_title">Extras der Kacheln</string>
     <string name="start_large">Größe „Groß“</string>
@@ -1755,6 +1779,14 @@
     <string name="gallery_app_hint">Die Fotos-Kachel öffnet diese App.</string>
     <string name="gallery_albums_hint">Die Bilder auf der Kachel stammen nur aus den hier angehakten Alben, wie in der Galerie, und nicht aus dem gesamten Speicher des Handys.</string>
     <string name="gallery_albums_none">Keine Alben zum Anzeigen: Lass die Kachel zuerst die Fotos lesen.</string>
+    <string name="gallery_source">Die Bilder stammen aus</string>
+    <string name="gallery_source_recent">Den neuesten Fotos des Telefons</string>
+    <string name="gallery_source_albums">Unten angehakten Alben</string>
+    <string name="gallery_source_chosen">Von mir gewählten Fotos</string>
+    <string name="gallery_pick">Fotos wählen</string>
+    <string name="gallery_pick_clear">Gewählte Fotos vergessen</string>
+    <string name="gallery_chosen_none">Noch keine Fotos gewählt: Die Kachel zeigt ihr Symbol.</string>
+    <string name="gallery_chosen_count">Gewählte Fotos: %1$d. Ein gelöschtes wird übersprungen.</string>
     <string name="ac_panel_sounds">Ton des Action Centers</string>
     <string name="ac_panel_sounds_hint">Das Gleiten, das man hört, wenn das Action Center herunter- und wieder hinauffährt. Es braucht die Metro-Töne.</string>
     <string name="voice_set_icon">Assistent-Symbol auf Start</string>
@@ -1881,4 +1913,344 @@
     <string name="sec_action_center_desc">Schnelltasten, Regler, Töne, Taschenlampe, Lautstärkefeld</string>
     <string name="sec_notifications">Benachrichtigungen</string>
     <string name="sec_notifications_desc">Benachrichtigungszugriff, Banner, Antworten, Gruppen, Filter, App für App</string>
+
+    <!-- Calculator -->
+    <string name="calc_pivot_calc">rechner</string>
+    <string name="calc_pivot_history">verlauf</string>
+    <string name="calc_pivot_convert">umrechner</string>
+    <string name="calc_standard">standard</string>
+    <string name="calc_scientific">wissenschaftlich</string>
+    <string name="calc_degrees">grad</string>
+    <string name="calc_radians">bogenmaß</string>
+    <string name="calc_error_syntax">Ungültiger Ausdruck</string>
+    <string name="calc_error_domain">Operation nicht möglich</string>
+    <string name="calc_error_overflow">Ergebnis zu groß</string>
+    <string name="calc_history_empty">Noch nichts berechnet. Ihre Rechnungen bleiben hier.</string>
+    <string name="calc_history_clear">leeren</string>
+    <string name="calc_amount">Menge</string>
+    <string name="calc_rates_missing">Die Wechselkurse wurden noch nicht geladen. Bitte einmal mit dem Internet verbinden.</string>
+    <string name="calc_rates_date">Kurse vom %1$s</string>
+    <string name="calc_kind_length">länge</string>
+    <string name="calc_kind_area">fläche</string>
+    <string name="calc_kind_volume">volumen</string>
+    <string name="calc_kind_mass">masse</string>
+    <string name="calc_kind_temperature">temperatur</string>
+    <string name="calc_kind_speed">geschwindigkeit</string>
+    <string name="calc_kind_time">zeit</string>
+    <string name="calc_kind_data">daten</string>
+    <string name="calc_kind_energy">energie</string>
+    <string name="calc_kind_pressure">druck</string>
+    <string name="calc_kind_angle">winkel</string>
+    <string name="calc_kind_currency">währung</string>
+
+    <!-- Notes -->
+    <string name="stock_notes">Notizen</string>
+    <string name="stock_todo">Aufgaben</string>
+    <string name="notes_title">notizen</string>
+    <string name="notes_search">Notizen durchsuchen</string>
+    <string name="notes_all">alle</string>
+    <string name="notes_empty">Noch keine Notizen. Tippen Sie auf +, um zu schreiben, oder auf den Stift, um zu zeichnen.</string>
+    <string name="notes_new">neu</string>
+    <string name="notes_sketch">skizze</string>
+    <string name="notes_backup">sichern</string>
+    <string name="notes_restore">laden</string>
+    <string name="notes_untitled">Ohne Titel</string>
+    <string name="notes_title_hint">Titel</string>
+    <string name="notes_body_hint">Hier schreiben…</string>
+    <string name="notes_read">lesen</string>
+    <string name="notes_edit">bearbeiten</string>
+    <string name="notes_pin">anheften</string>
+    <string name="notes_unpin">lösen</string>
+    <string name="notes_more">mehr</string>
+    <string name="notes_color">Farbe</string>
+    <string name="notes_folder">Ordner</string>
+    <string name="notes_folder_hint">Name des Ordners</string>
+    <string name="notes_share">Als Text teilen</string>
+    <string name="notes_export_text">Als Datei speichern (.md)</string>
+    <string name="notes_export_sketch">Skizze als Bild speichern (.png)</string>
+    <string name="notes_sketch_remove">Skizze entfernen</string>
+    <string name="notes_delete">Notiz löschen</string>
+    <string name="notes_delete_confirm">Zum Löschen erneut tippen</string>
+    <string name="notes_backup_done">Sicherung gespeichert: %1$d Notizen</string>
+    <string name="notes_backup_failed">Die Sicherung konnte nicht gespeichert werden</string>
+    <string name="notes_restore_done">%1$d Notizen wiederhergestellt</string>
+    <string name="notes_restore_failed">Diese Datei ist keine Sicherung der Notizen</string>
+    <string name="notes_save_failed">Die Notizen konnten nicht gespeichert werden</string>
+    <string name="sketch_undo">zurück</string>
+    <string name="sketch_redo">vor</string>
+    <string name="sketch_clear">leeren</string>
+    <string name="sketch_done">fertig</string>
+    <string name="sketch_label_hint">Text der Beschriftung</string>
+    <string name="sketch_add">Hinzufügen</string>
+
+    <!-- To do -->
+    <string name="todo_pivot_open">aufgaben</string>
+    <string name="todo_pivot_done">erledigt</string>
+    <string name="todo_all">alle</string>
+    <string name="todo_empty">Nichts zu tun. Schreiben Sie unten etwas auf.</string>
+    <string name="todo_late">überfällig</string>
+    <string name="todo_today">heute</string>
+    <string name="todo_later">später</string>
+    <string name="todo_no_date">kein Datum</string>
+    <string name="todo_in_one_hour">in 1 Stunde</string>
+    <string name="todo_this_evening">heute Abend</string>
+    <string name="todo_tomorrow">morgen</string>
+    <string name="todo_pick">wählen…</string>
+    <string name="todo_hint">Was ist zu tun?</string>
+    <string name="todo_list_hint">Liste (optional)</string>
+    <string name="todo_save">Speichern</string>
+    <string name="todo_delete">Löschen</string>
+    <string name="todo_clear_done">Erledigte leeren</string>
+    <string name="todo_nothing_done">Noch nichts erledigt.</string>
+
+    <!-- Voice recorder -->
+    <string name="rec_pivot_record">aufnehmen</string>
+    <string name="rec_pivot_list">aufnahmen</string>
+    <string name="rec_empty">Noch keine Aufnahmen.</string>
+    <string name="rec_selection">Auswahl: %1$s bis %2$s</string>
+    <string name="rec_play">Abspielen</string>
+    <string name="rec_pause">Pause</string>
+    <string name="rec_cut">Ausschnitt speichern</string>
+    <string name="rec_cut_done">Der Ausschnitt wurde als neue Aufnahme gespeichert</string>
+    <string name="rec_cut_failed">Der Ausschnitt konnte nicht gespeichert werden</string>
+    <string name="rec_working">Einen Moment…</string>
+    <string name="rec_transcript">Abschrift</string>
+    <string name="rec_transcribe">Gesprochenes aufschreiben</string>
+    <string name="rec_transcribing">Die Aufnahme wird gehört…</string>
+    <string name="rec_transcribe_unsupported">Dieses Telefon kann eine Aufnahme nicht abschreiben: Android 13 und ein Spracherkennungsdienst sind nötig.</string>
+    <string name="rec_transcribe_failed">Der Sprachdienst des Telefons konnte die Aufnahme nicht abschreiben (vielleicht kennt er die Sprache nicht oder braucht Internet).</string>
+    <string name="rec_to_notes">An Notizen senden</string>
+    <string name="rec_sent_to_notes">In Notizen gespeichert</string>
+    <string name="rec_back">zurück</string>
+
+    <!-- Calendar -->
+    <string name="cal_pivot_agenda">agenda</string>
+    <string name="cal_pivot_month">monat</string>
+    <string name="cal_pivot_week">woche</string>
+    <string name="cal_all_day">ganztägig</string>
+    <string name="cal_no_events">Keine Termine.</string>
+    <string name="cal_new">neu</string>
+    <string name="cal_today">heute</string>
+    <string name="cal_untitled">(ohne Titel)</string>
+    <string name="cal_title_hint">Titel</string>
+    <string name="cal_location_hint">Ort</string>
+    <string name="cal_notes_hint">Notizen</string>
+    <string name="cal_all_day_toggle">Ganztägig</string>
+    <string name="cal_starts">Beginn</string>
+    <string name="cal_ends">Ende</string>
+    <string name="cal_rem_none">keine Erinnerung</string>
+    <string name="cal_rem_10">10 Min. vorher</string>
+    <string name="cal_rem_30">30 Min. vorher</string>
+    <string name="cal_rem_60">1 Std. vorher</string>
+    <string name="cal_rem_day">1 Tag vorher</string>
+    <string name="cal_repeats_note">Dieser Termin wiederholt sich: Änderungen gelten für alle Termine.</string>
+    <string name="cal_need_permission">Der Kalender braucht die Erlaubnis, die Termine des Telefons zu lesen und zu schreiben.</string>
+    <string name="cal_save_failed">Der Termin konnte nicht gespeichert werden. Gibt es einen Kalender, der Termine annimmt?</string>
+
+    <!-- Data Sense and Storage Sense -->
+    <string name="ds_data">daten</string>
+    <string name="ds_storage">speicher</string>
+    <string name="ds_time">zeit</string>
+    <string name="ds_battery">akku</string>
+    <string name="ds_network">netz</string>
+    <string name="ds_need_access">Um zu zeigen, wie das Telefon genutzt wird, verlangt Android die Freigabe „Nutzungszugriff“ für den Launcher.</string>
+    <string name="ds_today">heute</string>
+    <string name="ds_7days">7 Tage</string>
+    <string name="ds_30days">30 Tage</string>
+    <string name="ds_this_month">dieser Monat</string>
+    <string name="ds_mobile">Mobilfunk</string>
+    <string name="ds_apps">apps</string>
+    <string name="ds_nothing">Noch nichts anzuzeigen.</string>
+    <string name="ds_app_detail">WLAN %1$s · mobil %2$s
+im Vordergrund %3$s · im Hintergrund %4$s
+%5$d%% aller Daten</string>
+    <string name="ds_limit">limit</string>
+    <string name="ds_limit_title">Monatslimit für Mobilfunkdaten</string>
+    <string name="ds_limit_hint">GB (0 für keins)</string>
+    <string name="ds_limit_used">%1$s von %2$s in diesem Monat</string>
+    <string name="ds_photos">Fotos</string>
+    <string name="ds_videos">Videos</string>
+    <string name="ds_music">Musik</string>
+    <string name="ds_other">Sonstiges</string>
+    <string name="ds_of_total">von %1$s · %2$s frei</string>
+    <string name="ds_cache">Caches der Apps: %1$s</string>
+    <string name="ds_biggest">größte Apps</string>
+    <string name="ds_app_sizes">App %1$s · Daten %2$s · Cache %3$s</string>
+    <string name="ds_screen_time">auf dem Bildschirm</string>
+    <string name="ds_last_used">zuletzt %1$s</string>
+    <string name="ds_status">Status</string>
+    <string name="ds_charging">lädt</string>
+    <string name="ds_discharging">im Akkubetrieb</string>
+    <string name="ds_temperature">Temperatur</string>
+    <string name="ds_voltage">Spannung</string>
+    <string name="ds_health">Zustand</string>
+    <string name="ds_health_good">gut</string>
+    <string name="ds_health_hot">zu heiß</string>
+    <string name="ds_health_dead">verbraucht</string>
+    <string name="ds_health_cold">zu kalt</string>
+    <string name="ds_unknown">unbekannt</string>
+    <string name="ds_technology">Technologie</string>
+    <string name="ds_current">Strom</string>
+    <string name="ds_charge">Ladung</string>
+    <string name="ds_offline">Keine Verbindung.</string>
+    <string name="ds_operator">Anbieter</string>
+    <string name="ds_down">Download</string>
+    <string name="ds_up">Upload</string>
+    <string name="ds_metered">Getaktet</string>
+    <string name="ds_roaming">Roaming</string>
+    <string name="ds_vpn">VPN</string>
+    <string name="ds_internet">Internet funktioniert</string>
+    <string name="ds_yes">ja</string>
+    <string name="ds_no">nein</string>
+
+    <!-- Wallet -->
+    <string name="wal_title">wallet</string>
+    <string name="wal_search">Karten durchsuchen</string>
+    <string name="wal_empty">Noch keine Karten. Tippen Sie auf +, um eine Kundenkarte oder ein Ticket hinzuzufügen.</string>
+    <string name="wal_kind_loyalty">Kundenkarten</string>
+    <string name="wal_kind_ticket">Tickets</string>
+    <string name="wal_kind_other">Sonstiges</string>
+    <string name="wal_new">Neue Karte</string>
+    <string name="wal_code">Code (Zahlen oder Text)</string>
+    <string name="wal_from_picture">Code aus einem Bild lesen</string>
+    <string name="wal_picture_failed">In diesem Bild konnte kein Code gelesen werden.</string>
+    <string name="wal_format_invalid">Dieser Code lässt sich in diesem Format nicht schreiben (EAN-13 braucht 12 oder 13 Ziffern).</string>
+    <string name="wal_no_expiry">kein Ablaufdatum</string>
+    <string name="wal_expires">gültig bis %1$s</string>
+    <string name="wal_expired">abgelaufen</string>
+    <string name="wal_save_failed">Die Karten konnten nicht gespeichert werden</string>
+    <string name="wal_import_failed">Diese Datei enthält keine Karten</string>
+    <string name="wal_imported">%1$d Karten wiederhergestellt</string>
+
+    <!-- News app -->
+    <string name="nws_tile">Kachel</string>
+    <string name="nws_tile_set">Die Kachel Nachrichten auf Start zeigt jetzt „%1$s“.</string>
+    <string name="nws_sources">Quellen</string>
+    <string name="nws_offline">Die Nachrichten konnten nicht gelesen werden. Prüfen Sie die Verbindung und versuchen Sie es erneut.</string>
+    <string name="nws_add_google">Themen von Google News</string>
+    <string name="nws_add_feed">Weitere Quellen oder ein eigener Feed (RSS oder Atom)</string>
+    <string name="nws_name_hint">Name (optional)</string>
+    <string name="nws_add">Feed hinzufügen</string>
+
+    <!-- File manager -->
+    <string name="fm_internal">Telefon</string>
+    <string name="fm_downloads">Downloads</string>
+    <string name="fm_camera">Kamera</string>
+    <string name="fm_pictures">Bilder</string>
+    <string name="fm_music">Musik</string>
+    <string name="fm_movies">Filme</string>
+    <string name="fm_documents">Dokumente</string>
+    <string name="fm_need_access">Um Ihre Dateien anzuzeigen und zu ändern, braucht der Launcher Zugriff auf alle Dateien des Telefons. Android bittet Sie, dies in einem eigenen Bildschirm zu erlauben.</string>
+    <string name="fm_folder_empty">Dieser Ordner ist leer.</string>
+    <string name="fm_unreadable">Dieser Ordner kann nicht gelesen werden.</string>
+    <string name="fm_search_hint">In diesem Ordner suchen</string>
+    <string name="fm_search_deep">Auch in Unterordnern suchen</string>
+    <string name="fm_new">neu</string>
+    <string name="fm_places">Orte</string>
+    <string name="fm_sort">sortieren</string>
+    <string name="fm_more">mehr</string>
+    <string name="fm_copy">kopieren</string>
+    <string name="fm_cut">ausschneiden</string>
+    <string name="fm_delete">löschen</string>
+    <string name="fm_paste">einfügen</string>
+    <string name="fm_share">teilen</string>
+    <string name="fm_rename">Umbenennen</string>
+    <string name="fm_zip">Als .zip komprimieren</string>
+    <string name="fm_extract_here">Hier entpacken</string>
+    <string name="fm_extract_to">In einen Ordner mit gleichem Namen entpacken</string>
+    <string name="fm_properties">Eigenschaften und Prüfsummen</string>
+    <string name="fm_select_all">Alles auswählen</string>
+    <string name="fm_invert">Auswahl umkehren</string>
+    <string name="fm_copy_to_other">In das andere Fenster kopieren</string>
+    <string name="fm_move_to_other">In das andere Fenster verschieben</string>
+    <string name="fm_copy_path">Pfad kopieren</string>
+    <string name="fm_bookmark">Zu den Orten hinzufügen</string>
+    <string name="fm_unbookmark">Aus den Orten entfernen</string>
+    <string name="fm_new_folder">Neuer Ordner</string>
+    <string name="fm_new_file">Neue Textdatei</string>
+    <string name="fm_name">Name</string>
+    <string name="fm_name_bad">Dieser Name kann nicht verwendet werden oder ist vergeben.</string>
+    <string name="fm_trash">Papierkorb</string>
+    <string name="fm_trash_empty">Der Papierkorb ist leer. Dinge bleiben dort 30 Tage.</string>
+    <string name="fm_empty_trash">Papierkorb leeren</string>
+    <string name="fm_restore">wiederherstellen</string>
+    <string name="fm_sort_name">Name</string>
+    <string name="fm_sort_date">Datum</string>
+    <string name="fm_sort_size">Größe</string>
+    <string name="fm_sort_type">Typ</string>
+    <string name="fm_descending">Größte oder neueste zuerst</string>
+    <string name="fm_hidden">Versteckte Dateien zeigen</string>
+    <string name="fm_conflict_title">%1$d sind im Ordner schon vorhanden</string>
+    <string name="fm_replace">Ersetzen</string>
+    <string name="fm_keep_both">Beide behalten</string>
+    <string name="fm_skip">Überspringen</string>
+    <string name="fm_working">Einen Moment…</string>
+    <string name="fm_cancel">Abbrechen</string>
+    <string name="fm_to_trash">In den Papierkorb</string>
+    <string name="fm_delete_forever">Endgültig löschen</string>
+    <string name="fm_delete_ask">%1$d ausgewählt</string>
+    <string name="fm_failed">%1$d konnten nicht ausgeführt werden</string>
+    <string name="fm_checksums">Prüfsummen</string>
+    <string name="fm_calculate">Berechnen</string>
+    <string name="fm_size">Größe</string>
+    <string name="fm_modified">Geändert</string>
+    <string name="fm_path">Pfad</string>
+    <string name="fm_type">Typ</string>
+    <string name="fm_contains">Enthält</string>
+    <string name="fm_items">%1$d Elemente</string>
+    <string name="fm_edit_text">Als Text bearbeiten</string>
+    <string name="fm_saved">Gespeichert</string>
+    <string name="fm_save_failed">Die Datei konnte nicht gespeichert werden</string>
+    <string name="fm_too_big">Diese Datei ist zu groß, um hier bearbeitet zu werden.</string>
+    <string name="fm_save">Speichern</string>
+    <string name="fm_back">zurück</string>
+    <string name="fm_zip_name">Name des Archivs</string>
+    <string name="fm_extract_bad">Dieses Archiv konnte nicht entpackt werden (beschädigt oder unsicher).</string>
+    <string name="fm_path_copied">Pfad kopiert</string>
+    <string name="fm_clipboard">%1$d warten aufs Einfügen</string>
+
+    <!-- File manager (more) -->
+    <string name="fm_open_with">Mit einer anderen App öffnen</string>
+
+    <!-- Start arrow -->
+    <string name="theme_apps_arrow">Pfeil unter den Kacheln zeigen</string>
+    <string name="theme_apps_arrow_hint">Der runde Pfeil unten rechts auf Start. Ausgeschaltet wird er nicht gezeichnet, aber das Wischen zur nächsten Seite oder zur App-Liste funktioniert wie zuvor.</string>
+
+    <!-- Action Center switch -->
+    <string name="ac_enabled">Action Center verwenden</string>
+    <string name="ac_enabled_hint">Ausgeschaltet verschwindet das Fenster, das mit den Benachrichtigungen und den Schnelltasten herunterkommt (im Launcher und über anderen Apps), die Gesten dafür tun nichts und die Benachrichtigungen bleiben im eigenen Bereich von Android, mit eigenen Tönen. Bereits verschobene kommen nicht zurück. Kacheln und Sperrbildschirm lesen die Benachrichtigungen weiter für Zähler und Listen.</string>
+
+    <!-- Wallpaper of Android -->
+    <string name="theme_system_wallpaper">Gleicher Hintergrund für Android</string>
+    <string name="theme_system_wallpaper_hint">Solange MetroWin Ihre Home-App ist, ist der Hintergrund von Android das Foto von Start (oder dessen Farbe, ohne Foto). Das zeigt der Bildschirm der letzten Apps hinter den Karten, sodass der Hintergrund des ursprünglichen Launchers verschwindet. Ausgeschaltet kehrt Android zu seinem Standardhintergrund zurück. Der Sperrbildschirm hat eine eigene Schaltfläche.</string>
+
+    <!-- Action Center: mobile data -->
+    <string name="qa_mobile_data">Mobile Daten</string>
+
+    <!-- News app pictures -->
+    <string name="nws_pictures">Bilder anzeigen</string>
+    <string name="start_columns">Kacheln pro Zeile</string>
+    <string name="start_columns_auto">auto</string>
+    <string name="start_columns_hint">Wie viele kleine Kacheln nebeneinander in Start passen. Automatisch behält, was Bildschirm und \"Mehr Kacheln anzeigen\" ergeben; eine Zahl wird auf das begrenzt, was die Bildschirmbreite fasst, ohne die Kacheln zu klein zum Antippen zu machen.</string>
+    <string name="start_free">Freier Modus</string>
+    <string name="start_free_hint">Eine Kachel bleibt, wo du sie ablegst, auf jeder Zelle des Rasters, und die anderen rücken nicht nach, um die Lücke zu füllen. Schaltest du es aus, laufen die Kacheln wieder der Reihe nach, wie zuvor; nichts, was du platziert hast, geht verloren.</string>
+    <string name="gest_navbar_spacing">Abstand zwischen den Tasten</string>
+    <string name="gest_navbar_spacing_hint">Wie weit Zurück, das Windows-Logo und die Suche in der Navigationsleiste auseinanderliegen, von 50 bis 110 Prozent des üblichen Abstands.</string>
+    <string name="launch_fade">Einblenden: die App blendet sich ein</string>
+    <string name="launch_slide">Schieben: die App kommt von rechts</string>
+    <string name="launch_rise">Aufsteigen: die App steigt von unten auf</string>
+    <string name="launch_zoom">Zoom: die App wächst aus der Mitte</string>
+    <string name="launch_instant">keine: die App öffnet sofort</string>
+    <string name="screen_launch_hint_more">Einblenden, Schieben, Aufsteigen und Zoom ändern nur, wie das Fenster der App erscheint; bei keine öffnet sie sofort. Die Geschwindigkeit der Animationen steht unter Gesten.</string>
+    <string name="theme_favorite_page">Bevorzugter Start-Bildschirm</string>
+    <string name="theme_favorite_default">der Hauptbildschirm</string>
+    <string name="theme_favorite_n">Start-Bildschirm %1$d</string>
+    <string name="theme_favorite_hint">Der Start-Bildschirm, zu dem der Launcher zurückkehrt, wenn Windows gedrückt wird oder man aus einer App zurückkommt. Standard ist der Hauptbildschirm.</string>
+    <string name="access_font">Schriftart</string>
+    <string name="access_font_default">des Designs (Standard)</string>
+    <string name="access_font_custom">meine Schriftart</string>
+    <string name="access_font_pick">Schriftdatei auswählen</string>
+    <string name="access_font_hint">Der Launcher bringt zwanzig Schriftarten mit; eine eigene Datei (.ttf oder .otf) geht auch. Die Schriftart des Handys hat, wenn aktiv, Vorrang.</string>
+    <string name="access_font_sample">Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich 0123456789</string>
+    <string name="access_font_failed">Diese Datei ist keine lesbare Schriftart</string>
 </resources>

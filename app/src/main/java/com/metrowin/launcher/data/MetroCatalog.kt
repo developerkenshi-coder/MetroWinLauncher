@@ -139,6 +139,9 @@ object MetroCatalog {
             // MediaStore.Audio.Media.RECORD_SOUND_ACTION
             listOf(Target.Action("android.provider.MediaStore.RECORD_SOUND")) + pkg("com.google.android.apps.recorder"),
         ),
+        // The mini apps of the launcher with no Android app behind them (see MiniApps).
+        StockApp("notes", R.string.stock_notes, Glyph.Notes),
+        StockApp("todo", R.string.stock_todo, Glyph.Todo),
         StockApp("podcasts", R.string.stock_podcasts, Glyph.Podcasts, pkg("com.google.android.apps.podcasts")),
         StockApp("games", R.string.stock_games, Glyph.Games, pkg("com.google.android.play.games")),
         StockApp("xbox", R.string.stock_xbox, Glyph.Xbox, pkg("com.microsoft.xboxone.smartglass")),

@@ -10,6 +10,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.lifecycle.lifecycleScope
+import com.metrowin.launcher.ui.mini.PageTurn
+import com.metrowin.launcher.ui.mini.returnToLauncher
+import com.metrowin.launcher.ui.mini.TurnPage
 import androidx.compose.runtime.setValue
 import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.data.SettingsStore
@@ -20,6 +24,7 @@ import com.metrowin.launcher.notifications.OverlayTheme
  * of the phone, and the notification of a message opens the conversation of its sender.
  */
 class MessagesActivity : ComponentActivity() {
+    private val turn by lazy { PageTurn(intent.getBooleanExtra(PageTurn.EXTRA, false)) }
     private var address by mutableStateOf<String?>(null)
     private var body by mutableStateOf("")
 
@@ -30,9 +35,14 @@ class MessagesActivity : ComponentActivity() {
         val settings = SettingsStore(this).load()
         setContent {
             OverlayTheme(settings, remember { IconLoader(applicationContext) }) {
-                MessagesScreen(address, body, onAddress = { address = it }, onBody = { body = it })
+                TurnPage(turn) { MessagesScreen(address, body, onAddress = { address = it }, onBody = { body = it }) }
             }
         }
+    }
+
+    /** With the original animation the page turns away first, and the window closes without its own animation. */
+    override fun finish() {
+        if (!turn.leave(lifecycleScope) { returnToLauncher(); super.finish(); overridePendingTransition(0, 0) }) { returnToLauncher(); super.finish() }
     }
 
     override fun onNewIntent(intent: Intent) {

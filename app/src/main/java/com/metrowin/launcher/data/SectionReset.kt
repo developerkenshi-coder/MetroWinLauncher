@@ -12,15 +12,15 @@ object SectionReset {
     val keys: Map<String, Set<String>> = mapOf(
         "StartTheme" to setOf(
             "accentApps", "accentIndex", "accentNightIndex", "accentPanel", "accentStart", "autoAccent", "customAccent", "darkFromHour", "darkToHour",
-            "dynamicColor", "oledMode", "pageBackgrounds", "panoramaTitles", "parallax", "startPhotoFit", "startPhotoX", "startPhotoY", "startPhotoZoom",
-            "themeMode", "themeStyle",
+            "dynamicColor", "oledMode", "pageBackgrounds", "panoramaTitles", "parallax", "tileOpacity", "startPhotoFit", "startPhotoX", "startPhotoY", "startPhotoZoom",
+            "systemWallpaperFollows", "themeMode", "themeStyle",
         ),
         "Start" to setOf(
-            "batteryEstimate", "calendarAgenda", "collectionTiles", "groupTitles", "largeTiles", "layoutSchedule", "moreTiles", "showTileNames",
+            "batteryEstimate", "calendarAgenda", "favoritePage", "collectionTiles", "groupTitles", "largeTiles", "freeLayout", "layoutSchedule", "moreTiles", "showAppsArrow", "showTileNames", "tileColumns",
             "tileMusicControls", "tileSpacing",
         ),
         "StartBars" to setOf(
-            "appBar", "clockAlarm", "clockHours", "clockTaps", "clockWeek", "clockZone", "hideStatusBar", "showClock",
+            "appBar", "actionBar", "clockAlarm", "clockHours", "clockTaps", "clockWeek", "clockZone", "hideStatusBar", "showClock",
         ),
         "StatusBar" to setOf("metroStatusBar", "metroStatusBarOverApps", "statusBarHidden"),
         "StartBehaviour" to setOf("antiBurnIn", "lockStart", "startLowerPercent", "startTopAfterMin", "stepGoal", "undoSteps"),
@@ -30,7 +30,7 @@ object SectionReset {
             "searchToday", "searchWeb", "tipOfDay", "todayAlarm", "todayDate", "todayNear", "todayWeather",
         ),
         "Gestures" to setOf(
-            "animationSpeed", "doubleTapAction", "doubleTapApp", "edgeBackPan", "edgePull", "homeDoubleAction", "homeDoubleApp", "metroNavBar", "lockOverlay", "antiBurnIn", "navHoldMs", "tapHaptics", "tapSound",
+            "animationSpeed", "doubleTapAction", "doubleTapApp", "edgeBackPan", "edgePull", "homeDoubleAction", "homeDoubleApp", "metroNavBar", "hideBarsInGames", "lockOverlay", "bankSafe", "bankSafeAdd", "bankSafeSkip", "antiBurnIn", "navHoldMs", "navSpacing", "tapHaptics", "tapSound",
             "tiltStrength", "twoFingerDownAction", "twoFingerDownApp", "twoFingerUpAction", "twoFingerUpApp", "vibrationStrength",
         ),
         "Actions" to setOf(
@@ -38,20 +38,20 @@ object SectionReset {
             "volumeProfilesShow", "vpnApp",
         ),
         "Notifications" to setOf(
-            "edgeActionCenter", "metroSounds", "panelSounds",
+            "actionCenterEnabled", "edgeActionCenter", "metroSounds", "panelSounds",
             "clearOnOpen", "dndMinutes", "groupConversations", "hideSystemNotifications", "inlineReply", "muteFromPanel", "notifFilterOn", "notifFilterWords",
             "notifPriority", "notificationPeek", "overlayBanner", "toastBanner",
         ),
         "LiveTiles" to setOf(
             "liveHideText", "liveMessages", "liveNowPlaying", "liveOffApps", "livePictures", "liveProgress", "notificationPeek", "thirdPartyTiles",
-            "galleryAlbums", "galleryApp", "weatherBlocks", "weatherFahrenheit",
+            "galleryAlbums", "galleryApp", "gallerySource", "galleryPhotos", "weatherBlocks", "weatherFahrenheit",
         ),
         "Apps" to setOf("appLabels", "compactList", "showCategories", "showFrequentApps", "showNewApps"),
-        "Screen" to setOf("highRefreshRate", "launchAnimation", "orientation"),
+        "Screen" to setOf("highRefreshRate", "launchAnimation", "orientation", "pagePadding"),
         "Battery" to setOf("batterySaving"),
-        "Accessibility" to setOf("boldText", "highContrast", "reduceMotion", "systemFont", "textScale"),
+        "Accessibility" to setOf("appFont", "boldText", "fontRevision", "highContrast", "reduceMotion", "systemFont", "textScale"),
         "Icons" to setOf("iconPack", "iconShape", "iconTileColors", "largeTileIcons"),
-        "Lock" to setOf("lockShowAlarm", "lockShowBattery", "lockShowEvent", "lockShowNotifications", "lockShowWeather", "lockSensorUnderScreen", "lockSensorY", "lockSensorOwnIcon"),
+        "Lock" to setOf("lockShowAlarm", "lockShowBattery", "lockShowEvent", "lockShowNotifications", "lockIconsOneRow", "lockShowWeather", "lockSensorUnderScreen", "lockSensorY", "lockSensorOwnIcon"),
         "Voice" to setOf("assistantIcon", "voiceButton", "voiceCallDirect", "voiceOffline"),
     )
 

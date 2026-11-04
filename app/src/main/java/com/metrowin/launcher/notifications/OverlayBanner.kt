@@ -157,8 +157,9 @@ internal fun OverlayTheme(settings: LauncherSettings, icons: IconLoader, content
         accent = accent, dark = rememberIsDark(settings),
         reduceMotion = AccessibilityPolicy.reduceMotion(settings.reduceMotion, AccessibilityPolicy.systemAnimatorScale(context)),
         highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode,
-        textScale = settings.textScale / 100f, boldText = settings.boldText, systemFont = settings.systemFont,
+        textScale = settings.textScale / 100f, boldText = settings.boldText, systemFont = settings.systemFont, appFont = settings.appFont, fontRevision = settings.fontRevision,
         tilt = settings.tiltStrength / 100f, speed = settings.animationSpeed / 100f,
+        pagePadding = settings.pagePadding, actionBar = settings.actionBar,
     ) {
         CompositionLocalProvider(LocalIconLoader provides icons, content = content)
     }
@@ -193,6 +194,11 @@ internal class OverlayWindowOwner : LifecycleOwner, SavedStateRegistryOwner {
 
     fun resume() {
         registry.currentState = Lifecycle.State.RESUMED
+    }
+
+    /** Below STARTED: what the window runs with `repeatOnLifecycle(STARTED)` stops, the window stays. */
+    fun pause() {
+        registry.currentState = Lifecycle.State.CREATED
     }
 
     fun destroy() {

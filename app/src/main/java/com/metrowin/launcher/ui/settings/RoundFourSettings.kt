@@ -149,7 +149,7 @@ fun ActionCenterExtrasSettings(env: SettingsEnv) {
             ) {
                 MetroText(
                     stringResource(R.string.ac_profile_line, profile.name, profile.ring, profile.media, profile.alarm),
-                    size = 17.sp, weight = FontWeight.Normal, maxLines = 2, modifier = Modifier.weight(1f),
+                    size = 17.sp, weight = FontWeight.Normal, modifier = Modifier.weight(1f),
                 )
                 MetroButton(stringResource(R.string.layouts_delete), Modifier.testTag("profiles:delete:$index")) {
                     env.onChange { it.copy(volumeProfiles = it.volumeProfiles.filterIndexed { i, _ -> i != index }) }

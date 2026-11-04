@@ -39,6 +39,8 @@ object BugReport {
         File(dir, LOG_NAME).apply {
             writeText("MetroWin Launcher ${about.versionName} (${about.versionCode}), Android ${about.androidRelease}, ${about.device}\n")
             appendText(lines.joinToString("\n", postfix = "\n"))
+            // The log of Android keeps minutes on a busy phone: what happened to notifications lately is kept apart (packages and reasons, never words).
+            appendText("--- notification journal ---\n" + com.metrowin.launcher.notifications.NotificationHub.journal().joinToString("\n", postfix = "\n"))
         }
     }.getOrNull()
 }

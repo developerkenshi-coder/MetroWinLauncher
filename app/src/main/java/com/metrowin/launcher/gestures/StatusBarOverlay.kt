@@ -16,7 +16,7 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,9 +31,9 @@ import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.notifications.OverlayWindowOwner
 import com.metrowin.launcher.notifications.overBars
 import com.metrowin.launcher.ui.components.MetroStatusBar
+import com.metrowin.launcher.ui.components.rememberBroadcast
 import com.metrowin.launcher.ui.theme.MetroAccents
 import com.metrowin.launcher.ui.theme.MetroTheme
-import kotlinx.coroutines.delay
 
 /**
  * The status bar of Windows Phone drawn over the one of Android in the apps outside the launcher. It takes no touch, so a swipe from the
@@ -77,8 +77,11 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
 
     /** The notifications are read only while the screen is on, as for the screens of the launcher. */
     private fun watch(on: Boolean) {
-        if (on == watching || shown == null) return
+        val current = shown
+        if (on == watching || current == null) return
         watching = on
+        // The bar's own polls (radio, cell, cutouts) run only while the window is started: with the screen off they stop.
+        if (on) current.owner.resume() else current.owner.pause()
         if (on) NotificationHub.startWatching() else NotificationHub.stopWatching()
     }
 
@@ -117,12 +120,9 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
         host.addView(ComposeView(service).apply {
             setContent {
                 MetroTheme(accent = MetroAccents[settings.accentIndex], dark = dark) {
-                    val battery by produceState(BatteryInfo.read(service)) {
-                        while (true) {
-                            delay(BATTERY_MS)
-                            value = BatteryInfo.read(service)
-                        }
-                    }
+                    // The percentage follows Android's own: the phone says every change, and the first answer comes at once (the broadcast is sticky).
+                    val batteryIntent = rememberBroadcast(Intent.ACTION_BATTERY_CHANGED)
+                    val battery = remember(batteryIntent) { batteryIntent?.let { BatteryInfo.from(it, service) } ?: BatteryInfo.read(service) }
                     val solid = if (dark) Color.Black else Color(0xFFE6E6E6)
                     MetroStatusBar(
                         battery, Modifier, if (dark) Color.White else Color(0xFF202020), barHeight,
@@ -143,6 +143,8 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
             return
         }
         shown = Shown(host, owner, params)
+        // Created while a game is in front: it never shows.
+        if (gameHidden) host.alpha = 0f
         service.registerReceiver(screen, IntentFilter(Intent.ACTION_SCREEN_ON).apply { addAction(Intent.ACTION_SCREEN_OFF); addAction(Intent.ACTION_USER_PRESENT) })
         watch(true)
         checkLock()
@@ -163,6 +165,18 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
     private fun systemBar(visible: Boolean) {
         handler.removeCallbacks(goFullScreen)
         if (visible) { fullScreen = false; sync() } else handler.postDelayed(goFullScreen, HIDE_DELAY_MS)
+    }
+
+    /** A game is in front: the bar slides up out of the screen (or back down). It never took a touch, so nothing else changes. */
+    private var gameHidden = false
+
+    fun isShown() = shown != null
+
+    fun gameHidden(hidden: Boolean) {
+        gameHidden = hidden
+        val view = shown?.view ?: return
+        view.animate().cancel()
+        view.animate().translationY(if (hidden) -view.height.toFloat() else 0f).alpha(if (hidden) 0f else 1f).setDuration(SLIDE_MS).start()
     }
 
     private fun sync() {
@@ -197,8 +211,8 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
 
     private companion object {
         const val MIN_DP = 24
-        const val BATTERY_MS = 30_000L
         const val HIDE_DELAY_MS = 700L
         const val LOCK_CHECK_MS = 100L
+        const val SLIDE_MS = 220L
     }
 }

@@ -90,6 +90,44 @@ class NewSettingsUiTest : ScreenshotBase() {
     }
 
     @Test
+    fun theArrowUnderTheTilesIsShownUntilSwitchedOffAndComesBackWithTheCodec() {
+        open(SettingsSection.Start)
+        assertTrue(current.showAppsArrow)
+        tap("start:appsarrow")
+        assertFalse(current.showAppsArrow)
+        assertFalse(com.metrowin.launcher.data.SettingsCodec.decode(com.metrowin.launcher.data.SettingsCodec.encode(current!!))!!.showAppsArrow)
+    }
+
+    @Test
+    fun thePageMarginsAreChosenOnTheScreenPageAndStayUntilReset() {
+        open(SettingsSection.Screen)
+        assertEquals(com.metrowin.launcher.data.PagePadding.Normal, current.pagePadding)
+        tap("screen:padding:2")
+        assertEquals(com.metrowin.launcher.data.PagePadding.Wide, current.pagePadding)
+        assertEquals(com.metrowin.launcher.data.PagePadding.Wide, com.metrowin.launcher.data.SettingsCodec.decode(com.metrowin.launcher.data.SettingsCodec.encode(current))!!.pagePadding)
+        tap("screen:padding:0")
+        assertEquals(com.metrowin.launcher.data.PagePadding.Compact, current.pagePadding)
+    }
+
+    @Test
+    fun theLockIconsInOneRowAreAChoiceThatStaysOffUntilTurnedOn() {
+        open(SettingsSection.Lock, LauncherSettings(lockQuickStatus = true))
+        assertFalse(current.lockIconsOneRow)
+        tap("lock:oneRow")
+        assertTrue(current.lockIconsOneRow)
+        assertTrue(com.metrowin.launcher.data.SettingsCodec.decode(com.metrowin.launcher.data.SettingsCodec.encode(current))!!.lockIconsOneRow)
+    }
+
+    @Test
+    fun theActionCenterIsOnUntilSwitchedOffAndItsDependentsFollow() {
+        open(SettingsSection.Notifications)
+        assertTrue(current.actionCenterEnabled)
+        tap("notifications:enabled")
+        assertFalse(current.actionCenterEnabled)
+        assertFalse(com.metrowin.launcher.data.SettingsCodec.decode(com.metrowin.launcher.data.SettingsCodec.encode(current!!))!!.actionCenterEnabled)
+    }
+
+    @Test
     fun theBarWithTheDotsCanBeSwitchedOff() {
         open(SettingsSection.StartBars)
         assertTrue(current.appBar)
@@ -178,35 +216,6 @@ class NewSettingsUiTest : ScreenshotBase() {
     }
 
     @Test
-    fun theNewsComeFromGoogleUntilAnotherSourceIsChosen() {
-        open(SettingsSection.LiveTiles)
-        assertEquals(NewsSources.GOOGLE_TOP, current.newsSource)
-        tap("live:news:header")
-        tap("live:news:2")
-        assertEquals(NewsSources.choices[2], current.newsSource)
-        assertTrue(NewsSources.isGoogle(current.newsSource))
-    }
-
-    @Test
-    fun aFeedOfOneOwnAsksForAnAddressAndSaysWhetherItIsGood() {
-        open(SettingsSection.LiveTiles, LauncherSettings(newsSource = NewsSources.CUSTOM))
-        tap("live:newsurl")
-        compose.onNode(hasSetTextAction() and hasAnyAncestor(hasTestTag("live:newsurl"))).performTextInput("example.com/feed.xml")
-        compose.waitForIdle()
-        // The test clock is paused: the page is drawn again when a frame goes by.
-        advance(100)
-        assertEquals("example.com/feed.xml", current.newsUrl)
-        compose.onNodeWithTag("live:newsurl:state").assertExists()
-    }
-
-    @Test
-    fun aFeedThatIsNotAWebAddressIsSaidToBeWrong() {
-        open(SettingsSection.LiveTiles, LauncherSettings(newsSource = NewsSources.CUSTOM, newsUrl = "ftp://example.com/feed"))
-        compose.onNodeWithTag("live:newsurl:state").assertExists()
-        assertTrue(NewsSources.customUrl(current.newsUrl) == null)
-    }
-
-    @Test
     fun theFinanceTileFollowsAtMostFourItemsAndTheFifthTakesThePlaceOfTheOldest() {
         val start = LauncherSettings(financeItems = listOf("fx:USD", "fx:GBP", "fx:JPY", "crypto:bitcoin"))
         open(SettingsSection.LiveTiles, start)
@@ -260,5 +269,28 @@ class NewSettingsUiTest : ScreenshotBase() {
         val mailTop = compose.onNodeWithTag("actions:notifapp:com.example.mail").fetchSemanticsNode().positionInRoot.y
         val chatTop = compose.onNodeWithTag("actions:notifapp:com.example.chat").fetchSemanticsNode().positionInRoot.y
         assertTrue("mail at $mailTop, chat at $chatTop", mailTop < chatTop)
+    }
+
+    @Test
+    fun theBanksAreListedAndAnAppCanBeTakenOutOrAdded() {
+        val bank = AppItem("app:bank", "My Bank", Launch.Action("x"), packageName = "es.bbva.contigo")
+        open(SettingsSection.Gestures, apps = listOf(chat, bank))
+        compose.onNodeWithTag("gestures:banksafe").assertExists()
+        // The bank is found by its name and is on; the chat is not listed until it is searched.
+        compose.onNodeWithTag("gestures:banksafe:es.bbva.contigo").assertExists()
+        compose.onAllNodesWithTag("gestures:banksafe:com.example.chat").assertCountEquals(0)
+        tap("gestures:banksafe:es.bbva.contigo")
+        assertEquals(setOf("es.bbva.contigo"), current.bankSafeSkip)
+        scrollIntoView("gestures:banksafe:query", topMargin = 0.2f)
+        compose.onNode(hasSetTextAction() and hasAnyAncestor(hasTestTag("gestures:banksafe:query"))).performTextInput("chat")
+        compose.waitForIdle()
+        advance(300)
+        tap("gestures:banksafe:com.example.chat")
+        assertEquals(setOf("com.example.chat"), current.bankSafeAdd)
+        // The master switch off: the list goes, what was chosen stays.
+        tap("gestures:banksafe")
+        assertFalse(current.bankSafe)
+        compose.onAllNodesWithTag("gestures:banksafe:query").assertCountEquals(0)
+        assertEquals(setOf("com.example.chat"), current.bankSafeAdd)
     }
 }

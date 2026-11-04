@@ -80,7 +80,6 @@ fun MessageReaderView(message: MailMessage, body: MailBody?, failure: String?, a
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var images by remember(message.id) { mutableStateOf(false) }
-    var more by remember { mutableStateOf(false) }
     val html = body?.html
     val hasRemoteImages = html != null && REMOTE_IMAGE.containsMatchIn(html)
     Column(Modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding()) {
@@ -91,8 +90,8 @@ fun MessageReaderView(message: MailMessage, body: MailBody?, failure: String?, a
                     MetroText(message.senderName.firstOrNull { it.isLetterOrDigit() }?.uppercase().orEmpty(), size = 22.sp, color = Color.White)
                 }
                 Column(Modifier.weight(1f).padding(start = 12.dp)) {
-                    MetroText(message.senderName.ifBlank { message.senderAddress }, size = 18.sp, weight = FontWeight.SemiBold, color = LocalAccent.current, maxLines = 1)
-                    MetroText(message.senderAddress, size = 13.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
+                    MetroText(message.senderName.ifBlank { message.senderAddress }, size = 18.sp, weight = FontWeight.SemiBold, color = LocalAccent.current)
+                    MetroText(message.senderAddress, size = 13.sp, weight = FontWeight.Normal, color = colors.subtle)
                 }
                 MetroText(whenText(message.timestamp), size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
             }
@@ -122,18 +121,13 @@ fun MessageReaderView(message: MailMessage, body: MailBody?, failure: String?, a
                 AppBarItem("↩↩", stringResource(R.string.mail_reply_all), actions.onReplyAll),
                 AppBarItem("↪", stringResource(R.string.mail_forward), actions.onForward),
                 AppBarItem("🗑", stringResource(R.string.mail_delete), actions.onDelete),
-                AppBarItem("…", stringResource(R.string.mail_more)) { more = !more },
+            ),
+            menu = listOf(
+                AppBarItem(if (message.isFlagged) "⚐" else "⚑", stringResource(R.string.mail_flag), actions.onFlag),
+                AppBarItem("✉", stringResource(R.string.mail_mark_unread), actions.onUnread),
+                AppBarItem("←", stringResource(R.string.mail_back), actions.onBack),
             ),
         )
-        if (more) {
-            AppBar(
-                listOf(
-                    AppBarItem(if (message.isFlagged) "⚐" else "⚑", stringResource(R.string.mail_flag), actions.onFlag),
-                    AppBarItem("✉", stringResource(R.string.mail_mark_unread), actions.onUnread),
-                    AppBarItem("←", stringResource(R.string.mail_back), actions.onBack),
-                ),
-            )
-        }
     }
 }
 
@@ -180,7 +174,7 @@ private fun Attachments(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 MetroText("📎", size = 18.sp)
-                MetroText(file.name, size = 15.sp, weight = FontWeight.Normal, color = LocalAccent.current, maxLines = 1, modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
+                MetroText(file.name, size = 15.sp, weight = FontWeight.Normal, color = LocalAccent.current, modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
                 MetroText(if (busy) "…" else sizeText(file.size), size = 12.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
             }
         }

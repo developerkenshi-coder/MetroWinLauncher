@@ -1,6 +1,9 @@
 package com.metrowin.launcher.ui.apps
 
+import com.metrowin.launcher.ui.components.pageSide
 import com.metrowin.launcher.data.AppList
+import com.metrowin.launcher.data.LaunchPlans
+import com.metrowin.launcher.ui.anim.MotionStyle
 import com.metrowin.launcher.data.SystemCommands
 import com.metrowin.launcher.ui.components.hideKeyboardWhenGone
 import com.metrowin.launcher.ui.anim.metroTween
@@ -15,6 +18,9 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -65,7 +71,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
 import com.metrowin.launcher.model.AppCategory
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import java.util.Locale
 import com.metrowin.launcher.data.EventMatch
@@ -110,6 +115,7 @@ import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.anim.turnstile
 import com.metrowin.launcher.ui.components.AppSquare
 import com.metrowin.launcher.ui.components.MetroText
+import com.metrowin.launcher.ui.components.sectionHeader
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.LocalStyle
@@ -236,6 +242,14 @@ class AppListModel(
         rows.withIndex().filter { it.value is ListRow.Header }.associate { (it.value as ListRow.Header).letter to it.index }
     val letters: Set<String> get() = headerIndex.keys
 
+    /**
+     * The list while the search box is touched and there are searches to offer: the chips stay right under the box, the searches made
+     * before come next, and the list follows them.
+     */
+    fun withRecents(recent: List<String>): List<ListRow> =
+        rows.take(head) + rows.filter { it === ListRow.Categories } + ListRow.Section(R.string.search_section_recent) +
+            recent.map { ListRow.Recent(it) } + rows.drop(head).filter { it !== ListRow.Categories }
+
     /** Position of the row of app [id], or null when the list does not show it. */
     fun indexOfApp(id: String): Int? = rows.indexOfFirst { it is ListRow.App && it.group.isEmpty() && it.item.id == id }.takeIf { it >= 0 }
 
@@ -280,8 +294,12 @@ fun AppListScreen(
     global: GlobalResults = GlobalResults.Empty,
     /** Bumped to put the cursor in the search box (and show the keyboard), as the "search the apps" gesture asks. */
     searchFocus: Int = 0,
+    /** The box took the focus asked by [searchFocus]: the caller drops the request, so a box composed again later does not ask for the keyboard once more. */
+    onSearchFocusDone: () -> Unit = {},
     /** Shown as a microphone in the search box while it is empty; null for no microphone. */
     onVoice: (() -> Unit)? = null,
+    /** The button next to the search box that starts picking several apps to put on Start together; null leaves it out. */
+    onSelect: (() -> Unit)? = null,
     /** The lists of the chips under the search box (the model decides whether they show), the chosen one, a choice, "new list" and a long press on a list. */
     lists: List<AppList> = emptyList(),
     selectedList: String? = null,
@@ -322,9 +340,8 @@ fun AppListScreen(
     val rows = remember(model, query, results, global, answers, recentSearches, searchFocused) {
         if (query.isBlank()) {
             if (searchFocused && recentSearches.isNotEmpty()) {
-                // The searches made before come right under the box; the list stays below them.
-                listOfNotNull<ListRow>(ListRow.Today.takeIf { model.head > 1 }, ListRow.Search, ListRow.Section(R.string.search_section_recent)) +
-                    recentSearches.map { ListRow.Recent(it) } + model.rows.drop(model.head)
+                // The chips come right under the box, the searches made before under them; the list stays below.
+                model.withRecents(recentSearches)
             } else {
                 model.rows
             }
@@ -378,26 +395,34 @@ fun AppListScreen(
     val openedAt = remember(replayToken) { System.nanoTime() }
 
     CompositionLocalProvider(LocalCompactList provides compact) {
+    Box(modifier.fillMaxSize()) {
     LazyColumn(
         state = listState,
-        modifier = modifier.fillMaxSize(),
+        // The top inset shrinks the list itself, not its content padding: a sticky heading sticks to the top of the list and
+        // ignores the content padding, so it would sit under the status bar and cover the first row.
+        modifier = Modifier.fillMaxSize().padding(top = insets.calculateTopPadding()),
         contentPadding = PaddingValues(
             start = sides.calculateStartPadding(direction),
             end = sides.calculateEndPadding(direction),
-            top = insets.calculateTopPadding() + 12.dp,
+            top = 12.dp,
             bottom = insets.calculateBottomPadding() + 12.dp,
         ),
     ) {
-        itemsIndexed(rows, key = { _, row -> row.key }, contentType = { _, row -> row::class }) { index, row ->
+        rows.forEachIndexed { index, row ->
+            if (row is ListRow.Header) {
+                sectionHeader(row.key, onClick = onHeaderClick) { HeaderRow(row.letter, index, listState, openedAt, exiting, onHeaderClick) }
+                return@forEachIndexed
+            }
+            val content: @Composable () -> Unit = {
             when (row) {
                 ListRow.Today -> if (today != null) TodayCard(today, index, listState, openedAt, exiting, onToday)
-                ListRow.Search -> SearchRow(query, onQueryChange, searchFocus, onVoice, onFocusChange = { searchFocused = it }, onSubmit = onSearchSubmit)
+                ListRow.Search -> SearchRow(query, onQueryChange, searchFocus, onSearchFocusDone, onVoice, onSelect, onFocusChange = { searchFocused = it }, onSubmit = onSearchSubmit)
                 is ListRow.Answer -> AnswerRow(row.answer, index, listState, openedAt, exiting) { onAnswer(row.answer) }
                 is ListRow.Recent -> ResultRow(
                     Glyph.Search, row.query, null, index, listState, openedAt, exiting, tag = "recent:${row.query}",
                 ) { onQueryChange(row.query) }
                 ListRow.Categories -> ListChips(lists, selectedList, onList, onNewList, onListLongPress)
-                is ListRow.Header -> HeaderRow(row.letter, index, listState, openedAt, exiting, onHeaderClick)
+                is ListRow.Header -> Unit
                 is ListRow.App -> AppRow(
                     row.item, index, listState, openedAt, exiting, onLaunch, onLongPress,
                     highlight?.takeIf { it.appId == row.item.id && row.group.isEmpty() }, row.group,
@@ -442,7 +467,24 @@ fun AppListScreen(
                     tag = "result:event:${row.match.eventId}",
                 ) { onLaunch(AppItem("search:event", row.match.title, Launch.Link(CalendarSearch.uri(row.match.eventId)))) }
             }
+            }
+            // The headings of the results stay at the top while their results scroll under them (not those of the plain list: they would never leave).
+            if (query.isNotBlank() && row is ListRow.Section) {
+                stickyHeader(key = row.key, contentType = row::class) { Box(Modifier.background(LocalMetroColors.current.background)) { content() } }
+            } else {
+                item(key = row.key, contentType = row::class) { content() }
+            }
         }
+    }
+    // Where the list is, as a letter at the edge that can be dragged; only for the plain list, whose rows are the model's.
+    if (rows === model.rows) {
+        val headers = remember(model) { model.headerIndex.entries.map { it.value to it.key }.sortedBy { it.first } }
+        AlphaScroller(
+            listState, headers, rows.size,
+            top = insets.calculateTopPadding() + 12.dp, bottom = insets.calculateBottomPadding() + 12.dp,
+            modifier = Modifier.padding(end = sides.calculateEndPadding(direction)),
+        )
+    }
     }
     }
 }
@@ -480,12 +522,20 @@ internal fun rememberRowAway(index: Int, listState: LazyListState, openedAt: Lon
     LaunchedEffect(away) {
         if (away.value < 1f) return@LaunchedEffect
         delay((index - listState.firstVisibleItemIndex).coerceIn(0, 14) * 26L)
-        away.animateTo(0f, metroTween(durationMillis = 380, easing = Motion.Decelerate))
+        if (MotionStyle.original) {
+            away.animateTo(0f, metroTween(durationMillis = LaunchPlans.ORIGINAL_IN_MS, easing = Motion.ExpoOut))
+        } else {
+            away.animateTo(0f, metroTween(durationMillis = 380, easing = Motion.Decelerate))
+        }
     }
     LaunchedEffect(exiting, away) {
         if (!exiting) return@LaunchedEffect
         delay((index - listState.firstVisibleItemIndex).coerceIn(0, 14) * 14L)
-        away.animateTo(1f, metroTween(durationMillis = 220, easing = Motion.Accelerate))
+        if (MotionStyle.original) {
+            away.animateTo(1f, metroTween(durationMillis = LaunchPlans.ORIGINAL_OUT_MS, easing = Motion.ExpoIn))
+        } else {
+            away.animateTo(1f, metroTween(durationMillis = 220, easing = Motion.Accelerate))
+        }
     }
     return away
 }
@@ -496,7 +546,9 @@ private fun SearchRow(
     query: String,
     onQueryChange: (String) -> Unit,
     focusToken: Int,
+    onFocusDone: () -> Unit,
     onVoice: (() -> Unit)?,
+    onSelect: (() -> Unit)? = null,
     onFocusChange: (Boolean) -> Unit = {},
     onSubmit: (String) -> Unit = {},
 ) {
@@ -508,13 +560,14 @@ private fun SearchRow(
         if (focusToken > 0) {
             requester.requestFocus()
             keyboard?.show()
+            onFocusDone()
         }
     }
     val currentChange by rememberUpdatedState(onQueryChange)
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .padding(horizontal = pageSide(12.dp), vertical = 4.dp)
             .height(52.dp)
             .panel(RoundedCornerShape(16.dp).takeUnless { LocalStyle.current.isClassic } ?: RectangleShape)
             .padding(horizontal = 14.dp),
@@ -549,12 +602,31 @@ private fun SearchRow(
                 drawLine(colors.subtle, Offset(0f, 0f), Offset(size.width, size.height), stroke, StrokeCap.Round)
                 drawLine(colors.subtle, Offset(size.width, 0f), Offset(0f, size.height), stroke, StrokeCap.Round)
             }
-        } else if (onVoice != null) {
-            Box(
-                Modifier.size(40.dp).metroPress(onClick = onVoice).testTag("search:voice"),
-                contentAlignment = Alignment.Center,
-            ) {
-                GlyphIcon(Glyph.Mic, 24.dp, color = colors.subtle)
+        } else {
+            if (onSelect != null) {
+                val description = stringResource(R.string.menu_select)
+                Box(
+                    Modifier.size(40.dp).metroPress(onClick = onSelect).semantics { contentDescription = description }.testTag("search:select"),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    // Two squares, the first one ticked: pick several apps.
+                    Canvas(Modifier.size(22.dp)) {
+                        val u = size.width / 8f
+                        val line = 1.4.dp.toPx()
+                        drawRect(colors.subtle, Offset(0f, 0f), androidx.compose.ui.geometry.Size(4.4f * u, 4.4f * u), style = Stroke(line))
+                        drawLine(colors.subtle, Offset(0.9f * u, 2.3f * u), Offset(1.9f * u, 3.3f * u), line)
+                        drawLine(colors.subtle, Offset(1.9f * u, 3.3f * u), Offset(3.6f * u, 1.2f * u), line)
+                        drawRect(colors.subtle, Offset(4.6f * u, 4.6f * u), androidx.compose.ui.geometry.Size(3.4f * u, 3.4f * u), style = Stroke(line))
+                    }
+                }
+            }
+            if (onVoice != null) {
+                Box(
+                    Modifier.size(40.dp).metroPress(onClick = onVoice).testTag("search:voice"),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    GlyphIcon(Glyph.Mic, 24.dp, color = colors.subtle)
+                }
             }
         }
     }
@@ -577,7 +649,7 @@ private fun HeaderRow(
             .height(RowHeight)
             .graphicsLayer { turnstile(away.value, reduced) }
             .metroPress(onClick = onClick, enabled = !exiting)
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = pageSide(12.dp)),
         contentAlignment = Alignment.CenterStart,
     ) {
         Box(Modifier.size(SquareSize).litFill(true), contentAlignment = Alignment.Center) {
@@ -659,7 +731,7 @@ private fun Chip(text: String, selected: Boolean, tag: String, onLongClick: (() 
 @Composable
 private fun SectionRow(@StringRes title: Int, onClear: (() -> Unit)? = null) {
     Row(
-        Modifier.fillMaxWidth().padding(start = 24.dp, end = 12.dp, top = 18.dp, bottom = 4.dp),
+        Modifier.testTag("section:$title").fillMaxWidth().padding(start = pageSide(24.dp), end = pageSide(12.dp), top = 18.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         MetroText(stringResource(title), size = 20.sp, color = LocalMetroColors.current.subtle, modifier = Modifier.weight(1f))
@@ -776,7 +848,7 @@ private fun ResultRow(
             .testTag(tag)
             .graphicsLayer { turnstile(away.value, reduced) }
             .metroPress(onClick = onClick, enabled = !exiting)
-            .padding(horizontal = 12.dp, vertical = 4.dp),
+            .padding(horizontal = pageSide(12.dp), vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -798,12 +870,12 @@ private fun ResultRow(
 fun AppRowContent(item: AppItem, modifier: Modifier = Modifier, compact: Boolean = LocalCompactList.current) {
     CompositionLocalProvider(LocalCompactList provides compact) {
         Row(
-            modifier.fillMaxWidth().height(RowHeight).padding(horizontal = 12.dp),
+            modifier.fillMaxWidth().height(RowHeight).padding(horizontal = pageSide(12.dp)),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AppSquare(item, SquareSize)
             Spacer(Modifier.width(14.dp))
-            MetroText(item.label, size = if (compact) 19.sp else 22.sp, maxLines = 2, modifier = Modifier.weight(1f))
+            MetroText(item.label, size = if (compact) 19.sp else 22.sp, modifier = Modifier.weight(1f))
         }
     }
 }

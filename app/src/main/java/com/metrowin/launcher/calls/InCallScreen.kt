@@ -99,7 +99,7 @@ fun InCallScreen(lines: List<CallLine>, audio: CallAudio, actions: CallActions, 
                         .metroPress(onClick = { if (other.held) actions.onHold(other.id, false) }).litFill(false).padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    MetroText(other.title, size = 20.sp, maxLines = 1, modifier = Modifier.weight(1f))
+                    MetroText(other.title, size = 20.sp, modifier = Modifier.weight(1f))
                     MetroText(stateText(other), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle)
                 }
             }
@@ -168,7 +168,7 @@ private fun stateText(line: CallLine): String {
 
 /** The time of a call, counting from the moment it was answered. */
 @Composable
-private fun elapsed(since: Long): String {
+internal fun elapsed(since: Long): String {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(since) {
         while (true) {

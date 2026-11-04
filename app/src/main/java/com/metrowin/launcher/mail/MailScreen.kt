@@ -400,9 +400,9 @@ private fun InboxPage(messages: List<MailMessage>?, onSelectMessage: (MailMessag
         items(messages, key = { it.id }) { msg ->
             Row(Modifier.fillMaxWidth().metroPress(onClick = { onSelectMessage(msg) }).padding(vertical = 8.dp), verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f)) {
-                    MetroText(msg.senderName, size = 22.sp, weight = if (msg.isUnread) FontWeight.SemiBold else FontWeight.Light, maxLines = 1)
-                    MetroText(msg.subject, size = 16.sp, weight = FontWeight.Normal, color = if (msg.isUnread) LocalAccent.current else colors.subtle, maxLines = 1)
-                    if (msg.snippet.isNotBlank()) MetroText(msg.snippet, size = 13.sp, weight = FontWeight.Normal, color = colors.subtle.copy(alpha = 0.8f), maxLines = 2)
+                    MetroText(msg.senderName, size = 22.sp, weight = if (msg.isUnread) FontWeight.SemiBold else FontWeight.Light)
+                    MetroText(msg.subject, size = 16.sp, weight = FontWeight.Normal, color = if (msg.isUnread) LocalAccent.current else colors.subtle)
+                    if (msg.snippet.isNotBlank()) MetroText(msg.snippet, size = 13.sp, weight = FontWeight.Normal, color = colors.subtle.copy(alpha = 0.8f))
                 }
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(start = 8.dp)) {
                     MetroText(whenText(msg.timestamp), size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)

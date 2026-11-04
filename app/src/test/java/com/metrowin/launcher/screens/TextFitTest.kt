@@ -229,6 +229,27 @@ abstract class TextFitBase(private val scale: Float, private val style: ThemeSty
         SettingsScreen(env = settingsEnv(section ?: SettingsSection.StartTheme), section = section, onSectionChange = {}, sectionAway = remember { Animatable(0f) })
     }
 
+    // ---- what the user wrote (the name of an app, of a city, of a layout) may be as long as it likes: it goes to a new line, never to "…"
+
+    private val longName = "Un nome davvero lunghissimo che l'utente ha scelto per questa voce dell'elenco"
+
+    @Composable
+    private fun LongNames(section: SettingsSection) {
+        SettingsScreen(
+            env = SettingsEnv(
+                settings = LauncherSettings(weatherCities = listOf(com.metrowin.launcher.data.SavedCity(longName, 0.0, 0.0)), activeLayout = "l1"),
+                onChange = {}, apps = apps, onLanguage = {}, backupFolderName = "Documents/MetroWin",
+                missingApps = listOf(com.metrowin.launcher.data.SavedApp("com.example.long", longName)),
+                layouts = listOf(com.metrowin.launcher.data.SavedLayout("l1", longName, 8, "", "")),
+            ),
+            section = section, onSectionChange = {}, sectionAway = remember { Animatable(0f) },
+        )
+    }
+
+    @Test fun longNamesInTheBackupPage() = fit("settings_backup_long", overlaps = false) { LongNames(SettingsSection.Backup) }
+    @Test fun longNamesInTheLiveTilesPage() = fit("settings_live_tiles_long", overlaps = false) { LongNames(SettingsSection.LiveTiles) }
+    @Test fun longNamesInTheStartPage() = fit("settings_start_long", overlaps = false) { LongNames(SettingsSection.Start) }
+
     // ---- the settings, one test for each section
 
     @Test fun settingsList() = fit("settings_list", overlaps = false) { SettingsPage(null) }

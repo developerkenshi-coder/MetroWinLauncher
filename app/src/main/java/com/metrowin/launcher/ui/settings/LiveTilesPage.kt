@@ -114,7 +114,7 @@ fun LiveTilesPage(env: SettingsEnv) {
                 SettingLabel(stringResource(R.string.weather_followed))
                 settings.weatherCities.forEachIndexed { index, city ->
                     Row(Modifier.fillMaxWidth().testTag("weather:city:$index"), verticalAlignment = Alignment.CenterVertically) {
-                        MetroText(city.name, size = 18.sp, weight = FontWeight.Normal, maxLines = 1, modifier = Modifier.weight(1f))
+                        MetroText(city.name, size = 18.sp, weight = FontWeight.Normal, modifier = Modifier.weight(1f))
                         MetroText(
                             stringResource(R.string.weather_unfollow), size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
                             modifier = Modifier.testTag("weather:unfollow:$index").metroPress(onClick = { env.onUnfollowCity(city) }).padding(8.dp),
@@ -156,7 +156,6 @@ fun LiveTilesPage(env: SettingsEnv) {
         Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
             SettingHeading(stringResource(R.string.tiles_more_heading))
             TileTransitionSetting(env)
-            NewsSourceSetting(env)
             FinanceBaseSetting(env)
             FinanceItemsSetting(env)
         }

@@ -175,6 +175,8 @@ data class TileFeatures(
     val clockHours: ClockHours = ClockHours.System,
     /** The icon of an app fills its tile. */
     val largeIcons: Boolean = false,
+    /** Percent of the colour a tile keeps over a Start photo. */
+    val tileOpacity: Int = 100,
 )
 
 val LocalTileFeatures = staticCompositionLocalOf { TileFeatures() }

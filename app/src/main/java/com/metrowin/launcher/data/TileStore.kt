@@ -22,6 +22,10 @@ object TileCodec {
                     if (entry is Tile && entry.style != TileStyle.Standard) put("style", entry.style.code)
                     if (entry.color != 0) put("color", entry.color)
                     if (entry.group.isNotEmpty()) put("group", entry.group)
+                    if (entry.col >= 0 && entry.row >= 0) {
+                        put("col", entry.col)
+                        put("row", entry.row)
+                    }
                     if (entry is Folder) {
                         put("type", "folder")
                         put("name", entry.name)
@@ -40,9 +44,9 @@ object TileCodec {
             val size = TileSize.fromCode(obj.optString("size"))
             if (obj.optString("type") == "folder") {
                 val children = obj.getJSONArray("children")
-                Folder(obj.getString("id"), obj.optString("name"), size, List(children.length()) { children.getString(it) }, colorOf(obj), obj.optString("group"))
+                Folder(obj.getString("id"), obj.optString("name"), size, List(children.length()) { children.getString(it) }, colorOf(obj), obj.optString("group"), obj.optInt("col", -1), obj.optInt("row", -1))
             } else {
-                Tile(obj.getString("id"), size, TileStyle.fromCode(obj.optString("style")), colorOf(obj), obj.optString("group"))
+                Tile(obj.getString("id"), size, TileStyle.fromCode(obj.optString("style")), colorOf(obj), obj.optString("group"), obj.optInt("col", -1), obj.optInt("row", -1))
             }
         }
     }.getOrNull()

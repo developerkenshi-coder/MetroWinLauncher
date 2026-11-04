@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Close to the exponential ease out (exponent 6) of the turnstile of the original Windows Phone: most of the way at once, a long soft stop. -->
+<pathInterpolator xmlns:android="http://schemas.android.com/apk/res/android"
+    android:controlX1="0.16"
+    android:controlX2="0.3"
+    android:controlY1="1"
+    android:controlY2="1" />

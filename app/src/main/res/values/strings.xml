@@ -127,6 +127,9 @@
     <string name="theme_dark_to">until</string>
     <string name="theme_hours_hint">The launcher is dark between these hours and light the rest of the day.</string>
     <string name="theme_parallax">photo moves slower than the tiles</string>
+    <string name="theme_tile_opacity">tiles show the photo through them</string>
+    <string name="theme_tile_opaque">opaque</string>
+    <string name="theme_tile_see_through">%1$d%% of the colour</string>
     <string name="theme_start_pages">start screens</string>
     <string name="theme_start_pages_hint">With more screens, swipe sideways between them. Tiles you remove from a screen stay on it until you move them.</string>
     <string name="stepper_minus">less</string>
@@ -188,6 +191,8 @@
     <string name="bug_log_failed">The log could not be read, the mail has no attachment</string>
     <string name="gest_navbar">Windows Phone navigation buttons</string>
     <string name="gest_navbar_hint">Draws back, the Windows logo and search over the buttons of Android. A long press on the logo opens the recent apps. Needs the accessibility service.</string>
+    <string name="gest_game_bars">Hide the bars in games and videos</string>
+    <string name="gest_game_bars_hint">While a game or a video is in front in full screen, the Windows Phone status bar and navigation buttons slide away so they do not cover it. Swipe up from the bottom edge for the buttons, down from the top edge for the status bar. Needs the accessibility service.</string>
     <string name="gest_navbar_needs_buttons">Your phone uses gesture navigation: choose the three buttons in the system settings, under System, Gestures, System navigation.</string>
     <string name="dialer_app_name">MetroWin Phone</string>
     <string name="dialer_tab_keypad">keypad</string>
@@ -405,6 +410,14 @@
     <string name="gest_lock_service_on">On: the launcher can lock the screen and open the recent apps</string>
     <string name="gest_lock_service_off">Off: locking the screen and the recent apps button need it</string>
     <string name="gest_lock_service_open">open accessibility settings</string>
+    <string name="bank_safe">banking apps</string>
+    <string name="bank_safe_toggle">protect banking apps</string>
+    <string name="bank_safe_hint">While a bank, a card or a wallet app is in front, the launcher takes every window of its own away (the buttons, the status bar over apps, the banners, the Action Center strip) and puts them back when you leave. Banks are found by name; add or take out apps below.</string>
+    <string name="bank_safe_cannot">What cannot be hidden: a bank can still see that the accessibility service is on, and that the launcher may draw over other apps. If an app still refuses to open, turn them off for a moment with the buttons below.</string>
+    <string name="bank_safe_service_off">turn the accessibility service off now</string>
+    <string name="bank_safe_service_off_hint">The buttons over the navigation bar, the status bar over apps, the lock screen and the Action Center strip stop until you turn the service on again in the accessibility settings.</string>
+    <string name="bank_safe_overlay_open">open the permission to draw over other apps</string>
+    <string name="bank_safe_overlay_hint">Turn it off for the launcher if a bank still says that an app covers its screen; the banner over other apps stops with it.</string>
     <string name="gest_lock_service_hint">Android lets an app lock the screen or open the recent apps only through an accessibility service. This one does nothing else: it reads nothing from the screen, and the only event it asks for is which app is in front, to take away the notifications of the app you are looking at. The recent apps open at once, without the wait that the swipe of Android\'s gesture navigation can have with a launcher that is not the one of the phone.</string>
     <string name="gest_lock_needs_service">Turn on the screen lock service in the accessibility settings first</string>
     <string name="lock_service_label">MetroWin screen lock</string>
@@ -530,9 +543,15 @@
 
     <!-- launch animation -->
     <string name="screen_launch">opening an app</string>
-    <string name="launch_turnstile">turnstile: the tiles turn away</string>
+    <string name="launch_turnstile">modern turnstile: the tiles turn away</string>
     <string name="launch_expand">expand: the tile grows into the app</string>
-    <string name="screen_launch_hint">Expand keeps the Start screen still and grows the app out of the tile you touched (on the list, out of the middle). Reduce motion in Accessibility turns both off.</string>
+    <string name="launch_original">Windows Phone original: the tiles turn away one row after the other, the app swings in</string>
+    <string name="screen_padding">page margins</string>
+    <string name="screen_padding_hint">How much room Start, the app list and the pages leave at the sides of the screen. Compact gives the tiles and the text a little more width; wide a little less. It never goes so far that the pages are hard to use.</string>
+    <string name="padding_compact">compact</string>
+    <string name="padding_normal">normal</string>
+    <string name="padding_wide">wide</string>
+    <string name="screen_launch_hint">The original Windows Phone turnstile turns the tiles away from the top, the tapped one last, and swings the app in and out again on Back; the modern one is quicker and softer. Expand keeps the Start screen still and grows the app out of the tile you touched (on the list, out of the middle). Reduce motion in Accessibility turns all off.</string>
 
     <!-- sync -->
     <string name="sync_heading">sync between phones</string>
@@ -1294,8 +1313,6 @@
     <string name="tiles_more_heading">News, finance and motion</string>
     <string name="transition_title">How a tile changes face</string>
     <string name="transition_hint">Slide brings the new face in from below; mixed uses one way on some tiles and the other on the rest. Nothing moves by itself while saving the battery or with reduced motion.</string>
-    <string name="news_source_title">Source of the News tile</string>
-    <string name="news_source_google">Google News: top stories (default)</string>
     <string name="news_topic_WORLD">Google News: world</string>
     <string name="news_topic_NATION">Google News: your country</string>
     <string name="news_topic_BUSINESS">Google News: business</string>
@@ -1304,11 +1321,8 @@
     <string name="news_topic_SPORTS">Google News: sports</string>
     <string name="news_topic_SCIENCE">Google News: science</string>
     <string name="news_topic_HEALTH">Google News: health</string>
-    <string name="news_source_custom">A feed of your own (RSS or Atom)</string>
     <string name="news_url_hint">https://example.com/feed.xml</string>
-    <string name="news_url_ok">This address will be read.</string>
     <string name="news_url_bad">Not a good address: it must be a web page on the Internet, over https.</string>
-    <string name="news_source_hint">The most important stories of the day, in the language and the country of the phone. They are asked for only while the News tile is on Start and the launcher is on screen: at most every half hour, every three hours when saving the battery.</string>
     <string name="finance_base_title">Show values in</string>
     <string name="finance_base_auto">The currency of the region (%1$s)</string>
     <string name="finance_items_title">What to follow (up to 4)</string>
@@ -1317,6 +1331,10 @@
     <string name="theme_panorama_hint">A large title (start, apps) behind the pages, which moves slower than the page when it slides. Off until you ask for it.</string>
     <string name="theme_app_bar">Bar with …</string>
     <string name="theme_app_bar_hint">At the bottom while you edit the tiles: the … button shows the names of the buttons.</string>
+    <string name="action_bar_title">Action bar</string>
+    <string name="action_bar_super">Super action bar</string>
+    <string name="action_bar_retro">Retro action bar</string>
+    <string name="action_bar_hint">Super: the bar of MetroWin, with all its functions. Retro: the app bar of Windows Phone 8.1, with round buttons and a … that shows their names and the text items. It applies to Start and the mini apps.</string>
     <string name="lock_quick_title">Status on the lock screen</string>
     <string name="lock_quick">Quick status (app counters)</string>
     <string name="lock_quick_hint">Up to five apps with the number of their notifications, under the time. If you do not choose, the apps with the most notifications.</string>
@@ -1326,6 +1344,8 @@
     <string name="lock_detail_hint">The last notification of this app, written out (who and what) on the lock screen. Anyone who sees the screen reads it.</string>
     <string name="lock_music">Music controls and cover</string>
     <string name="lock_music_hint">While a song plays: its cover, its name and the buttons to skip and pause.</string>
+    <string name="lock_icons_one_row">notification icons in one row, smaller</string>
+    <string name="lock_icons_one_row_hint">The apps with news on the lock screen stay in a single row: the icons shrink to fit, and a +N says how many did not. Off: larger icons that wrap onto more rows, as they are now.</string>
     <string name="ac_volume_panel_hint">The volume keys draw a Metro panel over the launcher for what is sounding now: the call, the music (with the name of the app) or the ringer. Android does not let an app lower the volume of another app by itself; for a player that has a volume of its own (a cast, a speaker) the panel moves that one.</string>
     <string name="ac_banner">Banner for new notifications</string>
     <string name="ac_overlay">Banner over other apps</string>
@@ -1484,6 +1504,10 @@
     <string name="battery_time_left">About %s left</string>
     <string name="edit_label_group">title</string>
     <string name="edit_group">Title of a group of tiles</string>
+    <string name="edit_select">select several tiles to move</string>
+    <string name="edit_label_select">select</string>
+    <string name="move_pick_hint">Tap the tiles to move to another Start screen. Hold one to take its whole group.</string>
+    <string name="move_pick_to">Move to Start %1$d</string>
     <string name="group_title_prompt">Title of the group that starts here (empty for none)</string>
     <string name="start_features_title">Extras of the tiles</string>
     <string name="start_large">Large size</string>
@@ -1755,6 +1779,14 @@
     <string name="gallery_app_hint">The Photos tile opens this app.</string>
     <string name="gallery_albums_hint">The pictures on the tile come only from the albums ticked here, as in the gallery, and not from the whole memory of the phone.</string>
     <string name="gallery_albums_none">No albums to show: let the tile read the photos first.</string>
+    <string name="gallery_source">Pictures come from</string>
+    <string name="gallery_source_recent">The latest photos of the phone</string>
+    <string name="gallery_source_albums">Albums ticked below</string>
+    <string name="gallery_source_chosen">Photos I choose</string>
+    <string name="gallery_pick">Choose photos</string>
+    <string name="gallery_pick_clear">Forget the chosen photos</string>
+    <string name="gallery_chosen_none">No photos chosen yet: the tile shows its icon.</string>
+    <string name="gallery_chosen_count">Photos chosen: %1$d. A deleted one is skipped.</string>
     <string name="ac_panel_sounds">Sound of the Action Center</string>
     <string name="ac_panel_sounds_hint">The glide heard when the Action Center comes down and goes back up. It needs the Metro sounds.</string>
     <string name="voice_set_icon">Assistant icon on Start</string>
@@ -1881,4 +1913,344 @@
     <string name="sec_action_center_desc">Quick buttons, sliders, sounds, flashlight, volume panel</string>
     <string name="sec_notifications">notifications</string>
     <string name="sec_notifications_desc">Notification access, banners, replies, groups, filters, per app</string>
+
+    <!-- Calculator -->
+    <string name="calc_pivot_calc">calculator</string>
+    <string name="calc_pivot_history">history</string>
+    <string name="calc_pivot_convert">converter</string>
+    <string name="calc_standard">standard</string>
+    <string name="calc_scientific">scientific</string>
+    <string name="calc_degrees">degrees</string>
+    <string name="calc_radians">radians</string>
+    <string name="calc_error_syntax">Not a valid expression</string>
+    <string name="calc_error_domain">Cannot do that operation</string>
+    <string name="calc_error_overflow">Result too large</string>
+    <string name="calc_history_empty">Nothing calculated yet. Your calculations are kept here.</string>
+    <string name="calc_history_clear">clear</string>
+    <string name="calc_amount">Amount</string>
+    <string name="calc_rates_missing">The exchange rates have not been downloaded yet. Connect to the internet once.</string>
+    <string name="calc_rates_date">Rates of %1$s</string>
+    <string name="calc_kind_length">length</string>
+    <string name="calc_kind_area">area</string>
+    <string name="calc_kind_volume">volume</string>
+    <string name="calc_kind_mass">mass</string>
+    <string name="calc_kind_temperature">temperature</string>
+    <string name="calc_kind_speed">speed</string>
+    <string name="calc_kind_time">time</string>
+    <string name="calc_kind_data">data</string>
+    <string name="calc_kind_energy">energy</string>
+    <string name="calc_kind_pressure">pressure</string>
+    <string name="calc_kind_angle">angle</string>
+    <string name="calc_kind_currency">currency</string>
+
+    <!-- Notes -->
+    <string name="stock_notes">Notes</string>
+    <string name="stock_todo">To do</string>
+    <string name="notes_title">notes</string>
+    <string name="notes_search">Search notes</string>
+    <string name="notes_all">all</string>
+    <string name="notes_empty">No notes here yet. Tap + to write one, or the pencil to draw.</string>
+    <string name="notes_new">new</string>
+    <string name="notes_sketch">sketch</string>
+    <string name="notes_backup">backup</string>
+    <string name="notes_restore">restore</string>
+    <string name="notes_untitled">Untitled</string>
+    <string name="notes_title_hint">Title</string>
+    <string name="notes_body_hint">Write here…</string>
+    <string name="notes_read">read</string>
+    <string name="notes_edit">edit</string>
+    <string name="notes_pin">pin</string>
+    <string name="notes_unpin">unpin</string>
+    <string name="notes_more">more</string>
+    <string name="notes_color">Colour</string>
+    <string name="notes_folder">Folder</string>
+    <string name="notes_folder_hint">Name of the folder</string>
+    <string name="notes_share">Share as text</string>
+    <string name="notes_export_text">Save as a file (.md)</string>
+    <string name="notes_export_sketch">Save the sketch as a picture (.png)</string>
+    <string name="notes_sketch_remove">Remove the sketch</string>
+    <string name="notes_delete">Delete the note</string>
+    <string name="notes_delete_confirm">Tap again to delete</string>
+    <string name="notes_backup_done">Backup saved: %1$d notes</string>
+    <string name="notes_backup_failed">The backup could not be saved</string>
+    <string name="notes_restore_done">%1$d notes restored</string>
+    <string name="notes_restore_failed">This file is not a backup of the notes</string>
+    <string name="notes_save_failed">The notes could not be saved</string>
+    <string name="sketch_undo">undo</string>
+    <string name="sketch_redo">redo</string>
+    <string name="sketch_clear">clear</string>
+    <string name="sketch_done">done</string>
+    <string name="sketch_label_hint">Text of the label</string>
+    <string name="sketch_add">Add</string>
+
+    <!-- To do -->
+    <string name="todo_pivot_open">to do</string>
+    <string name="todo_pivot_done">done</string>
+    <string name="todo_all">all</string>
+    <string name="todo_empty">Nothing to do. Write something below.</string>
+    <string name="todo_late">late</string>
+    <string name="todo_today">today</string>
+    <string name="todo_later">later</string>
+    <string name="todo_no_date">no date</string>
+    <string name="todo_in_one_hour">in 1 hour</string>
+    <string name="todo_this_evening">this evening</string>
+    <string name="todo_tomorrow">tomorrow</string>
+    <string name="todo_pick">pick…</string>
+    <string name="todo_hint">What to do?</string>
+    <string name="todo_list_hint">List (optional)</string>
+    <string name="todo_save">Save</string>
+    <string name="todo_delete">Delete</string>
+    <string name="todo_clear_done">clear done</string>
+    <string name="todo_nothing_done">Nothing done yet.</string>
+
+    <!-- Voice recorder -->
+    <string name="rec_pivot_record">record</string>
+    <string name="rec_pivot_list">recordings</string>
+    <string name="rec_empty">No recordings yet.</string>
+    <string name="rec_selection">Selected: %1$s to %2$s</string>
+    <string name="rec_play">Play</string>
+    <string name="rec_pause">Pause</string>
+    <string name="rec_cut">Save the piece</string>
+    <string name="rec_cut_done">The piece was saved as a new recording</string>
+    <string name="rec_cut_failed">The piece could not be saved</string>
+    <string name="rec_working">Working…</string>
+    <string name="rec_transcript">Transcript</string>
+    <string name="rec_transcribe">Write down what is said</string>
+    <string name="rec_transcribing">Listening to the recording…</string>
+    <string name="rec_transcribe_unsupported">This phone cannot write down a recording: it needs Android 13 and a speech recognition service.</string>
+    <string name="rec_transcribe_failed">The speech service of the phone could not write this recording down (it may not know the language, or need the internet).</string>
+    <string name="rec_to_notes">Send to Notes</string>
+    <string name="rec_sent_to_notes">Saved in Notes</string>
+    <string name="rec_back">back</string>
+
+    <!-- Calendar -->
+    <string name="cal_pivot_agenda">agenda</string>
+    <string name="cal_pivot_month">month</string>
+    <string name="cal_pivot_week">week</string>
+    <string name="cal_all_day">all day</string>
+    <string name="cal_no_events">No events.</string>
+    <string name="cal_new">new</string>
+    <string name="cal_today">today</string>
+    <string name="cal_untitled">(no title)</string>
+    <string name="cal_title_hint">Title</string>
+    <string name="cal_location_hint">Place</string>
+    <string name="cal_notes_hint">Notes</string>
+    <string name="cal_all_day_toggle">All day</string>
+    <string name="cal_starts">Starts</string>
+    <string name="cal_ends">Ends</string>
+    <string name="cal_rem_none">no reminder</string>
+    <string name="cal_rem_10">10 min before</string>
+    <string name="cal_rem_30">30 min before</string>
+    <string name="cal_rem_60">1 h before</string>
+    <string name="cal_rem_day">1 day before</string>
+    <string name="cal_repeats_note">This event repeats: a change is made to all of its times.</string>
+    <string name="cal_need_permission">The calendar needs the permission to read and write the events of the phone.</string>
+    <string name="cal_save_failed">The event could not be saved. Is there a calendar that accepts events?</string>
+
+    <!-- Data Sense and Storage Sense -->
+    <string name="ds_data">data</string>
+    <string name="ds_storage">storage</string>
+    <string name="ds_time">time</string>
+    <string name="ds_battery">battery</string>
+    <string name="ds_network">network</string>
+    <string name="ds_need_access">To show how the phone is used, Android asks you to turn on “usage access” for the launcher.</string>
+    <string name="ds_today">today</string>
+    <string name="ds_7days">7 days</string>
+    <string name="ds_30days">30 days</string>
+    <string name="ds_this_month">this month</string>
+    <string name="ds_mobile">Mobile</string>
+    <string name="ds_apps">apps</string>
+    <string name="ds_nothing">Nothing to show yet.</string>
+    <string name="ds_app_detail">Wi-Fi %1$s · mobile %2$s
+in front %3$s · in the background %4$s
+%5$d%% of all the data</string>
+    <string name="ds_limit">limit</string>
+    <string name="ds_limit_title">Monthly limit of mobile data</string>
+    <string name="ds_limit_hint">GB (0 for none)</string>
+    <string name="ds_limit_used">%1$s of %2$s this month</string>
+    <string name="ds_photos">photos</string>
+    <string name="ds_videos">videos</string>
+    <string name="ds_music">music</string>
+    <string name="ds_other">other</string>
+    <string name="ds_of_total">of %1$s · %2$s free</string>
+    <string name="ds_cache">Caches of the apps: %1$s</string>
+    <string name="ds_biggest">largest apps</string>
+    <string name="ds_app_sizes">app %1$s · data %2$s · cache %3$s</string>
+    <string name="ds_screen_time">on screen</string>
+    <string name="ds_last_used">last used %1$s</string>
+    <string name="ds_status">Status</string>
+    <string name="ds_charging">charging</string>
+    <string name="ds_discharging">on battery</string>
+    <string name="ds_temperature">Temperature</string>
+    <string name="ds_voltage">Voltage</string>
+    <string name="ds_health">Health</string>
+    <string name="ds_health_good">good</string>
+    <string name="ds_health_hot">too hot</string>
+    <string name="ds_health_dead">worn out</string>
+    <string name="ds_health_cold">too cold</string>
+    <string name="ds_unknown">unknown</string>
+    <string name="ds_technology">Technology</string>
+    <string name="ds_current">Current</string>
+    <string name="ds_charge">Charge</string>
+    <string name="ds_offline">No connection.</string>
+    <string name="ds_operator">Operator</string>
+    <string name="ds_down">Download</string>
+    <string name="ds_up">Upload</string>
+    <string name="ds_metered">Metered</string>
+    <string name="ds_roaming">Roaming</string>
+    <string name="ds_vpn">VPN</string>
+    <string name="ds_internet">Internet works</string>
+    <string name="ds_yes">yes</string>
+    <string name="ds_no">no</string>
+
+    <!-- Wallet -->
+    <string name="wal_title">wallet</string>
+    <string name="wal_search">Search cards</string>
+    <string name="wal_empty">No cards yet. Tap + to add a loyalty card or a ticket.</string>
+    <string name="wal_kind_loyalty">loyalty</string>
+    <string name="wal_kind_ticket">tickets</string>
+    <string name="wal_kind_other">other</string>
+    <string name="wal_new">New card</string>
+    <string name="wal_code">Code (numbers or text)</string>
+    <string name="wal_from_picture">Read the code from a picture</string>
+    <string name="wal_picture_failed">No code could be read in that picture.</string>
+    <string name="wal_format_invalid">This code cannot be written in that format (EAN-13 needs 12 or 13 digits).</string>
+    <string name="wal_no_expiry">no expiry date</string>
+    <string name="wal_expires">good until %1$s</string>
+    <string name="wal_expired">expired</string>
+    <string name="wal_save_failed">The cards could not be saved</string>
+    <string name="wal_import_failed">This file has no cards of the wallet</string>
+    <string name="wal_imported">%1$d cards restored</string>
+
+    <!-- News app -->
+    <string name="nws_tile">tile</string>
+    <string name="nws_tile_set">The News tile of Start now shows “%1$s”.</string>
+    <string name="nws_sources">sources</string>
+    <string name="nws_offline">The news could not be read. Check the connection and try again.</string>
+    <string name="nws_add_google">Google News topics</string>
+    <string name="nws_add_feed">Other sources, or a feed of your own (RSS or Atom)</string>
+    <string name="nws_name_hint">Name (optional)</string>
+    <string name="nws_add">Add the feed</string>
+
+    <!-- File manager -->
+    <string name="fm_internal">Phone</string>
+    <string name="fm_downloads">Downloads</string>
+    <string name="fm_camera">Camera</string>
+    <string name="fm_pictures">Pictures</string>
+    <string name="fm_music">Music</string>
+    <string name="fm_movies">Movies</string>
+    <string name="fm_documents">Documents</string>
+    <string name="fm_need_access">To show and change your files, the launcher needs access to all the files of the phone. Android asks you to allow it in a screen of its own.</string>
+    <string name="fm_folder_empty">This folder is empty.</string>
+    <string name="fm_unreadable">This folder cannot be read.</string>
+    <string name="fm_search_hint">Search in this folder</string>
+    <string name="fm_search_deep">Search in the subfolders too</string>
+    <string name="fm_new">new</string>
+    <string name="fm_places">places</string>
+    <string name="fm_sort">sort</string>
+    <string name="fm_more">more</string>
+    <string name="fm_copy">copy</string>
+    <string name="fm_cut">cut</string>
+    <string name="fm_delete">delete</string>
+    <string name="fm_paste">paste</string>
+    <string name="fm_share">share</string>
+    <string name="fm_rename">Rename</string>
+    <string name="fm_zip">Compress to a .zip</string>
+    <string name="fm_extract_here">Extract here</string>
+    <string name="fm_extract_to">Extract in a folder of its name</string>
+    <string name="fm_properties">Properties and checksums</string>
+    <string name="fm_select_all">Select all</string>
+    <string name="fm_invert">Invert the selection</string>
+    <string name="fm_copy_to_other">Copy to the other panel</string>
+    <string name="fm_move_to_other">Move to the other panel</string>
+    <string name="fm_copy_path">Copy the path</string>
+    <string name="fm_bookmark">Add to the places</string>
+    <string name="fm_unbookmark">Remove from the places</string>
+    <string name="fm_new_folder">New folder</string>
+    <string name="fm_new_file">New text file</string>
+    <string name="fm_name">Name</string>
+    <string name="fm_name_bad">That name cannot be used or is taken.</string>
+    <string name="fm_trash">Trash</string>
+    <string name="fm_trash_empty">The trash is empty. Things stay in it for 30 days.</string>
+    <string name="fm_empty_trash">Empty the trash</string>
+    <string name="fm_restore">restore</string>
+    <string name="fm_sort_name">name</string>
+    <string name="fm_sort_date">date</string>
+    <string name="fm_sort_size">size</string>
+    <string name="fm_sort_type">type</string>
+    <string name="fm_descending">largest or latest first</string>
+    <string name="fm_hidden">Show hidden files</string>
+    <string name="fm_conflict_title">%1$d already exist in the folder</string>
+    <string name="fm_replace">Replace them</string>
+    <string name="fm_keep_both">Keep both</string>
+    <string name="fm_skip">Skip them</string>
+    <string name="fm_working">Working…</string>
+    <string name="fm_cancel">Cancel</string>
+    <string name="fm_to_trash">Move to the trash</string>
+    <string name="fm_delete_forever">Delete for good</string>
+    <string name="fm_delete_ask">%1$d selected</string>
+    <string name="fm_failed">%1$d could not be done</string>
+    <string name="fm_checksums">Checksums</string>
+    <string name="fm_calculate">Calculate</string>
+    <string name="fm_size">Size</string>
+    <string name="fm_modified">Modified</string>
+    <string name="fm_path">Path</string>
+    <string name="fm_type">Type</string>
+    <string name="fm_contains">Contains</string>
+    <string name="fm_items">%1$d items</string>
+    <string name="fm_edit_text">Edit as text</string>
+    <string name="fm_saved">Saved</string>
+    <string name="fm_save_failed">The file could not be saved</string>
+    <string name="fm_too_big">This file is too big to be edited here.</string>
+    <string name="fm_save">Save</string>
+    <string name="fm_back">back</string>
+    <string name="fm_zip_name">Name of the archive</string>
+    <string name="fm_extract_bad">This archive could not be extracted (it is damaged or unsafe).</string>
+    <string name="fm_path_copied">Path copied</string>
+    <string name="fm_clipboard">%1$d waiting to be pasted</string>
+
+    <!-- File manager (more) -->
+    <string name="fm_open_with">Open with another app</string>
+
+    <!-- Start arrow -->
+    <string name="theme_apps_arrow">Show the arrow under the tiles</string>
+    <string name="theme_apps_arrow_hint">The round arrow at the bottom right of Start. Turned off, it is not drawn, but swiping to the next page or to the list of apps works as before.</string>
+
+    <!-- Action Center switch -->
+    <string name="ac_enabled">Use the Action Center</string>
+    <string name="ac_enabled_hint">Turned off, the panel that comes down with the notifications and the quick buttons is gone (in the launcher and over other apps), the gestures that opened it do nothing, and the notifications stay in Android’s own shade, with their own sounds. The ones the launcher already moved do not come back. Tiles and the lock screen still read the notifications for their badges and lists.</string>
+
+    <!-- Wallpaper of Android -->
+    <string name="theme_system_wallpaper">Same wallpaper for Android</string>
+    <string name="theme_system_wallpaper_hint">While MetroWin is your home app, the wallpaper of Android is the photo of Start (or its colour, with no photo). This is what the screen of the recent apps shows behind the cards, so the wallpaper of the launcher the phone came with is gone. Turned off, Android goes back to its own default wallpaper. The lock screen has its own button.</string>
+
+    <!-- Action Center: mobile data -->
+    <string name="qa_mobile_data">Mobile data</string>
+
+    <!-- News app pictures -->
+    <string name="nws_pictures">Show the pictures</string>
+    <string name="start_columns">Tiles per row</string>
+    <string name="start_columns_auto">auto</string>
+    <string name="start_columns_hint">How many small tiles fit across Start. Automatic keeps what your screen and \"show more tiles\" give; a number is limited to what the width of the screen holds without making the tiles too small to touch.</string>
+    <string name="start_free">Free mode</string>
+    <string name="start_free_hint">A tile stays where you drop it, on any cell of the grid, and the others do not move up to fill the gap. Turn it off and the tiles flow in order again, as before; nothing you placed is lost.</string>
+    <string name="gest_navbar_spacing">Distance between the buttons</string>
+    <string name="gest_navbar_spacing_hint">How far apart back, the Windows logo and search are in the navigation bar, from 50 to 110 percent of the usual distance.</string>
+    <string name="launch_fade">fade: the app fades in</string>
+    <string name="launch_slide">slide: the app comes in from the right</string>
+    <string name="launch_rise">rise: the app rises from the bottom</string>
+    <string name="launch_zoom">zoom: the app grows from the middle</string>
+    <string name="launch_instant">none: the app opens at once</string>
+    <string name="screen_launch_hint_more">Fade, slide, rise and zoom only change how the window of the app comes in; none opens it at once. The speed of the animations is in Gestures.</string>
+    <string name="theme_favorite_page">favourite Start screen</string>
+    <string name="theme_favorite_default">the home one</string>
+    <string name="theme_favorite_n">Start screen %1$d</string>
+    <string name="theme_favorite_hint">The Start screen the launcher returns to when you press Windows or come back from an app. By default it is the home one.</string>
+    <string name="access_font">font</string>
+    <string name="access_font_default">of the look (default)</string>
+    <string name="access_font_custom">my font</string>
+    <string name="access_font_pick">choose a font file</string>
+    <string name="access_font_hint">Twenty fonts come with the launcher, and you can bring your own (.ttf or .otf). The font of the phone, when it is on, comes before this one.</string>
+    <string name="access_font_sample">The quick brown fox jumps over the lazy dog 0123456789</string>
+    <string name="access_font_failed">That file is not a font the phone can read</string>
 </resources>

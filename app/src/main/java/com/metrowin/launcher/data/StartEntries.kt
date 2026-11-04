@@ -31,7 +31,9 @@ object StartEntries {
     /** Turns a folder back into the tiles it holds, in its place. */
     fun release(entries: List<StartEntry>, folderId: String): List<StartEntry> =
         entries.flatMap { entry ->
-            if (entry is Folder && entry.id == folderId) entry.children.mapIndexed { i, child -> Tile(child, TileSize.Medium, group = if (i == 0) entry.group else "") }
+            if (entry is Folder && entry.id == folderId) entry.children.mapIndexed { i, child ->
+                Tile(child, TileSize.Medium, group = if (i == 0) entry.group else "", col = if (i == 0) entry.col else -1, row = if (i == 0) entry.row else -1)
+            }
             else listOf(entry)
         }
 
@@ -71,6 +73,26 @@ object StartEntries {
 
     fun setStyle(entries: List<StartEntry>, id: String, style: TileStyle): List<StartEntry> =
         entries.map { if (it is Tile && it.id == id) it.copy(style = style) else it }
+
+    /**
+     * Free mode: the tile [id] goes to the cell ([col], [row]). [current] is where every tile is now (by id): the ones that were let flow are fixed
+     * there first, so that nothing else moves, whether they had a cell of their own or not.
+     */
+    fun place(entries: List<StartEntry>, id: String, col: Int, row: Int, current: Map<String, Pair<Int, Int>>): List<StartEntry> {
+        if (entries.none { it.id == id } || col < 0 || row < 0) return entries
+        return entries.map { entry ->
+            val (c, r) = if (entry.id == id) col to row else current[entry.id] ?: (entry.col to entry.row)
+            if (c == entry.col && r == entry.row) entry else entry.at(c, r)
+        }
+    }
+
+    /** [entry] without the cell it was given in free mode: it goes where the flow puts it. */
+    fun unplaced(entry: StartEntry): StartEntry = entry.at(-1, -1)
+
+    private fun StartEntry.at(col: Int, row: Int): StartEntry = when (this) {
+        is Tile -> copy(col = col, row = row)
+        is Folder -> copy(col = col, row = row)
+    }
 
     /** [draggedId] takes the place of [targetId], and the entries in between shift by one. */
     fun moveTo(entries: List<StartEntry>, draggedId: String, targetId: String): List<StartEntry> {
@@ -112,7 +134,7 @@ object StartEntries {
             when {
                 entry.id != target.id -> entry
                 entry is Folder -> entry.copy(children = entry.children + dragged.id)
-                else -> Folder(newFolderId(), name = "", size = TileSize.Medium, children = listOf(entry.id, dragged.id), group = entry.group)
+                else -> Folder(newFolderId(), name = "", size = TileSize.Medium, children = listOf(entry.id, dragged.id), group = entry.group, col = entry.col, row = entry.row)
             }
         }
     }
@@ -139,7 +161,7 @@ object StartEntries {
                 .map { if (it.id == folder.id) folder.copy(children = folder.children + tiles.map(Tile::id)) else it }
         }
         if (tiles.size < 2) return entries
-        val folder = Folder(newFolderId(), name = "", size = TileSize.Medium, children = tiles.map(Tile::id), group = tiles.first().group)
+        val folder = Folder(newFolderId(), name = "", size = TileSize.Medium, children = tiles.map(Tile::id), group = tiles.first().group, col = tiles.first().col, row = tiles.first().row)
         val first = tiles.first().id
         val others = tiles.drop(1).mapTo(HashSet()) { it.id }
         return buildList {
@@ -177,6 +199,18 @@ object StartEntries {
                 else -> entry
             }
         }
+    }
+
+    /**
+     * The section [id] is in: from the tile or folder that carries the title of its group (or the start of the screen, before any title) up
+     * to the next title. What the user means by "the whole group" when they pick one tile of it.
+     */
+    fun sectionIds(entries: List<StartEntry>, id: String): Set<String> {
+        val at = entries.indexOfFirst { it.id == id }
+        if (at < 0) return emptySet()
+        val start = (at downTo 0).firstOrNull { entries[it].group.isNotBlank() } ?: 0
+        val end = (at + 1 until entries.size).firstOrNull { entries[it].group.isNotBlank() } ?: entries.size
+        return entries.subList(start, end).mapTo(LinkedHashSet()) { it.id }
     }
 
     const val MAX_GROUP = 32

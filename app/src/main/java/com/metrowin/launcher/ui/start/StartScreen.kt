@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.components.pageSide
 import com.metrowin.launcher.ui.components.rememberIconTileColor
 import com.metrowin.launcher.ui.anim.metroTween
 import com.metrowin.launcher.ui.components.MetroText
@@ -118,7 +119,9 @@ import com.metrowin.launcher.notifications.LiveCard
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.LocalTapFeedback
 import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.ui.anim.MotionStyle
 import com.metrowin.launcher.ui.anim.turnstile
+import com.metrowin.launcher.data.LaunchPlans
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.TileWhite
@@ -159,6 +162,15 @@ data class FolderCell(val folder: Folder, val items: List<AppItem>, val expanded
 val AppCell.hasContentToEdit: Boolean
     get() = folderId == null && (item.note != null || item.targetDay != 0L || item.data is TileData.Counter || item.data is TileData.Checklist)
 
+/** The cell the user gave this one in free mode, or null when it flows (also every app of an open folder). */
+val StartCell.fixedCell: Pair<Int, Int>?
+    get() = when {
+        !isTopLevel -> null
+        this is AppCell -> tile.takeIf { it.col >= 0 && it.row >= 0 }?.let { it.col to it.row }
+        this is FolderCell -> folder.takeIf { it.col >= 0 && it.row >= 0 }?.let { it.col to it.row }
+        else -> null
+    }
+
 /** An app inside an open folder cannot be dragged or resized. */
 val StartCell.isTopLevel: Boolean get() = this !is AppCell || folderId == null
 
@@ -190,6 +202,8 @@ class StartActions(
     val onBackgroundTap: () -> Unit,
     /** The dragged tile dropped in a free place: it goes right after the tile [afterId]. */
     val onMoveAfter: (draggedId: String, afterId: String) -> Unit = { _, _ -> },
+    /** Free mode: the dragged tile dropped on the cell ([col], [row]); [current] is where every tile of the screen is, to be kept there. */
+    val onPlace: (draggedId: String, col: Int, row: Int, current: Map<String, Pair<Int, Int>>) -> Unit = { _, _, _, _ -> },
     /** The color button of a selected tile. */
     val onColor: (StartCell) -> Unit = {},
     /** The pencil of a selected tile that has something of its own to edit (a note, a countdown, a counter, a list). */
@@ -230,6 +244,8 @@ fun StartScreen(
     scrollState: ScrollState,
     actions: StartActions,
     modifier: Modifier = Modifier,
+    /** Room kept under the last row while the edit bar covers the bottom of the screen, so the tiles at the bottom can still be reached and moved. */
+    bottomRoom: Dp = 0.dp,
     /** The latest notification of each app, for the tiles that flip to it. */
     peeks: Map<String, List<LiveCard>> = emptyMap(),
     pullConnection: NestedScrollConnection? = null,
@@ -252,10 +268,14 @@ fun StartScreen(
     features: TileFeatures = TileFeatures(),
     /** The titles of the groups of tiles are shown, and the groups start on a row of their own. */
     showGroups: Boolean = true,
+    /** The round arrow under the last tile is drawn (the swipe that it stands for works either way). */
+    showArrow: Boolean = true,
     /** The tiles stay where they are: no move, no resize, no removal (the arrow to the app list stays). */
     locked: Boolean = false,
     /** Room added above the clock and the tiles, to bring them down to the thumb. */
     topInset: androidx.compose.ui.unit.Dp = 0.dp,
+    /** Free mode (see [LauncherSettings.freeLayout]): tiles stay on the cell they are dropped on; the titles of groups are not drawn. */
+    free: Boolean = false,
 ) {
     val currentActions by rememberUpdatedState(actions)
     CompositionLocalProvider(LocalTileNames provides showNames, LocalTileSpacing provides spacing, LocalTileFeatures provides features) {
@@ -276,18 +296,18 @@ fun StartScreen(
                 .verticalScroll(scrollState)
                 .topBarsPadding()
                 .cutoutSidesPadding()
-                .padding(horizontal = 12.dp),
+                .padding(horizontal = pageSide(12.dp)),
         ) {
             Spacer(Modifier.height(16.dp + topInset))
             header?.invoke()
             TileGridView(
                 cells, live, badges, peeks, columns, background != null,
-                enterToken, exitRequest, editingKey, scrollState, actions, readOnly || locked, pickedKeys, showGroups,
+                enterToken, exitRequest, editingKey, scrollState, actions, readOnly || locked, pickedKeys, showGroups, free, bottomRoom,
             )
             Box(Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 18.dp), contentAlignment = Alignment.CenterEnd) {
-                if (!readOnly) NextPageArrow(actions.onNextPage)
+                if (!readOnly && showArrow) NextPageArrow(actions.onNextPage)
             }
-            Spacer(Modifier.navigationBarsPadding())
+            Spacer(Modifier.navigationBarsPadding().height(bottomRoom))
         }
     }
     }
@@ -359,12 +379,20 @@ private class TileDragState {
     /** The tile just swapped with, so one move is not repeated before the layout has caught up. */
     var justMovedOver by mutableStateOf<String?>(null)
 
+    /** The tile (or "drop:" and the tile before a free place) the dragged one rests on; after [REORDER_DWELL_MS] the move is made, so crossing tiles in passing moves nothing. */
+    var pendingReorder by mutableStateOf<String?>(null)
+
+    /** Free mode: the cell the dragged tile would be put on if let go now (the one nearest its corner that is free), or null when there is none. */
+    var freeCell by mutableStateOf<Pair<Int, Int>?>(null)
+
     fun start(key: String, at: Offset) {
         draggedKey = key
         position = at
         pendingMerge = null
         mergeTarget = null
         justMovedOver = null
+        pendingReorder = null
+        freeCell = null
     }
 
     fun finish() {
@@ -372,6 +400,8 @@ private class TileDragState {
         pendingMerge = null
         mergeTarget = null
         justMovedOver = null
+        pendingReorder = null
+        freeCell = null
     }
 }
 
@@ -397,6 +427,8 @@ private fun TileGridView(
     readOnly: Boolean,
     pickedKeys: Set<String>?,
     showGroups: Boolean,
+    free: Boolean,
+    bottomRoom: Dp,
 ) {
     val density = LocalDensity.current
     val TileGap = LocalStyle.current.tileGap * LocalTileSpacing.current
@@ -406,9 +438,13 @@ private fun TileGridView(
         val gapPx = with(density) { TileGap.toPx() }
         val sizes = cells.map { it.size }
         // The title of a group is written above the row it starts; the rows from there on move down by the height of the title.
-        val titles = remember(cells, showGroups) { cells.map { if (showGroups && it.isTopLevel) it.group else "" } }
+        val titles = remember(cells, showGroups, free) { cells.map { if (showGroups && !free && it.isTopLevel) it.group else "" } }
         val breaks = remember(titles) { titles.map { it.isNotEmpty() } }
-        val layout = remember(sizes, breaks, columns) { TileGrid.place(sizes, columns, breaks) }
+        // Free mode: a tile just dropped keeps its new cell here until the saved one arrives, so it does not glide back and forth.
+        var placed by remember { mutableStateOf<Map<String, Pair<Int, Int>>>(emptyMap()) }
+        LaunchedEffect(cells) { placed = emptyMap() }
+        val fixed = remember(cells, free, placed) { if (free) cells.map { placed[it.entryId]?.takeIf { _ -> it.isTopLevel } ?: it.fixedCell } else emptyList() }
+        val layout = remember(sizes, breaks, columns, fixed) { TileGrid.place(sizes, columns, breaks, fixed) }
         val headerPx = with(density) { GROUP_HEADER.toPx() }
         val startRows = remember(layout, breaks) { layout.placements.filterIndexed { i, _ -> breaks[i] }.map { it.row } }
         val shiftOf: (Int) -> Float = { row -> headerPx * startRows.count { it <= row } }
@@ -428,8 +464,8 @@ private fun TileGridView(
         // The free places the dragged tile can be dropped on, worked out again whenever the layout or the dragged tile changes.
         val draggedIndex = cells.indexOfFirst { it.key == drag.draggedKey }
         val leaders = remember(cells) { cells.map { it.isTopLevel } }
-        val dropTargets = remember(sizes, leaders, columns, draggedIndex) {
-            if (draggedIndex < 0) emptyList() else TileGrid.dropTargets(sizes, columns, draggedIndex, leaders)
+        val dropTargets = remember(sizes, leaders, columns, draggedIndex, free) {
+            if (draggedIndex < 0 || free) emptyList() else TileGrid.dropTargets(sizes, columns, draggedIndex, leaders)
         }
         val currentDropTargets by rememberUpdatedState(dropTargets)
 
@@ -456,6 +492,27 @@ private fun TileGridView(
                 drops = currentDropTargets.map { t -> placementRect(Placement(t.col, t.row, t.cols, t.rows), currentMetrics.first, currentMetrics.second, currentShift(t.row)) },
                 small = list.map { it.size == TileSize.Small },
             )
+            if (free) {
+                // The cell nearest the corner of the tile, if the tile fits there without touching another one (the apps of a folder
+                // that is being moved go with it).
+                val step = currentMetrics.first + currentMetrics.second
+                val col = (drag.position.x / step).roundToInt().coerceIn(0, (columns - dragged.size.cols).coerceAtLeast(0))
+                val row = (drag.position.y / step).roundToInt().coerceIn(0, currentLayout.rows)
+                val taken = list.indices.any { j ->
+                    val other = currentLayout.placements[j]
+                    j != draggedIndex && (list[j].isTopLevel || dragged !is FolderCell) &&
+                        col < other.col + other.cols && other.col < col + dragged.size.cols && row < other.row + other.rows && other.row < row + dragged.size.rows
+                }
+                drag.freeCell = if (taken) null else col to row
+            }
+            // What the finger rests on now: the move just made is not made again until the finger has left that place (no bouncing back and forth).
+            val resting = when (outcome) {
+                is DragOutcome.Reorder -> list[outcome.target].key
+                is DragOutcome.Drop -> "drop:${list[currentDropTargets[outcome.target].after].key}"
+                else -> null
+            }
+            if (resting != drag.justMovedOver) drag.justMovedOver = null
+            if (resting == null || resting != drag.pendingReorder) drag.pendingReorder = null
             when (outcome) {
                 DragOutcome.Nothing -> {
                     drag.pendingMerge = null
@@ -472,41 +529,60 @@ private fun TileGridView(
                 is DragOutcome.Reorder -> {
                     drag.pendingMerge = null
                     drag.mergeTarget = null
-                    val target = list[outcome.target]
-                    if (drag.justMovedOver != target.key) {
-                        drag.justMovedOver = target.key
-                        currentActions.onMove(dragged.entryId, target.entryId)
-                    }
+                    // In free mode the others stay where they are: only the cell the tile is over matters.
+                    if (!free && drag.justMovedOver != resting) drag.pendingReorder = resting
                 }
                 is DragOutcome.Drop -> {
                     // Over a free place: the tile goes there, right after the tile that comes before it in the order.
                     drag.pendingMerge = null
                     drag.mergeTarget = null
-                    val place = currentDropTargets[outcome.target]
-                    val after = list[place.after]
-                    val marker = "drop:${after.key}"
-                    if (drag.justMovedOver != marker) {
-                        drag.justMovedOver = marker
-                        currentActions.onMoveAfter(dragged.entryId, after.entryId)
-                    }
+                    if (drag.justMovedOver != resting) drag.pendingReorder = resting
                 }
             }
         }
 
+        /** Makes the move the dragged tile was resting on (see [TileDragState.pendingReorder]). */
+        fun commitReorder(pending: String) {
+            val list = currentCells
+            val dragged = list.firstOrNull { it.key == drag.draggedKey } ?: return
+            drag.justMovedOver = pending
+            drag.pendingReorder = null
+            if (pending.startsWith("drop:")) {
+                list.firstOrNull { it.key == pending.removePrefix("drop:") }?.let { currentActions.onMoveAfter(dragged.entryId, it.entryId) }
+            } else {
+                list.firstOrNull { it.key == pending }?.let { currentActions.onMove(dragged.entryId, it.entryId) }
+            }
+        }
+
         val onDragEnd: () -> Unit = {
+            // Let go while resting on a tile, before the moment was up: the tile goes there, as the finger meant.
+            drag.pendingReorder?.let(::commitReorder)
             val draggedKey = drag.draggedKey
             val mergeKey = drag.mergeTarget
+            val cell = drag.freeCell
             drag.finish()
             if (draggedKey != null && mergeKey != null) {
                 val list = currentCells
                 val dragged = list.firstOrNull { it.key == draggedKey }
                 val onto = list.firstOrNull { it.key == mergeKey }
                 if (dragged != null && onto != null) currentActions.onMerge(dragged.entryId, onto.entryId)
+            } else if (draggedKey != null && cell != null) {
+                val list = currentCells
+                val dragged = list.firstOrNull { it.key == draggedKey }
+                if (dragged != null) {
+                    val now = list.indices.filter { list[it].isTopLevel }.associate { list[it].entryId to (currentLayout.placements[it].col to currentLayout.placements[it].row) }
+                    placed = now + (dragged.entryId to cell)
+                    currentActions.onPlace(dragged.entryId, cell.first, cell.second, now)
+                }
             }
         }
 
-        // The layout moved on after a swap: allow the next one.
-        LaunchedEffect(cells.map { it.key }) { drag.justMovedOver = null }
+        // Resting on a tile (or a free place) for a moment moves the dragged tile there.
+        LaunchedEffect(drag.pendingReorder) {
+            val pending = drag.pendingReorder ?: return@LaunchedEffect
+            delay(REORDER_DWELL_MS)
+            commitReorder(pending)
+        }
 
         // Holding a tile on the middle of another one arms the folder drop.
         LaunchedEffect(drag.pendingMerge) {
@@ -521,20 +597,26 @@ private fun TileGridView(
             val edge = with(density) { 96.dp.toPx() }
             val topInset = with(density) { 72.dp.toPx() }
             val maxStep = with(density) { 14.dp.toPx() }
+            // The edit bar covers the bottom: the tile is at the edge when it reaches the bar, not the end of the screen.
+            val bottom = screenHeightPx - with(density) { bottomRoom.toPx() }
             while (true) {
                 withFrameNanos { }
                 val key = drag.draggedKey ?: break
                 val index = currentCells.indexOfFirst { it.key == key }
                 if (index < 0) break
                 val centerY = gridTop + drag.position.y + rectOf(index).height / 2
+                // Slow at the start of the edge and faster towards the end of it, so a tile can be stopped where it is wanted.
+                fun ramp(depth: Float) = depth.coerceIn(0f, 1f).let { it * it }
                 val step = when {
-                    centerY < topInset + edge -> -maxStep * ((topInset + edge - centerY) / edge).coerceIn(0f, 1f)
-                    centerY > screenHeightPx - edge -> maxStep * ((centerY - (screenHeightPx - edge)) / edge).coerceIn(0f, 1f)
+                    centerY < topInset + edge -> -maxStep * ramp((topInset + edge - centerY) / edge)
+                    centerY > bottom - edge -> maxStep * ramp((centerY - (bottom - edge)) / edge)
                     else -> 0f
                 }
                 if (step != 0f) {
                     val consumed = scrollState.scrollBy(step)
                     drag.position += Offset(0f, consumed)
+                    // The grid moved under the finger: what it rests on is worked out again, though the finger did not move.
+                    if (consumed != 0f) onDragBy(Offset.Zero)
                 }
             }
         }
@@ -557,6 +639,19 @@ private fun TileGridView(
                         .size(with(density) { r.width.toDp() }, with(density) { r.height.toDp() })
                         .testTag("drop:${t.col}:${t.row}")
                         .border(2.dp, outline, if (t.cols == 1) dropStyle.smallTileShape else dropStyle.tileShape),
+                )
+            }
+            // Free mode: where the tile lands if it is let go now.
+            val landing = drag.freeCell
+            val draggedCell = cells.firstOrNull { it.key == drag.draggedKey }
+            if (free && landing != null && draggedCell != null) {
+                val r = placementRect(Placement(landing.first, landing.second, draggedCell.size.cols, draggedCell.size.rows), unitPx, gapPx)
+                Box(
+                    Modifier
+                        .offset { IntOffset(r.left.roundToInt(), r.top.roundToInt()) }
+                        .size(with(density) { r.width.toDp() }, with(density) { r.height.toDp() })
+                        .testTag("free:${landing.first}:${landing.second}")
+                        .border(3.dp, LocalMetroColors.current.foreground.copy(alpha = 0.7f), if (draggedCell.size == TileSize.Small) dropStyle.smallTileShape else dropStyle.tileShape),
                 )
             }
             titles.forEachIndexed { index, title ->
@@ -687,6 +782,9 @@ private const val MERGE_CORE_INSET = 0.22f
 private const val SMALL_CORE_INSET = 0.32f
 private const val MERGE_HOVER_MS = 320L
 
+/** How long the dragged tile rests on another one, or on a free place, before it takes it. */
+private const val REORDER_DWELL_MS = 140L
+
 /** Slides to its place in the grid when tiles are resized, pinned, unpinned or moved around it. */
 @Composable
 private fun PositionedTile(
@@ -769,11 +867,22 @@ private fun PositionedTile(
     LaunchedEffect(away) {
         if (origin != null) return@LaunchedEffect
         // Reduced motion: every tile fades in at once, quickly.
-        if (!reduced) delay(entryDelay(placement, index))
-        away.animateTo(0f, metroTween(durationMillis = if (reduced) REDUCED_FADE_MS else 420, easing = Motion.Decelerate))
+        val original = MotionStyle.original
+        if (!reduced) delay(if (original) LaunchPlans.inDelay(placement.row / 2) else entryDelay(placement, index))
+        if (original) {
+            away.animateTo(0f, metroTween(durationMillis = LaunchPlans.ORIGINAL_IN_MS, easing = Motion.ExpoOut))
+        } else {
+            away.animateTo(0f, metroTween(durationMillis = if (reduced) REDUCED_FADE_MS else 420, easing = Motion.Decelerate))
+        }
     }
     LaunchedEffect(exitRequest, away) {
         if (exitRequest == null) return@LaunchedEffect
+        if (MotionStyle.original) {
+            // The rows turn away from the top, the tapped tile last.
+            delay(LaunchPlans.outDelay(placement.row / 2, exitRequest.key == cell.key))
+            away.animateTo(1f, metroTween(durationMillis = LaunchPlans.ORIGINAL_OUT_MS, easing = Motion.ExpoIn))
+            return@LaunchedEffect
+        }
         if (!reduced) delay(if (exitRequest.key == cell.key) TAPPED_EXIT_DELAY_MS else exitDelay(placement))
         away.animateTo(1f, metroTween(durationMillis = if (reduced) REDUCED_FADE_MS else 240, easing = Motion.Accelerate))
     }
@@ -807,7 +916,7 @@ private fun PositionedTile(
         iconColor != null -> iconColor
         transparent -> Color.Black.copy(alpha = 0.12f)
         else -> colors.tileColor(index, LocalAccent.current)
-    }
+    }.let { if (hasBackground && !transparent) it.copy(alpha = it.alpha * LocalTileFeatures.current.tileOpacity / 100f) else it }
     val shape = style.tileShapeFor(cell.size)
 
     Box(

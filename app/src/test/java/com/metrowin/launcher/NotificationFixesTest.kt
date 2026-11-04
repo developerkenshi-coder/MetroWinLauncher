@@ -23,7 +23,11 @@ class NotificationFixesTest {
         NotificationEntry(key, "chat", title, text, postTime, contentIntent = null, autoCancel = false)
 
     @Before
-    fun clean() = NotificationHub.dismissAll()
+    fun clean() {
+        NotificationHub.dismissAll()
+        // Android no longer lists what was cleared: the notes about it are let go.
+        NotificationHub.update(emptyList())
+    }
 
     // --- a chat posts its notification again at each message
 
@@ -54,7 +58,7 @@ class NotificationFixesTest {
     // --- the notification of Android taken away, and kept for the Action Center
 
     @Test
-    fun aHeldNotificationStaysInTheActionCenterUntilItIsDismissedOrPostedAgain() {
+    fun aHeldNotificationStaysInTheActionCenterUntilTheUserDismissesItOrItIsPostedAgain() {
         val kept = entry("a", "kept", postTime = 100)
         NotificationHub.hold(kept)
         // Android no longer has it: the list the service reads does not, and the Action Center still shows it, newest first.
@@ -62,20 +66,54 @@ class NotificationFixesTest {
         assertEquals(listOf("b", "a"), NotificationHub.entries.value.map { it.key })
         // Posted again: the live one takes its place.
         NotificationHub.update(listOf(entry("a", "again", postTime = 300)))
-        assertEquals(listOf("again"), NotificationHub.entries.value.map { it.text })
-        // Once the app's own is gone it is not brought back.
+        assertEquals(listOf("again", "live"), NotificationHub.entries.value.map { it.text })
+        // Once the app's own is gone the copies stay (the live "b" was written down too): only the user taking them away ends them.
         NotificationHub.update(emptyList())
+        assertEquals(listOf("again", "live"), NotificationHub.entries.value.map { it.text })
+        NotificationHub.dismiss("a")
+        NotificationHub.dismiss("b")
         assertTrue(NotificationHub.entries.value.isEmpty())
     }
 
     @Test
-    fun aHeldNotificationTheAppTakesBackGoesFromTheActionCenter() {
+    fun aDismissedNotificationAndroidStillListsIsNotReadBackButANewerPostOfItIs() {
+        NotificationHub.update(listOf(entry("a", "old", postTime = 100)))
+        NotificationHub.dismiss("a")
+        assertTrue(NotificationHub.entries.value.isEmpty())
+        // The service read again before Android finished the cancel: still the same post.
+        NotificationHub.update(listOf(entry("a", "old", postTime = 100)))
+        assertTrue("it is not back", NotificationHub.entries.value.isEmpty())
+        assertTrue("and it was not written down again", NotificationHub.heldKeys().isEmpty())
+        // The same chat posts again.
+        NotificationHub.update(listOf(entry("a", "new", postTime = 200)))
+        assertEquals(listOf("new"), NotificationHub.entries.value.map { it.text })
+        // Android let go of it: a post of the same key and time (cannot happen, but) is then judged as new news.
+        NotificationHub.update(emptyList())
+        NotificationHub.dismiss("a")
+        NotificationHub.update(emptyList())
+        NotificationHub.update(listOf(entry("a", "old", postTime = 100)))
+        assertEquals(listOf("old"), NotificationHub.entries.value.map { it.text })
+    }
+
+    @Test
+    fun clearingAllIsNotUndoneByARead() {
+        NotificationHub.update(listOf(entry("a"), entry("b")))
+        NotificationHub.dismissAll()
+        NotificationHub.update(listOf(entry("a"), entry("b")))
+        assertTrue(NotificationHub.entries.value.isEmpty())
+    }
+
+    @Test
+    fun aHeldNotificationTheAppTakesBackStaysAndOneTheUserSwipesAwayInAndroidGoes() {
         NotificationHub.hold(entry("a"))
         NotificationHub.hold(entry("b"))
         NotificationHub.update(emptyList())
-        NotificationHub.removedByApp("a")
+        // The app took "a" back (reason 8): nothing happens to the copy. The user swiped "b" in the shade of Android (reason 2): it goes.
+        assertFalse(NotificationHub.removedByUser(android.service.notification.NotificationListenerService.REASON_APP_CANCEL))
+        assertTrue(NotificationHub.removedByUser(android.service.notification.NotificationListenerService.REASON_CANCEL))
+        NotificationHub.forget("b")
         NotificationHub.update(emptyList())
-        assertEquals(listOf("b"), NotificationHub.entries.value.map { it.key })
+        assertEquals(listOf("a"), NotificationHub.entries.value.map { it.key })
         assertEquals(mapOf("chat" to 1), NotificationHub.countsByPackage(NotificationHub.entries.value))
     }
 

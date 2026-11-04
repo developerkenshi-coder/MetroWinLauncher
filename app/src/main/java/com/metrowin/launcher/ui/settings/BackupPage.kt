@@ -91,7 +91,7 @@ fun BackupPage(env: SettingsEnv) {
                     val format = remember { java.time.format.DateTimeFormatter.ofLocalizedDateTime(java.time.format.FormatStyle.MEDIUM, java.time.format.FormatStyle.SHORT) }
                     env.backupCopies.forEach { name ->
                         MetroText(
-                            BackupCopies.parse(name)?.format(format) ?: name, size = 20.sp, weight = FontWeight.Normal, maxLines = 1,
+                            BackupCopies.parse(name)?.format(format) ?: name, size = 20.sp, weight = FontWeight.Normal,
                             modifier = Modifier.fillMaxWidth().testTag("backup:copy:$name").metroPress(onClick = { env.onRestoreCopy(name) }).padding(vertical = 8.dp),
                         )
                     }
@@ -164,7 +164,7 @@ fun BackupPage(env: SettingsEnv) {
             SettingLabel(stringResource(R.string.apps_backup_missing, env.missingApps.size))
             env.missingApps.forEach { app ->
                 MetroText(
-                    app.label, size = 20.sp, weight = FontWeight.Normal, maxLines = 1,
+                    app.label, size = 20.sp, weight = FontWeight.Normal,
                     modifier = Modifier.fillMaxWidth().testTag("backup:apps:missing:${app.packageName}").metroPress(onClick = { env.onOpenStore(app.packageName) }).padding(vertical = 8.dp),
                 )
             }

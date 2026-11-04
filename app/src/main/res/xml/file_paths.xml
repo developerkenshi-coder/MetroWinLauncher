@@ -2,4 +2,6 @@
 <paths>
     <cache-path name="shared" path="shared/" />
     <files-path name="recordings" path="recordings/" />
+    <!-- The file manager hands a file to the app the user chose, one at a time (the provider is not exported). -->
+    <root-path name="storage" path="/" />
 </paths>

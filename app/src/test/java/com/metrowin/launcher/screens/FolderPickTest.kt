@@ -99,6 +99,24 @@ class FolderPickTest : ScreenshotBase() {
         FolderPickBar(picked, canCreate, joining, onCreate, onCancel)
 
     @Test
+    fun theMoveBarOffersTheOtherScreensAndMovesOnlyWithSomethingPicked() {
+        var moved = -1
+        val picked = androidx.compose.runtime.mutableIntStateOf(0)
+        show { com.metrowin.launcher.ui.start.MovePickBar(picked = picked.intValue, screens = 3, current = 1, onMove = { moved = it }, onCancel = {}) }
+        advance(200)
+        compose.onNodeWithTag("movepick:to:1").assertDoesNotExist()
+        compose.onNodeWithTag("movepick:to:2").performClick()
+        assertEquals("nothing picked, nothing moves", -1, moved)
+        picked.intValue = 2
+        advance(200)
+        compose.onNodeWithTag("movepick:count").assertTextEquals("2 selected")
+        compose.onNodeWithTag("movepick:to:2").performClick()
+        assertEquals(2, moved)
+        compose.onNodeWithTag("movepick:to:0").performClick()
+        assertEquals(0, moved)
+    }
+
+    @Test
     fun theBarCountsAndCreatesOnlyWhenThereAreEnough() {
         var created = 0
         show { Bar(picked = 1, canCreate = false, onCreate = { created++ }) }

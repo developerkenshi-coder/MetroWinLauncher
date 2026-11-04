@@ -2,6 +2,7 @@ package com.metrowin.launcher
 
 import com.metrowin.launcher.data.VolumeProfiles
 import com.metrowin.launcher.data.AboutInfo
+import com.metrowin.launcher.data.GallerySource
 import com.metrowin.launcher.gestures.LockAccessibilityService
 import com.metrowin.launcher.data.BugReport
 import com.metrowin.launcher.data.AppStats
@@ -117,6 +118,7 @@ import com.metrowin.launcher.data.readAtMost
 import com.metrowin.launcher.data.ThemeCodec
 import com.metrowin.launcher.data.ProfileInfo
 import com.metrowin.launcher.data.ProfilesController
+import com.metrowin.launcher.data.LaunchAnimation
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.BrightnessController
 import com.metrowin.launcher.data.ConnectionAccess
@@ -726,6 +728,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         applyIconPack(_settings.value.iconPack)
         apps.galleryApp = _settings.value.galleryApp
         NotificationHub.clearOnOpen = _settings.value.clearOnOpen
+        NotificationHub.actionCenterOn = _settings.value.actionCenterEnabled
         UpdateCheckJob.schedule(application, _settings.value.updateAuto)
         checkUpdateIfDue()
         reloadApps()
@@ -746,19 +749,23 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         // Turning on "hide the notifications of Android" moves what is in the shade now to the Action Center.
         viewModelScope.launch {
             _settings.map { Triple(it.hideSystemNotifications, it.notifFilterOn, it.notifFilterWords) }.distinctUntilChanged().drop(1)
-                .collect { (hide, filter, _) -> if (hide || filter) NotificationHub.sweep() }
+                .collect { (hide, filter, _) -> if ((hide || filter) && _settings.value.actionCenterEnabled) NotificationHub.sweep() }
         }
         // The strip of the Action Center over other apps comes and goes with its switch.
         viewModelScope.launch {
-            _settings.map { it.edgeActionCenter }.distinctUntilChanged().collect { NotificationHub.edgeChanged() }
+            _settings.map { it.edgeActionCenter && it.actionCenterEnabled }.distinctUntilChanged().collect { NotificationHub.edgeChanged() }
         }
         // The Windows Phone buttons over the navigation bar come and go with their switch.
         viewModelScope.launch {
-            _settings.map { Pair(it.metroNavBar, it.navHoldMs) }.distinctUntilChanged().collect { LockAccessibilityService.syncNavBar() }
+            _settings.map { Triple(it.metroNavBar, it.navHoldMs, it.navSpacing) }.distinctUntilChanged().collect { LockAccessibilityService.syncNavBar() }
         }
         // The Windows Phone status bar over other apps comes and goes with its switch.
         viewModelScope.launch {
             _settings.map { Triple(it.metroStatusBarOverApps, it.statusBarHidden, it.metroStatusBar) }.distinctUntilChanged().collect { LockAccessibilityService.syncStatusBar() }
+        }
+        // The bars that slide away in games: a switch changed while a game is in front takes effect at once.
+        viewModelScope.launch {
+            _settings.map { it.hideBarsInGames }.distinctUntilChanged().collect { LockAccessibilityService.gameSettingChanged() }
         }
         // A notification that arrives while the launcher is on screen gets a banner. What was up when the launcher came back, and
         // what the service reads again at that moment, does not: it is old news.
@@ -766,7 +773,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             NotificationHub.entries.collect { entries ->
                 val s = _settings.value
                 val wall = System.currentTimeMillis()
-                if (listening && s.toastBanner) {
+                if (listening && s.toastBanner && s.actionCenterEnabled) {
                     // Right after the launcher came back the service reads everything again: only what was posted since then is news.
                     val settled = android.os.SystemClock.elapsedRealtime() >= bannersFrom
                     entries
@@ -810,6 +817,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _settings.map { listOf(it.newsSource, it.newsUrl, it.financeBase, it.financeItems) }.distinctUntilChanged().drop(1)
                 .collect { if (listening) refreshFeeds() }
+        }
+        // The source of the News tile is chosen in the news app.
+        viewModelScope.launch {
+            com.metrowin.launcher.news.NewsTile.changes.drop(1).collect { if (listening) refreshFeeds() }
         }
     }
 
@@ -892,6 +903,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         forgetEndedMutes()
         val access = hasNotificationAccess()
         _notificationAccess.value = access
+        // The access was taken away: what the register kept goes too, nobody is allowed to read it any more.
+        if (!access) NotificationHub.clearHeld()
         // After the process was killed Android does not always bind the service again by itself.
         if (access && NotificationHub.service == null) {
             NotificationListenerService.requestRebind(ComponentName(getApplication(), NotificationService::class.java))
@@ -1116,6 +1129,13 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             if (tag.isEmpty()) android.os.LocaleList.getEmptyLocaleList() else android.os.LocaleList.forLanguageTags(tag)
     }
 
+    /** The albums the Photos tile reads: the ticked ones, only when that is the source; none means every album. */
+    private fun galleryAlbums(s: LauncherSettings) = if (s.gallerySource == GallerySource.Albums) s.galleryAlbums else emptySet()
+
+    /** The photos picked for the Photos tile, or null when its source is not the picked photos. */
+    private fun galleryPhotos(s: LauncherSettings) =
+        if (s.gallerySource == GallerySource.Chosen) s.galleryPhotos.map(Uri::parse) else null
+
     /**
      * Reads what the live tiles on Start show, unless that was read lately and Start asks for nothing new. Only the
      * data of the tiles that are pinned is read, and not at all while none of them is. [force] reads in any case.
@@ -1144,7 +1164,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         loadedAlbums = albumIds
         loadedGroups = groupIds
         viewModelScope.launch {
-            val fresh = if (toRead.isEmpty()) LiveTileData() else withContext(Dispatchers.IO) { liveTiles.load(toRead, albumIds, groupIds, _settings.value.galleryAlbums) }
+            val fresh = if (toRead.isEmpty()) LiveTileData() else withContext(Dispatchers.IO) { liveTiles.load(toRead, albumIds, groupIds, galleryAlbums(_settings.value), galleryPhotos(_settings.value)) }
             _live.update { it.keeping(wanted + feeds, albumIds, groupIds).updatedWith(fresh, toRead) }
         }
     }
@@ -1163,7 +1183,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val s = _settings.value
         val locale = Locale.getDefault()
         val edition = NewsEdition.of(locale)
-        val newsKey = NewsSources.key(s.newsSource, s.newsUrl, edition)
+        // The news app holds the choice; what the settings kept before it is the answer until the user chooses one there.
+        val (newsSource, newsUrl) = com.metrowin.launcher.news.NewsHub.tileChoice(getApplication()) ?: (s.newsSource to s.newsUrl)
+        val newsKey = NewsSources.key(newsSource, newsUrl, edition)
         val base = Finance.baseFor(s.financeBase, locale)
         val items = FinanceItems.normalize(s.financeItems, base)
         val financeKey = Finance.key(base, items)
@@ -1179,7 +1201,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 _live.update { it.copy(news = kept) }
                 val now = System.currentTimeMillis()
                 if ((force || kept == null || stale(kept.fetchedAt, now)) && (force || throttle.due("news:$newsKey", retry))) {
-                    val fetched = withContext(Dispatchers.IO) { newsRepository.fetch(s.newsSource, s.newsUrl, edition, now) }
+                    val fetched = withContext(Dispatchers.IO) { newsRepository.fetch(newsSource, newsUrl, edition, now) }
                     if (fetched != null) _live.update { it.copy(news = fetched) }
                 }
             }
@@ -1451,6 +1473,15 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             // Written at once: what reads the settings back right after (the services, see syncNavBar) must see this change, not the last.
             settingsStore.save(updated)
             NotificationHub.clearOnOpen = updated.clearOnOpen
+            NotificationHub.actionCenterOn = updated.actionCenterEnabled
+            LockAccessibilityService.safeSettingsChanged(updated)
+            // Turned off, Android gets its own wallpaper back (what it had before is not kept: reading it needs a permission the launcher does not ask for).
+            if (previous.systemWallpaperFollows && !updated.systemWallpaperFollows && wallpaperPrefs.contains("key")) {
+                viewModelScope.launch(Dispatchers.IO) {
+                    com.metrowin.launcher.data.SystemWallpaper.clear(getApplication())
+                    wallpaperPrefs.edit().remove("key").apply()
+                }
+            }
             val movedWeather = updated.weatherLatitude != previous.weatherLatitude && !(updated.weatherLatitude.isNaN() && previous.weatherLatitude.isNaN()) ||
                 updated.weatherLongitude != previous.weatherLongitude && !(updated.weatherLongitude.isNaN() && previous.weatherLongitude.isNaN()) ||
                 updated.weatherFahrenheit != previous.weatherFahrenheit
@@ -1466,9 +1497,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 apps.galleryApp = updated.galleryApp
                 reloadApps()
             }
-            if (updated.galleryAlbums != previous.galleryAlbums) refreshLive(force = true)
+            if (updated.galleryAlbums != previous.galleryAlbums || updated.gallerySource != previous.gallerySource || updated.galleryPhotos != previous.galleryPhotos) refreshLive(force = true)
             if (updated.startPages != previous.startPages && tilesReady) {
                 updatePages { StartPages.resize(it, updated.startPages) }
+            }
+            // The user moves the secondary Start to the other side: what is on the home screen goes with the home, so the screen they use
+            // stays the main one and the other is the one that changes side. A layout or a backup that brings its own home is not this.
+            if (updated.homePage != previous.homePage && updated.copy(homePage = previous.homePage) == previous && tilesReady) {
+                updatePages { StartPages.movePage(it, StartPages.mainPage(it, previous.homePage), updated.homePage.coerceIn(0, it.lastIndex)) }
             }
         }
     }
@@ -1483,6 +1519,27 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             } else {
                 Toast.makeText(getApplication(), R.string.photo_failed, Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    /** Keeps a copy of the font file the user chose and uses it; a file that is not a font is refused. */
+    fun setCustomFont(uri: Uri) {
+        viewModelScope.launch {
+            val saved = withContext(Dispatchers.IO) {
+                runCatching {
+                    val target = com.metrowin.launcher.ui.theme.AppFonts.customFile(getApplication())
+                    target.parentFile?.mkdirs()
+                    val temp = java.io.File(target.parentFile, "custom.part")
+                    getApplication<Application>().contentResolver.openInputStream(uri)?.use { input ->
+                        temp.outputStream().use { out -> input.copyTo(out) }
+                    } ?: error("no input")
+                    val head = ByteArray(4).also { buffer -> temp.inputStream().use { it.read(buffer) } }
+                    check(temp.length() in 1..com.metrowin.launcher.ui.theme.AppFonts.MAX_BYTES && com.metrowin.launcher.ui.theme.AppFonts.looksLikeFont(head))
+                    check(temp.renameTo(target) || (target.delete() && temp.renameTo(target)))
+                }.onFailure { java.io.File(com.metrowin.launcher.ui.theme.AppFonts.customFile(getApplication()).parentFile, "custom.part").delete() }.isSuccess
+            }
+            if (saved) updateSettings { it.copy(appFont = com.metrowin.launcher.ui.theme.AppFonts.CUSTOM, fontRevision = it.fontRevision + 1) }
+            else tell(R.string.access_font_failed)
         }
     }
 
@@ -1533,6 +1590,33 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 if (done) R.string.lock_applied else R.string.lock_apply_failed
             }
             tell(outcome)
+        }
+    }
+
+    private val wallpaperPrefs by lazy { getApplication<Application>().getSharedPreferences("metrowin_syswall", android.content.Context.MODE_PRIVATE) }
+
+    /**
+     * While MetroWin is the home app, the wallpaper of Android is made to match Start: the screen of the recent apps draws it behind
+     * the cards, and it would otherwise be the one of the launcher the phone came with. It is made again only when what it is made
+     * of changes, and never over the lock screen (the one of the lock screen has its own button).
+     */
+    fun syncSystemWallpaper(dark: Boolean) {
+        val app = getApplication<Application>()
+        val s = _settings.value
+        if (!s.systemWallpaperFollows || !com.metrowin.launcher.data.HomeApp.isDefault(app)) return
+        viewModelScope.launch(Dispatchers.IO) {
+            val (width, height) = com.metrowin.launcher.data.SystemWallpaper.size(app)
+            val key = com.metrowin.launcher.data.SystemWallpaper.key(s, dark, width, height)
+            if (wallpaperPrefs.getString("key", null) == key) return@launch
+            val photo = if (s.hasStartBackground) backgroundStore.load() else null
+            // The dynamic colours of Android are drawn from the wallpaper: a plain colour would take them from this look, so it is left alone.
+            if (photo == null && s.themeStyle == com.metrowin.launcher.data.ThemeStyle.Droid && s.dynamicColor) return@launch
+            val picture = com.metrowin.launcher.data.SystemWallpaper.render(
+                photo, s.startPhotoFit, s.startPhotoZoom, s.startPhotoX, s.startPhotoY,
+                if (dark) android.graphics.Color.BLACK else android.graphics.Color.WHITE, width, height,
+            )
+            if (com.metrowin.launcher.data.SystemWallpaper.apply(app, picture)) wallpaperPrefs.edit().putString("key", key).apply()
+            picture.recycle()
         }
     }
 
@@ -1588,10 +1672,17 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun setColor(id: String, color: Int) =
         updatePages(R.string.undo_changed) { StartPages.update(it, id) { page -> StartEntries.setColor(page, id, color) } }
 
+    /** Several tiles or folders (a whole group, say) to another Start screen at once. */
+    fun moveEntriesToPage(ids: Set<String>, page: Int) = updatePages(R.string.undo_moved) { StartPages.moveManyToPage(it, ids, page) }
+
     fun moveToPage(id: String, page: Int) = updatePages(R.string.undo_moved) { StartPages.moveToPage(it, id, page) }
 
     fun moveTo(draggedId: String, targetId: String) =
         updatePages(R.string.undo_moved) { StartPages.update(it, targetId) { page -> StartEntries.moveTo(page, draggedId, targetId) } }
+
+    /** Free mode: the tile [id] dropped on the cell ([col], [row]); [current] is where every tile is, which stay there (see [StartEntries.place]). */
+    fun placeTile(id: String, col: Int, row: Int, current: Map<String, Pair<Int, Int>>) =
+        updatePages(R.string.undo_moved) { StartPages.update(it, id) { page -> StartEntries.place(page, id, col, row, current) } }
 
     /** A small tile dropped in a free cell: it goes right after [afterId] (see [StartEntries.moveAfter]). */
     fun moveAfter(draggedId: String, afterId: String) =
@@ -1631,8 +1722,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         updatePages { StartPages.update(it, folderId) { page -> StartEntries.rename(page, folderId, name) } }
 
     /** Returns false (and tells the user) when the app could not be opened. */
-    fun launch(item: AppItem, sourceBounds: Rect? = null, growFrom: Rect? = null, anchor: android.view.View? = null): Boolean {
-        val opened = apps.launch(item, sourceBounds, growFrom, anchor)
+    fun launch(item: AppItem, sourceBounds: Rect? = null, growFrom: Rect? = null, anchor: android.view.View? = null, original: Boolean = false, window: LaunchAnimation = LaunchAnimation.Turnstile): Boolean {
+        item.packageName?.let { LockAccessibilityService.opening(it) }
+        val opened = apps.launch(item, sourceBounds, growFrom, anchor, original, window)
         if (opened) {
             // A contact, a setting or a web search found by the search is not an app of the list.
             if (!item.id.startsWith("search:")) {
@@ -1738,14 +1830,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     /** Puts a widget that Android has bound to [appWidgetId] on Start. */
-    fun addWidget(appWidgetId: Int, provider: WidgetProvider, page: Int) {
+    fun addWidget(appWidgetId: Int, provider: WidgetProvider, page: Int, size: TileSize) {
         val id = "shortcut:widget:$appWidgetId"
         addShortcut(
             ShortcutDef(
                 id = id, kind = ShortcutKind.Widget, label = provider.label.ifBlank { provider.appLabel },
                 widgetProvider = provider.component.flattenToString(), widgetId = appWidgetId,
             ),
-            page, WidgetSizing.tileSizeFor(provider.minWidthDp, provider.minHeightDp),
+            page, size,
         )
     }
 

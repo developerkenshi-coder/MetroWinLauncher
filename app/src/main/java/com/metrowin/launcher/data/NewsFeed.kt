@@ -15,7 +15,7 @@ import org.xml.sax.InputSource
 
 /** One headline: what it says, who published it, where to read it, and when (epoch milliseconds, 0 when the feed does not say). */
 @Immutable
-data class NewsItem(val title: String, val source: String, val link: String, val publishedAt: Long)
+data class NewsItem(val title: String, val source: String, val link: String, val publishedAt: Long, val image: String = "")
 
 /** The headlines of a source, as they were when [fetchedAt]. [title] is what the feed calls itself ("Top stories - Google News"). */
 @Immutable
@@ -144,7 +144,10 @@ object Feeds {
             val title = withoutSource(raw, source).take(MAX_TITLE)
             val link = safeLink(item.children("link").firstOrNull()?.textContent) ?: return@mapNotNull null
             if (title.isEmpty()) return@mapNotNull null
-            NewsItem(title, source, link, date(item.children("pubDate").firstOrNull()?.textContent ?: item.children("dc:date").firstOrNull()?.textContent))
+            NewsItem(
+                title, source, link, date(item.children("pubDate").firstOrNull()?.textContent ?: item.children("dc:date").firstOrNull()?.textContent),
+                image = rssImage(item),
+            )
         }
         return finish(feedTitle, items)
     }
@@ -158,9 +161,53 @@ object Feeds {
             val link = safeLink(href) ?: return@mapNotNull null
             if (title.isEmpty()) return@mapNotNull null
             val source = clean(entry.children("source").firstOrNull()?.children("title")?.firstOrNull()?.textContent.orEmpty(), 60)
-            NewsItem(title, source, link, date(entry.children("updated").firstOrNull()?.textContent ?: entry.children("published").firstOrNull()?.textContent))
+            NewsItem(
+                title, source, link, date(entry.children("updated").firstOrNull()?.textContent ?: entry.children("published").firstOrNull()?.textContent),
+                image = atomImage(entry),
+            )
         }
         return finish(feedTitle, items)
+    }
+
+    /** The picture of an RSS item: what the feed names for it (media:content, media:thumbnail, enclosure), or the first picture in its text. */
+    private fun rssImage(item: Element): String {
+        val named = item.children("media:content").filter { isPicture(it) }.mapNotNull { safeImage(it.getAttribute("url")) } +
+            item.children("media:thumbnail").mapNotNull { safeImage(it.getAttribute("url")) } +
+            item.children("enclosure").filter { isPicture(it) }.mapNotNull { safeImage(it.getAttribute("url")) } +
+            item.children("media:group").flatMap { g -> g.children("media:content") + g.children("media:thumbnail") }.mapNotNull { safeImage(it.getAttribute("url")) }
+        named.firstOrNull()?.let { return it }
+        return listOf("content:encoded", "description").firstNotNullOfOrNull { tag -> item.children(tag).firstOrNull()?.textContent?.let(::imageInHtml) }.orEmpty()
+    }
+
+    private fun atomImage(entry: Element): String {
+        val named = entry.children("link").filter { it.getAttribute("rel") == "enclosure" && isPicture(it) }.mapNotNull { safeImage(it.getAttribute("href")) } +
+            entry.children("media:thumbnail").mapNotNull { safeImage(it.getAttribute("url")) } +
+            entry.children("media:content").filter { isPicture(it) }.mapNotNull { safeImage(it.getAttribute("url")) }
+        named.firstOrNull()?.let { return it }
+        return listOf("content", "summary").firstNotNullOfOrNull { tag -> entry.children(tag).firstOrNull()?.textContent?.let(::imageInHtml) }.orEmpty()
+    }
+
+    /** A media element that is a picture: it says so by its type or medium, or says nothing (a thumbnail). */
+    private fun isPicture(element: Element): Boolean {
+        val type = element.getAttribute("type").lowercase(Locale.ROOT)
+        val medium = element.getAttribute("medium").lowercase(Locale.ROOT)
+        return when {
+            type.isNotEmpty() -> type.startsWith("image/")
+            medium.isNotEmpty() -> medium == "image"
+            else -> true
+        }
+    }
+
+    /** The address of the first picture in the HTML of a feed's text, or null. */
+    fun imageInHtml(html: String): String? =
+        Regex("""<img[^>]+src\s*=\s*["']([^"']+)["']""", RegexOption.IGNORE_CASE).find(html)?.groupValues?.get(1)?.let { safeImage(it.replace("&amp;", "&")) }
+
+    /** A picture's address that is safe to fetch: https only (nothing in the clear), a host, no name and password, not too long. Null otherwise. */
+    fun safeImage(text: String?): String? {
+        val link = text?.trim().orEmpty()
+        if (link.length > 1_000 || !link.startsWith("https://", true)) return null
+        val uri = runCatching { java.net.URI(link) }.getOrNull() ?: return null
+        return link.takeIf { uri.host != null && uri.userInfo == null }
     }
 
     private fun finish(title: String, items: List<NewsItem>): Parsed? {
@@ -237,7 +284,7 @@ object NewsCodec {
             "items",
             JSONArray().also { array ->
                 data.items.forEach { item ->
-                    array.put(JSONObject().put("t", item.title).put("s", item.source).put("l", item.link).put("p", item.publishedAt))
+                    array.put(JSONObject().put("t", item.title).put("s", item.source).put("l", item.link).put("p", item.publishedAt).put("i", item.image))
                 }
             },
         )
@@ -248,7 +295,10 @@ object NewsCodec {
         val array = o.getJSONArray("items")
         val items = List(array.length()) { i ->
             val item = array.getJSONObject(i)
-            NewsItem(item.getString("t"), item.optString("s"), Feeds.safeLink(item.getString("l")) ?: error("link"), item.optLong("p"))
+            NewsItem(
+                item.getString("t"), item.optString("s"), Feeds.safeLink(item.getString("l")) ?: error("link"), item.optLong("p"),
+                Feeds.safeImage(item.optString("i")).orEmpty(),
+            )
         }
         NewsData(o.optString("title"), items.take(Feeds.MAX_ITEMS), o.getLong("fetchedAt"), o.optString("key"))
     }.getOrNull()

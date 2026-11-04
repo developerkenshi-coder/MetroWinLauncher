@@ -164,13 +164,19 @@ enum class IconShape(val code: String, @param:StringRes val label: Int) {
     }
 }
 
-/** How an app opens: the Metro turnstile, or the tile growing into the window of the app. */
+/** How an app opens: the modern turnstile, the tile growing into the window of the app, or the turnstile of the original Windows Phone. */
 enum class LaunchAnimation(val code: String, @param:StringRes val label: Int) {
+    Original("original", R.string.launch_original),
     Turnstile("turnstile", R.string.launch_turnstile),
-    Expand("expand", R.string.launch_expand);
+    Expand("expand", R.string.launch_expand),
+    Fade("fade", R.string.launch_fade),
+    Slide("slide", R.string.launch_slide),
+    Rise("rise", R.string.launch_rise),
+    Zoom("zoom", R.string.launch_zoom),
+    Instant("instant", R.string.launch_instant);
 
     companion object {
-        fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: Turnstile
+        fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: Original
     }
 }
 
@@ -182,6 +188,27 @@ enum class TileTransition(val code: String, @param:StringRes val label: Int) {
 
     companion object {
         fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: Flip
+    }
+}
+
+/** Where the pictures of the Photos tile come from: the latest of the phone, the albums ticked, or photos picked one by one. */
+enum class GallerySource(val code: String) {
+    Recent("recent"),
+    Albums("albums"),
+    Chosen("chosen");
+
+    companion object {
+        fun fromCode(code: String?) = entries.firstOrNull { it.code == code }
+    }
+}
+
+/** The bar of actions at the bottom of Start (while editing) and of the mini apps: the Super one, or the original of Windows Phone 8.1. */
+enum class ActionBarStyle(val code: String, @param:StringRes val label: Int) {
+    Super("super", R.string.action_bar_super),
+    Retro("retro", R.string.action_bar_retro);
+
+    companion object {
+        fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: Super
     }
 }
 
@@ -229,16 +256,30 @@ data class LauncherSettings(
     val autoAccent: Boolean = false,
     /** Three columns of medium tiles instead of two ("show more tiles"). */
     val moreTiles: Boolean = false,
+    /** How many small tiles Start has across, an even number from 4: 0 keeps what the screen and "more tiles" give (see [TileGrid.columnsFor]). */
+    val tileColumns: Int = 0,
+    /** Free mode: a tile stays where it is dropped, on any cell of the grid, and the others do not move up to fill the gap. */
+    val freeLayout: Boolean = false,
     /** 0 when Start has no background photo, otherwise bumped for every new photo. */
     val backgroundRevision: Int = 0,
+
+    /** While MetroWin is the home app, the wallpaper of Android (what the screen of the recent apps shows behind the cards) is made to match Start: its photo, or its colour. */
+    val systemWallpaperFollows: Boolean = true,
     /** The photo moves slower than the tiles when Start scrolls. */
     val parallax: Boolean = true,
+    /** How much of the colour of a tile is left over the Start photo, in percent: below 100 the photo shows through the tiles (only with a photo). */
+    val tileOpacity: Int = 100,
     /** How many Start screens there are, 1 to [MAX_START_PAGES]. */
     val startPages: Int = 1,
     /** Which of the Start screens is home, 0 for the first: where the app opens and where the Windows button returns. Screens before it are to its left. */
     val homePage: Int = 0,
+    /** The Start screen the launcher returns to whatever the home is, 0 for the first; -1 is the home. */
+    val favoritePage: Int = -1,
     /** The app list is to the left of Start (the pages run from the right), instead of to its right. */
     val appListLeft: Boolean = false,
+
+    /** The round arrow at the bottom of Start (it goes to the next page, or to the list of apps) is drawn. The swipe does the same either way. */
+    val showAppsArrow: Boolean = true,
     /** The time and date above the tiles. */
     val showClock: Boolean = false,
     /** A touch on the time opens the clock, on the date the calendar. */
@@ -301,10 +342,16 @@ data class LauncherSettings(
     val boldText: Boolean = false,
     /** The font of the phone instead of the one the look brings. */
     val systemFont: Boolean = false,
+    /** The font the user picked (a code of AppFonts, or "custom"); "" is the font of the look. */
+    val appFont: String = "",
+    /** Counts the font files the user brought, so the font is read again when they bring another. */
+    val fontRevision: Int = 0,
     /** What pressing Home twice does (once, on Start, it only goes back to the top). */
     val homeDoubleAction: GestureAction = GestureAction.None,
     val homeDoubleApp: String = "",
     val tileSpacing: TileSpacing = TileSpacing.Normal,
+    /** The room the pages leave at the sides of the screen. */
+    val pagePadding: PagePadding = PagePadding.Normal,
     /** The size of the text of the launcher, in percent (see [TEXT_SCALES]). */
     val textScale: Int = 100,
     /** The status bar of Android is out of the way on Start; a swipe from the top edge brings it back for a moment. */
@@ -325,15 +372,20 @@ data class LauncherSettings(
     val orientation: OrientationMode = OrientationMode.Portrait,
     /** Ask Android for the fastest refresh rate of the screen. */
     val highRefreshRate: Boolean = true,
-    val launchAnimation: LaunchAnimation = LaunchAnimation.Turnstile,
+    val launchAnimation: LaunchAnimation = LaunchAnimation.Original,
     /** The big title of a page (start, apps) behind the content, moving slower than it when the pages slide: off until asked for. */
     val panoramaTitles: Boolean = false,
     /** The bar at the bottom of the edit mode: its "…" button shows the names of the buttons. */
     val appBar: Boolean = true,
+    /** Which action bar Start and the mini apps use. */
+    val actionBar: ActionBarStyle = ActionBarStyle.Super,
 
     // --- gestures
     /** Pulling down from the top edge opens the Action Center from any page. */
     val edgePull: Boolean = true,
+
+    /** The Action Center of the launcher (the panel that comes down with the notifications and the quick buttons) is there. Off, Android shows its own notifications and nothing here takes them away. */
+    val actionCenterEnabled: Boolean = true,
     /** The back swipe from the right edge on Start goes on to the next page. */
     val edgeBackPan: Boolean = true,
     val doubleTapAction: GestureAction = GestureAction.None,
@@ -387,12 +439,20 @@ data class LauncherSettings(
     val edgeActionCenter: Boolean = false,
     /** The three buttons of Windows Phone are drawn over the navigation bar of Android (needs the accessibility service and the three-button navigation). Off until asked for. */
     val metroNavBar: Boolean = false,
+    /** The Windows Phone status bar and buttons over the apps slide away while a game is in front, and come back with a swipe from their edge (needs the accessibility service). */
+    val hideBarsInGames: Boolean = true,
     /** The Metro lock screen shows over the lock screen of Android when the screen comes on (needs the accessibility service). */
     val lockOverlay: Boolean = true,
+    /** While a bank (by its name, or an app of [bankSafeAdd] and not one of [bankSafeSkip]) is in front, no window of the launcher is over the apps (see SafeMode). */
+    val bankSafe: Boolean = true,
+    val bankSafeAdd: Set<String> = emptySet(),
+    val bankSafeSkip: Set<String> = emptySet(),
     /** The screen moves a few pixels every minute, so that nothing that stays the same for hours burns into the panel. */
     val antiBurnIn: Boolean = true,
     /** How long the logo of the navigation buttons is held to open the recent apps, 300 to 1500 ms. */
     val navHoldMs: Int = NAV_HOLD_DEFAULT_MS,
+    /** How far apart the three buttons of the navigation bar are, as a share of the distance they have by default, 50 to 110 percent. */
+    val navSpacing: Int = NAV_SPACING_DEFAULT,
     /** The places (see [ContactSource]) whose contacts the address book of the dialer shows, as a mask. */
     val dialerSources: Int = ContactSource.ALL,
     /** The choices made for each app below (what it may show in the Action Center, on the lock screen and as a banner) are applied. */
@@ -502,6 +562,8 @@ data class LauncherSettings(
     val lockPhotoRevision: Int = 0,
     val lockShowAlarm: Boolean = true,
     val lockShowNotifications: Boolean = true,
+    /** The apps with news on the lock screen in one smaller row (with a "+N" when there are too many), instead of the larger icons that wrap. */
+    val lockIconsOneRow: Boolean = false,
     val lockShowBattery: Boolean = true,
     val lockShowWeather: Boolean = true,
     /** The next event's title on the lock screen: off until asked for, since anyone who sees the screen reads it. */
@@ -542,6 +604,10 @@ data class LauncherSettings(
     val galleryApp: String = "",
     /** The albums (ids of the folders of the phone) the Photos tile takes its pictures from; none chosen: every album. */
     val galleryAlbums: Set<String> = emptySet(),
+    /** Where the Photos tile takes its pictures from (see [GallerySource]); [galleryAlbums] counts only for Albums. */
+    val gallerySource: GallerySource = GallerySource.Recent,
+    /** The photos picked for the tile (their content addresses, kept readable with a persistable permission). */
+    val galleryPhotos: List<String> = emptyList(),
     /** The glide sound of the Action Center coming down and going up, while the Metro sounds are on. */
     val panelSounds: Boolean = true,
     /** Looks for a new release on GitHub every 12 hours (see AppUpdate). */
@@ -590,6 +656,10 @@ data class LauncherSettings(
         const val NAV_HOLD_MIN_MS = 300
         const val NAV_HOLD_MAX_MS = 1500
         const val NAV_HOLD_DEFAULT_MS = 500
+        const val NAV_SPACING_MIN = 50
+        const val NAV_SPACING_MAX = 110
+        const val NAV_SPACING_DEFAULT = 100
+        const val NAV_SPACING_STEP = 10
 
         /** The most apps the quick status of the lock screen holds. */
         const val MAX_QUICK_APPS = 5
@@ -615,7 +685,11 @@ class SettingsStore(context: Context) {
 
     fun edgeActionCenterOn(): Boolean = switchOn("edgeActionCenter", false)
 
+    fun actionCenterOn(): Boolean = switchOn("actionCenterEnabled", true)
+
     fun metroNavBarOn(): Boolean = switchOn("metroNavBar", false)
+
+    fun hideBarsInGamesOn(): Boolean = switchOn("hideBarsInGames", true)
 
     fun metroStatusBarOverAppsOn(): Boolean = switchOn("metroStatusBarOverApps", false)
 
@@ -626,6 +700,10 @@ class SettingsStore(context: Context) {
     /** How long the logo of the navigation bar is held to open the recent apps, in milliseconds. */
     fun navHoldMs(): Int = prefs.getString(KEY_JSON, null)?.let { runCatching { parsed(it).optInt("navHoldMs", LauncherSettings.NAV_HOLD_DEFAULT_MS) }.getOrNull() }
         ?.coerceIn(LauncherSettings.NAV_HOLD_MIN_MS, LauncherSettings.NAV_HOLD_MAX_MS) ?: LauncherSettings.NAV_HOLD_DEFAULT_MS
+
+    /** How far apart the buttons of the navigation bar are, in percent of the default (see [LauncherSettings.navSpacing]). */
+    fun navSpacing(): Int = prefs.getString(KEY_JSON, null)?.let { runCatching { parsed(it).optInt("navSpacing", LauncherSettings.NAV_SPACING_DEFAULT) }.getOrNull() }
+        ?.coerceIn(LauncherSettings.NAV_SPACING_MIN, LauncherSettings.NAV_SPACING_MAX) ?: LauncherSettings.NAV_SPACING_DEFAULT
 
     fun hideSystemOn(): Boolean = switchOn("hideSystemNotifications", false)
 

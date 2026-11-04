@@ -110,6 +110,23 @@ class LiveCardFacesTest : ScreenshotBase() {
     }
 
     @Test
+    fun withSeveralChatsOnlyTheInsideTurnsAndTheNameOfTheAppStaysOnce() {
+        showTile(whatsapp, listOf(LiveCard.Message("Anna", "uno", null, null, 0), LiveCard.Message("Bruno", "due", null, null, 0)))
+        firstCard()
+        compose.onAllNodesWithText("WhatsApp").assertCountEquals(1)
+        advance(5_000)
+        compose.onAllNodesWithText("Bruno").assertCountEquals(1)
+        compose.onAllNodesWithText("WhatsApp").assertCountEquals(1)
+    }
+
+    @Test
+    fun withOneChatTheNameOfTheAppIsPartOfTheFace() {
+        showTile(whatsapp, listOf(LiveCard.Message("Anna", "uno", null, null, 0)))
+        firstCard()
+        compose.onAllNodesWithText("WhatsApp").assertCountEquals(1)
+    }
+
+    @Test
     fun aSmallTileSaysWhoWroteAndTheFirstWordsButNotTheList() {
         showTile(whatsapp, listOf(LiveCard.Message("Giulia", "Ciao", null, null, 0)), size = TileSize.Small)
         advance(300)

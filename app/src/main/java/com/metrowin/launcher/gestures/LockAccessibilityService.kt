@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
+import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.notifications.NotificationHub
 
@@ -20,6 +21,7 @@ class LockAccessibilityService : AccessibilityService() {
     private val navBar by lazy { NavBarOverlay(this) }
     private val lockScreen by lazy { LockOverlay(this) }
     private val statusBar by lazy { StatusBarOverlay(this) }
+    private val gameBars by lazy { GameBars(this, navBar, statusBar) }
 
     // The phone changes from the three buttons to the gestures (or back) while the service runs: the bar follows at once.
     private val navigationMode = object : android.database.ContentObserver(Handler(Looper.getMainLooper())) {
@@ -30,10 +32,16 @@ class LockAccessibilityService : AccessibilityService() {
         instance = this
         NotificationHub.edgeChanged()
         contentResolver.registerContentObserver(Settings.Secure.getUriFor("navigation_mode"), false, navigationMode)
+        safeSettings = SettingsStore(this).load()
         syncNavBar()
         syncStatusBar()
         scheduleNudge()
         lockScreen.start()
+        // An app that hides the status bar of Android (a video, a game in full screen) takes ours away too, whatever the app is.
+        gameBars.watchSystemBars { hidden ->
+            fullScreen = hidden
+            syncBars()
+        }
     }
 
     private val nudgeHandler = Handler(Looper.getMainLooper())
@@ -56,9 +64,12 @@ class LockAccessibilityService : AccessibilityService() {
         nudgeHandler.removeCallbacksAndMessages(null)
         lockScreen.stop()
         runCatching { contentResolver.unregisterContentObserver(navigationMode) }
+        gameBars.stopWatching()
+        gameBars.set(false)
         navBar.hide()
         statusBar.hide()
         if (instance === this) instance = null
+        safe = false
         NotificationHub.edgeChanged()
         return super.onUnbind(intent)
     }
@@ -73,9 +84,43 @@ class LockAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val pkg = event.packageName?.toString() ?: return
-        if (pkg in notApps || pkg == NotificationHub.foregroundPackage) return
+        // Back at the launcher: the app that was in front before is not any more, and what it posts now has not been read.
+        if (pkg == packageName) {
+            NotificationHub.foregroundPackage = null
+            setSafe(false)
+            syncGame(null)
+            return
+        }
+        if (pkg in notApps) return
+        syncGame(pkg)
+        // A bank (or an app the user listed) in front: the windows of the launcher over it are taken away until it is left.
+        setSafe(SafeMode.isSensitive(pkg, safeSettings))
+        if (pkg == NotificationHub.foregroundPackage) return
         NotificationHub.foregroundPackage = pkg
         NotificationHub.appOpened(pkg)
+    }
+
+    private val gamePackages = HashMap<String, Boolean>()
+
+    /**
+     * The app in front is a game (and the user wants the bars away): the bars slide out. [pkg] is null at the launcher. What an app is
+     * is asked of the package manager once, and remembered.
+     */
+    internal fun syncGame(pkg: String?) {
+        gameInFront = pkg != null && gamePackages.getOrPut(pkg) { GameApps.isGame(packageManager, pkg) }
+        syncBars()
+    }
+
+    private var gameInFront = false
+
+    /** The app in front has hidden the status bar of Android (see [GameBars.watchSystemBars]). */
+    private var fullScreen = false
+
+    /** The bars are away while a game is in front, or any app is in full screen outside the launcher, when the user wants them away. */
+    private fun syncBars() {
+        val away = SettingsStore(this).hideBarsInGamesOn() && (gameInFront || fullScreen && !launcherInFront)
+        gameBars.set(away)
+        NotificationHub.edgeChanged()
     }
 
     /** The phone turned: the bar of the system has another size now, and ours takes it. */
@@ -104,8 +149,9 @@ class LockAccessibilityService : AccessibilityService() {
         fun syncNavBar() {
             val service = instance ?: return
             val store = SettingsStore(service)
-            if (store.metroNavBarOn() && NavBarOverlay.threeButtons(service)) service.navBar.show(store.navHoldMs())
+            if (!safe && store.metroNavBarOn() && NavBarOverlay.threeButtons(service)) service.navBar.show(store.navHoldMs(), store.navSpacing())
             else service.navBar.hide()
+            service.gameBars.refresh()
         }
 
         /** The Windows Phone status bar over the apps outside the launcher: there when the user turned it on and this service is on. */
@@ -117,11 +163,69 @@ class LockAccessibilityService : AccessibilityService() {
         fun launcherFront(front: Boolean) {
             launcherInFront = front
             instance?.statusBar?.launcher(front)
+            instance?.syncBars()
         }
 
         fun syncStatusBar() {
             val service = instance ?: return
-            if (SettingsStore(service).metroStatusBarOverAppsOn()) service.statusBar.show() else service.statusBar.hide()
+            if (!safe && SettingsStore(service).metroStatusBarOverAppsOn()) service.statusBar.show() else service.statusBar.hide()
+            service.gameBars.refresh()
+        }
+
+        /** Whether a game is in front and the bars are away: the strip at the top edge for the Action Center gives way to the one that calls the status bar back. */
+        val gameBarsAway: Boolean get() = instance?.gameBars?.active == true
+
+        /** The switch "hide the bars in games" changed: the app in front is judged again with it (a game being played gets its bars back, or loses them). */
+        fun gameSettingChanged() {
+            instance?.syncGame(NotificationHub.foregroundPackage)
+        }
+
+        /** The settings changed (the switch, the list of apps): the service decides with the new ones, and leaves the safe mode when it is turned off. */
+        fun safeSettingsChanged(settings: LauncherSettings) {
+            safeSettings = settings
+            if (!settings.bankSafe) setSafe(false)
+        }
+
+        @Volatile
+        private var safeSettings = LauncherSettings()
+
+        /** True while a bank (see [SafeMode]) is in front or being opened: no window of the launcher is over the apps. */
+        @Volatile
+        var safe = false
+            private set
+
+        /** The launcher is about to open [packageName]: if it is a bank the windows go before it starts, not after the first window of the bank is up. */
+        fun opening(packageName: String) {
+            if (SafeMode.isSensitive(packageName, safeSettings)) setSafe(true)
+            // A game going to start: the bars go with the launcher's own animation, not after the first window of the game is up.
+            instance?.syncGame(packageName)
+        }
+
+        private fun setSafe(on: Boolean) {
+            if (safe == on) return
+            safe = on
+            val service = instance
+            if (service != null) {
+                if (on) {
+                    service.navBar.hide()
+                    service.statusBar.hide()
+                    service.lockScreen.hide()
+                    NotificationHub.service?.hideOverlays()
+                }
+                // Back: each window comes back if its own switch says so.
+                else {
+                    syncNavBar()
+                    syncStatusBar()
+                }
+            }
+            NotificationHub.edgeChanged()
+        }
+
+        /** Turns the accessibility service off, for the user who wants no trace of it at the moment (a bank that blocks it): it is turned on again in the settings of Android. */
+        fun turnOff(): Boolean {
+            val service = instance ?: return false
+            service.disableSelf()
+            return true
         }
 
         /** Locks the screen. False when the service is off, or on a version of Android that cannot do it (before 9). */

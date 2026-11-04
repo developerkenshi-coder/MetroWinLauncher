@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.pageSide
 import com.metrowin.launcher.ui.components.DEFAULT_MIN_SCALE
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.foundation.border
@@ -64,7 +65,7 @@ fun SettingsPage(modifier: Modifier = Modifier, content: @Composable ColumnScope
                 .fillMaxSize()
                 .onGloballyPositioned { focus.viewport(it) }
                 .verticalScroll(scroll)
-                .padding(horizontal = 24.dp, vertical = 12.dp),
+                .padding(horizontal = pageSide(24.dp), vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(26.dp),
             content = {
                 content()

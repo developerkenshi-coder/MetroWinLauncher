@@ -7,6 +7,7 @@ import androidx.annotation.StringRes
 import com.metrowin.launcher.data.AppLanguages
 import com.metrowin.launcher.data.LaunchAnimation
 import com.metrowin.launcher.data.OrientationMode
+import com.metrowin.launcher.data.PagePadding
 
 /** How the launcher uses the screen: rotation (and with it landscape) and the refresh rate. */
 @Composable
@@ -28,8 +29,17 @@ fun ScreenPage(env: SettingsEnv) {
             options = animations.map { stringResource(it.label) },
             selected = animations.indexOf(settings.launchAnimation),
             onSelect = { i -> env.onChange { it.copy(launchAnimation = animations[i]) } },
-            hint = stringResource(R.string.screen_launch_hint),
+            hint = stringResource(R.string.screen_launch_hint) + " " + stringResource(R.string.screen_launch_hint_more),
             tag = "screen:launch", id = "screen.launch",
+        )
+        val paddings = PagePadding.entries
+        OptionList(
+            label = stringResource(R.string.screen_padding),
+            options = paddings.map { stringResource(it.label) },
+            selected = paddings.indexOf(settings.pagePadding),
+            onSelect = { i -> env.onChange { it.copy(pagePadding = paddings[i]) } },
+            hint = stringResource(R.string.screen_padding_hint),
+            tag = "screen:padding", id = "screen.padding",
         )
         env.onLanguage?.let { change ->
             val tags = AppLanguages.tags

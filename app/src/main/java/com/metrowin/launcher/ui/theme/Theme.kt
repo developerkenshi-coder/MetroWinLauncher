@@ -1,6 +1,10 @@
 package com.metrowin.launcher.ui.theme
 
+import com.metrowin.launcher.data.PagePadding
 import com.metrowin.launcher.ui.anim.MotionSpeed
+import com.metrowin.launcher.data.ActionBarStyle
+import com.metrowin.launcher.ui.components.LocalActionBar
+import com.metrowin.launcher.ui.components.LocalPagePadding
 import com.metrowin.launcher.ui.anim.LocalTiltStrength
 import android.app.Activity
 import android.content.Context
@@ -19,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Density
@@ -159,9 +164,16 @@ fun MetroTheme(
     boldText: Boolean = false,
     /** The font of the phone instead of the one the look brings. */
     systemFont: Boolean = false,
+    /** The font the user picked (see [AppFonts]; "" is the one of the look) and the number of times they brought a file of their own. */
+    appFont: String = "",
+    fontRevision: Int = 0,
     /** How far a press tilts the tiles and buttons (1 as designed, 0 not at all) and how fast the animations go (2 is twice as fast). */
     tilt: Float = 1f,
     speed: Float = 1f,
+    /** How much room the pages leave at the sides. */
+    pagePadding: PagePadding = PagePadding.Normal,
+    /** Which action bar the mini apps and the edit bar of Start draw. */
+    actionBar: ActionBarStyle = ActionBarStyle.Super,
     content: @Composable () -> Unit,
 ) {
     SystemBarIcons(dark)
@@ -170,7 +182,9 @@ fun MetroTheme(
     // "Undefined" is a very large number, not a bold setting.
     val systemBold = adjustment != ADJUSTMENT_UNDEFINED && adjustment >= SYSTEM_BOLD_ADJUSTMENT
     val resolved = remember(style, dark, accent, droid, oled) { Themes.resolve(style, dark, accent, droid, oled) }
-    val typed = remember(resolved.style, boldText, systemBold, systemFont) { resolved.style.withType(boldText || systemBold, systemFont) }
+    val context = LocalContext.current
+    val chosen = remember(appFont, fontRevision) { if (systemFont) null else AppFonts.family(context, appFont, fontRevision) }
+    val typed = remember(resolved.style, boldText, systemBold, systemFont, chosen) { resolved.style.withType(boldText || systemBold, systemFont, chosen) }
     val density = LocalDensity.current
     CompositionLocalProvider(
         LocalAccent provides resolved.accent,
@@ -180,6 +194,8 @@ fun MetroTheme(
         LocalReduceMotion provides reduceMotion,
         LocalHighContrast provides highContrast,
         LocalTiltStrength provides tilt,
+        LocalPagePadding provides pagePadding,
+        LocalActionBar provides actionBar,
         LocalDensity provides density.let { Density(it.density, it.fontScale * textScale) },
         content = content,
     )

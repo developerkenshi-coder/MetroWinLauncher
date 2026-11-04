@@ -17,7 +17,7 @@ import org.junit.Test
 class SettingsCodecTest {
     private val custom = LauncherSettings(
         themeMode = ThemeMode.Schedule, darkFromHour = 20, darkToHour = 6, accentIndex = 11, autoAccent = true,
-        moreTiles = true, backgroundRevision = 3, parallax = false, startPages = 3, showClock = true,
+        moreTiles = true, tileColumns = 6, freeLayout = true, navSpacing = 70, backgroundRevision = 3, parallax = false, startPages = 3, showClock = true,
         orientation = OrientationMode.Auto, highRefreshRate = false, launchAnimation = LaunchAnimation.Expand,
         edgePull = false, doubleTapAction = GestureAction.LockScreen, twoFingerDownAction = GestureAction.OpenSettings,
         twoFingerUpAction = GestureAction.Recents,

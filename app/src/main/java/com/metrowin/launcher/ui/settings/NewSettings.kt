@@ -49,53 +49,6 @@ fun TileTransitionSetting(env: SettingsEnv) {
     )
 }
 
-private fun topicString(topic: String): Int = when (topic) {
-    "WORLD" -> R.string.news_topic_WORLD
-    "NATION" -> R.string.news_topic_NATION
-    "BUSINESS" -> R.string.news_topic_BUSINESS
-    "TECHNOLOGY" -> R.string.news_topic_TECHNOLOGY
-    "ENTERTAINMENT" -> R.string.news_topic_ENTERTAINMENT
-    "SPORTS" -> R.string.news_topic_SPORTS
-    "SCIENCE" -> R.string.news_topic_SCIENCE
-    else -> R.string.news_topic_HEALTH
-}
-
-/** Where the News tile reads from: Google News (the default), one of its sections, or a feed of your own. */
-@Composable
-fun NewsSourceSetting(env: SettingsEnv) {
-    val settings = env.settings
-    val choices = NewsSources.choices
-    val labels = choices.map { code ->
-        when {
-            code == NewsSources.GOOGLE_TOP -> stringResource(R.string.news_source_google)
-            code == NewsSources.CUSTOM -> stringResource(R.string.news_source_custom)
-            else -> stringResource(topicString(NewsSources.topicOf(code) ?: "WORLD"))
-        }
-    }
-    Column(Modifier.settingAnchor("live.news"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        DropdownSetting(
-            label = stringResource(R.string.news_source_title),
-            options = labels,
-            selected = choices.indexOf(NewsSources.normalize(settings.newsSource)).coerceAtLeast(0),
-            onSelect = { index -> env.onChange { it.copy(newsSource = choices[index]) } },
-            tag = "live:news",
-        )
-        if (settings.newsSource == NewsSources.CUSTOM) {
-            MetroTextField(
-                value = settings.newsUrl,
-                onValueChange = { text -> env.onChange { it.copy(newsUrl = text.take(NewsSources.MAX_URL)) } },
-                placeholder = stringResource(R.string.news_url_hint),
-                modifier = Modifier.testTag("live:newsurl"),
-            )
-            val good = NewsSources.customUrl(settings.newsUrl) != null
-            if (settings.newsUrl.isNotBlank()) {
-                SettingHint(stringResource(if (good) R.string.news_url_ok else R.string.news_url_bad), Modifier.testTag("live:newsurl:state"))
-            }
-        }
-        SettingHint(stringResource(R.string.news_source_hint))
-    }
-}
-
 /** The currency the Finance tile gives its values in. */
 @Composable
 fun FinanceBaseSetting(env: SettingsEnv) {
@@ -270,7 +223,7 @@ private fun NotificationAppRow(
         ) {
             AppSquare(app, 36.dp)
             Column(Modifier.weight(1f).padding(start = 14.dp)) {
-                MetroText(app.label, size = 19.sp, maxLines = 1)
+                MetroText(app.label, size = 19.sp)
                 val off = listOfNotNull(
                     stringResource(R.string.ac_notif_center).takeIf { !center },
                     stringResource(R.string.ac_notif_lock).takeIf { !lock },

@@ -91,7 +91,7 @@ fun NewsPage(
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 news.items.forEachIndexed { index, item ->
                     Column(Modifier.fillMaxWidth().testTag("news:item:$index").metroPress(onClick = { onOpen(item.link) })) {
-                        MetroText(item.title, size = 21.sp, maxLines = 4, lineHeight = 26.sp)
+                        MetroText(item.title, size = 21.sp, lineHeight = 26.sp)
                         val line = listOfNotNull(item.source.takeIf { it.isNotBlank() }, ageText(item.publishedAt)).joinToString(" · ")
                         if (line.isNotEmpty()) MetroText(line, size = 14.sp, weight = FontWeight.Normal, color = colors.subtle)
                     }
@@ -138,7 +138,7 @@ fun FinancePage(
                     ) {
                         Column(Modifier.weight(1f)) {
                             MetroText(FinanceItems.symbol(quote.item), size = 26.sp)
-                            MetroText(nameOf(quote.item), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
+                            MetroText(nameOf(quote.item), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle)
                         }
                         Column(horizontalAlignment = Alignment.End) {
                             MetroText("${Finance.format(quote.value, locale)} ${finance.base}", size = 24.sp, maxLines = 1)
@@ -265,7 +265,7 @@ fun RemindersPage(
             }
             done.forEach { reminder ->
                 Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    MetroText(reminder.text, size = 19.sp, color = colors.subtle, maxLines = 2, modifier = Modifier.weight(1f))
+                    MetroText(reminder.text, size = 19.sp, color = colors.subtle, modifier = Modifier.weight(1f))
                     RoundButton("×", stringResource(R.string.reminders_remove), "reminders:remove:${reminder.id}") { onRemove(reminder.id) }
                 }
             }
@@ -281,7 +281,7 @@ private fun ReminderSection(title: Int, list: List<Reminder>, now: Long, onDone:
     list.forEach { reminder ->
         Row(Modifier.fillMaxWidth().padding(vertical = 5.dp).testTag("reminders:item:${reminder.id}"), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                MetroText(reminder.text, size = 21.sp, maxLines = 3, lineHeight = 26.sp)
+                MetroText(reminder.text, size = 21.sp, lineHeight = 26.sp)
                 MetroText(whenText(reminder.at, now), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
             }
             RoundButton("✓", stringResource(R.string.reminder_done), "reminders:done:${reminder.id}") { onDone(reminder.id) }
@@ -400,7 +400,7 @@ fun PeopleHubPage(
                             size = 20.sp, weight = FontWeight.Normal, color = if (call.missed) LocalAccent.current else colors.subtle, modifier = Modifier.width(30.dp),
                         )
                         Column(Modifier.weight(1f)) {
-                            MetroText(call.name, size = 20.sp, maxLines = 1)
+                            MetroText(call.name, size = 20.sp)
                             MetroText(whenText(call.date), size = 13.sp, weight = FontWeight.Normal, color = colors.subtle)
                         }
                     }
@@ -414,8 +414,8 @@ fun PeopleHubPage(
             Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(bottom = 24.dp)) {
                 news.take(8).forEachIndexed { index, entry ->
                     Column(Modifier.fillMaxWidth().testTag("peoplehub:news:$index").metroPress(onClick = { onOpenNotification(entry) })) {
-                        MetroText(entry.title.ifBlank { labelOf(entry.packageName) }, size = 19.sp, maxLines = 1)
-                        if (entry.text.isNotBlank()) MetroText(entry.text, size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 2)
+                        MetroText(entry.title.ifBlank { labelOf(entry.packageName) }, size = 19.sp)
+                        if (entry.text.isNotBlank()) MetroText(entry.text, size = 15.sp, weight = FontWeight.Normal, color = colors.subtle)
                         MetroText(labelOf(entry.packageName) + " · " + (ageText(entry.postTime) ?: ""), size = 12.sp, weight = FontWeight.Normal, color = colors.subtle)
                     }
                 }

@@ -105,7 +105,9 @@ class ActionCenterMoreTest {
     fun theOtherButtonsStillOpenTheirScreenAndAnswerFalse() {
         val controller = QuickActionsController(app)
         assertFalse(controller.activate(QuickAction.Wifi))
-        assertEquals(Settings.ACTION_WIFI_SETTINGS, shadowOf(app).nextStartedActivity.action)
+        // Android 11 and later have a panel with the Wi-Fi switch, which opens over the screen instead of the whole settings.
+        val expected = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) "android.settings.panel.action.WIFI" else Settings.ACTION_WIFI_SETTINGS
+        assertEquals(expected, shadowOf(app).nextStartedActivity.action)
         assertFalse(controller.activate(QuickAction.LauncherSettings))
         assertFalse(controller.activate(QuickAction.Recents))
     }

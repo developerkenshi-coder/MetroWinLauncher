@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Window animation of an app opened from the launcher with the original Windows Phone turnstile: the window swings in around its left edge (a flat squeeze stands for the turn, which a window cannot do). -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shareInterpolator="false">
+    <scale
+        android:duration="350"
+        android:fromXScale="0.15"
+        android:fromYScale="1.0"
+        android:interpolator="@interpolator/expo_out"
+        android:pivotX="0%"
+        android:pivotY="50%"
+        android:toXScale="1.0"
+        android:toYScale="1.0" />
+    <alpha
+        android:duration="10"
+        android:fromAlpha="0.0"
+        android:toAlpha="1.0" />
+</set>

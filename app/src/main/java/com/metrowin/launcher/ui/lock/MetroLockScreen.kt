@@ -16,6 +16,7 @@ import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -74,7 +75,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.core.graphics.drawable.toBitmap
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.data.LockIconRow
 import com.metrowin.launcher.data.LockStatus
+import com.metrowin.launcher.data.QuickBadge
 import com.metrowin.launcher.data.LockStatusBuilder
 import com.metrowin.launcher.notifications.MediaInfo
 import com.metrowin.launcher.notifications.NotificationControl
@@ -85,6 +88,8 @@ import com.metrowin.launcher.data.LockInfoSource
 import com.metrowin.launcher.data.LockText
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.notifications.NotificationHub
+import com.metrowin.launcher.calls.elapsed
+import com.metrowin.launcher.ui.components.BatteryCell
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.shrinkToHeight
@@ -107,12 +112,14 @@ data class LockOptions(
     val showStatus: Boolean = false,
     /** The music card with its buttons, when something plays. */
     val showMusic: Boolean = false,
+    /** The apps with counters in one smaller row, with a "+N" when they do not all fit. */
+    val iconsOneRow: Boolean = false,
 )
 
 /** The options the settings give the lock screen. */
 fun LauncherSettings.lockOptions() = LockOptions(
     lockShowAlarm, lockShowNotifications, lockShowBattery, lockShowWeather, lockShowEvent,
-    showStatus = lockQuickStatus || lockDetailApp.isNotEmpty(), showMusic = lockShowMusic,
+    showStatus = lockQuickStatus || lockDetailApp.isNotEmpty(), showMusic = lockShowMusic, iconsOneRow = lockIconsOneRow,
 )
 
 /**
@@ -171,6 +178,8 @@ fun MetroLockScreen(
     onUnlock: (() -> Unit)? = null,
     status: LockStatus = LockStatus(),
     media: MediaInfo? = null,
+    /** A call that is on: a card with the time, mute and end call, so the call can be handled without leaving the lock screen. */
+    call: LockCall? = null,
     /** A fingerprint is saved on the phone: a line says that it opens it. */
     fingerprint: Boolean = false,
     /** Where the fingerprint sensor is under the screen, as a share of the height from the top; null when it is not under the screen. */
@@ -251,7 +260,7 @@ fun MetroLockScreen(
                 Modifier.align(Alignment.TopEnd).lockTopPadding(holes).padding(start = 20.dp, top = 20.dp, bottom = 20.dp, end = 20.dp + holes.right).testTag("lock:battery"),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                GlyphIcon(Glyph.Battery, 22.dp, color = Color.White)
+                BatteryCell(battery, Color.White, Modifier.size(width = 28.dp, height = 15.dp))
                 Spacer(Modifier.width(8.dp))
                 MetroText("${battery.percent}%", size = 18.sp, color = Color.White)
             }
@@ -287,13 +296,16 @@ fun MetroLockScreen(
                     }
                 }
                 Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    if (call != null) CallCard(call)
                     if (playing != null) MusicCard(playing)
                     Spacer(Modifier.weight(1f))
-                    if (hasStatus) Box(Modifier.shrinkToHeight(MIN_FIT)) { QuickStatus(status) }
+                    if (hasStatus) Box(Modifier.shrinkToHeight(MIN_FIT)) { QuickStatus(status, options.iconsOneRow) }
                 }
             }
         } else {
-            Column(Modifier.fillMaxSize().lockTopPadding(holes).navigationBarsPadding().padding(start = 24.dp, end = 24.dp, top = if (playing != null) 64.dp else 16.dp, bottom = 40.dp + reserve)) {
+            Column(Modifier.fillMaxSize().lockTopPadding(holes).navigationBarsPadding().padding(start = 24.dp, end = 24.dp, top = if (playing != null || call != null) 64.dp else 16.dp, bottom = 40.dp + reserve)) {
+                if (call != null) CallCard(call)
+                if (call != null && playing != null) Spacer(Modifier.height(16.dp))
                 if (playing != null) MusicCard(playing)
                 Spacer(Modifier.weight(1f))
                 // Last to be given room: on a short screen what is written gets smaller instead of being pushed off the screen.
@@ -304,7 +316,7 @@ fun MetroLockScreen(
                     lines()
                     if (hasStatus) {
                         Spacer(Modifier.height(14.dp))
-                        QuickStatus(status)
+                        QuickStatus(status, options.iconsOneRow)
                     }
                 }
             }
@@ -384,7 +396,7 @@ private fun LockLines(info: LockInfo, options: LockOptions, zone: ZoneId, is24Ho
 /** The last notification of the app chosen for the detail, told in words, and under it the apps with news, each with its small icon and a counter. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun QuickStatus(status: LockStatus) {
+private fun QuickStatus(status: LockStatus, oneRow: Boolean) {
     Column(Modifier.testTag("lock:status"), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         status.detail?.let { line ->
             val context = LocalContext.current
@@ -397,29 +409,43 @@ private fun QuickStatus(status: LockStatus) {
                 if (line.text.isNotBlank()) MetroText(line.text, size = 17.sp, color = Color.White.copy(alpha = 0.9f), weight = FontWeight.Normal, maxLines = 3)
             }
         }
-        if (status.quick.isNotEmpty()) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(22.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                status.quick.forEach { badge ->
-                    Row(Modifier.testTag("lock:badge:${badge.packageName}"), verticalAlignment = Alignment.CenterVertically) {
-                        val icon = badge.icon
-                        if (icon != null) {
-                            // The small icon of a notification is a shape on nothing: drawn white, as the status bar draws it.
-                            Image(
-                                icon.asImageBitmap(), contentDescription = null, colorFilter = ColorFilter.tint(Color.White),
-                                modifier = Modifier.size(34.dp).alpha(if (badge.count > 0) 1f else 0.5f).testTag("lock:badge:${badge.packageName}:icon"),
-                            )
-                        } else {
-                            PackageIcon(badge.packageName, 34.dp, Modifier.alpha(if (badge.count > 0) 1f else 0.5f))
-                        }
-                        if (badge.count > 0) {
-                            MetroText(
-                                if (badge.count > 99) "99+" else badge.count.toString(), size = 26.sp, color = Color.White,
-                                modifier = Modifier.padding(start = 8.dp).testTag("lock:badge:${badge.packageName}:count"),
-                            )
-                        }
+        if (status.quick.isNotEmpty() && oneRow) {
+            // One row, never wider than the screen leaves: the icons shrink to fit and the ones that still do not fit are a "+N".
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val fit = LockIconRow.fit(status.quick.map { if (it.count > 0) counter(it.count).length else 0 }, maxWidth.value)
+                Row(Modifier.testTag("lock:row"), horizontalArrangement = Arrangement.spacedBy(LockIconRow.GAP_DP.dp), verticalAlignment = Alignment.CenterVertically) {
+                    status.quick.take(fit.shown).forEach { QuickBadge(it, fit.iconDp.dp, LockIconRow.textSp(fit.iconDp).sp, Modifier.padding(start = 4.dp)) }
+                    if (fit.hidden > 0) {
+                        MetroText("+${fit.hidden}", size = LockIconRow.textSp(fit.iconDp).sp, color = Color.White, maxLines = 1, modifier = Modifier.testTag("lock:more"))
                     }
                 }
             }
+        } else if (status.quick.isNotEmpty()) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(22.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                status.quick.forEach { QuickBadge(it, 34.dp, 26.sp, Modifier.padding(start = 8.dp)) }
+            }
+        }
+    }
+}
+
+private fun counter(count: Int) = if (count > 99) "99+" else count.toString()
+
+/** An app with news: its small icon and, when it has notifications, how many. */
+@Composable
+private fun QuickBadge(badge: QuickBadge, iconSize: Dp, textSize: androidx.compose.ui.unit.TextUnit, countPadding: Modifier) {
+    Row(Modifier.testTag("lock:badge:${badge.packageName}"), verticalAlignment = Alignment.CenterVertically) {
+        val icon = badge.icon
+        if (icon != null) {
+            // The small icon of a notification is a shape on nothing: drawn white, as the status bar draws it.
+            Image(
+                icon.asImageBitmap(), contentDescription = null, colorFilter = ColorFilter.tint(Color.White),
+                modifier = Modifier.size(iconSize).alpha(if (badge.count > 0) 1f else 0.5f).testTag("lock:badge:${badge.packageName}:icon"),
+            )
+        } else {
+            PackageIcon(badge.packageName, iconSize, Modifier.alpha(if (badge.count > 0) 1f else 0.5f))
+        }
+        if (badge.count > 0) {
+            MetroText(counter(badge.count), size = textSize, color = Color.White, maxLines = 1, modifier = countPadding.testTag("lock:badge:${badge.packageName}:count"))
         }
     }
 }
@@ -463,6 +489,34 @@ private fun MusicCard(media: MediaInfo, modifier: Modifier = Modifier) {
                 TransportButton(Transport.Next, stringResource(R.string.lock_music_next), "lock:music:next") { media.next() }
             }
         }
+    }
+}
+
+/** What the lock screen shows of a call that is on, and what it does with it. */
+class LockCall(val title: String, val connectedAt: Long, val muted: Boolean, val onMute: () -> Unit, val onHangUp: () -> Unit, val onOpen: () -> Unit)
+
+/** The name and the time of the call (a touch opens the screen of the call), with the buttons to mute it and to end it. */
+@Composable
+private fun CallCard(call: LockCall, modifier: Modifier = Modifier) {
+    Column(modifier.testTag("lock:call"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.fillMaxWidth().testTag("lock:call:open").metroPress(onClick = call.onOpen)) {
+            MetroText(call.title.ifEmpty { stringResource(R.string.incall_unknown) }, size = 24.sp, color = Color.White, maxLines = 1)
+            MetroText(
+                if (call.connectedAt > 0) elapsed(call.connectedAt) else stringResource(R.string.incall_calling), size = 18.sp,
+                color = Color.White.copy(alpha = 0.85f), weight = FontWeight.Normal, modifier = Modifier.testTag("lock:call:time"),
+            )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            CallChoice(stringResource(R.string.incall_mute), if (call.muted) Color.White else Color.White.copy(alpha = 0.2f), if (call.muted) Color.Black else Color.White, "lock:call:mute", Modifier.weight(1f), call.onMute)
+            CallChoice(stringResource(R.string.incall_hang_up), Color(0xFFE51400), Color.White, "lock:call:hangup", Modifier.weight(1f), call.onHangUp)
+        }
+    }
+}
+
+@Composable
+private fun CallChoice(text: String, fill: Color, ink: Color, tag: String, modifier: Modifier, onClick: () -> Unit) {
+    Box(modifier.height(52.dp).testTag(tag).metroPress(onClick = onClick).background(fill), contentAlignment = Alignment.Center) {
+        MetroText(text, size = 18.sp, color = ink, weight = FontWeight.Normal, maxLines = 1)
     }
 }
 

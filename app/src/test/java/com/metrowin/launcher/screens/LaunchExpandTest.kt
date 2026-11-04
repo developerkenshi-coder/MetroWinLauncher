@@ -75,10 +75,10 @@ class LaunchExpandTest : ScreenshotBase() {
             )
         }
         advance(500)
-        compose.onNodeWithTag("screen:launch:1").performClick()
+        compose.onNodeWithTag("screen:launch:2").performClick()
         advance(100)
         assertEquals(LaunchAnimation.Expand, current.launchAnimation)
-        compose.onNodeWithTag("screen:launch:0").performClick()
+        compose.onNodeWithTag("screen:launch:1").performClick()
         advance(100)
         assertEquals(LaunchAnimation.Turnstile, current.launchAnimation)
     }

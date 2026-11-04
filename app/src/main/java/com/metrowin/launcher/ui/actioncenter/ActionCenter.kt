@@ -98,6 +98,8 @@ import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.gesture.PullPanel
+import androidx.compose.ui.platform.LocalDensity
+import com.metrowin.launcher.ui.gesture.PullRules
 import com.metrowin.launcher.ui.gesture.pushUpConnection
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -230,7 +232,8 @@ fun ActionCenter(
     val shownStates = if (arranging) QuickAction.entries.associateWith { it == picked } else states
     val listed = remember(notifications, groupConversations) { NotificationGroups.build(notifications, groupConversations) }
     var openGroups by remember { mutableStateOf(emptySet<String>()) }
-    val pushUp = remember(panel) { pushUpConnection(panel) }
+    val dead = PullRules.PUSH_UP_DEAD_DP * LocalDensity.current.density
+    val pushUp = remember(panel, dead) { pushUpConnection(panel, dead) }
     CompositionLocalProvider(LocalMessageLines provides messageLines) {
     Box(
         modifier
@@ -1052,8 +1055,12 @@ private fun Modifier.swipeToDismiss(onDismissed: () -> Unit): Modifier {
             },
             onDragStopped = { velocity ->
                 if (offset.value > width * SWIPE_FRACTION || velocity > SWIPE_VELOCITY) {
-                    offset.animateTo(width, metroTween(durationMillis = 180))
-                    currentDismissed()
+                    // Dismissed even when a new touch cuts the slide short: a row left half way, neither gone nor back, cannot be swiped again.
+                    try {
+                        offset.animateTo(width, metroTween(durationMillis = 180))
+                    } finally {
+                        currentDismissed()
+                    }
                 } else {
                     offset.animateTo(0f, spring())
                 }

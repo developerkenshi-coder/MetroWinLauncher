@@ -155,6 +155,13 @@ fun NotificationsPage(env: SettingsEnv) {
                 }
             }
             ToggleSetting(
+                label = stringResource(R.string.ac_enabled),
+                checked = env.settings.actionCenterEnabled,
+                onChange = { value -> env.onChange { it.copy(actionCenterEnabled = value) } },
+                hint = stringResource(R.string.ac_enabled_hint),
+                tag = "notifications:enabled", id = "ac.enabled",
+            )
+            ToggleSetting(
                 label = stringResource(R.string.notif_peek),
                 checked = env.settings.notificationPeek,
                 onChange = { value -> env.onChange { it.copy(notificationPeek = value) } },
@@ -167,7 +174,7 @@ fun NotificationsPage(env: SettingsEnv) {
                 checked = env.settings.inlineReply,
                 onChange = { value -> env.onChange { it.copy(inlineReply = value) } },
                 hint = stringResource(R.string.notif_inline_reply_hint),
-                enabled = env.notificationAccess,
+                enabled = env.notificationAccess && env.settings.actionCenterEnabled,
                 tag = "notifications:reply", id = "ac.reply",
             )
             ToggleSetting(
@@ -175,7 +182,7 @@ fun NotificationsPage(env: SettingsEnv) {
                 checked = env.settings.groupConversations,
                 onChange = { value -> env.onChange { it.copy(groupConversations = value) } },
                 hint = stringResource(R.string.notif_group_hint),
-                enabled = env.notificationAccess,
+                enabled = env.notificationAccess && env.settings.actionCenterEnabled,
                 tag = "notifications:group", id = "ac.group",
             )
             ToggleSetting(
@@ -183,7 +190,7 @@ fun NotificationsPage(env: SettingsEnv) {
                 checked = env.settings.toastBanner,
                 onChange = { value -> env.onChange { it.copy(toastBanner = value) } },
                 hint = stringResource(R.string.ac_banner_hint),
-                enabled = env.notificationAccess,
+                enabled = env.notificationAccess && env.settings.actionCenterEnabled,
                 tag = "notifications:banner", id = "ac.banner",
             )
             OverlaySettings(env)
@@ -207,7 +214,7 @@ fun NotificationsPage(env: SettingsEnv) {
                 checked = env.settings.hideSystemNotifications,
                 onChange = { value -> env.onChange { it.copy(hideSystemNotifications = value) } },
                 hint = stringResource(R.string.ac_hide_system_hint),
-                enabled = env.notificationAccess && env.settings.toastBanner,
+                enabled = env.notificationAccess && env.settings.actionCenterEnabled && env.settings.toastBanner,
                 tag = "notifications:hidesystem", id = "ac.hide",
             )
             NotificationExtrasSettings(env)
@@ -225,14 +232,14 @@ private fun OverlaySettings(env: SettingsEnv) {
     OverlayToggle(
         label = R.string.ac_overlay, hint = R.string.ac_overlay_hint, on = env.settings.overlayBanner, allowed = allowed,
         needs = R.string.ac_overlay_needs,
-        enabled = env.notificationAccess && env.settings.toastBanner, tag = "notifications:overlay", id = "ac.overlay",
+        enabled = env.notificationAccess && env.settings.actionCenterEnabled && env.settings.toastBanner, tag = "notifications:overlay", id = "ac.overlay",
         onChange = { value -> env.onChange { it.copy(overlayBanner = value) }; if (value && !allowed) askToDrawOverApps(context) },
     )
     // The Action Center over other apps draws with the accessibility service (the one that locks the screen), not with this permission.
     OverlayToggle(
         label = R.string.ac_edge, hint = R.string.ac_edge_hint, on = env.settings.edgeActionCenter, allowed = env.lockServiceEnabled,
         needs = R.string.gest_lock_needs_service,
-        enabled = env.notificationAccess, tag = "notifications:edge", id = "ac.edge",
+        enabled = env.notificationAccess && env.settings.actionCenterEnabled, tag = "notifications:edge", id = "ac.edge",
         onChange = { value -> env.onChange { it.copy(edgeActionCenter = value) }; if (value && !env.lockServiceEnabled) env.onOpenAccessibilitySettings() },
     )
 }

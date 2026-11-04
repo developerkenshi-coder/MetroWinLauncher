@@ -62,12 +62,12 @@ class MetroStyle(
         return if (bold) FontWeight((base.weight + BOLD_STEP).coerceAtMost(MAX_WEIGHT)) else base
     }
 
-    /** The same look with heavier text and/or the font of the phone. */
-    fun withType(bold: Boolean, systemFont: Boolean): MetroStyle =
-        if (!bold && !systemFont) this
+    /** The same look with heavier text and/or the font of the phone, or [chosen] (a font the user picked; the font of the phone wins over it). */
+    fun withType(bold: Boolean, systemFont: Boolean, chosen: FontFamily? = null): MetroStyle =
+        if (!bold && !systemFont && chosen == null) this
         else MetroStyle(
             kind, tileShape, smallTileShape, tileGap, controlShape, cardShape, squareShape, sheetShape,
-            font = if (systemFont) FontFamily.Default else font, weights = weights, bold = bold || this.bold,
+            font = if (systemFont) FontFamily.Default else chosen ?: font, weights = weights, bold = bold || this.bold,
         )
 
     fun tileShapeFor(size: TileSize): Shape = if (size == TileSize.Small) smallTileShape else tileShape

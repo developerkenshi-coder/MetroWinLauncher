@@ -66,7 +66,10 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 
-/** A dimmed page with [content] in a panel in the middle; touching outside it calls [onCancel]. */
+/**
+ * A dimmed page with [content] in a panel in the middle; touching outside it calls [onCancel]. The panel scrolls by itself when its content is
+ * long: never put a vertically scrolling list or column in [content] without a fixed height (it would be measured with no limit and crash).
+ */
 @Composable
 internal fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val colors = LocalMetroColors.current

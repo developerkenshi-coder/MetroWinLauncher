@@ -28,11 +28,17 @@ import androidx.compose.runtime.MutableIntState
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.metrowin.launcher.calls.CallManager
+import com.metrowin.launcher.calls.InCallActivity
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.notifications.OverlayWindowOwner
 import com.metrowin.launcher.notifications.overBars
 import com.metrowin.launcher.notifications.rememberMediaInfo
+import com.metrowin.launcher.ui.lock.LockCall
 import com.metrowin.launcher.ui.lock.MetroLockScreen
 import com.metrowin.launcher.ui.lock.hiddenOnLock
 import com.metrowin.launcher.ui.lock.lockOptions
@@ -46,7 +52,8 @@ import java.io.File
  * The Metro lock screen over the lock screen of Android, which a launcher cannot replace: when the screen goes off, a window of the
  * accessibility service with the lock screen of MetroWin (the photo, the big time, the alarm, the notifications) is made ready, so
  * that it is there when the screen comes on. Swiping it up takes it away and leaves the lock screen of Android (with its PIN, if there
- * is one) under it. It is not shown during a call, and it goes away at once if one comes in.
+ * is one) under it. A call that is on shows in it as a card (the time, mute, end call) when the launcher is the phone app (see CallManager);
+ * a call coming in takes it away at once, as the screen of the call must be reachable.
  */
 internal class LockOverlay(private val service: AccessibilityService) {
     private class Shown(val view: ComposeView, val owner: OverlayWindowOwner, val windows: WindowManager, val touch: List<View>, val unlock: MutableIntState) {
@@ -126,8 +133,18 @@ internal class LockOverlay(private val service: AccessibilityService) {
         handler.postDelayed(hideLater, LIFT_MS)
     }
 
-    /** No call is on or ringing. */
-    private fun quiet(): Boolean = service.getSystemService(AudioManager::class.java)?.mode == AudioManager.MODE_NORMAL
+    /** No call is ringing, and any that is on is one the launcher handles (the card of the lock screen). Else the phone is in a call of another app: the lock screen stays away. */
+    private fun quiet(): Boolean {
+        val lines = CallManager.lines.value.filterNot { it.ended }
+        if (lines.any { it.ringing }) return false
+        return lines.isNotEmpty() || service.getSystemService(AudioManager::class.java)?.mode == AudioManager.MODE_NORMAL
+    }
+
+    /** The card of the lock screen opens the screen of the call, which shows over Android's lock as the screen of any phone app does. */
+    private fun openCall() {
+        runCatching { service.startActivity(Intent(service, InCallActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)) }
+        hide()
+    }
 
     private fun show() {
         if (shown != null || !quiet() || !SettingsStore(service).lockOverlayOn()) return
@@ -150,6 +167,11 @@ internal class LockOverlay(private val service: AccessibilityService) {
             setViewTreeSavedStateRegistryOwner(owner)
             setContent {
                 MetroTheme(accent = MetroAccents[settings.accentIndex], dark = true) {
+                    val lines by CallManager.lines.collectAsState()
+                    val audio by CallManager.audio.collectAsState()
+                    val line = lines.firstOrNull { !it.ended && !it.ringing }
+                    // A call that comes in while this is up: it goes, the answer buttons are on the screen of the call.
+                    if (lines.any { it.ringing && !it.ended }) LaunchedEffect(Unit) { handler.post { hide() } }
                     MetroLockScreen(
                         info = rememberLockInfo(settings.hiddenOnLock()),
                         photo = photo,
@@ -162,6 +184,7 @@ internal class LockOverlay(private val service: AccessibilityService) {
                         onUnlocked = ::hide,
                         status = rememberLockStatus(settings),
                         media = rememberMediaInfo(settings.lockShowMusic),
+                        call = line?.let { LockCall(it.title, it.connectedAt, audio.muted, { CallManager.mute(!audio.muted) }, { CallManager.hangUp(it.id) }, ::openCall) },
                     )
                 }
             }

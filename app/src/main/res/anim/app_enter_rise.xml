@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Window animation of an app opened from the launcher with the rise style: it comes up from the bottom edge. -->
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <translate
+        android:duration="300"
+        android:fromYDelta="100%p"
+        android:interpolator="@android:interpolator/decelerate_cubic"
+        android:toYDelta="0" />
+</set>

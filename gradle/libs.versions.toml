@@ -24,6 +24,7 @@ androidx-compose-foundation = { module = "androidx.compose.foundation:foundation
 androidx-compose-animation = { module = "androidx.compose.animation:animation" }
 android-mail = { module = "com.sun.mail:android-mail", version.ref = "androidMail" }
 android-activation = { module = "com.sun.mail:android-activation", version.ref = "androidMail" }
+zxing-core = { module = "com.google.zxing:core", version = "3.5.3" }
 junit = { module = "junit:junit", version.ref = "junit" }
 org-json = { module = "org.json:json", version.ref = "orgJson" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }

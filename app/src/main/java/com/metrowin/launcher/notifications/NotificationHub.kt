@@ -9,6 +9,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.service.notification.NotificationListenerService.REASON_CANCEL
+import android.service.notification.NotificationListenerService.REASON_CANCEL_ALL
+import android.service.notification.NotificationListenerService.REASON_CLICK
 import androidx.compose.runtime.Immutable
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,6 +63,9 @@ data class NotificationEntry(
     val urgent: Boolean = false,
     /** The small icon of the notification (a white shape on nothing, like the ones of the status bar) for the lock screen's row of icons, when the app has one. */
     val icon: EntryIcon? = null,
+    /** The group the app put it in, and whether it is the heading of that group ("5 new messages"). */
+    val group: String? = null,
+    val summary: Boolean = false,
 )
 
 /** What a tile shows when it flips to the latest notification of its app. */
@@ -129,11 +135,72 @@ object NotificationHub {
      */
     private val held = LinkedHashMap<String, NotificationEntry>()
 
-    fun update(entries: List<NotificationEntry>) {
+    /** The register on disk (see [NotificationLedger]), set by the service when it connects; null before that and in tests. */
+    @Volatile
+    private var ledger: NotificationLedger? = null
+
+    internal fun attach(context: Context) = attach(ledger ?: NotificationLedger(context.applicationContext))
+
+    /** The service connected: what the register has (a process that was killed, a listener that rebound) is in the list again. */
+    internal fun attach(ledger: NotificationLedger) {
+        if (this.ledger === ledger) return
+        this.ledger = ledger
+        synchronized(held) {
+            ledger.load().forEach { item -> held.putIfAbsent(item.key, entryOf(item)) }
+            while (held.size > NotificationLedger.MAX_ITEMS) held.remove(held.keys.first())
+        }
+    }
+
+    private fun entryOf(item: LedgerItem) = NotificationEntry(
+        key = item.key, packageName = item.packageName, title = item.title, text = item.text, postTime = item.postTime, contentIntent = null,
+        autoCancel = item.autoCancel, longText = item.longText, urgent = item.urgent, group = item.group, summary = item.summary,
+    )
+
+    private fun ledgerOf(entry: NotificationEntry) = LedgerItem(
+        key = entry.key, packageName = entry.packageName, title = entry.title.take(NotificationLedger.MAX_TEXT), text = entry.text.take(NotificationLedger.MAX_TEXT),
+        longText = entry.longText?.take(NotificationLedger.MAX_TEXT), postTime = entry.postTime, autoCancel = entry.autoCancel,
+        urgent = entry.urgent, group = entry.group, summary = entry.summary,
+    )
+
+    /** One line for the journal that goes in the bug report (see [NotificationLedger.note]): where from and what happened, never the words. */
+    internal fun note(line: String) {
+        ledger?.note("${java.text.SimpleDateFormat("MM-dd HH:mm:ss", java.util.Locale.ROOT).format(System.currentTimeMillis())} $line")
+    }
+
+    internal fun journal(): List<String> = ledger?.journalLines().orEmpty()
+
+    /**
+     * Written down the moment the notification is posted, with or without a screen of the launcher on: the app can take it back a
+     * second later (a chat read on another device) and the list is only read when a screen comes on. It stays until the user takes
+     * it away here ([forget]), a newer post with the same key takes its place, or [NotificationLedger.MAX_AGE_MS] passes.
+     */
+    fun keep(entry: NotificationEntry) {
+        if (!actionCenterOn) return
+        synchronized(held) {
+            held.remove(entry.key)
+            held[entry.key] = entry
+            while (held.size > NotificationLedger.MAX_ITEMS) held.remove(held.keys.first())
+        }
+        ledger?.record(ledgerOf(entry))
+    }
+
+    /**
+     * The live ones (what Android has up now) and the kept ones the app is not showing any more, newest first. A group's heading is
+     * shown only while none of the group's own notifications is, so a bundle is not told twice.
+     */
+    fun update(rawEntries: List<NotificationEntry>) {
+        // A notification the user just dismissed can still be up in Android for a moment (the cancel is asked, not done): it is not read back.
+        val entries = synchronized(held) {
+            dismissed.keys.retainAll(rawEntries.mapTo(HashSet()) { it.key })
+            rawEntries.filterNot { (dismissed[it.key] ?: Long.MIN_VALUE) >= it.postTime }
+        }
+        // What Android already had up when the listener connected was never posted to it: it is written down now, without its picture.
+        entries.forEach { live -> if (synchronized(held) { (held[live.key]?.postTime ?: Long.MIN_VALUE) < live.postTime }) keep(live.copy(picture = null)) }
         val shown = synchronized(held) {
-            // Posted again: the live one counts, not the copy.
-            held.keys.removeAll(entries.mapTo(HashSet()) { it.key })
-            if (held.isEmpty()) entries else (entries + held.values).sortedByDescending { it.postTime }
+            val live = entries.mapTo(HashSet()) { it.key }
+            val all = if (held.isEmpty()) entries else entries + held.values.filter { it.key !in live }
+            val headed = all.filterNot { it.summary }.mapTo(HashSet()) { it.packageName to it.group }
+            all.filter { !it.summary || (it.packageName to it.group) !in headed }.sortedByDescending { it.postTime }
         }
         _entries.value = shown
         clearJustOpened(shown)
@@ -155,14 +222,18 @@ object NotificationHub {
     @Volatile
     var foregroundPackage: String? = null
 
+    /** The Action Center is on: only then does the launcher take notifications out of Android's shade, or clear them when their app is opened. */
+    @Volatile
+    var actionCenterOn: Boolean = true
+
     fun appOpened(packageName: String, now: Long = android.os.SystemClock.elapsedRealtime()) {
-        if (!clearOnOpen) return
+        if (!clearOnOpen || !actionCenterOn) return
         synchronized(openedAt) { openedAt[packageName] = now }
         dismissApp(packageName)
     }
 
     private fun clearJustOpened(shown: List<NotificationEntry>, now: Long = android.os.SystemClock.elapsedRealtime()) {
-        if (!clearOnOpen) return
+        if (!clearOnOpen || !actionCenterOn) return
         val packages = synchronized(openedAt) {
             openedAt.values.removeAll { now - it > JUST_OPENED_MS }
             openedAt.keys.toList()
@@ -177,10 +248,8 @@ object NotificationHub {
      * only done while the screen is on (see [keepForSound]). The app is told the notification was dismissed.
      */
     fun hold(entry: NotificationEntry) {
-        synchronized(held) {
-            held[entry.key] = entry
-            while (held.size > MAX_HELD) held.remove(held.keys.first())
-        }
+        if (!actionCenterOn) return
+        keep(entry)
         service?.cancelNotification(entry.key)
     }
 
@@ -213,19 +282,46 @@ object NotificationHub {
         forget(entry.key)
     }
 
-    /** The copies kept for the Action Center are let go: the service went away and what it knew with it. */
-    internal fun clearHeld() = synchronized(held) { held.clear() }
+    /** Everything kept is let go, the register on disk too: the user turned the access to the notifications off, or cleared them all. */
+    internal fun clearHeld() {
+        synchronized(held) { held.clear(); dismissed.clear() }
+        ledger?.clear()
+    }
 
-    /** The app or the system took the notification away (not the launcher, see [hold]): the copy kept for the Action Center goes too. */
-    fun removedByApp(key: String) = forget(key)
+    /**
+     * Android ended a notification. Only the user doing it in the shade of Android (a tap, a swipe, "clear all") takes the copy with it:
+     * the app taking it back (a chat read on another device) or the system ending it (a timeout, a package that changed) does not, and the
+     * launcher's own cancel (see [hold]) keeps it by design.
+     */
+    fun removedByUser(reason: Int) = reason == REASON_CLICK || reason == REASON_CANCEL || reason == REASON_CANCEL_ALL
 
-    /** The keys of the copies the launcher keeps for the Action Center (see [hold]). */
+    /** The copies kept for the Action Center, by key. */
     internal fun heldKeys(): Set<String> = synchronized(held) { held.keys.toSet() }
 
+    /**
+     * The post (its time) of each notification the user dismissed that Android may still list: [update] skips it until Android lets go of it,
+     * so a read in between does not put it back (it would stay, as the cancel that follows is not "the user" for [removedByUser]).
+     * A newer post of the same key is news and passes.
+     */
+    private val dismissed = HashMap<String, Long>()
+
     /** The notification is gone for good: dismissed, or its place taken. */
-    private fun forget(key: String) {
-        synchronized(held) { held.remove(key) }
-        _entries.value = _entries.value.filterNot { it.key == key }
+    fun forget(key: String) {
+        val gone = synchronized(held) {
+            val entry = held.remove(key) ?: _entries.value.firstOrNull { it.key == key }
+            if (entry != null) dismissed[key] = maxOf(dismissed[key] ?: Long.MIN_VALUE, entry.postTime)
+            val keys = mutableListOf(key)
+            // The last notification of a group went: its heading ("3 new messages") has nothing left to head and goes with it.
+            if (entry != null && !entry.summary && entry.group != null) {
+                fun NotificationEntry.sameGroup() = packageName == entry.packageName && group == entry.group
+                if (held.values.none { !it.summary && it.sameGroup() }) {
+                    held.values.filter { it.summary && it.sameGroup() }.forEach { held.remove(it.key); keys += it.key }
+                }
+            }
+            keys
+        }
+        ledger?.remove(gone)
+        _entries.value = _entries.value.filterNot { it.key in gone }
         service?.heldChanged()
     }
 
@@ -300,6 +396,8 @@ object NotificationHub {
             entry.contentIntent?.send(context, 0, null, null, null, null, options)
         }
         // Opened from the list, the app is seen: the notification goes, whatever the app asked for, and the others of that app with it.
+        com.metrowin.launcher.gestures.LockAccessibilityService.opening(entry.packageName)
+        if (entry.contentIntent == null) openApp(context, entry.packageName)
         if (entry.autoCancel || clearOnOpen) {
             forget(entry.key)
             service?.cancelNotification(entry.key)
@@ -337,14 +435,19 @@ object NotificationHub {
         }
     }
 
+    /** A kept notification has no intent of the app any more (it was read back from disk): the app itself opens. */
+    private fun openApp(context: Context, packageName: String) {
+        runCatching { context.packageManager.getLaunchIntentForPackage(packageName)?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)?.let(context::startActivity) }
+    }
+
     fun dismissAll() {
         rememberDismissed(_entries.value)
         clearHeld()
+        synchronized(held) { _entries.value.forEach { dismissed[it.key] = it.postTime } }
         _entries.value = emptyList()
         service?.cancelAllNotifications()
     }
 
-    private const val MAX_HELD = 200
     private const val JUST_OPENED_MS = 8_000L
     private const val MAX_HISTORY = 30
 }

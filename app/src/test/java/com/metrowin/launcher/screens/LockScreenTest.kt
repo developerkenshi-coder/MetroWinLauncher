@@ -58,6 +58,7 @@ class LockScreenTest : ScreenshotBase() {
     private fun showLock(
         info: LockInfo = this.info, options: LockOptions = LockOptions(), withPhoto: Boolean = false, canUnlock: Boolean = true,
         status: com.metrowin.launcher.data.LockStatus = com.metrowin.launcher.data.LockStatus(),
+        call: com.metrowin.launcher.ui.lock.LockCall? = null,
     ) = show {
         val photo = if (withPhoto) {
             remember { Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888).apply { eraseColor(0xFF3A7D44.toInt()) }.asImageBitmap() }
@@ -67,7 +68,7 @@ class LockScreenTest : ScreenshotBase() {
         MetroLockScreen(
             info = info, photo = photo, options = options,
             onUnlock = if (canUnlock) ({ unlocked++ }) else null,
-            unlockSignal = signal.intValue, onUnlocked = { finished++ }, status = status,
+            unlockSignal = signal.intValue, onUnlocked = { finished++ }, status = status, call = call,
             is24Hour = true, zone = utc, locale = Locale.US,
         )
     }
@@ -82,6 +83,41 @@ class LockScreenTest : ScreenshotBase() {
         compose.onNodeWithTag("lock:alarm").assertExists()
         compose.onNodeWithTag("lock:notifications").assertExists()
         compose.onNodeWithTag("lock:battery").assertExists()
+    }
+
+    @Test
+    fun aCallThatIsOnShowsItsTimeAndCanBeMutedAndEnded() {
+        var muted = 0
+        var ended = 0
+        var opened = 0
+        val call = com.metrowin.launcher.ui.lock.LockCall(
+            "Anna", System.currentTimeMillis() - 65_000, false, { muted++ }, { ended++ }, { opened++ },
+        )
+        showLock(call = call)
+        advance(300)
+        compose.onNodeWithTag("lock:call").assertExists()
+        compose.onNodeWithTag("lock:call:time", useUnmergedTree = true).assertExists()
+        compose.onNodeWithTag("lock:call:mute").performClick()
+        compose.onNodeWithTag("lock:call:hangup").performClick()
+        compose.onNodeWithTag("lock:call:open").performClick()
+        assertEquals(listOf(1, 1, 1), listOf(muted, ended, opened))
+        // The time and the rest of the lock screen are still there.
+        compose.onNodeWithTag("lock:time").assertExists()
+    }
+
+    @Test
+    fun theBatteryIconIsFilledToTheChargeNotHalfFull() {
+        showLock(info = info.copy(battery = BatteryInfo(100, BatteryState.Discharging)), canUnlock = false)
+        advance(300)
+        val box = compose.onNodeWithTag("lock:battery").fetchSemanticsNode().boundsInRoot
+        val shot = capture("lock_battery")
+        // The icon is the first 28dp of the row: along its middle line, between the walls, a full charge is lit all the way (the old icon lit half).
+        val dp = compose.density.density
+        val y = ((box.top + box.bottom) / 2).toInt()
+        val from = (box.left + 4 * dp).toInt()
+        val to = (box.left + 22 * dp).toInt()
+        val lit = (from until to).count { shot.getPixel(it, y) and 0xFFFFFF == 0xFFFFFF }
+        assertTrue("a full battery is drawn full ($lit of ${to - from} pixels lit)", lit > (to - from) * 0.8)
     }
 
     @Test

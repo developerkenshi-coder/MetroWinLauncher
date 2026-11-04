@@ -4,6 +4,8 @@ import com.metrowin.launcher.ui.theme.panel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.semantics.semantics
@@ -26,6 +28,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -80,6 +83,8 @@ fun AppContextMenu(
     onAddToList: (() -> Unit)? = null,
     /** Null when the app cannot be picked with others to pin (it is on Start already, or Start is locked). */
     onSelect: (() -> Unit)? = null,
+    /** The pixels at the bottom the system covers (the navigation bar): the menu stays above them. */
+    bottomInset: Int = WindowInsets.navigationBars.getBottom(LocalDensity.current),
 ) {
     val entries = MenuEntries(
         pinned, onPinToggle, onUninstall, onHide, onAddToFolder, shortcuts, onShortcut, onRename, onResetName, onInfo, locked, onToggleLock, onPinShortcut,
@@ -96,22 +101,24 @@ fun AppContextMenu(
         val openUp = rowBottom > constraints.maxHeight * OPEN_UP_BELOW
 
         // Row and menu form one block: it starts at the row when opening downwards, and ends at the
-        // bottom of the row when opening upwards.
+        // bottom of the row when opening upwards. It never reaches under the navigation bar: what does not fit
+        // is cut from the menu, which scrolls, and not from the row.
         Column(
             Modifier.layout { measurable, c ->
-                val block = measurable.measure(c)
+                val limit = (c.maxHeight - bottomInset).coerceAtLeast(0)
+                val block = measurable.measure(c.copy(minHeight = 0, maxHeight = limit))
                 val y = if (openUp) rowBottom - block.height else state.top
                 layout(block.width, c.maxHeight) {
-                    block.place(0, y.toInt().coerceIn(0, (c.maxHeight - block.height).coerceAtLeast(0)))
+                    block.place(0, y.toInt().coerceIn(0, (limit - block.height).coerceAtLeast(0)))
                 }
             },
         ) {
             if (openUp) {
-                Menu(state.item, entries)
+                Menu(state.item, entries, Modifier.weight(1f, fill = false))
                 AppRowContent(state.item, compact = compact)
             } else {
                 AppRowContent(state.item, compact = compact)
-                Menu(state.item, entries)
+                Menu(state.item, entries, Modifier.weight(1f, fill = false))
             }
         }
     }
@@ -139,10 +146,10 @@ private class MenuEntries(
 )
 
 @Composable
-private fun Menu(item: AppItem, e: MenuEntries) {
+private fun Menu(item: AppItem, e: MenuEntries, modifier: Modifier) {
     // Long menus scroll: ten entries and the pressed row do not always fit on a small screen.
     Column(
-        Modifier.fillMaxWidth().panel().heightIn(max = MENU_MAX_HEIGHT).verticalScroll(rememberScrollState()).padding(vertical = 6.dp),
+        modifier.testTag("menu:panel").fillMaxWidth().panel().heightIn(max = MENU_MAX_HEIGHT).verticalScroll(rememberScrollState()).padding(vertical = 6.dp),
     ) {
         e.shortcuts.forEach { shortcut ->
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {

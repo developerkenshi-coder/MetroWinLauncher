@@ -1,13 +1,21 @@
 package com.metrowin.launcher.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.fillMaxWidth
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.ui.components.MetroButton
+import com.metrowin.launcher.ui.components.MetroText
+import com.metrowin.launcher.ui.theme.AppFonts
 
 /** Everything that makes the launcher easier to read and to follow: the size and weight of the text, less motion, more contrast, and TalkBack. */
 @Composable
@@ -43,6 +51,7 @@ fun AccessibilityPage(env: SettingsEnv) {
                 tag = "access:systemfont",
                 id = "access.systemfont",
             )
+            FontChoice(env)
         }
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.access_motion_title))
@@ -65,4 +74,28 @@ fun AccessibilityPage(env: SettingsEnv) {
             )
         }
     }
+}
+
+/** The font of the launcher: the one of the look, one of the twenty that come with it, or a file of the user's own. */
+@Composable
+private fun FontChoice(env: SettingsEnv) {
+    val settings = env.settings
+    val context = LocalContext.current
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> if (uri != null) env.onPickFont(uri) }
+    val fonts = AppFonts.all
+    val hasCustom = AppFonts.customFile(context).isFile
+    val options = listOf(stringResource(R.string.access_font_default)) + fonts.map { it.label } +
+        listOfNotNull(stringResource(R.string.access_font_custom).takeIf { hasCustom })
+    val selected = when {
+        settings.appFont == AppFonts.CUSTOM && hasCustom -> options.lastIndex
+        else -> fonts.indexOfFirst { it.code == settings.appFont } + 1
+    }
+    DropdownSetting(
+        label = stringResource(R.string.access_font), options = options, selected = selected,
+        onSelect = { i -> env.onChange { it.copy(appFont = when { i == 0 -> ""; i <= fonts.size -> fonts[i - 1].code; else -> AppFonts.CUSTOM }) } },
+        tag = "access:font", id = "access.font",
+    )
+    MetroText(stringResource(R.string.access_font_sample), size = 20.sp)
+    MetroButton(stringResource(R.string.access_font_pick), Modifier.fillMaxWidth()) { picker.launch(arrayOf("*/*")) }
+    SettingHint(stringResource(R.string.access_font_hint))
 }

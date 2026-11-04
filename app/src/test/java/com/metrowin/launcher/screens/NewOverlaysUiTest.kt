@@ -188,6 +188,31 @@ class NewOverlaysUiTest : ScreenshotBase() {
     }
 
     @Test
+    fun theQuickStatusInOneRowKeepsEveryAppOnTheSameLineAndInsideTheScreen() {
+        val status = LockStatus(List(5) { QuickBadge("app$it", it * 7) })
+        show { MetroLockScreen(lockInfo, photo = null, options = LockOptions(showStatus = true, iconsOneRow = true), status = status, is24Hour = true) }
+        advance(400)
+        capture("lock_status_one_row")
+        val tops = (0 until 5).map { compose.onNodeWithTag("lock:badge:app$it").fetchSemanticsNode().boundsInRoot }
+        assertEquals(1, tops.map { it.top.toInt() / 10 }.toSet().size)
+        val row = compose.onNodeWithTag("lock:row").fetchSemanticsNode().boundsInRoot
+        tops.forEach { assertTrue("$it inside $row", it.right <= row.right + 1f && it.left >= row.left - 1f) }
+        compose.onAllNodesWithTag("lock:more").assertCountEquals(0)
+    }
+
+    @Test
+    fun withTooManyAppsTheOneRowEndsInAPlusNAndStaysOnTheScreen() {
+        val status = LockStatus(List(14) { QuickBadge("app$it", 100 + it) })
+        show { MetroLockScreen(lockInfo, photo = null, options = LockOptions(showStatus = true, iconsOneRow = true), status = status, is24Hour = true) }
+        advance(400)
+        capture("lock_status_plus_n")
+        val more = compose.onNodeWithTag("lock:more").fetchSemanticsNode().boundsInRoot
+        val row = compose.onNodeWithTag("lock:row").fetchSemanticsNode().boundsInRoot
+        assertTrue("$more inside $row", more.right <= row.right + 1f)
+        assertTrue(textOf("lock:more").startsWith("+"))
+    }
+
+    @Test
     fun theDetailedStatusSaysWhoItIsFromAndWhatItSays() {
         val status = LockStatus(detail = DetailLine("chat", "Anna", "See you at 8"))
         show { MetroLockScreen(lockInfo, photo = null, options = LockOptions(showStatus = true), status = status, is24Hour = true) }

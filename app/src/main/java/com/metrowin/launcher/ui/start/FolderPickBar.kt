@@ -84,3 +84,53 @@ fun FolderPickBar(
         }
     }
 }
+
+/**
+ * The bar while tiles are picked to be moved to another Start screen: what to do, how many are picked, and one button for each of the other
+ * screens (Start 1, Start 2...). A long press on a tile picks the whole group it is in.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun MovePickBar(
+    picked: Int,
+    screens: Int,
+    current: Int,
+    onMove: (Int) -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LocalMetroColors.current
+    Column(
+        modifier
+            .fillMaxWidth()
+            .sheet()
+            .pointerInput(Unit) { detectTapGestures { } }
+            .navigationBarsPadding()
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        MetroText(
+            stringResource(R.string.move_pick_hint),
+            size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 3,
+            modifier = Modifier.testTag("movepick:hint"),
+        )
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp),
+            itemVerticalAlignment = Alignment.CenterVertically,
+        ) {
+            MetroText(
+                pluralStringResource(R.plurals.folder_pick_count, picked, picked), size = 20.sp, color = LocalAccent.current,
+                modifier = Modifier.testTag("movepick:count"),
+            )
+            Box(Modifier.metroPress(onClick = onCancel).padding(horizontal = 10.dp, vertical = 10.dp).testTag("movepick:cancel")) {
+                MetroText(stringResource(R.string.folder_pick_cancel), size = 18.sp, weight = FontWeight.Normal, color = colors.subtle)
+            }
+            (0 until screens).filter { it != current }.forEach { screen ->
+                MetroButton(
+                    stringResource(R.string.move_pick_to, screen + 1),
+                    Modifier.alpha(if (picked > 0) 1f else 0.4f).semantics { if (picked == 0) disabled() }.testTag("movepick:to:$screen"),
+                ) { if (picked > 0) onMove(screen) }
+            }
+        }
+    }
+}

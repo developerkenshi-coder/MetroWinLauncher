@@ -19,8 +19,8 @@ android {
         applicationId = "com.metrowin.launcher"
         minSdk = 26
         targetSdk = 36
-        versionCode = 17
-        versionName = "26.5.5S"
+        versionCode = 24
+        versionName = "26.6S"
     }
 
     // The key of the official release comes from keystore.properties in the root of the project (never committed: it is in
@@ -99,6 +99,8 @@ dependencies {
     implementation(libs.androidx.compose.animation)
     implementation(libs.android.mail)
     implementation(libs.android.activation)
+    // Draws and reads the barcodes of the wallet (QR, Aztec, PDF417, EAN, Code 128, Code 39): Apache 2.0, nothing else is pulled in.
+    implementation(libs.zxing.core)
 
     testImplementation(libs.junit)
     testImplementation(libs.org.json)

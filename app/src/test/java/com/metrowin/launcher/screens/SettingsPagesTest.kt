@@ -134,6 +134,32 @@ class SettingsPagesTest : ScreenshotBase() {
     }
 
     @Test
+    fun theStartPageChoosesTheFavouriteScreenAmongTheOnesThatExist() {
+        open(SettingsSection.Start, LauncherSettings(startPages = 3))
+        tap("start:favorite:header")
+        advance(100)
+        tap("start:favorite:3")
+        assertEquals(2, current.favoritePage)
+        tap("start:favorite:header")
+        advance(100)
+        tap("start:favorite:0")
+        assertEquals(-1, current.favoritePage)
+    }
+
+    @Test
+    fun theAccessibilityPageChoosesTheFont() {
+        open(SettingsSection.Accessibility)
+        tap("access:font:header")
+        advance(100)
+        tap("access:font:3")
+        assertEquals(com.metrowin.launcher.ui.theme.AppFonts.all[2].code, current.appFont)
+        tap("access:font:header")
+        advance(100)
+        tap("access:font:0")
+        assertEquals("", current.appFont)
+    }
+
+    @Test
     fun theSwitchesThatNeedAPhotoDoNothingWithoutOne() {
         open(SettingsSection.StartTheme)
         tap("theme:autoaccent")

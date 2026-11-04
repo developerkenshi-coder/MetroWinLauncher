@@ -79,6 +79,8 @@ class SettingsEnv(
     val startBackground: ImageBitmap? = null,
     val onPickBackground: (Uri) -> Unit = {},
     val onClearBackground: () -> Unit = {},
+    /** The font file the user chose: the launcher keeps a copy and uses it. */
+    val onPickFont: (Uri) -> Unit = {},
     /** The accent that suits the Start photo, when there is one. */
     val autoAccentIndex: Int? = null,
     /** The launcher is sparing the battery now (see PowerPolicy). */

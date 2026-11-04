@@ -93,6 +93,13 @@ fun LockScreenPage(env: SettingsEnv) {
             )
         }
         LockQuickSettings(env)
+        if (settings.lockQuickStatus) {
+            ToggleSetting(
+                stringResource(R.string.lock_icons_one_row), settings.lockIconsOneRow,
+                onChange = { value -> env.onChange { it.copy(lockIconsOneRow = value) } },
+                hint = stringResource(R.string.lock_icons_one_row_hint), tag = "lock:oneRow", id = "lock.oneRow",
+            )
+        }
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.lock_sensor_title))
             ToggleSetting(

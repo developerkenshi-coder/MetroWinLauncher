@@ -29,22 +29,45 @@ object TileGrid {
     private const val BLOCK = 2
     private const val MAX_COLUMNS = 12
 
+    /** The lowest row a tile can be given in free mode: a saved file with a huge row must not make the grid, or the memory, huge. */
+    private const val MAX_FREE_ROW = 200
+    const val MAX_CUSTOM_COLUMNS = MAX_COLUMNS
+
+    /** The smallest a small tile gets with the columns the user chose, in dp: below this it is no longer a target a finger can hit. */
+    private const val MIN_CUSTOM_UNIT_DP = 44f
+
     /** Width of a small tile, in dp, that the portrait phone grid has: four columns on 360 dp, six with "more tiles". */
     private const val UNIT_DP = 79.5f
     private const val MORE_UNIT_DP = 51f
     private const val GAP_DP = 6f
     private const val SIDES_DP = 24f
 
+    /** The side of a small tile, in dp, when [columns] of them (with [gapDp] between) fill a screen [widthDp] wide. */
+    fun unitDp(widthDp: Float, columns: Int, gapDp: Float = GAP_DP, sidesDp: Float = SIDES_DP): Float = (widthDp - sidesDp - gapDp * (columns - 1)) / columns
+
+    /** What the two margins of Start take, in dp, with the margin [padding] gives on a screen [widthDp] wide: what [unitDp] and [columnsFor] leave out. */
+    fun sidesFor(padding: PagePadding, widthDp: Float): Float = 2 * padding.sideDp(SIDES_DP / 2, widthDp)
+
     /**
      * How many columns of small tiles fit a screen [widthDp] wide, in whole blocks, so the tiles keep the size they
      * have on a portrait phone (4 columns, 6 with [more]) and a wider screen, such as a phone in landscape, gets more
      * of them instead of bigger ones.
      */
-    fun columnsFor(widthDp: Float, more: Boolean): Int {
+    fun columnsFor(widthDp: Float, more: Boolean, sidesDp: Float = SIDES_DP, custom: Int = 0): Int {
+        if (custom > 0) return custom.coerceIn(DEFAULT_COLUMNS, maxOf(DEFAULT_COLUMNS, customMax(widthDp, sidesDp)))
         val unit = if (more) MORE_UNIT_DP else UNIT_DP
-        val fit = (widthDp - SIDES_DP + GAP_DP) / (unit + GAP_DP)
+        val fit = (widthDp - sidesDp + GAP_DP) / (unit + GAP_DP)
         return (BLOCK * Math.round(fit / BLOCK)).coerceIn(if (more) MORE_COLUMNS else DEFAULT_COLUMNS, MAX_COLUMNS)
     }
+
+    /** The most columns a screen [widthDp] wide takes with the user's own count: whole blocks of small tiles that stay at least [MIN_CUSTOM_UNIT_DP] wide. */
+    fun customMax(widthDp: Float, sidesDp: Float = SIDES_DP): Int {
+        val fit = ((widthDp - sidesDp + GAP_DP) / (MIN_CUSTOM_UNIT_DP + GAP_DP)).toInt()
+        return (fit - fit % BLOCK).coerceIn(DEFAULT_COLUMNS, MAX_COLUMNS)
+    }
+
+    /** What the user can choose for the columns on this screen: 0 (as it is now), then every even count from 4 up to [customMax]. */
+    fun customChoices(widthDp: Float, sidesDp: Float = SIDES_DP): List<Int> = listOf(0) + (DEFAULT_COLUMNS..customMax(widthDp, sidesDp) step BLOCK)
 
     /**
      * The free places where the tile at [dragged] can be dropped to put it there, instead of swapping it with a tile.
@@ -134,7 +157,13 @@ object TileGrid {
      * Where each tile goes. A tile that is a start of a group ([breaks]) goes on a row of blocks that nothing before it uses, so a
      * title can be written above the row; the others follow as they always did.
      */
-    fun place(sizes: List<TileSize>, columns: Int = DEFAULT_COLUMNS, breaks: List<Boolean> = emptyList()): GridLayout {
+    fun place(
+        sizes: List<TileSize>,
+        columns: Int = DEFAULT_COLUMNS,
+        breaks: List<Boolean> = emptyList(),
+        /** Free mode: the cell (column to row) the user gave each tile, null for one that flows. A cell that does not fit or is taken makes the tile flow. */
+        fixed: List<Pair<Int, Int>?> = emptyList(),
+    ): GridLayout {
         require(columns % BLOCK == 0) { "columns must be a whole number of blocks" }
         val blocksPerRow = columns / BLOCK
         val occupied = ArrayList<BooleanArray>()
@@ -174,11 +203,20 @@ object TileGrid {
             }
         }
 
+        // The tiles with a cell of their own take it first, so that a tile that flows never lands on one.
+        val own = arrayOfNulls<Placement>(sizes.size)
+        sizes.forEachIndexed { index, size ->
+            val (col, row) = fixed.getOrNull(index) ?: return@forEachIndexed
+            if (col < 0 || row < 0 || row > MAX_FREE_ROW || col + size.cols > columns || !isFree(col, row, size.cols, size.rows)) return@forEachIndexed
+            own[index] = Placement(col, row, size.cols, size.rows)
+            for (r in row until row + size.rows) for (c in col until col + size.cols) occupied[r][c] = true
+        }
+
         var cursor = 0
         var usedRows = 0
         val placements = sizes.mapIndexed { index, size ->
             if (breaks.getOrElse(index) { false } && usedRows > 0) cursor = (usedRows + BLOCK - 1) / BLOCK * blocksPerRow
-            find(size, cursor).also { p ->
+            (own[index] ?: find(size, cursor)).also { p ->
                 for (r in p.row until p.row + p.rows) for (c in p.col until p.col + p.cols) occupied[r][c] = true
                 cursor = p.row / BLOCK * blocksPerRow + p.col / BLOCK
                 usedRows = maxOf(usedRows, p.row + p.rows)

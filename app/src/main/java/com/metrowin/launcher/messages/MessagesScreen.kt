@@ -126,8 +126,8 @@ private fun ListPage(conversations: List<Conversation>?, repository: SmsReposito
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column(Modifier.weight(1f)) {
-                            MetroText(item.title, size = 22.sp, weight = if (item.unread > 0) FontWeight.SemiBold else FontWeight.Light, maxLines = 1)
-                            MetroText(item.snippet, size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
+                            MetroText(item.title, size = 22.sp, weight = if (item.unread > 0) FontWeight.SemiBold else FontWeight.Light)
+                            MetroText(item.snippet, size = 14.sp, weight = FontWeight.Normal, color = colors.subtle)
                         }
                         Column(horizontalAlignment = Alignment.End) {
                             MetroText(whenText(item.date), size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)

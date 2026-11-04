@@ -12,6 +12,7 @@ object SystemCommands {
         Entry(QuickAction.Flashlight, null, setOf("flashlight", "torch", "torcia", "torcia elettrica")),
         Entry(QuickAction.Wifi, null, setOf("wifi", "wi fi", "wlan")),
         Entry(QuickAction.Bluetooth, null, setOf("bluetooth", "bt")),
+        Entry(QuickAction.MobileData, null, setOf("mobile data", "cellular data", "cellular", "data", "dati", "dati mobili", "rete dati", "connessione dati")),
         Entry(QuickAction.Airplane, null, setOf("airplane mode", "airplane", "aeroplane mode", "flight mode", "modalita aereo", "modalita aeroplano", "aereo", "aeroplano")),
         Entry(QuickAction.QuietHours, null, setOf("do not disturb", "dnd", "dont disturb", "don t disturb", "non disturbare")),
         Entry(QuickAction.Location, null, setOf("location", "gps", "posizione", "localizzazione")),

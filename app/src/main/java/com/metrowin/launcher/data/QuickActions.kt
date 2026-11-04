@@ -38,6 +38,9 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
     Rotation("rotation", R.string.qa_rotation, Glyph.Rotation),
     Location("location", R.string.qa_location, Glyph.Maps),
     Hotspot("hotspot", R.string.qa_hotspot, Glyph.Hotspot),
+
+    /** The mobile data, on or off: its state is shown, and a touch opens the panel of Android that has the switch (see [QuickActionsController.activate]). */
+    MobileData("mobiledata", R.string.qa_mobile_data, Glyph.Data),
     Vpn("vpn", R.string.qa_vpn, Glyph.Vpn),
     Cast("cast", R.string.qa_cast, Glyph.Cast),
     Brightness("brightness", R.string.qa_brightness, Glyph.Brightness),
@@ -66,7 +69,7 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
         val defaults = listOf(Wifi, Bluetooth, Flashlight, LauncherSettings)
 
         /** The buttons that can be kept on Start as a switch: the ones that have a state to show. */
-        val toggles = listOf(Wifi, Bluetooth, Airplane, Flashlight, QuietHours, QuietTimed, Rotation, Location, AutoBrightness)
+        val toggles = listOf(Wifi, Bluetooth, Airplane, MobileData, Flashlight, QuietHours, QuietTimed, Rotation, Location, AutoBrightness)
 
         /** What the four buttons were before the launcher's settings joined them: nobody chose that, so it is replaced. */
         private val previousDefaults = listOf("wifi", "bluetooth", "airplane", "flashlight")
@@ -84,6 +87,7 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
             Wifi, Bluetooth -> null
             Airplane -> Settings.ACTION_WIRELESS_SETTINGS
             Hotspot -> "android.settings.TETHER_SETTINGS"
+            MobileData -> "android.settings.DATA_USAGE_SETTINGS"
             Flashlight -> MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA
             QuietHours, QuietTimed -> "android.settings.ZEN_MODE_SETTINGS"
             Rotation, Brightness, ScreenTimeout, AutoBrightness -> Settings.ACTION_DISPLAY_SETTINGS
@@ -184,6 +188,8 @@ class QuickActionsController(private val context: Context) {
             QuickAction.Wifi -> context.getSystemService(WifiManager::class.java).isWifiEnabled
             QuickAction.Bluetooth -> context.getSystemService(BluetoothManager::class.java).adapter?.isEnabled
             QuickAction.Airplane -> Settings.Global.getInt(context.contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) == 1
+            // The mobile data the user switched on, whatever network is in use (Android keeps this switch in its global settings, readable by anyone).
+            QuickAction.MobileData -> Settings.Global.getInt(context.contentResolver, "mobile_data", 1) == 1
             QuickAction.Flashlight -> if (torchId == null) null else _torchOn.value
             QuickAction.Vpn -> context.getSystemService(ConnectivityManager::class.java).let { cm ->
                 cm.getNetworkCapabilities(cm.activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true
@@ -298,10 +304,18 @@ class QuickActionsController(private val context: Context) {
             }
             return true
         }
+        // Android does not let an app switch the radios (Wi-Fi, Bluetooth, mobile data, flight mode) any more. What it does give is its own
+        // panels, a sheet with the switch over whatever is on screen, and a dialog that asks to turn Bluetooth on: one touch from here, not a trip through the settings.
+        if (action == QuickAction.Bluetooth && isOn(QuickAction.Bluetooth) == false) {
+            // The dialog of Android that asks to turn Bluetooth on needs the Bluetooth permission from Android 12.
+            val allowed = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || LivePermissions.isGranted(context, android.Manifest.permission.BLUETOOTH_CONNECT)
+            if (allowed && start(android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE)) return false
+        }
         val intentAction = when (action) {
-            QuickAction.Wifi -> Settings.ACTION_WIFI_SETTINGS
+            QuickAction.Wifi -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) PANEL_WIFI else Settings.ACTION_WIFI_SETTINGS
             QuickAction.Bluetooth -> Settings.ACTION_BLUETOOTH_SETTINGS
-            QuickAction.Airplane -> Settings.ACTION_AIRPLANE_MODE_SETTINGS
+            QuickAction.Airplane, QuickAction.MobileData ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) PANEL_INTERNET else if (action == QuickAction.MobileData) Settings.ACTION_DATA_ROAMING_SETTINGS else Settings.ACTION_AIRPLANE_MODE_SETTINGS
             QuickAction.QuietHours, QuickAction.QuietTimed -> "android.settings.ZEN_MODE_SETTINGS"
             QuickAction.Brightness, QuickAction.Flashlight -> Settings.ACTION_DISPLAY_SETTINGS
             QuickAction.Location -> Settings.ACTION_LOCATION_SOURCE_SETTINGS
@@ -337,6 +351,12 @@ class QuickActionsController(private val context: Context) {
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             )
         }
+    }
+
+    private companion object {
+        /** The panel of Android with the Wi-Fi switch and the networks (Android 11 and later), and the one with Wi-Fi, mobile data and flight mode (Android 10 and later). */
+        const val PANEL_WIFI = "android.settings.panel.action.WIFI"
+        const val PANEL_INTERNET = "android.settings.panel.action.INTERNET_CONNECTIVITY"
     }
 
     private fun start(intentAction: String): Boolean =

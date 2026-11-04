@@ -70,7 +70,8 @@ private suspend fun PointerInputScope.watchTopEdge(panel: PullPanel, zonePx: Flo
                 abs(total.x) > slop && abs(total.x) > abs(total.y) -> return@awaitEachGesture
                 // Up: nothing to pull.
                 total.y < -slop -> return@awaitEachGesture
-                total.y > slop -> {
+                // Down, and clearly more down than sideways: a slanted brush near the edge is not a pull.
+                total.y > slop && total.y > 2 * abs(total.x) -> {
                     claimed = true
                     panel.dragByPx(total.y - slop)
                     change.consume()
@@ -90,8 +91,13 @@ fun pullDownConnection(panel: PullPanel, startScroll: ScrollState, blocked: () -
         /** True from the moment this gesture takes the panel until the finger lets go. */
         private var holding = false
 
+        /** Whether Start was already at the top when this finger came down; null between gestures. */
+        private var startedAtTop: Boolean? = null
+
         override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-            if (source != NestedScrollSource.UserInput || !holding) return Offset.Zero
+            if (source != NestedScrollSource.UserInput) return Offset.Zero
+            if (startedAtTop == null) startedAtTop = startScroll.value == 0
+            if (!holding) return Offset.Zero
             if (panel.progress <= 0f && available.y <= 0f) {
                 // Pushed all the way back up: the panel is put away and Start scrolls again.
                 holding = false
@@ -104,6 +110,8 @@ fun pullDownConnection(panel: PullPanel, startScroll: ScrollState, blocked: () -
 
         override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
             if (source != NestedScrollSource.UserInput || available.y <= 0f || blocked() || startScroll.value != 0) return Offset.Zero
+            // Scrolling up to the top and running past it is not a pull: the finger has to come down on the top.
+            if (startedAtTop != true) return Offset.Zero
             holding = true
             panel.dragByPx(available.y)
             // Everything left over is taken, so the content does not stretch while the panel moves.
@@ -111,6 +119,7 @@ fun pullDownConnection(panel: PullPanel, startScroll: ScrollState, blocked: () -
         }
 
         override suspend fun onPreFling(available: Velocity): Velocity {
+            startedAtTop = null
             if (!holding) return Velocity.Zero
             holding = false
             panel.release(available.y)
@@ -121,10 +130,14 @@ fun pullDownConnection(panel: PullPanel, startScroll: ScrollState, blocked: () -
 /**
  * The other way round, on the open panel: when its list has nothing left to scroll, pushing further up
  * pushes the panel up with it, and the panel keeps the finger until it lets go (moving back down brings
- * the panel down again before the list moves).
+ * the panel down again before the list moves). The panel waits for the finger to go [deadZonePx] past the end of the list, so a list
+ * scrolled to its end does not take the panel with it.
  */
-fun pushUpConnection(panel: PullPanel): NestedScrollConnection = object : NestedScrollConnection {
+fun pushUpConnection(panel: PullPanel, deadZonePx: Float): NestedScrollConnection = object : NestedScrollConnection {
     private var holding = false
+
+    /** How far the finger went past the end of the list, before the panel follows. */
+    private var pushed = 0f
 
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
         if (source != NestedScrollSource.UserInput || !holding) return Offset.Zero
@@ -132,13 +145,22 @@ fun pushUpConnection(panel: PullPanel): NestedScrollConnection = object : Nested
     }
 
     override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-        if (source != NestedScrollSource.UserInput || available.y >= 0f) return Offset.Zero
-        holding = true
+        if (source != NestedScrollSource.UserInput) return Offset.Zero
+        if (available.y >= 0f) {
+            pushed = 0f
+            return Offset.Zero
+        }
+        if (!holding) {
+            pushed -= available.y
+            if (pushed < deadZonePx) return Offset.Zero
+            holding = true
+        }
         panel.dragByPx(available.y)
         return Offset(0f, available.y)
     }
 
     override suspend fun onPreFling(available: Velocity): Velocity {
+        pushed = 0f
         if (!holding) return Velocity.Zero
         holding = false
         panel.release(available.y)

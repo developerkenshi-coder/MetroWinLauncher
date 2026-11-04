@@ -60,6 +60,8 @@ fun JumpList(
     /** The star, first in the grid, takes you to the app opened last. It is off when there is none. */
     hasRecent: Boolean = false,
     onPickRecent: () -> Unit = {},
+    /** False for a list that has no "last opened" (the contacts): the grid starts with the first letter. */
+    showRecent: Boolean = true,
 ) {
     val currentDismiss by rememberUpdatedState(onDismiss)
     Box(
@@ -77,7 +79,7 @@ fun JumpList(
                 .padding(horizontal = 12.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.Center,
         ) {
-            (listOf(RECENT_KEY) + keys).chunked(COLUMNS).forEachIndexed { rowIndex, rowKeys ->
+            ((if (showRecent) listOf(RECENT_KEY) else emptyList()) + keys).chunked(COLUMNS).forEachIndexed { rowIndex, rowKeys ->
                 Row(Modifier.fillMaxWidth()) {
                     rowKeys.forEachIndexed { colIndex, key ->
                         JumpCell(

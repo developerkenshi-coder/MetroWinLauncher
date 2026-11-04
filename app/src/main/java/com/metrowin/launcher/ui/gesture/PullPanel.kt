@@ -22,18 +22,30 @@ object PullRules {
     /** Pulled or pushed this far (dp), the panel carries on by itself to the side the finger was heading. */
     const val COMMIT_DP = 110f
 
-    /** A flick faster than this (dp per second) decides on its own, whatever the distance. */
+    /** A flick faster than this (dp per second) decides on its own, once the panel has moved at least [MIN_FLING_DP]. */
     const val FLING_DP_PER_SECOND = 350f
+
+    /** An open panel needs to be pushed up this far (dp) to close, further than it takes to open: it must not slip away by accident. */
+    const val CLOSE_COMMIT_DP = 160f
+
+    /** An open panel pushed up less than this (dp) never closes on speed alone: the end of a list scrolled to its end is not a push. */
+    const val MIN_CLOSE_FLING_DP = 64f
+
+    /** Once the list of an open panel has nothing left to scroll, the finger has to go on this far (dp) before the panel follows it. */
+    const val PUSH_UP_DEAD_DP = 32f
+
+    /** A panel pulled down less than this (dp) never opens on speed alone: a brush or the end of a scroll is not a pull. */
+    const val MIN_FLING_DP = 48f
 
     /**
      * Whether the panel ends open. [progress] is how far down it is (0..1) and [travelDp] how long its way is.
      * [velocityDpPerSecond] is positive when the finger moves down. A panel that was open when grabbed stays
-     * open unless the finger pushed it up past [COMMIT_DP]; one that was closed opens once pulled past it.
+     * open unless the finger pushed it up past [CLOSE_COMMIT_DP]; one that was closed opens once pulled past [COMMIT_DP].
      */
     fun shouldOpen(progress: Float, travelDp: Float, velocityDpPerSecond: Float, startedOpen: Boolean): Boolean = when {
-        velocityDpPerSecond > FLING_DP_PER_SECOND -> true
-        velocityDpPerSecond < -FLING_DP_PER_SECOND -> false
-        startedOpen -> (1f - progress) * travelDp < COMMIT_DP
+        velocityDpPerSecond > FLING_DP_PER_SECOND && (startedOpen || progress * travelDp >= MIN_FLING_DP) -> true
+        velocityDpPerSecond < -FLING_DP_PER_SECOND && (!startedOpen || (1f - progress) * travelDp >= MIN_CLOSE_FLING_DP) -> false
+        startedOpen -> (1f - progress) * travelDp < CLOSE_COMMIT_DP
         else -> progress * travelDp > COMMIT_DP
     }
 }

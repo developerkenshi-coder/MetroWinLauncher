@@ -18,7 +18,10 @@ import androidx.lifecycle.lifecycleScope
 import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.dialer.DialerActivity
+import com.metrowin.launcher.gestures.LockAccessibilityService
+import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.notifications.OverlayTheme
+import com.metrowin.launcher.ui.mini.returnToLauncher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -30,9 +33,13 @@ import kotlinx.coroutines.launch
 class InCallActivity : ComponentActivity() {
     private var proximity: PowerManager.WakeLock? = null
 
+    /** The launcher (or a screen of it) was in front when the call came, so it is where the user goes back to when the call ends. */
+    private var fromLauncher = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT), navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
         super.onCreate(savedInstanceState)
+        fromLauncher = savedInstanceState == null && NotificationHub.foregroundPackage == null && LockAccessibilityService.isEnabled(this)
         @Suppress("DEPRECATION") // the flags work on every version; the methods that replace them come with Android 8.1
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val actions = CallActions(
@@ -49,6 +56,7 @@ class InCallActivity : ComponentActivity() {
             LaunchedEffect(lines.isEmpty()) {
                 if (lines.isEmpty()) {
                     delay(ENDED_MS)
+                    returnToLauncher(fromLauncher)
                     finish()
                 }
             }

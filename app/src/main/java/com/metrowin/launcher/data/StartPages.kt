@@ -26,6 +26,26 @@ object StartPages {
         return kept
     }
 
+    /**
+     * The screen the user has Start on: the home, unless the home is empty and another screen is not (a phone that had the secondary Start
+     * set to the left before the main screen followed the home): then the fullest one.
+     */
+    fun mainPage(pages: List<List<StartEntry>>, home: Int): Int {
+        val h = home.coerceIn(0, pages.lastIndex.coerceAtLeast(0))
+        if (pages.getOrNull(h)?.isNotEmpty() != false) return h
+        return pages.indices.maxByOrNull { pages[it].size }?.takeIf { pages[it].isNotEmpty() } ?: h
+    }
+
+    /** Every entry of [ids] to the end of screen [target], in the order they have now, so a group keeps its tiles one after the other. */
+    fun moveManyToPage(pages: List<List<StartEntry>>, ids: Set<String>, target: Int): List<List<StartEntry>> =
+        pages.flatten().map { it.id }.filter { it in ids }.fold(pages) { acc, id -> moveToPage(acc, id, target) }
+
+    /** Screen [from] put at place [to], the others keeping their order: the Start the user knows follows the home when it moves. */
+    fun movePage(pages: List<List<StartEntry>>, from: Int, to: Int): List<List<StartEntry>> {
+        if (from !in pages.indices || to !in pages.indices || from == to) return pages
+        return pages.toMutableList().also { it.add(to, it.removeAt(from)) }
+    }
+
     /** Pins [id] at the end of screen [page], unless it is pinned somewhere already. */
     fun pin(pages: List<List<StartEntry>>, id: String, page: Int): List<List<StartEntry>> {
         if (isPinned(pages, id)) return pages
@@ -52,7 +72,8 @@ object StartPages {
         val to = target.coerceIn(0, pages.lastIndex)
         val from = pages.indexOfFirst { page -> page.any { it.id == entryId } }
         if (from < 0 || from == to) return pages
-        val moved = pages[from].first { it.id == entryId }
+        // On another screen its cell may be taken: it goes where the flow puts it.
+        val moved = StartEntries.unplaced(pages[from].first { it.id == entryId })
         return pages.mapIndexed { index, entries ->
             when (index) {
                 from -> entries.filterNot { it.id == entryId }

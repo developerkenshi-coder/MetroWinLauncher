@@ -138,10 +138,12 @@ class LiveTileRepository(private val context: Context) {
         groupIds: Set<Long> = emptySet(),
         /** The albums the Photos tile takes its pictures from; empty: every album. */
         galleryAlbums: Set<String> = emptySet(),
+        /** Photos the user picked for the Photos tile; not null: these are the pictures, whatever the albums. */
+        galleryPhotos: List<Uri>? = null,
     ): LiveTileData {
         val events = if (LiveKind.Calendar in wanted) CalendarSearch(context).upcoming() else emptyList()
         return LiveTileData(
-        photos = if (LiveKind.Photos in wanted) photos(galleryAlbums) else emptyList(),
+        photos = if (LiveKind.Photos in wanted) (galleryPhotos?.let(::chosenPhotos) ?: photos(galleryAlbums)) else emptyList(),
         people = if (LiveKind.People in wanted) people() else emptyList(),
         nextEvent = events.firstOrNull(),
         events = events,
@@ -164,6 +166,16 @@ class LiveTileRepository(private val context: Context) {
 
     @Synchronized
     private fun photos(albums: Set<String>, limit: Int = 6): List<ImageBitmap> = recentPhotos(albums, limit)
+
+    /**
+     * The photos the user picked, as thumbnails, in a different order each time. One that was deleted or whose permission
+     * is gone is left out, so a tile with none left shows its icon. Needs no permission to read photos: the picker gave it.
+     */
+    @Synchronized
+    private fun chosenPhotos(uris: List<Uri>, limit: Int = 6): List<ImageBitmap> =
+        uris.shuffled().asSequence()
+            .mapNotNull { uri -> photoCache[uri] ?: thumbnail(uri, PHOTO_PX)?.asImageBitmap()?.also { photoCache[uri] = it } }
+            .take(limit).toList()
 
     /** The latest photos of one album of the phone ([bucket] is the id of the album), as thumbnails. */
     @Synchronized

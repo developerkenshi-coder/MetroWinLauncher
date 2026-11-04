@@ -107,6 +107,14 @@ fun StartThemePage(env: SettingsEnv) {
             }
         }
         ToggleSetting(
+            label = stringResource(R.string.theme_system_wallpaper),
+            checked = settings.systemWallpaperFollows,
+            onChange = { value -> env.onChange { it.copy(systemWallpaperFollows = value) } },
+            hint = stringResource(R.string.theme_system_wallpaper_hint),
+            tag = "theme:syswallpaper",
+            id = "theme.syswallpaper",
+        )
+        ToggleSetting(
             label = stringResource(R.string.theme_oled),
             checked = settings.oledMode,
             onChange = { value -> env.onChange { it.copy(oledMode = value) } },
@@ -217,6 +225,15 @@ fun StartThemePage(env: SettingsEnv) {
             enabled = settings.hasStartBackground,
             tag = "theme:parallax",
             id = "theme.parallax",
+        )
+        val opacities = listOf(100, 80, 60, 40)
+        DropdownSetting(
+            label = stringResource(R.string.theme_tile_opacity),
+            options = opacities.map { stringResource(if (it == 100) R.string.theme_tile_opaque else R.string.theme_tile_see_through, it) },
+            selected = opacities.indexOf(opacities.minBy { kotlin.math.abs(it - settings.tileOpacity) }),
+            onSelect = { i -> env.onChange { it.copy(tileOpacity = opacities[i]) } },
+            tag = "theme:tileopacity",
+            id = "theme.tileopacity",
         )
         ToggleSetting(
             label = stringResource(R.string.theme_panorama),
