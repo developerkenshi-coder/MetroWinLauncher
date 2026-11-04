@@ -30,7 +30,7 @@ object SectionReset {
             "searchToday", "searchWeb", "tipOfDay", "todayAlarm", "todayDate", "todayNear", "todayWeather",
         ),
         "Gestures" to setOf(
-            "animationSpeed", "doubleTapAction", "doubleTapApp", "edgeBackPan", "edgePull", "homeDoubleAction", "homeDoubleApp", "metroNavBar", "hideBarsInGames", "lockOverlay", "bankSafe", "bankSafeAdd", "bankSafeSkip", "antiBurnIn", "navHoldMs", "navSpacing", "tapHaptics", "tapSound",
+            "animationSpeed", "doubleTapAction", "doubleTapApp", "edgeBackPan", "edgePull", "homeDoubleAction", "homeDoubleApp", "metroNavBar", "hideBarsInGames", "gameAdd", "gameSkip", "lockOverlay", "bankSafe", "bankSafeAdd", "bankSafeSkip", "antiBurnIn", "navHoldMs", "navSpacing", "tapHaptics", "tapSound",
             "tiltStrength", "twoFingerDownAction", "twoFingerDownApp", "twoFingerUpAction", "twoFingerUpApp", "vibrationStrength",
         ),
         "Actions" to setOf(

@@ -61,8 +61,8 @@ class SafeModeTest {
         assertTrue("the section that holds the accessibility switches resets it", SectionReset.canReset("Gestures"))
     }
 
-    private fun windowOf(service: LockAccessibilityService, pkg: String) =
-        service.onAccessibilityEvent(AccessibilityEvent.obtain(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED).apply { packageName = pkg })
+    private fun windowOf(service: LockAccessibilityService, pkg: String, className: String? = null) =
+        service.onAccessibilityEvent(AccessibilityEvent.obtain(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED).apply { packageName = pkg; this.className = className })
 
     @Test
     fun theWindowsGoWhileABankIsInFrontAndComeBackWhenTheLauncherIs() {
@@ -74,7 +74,10 @@ class SafeModeTest {
         assertTrue(LockAccessibilityService.safe)
         windowOf(service, "com.android.systemui")
         assertTrue("the shade of Android over the bank does not end it", LockAccessibilityService.safe)
-        windowOf(service, "com.metrowin.launcher")
+        // A window the service draws itself (no activity) is not the launcher: the bank stays in front.
+        windowOf(service, "com.metrowin.launcher", "android.view.View")
+        assertTrue(LockAccessibilityService.safe)
+        windowOf(service, "com.metrowin.launcher", "com.metrowin.launcher.MainActivity")
         assertFalse(LockAccessibilityService.safe)
     }
 

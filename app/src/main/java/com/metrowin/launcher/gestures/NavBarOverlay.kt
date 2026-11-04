@@ -2,7 +2,11 @@ package com.metrowin.launcher.gestures
 
 import android.accessibilityservice.AccessibilityService
 import android.annotation.SuppressLint
+import android.app.KeyguardManager
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Color
@@ -18,6 +22,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import android.view.WindowManager
+import androidx.core.content.ContextCompat
 import com.metrowin.launcher.MainActivity
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.NavButtons
@@ -38,6 +43,25 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
     /** A game is in front: the buttons are slid away, and take no touch (see [GameBars]). */
     private var gameHidden = false
 
+    // The lock screen of Android is up: the buttons are out of sight and take no touch, so a tap can never reach it through them (Back and Home sent
+    // from here to the lock screen are what left the phone stuck until the screen was turned off and on).
+    private var locked = false
+    private var receiving = false
+    private val lockCheck = Runnable { checkLock() }
+    private val screen = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) = checkLock()
+    }
+
+    private fun checkLock() {
+        handler.removeCallbacks(lockCheck)
+        locked = service.getSystemService(KeyguardManager::class.java)?.isKeyguardLocked == true
+        val view = bar ?: return
+        view.visibility = if (locked) View.INVISIBLE else View.VISIBLE
+        (view.layoutParams as? WindowManager.LayoutParams)?.let { applyTouch(view, it) }
+        // Android says "unlocked" to a service some tenths of a second late: asked again until the lock screen is gone (only with the screen on).
+        if (locked && service.getSystemService(android.os.PowerManager::class.java)?.isInteractive == true) handler.postDelayed(lockCheck, LOCK_CHECK_MS)
+    }
+
     fun isShown() = bar != null
 
     /** Slides the buttons down out of the screen (or back), and leaves the window there but untouchable and clear while they are away. */
@@ -57,7 +81,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
     }
 
     private fun applyTouch(view: View, params: WindowManager.LayoutParams) {
-        val flags = if (gameHidden) params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE else params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
+        val flags = if (gameHidden || locked) params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE else params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
         if (flags == params.flags) return
         params.flags = flags
         runCatching { service.getSystemService(WindowManager::class.java).updateViewLayout(view, params) }
@@ -67,9 +91,9 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
         val fallback = (48 * service.resources.displayMetrics.density).toInt()
         // The height of the bar of the system, not more: a taller one would cover the bottom of the apps (the tabs of Reddit, for one).
         val real = barHeight(service)
-        // A little more than the bar, above and below it (see [bleedPx]): a strip of the screen left uncovered next to ours is far worse than
-        // a few pixels of an app under it.
-        return (if (real <= 0) fallback else real) + 2 * bleedPx()
+        // A little more than the bar below it, off the screen (see [bleedPx]), and not a pixel above it: the top edge is where the bar of the
+        // system starts, so the bottom bars of the apps (Reddit's, for one) are not covered.
+        return (if (real <= 0) fallback else real) + bleedPx()
     }
 
     private fun bleedPx() = (BLEED_DP * service.resources.displayMetrics.density).toInt()
@@ -108,6 +132,15 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
             bar = view
             attempts = 0
             view.visibility = View.VISIBLE
+            if (!receiving) {
+                ContextCompat.registerReceiver(
+                    service, screen,
+                    IntentFilter(Intent.ACTION_SCREEN_ON).apply { addAction(Intent.ACTION_SCREEN_OFF); addAction(Intent.ACTION_USER_PRESENT) },
+                    ContextCompat.RECEIVER_NOT_EXPORTED,
+                )
+                receiving = true
+            }
+            checkLock()
             // Created while a game is in front: it never shows.
             if (gameHidden) { view.alpha = 0f; params.flags = params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE; runCatching { windows.updateViewLayout(view, params) } }
         } else if (attempts < MAX_ATTEMPTS) {
@@ -126,8 +159,8 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
         val height = if (visible) heightPx() else 1
         if (params.height == height) return
         params.height = height
-        params.flags = if (visible && !gameHidden) params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv() else params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-        view.visibility = if (visible) View.VISIBLE else View.INVISIBLE
+        params.flags = if (visible && !gameHidden && !locked) params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv() else params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        view.visibility = if (visible && !locked) View.VISIBLE else View.INVISIBLE
         runCatching { service.getSystemService(WindowManager::class.java).updateViewLayout(view, params) }
     }
 
@@ -141,6 +174,8 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
 
     fun hide() {
         handler.removeCallbacksAndMessages(null)
+        if (receiving) runCatching { service.unregisterReceiver(screen) }
+        receiving = false
         val view = bar ?: return
         bar = null
         runCatching { service.getSystemService(WindowManager::class.java).removeViewImmediate(view) }
@@ -273,16 +308,30 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
         private const val RETRY_MS = 600L
         private const val BLEED_DP = 4
         private const val SLIDE_MS = 220L
+        private const val LOCK_CHECK_MS = 100L
 
         /** Whether the phone uses the three buttons (0), not the two-button bar (1) or the gestures (2). Where it is not told, the three buttons. */
         fun threeButtons(context: Context): Boolean =
             Settings.Secure.getInt(context.contentResolver, "navigation_mode", 0) == 0
 
+        /**
+         * The bar of the system is at a side of the screen (some phones put the three buttons there in landscape): ours would be drawn along
+         * the bottom edge anyway and cover the app for nothing, so it stays away until the phone is upright again.
+         */
+        fun onSide(context: Context): Boolean {
+            if (android.os.Build.VERSION.SDK_INT < 30) return false
+            val bar = context.getSystemService(WindowManager::class.java).currentWindowMetrics.windowInsets
+                .getInsetsIgnoringVisibility(android.view.WindowInsets.Type.navigationBars())
+            return bar.bottom == 0 && (bar.left > 0 || bar.right > 0)
+        }
+
         /** The height of the bar of the system, in pixels; 0 when the phone has none. */
         fun barHeight(context: Context): Int {
             if (android.os.Build.VERSION.SDK_INT >= 30) {
-                val real = context.getSystemService(WindowManager::class.java).currentWindowMetrics.windowInsets
-                    .getInsetsIgnoringVisibility(android.view.WindowInsets.Type.navigationBars()).bottom
+                // What the bar takes now, when it is there; what it would take (a little more on some phones) only when it is away.
+                val insets = context.getSystemService(WindowManager::class.java).currentWindowMetrics.windowInsets
+                val shown = insets.getInsets(android.view.WindowInsets.Type.navigationBars()).bottom
+                val real = if (shown > 0) shown else insets.getInsetsIgnoringVisibility(android.view.WindowInsets.Type.navigationBars()).bottom
                 if (real > 0) return real
             }
             val id = context.resources.getIdentifier("navigation_bar_height", "dimen", "android")

@@ -26,4 +26,51 @@ class GameBarsTest {
         assertFalse(SettingsCodec.decode(SettingsCodec.encode(off), LauncherSettings())!!.hideBarsInGames)
         assertEquals(true, SettingsCodec.decode(SettingsCodec.encode(LauncherSettings()), off)!!.hideBarsInGames)
     }
+
+    @Test
+    fun theUsersWordComesBeforeThePhones() {
+        // Added: a game though the phone does not say so. Skipped: not a game though it does. Neither: the phone decides.
+        assertTrue(GameApps.isGame("a", setOf("a"), emptySet()) { false })
+        assertFalse(GameApps.isGame("a", emptySet(), setOf("a")) { true })
+        assertTrue(GameApps.isGame("a", emptySet(), emptySet()) { true })
+        assertFalse(GameApps.isGame("a", emptySet(), emptySet()) { false })
+    }
+
+    @Test
+    fun theListsSurviveTheBackupAndAreClearedWithTheirPage() {
+        val lists = LauncherSettings(gameAdd = setOf("com.x.game"), gameSkip = setOf("com.y.app"))
+        assertEquals(lists, SettingsCodec.decode(SettingsCodec.encode(lists), LauncherSettings()))
+        val reset = com.metrowin.launcher.data.SectionReset.reset(lists, "Gestures")
+        assertTrue(reset.gameAdd.isEmpty() && reset.gameSkip.isEmpty())
+    }
+
+    @Test
+    fun aGameThatDoesNotSayItIsOneIsKnownByItsManifest() {
+        assertTrue(GameApps.isGameKey("com.google.android.gms.games.APP_ID"))
+        assertTrue(GameApps.isGameKey("unity.splash-mode"))
+        assertTrue(GameApps.isGameKey("com.epicgames.unreal.GameActivity.bUseExternalFilesDir"))
+        assertFalse(GameApps.isGameKey("com.google.android.gms.version"))
+        assertTrue(GameApps.isLandscapeOnly(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE))
+        assertTrue(GameApps.isLandscapeOnly(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE))
+        assertFalse(GameApps.isLandscapeOnly(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT))
+        // Free to turn (the default of most apps) and "sensor" are not landscape only.
+        assertFalse(GameApps.isLandscapeOnly(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED))
+        assertFalse(GameApps.isLandscapeOnly(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR))
+    }
+
+    @Test
+    fun theAssistantsOfTheMakersAndGooglePlayGamesSayAGameIsUp() {
+        assertTrue("com.vivo.gamecube" in GameApps.HELPERS)
+        assertTrue("com.google.android.play.games" in GameApps.HELPERS)
+        assertFalse("com.google.android.gms" in GameApps.HELPERS)
+    }
+
+    @Test
+    fun theFirstScreenOfAGameEngineIsAGame() {
+        assertTrue(GameApps.isGameActivity("com.unity3d.player.UnityPlayerActivity"))
+        assertTrue(GameApps.isGameActivity("com.pokemon.pokemontcgl.UnityPlayerActivity"))
+        assertTrue(GameApps.isGameActivity("com.epicgames.ue4.GameActivity"))
+        assertFalse(GameApps.isGameActivity("com.android.chrome.Main"))
+        assertFalse(GameApps.isGameActivity("com.example.MainActivity"))
+    }
 }

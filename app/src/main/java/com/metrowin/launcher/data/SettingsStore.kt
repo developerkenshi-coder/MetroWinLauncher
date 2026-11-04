@@ -441,6 +441,9 @@ data class LauncherSettings(
     val metroNavBar: Boolean = false,
     /** The Windows Phone status bar and buttons over the apps slide away while a game is in front, and come back with a swipe from their edge (needs the accessibility service). */
     val hideBarsInGames: Boolean = true,
+    /** Apps the user says are games (the bars slide away for them), and apps they say are not, whatever the phone says (see GameApps). */
+    val gameAdd: Set<String> = emptySet(),
+    val gameSkip: Set<String> = emptySet(),
     /** The Metro lock screen shows over the lock screen of Android when the screen comes on (needs the accessibility service). */
     val lockOverlay: Boolean = true,
     /** While a bank (by its name, or an app of [bankSafeAdd] and not one of [bankSafeSkip]) is in front, no window of the launcher is over the apps (see SafeMode). */

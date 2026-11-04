@@ -21,8 +21,49 @@ object GameApps {
     fun isGame(category: Int, flags: Int): Boolean =
         category == ApplicationInfo.CATEGORY_GAME || flags and ApplicationInfo.FLAG_IS_GAME != 0
 
+    /** Packages whose window appears over a game the phone knows: the assistants of the makers, and Google Play Games. Their window says a game is in front. */
+    val HELPERS = setOf(
+        "com.vivo.gamecube", "com.samsung.android.game.gametools", "com.miui.gamebooster", "com.oplus.games", "com.coloros.gamespaceui",
+        "com.huawei.gameassistant", "com.asus.gamewidget", "com.google.android.play.games",
+    )
+
+    /** The user's word comes first: an app they added is a game, one they took out is not; any other is a game when [byPhone] says so. */
+    inline fun isGame(packageName: String, added: Set<String>, skipped: Set<String>, byPhone: () -> Boolean): Boolean =
+        if (packageName in added) true else if (packageName in skipped) false else byPhone()
+
     fun isGame(packages: PackageManager, packageName: String): Boolean =
-        runCatching { packages.getApplicationInfo(packageName, 0).let { isGame(it.category, it.flags) } }.getOrDefault(false)
+        runCatching { packages.getApplicationInfo(packageName, 0).let { isGame(it.category, it.flags) } }.getOrDefault(false) ||
+            looksLikeGame(packages, packageName)
+
+    /**
+     * Many games never say what they are (no category, no flag). Their manifests do: they are signed in to Google Play Games, they carry the
+     * marks of a game engine, or their first screen is landscape only. A wrong guess costs little (the bars come back with a swipe, and the
+     * app can be taken out of the list in the settings); a game that is missed keeps the bars over it.
+     */
+    fun looksLikeGame(packages: PackageManager, packageName: String): Boolean = runCatching {
+        val keys = packages.getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData?.keySet().orEmpty()
+        if (keys.any(::isGameKey)) return@runCatching true
+        val launcher = packages.getLaunchIntentForPackage(packageName)?.component ?: return@runCatching false
+        val screen = packages.getActivityInfo(launcher, PackageManager.GET_META_DATA)
+        isGameActivity(screen.name) || screen.metaData?.keySet().orEmpty().any(::isGameKey) || isLandscapeOnly(screen.screenOrientation)
+    }.getOrDefault(false)
+
+    /** The first screen is the one of a game engine (Unity, Unreal): the name of the class says it, whoever made the game. */
+    fun isGameActivity(className: String): Boolean =
+        className.endsWith("UnityPlayerActivity") || className.startsWith("com.unity3d.player.") || className.startsWith("com.epicgames.ue4.") ||
+            className.startsWith("com.epicgames.unreal.")
+
+    /** A metadata key of the manifest that only games have: Google Play Games, Unity, Unreal. */
+    fun isGameKey(key: String): Boolean =
+        key == "com.google.android.gms.games.APP_ID" || key.startsWith("unity.") || key.startsWith("com.epicgames.unreal") || key == "com.google.android.gms.games.unityplugin"
+
+    /** The orientation an activity asks for is always landscape: [android.content.pm.ActivityInfo]'s LANDSCAPE, REVERSE, SENSOR and USER landscape. */
+    fun isLandscapeOnly(screenOrientation: Int): Boolean = screenOrientation in LANDSCAPE_ONLY
+
+    private val LANDSCAPE_ONLY = setOf(
+        android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE,
+        android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE, android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE,
+    )
 }
 
 /**

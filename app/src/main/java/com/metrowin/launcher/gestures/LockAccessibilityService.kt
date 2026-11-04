@@ -78,6 +78,10 @@ class LockAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val pkg = event.packageName?.toString() ?: return
+        // The windows this service draws (the bars, the strips at the edges, the lock screen) are windows of this package too, and each one that
+        // comes or goes sends this event: only a screen of the launcher (an activity) is "back at the launcher", or the bars of a game would be
+        // taken away by the strips that call them back.
+        if (pkg == packageName && event.className?.toString()?.endsWith("Activity") != true) return
         // Back at the launcher: the app that was in front before is not any more, and what it posts now has not been read.
         if (pkg == packageName) {
             NotificationHub.foregroundPackage = null
@@ -86,6 +90,13 @@ class LockAccessibilityService : AccessibilityService() {
             return
         }
         if (pkg in notApps) return
+        lockScreen.appCameOver()
+        // The overlay a phone shows over a game it knows (vivo's Game Cube, Samsung's Game Tools, Google Play Games) comes just after the game and
+        // would take its place as the app in front: it says a game is up, and is not an app that came to the front.
+        if (pkg in GameApps.HELPERS) {
+            syncGame(pkg)
+            return
+        }
         syncGame(pkg)
         // A bank (or an app the user listed) in front: the windows of the launcher over it are taken away until it is left.
         setSafe(SafeMode.isSensitive(pkg, safeSettings))
@@ -101,7 +112,8 @@ class LockAccessibilityService : AccessibilityService() {
      * is asked of the package manager once, and remembered.
      */
     internal fun syncGame(pkg: String?) {
-        val game = pkg != null && SettingsStore(this).hideBarsInGamesOn() && gamePackages.getOrPut(pkg) { GameApps.isGame(packageManager, pkg) }
+        val game = pkg != null && SettingsStore(this).hideBarsInGamesOn() &&
+            GameApps.isGame(pkg, safeSettings.gameAdd, safeSettings.gameSkip) { pkg in GameApps.HELPERS || gamePackages.getOrPut(pkg) { GameApps.isGame(packageManager, pkg) } }
         gameBars.set(game)
         NotificationHub.edgeChanged()
     }
@@ -132,7 +144,7 @@ class LockAccessibilityService : AccessibilityService() {
         fun syncNavBar() {
             val service = instance ?: return
             val store = SettingsStore(service)
-            if (!safe && store.metroNavBarOn() && NavBarOverlay.threeButtons(service)) service.navBar.show(store.navHoldMs(), store.navSpacing())
+            if (!safe && store.metroNavBarOn() && NavBarOverlay.threeButtons(service) && !NavBarOverlay.onSide(service)) service.navBar.show(store.navHoldMs(), store.navSpacing())
             else service.navBar.hide()
             service.gameBars.refresh()
         }

@@ -405,15 +405,6 @@
             </intent-filter>
         </service>
 
-        <!-- Takes the lock screen of Android away after the Metro one is swiped up (the fingerprint is read there). -->
-        <activity
-            android:name=".gestures.UnlockActivity"
-            android:exported="false"
-            android:excludeFromRecents="true"
-            android:noHistory="true"
-            android:showWhenLocked="true"
-            android:taskAffinity=""
-            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <!-- The Metro Mail app -->
         <activity

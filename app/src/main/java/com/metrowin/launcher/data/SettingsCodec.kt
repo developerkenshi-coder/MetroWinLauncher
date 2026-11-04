@@ -130,6 +130,8 @@ object SettingsCodec {
         put("edgeActionCenter", s.edgeActionCenter)
         put("metroNavBar", s.metroNavBar)
         put("hideBarsInGames", s.hideBarsInGames)
+        put("gameAdd", JSONArray(s.gameAdd.sorted()))
+        put("gameSkip", JSONArray(s.gameSkip.sorted()))
         put("lockOverlay", s.lockOverlay)
         put("bankSafe", s.bankSafe)
         put("bankSafeAdd", JSONArray(s.bankSafeAdd.sorted()))
@@ -376,6 +378,8 @@ object SettingsCodec {
             edgeActionCenter = o.optBoolean("edgeActionCenter", base.edgeActionCenter),
             metroNavBar = o.optBoolean("metroNavBar", base.metroNavBar),
             hideBarsInGames = o.optBoolean("hideBarsInGames", base.hideBarsInGames),
+            gameAdd = strings("gameAdd", base.gameAdd).toSet(),
+            gameSkip = strings("gameSkip", base.gameSkip).toSet(),
             lockOverlay = o.optBoolean("lockOverlay", base.lockOverlay),
             bankSafe = o.optBoolean("bankSafe", base.bankSafe),
             bankSafeAdd = strings("bankSafeAdd", base.bankSafeAdd).toSet(),

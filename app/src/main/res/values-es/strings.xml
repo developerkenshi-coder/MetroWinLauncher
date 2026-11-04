@@ -2270,4 +2270,6 @@ en primer plano %3$s · en segundo plano %4$s
     <string name="access_font_hint">El launcher trae veinte fuentes y puede usarse la propia (.ttf u .otf). La fuente del teléfono, si está activada, tiene prioridad.</string>
     <string name="access_font_sample">El veloz murciélago hindú comía feliz cardillo y kiwi 0123456789</string>
     <string name="access_font_failed">Ese archivo no es una fuente que el teléfono pueda leer</string>
+    <string name="gest_game_apps">Juegos para los que las barras se deslizan</string>
+    <string name="gest_game_apps_hint">Se listan los juegos que conoce el teléfono. Un juego no reconocido (las barras se quedan encima): búscalo y actívalo. Uno equivocado: desactívalo.</string>
 </resources>

@@ -2253,4 +2253,6 @@ in front %3$s · in the background %4$s
     <string name="access_font_hint">Twenty fonts come with the launcher, and you can bring your own (.ttf or .otf). The font of the phone, when it is on, comes before this one.</string>
     <string name="access_font_sample">The quick brown fox jumps over the lazy dog 0123456789</string>
     <string name="access_font_failed">That file is not a font the phone can read</string>
+    <string name="gest_game_apps">Games the bars slide away for</string>
+    <string name="gest_game_apps_hint">The games the phone knows are listed. A game that is not recognised (the bars stay over it): search for it and switch it on. A wrong one: switch it off.</string>
 </resources>

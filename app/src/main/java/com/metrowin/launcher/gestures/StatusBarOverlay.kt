@@ -58,7 +58,9 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
 
     private val screen = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            watch(intent.action == Intent.ACTION_SCREEN_ON)
+            // Only the screen going off stops it: "user present" (the unlock) comes after "screen on" and must not stop it, or the clock,
+            // the battery and the notifications of the bar stood still for the whole time the phone was in use.
+            watch(shouldWatch(intent.action))
             checkLock()
         }
     }
@@ -209,10 +211,13 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
         }
     }
 
-    private companion object {
-        const val MIN_DP = 24
-        const val HIDE_DELAY_MS = 700L
-        const val LOCK_CHECK_MS = 100L
-        const val SLIDE_MS = 220L
+    internal companion object {
+        /** The bar reads the phone while the screen is on: everything but the screen going off keeps it reading. */
+        fun shouldWatch(action: String?): Boolean = action != Intent.ACTION_SCREEN_OFF
+
+        private const val MIN_DP = 24
+        private const val HIDE_DELAY_MS = 700L
+        private const val LOCK_CHECK_MS = 100L
+        private const val SLIDE_MS = 220L
     }
 }

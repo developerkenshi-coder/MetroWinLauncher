@@ -75,6 +75,7 @@ import com.metrowin.launcher.notifications.NotificationHub
 import androidx.compose.runtime.collectAsState
 import kotlinx.coroutines.delay
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 
 /**
  * The room the Windows Phone status bar takes at the top, 0 while it is not shown. [topBarsPadding] leaves this much room, so that
@@ -165,11 +166,13 @@ fun MetroStatusBar(
     }
     // The minute is also told by the phone: a pause in the coroutine's clock (the phone asleep) or a change of the time or the zone does not leave it wrong.
     val clockChange = rememberBroadcast(Intent.ACTION_TIME_TICK, Intent.ACTION_TIME_CHANGED, Intent.ACTION_TIMEZONE_CHANGED)
-    val clock by produceState(LocalTime.now(), clockChange) {
+    val clock by produceState(LocalTime.now().truncatedTo(ChronoUnit.MINUTES), clockChange) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            // Every second, and the state only changes with the minute: a coroutine that wakes early or late, a clock that jumps (network time)
+            // or a minute broadcast that is late never leave it wrong for more than a second.
             while (true) {
-                value = LocalTime.now()
-                delay(60_000L - System.currentTimeMillis() % 60_000L)
+                value = LocalTime.now().truncatedTo(ChronoUnit.MINUTES)
+                delay(1_000L - System.currentTimeMillis() % 1_000L)
             }
         }
     }

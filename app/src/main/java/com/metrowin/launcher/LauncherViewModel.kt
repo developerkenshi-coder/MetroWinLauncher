@@ -765,7 +765,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
         // The bars that slide away in games: a switch changed while a game is in front takes effect at once.
         viewModelScope.launch {
-            _settings.map { it.hideBarsInGames }.distinctUntilChanged().collect { LockAccessibilityService.gameSettingChanged() }
+            _settings.map { Triple(it.hideBarsInGames, it.gameAdd, it.gameSkip) }.distinctUntilChanged().collect { LockAccessibilityService.gameSettingChanged() }
         }
         // A notification that arrives while the launcher is on screen gets a banner. What was up when the launcher came back, and
         // what the service reads again at that moment, does not: it is old news.

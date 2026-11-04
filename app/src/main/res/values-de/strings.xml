@@ -2253,4 +2253,6 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="access_font_hint">Der Launcher bringt zwanzig Schriftarten mit; eine eigene Datei (.ttf oder .otf) geht auch. Die Schriftart des Handys hat, wenn aktiv, Vorrang.</string>
     <string name="access_font_sample">Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich 0123456789</string>
     <string name="access_font_failed">Diese Datei ist keine lesbare Schriftart</string>
+    <string name="gest_game_apps">Spiele, bei denen die Leisten weggleiten</string>
+    <string name="gest_game_apps_hint">Aufgeführt sind die Spiele, die das Handy kennt. Ein nicht erkanntes Spiel (die Leisten bleiben darüber): suchen und einschalten. Ein falsches: ausschalten.</string>
 </resources>

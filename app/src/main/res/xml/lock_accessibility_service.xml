@@ -9,4 +9,4 @@
     android:accessibilityFeedbackType="feedbackGeneric"
     android:canRetrieveWindowContent="false"
     android:description="@string/lock_service_description"
-    android:notificationTimeout="500" />
+    android:notificationTimeout="0" />

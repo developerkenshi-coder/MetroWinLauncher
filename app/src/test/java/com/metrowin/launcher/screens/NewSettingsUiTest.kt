@@ -272,6 +272,24 @@ class NewSettingsUiTest : ScreenshotBase() {
     }
 
     @Test
+    fun aGameThePhoneDoesNotKnowIsAddedByHandAndAWrongOneTakenOut() {
+        val known = AppItem("app:known", "Known Game", Launch.Action("x"), packageName = "com.example.known", category = com.metrowin.launcher.model.AppCategory.Game)
+        open(SettingsSection.Gestures, apps = listOf(chat, known))
+        // The game the phone knows is listed and on; the chat is not listed until it is searched.
+        compose.onNodeWithTag("gestures:gameapps:com.example.known").assertExists()
+        compose.onAllNodesWithTag("gestures:gameapps:com.example.chat").assertCountEquals(0)
+        scrollIntoView("gestures:gameapps:query", topMargin = 0.2f)
+        compose.onNode(hasSetTextAction() and hasAnyAncestor(hasTestTag("gestures:gameapps:query"))).performTextInput("chat")
+        compose.waitForIdle()
+        advance(300)
+        tap("gestures:gameapps:com.example.chat")
+        assertEquals(setOf("com.example.chat"), current.gameAdd)
+        tap("gestures:gameapps:com.example.chat")
+        assertEquals(emptySet<String>(), current.gameAdd)
+        assertEquals(setOf("com.example.chat"), current.gameSkip)
+    }
+
+    @Test
     fun theBanksAreListedAndAnAppCanBeTakenOutOrAdded() {
         val bank = AppItem("app:bank", "My Bank", Launch.Action("x"), packageName = "es.bbva.contigo")
         open(SettingsSection.Gestures, apps = listOf(chat, bank))

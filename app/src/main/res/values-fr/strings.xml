@@ -2270,4 +2270,6 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="access_font_hint">Le lanceur propose vingt polices, et on peut apporter la sienne (.ttf ou .otf). La police du téléphone, si elle est activée, passe avant.</string>
     <string name="access_font_sample">Portez ce vieux whisky au juge blond qui fume 0123456789</string>
     <string name="access_font_failed">Ce fichier n\'est pas une police lisible</string>
+    <string name="gest_game_apps">Jeux pour lesquels les barres glissent</string>
+    <string name="gest_game_apps_hint">Les jeux connus du téléphone sont listés. Un jeu non reconnu (les barres restent dessus) : cherchez-le et activez-le. Un jeu à tort : désactivez-le.</string>
 </resources>

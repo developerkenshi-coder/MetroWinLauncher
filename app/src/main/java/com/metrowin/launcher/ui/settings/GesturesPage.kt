@@ -98,6 +98,7 @@ fun GesturesPage(env: SettingsEnv) {
                 onChange = { value -> env.onChange { it.copy(hideBarsInGames = value) } },
                 hint = stringResource(R.string.gest_game_bars_hint), tag = "gestures:gamebars", id = "gest.gamebars",
             )
+            if (settings.hideBarsInGames) GameAppsSetting(env)
             StepperSetting(
                 label = stringResource(R.string.gest_navbar_spacing),
                 value = "${settings.navSpacing}%",

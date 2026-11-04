@@ -130,6 +130,7 @@ object SettingsIndex {
         // --- icons & themes
         e("icons.shape", Icons, R.string.icons_shape, "shape", "round", "circle", "square", "squircle", "forma", "rotonde", "cerchio", "quadrate"),
         e("icons.tilecolors", Icons, R.string.icons_tile_colors, "colour", "color", "tile", "icon", "colore", "riquadro", "icona", "dominante"),
+        e("gest.gameapps", Gestures, R.string.gest_game_apps, "game", "games", "add", "list", "not recognised", "gioco", "giochi", "aggiungi", "elenco", "non riconosciuto"),
         e("gest.gamebars", Gestures, R.string.gest_game_bars, "game", "games", "bars", "hide", "status bar", "navigation", "gioco", "giochi", "barre", "nascondi", "barra di stato", "navigazione"),
         e("gest.navspacing", Gestures, R.string.gest_navbar_spacing, "navigation", "bar", "spacing", "distance", "buttons", "barra", "distanza", "tasti", "spaziatura"),
         e("gest.navbarhold", Gestures, R.string.gest_navbar_hold, "navigation", "bar", "hold", "recent", "long", "barra", "tieni", "recenti", "lunga"),

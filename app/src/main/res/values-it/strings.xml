@@ -2063,7 +2063,7 @@
     <string name="ds_time">tempo</string>
     <string name="ds_battery">batteria</string>
     <string name="ds_network">rete</string>
-    <string name="ds_need_access">Per mostrare come viene usato il telefono, Android chiede di attivare l’“accesso ai dati di utilizzo” per il launcher.</string>
+    <string name="ds_need_access">Per mostrare come viene usato il telefono, Android chiede di attivare l’accesso ai dati di utilizzo per il launcher.</string>
     <string name="ds_today">oggi</string>
     <string name="ds_7days">7 giorni</string>
     <string name="ds_30days">30 giorni</string>
@@ -2263,4 +2263,6 @@ in primo piano %3$s · in background %4$s
     <string name="access_font_hint">Il launcher ha venti caratteri e puoi usarne uno tuo (.ttf o .otf). Il carattere del telefono, se attivo, ha la precedenza.</string>
     <string name="access_font_sample">Ma la volpe, col suo balzo, ha raggiunto il quieto Fido 0123456789</string>
     <string name="access_font_failed">Quel file non è un carattere leggibile dal telefono</string>
+    <string name="gest_game_apps">Giochi per cui le barre se ne vanno</string>
+    <string name="gest_game_apps_hint">Sono elencati i giochi che il telefono conosce. Un gioco non riconosciuto (le barre restano sopra): cercalo e attivalo. Uno sbagliato: disattivalo.</string>
 </resources>

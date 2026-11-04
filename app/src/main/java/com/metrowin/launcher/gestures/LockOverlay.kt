@@ -234,12 +234,18 @@ internal class LockOverlay(private val service: AccessibilityService) {
             Size(metrics.widthPixels, metrics.heightPixels)
         }
 
-    /** Swiped up: Android is asked to take its own lock screen away (that is where the PIN or the fingerprint is read), then ours goes. */
-    private fun unlock() {
-        runCatching {
-            service.startActivity(Intent(service, UnlockActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION))
-        }
-        hide()
+    /**
+     * Swiped up: ours goes and the lock screen of Android is there, untouched (its PIN or its fingerprint is read there). Nothing is asked of
+     * Android: no screen is opened to take its lock away, as that could leave the two fighting over the screen.
+     */
+    private fun unlock() = hide()
+
+    /**
+     * An app came on screen over the lock screen of Android (an alarm, the camera, a call of another app): ours must not be over it, whatever
+     * the lock says. Only with the screen on: a window that changes with the screen off is not on screen.
+     */
+    fun appCameOver() {
+        if (shown != null && service.getSystemService(android.os.PowerManager::class.java)?.isInteractive == true) hide()
     }
 
     /** The phone has a fingerprint (or other biometric) saved: the lock screen says it can be used. */
