@@ -70,6 +70,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.core.graphics.drawable.toBitmap
@@ -198,6 +199,7 @@ fun MetroLockScreen(
     val hop = with(LocalDensity.current) { HOP.toPx() }
     val time = Instant.ofEpochMilli(info.nowMillis).atZone(zone)
     val currentUnlocked by rememberUpdatedState(onUnlocked)
+    val unlockLabel = stringResource(R.string.a11y_unlock)
     LaunchedEffect(unlockSignal) {
         if (unlockSignal > 0) {
             // Android has already let go of its lock: this one leaves faster than a swipe does it, as it is in the way.
@@ -211,6 +213,7 @@ fun MetroLockScreen(
             .fillMaxSize()
             .onSizeChanged { height = it.height.coerceAtLeast(1) }
             .testTag("lock:screen")
+            .then(if (onUnlock == null) Modifier else Modifier.semantics { contentDescription = unlockLabel; onClick(label = unlockLabel) { scope.launch { lift.animateTo(-height.toFloat(), metroTween(durationMillis = 220)); onUnlock() }; true } })
             // The gestures come before the layer that moves the screen: the finger is followed in the coordinates of the
             // window, not of a screen that is itself moving under it.
             .then(
@@ -434,15 +437,20 @@ private fun counter(count: Int) = if (count > 99) "99+" else count.toString()
 @Composable
 private fun QuickBadge(badge: QuickBadge, iconSize: Dp, textSize: androidx.compose.ui.unit.TextUnit, countPadding: Modifier) {
     Row(Modifier.testTag("lock:badge:${badge.packageName}"), verticalAlignment = Alignment.CenterVertically) {
+        val packages = LocalContext.current.packageManager
+        // The name of the app, so that the icon says whose news it is.
+        val name = remember(badge.packageName) {
+            runCatching { packages.getApplicationLabel(packages.getApplicationInfo(badge.packageName, 0)).toString() }.getOrNull()
+        }
         val icon = badge.icon
         if (icon != null) {
             // The small icon of a notification is a shape on nothing: drawn white, as the status bar draws it.
             Image(
-                icon.asImageBitmap(), contentDescription = null, colorFilter = ColorFilter.tint(Color.White),
+                icon.asImageBitmap(), contentDescription = name, colorFilter = ColorFilter.tint(Color.White),
                 modifier = Modifier.size(iconSize).alpha(if (badge.count > 0) 1f else 0.5f).testTag("lock:badge:${badge.packageName}:icon"),
             )
         } else {
-            PackageIcon(badge.packageName, iconSize, Modifier.alpha(if (badge.count > 0) 1f else 0.5f))
+            PackageIcon(badge.packageName, iconSize, Modifier.alpha(if (badge.count > 0) 1f else 0.5f), name)
         }
         if (badge.count > 0) {
             MetroText(counter(badge.count), size = textSize, color = Color.White, maxLines = 1, modifier = countPadding.testTag("lock:badge:${badge.packageName}:count"))
@@ -452,7 +460,7 @@ private fun QuickBadge(badge: QuickBadge, iconSize: Dp, textSize: androidx.compo
 
 /** The icon of an app, read once (off the main thread) and kept; nothing while it is not there. */
 @Composable
-private fun PackageIcon(packageName: String, size: Dp, modifier: Modifier = Modifier) {
+private fun PackageIcon(packageName: String, size: Dp, modifier: Modifier = Modifier, description: String? = null) {
     val context = LocalContext.current
     val icon by produceState<ImageBitmap?>(null, packageName) {
         value = withContext(Dispatchers.IO) {
@@ -460,7 +468,7 @@ private fun PackageIcon(packageName: String, size: Dp, modifier: Modifier = Modi
         }
     }
     Box(modifier.size(size)) {
-        icon?.let { Image(it, contentDescription = null, modifier = Modifier.fillMaxSize()) }
+        icon?.let { Image(it, contentDescription = description, modifier = Modifier.fillMaxSize()) }
     }
 }
 
@@ -525,7 +533,7 @@ private enum class Transport { Previous, Play, Pause, Next }
 @Composable
 private fun TransportButton(kind: Transport, description: String, tag: String, onClick: () -> Unit) {
     Box(
-        Modifier.size(44.dp).testTag(tag).semantics { contentDescription = description }.metroPress(onClick = onClick),
+        Modifier.size(48.dp).testTag(tag).semantics { contentDescription = description }.metroPress(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(Modifier.size(22.dp)) {

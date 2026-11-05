@@ -115,6 +115,20 @@ class SettingsIndexTest : ScreenshotBase() {
     }
 
     @Test
+    fun theOtherLanguagesFindSettingsByTheirOwnWords() {
+        // Words that are in no title and in no keyword of the code: they come from the words of the section.
+        for ((locale, word, section) in listOf(
+            Triple(Locale.GERMANY, "Bildschirmschoner", SettingsSection.Lock),
+            Triple(Locale("es"), "linterna", SettingsSection.Actions),
+            Triple(Locale.FRANCE, "dictée", SettingsSection.Voice),
+            Triple(Locale("pt", "BR"), "otimização", SettingsSection.Battery),
+        )) {
+            val hits = SettingsIndex.searchIndex(localized(locale)).search(word)
+            assertTrue("$locale $word", hits.any { it.section == section })
+        }
+    }
+
+    @Test
     fun aMistakeInTheWordStillFindsTheSetting() {
         val index = SettingsIndex.searchIndex(localized(Locale.US))
         assertTrue(index.search("parallx").any { it.setting?.id == "theme.parallax" })

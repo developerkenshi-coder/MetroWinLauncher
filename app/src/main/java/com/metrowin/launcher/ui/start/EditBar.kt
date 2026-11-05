@@ -245,7 +245,7 @@ private fun MoreButton(labels: Boolean, onClick: () -> Unit) {
     val tint = if (labels) onAccent() else LocalMetroColors.current.foreground
     Box(
         Modifier
-            .size(46.dp)
+            .size(48.dp)
             .testTag("edit:more")
             .semantics { contentDescription = description }
             .metroPress(onClick = onClick)
@@ -267,7 +267,7 @@ private fun AddButton(onClick: () -> Unit) {
     val description = stringResource(R.string.edit_add)
     Box(
         Modifier
-            .size(46.dp)
+            .size(48.dp)
             .testTag("edit:add")
             .semantics { contentDescription = description }
             .metroPress(onClick = onClick)
@@ -283,7 +283,7 @@ private fun FolderButton(onClick: () -> Unit) {
     val description = stringResource(R.string.edit_folder)
     Box(
         Modifier
-            .size(46.dp)
+            .size(48.dp)
             .testTag("edit:folder")
             .semantics { contentDescription = description }
             .metroPress(onClick = onClick)
@@ -300,7 +300,7 @@ private fun SelectManyButton(onClick: () -> Unit) {
     val tint = LocalMetroColors.current.foreground
     Box(
         Modifier
-            .size(46.dp)
+            .size(48.dp)
             .testTag("edit:select")
             .semantics { contentDescription = description }
             .metroPress(onClick = onClick)
@@ -325,7 +325,7 @@ private fun GroupButton(onClick: () -> Unit) {
     val tint = LocalMetroColors.current.foreground
     Box(
         Modifier
-            .size(46.dp)
+            .size(48.dp)
             .testTag("edit:group")
             .semantics { contentDescription = description }
             .metroPress(onClick = onClick)
@@ -356,7 +356,7 @@ private fun SizeButton(size: TileSize, selected: Boolean, onClick: () -> Unit) {
     )
     Box(
         Modifier
-            .size(46.dp)
+            .size(48.dp)
             .testTag("edit:size:${size.name}")
             .semantics { contentDescription = description }
             .metroPress(onClick = onClick)
@@ -383,7 +383,7 @@ private fun ArrowButton(left: Boolean, description: String, enabled: Boolean, ta
     val color = if (enabled) LocalMetroColors.current.foreground else LocalMetroColors.current.inactive
     Box(
         Modifier
-            .size(40.dp)
+            .size(48.dp)
             .testTag(tag)
             .semantics { contentDescription = description }
             .then(if (enabled) Modifier.metroPress(onClick = onClick) else Modifier),

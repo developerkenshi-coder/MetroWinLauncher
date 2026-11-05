@@ -31,7 +31,7 @@ import com.metrowin.launcher.ui.settings.SettingsSection.BugReport
 
 /**
  * One setting of the launcher, as the index knows it: the [section] it lives in, the [title] it has on its page and other words
- * (Italian and English) that find it. The [id] is what the control on the page says it is (see [settingAnchor]), which is how the
+ * (Italian and English; the other languages have theirs per section, see [SettingsSection.words]) that find it. The [id] is what the control on the page says it is (see [settingAnchor]), which is how the
  * search takes you to it.
  */
 class SettingEntry(
@@ -327,6 +327,9 @@ object SettingsIndex {
 
     fun of(section: SettingsSection): List<SettingEntry> = entries.filter { it.section == section }
 
+    /** The words of the section in the language of the phone: the keywords written in the code are only English and Italian. */
+    private fun words(context: Context, section: SettingsSection) = context.getString(section.words).split(',').map { it.trim() }.filter { it.isNotEmpty() }
+
     /**
      * An index to search the settings (and the sections themselves) in the language of the phone. A setting is found by its name,
      * and less strongly by its keywords and by the name of its section ("gestures" lists the gestures); a section by its name and
@@ -335,11 +338,11 @@ object SettingsIndex {
     fun searchIndex(context: Context): SearchIndex<SettingHit> {
         val rows = buildList {
             SettingsSection.entries.forEach { section ->
-                add(SearchEntry(SettingHit(section, null), context.getString(section.title), listOf(context.getString(section.description), context.getString(section.group.title))))
+                add(SearchEntry(SettingHit(section, null), context.getString(section.title), listOf(context.getString(section.description), context.getString(section.group.title)) + words(context, section)))
             }
             entries.forEach { entry ->
                 val place = context.getString(entry.section.title)
-                add(SearchEntry(SettingHit(entry.section, entry), context.getString(entry.title), entry.keywords + place, boost = 0))
+                add(SearchEntry(SettingHit(entry.section, entry), context.getString(entry.title), entry.keywords + place + words(context, entry.section), boost = 0))
             }
         }
         return SearchIndex(rows, keywordPrefixFrom = 3)

@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
@@ -95,7 +96,7 @@ fun SettingHint(
 /** A heading that groups settings inside a page. */
 @Composable
 fun SettingHeading(text: String, modifier: Modifier = Modifier) {
-    MetroText(text, size = 26.sp, modifier = modifier)
+    MetroText(text, size = 26.sp, modifier = modifier.semantics { heading() })
 }
 
 /** The Windows Phone toggle with, optionally, a line under it that says what it does. */
@@ -237,8 +238,8 @@ fun StepperSetting(
 private fun StepButton(symbol: String, description: String, enabled: Boolean, onClick: () -> Unit, tag: String?) {
     Box(
         Modifier
-            .size(44.dp)
-            .semantics { contentDescription = description }
+            .size(48.dp)
+            .semantics { contentDescription = description; if (!enabled) disabled() }
             .then(if (tag != null) Modifier.testTag(tag) else Modifier)
             .alpha(if (enabled) 1f else 0.35f)
             .then(if (enabled) Modifier.metroPress(onClick = onClick) else Modifier)

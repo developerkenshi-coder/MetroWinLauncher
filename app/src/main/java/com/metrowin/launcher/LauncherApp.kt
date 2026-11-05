@@ -2250,7 +2250,7 @@ fun LauncherApp(vm: LauncherViewModel) {
 
                 // With the bar over the apps on (it is on the launcher as well, without a background) this one would be a second copy under it.
                 if (settings.metroStatusBar && !(settings.metroStatusBarOverApps && lockServiceEnabled)) {
-                    MetroStatusBar(battery, Modifier.align(Alignment.TopStart), hidden = StatusItem.hiddenIds(settings.statusBarHidden))
+                    MetroStatusBar(battery, Modifier.align(Alignment.TopStart), hidden = StatusItem.hiddenIds(settings.statusBarHidden), onOpenActionCenter = panel::open)
                 }
 
                 if (tutorialVisible) {

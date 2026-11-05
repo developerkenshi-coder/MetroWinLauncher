@@ -52,6 +52,17 @@ object ColorMath {
         return 0.2126f * r + 0.7152f * g + 0.0722f * b
     }
 
+    /** WCAG contrast ratio of two opaque colors, 1..21; 4.5 is the least for text of normal size. */
+    fun contrast(a: Color, b: Color): Float {
+        fun linear(v: Float) = if (v <= 0.04045f) v / 12.92f else Math.pow(((v + 0.055f) / 1.055f).toDouble(), 2.4).toFloat()
+        fun lum(c: Color) = 0.2126f * linear(c.red) + 0.7152f * linear(c.green) + 0.0722f * linear(c.blue)
+        val (hi, lo) = lum(a).let { x -> lum(b).let { y -> max(x, y) to min(x, y) } }
+        return (hi + 0.05f) / (lo + 0.05f)
+    }
+
+    /** Black or white, whichever reads better on [background]: at least 4.5:1 on any color. */
+    fun inkOn(background: Color): Color = if (contrast(Color.White, background) >= contrast(Color.Black, background)) Color.White else Color.Black
+
     /** [color] with its hue turned by [degrees]. */
     fun rotateHue(color: Color, degrees: Float): Color {
         val hsv = argbToHsv(color.toArgbInt())

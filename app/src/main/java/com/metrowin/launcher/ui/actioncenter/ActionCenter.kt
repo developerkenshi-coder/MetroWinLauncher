@@ -71,6 +71,8 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.dismiss
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.layout.layout
@@ -706,7 +708,7 @@ private fun ExpandChevron(expanded: Boolean, onClick: () -> Unit) {
     val color = LocalMetroColors.current.foreground
     // The arrow turns over as the part it opens comes out.
     val turn by animateFloatAsState(if (expanded) 1f else 0f, metroTween(durationMillis = 240, easing = Motion.Decelerate), label = "chevron")
-    Box(Modifier.size(44.dp).metroPress(onClick = onClick), contentAlignment = Alignment.Center) {
+    Box(Modifier.size(48.dp).metroPress(onClick = onClick), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(18.dp, 10.dp)) {
             val stroke = 2.4.dp.toPx()
             val tipY = size.height * (1f - turn)
@@ -1047,7 +1049,10 @@ private fun Modifier.swipeToDismiss(onDismissed: () -> Unit): Modifier {
     val scope = rememberCoroutineScope()
     var width by remember { mutableFloatStateOf(1f) }
     val currentDismissed by rememberUpdatedState(onDismissed)
+    val dismissLabel = stringResource(R.string.a11y_dismiss)
     return this
+        // The swipe is not the only way: TalkBack and the switch controls offer it among the actions of the row.
+        .semantics { dismiss(label = dismissLabel) { currentDismissed(); true } }
         .onSizeChanged { width = it.width.toFloat().coerceAtLeast(1f) }
         .draggable(
             orientation = Orientation.Horizontal,

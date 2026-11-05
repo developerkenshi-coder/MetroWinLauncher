@@ -259,7 +259,7 @@ internal fun MusicControls(playing: Boolean, modifier: Modifier = Modifier) {
 
 @Composable
 internal fun TransportButton(kind: Transport, tag: String, ink: Color = LocalMetroColors.current.tileContent, onClick: () -> Unit) {
-    Box(Modifier.size(40.dp).testTag(tag).metroPress(onClick = onClick), contentAlignment = Alignment.Center) {
+    Box(Modifier.size(48.dp).testTag(tag).metroPress(onClick = onClick), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(18.dp)) {
             val w = size.width
             val h = size.height

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.components
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import android.text.format.DateFormat
@@ -64,6 +65,11 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
+import com.metrowin.launcher.R
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -137,6 +143,8 @@ fun MetroStatusBar(
     height: Dp = metroStatusBarHeight(),
     background: Color = Color.Transparent,
     hidden: Set<String> = emptySet(),
+    /** What a screen reader's "activate" does on the bar: the pull down from the top edge has no other way for someone who cannot swipe. */
+    onOpenActionCenter: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     // The polls run only while the bar is on screen (started): with the screen off, as over the lock screen, they stop and the phone can sleep; back, they read at once.
@@ -185,34 +193,38 @@ fun MetroStatusBar(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 GlyphIcon(Glyph.Bell, 14.dp, color = color)
                 Spacer(Modifier.width(3.dp))
-                MetroText(notifications.size.toString(), size = 12.sp, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:notifications"))
+                val said = stringResource(R.string.a11y_sb_notifications, notifications.size)
+                MetroText(notifications.size.toString(), size = 12.sp, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:notifications").semantics { contentDescription = said })
             }
         }
     }
     val togglesPart: @Composable () -> Unit = {
-        if (on(StatusItem.Airplane) && reading.airplane) GlyphIcon(Glyph.Airplane, 13.dp, color = color)
-        if (on(StatusItem.Hotspot) && reading.hotspot) GlyphIcon(Glyph.Hotspot, 13.dp, color = color)
-        if (on(StatusItem.Vpn) && reading.vpn) GlyphIcon(Glyph.Vpn, 12.dp, color = color)
-        if (on(StatusItem.Location) && reading.location) PinIcon(color)
-        if (on(StatusItem.Bluetooth) && reading.bluetooth) GlyphIcon(Glyph.Bluetooth, 12.dp, color = color)
-        if (on(StatusItem.Alarm) && reading.alarm) GlyphIcon(Glyph.Alarm, 13.dp, color = color)
-        if (on(StatusItem.Sound) && reading.ringer != Ringer.Normal) SoundIcon(reading.ringer == Ringer.Vibrate, color)
-        if (on(StatusItem.Dnd) && reading.dnd) GlyphIcon(Glyph.Moon, 12.dp, color = color)
+        if (on(StatusItem.Airplane) && reading.airplane) Said(R.string.a11y_sb_airplane) { GlyphIcon(Glyph.Airplane, 13.dp, color = color) }
+        if (on(StatusItem.Hotspot) && reading.hotspot) Said(R.string.a11y_sb_hotspot) { GlyphIcon(Glyph.Hotspot, 13.dp, color = color) }
+        if (on(StatusItem.Vpn) && reading.vpn) Said(R.string.a11y_sb_vpn) { GlyphIcon(Glyph.Vpn, 12.dp, color = color) }
+        if (on(StatusItem.Location) && reading.location) Said(R.string.a11y_sb_location) { PinIcon(color) }
+        if (on(StatusItem.Bluetooth) && reading.bluetooth) Said(R.string.a11y_sb_bluetooth) { GlyphIcon(Glyph.Bluetooth, 12.dp, color = color) }
+        if (on(StatusItem.Alarm) && reading.alarm) Said(R.string.a11y_sb_alarm) { GlyphIcon(Glyph.Alarm, 13.dp, color = color) }
+        if (on(StatusItem.Sound) && reading.ringer != Ringer.Normal) {
+            Said(if (reading.ringer == Ringer.Vibrate) R.string.ringer_vibrate else R.string.ringer_silent) { SoundIcon(reading.ringer == Ringer.Vibrate, color) }
+        }
+        if (on(StatusItem.Dnd) && reading.dnd) Said(R.string.a11y_sb_dnd) { GlyphIcon(Glyph.Moon, 12.dp, color = color) }
     }
     val radiosPart: @Composable () -> Unit = {
-        if (on(StatusItem.Signal) && !reading.airplane && cell.level >= 0) Bars(cell.level, 4, color)
+        if (on(StatusItem.Signal) && !reading.airplane && cell.level >= 0) Said(R.string.a11y_sb_signal, cell.level) { Bars(cell.level, 4, color) }
         if (on(StatusItem.Network) && !reading.airplane && cell.level >= 0) cell.label?.let {
             MetroText(it, size = 12.sp, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:network"))
         }
-        if (on(StatusItem.Wifi)) reading.wifi?.let { WifiFan(it, color) }
+        if (on(StatusItem.Wifi)) reading.wifi?.let { Said(R.string.a11y_sb_wifi) { WifiFan(it, color) } }
     }
     val batteryPart: @Composable () -> Unit = {
-        if (on(StatusItem.Saver) && reading.saver) SaverPlus(color)
+        if (on(StatusItem.Saver) && reading.saver) Said(R.string.a11y_sb_saver) { SaverPlus(color) }
         if (on(StatusItem.BatteryPercent)) battery?.let {
-            MetroText("${it.percent}%", size = 12.sp, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:battery"))
+            val said = stringResource(R.string.a11y_sb_battery, it.percent)
+            MetroText("${it.percent}%", size = 12.sp, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:battery").semantics { contentDescription = said })
         }
         if (on(StatusItem.Battery)) battery?.let {
-            if (it.state == BatteryState.Charging) Bolt(color)
+            if (it.state == BatteryState.Charging) Said(R.string.a11y_sb_charging) { Bolt(color) }
             BatteryCell(it, color)
         }
         if (on(StatusItem.Time)) MetroText(
@@ -221,10 +233,12 @@ fun MetroStatusBar(
         )
     }
     val gap = Arrangement.spacedBy(7.dp)
+    val openLabel = stringResource(R.string.gact_action_center)
     Row(
         modifier.fillMaxWidth().background(background).windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)).height(height)
             .padding(start = 10.dp + holes.left, end = 10.dp + holes.right)
-            .testTag("statusbar"),
+            .testTag("statusbar")
+            .then(if (onOpenActionCenter == null) Modifier else Modifier.semantics { onClick(label = openLabel) { onOpenActionCenter(); true } }),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (holes.hasCenter) {
@@ -248,6 +262,13 @@ fun MetroStatusBar(
 }
 
 private const val RADIO_REFRESH_MS = 4_000L
+
+/** An icon with no text of its own, named for a screen reader. */
+@Composable
+private fun Said(@StringRes text: Int, vararg args: Any, content: @Composable () -> Unit) {
+    val said = stringResource(text, *args)
+    Box(Modifier.semantics { contentDescription = said }) { content() }
+}
 
 /** Rising bars, [level] of [count] of them filled and the rest faint, as the signal of Windows Phone. */
 @Composable

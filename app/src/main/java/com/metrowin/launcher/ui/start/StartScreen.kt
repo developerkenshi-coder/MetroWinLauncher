@@ -1183,7 +1183,7 @@ private fun NextPageArrow(onClick: () -> Unit) {
     val color = LocalMetroColors.current.foreground
     Box(
         Modifier
-            .size(46.dp)
+            .size(48.dp)
             .metroPress(onClick = onClick)
             .border(2.dp, color, CircleShape),
         contentAlignment = Alignment.Center,

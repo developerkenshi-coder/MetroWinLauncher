@@ -208,6 +208,8 @@ fun Modifier.litFill(lit: Boolean, shape: Shape = LocalStyle.current.squareShape
 /** The text and glyph color on a [litFill] that is lit, or on a plain square of the accent color. */
 @Composable
 fun onAccent(): Color {
+    // The pure contrast of the setting for contrast: the accents of Windows Phone are not all dark enough for white.
+    if (LocalHighContrast.current) return ColorMath.inkOn(LocalAccent.current)
     if (LocalStyle.current.isClassic) return TileWhite
     // The other looks have pale accents too (the light tones of Modern Droid), so the ink follows the brightness.
     return if (ColorMath.luminance(LocalAccent.current.toArgbInt()) > 0.55f) Color(0xFF111111) else Color.White

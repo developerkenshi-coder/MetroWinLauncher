@@ -36,36 +36,38 @@ enum class SettingsSection(
     val group: SettingsGroup,
     @param:StringRes val title: Int,
     @param:StringRes val description: Int,
+    /** Words, in the language of the phone, that find the section and its settings (see [SettingsIndex.searchIndex]). */
+    @param:StringRes val words: Int,
 ) {
     // look: what you see
-    StartTheme(SettingsGroup.Look, R.string.settings_start_theme, R.string.sec_start_theme_desc),
-    Start(SettingsGroup.Look, R.string.sec_start, R.string.sec_start_desc),
-    StartBars(SettingsGroup.Look, R.string.sec_bars, R.string.sec_bars_desc),
-    StatusBar(SettingsGroup.Look, R.string.sec_statusbar, R.string.sec_statusbar_desc),
-    Icons(SettingsGroup.Look, R.string.sec_icons, R.string.sec_icons_desc),
-    Accessibility(SettingsGroup.Look, R.string.sec_access, R.string.sec_access_desc),
-    Lock(SettingsGroup.Look, R.string.sec_lock, R.string.sec_lock_desc),
+    StartTheme(SettingsGroup.Look, R.string.settings_start_theme, R.string.sec_start_theme_desc, R.string.kw_start_theme),
+    Start(SettingsGroup.Look, R.string.sec_start, R.string.sec_start_desc, R.string.kw_start),
+    StartBars(SettingsGroup.Look, R.string.sec_bars, R.string.sec_bars_desc, R.string.kw_start_bars),
+    StatusBar(SettingsGroup.Look, R.string.sec_statusbar, R.string.sec_statusbar_desc, R.string.kw_status_bar),
+    Icons(SettingsGroup.Look, R.string.sec_icons, R.string.sec_icons_desc, R.string.kw_icons),
+    Accessibility(SettingsGroup.Look, R.string.sec_access, R.string.sec_access_desc, R.string.kw_access),
+    Lock(SettingsGroup.Look, R.string.sec_lock, R.string.sec_lock_desc, R.string.kw_lock),
 
     // behavior: how it moves and answers
-    Screen(SettingsGroup.Behavior, R.string.sec_screen, R.string.sec_screen_desc),
-    Gestures(SettingsGroup.Behavior, R.string.sec_gestures, R.string.sec_gestures_desc),
-    StartBehaviour(SettingsGroup.Behavior, R.string.sec_start_behaviour, R.string.sec_start_behaviour_desc),
-    Actions(SettingsGroup.Behavior, R.string.sec_action_center, R.string.sec_action_center_desc),
-    Notifications(SettingsGroup.Behavior, R.string.sec_notifications, R.string.sec_notifications_desc),
-    Voice(SettingsGroup.Behavior, R.string.sec_voice, R.string.sec_voice_desc),
-    Battery(SettingsGroup.Behavior, R.string.sec_battery, R.string.sec_battery_desc),
+    Screen(SettingsGroup.Behavior, R.string.sec_screen, R.string.sec_screen_desc, R.string.kw_screen),
+    Gestures(SettingsGroup.Behavior, R.string.sec_gestures, R.string.sec_gestures_desc, R.string.kw_gestures),
+    StartBehaviour(SettingsGroup.Behavior, R.string.sec_start_behaviour, R.string.sec_start_behaviour_desc, R.string.kw_start_behaviour),
+    Actions(SettingsGroup.Behavior, R.string.sec_action_center, R.string.sec_action_center_desc, R.string.kw_actions),
+    Notifications(SettingsGroup.Behavior, R.string.sec_notifications, R.string.sec_notifications_desc, R.string.kw_notifications),
+    Voice(SettingsGroup.Behavior, R.string.sec_voice, R.string.sec_voice_desc, R.string.kw_voice),
+    Battery(SettingsGroup.Behavior, R.string.sec_battery, R.string.sec_battery_desc, R.string.kw_battery),
 
     // apps: the list, the search, the live content and the profiles they come from
-    Apps(SettingsGroup.Apps, R.string.sec_apps, R.string.sec_apps_desc),
-    Search(SettingsGroup.Apps, R.string.sec_search, R.string.sec_search_desc),
-    LiveTiles(SettingsGroup.Apps, R.string.sec_live_tiles, R.string.sec_live_tiles_desc),
-    Profiles(SettingsGroup.Apps, R.string.sec_profiles, R.string.sec_profiles_desc),
+    Apps(SettingsGroup.Apps, R.string.sec_apps, R.string.sec_apps_desc, R.string.kw_apps),
+    Search(SettingsGroup.Apps, R.string.sec_search, R.string.sec_search_desc, R.string.kw_search),
+    LiveTiles(SettingsGroup.Apps, R.string.sec_live_tiles, R.string.sec_live_tiles_desc, R.string.kw_live_tiles),
+    Profiles(SettingsGroup.Apps, R.string.sec_profiles, R.string.sec_profiles_desc, R.string.kw_profiles),
 
     // tools
-    Backup(SettingsGroup.Tools, R.string.sec_backup, R.string.sec_backup_desc),
-    Kids(SettingsGroup.Tools, R.string.kids_title, R.string.sec_kids_desc),
-    BugReport(SettingsGroup.Tools, R.string.sec_bug, R.string.sec_bug_desc),
-    About(SettingsGroup.Tools, R.string.sec_about, R.string.sec_about_desc),
+    Backup(SettingsGroup.Tools, R.string.sec_backup, R.string.sec_backup_desc, R.string.kw_backup),
+    Kids(SettingsGroup.Tools, R.string.kids_title, R.string.sec_kids_desc, R.string.kw_kids),
+    BugReport(SettingsGroup.Tools, R.string.sec_bug, R.string.sec_bug_desc, R.string.kw_bug),
+    About(SettingsGroup.Tools, R.string.sec_about, R.string.sec_about_desc, R.string.kw_about),
 }
 
 /**

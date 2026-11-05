@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
@@ -645,7 +646,7 @@ private fun SearchRow(
             if (onSelect != null) {
                 val description = stringResource(R.string.menu_select)
                 Box(
-                    Modifier.size(40.dp).metroPress(onClick = onSelect).semantics { contentDescription = description }.testTag("search:select"),
+                    Modifier.size(48.dp).metroPress(onClick = onSelect).semantics { contentDescription = description }.testTag("search:select"),
                     contentAlignment = Alignment.Center,
                 ) {
                     // Two squares, the first one ticked: pick several apps.
@@ -661,7 +662,7 @@ private fun SearchRow(
             }
             if (onVoice != null) {
                 Box(
-                    Modifier.size(40.dp).metroPress(onClick = onVoice).testTag("search:voice"),
+                    Modifier.size(48.dp).metroPress(onClick = onVoice).testTag("search:voice"),
                     contentAlignment = Alignment.Center,
                 ) {
                     GlyphIcon(Glyph.Mic, 24.dp, color = colors.subtle)
@@ -773,7 +774,7 @@ private fun SectionRow(@StringRes title: Int, onClear: (() -> Unit)? = null) {
         Modifier.testTag("section:$title").fillMaxWidth().padding(start = pageSide(24.dp), end = pageSide(12.dp), top = 18.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MetroText(stringResource(title), size = 20.sp, color = LocalMetroColors.current.subtle, modifier = Modifier.weight(1f))
+        MetroText(stringResource(title), size = 20.sp, color = LocalMetroColors.current.subtle, modifier = Modifier.weight(1f).semantics { heading() })
         if (onClear != null) {
             MetroText(
                 stringResource(R.string.search_clear), size = 16.sp, weight = FontWeight.Normal, color = LocalAccent.current,

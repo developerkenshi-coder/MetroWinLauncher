@@ -24,6 +24,13 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
+import com.metrowin.launcher.R
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -86,6 +93,7 @@ fun AlphaScroller(
     // Out of the tree while it is away: nothing of it takes a touch or counts as a part of the screen.
     if (shown <= 0f && dragging == null) return
     val density = LocalDensity.current
+    val said = stringResource(R.string.a11y_alpha_scroller, letter.lowercase())
     BoxWithConstraints(modifier.fillMaxSize().padding(top = top, bottom = bottom)) {
         val track = with(density) { (maxHeight - THUMB).toPx() }.coerceAtLeast(1f)
         Box(
@@ -94,6 +102,12 @@ fun AlphaScroller(
                 .offset { IntOffset(0, (fraction * track).roundToInt()) }
                 .graphicsLayer { alpha = shown }
                 .testTag("alphascroller")
+                // For a screen reader the drag is a slider: it can be set to a position without a gesture.
+                .semantics {
+                    contentDescription = said
+                    progressBarRangeInfo = ProgressBarRangeInfo(fraction, 0f..1f)
+                    setProgress { target -> scope.launch { listState.scrollToItem(AlphaIndex.indexAt(target, count)) }; true }
+                }
                 // Grabbed only while it shows, and only up and down: a sideways drag still turns the page.
                 .pointerInput(count, track) {
                     detectVerticalDragGestures(

@@ -134,7 +134,7 @@ private fun VolumeLine(row: VolumeRow, app: String?, main: Boolean, expanded: Bo
             if (main) {
                 val description = stringResource(if (expanded) R.string.volume_less else R.string.volume_more)
                 Box(
-                    Modifier.size(44.dp).testTag("volume:expand").semantics { contentDescription = description }.metroPress(onClick = onToggle),
+                    Modifier.size(48.dp).testTag("volume:expand").semantics { contentDescription = description }.metroPress(onClick = onToggle),
                     contentAlignment = Alignment.Center,
                 ) {
                     // A chevron drawn, not typed: it does not depend on the font.
