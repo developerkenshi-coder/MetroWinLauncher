@@ -1565,6 +1565,21 @@ fun LauncherApp(vm: LauncherViewModel) {
                         )
                     },
                     apps = {
+                        // What touching a search answer does, shared by the answer row and the confirm of the keyboard (the
+                        // search of the keyboard: no app was found, the first answer is what the user asked for).
+                        val touchAnswer: (QuickAnswer) -> Unit = { answer ->
+                            if (answer is QuickAnswer.Dice || answer is QuickAnswer.Coin) {
+                                rollSeed++
+                            } else if (answer is QuickAnswer.Reminder && answer.at == null) {
+                                // No time was said: the form of the reminders finishes it.
+                                vm.rememberSearch(query)
+                                panels.open(Panel.Reminders(answer.text))
+                            } else {
+                                if (answer is QuickAnswer.Reminder) ensureNotifications()
+                                vm.rememberSearch(query)
+                                vm.perform(answer)
+                            }
+                        }
                         AppListScreen(
                             model = appList,
                             listState = listState,
@@ -1599,19 +1614,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onNewList = { newListOpen = true },
                             onListLongPress = { listMenuFor = it.id },
                             answers = answers,
-                            onAnswer = { answer ->
-                                if (answer is QuickAnswer.Dice || answer is QuickAnswer.Coin) {
-                                    rollSeed++
-                                } else if (answer is QuickAnswer.Reminder && answer.at == null) {
-                                    // No time was said: the form of the reminders finishes it.
-                                    vm.rememberSearch(query)
-                                    panels.open(Panel.Reminders(answer.text))
-                                } else {
-                                    if (answer is QuickAnswer.Reminder) ensureNotifications()
-                                    vm.rememberSearch(query)
-                                    vm.perform(answer)
-                                }
-                            },
+                            onAnswer = touchAnswer,
                             onOpenNotification = { entry ->
                                 vm.rememberSearch(query)
                                 vm.openNotification(entry)
