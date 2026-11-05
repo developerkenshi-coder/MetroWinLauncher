@@ -1,8 +1,10 @@
 package com.metrowin.launcher.data
 
+import android.content.SharedPreferences
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import androidx.core.content.edit
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -36,6 +38,14 @@ object SecureStore {
         val cipher = Cipher.getInstance(TRANSFORM).apply { init(Cipher.ENCRYPT_MODE, key()) }
         Base64.encodeToString(cipher.iv + cipher.doFinal(plain.toByteArray()), Base64.NO_WRAP)
     }.getOrDefault("")
+
+    /** Keeps [plain] encrypted under [key]. When the Keystore fails nothing is written, so the value already there is not erased by an empty one. */
+    fun putSecure(prefs: SharedPreferences, key: String, plain: String): Boolean {
+        val sealed = encrypt(plain)
+        if (sealed.isEmpty()) return false
+        prefs.edit { putString(key, sealed) }
+        return true
+    }
 
     /** What [encrypt] made of a text, or null for text that is not its own (or a key that is gone). */
     fun decrypt(text: String): String? = runCatching {

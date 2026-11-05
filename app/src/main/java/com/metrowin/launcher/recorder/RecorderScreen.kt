@@ -85,11 +85,12 @@ fun RecorderScreen() {
     var allowed by remember { mutableStateOf(LivePermissions.isGranted(context, Manifest.permission.RECORD_AUDIO)) }
     val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { allowed = it }
     var version by remember { mutableIntStateOf(0) }
-    val files = remember(version) { store.list() }
+    val files = remember(version, VoiceRecorder.active) { store.list() }
     var selected by remember { mutableStateOf<String?>(null) }
     val pager = rememberPagerState { 2 }
-    var recording by remember { mutableStateOf(false) }
-    var startedAt by remember { mutableLongStateOf(0L) }
+    // The recording is the process's, not the page's: it is still there when the page is back, and a stop from the notification shows here.
+    val recording = VoiceRecorder.active
+    val startedAt = VoiceRecorder.startedAt
     var elapsed by remember { mutableLongStateOf(0L) }
     var failed by remember { mutableStateOf(false) }
     LaunchedEffect(recording) {
@@ -117,12 +118,9 @@ fun RecorderScreen() {
                         MetroButton(stringResource(if (recording) R.string.recorder_stop else R.string.recorder_start), Modifier.fillMaxWidth().padding(top = 24.dp).testTag("rec:toggle")) {
                             if (recording) {
                                 recorder.stop()
-                                recording = false
                                 version++
                             } else if (recorder.start()) {
                                 failed = false
-                                startedAt = SystemClock.elapsedRealtime()
-                                recording = true
                             } else {
                                 failed = true
                             }

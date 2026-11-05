@@ -391,6 +391,33 @@ fun AppListScreen(
         snapshotFlow { listState.isScrollInProgress }.filter { it }.collect { focus.clearFocus() }
     }
     LaunchedEffect(query) { listState.scrollToItem(0) }
+    // A fresh request for the search box (the double touch above Start, the double press of the home button, the
+    // search button of the navigation bar): a list left scrolled down composes no search row, and the request
+    // would wait unheard before it. The scroll goes back to the top first, where the box is.
+    LaunchedEffect(searchFocus) {
+        if (searchFocus > 0) listState.scrollToItem(0)
+    }
+    // What a touch on a row does. One definition, used by the rows themselves and by the confirm of the keyboard, which
+    // opens the first row as its touch would.
+    val activate: (ListRow) -> Unit = { row ->
+        when (row) {
+            is ListRow.App -> onLaunch(row.item)
+            is ListRow.Answer -> onAnswer(row.answer)
+            is ListRow.Recent -> onQueryChange(row.query)
+            is ListRow.Contact -> {
+                val number = row.match.number
+                if (number != null) onDial(number) else onLaunch(AppItem("search:contact", row.match.name, Launch.Link(row.match.lookupUri)))
+            }
+            is ListRow.Setting -> onLaunch(AppItem("search:setting", row.setting.label, Launch.Action(row.setting.action)))
+            is ListRow.Web -> onLaunch(AppItem("search:web", row.query, Launch.Link(GlobalSearch.webUrl(row.query, engine))))
+            is ListRow.LauncherSetting -> onOpenSetting(row.match)
+            is ListRow.Tile -> onLaunch(row.match.item)
+            is ListRow.Notification -> onOpenNotification(row.entry)
+            is ListRow.File -> onLaunch(AppItem("search:file", row.match.name, Launch.Link(row.match.uri)))
+            is ListRow.Event -> onLaunch(AppItem("search:event", row.match.title, Launch.Link(CalendarSearch.uri(row.match.eventId))))
+            ListRow.Search, ListRow.Today, ListRow.Categories, is ListRow.Header, is ListRow.Section -> Unit
+        }
+    }
     // Rows composed within this window after the page opens animate in; rows that scroll into view later do not.
     val openedAt = remember(replayToken) { System.nanoTime() }
 
@@ -416,11 +443,16 @@ fun AppListScreen(
             val content: @Composable () -> Unit = {
             when (row) {
                 ListRow.Today -> if (today != null) TodayCard(today, index, listState, openedAt, exiting, onToday)
-                ListRow.Search -> SearchRow(query, onQueryChange, searchFocus, onSearchFocusDone, onVoice, onSelect, onFocusChange = { searchFocused = it }, onSubmit = onSearchSubmit)
-                is ListRow.Answer -> AnswerRow(row.answer, index, listState, openedAt, exiting) { onAnswer(row.answer) }
+                ListRow.Search -> SearchRow(query, onQueryChange, searchFocus, onSearchFocusDone, onVoice, onSelect, onFocusChange = { searchFocused = it }, onSubmit = { typed ->
+                    onSearchSubmit(typed)
+                    // The confirm of the keyboard opens the first row, as a touch on it would (in a pick of apps, it
+                    // picks that one). With nothing typed there is no result, and the plain list is not one.
+                    if (query.isNotBlank()) rows.firstOrNull { it.isActionable() }?.let(activate)
+                })
+                is ListRow.Answer -> AnswerRow(row.answer, index, listState, openedAt, exiting) { activate(row) }
                 is ListRow.Recent -> ResultRow(
                     Glyph.Search, row.query, null, index, listState, openedAt, exiting, tag = "recent:${row.query}",
-                ) { onQueryChange(row.query) }
+                ) { activate(row) }
                 ListRow.Categories -> ListChips(lists, selectedList, onList, onNewList, onListLongPress)
                 is ListRow.Header -> Unit
                 is ListRow.App -> AppRow(
@@ -433,39 +465,36 @@ fun AppListScreen(
                     if (row.match.number != null) Glyph.Phone else Glyph.People, row.match.name,
                     row.match.number ?: stringResource(R.string.search_contact_subtitle), index, listState, openedAt, exiting,
                     tag = "result:contact:${row.match.lookupUri}",
-                ) {
-                    val number = row.match.number
-                    if (number != null) onDial(number) else onLaunch(AppItem("search:contact", row.match.name, Launch.Link(row.match.lookupUri)))
-                }
+                ) { activate(row) }
                 is ListRow.Setting -> ResultRow(
                     row.setting.glyph, row.setting.label, stringResource(R.string.search_setting_subtitle), index, listState, openedAt, exiting,
                     tag = "result:setting:${row.setting.id}", accent = true,
-                ) { onLaunch(AppItem("search:setting", row.setting.label, Launch.Action(row.setting.action))) }
+                ) { activate(row) }
                 is ListRow.Web -> ResultRow(
                     Glyph.Globe, stringResource(R.string.search_web_for, row.query, engine.label), null, index, listState, openedAt, exiting,
                     tag = "result:web", accent = true,
-                ) { onLaunch(AppItem("search:web", row.query, Launch.Link(GlobalSearch.webUrl(row.query, engine)))) }
+                ) { activate(row) }
                 is ListRow.LauncherSetting -> ResultRow(
                     Glyph.Settings, row.match.title, row.match.where, index, listState, openedAt, exiting,
                     tag = "result:lsetting:${row.match.id ?: "section:${row.match.section}"}", accent = true,
-                ) { onOpenSetting(row.match) }
+                ) { activate(row) }
                 is ListRow.Tile -> ResultRow(
                     row.match.item.glyph ?: Glyph.Star, row.match.item.label, row.match.snippet ?: stringResource(R.string.search_tile_subtitle),
                     index, listState, openedAt, exiting, tag = "result:tile:${row.match.item.id}",
-                ) { onLaunch(row.match.item) }
+                ) { activate(row) }
                 is ListRow.Notification -> ResultRow(
                     Glyph.Bell, row.entry.title.ifBlank { row.entry.text }, row.entry.text.takeIf { row.entry.title.isNotBlank() },
                     index, listState, openedAt, exiting, tag = "result:notification:${row.entry.key}",
-                ) { onOpenNotification(row.entry) }
+                ) { activate(row) }
                 is ListRow.File -> ResultRow(
                     row.match.type.glyph, row.match.name,
                     stringResource(row.match.type.label) + " · " + FileSearch.sizeText(row.match.size),
                     index, listState, openedAt, exiting, tag = "result:file:${row.match.uri}",
-                ) { onLaunch(AppItem("search:file", row.match.name, Launch.Link(row.match.uri))) }
+                ) { activate(row) }
                 is ListRow.Event -> ResultRow(
                     Glyph.Calendar, row.match.title, eventWhen(row.match), index, listState, openedAt, exiting,
                     tag = "result:event:${row.match.eventId}",
-                ) { onLaunch(AppItem("search:event", row.match.title, Launch.Link(CalendarSearch.uri(row.match.eventId)))) }
+                ) { activate(row) }
             }
             }
             // The headings of the results stay at the top while their results scroll under them (not those of the plain list: they would never leave).
@@ -487,6 +516,16 @@ fun AppListScreen(
     }
     }
     }
+}
+
+/**
+ * Whether touching the row opens something, which the confirm of the keyboard can do too: the search box, the headings,
+ * the chips and the card of today do not, and neither does a search made before (it only puts its text in the box).
+ */
+private fun ListRow.isActionable(): Boolean = when (this) {
+    is ListRow.App, is ListRow.Answer, is ListRow.Contact, is ListRow.Setting, is ListRow.Web,
+    is ListRow.LauncherSetting, is ListRow.Tile, is ListRow.Notification, is ListRow.File, is ListRow.Event -> true
+    ListRow.Search, ListRow.Today, ListRow.Categories, is ListRow.Header, is ListRow.Section, is ListRow.Recent -> false
 }
 
 /** "Thu 12 November, 15:30" (or without the time for an event of the whole day), in the language and clock of the phone. */

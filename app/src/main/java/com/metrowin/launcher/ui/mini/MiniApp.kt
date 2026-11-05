@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.mini
 
+import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.pageSide
 import android.graphics.Color
 import android.os.Bundle
@@ -55,7 +56,7 @@ abstract class MiniActivity : ComponentActivity() {
 fun MiniFrame(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     // shortcut: the screens of the mini apps have their own 24 dp inside, so only "wide" changes them, compact leaves them as they are; give them pageSide when they are touched next.
     Column(
-        modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().cutoutSidesPadding()
+        modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().cutoutSidesPadding().centeredContent()
             .padding(horizontal = pageSide(0.dp)),
         content = content,
     )

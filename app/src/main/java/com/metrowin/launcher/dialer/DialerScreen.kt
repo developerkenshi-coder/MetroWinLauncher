@@ -1,9 +1,11 @@
 package com.metrowin.launcher.dialer
 
+import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.topBarsPadding
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.telecom.PhoneAccountHandle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -70,6 +72,7 @@ import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.pages.FavouriteSquare
 import com.metrowin.launcher.ui.pages.PageChip
 import com.metrowin.launcher.ui.pages.PageNote
+import com.metrowin.launcher.ui.start.DialogFrame
 import com.metrowin.launcher.ui.start.whenText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -105,9 +108,13 @@ fun DialerScreen(
         val missing = listOf(LivePermissions.contacts, LivePermissions.calls, PhoneCalls.permission).filter { !LivePermissions.isGranted(context, it) }
         if (missing.isNotEmpty()) ask.launch(missing.toTypedArray())
     }
-    fun call(target: String) {
+    fun call(target: String, sim: PhoneAccountHandle? = null) {
         if (target.isEmpty()) return
-        DialerRole.call(context, target, canCall)
+        DialerRole.call(context, target, canCall, sim)
+        onPlaced()
+    }
+    fun voicemail() {
+        DialerRole.voicemail(context)
         onPlaced()
     }
     // As on Windows Phone, the history comes first; the keypad is a page of its own, one tap away on the bar.
@@ -116,7 +123,7 @@ fun DialerScreen(
     val scope = rememberCoroutineScope()
     // Back from the keypad, the contacts or the favourites goes to the history, where the phone starts; only from there it leaves.
     androidx.activity.compose.BackHandler(enabled = pager.currentPage != PAGE_HISTORY) { scope.launch { pager.animateScrollToPage(PAGE_HISTORY) } }
-    Column(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding()) {
+    Column(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().centeredContent()) {
         PivotHeader(titles, pager, Modifier.padding(start = 24.dp, top = 20.dp, bottom = 8.dp))
         HorizontalPager(pager, Modifier.weight(1f), beyondViewportPageCount = 1) { page ->
             Box(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
@@ -124,7 +131,7 @@ fun DialerScreen(
                     PAGE_HISTORY -> HistoryPage(hasCallLog, { ask.launch(arrayOf(LivePermissions.calls)) }, ::call)
                     PAGE_FAVOURITES -> FavouritesPage(hasContacts, { ask.launch(arrayOf(LivePermissions.contacts)) }, ::call)
                     PAGE_CONTACTS -> ContactsPage(hasContacts, { ask.launch(arrayOf(LivePermissions.contacts)) }, ::call)
-                    else -> KeypadPage(number, onNumberChange, hasContacts, ::call)
+                    else -> KeypadPage(number, onNumberChange, hasContacts, canCall, ::call, ::voicemail)
                 }
             }
         }
@@ -141,8 +148,10 @@ fun DialerScreen(
 }
 
 @Composable
-private fun KeypadPage(number: String, onNumberChange: (String) -> Unit, hasContacts: Boolean, call: (String) -> Unit) {
+private fun KeypadPage(number: String, onNumberChange: (String) -> Unit, hasContacts: Boolean, canCall: Boolean, call: (String, PhoneAccountHandle?) -> Unit, voicemail: () -> Unit) {
     val context = LocalContext.current
+    // With two SIMs the green bar is split, one half for each; with one the phone chooses.
+    val sims = remember(canCall) { DialerRole.sims(context) }
     val colors = LocalMetroColors.current
     val directory = remember { ContactDirectory(context.applicationContext) }
     val suggestions by produceState(emptyList(), number, hasContacts) {
@@ -168,19 +177,29 @@ private fun KeypadPage(number: String, onNumberChange: (String) -> Unit, hasCont
                 )
             }
             suggestions.forEach { entry ->
-                Row(Modifier.fillMaxWidth().testTag("dialer:suggest").metroPress(onClick = { call(entry.number) }).padding(vertical = 5.dp)) {
+                Row(Modifier.fillMaxWidth().testTag("dialer:suggest").metroPress(onClick = { call(entry.number, null) }).padding(vertical = 5.dp)) {
                     MetroText(entry.name, size = 20.sp, modifier = Modifier.weight(1f))
                     MetroText(entry.number, size = 16.sp, weight = FontWeight.Normal, color = colors.subtle)
                 }
             }
         }
         Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 8.dp)) {
-            DialPad(onKey = { onNumberChange((number + it).take(MAX_NUMBER)) })
-            Box(
-                Modifier.fillMaxWidth().height(60.dp).testTag("dialer:call").metroPress(onClick = { call(number) }, enabled = number.isNotEmpty())
-                    .background(if (number.isEmpty()) Green.copy(alpha = 0.4f) else Green),
-                contentAlignment = Alignment.Center,
-            ) { MetroText(stringResource(R.string.dialer_call), size = 22.sp, weight = FontWeight.Normal, color = Color.White) }
+            DialPad(onKey = { onNumberChange((number + it).take(MAX_NUMBER)) }, onVoicemail = voicemail)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                (sims.ifEmpty { listOf(null) }).forEachIndexed { index, sim ->
+                    Box(
+                        Modifier.weight(1f).height(60.dp).testTag(if (sim == null) "dialer:call" else "dialer:call:sim$index")
+                            .metroPress(onClick = { call(number, sim) }, enabled = number.isNotEmpty())
+                            .background(if (number.isEmpty()) Green.copy(alpha = 0.4f) else Green),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        MetroText(
+                            if (sim == null) stringResource(R.string.dialer_call) else DialerRole.simLabel(context, sim).ifBlank { "SIM ${index + 1}" },
+                            size = 22.sp, weight = FontWeight.Normal, color = Color.White, maxLines = 1,
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -302,17 +321,44 @@ private fun FavouritesPage(hasPermission: Boolean, onRequest: () -> Unit, call: 
 private fun HistoryPage(hasPermission: Boolean, onRequest: () -> Unit, call: (String) -> Unit) {
     val context = LocalContext.current
     val colors = LocalMetroColors.current
-    val calls by produceState<List<RecentCall>?>(null, hasPermission) {
+    val scope = rememberCoroutineScope()
+    var reload by remember { mutableIntStateOf(0) }
+    var missedOnly by remember { mutableStateOf(false) }
+    var target by remember { mutableStateOf<RecentCall?>(null) }
+    val calls by produceState<List<RecentCall>?>(null, hasPermission, reload) {
         value = if (hasPermission) withContext(Dispatchers.IO) { PeopleReader(context.applicationContext).recentCalls(HISTORY) } else emptyList()
+    }
+    // Taking a call out of the log needs the permission to write it, which is asked for the first time it is wanted.
+    var waiting by remember { mutableStateOf<RecentCall?>(null) }
+    fun remove(call: RecentCall) {
+        scope.launch { withContext(Dispatchers.IO) { PeopleReader(context.applicationContext).deleteCall(call) }; reload++ }
+    }
+    val askWrite = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> if (granted) waiting?.let(::remove); waiting = null }
+    target?.let { call ->
+        DialogFrame(onCancel = { target = null }) {
+            MetroText(call.name, size = 22.sp, maxLines = 1)
+            MetroButton(stringResource(R.string.dialer_delete_call), Modifier.fillMaxWidth().testTag("dialer:delete_call")) {
+                target = null
+                if (LivePermissions.isGranted(context, Manifest.permission.WRITE_CALL_LOG)) remove(call) else { waiting = call; askWrite.launch(Manifest.permission.WRITE_CALL_LOG) }
+            }
+            if (DialerRole.canBlock(context)) {
+                MetroButton(stringResource(R.string.dialer_block), Modifier.fillMaxWidth().testTag("dialer:block")) { DialerRole.block(context, call.number); target = null }
+            }
+        }
     }
     if (!hasPermission) {
         Column { PageNote(stringResource(R.string.page_needs_calls)); MetroButton(stringResource(R.string.page_allow), Modifier.fillMaxWidth().padding(top = 8.dp), onClick = onRequest) }
         return
     }
-    if (calls?.isEmpty() == true) PageNote(stringResource(R.string.dialer_no_history), Modifier.testTag("dialer:nohistory"))
+    val shown = calls?.filter { !missedOnly || it.missed }
+    Row(Modifier.padding(bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        PageChip(stringResource(R.string.dialer_filter_all), !missedOnly, "dialer:filter:all") { missedOnly = false }
+        PageChip(stringResource(R.string.dialer_filter_missed), missedOnly, "dialer:filter:missed") { missedOnly = true }
+    }
+    if (shown?.isEmpty() == true) PageNote(stringResource(R.string.dialer_no_history), Modifier.testTag("dialer:nohistory"))
     LazyColumn(Modifier.fillMaxSize().testTag("dialer:history")) {
-        items(calls.orEmpty()) { item ->
-            Row(Modifier.fillMaxWidth().testTag("dialer:call:${item.date}").metroPress(onClick = { call(item.number) }).padding(vertical = 7.dp), verticalAlignment = Alignment.CenterVertically) {
+        items(shown.orEmpty()) { item ->
+            Row(Modifier.fillMaxWidth().testTag("dialer:call:${item.date}").metroPress(onClick = { call(item.number) }, onLongClick = { target = item }).padding(vertical = 7.dp), verticalAlignment = Alignment.CenterVertically) {
                 MetroText(
                     when {
                         item.missed -> "✕"

@@ -84,7 +84,7 @@ object PowerPolicy {
 /** Which of the data behind the live tiles Start really shows, so the others are not read at all. */
 object LiveSources {
     private val sources = setOf(
-        LiveKind.Calendar, LiveKind.Photos, LiveKind.People, LiveKind.Phone, LiveKind.Storage, LiveKind.Alarm, LiveKind.Birthdays,
+        LiveKind.Calendar, LiveKind.Photos, LiveKind.People, LiveKind.Phone, LiveKind.Mail, LiveKind.Storage, LiveKind.Alarm, LiveKind.Birthdays,
         LiveKind.Album, LiveKind.Group,
     )
 

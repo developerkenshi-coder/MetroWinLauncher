@@ -111,6 +111,7 @@ import com.metrowin.launcher.data.ThirdPartyTile
 import com.metrowin.launcher.data.ThirdPartyTiles
 import com.metrowin.launcher.data.TileFeed
 import com.metrowin.launcher.data.SafSyncStorage
+import com.metrowin.launcher.data.SyncConflicts
 import com.metrowin.launcher.data.SyncEngine
 import com.metrowin.launcher.data.SyncLocal
 import com.metrowin.launcher.data.SyncOutcome
@@ -129,6 +130,8 @@ import com.metrowin.launcher.data.RingerMode
 import com.metrowin.launcher.data.SoundController
 import com.metrowin.launcher.data.RecentApps
 import com.metrowin.launcher.data.QuickActionsController
+import com.metrowin.launcher.data.BackupExtras
+import com.metrowin.launcher.data.BackupExtrasStore
 import com.metrowin.launcher.data.LayoutBackup
 import com.metrowin.launcher.data.LayoutBackupCodec
 import com.metrowin.launcher.data.LiveTileRepository
@@ -730,6 +733,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         NotificationHub.clearOnOpen = _settings.value.clearOnOpen
         NotificationHub.actionCenterOn = _settings.value.actionCenterEnabled
         UpdateCheckJob.schedule(application, _settings.value.updateAuto)
+        kotlin.concurrent.thread(name = "mail-schedule") { com.metrowin.launcher.mail.MailSync.schedule(application); com.metrowin.launcher.datasense.DataLimitWatch.schedule(application) }
         checkUpdateIfDue()
         reloadApps()
         if (_settings.value.hasStartBackground) loadBackground()
@@ -2402,7 +2406,15 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     /** What the layout is now, as a backup file would hold it. */
-    fun currentBackup() = LayoutBackup(_pages.value, _shortcuts.value, _settings.value)
+    fun currentBackup(withWallet: Boolean = false) =
+        LayoutBackup(_pages.value, _shortcuts.value, _settings.value, BackupExtrasStore.read(getApplication(), withWallet))
+
+    /** Puts the things to do, reminders, named layouts and place of the car of a backup in place of the phone's own. */
+    private fun applyExtras(extras: BackupExtras) {
+        BackupExtrasStore.apply(getApplication(), extras)
+        _layouts.value = layoutStore.load()
+        _live.update { it.copy(reminders = extras.reminders, extras = it.extras.copy(parked = extras.car)) }
+    }
 
     /** Puts a backup in place of the current layout. Tiles of apps this phone does not have are left out. */
     fun restoreBackup(backup: LayoutBackup) {
@@ -2414,6 +2426,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val pages = StartPages.prune(StartPages.resize(backup.pages, backup.settings.startPages), known)
         _pages.value = pages
         store.savePages(pages)
+        backup.extras?.let(::applyExtras)
     }
 
     /** The name of the backup folder, for the settings; null while none is chosen or it cannot be read. */
@@ -2502,6 +2515,44 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    private val _syncOthers = MutableStateFlow<List<String>>(emptyList())
+
+    /** The copies a sync with a conflict left in the folder, the newest first (read when the page of the backup opens). */
+    val syncOthers: StateFlow<List<String>> = _syncOthers.asStateFlow()
+
+    fun refreshSyncOthers() {
+        val folder = _settings.value.backupFolder
+        viewModelScope.launch {
+            _syncOthers.value = if (folder.isBlank()) emptyList() else withContext(Dispatchers.IO) { SyncConflicts.newestFirst(SafFolder(getApplication(), folder.toUri()).names()) }
+        }
+    }
+
+    /** Opens one of the copies with the sync passphrase and asks which parts of it to put back. */
+    fun recoverSyncOther(name: String) {
+        val s = _settings.value
+        if (s.backupFolder.isBlank() || SyncConflicts.stamp(name) == null) return
+        viewModelScope.launch {
+            val blob = withContext(Dispatchers.IO) { SafFolder(getApplication(), s.backupFolder.toUri()).read(name) }
+            val layout = blob?.let { SyncConflicts.layoutOf(it, s.syncPassphrase) }
+            val backup = layout?.let { LayoutBackupCodec.decode(it, s) }
+            when {
+                blob == null -> tell(R.string.backup_no_file)
+                layout == null -> tell(R.string.sync_wrong_passphrase)
+                backup == null -> tell(R.string.sync_not_file)
+                else -> _pendingRestore.value = backup
+            }
+        }
+    }
+
+    fun clearSyncOthers() {
+        val folder = _settings.value.backupFolder
+        if (folder.isBlank()) return
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { SafFolder(getApplication(), folder.toUri()).let { files -> SyncConflicts.newestFirst(files.names()).forEach(files::delete) } }
+            refreshSyncOthers()
+        }
+    }
+
     /** A backup that has been read and waits for the user to say which parts of it to put back. */
     private val _pendingRestore = MutableStateFlow<LayoutBackup?>(null)
     val pendingRestore: StateFlow<LayoutBackup?> = _pendingRestore.asStateFlow()
@@ -2537,6 +2588,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             rebuildItems()
         }
         if (settings != current) updateSettings { settings }
+        if (RestorePart.Data in parts) backup.extras?.let(::applyExtras)
         if (RestorePart.Start in parts) {
             val known = _items.value.mapTo(HashSet()) { it.id }
             val pages = StartPages.prune(StartPages.resize(backup.pages, _settings.value.startPages), known)
@@ -2631,7 +2683,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 if (s.deviceId.isEmpty()) updateSettings { it.copy(deviceId = java.util.UUID.randomUUID().toString()) }
                 val folder = SafFolder(getApplication(), s.backupFolder.toUri())
                 val outcome = withContext(Dispatchers.IO) {
-                    val layout = LayoutBackupCodec.encode(currentBackup(), 0L)
+                    val layout = LayoutBackupCodec.encode(currentBackup(withWallet = true), 0L, secret = true)
                     val local = SyncLocal(layout, s.syncPassphrase, _settings.value.deviceId, s.syncLastHash, s.syncLastStamp)
                     SyncEngine(SafSyncStorage(folder)).sync(local)
                 }
@@ -2671,7 +2723,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                     }
                 }
                 restoreBackup(backup)
-                val hash = SyncEngine.hash(LayoutBackupCodec.encode(currentBackup(), 0L))
+                val hash = withContext(Dispatchers.IO) { SyncEngine.hash(LayoutBackupCodec.encode(currentBackup(withWallet = true), 0L, secret = true)) }
                 updateSettings { it.copy(syncLastHash = hash, syncLastStamp = outcome.stamp, syncLastAt = now) }
                 if (announce) tell(R.string.sync_applied)
             }

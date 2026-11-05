@@ -155,7 +155,11 @@ fun TileFace(
     /** The "one less" button of a counter: called with -1. */
     onCounterStep: (Int) -> Unit = {},
 ) {
-    val count = if (item.live == LiveKind.Phone) maxOf(live.missedCalls, notifications) else notifications
+    val count = when (item.live) {
+        LiveKind.Phone -> maxOf(live.missedCalls, notifications)
+        LiveKind.Mail -> maxOf(live.unreadMail, notifications)
+        else -> notifications
+    }
     // The Iconic template shows the counter big, in the middle; a small tile has no room for that.
     val iconic = style == TileStyle.Iconic && size != TileSize.Small && item.live != LiveKind.Torch
     // The photos a Cycle tile fades through: the latest of the phone, or those of the album the tile stands for.
@@ -236,7 +240,7 @@ fun TileFace(
                     LiveKind.Group -> GroupFace(item, size, width, height, (item.data as? TileData.Group)?.let { live.groups[it.groupId] }.orEmpty(), seed)
                     LiveKind.News -> NewsFace(item, size, width, height, live.news, seed)
                     LiveKind.Finance -> FinanceFace(item, size, width, height, live.finance)
-                    LiveKind.Phone, LiveKind.Messages, null ->
+                    LiveKind.Phone, LiveKind.Messages, LiveKind.Mail, null ->
                         if (item.photoPath != null) PhotoShortcutFace(item, size, width, height)
                         else if (faces.isNotEmpty()) CardsFace(item, size, width, height, faces, seed)
                         else StaticFace(item, size, width, height)

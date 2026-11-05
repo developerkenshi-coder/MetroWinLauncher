@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 /** What of a backup can be put back: the Start screens with their shortcuts, the settings, or only how the launcher looks. */
-enum class RestorePart { Start, Settings, Theme }
+enum class RestorePart { Start, Settings, Theme, Data }
 
 /** The files of the backups kept in the backup folder, named by the minute they were made. Pure, so the names and what to let go are tested. */
 object BackupCopies {

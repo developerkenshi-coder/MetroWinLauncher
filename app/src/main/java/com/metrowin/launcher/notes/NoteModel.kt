@@ -27,8 +27,10 @@ data class Note(
     val folder: String = "",
     val created: Long = 0L,
     val updated: Long = 0L,
+    /** Photos and sounds, by the name of their file in [NoteFiles]. */
+    val files: List<String> = emptyList(),
 ) {
-    val isBlank: Boolean get() = title.isBlank() && text.isBlank() && strokes.isEmpty()
+    val isBlank: Boolean get() = title.isBlank() && text.isBlank() && strokes.isEmpty() && files.isEmpty()
 }
 
 object SketchPage {
@@ -42,6 +44,7 @@ object NoteCodec {
     const val MAX_STROKES = 3_000
     const val MAX_POINTS = 6_000
     const val MAX_TEXT = 200_000
+    const val MAX_FILES = 20
 
     fun encode(notes: List<Note>): String = JSONObject().put("version", 1).put("notes", JSONArray().also { array -> notes.forEach { array.put(encodeNote(it)) } }).toString()
 
@@ -54,6 +57,7 @@ object NoteCodec {
         .put("id", note.id).put("title", note.title).put("text", note.text).put("color", note.color).put("pinned", note.pinned)
         .put("folder", note.folder).put("created", note.created).put("updated", note.updated)
         .put("strokes", JSONArray().also { array -> note.strokes.forEach { array.put(encodeStroke(it)) } })
+        .put("files", JSONArray(note.files))
 
     private fun encodeStroke(stroke: Stroke) = JSONObject()
         .put("tool", stroke.tool.name).put("color", stroke.color).put("width", stroke.width.toDouble()).put("text", stroke.text)
@@ -72,6 +76,8 @@ object NoteCodec {
             folder = o.optString("folder").take(60),
             created = o.optLong("created"),
             updated = o.optLong("updated"),
+            // A name from a backup is never trusted: it becomes a path.
+            files = o.optJSONArray("files")?.let { a -> (0 until minOf(a.length(), MAX_FILES)).mapNotNull { a.optString(it).takeIf(NoteFiles::valid) } }.orEmpty(),
         )
     }
 

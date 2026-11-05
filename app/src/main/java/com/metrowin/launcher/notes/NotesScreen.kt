@@ -1,6 +1,12 @@
 package com.metrowin.launcher.notes
 
 import android.content.Intent
+import android.media.MediaPlayer
+import android.net.Uri
+import android.webkit.MimeTypeMap
+import androidx.compose.foundation.Image
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.graphics.asImageBitmap
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -82,10 +88,13 @@ fun NotesScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val store = remember { NoteStore(context) }
+    val noteFiles = remember { NoteFiles(context) }
     val lock = remember { Mutex() }
     var notes by remember { mutableStateOf<List<Note>?>(null) }
+    // A file of notes that the key of the phone no longer opens is kept aside; the list says so, and says what can be done.
+    var lost by remember { mutableStateOf(false) }
     var page by remember { mutableStateOf<Page>(Page.List) }
-    LaunchedEffect(Unit) { notes = withContext(Dispatchers.IO) { store.load() } }
+    LaunchedEffect(Unit) { withContext(Dispatchers.IO) { store.load().also { lost = store.hasUnreadable() } }.let { notes = it } }
 
     fun toast(id: Int, vararg args: Any) = Toast.makeText(context, context.getString(id, *args), Toast.LENGTH_LONG).show()
 
@@ -110,7 +119,7 @@ fun NotesScreen() {
         scope.launch {
             val ok = withContext(Dispatchers.IO) {
                 runCatching {
-                    context.contentResolver.openOutputStream(uri, "wt")!!.use { NoteBackup.write(snapshot, it) { note -> sketchPng(note.strokes) } }
+                    context.contentResolver.openOutputStream(uri, "wt")!!.use { NoteBackup.write(snapshot, it, noteFiles::file) { note -> sketchPng(note.strokes) } }
                 }.isSuccess
             }
             if (ok) toast(R.string.notes_backup_done, snapshot.size) else toast(R.string.notes_backup_failed)
@@ -119,7 +128,7 @@ fun NotesScreen() {
     val restore = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri ?: return@rememberLauncherForActivityResult
         scope.launch {
-            val incoming = withContext(Dispatchers.IO) { runCatching { context.contentResolver.openInputStream(uri)!!.use { NoteBackup.read(it) } }.getOrNull() }
+            val incoming = withContext(Dispatchers.IO) { runCatching { context.contentResolver.openInputStream(uri)!!.use { NoteBackup.read(it) { name, file -> noteFiles.restore(name, file) } } }.getOrNull() }
             if (incoming == null) toast(R.string.notes_restore_failed) else {
                 commit(NoteBackup.merge(notes.orEmpty(), incoming))
                 toast(R.string.notes_restore_done, incoming.size)
@@ -137,13 +146,16 @@ fun NotesScreen() {
             onNewSketch = { val n = create(); replace(n); page = Page.Sketch(n.id) },
             onBackup = { backup.launch("metrowin-notes-" + java.time.LocalDate.now() + ".zip") },
             onRestore = { restore.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream")) },
+            lost = lost && notes.orEmpty().isEmpty(),
+            onDiscard = { scope.launch(Dispatchers.IO) { store.discardUnreadable(); lost = false } },
         )
         is Page.Edit -> if (note == null) page = Page.List else NoteEditor(
             note = note,
+            noteFiles = noteFiles,
             folders = notes.orEmpty().map { it.folder }.filter { it.isNotBlank() }.distinct(),
             onChange = ::replace,
             onSketch = { page = Page.Sketch(note.id) },
-            onDelete = { commit(notes.orEmpty().filter { it.id != note.id }); page = Page.List },
+            onDelete = { note.files.forEach(noteFiles::delete); commit(notes.orEmpty().filter { it.id != note.id }); page = Page.List },
             onClose = {
                 // A note with nothing in it is not kept.
                 if (note.isBlank) commit(notes.orEmpty().filter { it.id != note.id })
@@ -170,8 +182,11 @@ private fun NoteList(
     onNewSketch: () -> Unit,
     onBackup: () -> Unit,
     onRestore: () -> Unit,
+    lost: Boolean,
+    onDiscard: () -> Unit,
 ) {
     val colors = LocalMetroColors.current
+    var confirmDiscard by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var folder by remember { mutableStateOf("") }
     val all = NoteStore.sorted(notes.orEmpty())
@@ -188,6 +203,12 @@ private fun NoteList(
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 10.dp)) {
                     item { PageChip(stringResource(R.string.notes_all), folder.isEmpty(), "notes:folder:all") { folder = "" } }
                     items(folders) { name -> PageChip(name, folder == name, "notes:folder:$name") { folder = name } }
+                }
+            }
+            if (lost) {
+                PageNote(stringResource(R.string.notes_lost), Modifier.padding(top = 14.dp).testTag("notes:lost"))
+                MetroButton(stringResource(if (confirmDiscard) R.string.notes_delete_confirm else R.string.notes_lost_discard), Modifier.fillMaxWidth().padding(top = 8.dp).testTag("notes:discard")) {
+                    if (confirmDiscard) onDiscard() else confirmDiscard = true
                 }
             }
             if (notes != null && shown.isEmpty()) PageNote(stringResource(R.string.notes_empty), Modifier.padding(top = 14.dp).testTag("notes:empty"))
@@ -227,6 +248,7 @@ private fun NoteList(
 @Composable
 private fun NoteEditor(
     note: Note,
+    noteFiles: NoteFiles,
     folders: List<String>,
     onChange: (Note) -> Unit,
     onSketch: () -> Unit,
@@ -262,6 +284,36 @@ private fun NoteEditor(
     val md = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/markdown")) { uri ->
         uri?.let { scope.launch(Dispatchers.IO) { runCatching { context.contentResolver.openOutputStream(it, "wt")!!.use { out -> out.write(NoteBackup.plain(snapshot()).toByteArray()) } } } }
     }
+    val pdf = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/pdf")) { uri ->
+        val shot = snapshot()
+        uri?.let { scope.launch(Dispatchers.IO) { runCatching { context.contentResolver.openOutputStream(it, "wt")!!.use { out -> NotePdf.write(shot, if (shot.strokes.isEmpty()) null else sketchPng(shot.strokes), out) } } } }
+    }
+    fun attach(uri: Uri?) {
+        uri ?: return
+        scope.launch {
+            val name = if (latest.files.size >= NoteCodec.MAX_FILES) null else withContext(Dispatchers.IO) {
+                runCatching {
+                    val ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(context.contentResolver.getType(uri)).orEmpty()
+                    context.contentResolver.openInputStream(uri)!!.use { noteFiles.add(it, ext) }
+                }.getOrNull()
+            }
+            if (name == null) Toast.makeText(context, R.string.notes_attach_failed, Toast.LENGTH_LONG).show() else onChange(snapshot().let { it.copy(files = it.files + name) })
+        }
+    }
+    val photo = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { attach(it) }
+    val audio = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { attach(it) }
+    var playing by remember { mutableStateOf<String?>(null) }
+    val player = remember { mutableStateOf<MediaPlayer?>(null) }
+    DisposableEffect(Unit) { onDispose { player.value?.release() } }
+    fun play(name: String) {
+        player.value?.release()
+        player.value = null
+        if (playing == name) { playing = null; return }
+        playing = name
+        player.value = runCatching {
+            MediaPlayer().apply { setDataSource(noteFiles.file(name)!!.path); setOnCompletionListener { playing = null }; prepare(); start() }
+        }.getOrElse { playing = null; null }
+    }
     val png = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/png")) { uri ->
         val strokes = note.strokes
         uri?.let { scope.launch(Dispatchers.IO) { runCatching { context.contentResolver.openOutputStream(it, "wt")!!.use { out -> out.write(sketchPng(strokes)) } } } }
@@ -289,6 +341,13 @@ private fun NoteEditor(
                 }
                 if (note.strokes.isNotEmpty()) {
                     SketchPreview(note.strokes, onSketch)
+                }
+                note.files.forEach { name ->
+                    Attachment(name, noteFiles, playing == name, onPlay = { play(name) }) {
+                        if (playing == name) play(name)
+                        noteFiles.delete(name)
+                        onChange(snapshot().let { it.copy(files = it.files - name) })
+                    }
                 }
             }
             if (!reading) {
@@ -337,13 +396,31 @@ private fun NoteEditor(
                 val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, NoteBackup.plain(snapshot()))
                 context.startActivity(Intent.createChooser(send, null))
             }
+            MetroButton(stringResource(R.string.notes_attach_photo), Modifier.fillMaxWidth().testTag("notes:photo")) { more = false; photo.launch("image/*") }
+            MetroButton(stringResource(R.string.notes_attach_audio), Modifier.fillMaxWidth().testTag("notes:audio")) { more = false; audio.launch("audio/*") }
             MetroButton(stringResource(R.string.notes_export_text), Modifier.fillMaxWidth()) { md.launch("$fileName.md") }
+            MetroButton(stringResource(R.string.notes_export_pdf), Modifier.fillMaxWidth().testTag("notes:pdf")) { pdf.launch("$fileName.pdf") }
             if (note.strokes.isNotEmpty()) MetroButton(stringResource(R.string.notes_export_sketch), Modifier.fillMaxWidth()) { png.launch("$fileName.png") }
             if (note.strokes.isNotEmpty()) MetroButton(stringResource(R.string.notes_sketch_remove), Modifier.fillMaxWidth()) { onChange(snapshot().copy(strokes = emptyList())); more = false }
             MetroButton(stringResource(if (confirmDelete) R.string.notes_delete_confirm else R.string.notes_delete), Modifier.fillMaxWidth().testTag("notes:delete")) {
                 if (confirmDelete) onDelete() else confirmDelete = true
             }
         }
+    }
+}
+
+/** A photo of a note, shown in full width, or a sound with a button to hear it; a cross takes it off the note. */
+@Composable
+private fun Attachment(name: String, noteFiles: NoteFiles, playing: Boolean, onPlay: () -> Unit, onRemove: () -> Unit) {
+    val colors = LocalMetroColors.current
+    Row(Modifier.fillMaxWidth().padding(vertical = 6.dp).testTag("notes:file"), verticalAlignment = Alignment.CenterVertically) {
+        if (NoteFiles.isPicture(name)) {
+            val bitmap by produceState<android.graphics.Bitmap?>(null, name) { value = withContext(Dispatchers.IO) { noteFiles.picture(name, 800) } }
+            bitmap?.let { Image(it.asImageBitmap(), null, Modifier.weight(1f)) } ?: Box(Modifier.weight(1f))
+        } else {
+            MetroText((if (playing) "■  " else "▶  ") + name.substringAfterLast('.').uppercase(), size = 19.sp, modifier = Modifier.weight(1f).metroPress(onClick = onPlay).padding(vertical = 8.dp))
+        }
+        MetroText("✕", size = 22.sp, color = colors.subtle, modifier = Modifier.metroPress(onClick = onRemove).padding(start = 12.dp, top = 8.dp, bottom = 8.dp))
     }
 }
 

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.mail
 
+import com.metrowin.launcher.ui.components.centeredContent
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -82,7 +83,7 @@ fun MessageReaderView(message: MailMessage, body: MailBody?, failure: String?, a
     var images by remember(message.id) { mutableStateOf(false) }
     val html = body?.html
     val hasRemoteImages = html != null && REMOTE_IMAGE.containsMatchIn(html)
-    Column(Modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding()) {
+    Column(Modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().centeredContent()) {
         Column(Modifier.padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             MetroText(message.subject.ifBlank { "—" }, size = 24.sp, weight = FontWeight.Normal, maxLines = 3, lineHeight = 29.sp, modifier = Modifier.testTag("mail:subject"))
             Row(verticalAlignment = Alignment.CenterVertically) {

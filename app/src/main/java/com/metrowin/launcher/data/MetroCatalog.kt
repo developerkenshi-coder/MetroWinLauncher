@@ -63,7 +63,7 @@ object MetroCatalog {
         StockApp(
             "mail", R.string.stock_mail, Glyph.Mail,
             listOf(category(Intent.CATEGORY_APP_EMAIL)) + pkg("com.google.android.gm", "com.microsoft.office.outlook"),
-            live = LiveKind.Messages,
+            live = LiveKind.Mail,
         ),
         StockApp(
             "calendar", R.string.stock_calendar, Glyph.Calendar,

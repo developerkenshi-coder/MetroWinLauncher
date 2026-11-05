@@ -1,5 +1,7 @@
 package com.metrowin.launcher.notes
 
+import com.metrowin.launcher.data.readAtMost
+import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.zip.ZipEntry
@@ -12,13 +14,21 @@ import java.util.zip.ZipOutputStream
  */
 object NoteBackup {
     const val JSON = "notes.json"
+    private const val FILES = "files/"
     private const val MAX_JSON = 60L * 1024 * 1024
 
-    fun write(notes: List<Note>, out: OutputStream, png: (Note) -> ByteArray? = { null }) {
+    fun write(notes: List<Note>, out: OutputStream, files: (String) -> File? = { null }, png: (Note) -> ByteArray? = { null }) {
         ZipOutputStream(out).use { zip ->
             zip.putNextEntry(ZipEntry(JSON))
             zip.write(NoteCodec.encode(notes).toByteArray())
             zip.closeEntry()
+            // The photos and sounds go in once each, under the names the notes hold them by.
+            notes.flatMap { it.files }.distinct().forEach { name ->
+                val file = files(name)?.takeIf { it.isFile } ?: return@forEach
+                zip.putNextEntry(ZipEntry("$FILES$name"))
+                file.inputStream().use { it.copyTo(zip) }
+                zip.closeEntry()
+            }
             val used = HashSet<String>()
             notes.forEachIndexed { index, note ->
                 val name = unique(fileName(note, index), used)
@@ -34,19 +44,27 @@ object NoteBackup {
         }
     }
 
-    /** The notes of a backup, or null when the file is not one (or is too big to be one). */
-    fun read(input: InputStream): List<Note>? {
+    /**
+     * The notes of a backup, or null when the file is not one (or is too big to be one). The photos and sounds in it are handed to
+     * [onFile] with their names as it meets them (after the notes: that is how a backup is written).
+     */
+    fun read(input: InputStream, onFile: (String, InputStream) -> Unit = { _, _ -> }): List<Note>? {
+        var notes: List<Note>? = null
         ZipInputStream(input).use { zip ->
             var entries = 0
             while (true) {
-                val entry = zip.nextEntry ?: return null
+                val entry = zip.nextEntry ?: break
                 if (++entries > 20_000) return null
-                if (entry.name != JSON) continue
-                val bytes = zip.readNBytes((MAX_JSON + 1).toInt())
-                if (bytes.size > MAX_JSON) return null
-                return NoteCodec.decode(String(bytes)).takeIf { it.isNotEmpty() || String(bytes).contains("\"notes\"") }
+                if (entry.name == JSON && notes == null) {
+                    // readNBytes needs Android 13; this stops at the limit on every version.
+                    val bytes = zip.readAtMost(MAX_JSON.toInt()) ?: return null
+                    notes = NoteCodec.decode(String(bytes)).takeIf { it.isNotEmpty() || String(bytes).contains("\"notes\"") }
+                } else if (notes != null && entry.name.startsWith(FILES)) {
+                    onFile(entry.name.removePrefix(FILES), zip)
+                }
             }
         }
+        return notes
     }
 
     /** The note as text for anyone: its title, then what it says (the markers of [NoteText] stay: they read as a list or a title). */

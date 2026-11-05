@@ -19,6 +19,7 @@ android {
         applicationId = "com.metrowin.launcher"
         minSdk = 26
         targetSdk = 36
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         versionCode = 42
         versionName = "26.6.3S"
     }
@@ -109,4 +110,13 @@ dependencies {
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Smoke tests on a device or emulator (src/androidTest): the safety net for the big refactors.
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    // 3.7 reads the input manager the way Android 17 allows; the version the Compose test library pulls in does not.
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 }

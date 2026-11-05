@@ -248,6 +248,9 @@
     <string name="mail_bar_new">new</string>
     <string name="mail_bar_sync">sync</string>
     <string name="mail_bar_search">search</string>
+    <string name="mail_bar_threads">conversations</string>
+    <string name="mail_load_more">load more</string>
+    <string name="mail_new_count">%d new messages</string>
     <string name="mail_folder_inbox">Inbox</string>
     <string name="mail_folder_drafts">Drafts</string>
     <string name="mail_folder_sent">Sent</string>
@@ -256,6 +259,10 @@
     <string name="mail_delete">delete</string>
     <string name="mail_flag">flag</string>
     <string name="dialer_no_history">There are no calls yet.</string>
+    <string name="dialer_filter_all">all</string>
+    <string name="dialer_filter_missed">missed</string>
+    <string name="dialer_delete_call">Delete from history</string>
+    <string name="dialer_block">Block number</string>
     <string name="incall_incoming">incoming call</string>
     <string name="incall_calling">calling…</string>
     <string name="incall_on_hold">on hold</string>
@@ -267,6 +274,7 @@
     <string name="incall_keypad">keypad</string>
     <string name="incall_hide_keypad">hide keypad</string>
     <string name="incall_speaker">speaker</string>
+    <string name="incall_bluetooth">bluetooth</string>
     <string name="incall_hold">hold</string>
     <string name="incall_add">add call</string>
     <string name="incall_merge">merge calls</string>
@@ -571,6 +579,8 @@
     <string name="sync_not_file">The sync file in the folder is damaged or is not ours</string>
     <string name="sync_failed">Could not reach the folder</string>
     <string name="sync_hint">The first sync of a phone that finds a file in the folder takes it, and keeps what it had as the backup file in the folder. After that, whatever changed since the last sync goes across; if both phones changed, this one wins and the other is kept as a separate file.</string>
+    <string name="sync_others_list">Layouts kept after a sync conflict: tap one to put it back</string>
+    <string name="sync_others_clear">Delete these copies</string>
 
     <!-- notification reply and grouping -->
     <string name="notif_reply">reply</string>
@@ -1588,6 +1598,7 @@
     <string name="restore_start">The Start screens and their shortcuts</string>
     <string name="restore_settings">The settings</string>
     <string name="restore_theme">How the launcher looks</string>
+    <string name="restore_data">Things to do, reminders, named layouts and the place of the car</string>
     <string name="restore_go">Put back</string>
 
     <!-- Weather: what the forecast page and the tile can show -->
@@ -1811,6 +1822,7 @@
     <string name="update_notification_text">Version %1$s is out. Open the settings, About, to install it.</string>
     <string name="update_install_failed">The update could not be installed.</string>
     <string name="channel_update">Updates</string>
+    <string name="channel_mail">Mail</string>
     <string name="update_notes_title">What is new in %1$s</string>
     <string name="qa_device_settings">Android settings</string>
     <string name="ac_arrange">arrange</string>
@@ -1822,6 +1834,7 @@
     <string name="messages_new">new</string>
     <string name="messages_refresh">refresh</string>
     <string name="messages_empty">No messages.</string>
+    <string name="messages_delete">Delete conversation</string>
     <string name="messages_to_hint">To (number)</string>
     <string name="messages_open">Open</string>
     <string name="messages_hint">Type a message</string>
@@ -1832,6 +1845,11 @@
     <string name="messages_channel">Text messages</string>
     <string name="messages_unknown">Unknown</string>
     <string name="messages_failed">The message was not sent.</string>
+    <string name="messages_reply">Reply</string>
+    <string name="messages_search">search</string>
+    <string name="messages_copy">Copy</string>
+    <string name="messages_forward">Forward</string>
+    <string name="messages_retry">Try again</string>
     <string name="mail_signing_in">Signing in…</string>
     <string name="mail_login_failed">Could not sign in: %1$s</string>
     <string name="mail_loading">Loading…</string>
@@ -1967,6 +1985,12 @@
     <string name="notes_folder_hint">Name of the folder</string>
     <string name="notes_share">Share as text</string>
     <string name="notes_export_text">Save as a file (.md)</string>
+    <string name="notes_lost">The notes could not be read: the key of this phone that protected them is gone. The old file is kept. Restore a backup with the arrow below, or delete the file.</string>
+    <string name="notes_lost_discard">Delete the unreadable file</string>
+    <string name="notes_attach_photo">Attach a photo</string>
+    <string name="notes_attach_audio">Attach a sound</string>
+    <string name="notes_attach_failed">The file could not be attached (too big, or too many).</string>
+    <string name="notes_export_pdf">Export as PDF</string>
     <string name="notes_export_sketch">Save the sketch as a picture (.png)</string>
     <string name="notes_sketch_remove">Remove the sketch</string>
     <string name="notes_delete">Delete the note</string>
@@ -2043,7 +2067,9 @@
     <string name="cal_rem_30">30 min before</string>
     <string name="cal_rem_60">1 h before</string>
     <string name="cal_rem_day">1 day before</string>
-    <string name="cal_repeats_note">This event repeats: a change is made to all of its times.</string>
+    <string name="cal_repeats_note">This event repeats. Apply the change to:</string>
+    <string name="cal_only_this">only this event</string>
+    <string name="cal_all_events">all events</string>
     <string name="cal_need_permission">The calendar needs the permission to read and write the events of the phone.</string>
     <string name="cal_save_failed">The event could not be saved. Is there a calendar that accepts events?</string>
 
@@ -2067,7 +2093,13 @@ in front %3$s · in the background %4$s
     <string name="ds_limit">limit</string>
     <string name="ds_limit_title">Monthly limit of mobile data</string>
     <string name="ds_limit_hint">GB (0 for none)</string>
-    <string name="ds_limit_used">%1$s of %2$s this month</string>
+    <string name="ds_cycle">billing cycle</string>
+    <string name="ds_billing_day">Day the plan renews (1–28)</string>
+    <string name="channel_data">Data Sense</string>
+    <string name="ds_alert_title">Mobile data limit</string>
+    <string name="ds_alert_80">80%% reached: %1$s of %2$s</string>
+    <string name="ds_alert_100">Limit reached: %1$s of %2$s</string>
+    <string name="ds_limit_used">%1$s of %2$s</string>
     <string name="ds_photos">photos</string>
     <string name="ds_videos">videos</string>
     <string name="ds_music">music</string>

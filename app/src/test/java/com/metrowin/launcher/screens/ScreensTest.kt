@@ -34,6 +34,7 @@ import androidx.compose.ui.test.moveBy
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
@@ -478,6 +479,21 @@ class ScreensTest : ScreenshotBase() {
         advance(800)
         capture("settings_kids_opened")
         compose.onNodeWithTag("kids:start").assertExists()
+    }
+
+    @Test
+    fun aPivotTitleTouchedSwingsToItsPage() {
+        show { Settings(SettingsEnv(LauncherSettings(), onChange = {})) }
+        advance(500)
+        // The pivot titles are touched too, as in the settings of Windows Phone: the title of "behavior"
+        // opens that page, and so does one further away.
+        compose.onNodeWithText("behavior").performClick()
+        advance(900)
+        compose.onNodeWithTag("settings:section:Actions").assertExists()
+        compose.onNodeWithTag("settings:section:StartTheme").assertDoesNotExist()
+        compose.onNodeWithText("apps").performClick()
+        advance(900)
+        compose.onNodeWithTag("settings:section:Search").assertExists()
     }
 
     @Test

@@ -185,8 +185,15 @@ object FileOps {
                     copyOne(child, target, if (conflict == Conflict.KeepBoth) Conflict.Replace else conflict, progress)
                 }
             } else {
-                source.inputStream().use { input -> target.outputStream().use { output -> pipe(input, output, progress) } }
-                target.setLastModified(source.lastModified())
+                // Written beside the target and moved over it at the end, so a failure or a cancel never leaves a cut file where a good one was.
+                val part = File(targetDir, ".part-${System.nanoTime()}")
+                try {
+                    source.inputStream().use { input -> part.outputStream().use { output -> pipe(input, output, progress) } }
+                    part.setLastModified(source.lastModified())
+                    java.nio.file.Files.move(part.toPath(), target.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+                } finally {
+                    part.delete()
+                }
             }
             target
         }.getOrElse { progress.failed++; null }
@@ -214,16 +221,26 @@ object FileOps {
             val taken = target.exists()
             if (taken && conflict == Conflict.Skip) { progress.doneBytes += size(source); continue }
             val destination = if (taken && conflict == Conflict.KeepBoth) uniqueFile(targetDir, source.name) else target
-            if (taken && conflict == Conflict.Replace) delete(target)
+            // What is replaced is set aside first and deleted only when the move has worked; if it fails it goes back.
+            var aside: File? = null
+            if (taken && conflict == Conflict.Replace) {
+                aside = File(targetDir, ".old-${System.nanoTime()}")
+                if (!target.renameTo(aside)) { progress.failed++; continue }
+            }
             progress.current = source.name
             if (source.renameTo(destination)) {
+                aside?.let(::delete)
                 progress.doneBytes += size(destination)
                 made += destination
             } else {
                 // Not the same volume: copy, and delete the original only when everything arrived.
                 val before = progress.failed
                 val copied = copy(listOf(source), targetDir, if (taken && conflict == Conflict.KeepBoth) Conflict.KeepBoth else Conflict.Replace, progress)
-                if (copied.isNotEmpty() && progress.failed == before && !progress.cancelled) { delete(source); made += copied }
+                if (copied.isNotEmpty() && progress.failed == before && !progress.cancelled) {
+                    delete(source); aside?.let(::delete); made += copied
+                } else if (aside != null) {
+                    delete(target); aside.renameTo(target)
+                }
             }
         }
         return made

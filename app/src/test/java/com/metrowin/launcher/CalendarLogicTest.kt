@@ -74,3 +74,22 @@ class CalendarLogicTest {
         assertEquals(at(2026, 11, 1, 13), CalendarLogic.nextHour(at(2026, 11, 1, 12, 0), rome))
     }
 }
+
+class CalendarSeriesTest {
+    @org.junit.Test fun remindersToggleAndClear() {
+        org.junit.Assert.assertEquals(listOf(10, 60), CalendarLogic.toggleReminder(listOf(60), 10))
+        org.junit.Assert.assertEquals(listOf(60), CalendarLogic.toggleReminder(listOf(10, 60), 10))
+        org.junit.Assert.assertEquals(emptyList<Int>(), CalendarLogic.toggleReminder(listOf(10, 60), -1))
+    }
+
+    @org.junit.Test fun repeatingEventHasALengthNotAnEnd() {
+        org.junit.Assert.assertEquals("P3600S", CalendarLogic.duration(false, 0L, 3_600_000L))
+        org.junit.Assert.assertEquals("P2D", CalendarLogic.duration(true, 0L, 2 * 86_400_000L))
+        org.junit.Assert.assertEquals("P1D", CalendarLogic.duration(true, 0L, 0L))
+    }
+
+    @org.junit.Test fun seriesMovesByAsMuchAsTheOpenedTime() {
+        org.junit.Assert.assertEquals(1_000L + 500L, CalendarLogic.movedSeriesStart(1_000L, 9_000L, 9_500L))
+        org.junit.Assert.assertEquals(1_000L, CalendarLogic.movedSeriesStart(1_000L, 9_000L, 9_000L))
+    }
+}

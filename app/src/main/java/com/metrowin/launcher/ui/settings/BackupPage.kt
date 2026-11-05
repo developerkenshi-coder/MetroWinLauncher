@@ -1,6 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
 import com.metrowin.launcher.data.BackupCopies
+import com.metrowin.launcher.data.SyncConflicts
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -45,7 +46,7 @@ fun BackupPage(env: SettingsEnv) {
     val settings = env.settings
     val hasFolder = settings.backupFolder.isNotBlank()
     // The copies in the folder are read when the page opens, and again when the folder is changed.
-    LaunchedEffect(settings.backupFolder) { env.onRefreshCopies() }
+    LaunchedEffect(settings.backupFolder) { env.onRefreshCopies(); env.onRefreshSyncOthers() }
     val intervals = BackupSchedule.intervals
     val intervalNames = listOf(
         stringResource(R.string.backup_every_off), stringResource(R.string.backup_every_day),
@@ -126,6 +127,18 @@ fun BackupPage(env: SettingsEnv) {
                         stringResource(R.string.sync_now), onClick = env.onSyncNow,
                         enabled = settings.syncPassphrase.isNotEmpty(), hint = stringResource(R.string.sync_hint), tag = "sync:now", id = "sync.now",
                     )
+                    if (env.syncOthers.isNotEmpty()) {
+                        SettingLabel(stringResource(R.string.sync_others_list))
+                        val format = remember { java.time.format.DateTimeFormatter.ofLocalizedDateTime(java.time.format.FormatStyle.MEDIUM, java.time.format.FormatStyle.SHORT) }
+                        env.syncOthers.forEach { name ->
+                            MetroText(
+                                SyncConflicts.stamp(name)?.let { java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).format(format) } ?: name,
+                                size = 20.sp, weight = FontWeight.Normal,
+                                modifier = Modifier.fillMaxWidth().testTag("sync:other:$name").metroPress(onClick = { env.onRecoverSyncOther(name) }).padding(vertical = 8.dp),
+                            )
+                        }
+                        ActionSetting(stringResource(R.string.sync_others_clear), onClick = env.onClearSyncOthers, tag = "sync:others:clear")
+                    }
                 }
             }
         }

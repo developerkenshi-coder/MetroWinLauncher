@@ -1,5 +1,6 @@
 package com.metrowin.launcher.mail
 
+import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.topBarsPadding
 import android.content.Intent
 import android.net.Uri
@@ -50,6 +51,7 @@ import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.pageBackground
 import java.util.UUID
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -60,6 +62,7 @@ import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.start.whenText
 import androidx.activity.compose.BackHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.mail.Flags
@@ -78,7 +81,8 @@ fun MailScreen(modifier: Modifier = Modifier) {
     val repository = remember { MailRepository(context.applicationContext) }
     val scope = rememberCoroutineScope()
     var accounts by remember { mutableStateOf(repository.loadAccounts()) }
-    val account = accounts.firstOrNull()
+    var accountId by remember { mutableStateOf<String?>(null) }
+    val account = accounts.firstOrNull { it.id == accountId } ?: accounts.firstOrNull()
     var folder by remember { mutableStateOf(INBOX) }
     var reload by remember { mutableIntStateOf(0) }
     var messages by remember { mutableStateOf<List<MailMessage>?>(null) }
@@ -90,14 +94,31 @@ fun MailScreen(modifier: Modifier = Modifier) {
     var draft by remember { mutableStateOf(Draft()) }
     var searching by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
+    var limit by remember { mutableIntStateOf(MailClient.LIMIT) }
+    var threads by remember { mutableStateOf(false) }
+    // One login to the server for as long as the screen is there (and the account is the same).
+    val client = remember(account?.id) { account?.let(repository::client) }
+    DisposableEffect(client) { onDispose { client?.close() } }
+    // The mail is on screen: the notification of the account is no use now.
+    LaunchedEffect(account?.id) { account?.let { MailSync.dismiss(context, it.id) } }
+    // What the Mail tile counts is what the inbox has unread, so it follows what is read here.
+    suspend fun recount() {
+        val c = client ?: return
+        val a = account ?: return
+        io { c.unread(INBOX) }.onSuccess { MailSync.setUnread(context, a.id, it) }
+    }
 
-    // The messages follow the account, the folder and the refresh button.
-    LaunchedEffect(account?.id, folder, reload) {
-        val client = account?.let(repository::client) ?: return@LaunchedEffect
+    // The messages follow the account, the folder, the search, the page size and the refresh button.
+    LaunchedEffect(account?.id, folder, reload, limit, query) {
+        client ?: return@LaunchedEffect
+        account ?: return@LaunchedEffect
         error = null
+        val serverSearch = query.isNotBlank()
+        // Typing a search waits for a pause before the server is asked.
+        if (serverSearch) delay(400)
         // What was seen last time is shown at once, and the server's answer replaces it.
-        if (messages == null) messages = repository.cached(account.id, folder)
-        io { client.messages(folder) }
+        if (messages == null && !serverSearch) messages = repository.cached(account.id, folder)
+        io { client.messages(folder, limit, query) }
             .onSuccess { fresh ->
                 // The lines of the messages already read stay while the new list comes in.
                 val known = messages.orEmpty().associate { it.id to it.snippet }
@@ -105,23 +126,23 @@ fun MailScreen(modifier: Modifier = Modifier) {
                 io { client.snippets(folder, fresh.take(SNIPPETS).map { it.id.toLong() }) }.onSuccess { lines ->
                     messages = messages?.map { m -> lines[m.id]?.let { m.copy(snippet = it) } ?: m }
                 }
-                messages?.let { repository.cache(account.id, folder, it) }
+                if (!serverSearch) messages?.let { repository.cache(account.id, folder, it.take(MailClient.LIMIT)) }
+                recount()
             }
             .onFailure { error = it.message ?: it.javaClass.simpleName; messages = messages ?: emptyList() }
     }
 
     if (account == null) {
-        Box(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().padding(24.dp)) {
+        Box(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().centeredContent().padding(24.dp)) {
             OnboardingAccountSetup(onAccountAdded = { added, password ->
                 repository.saveAccount(added, password)
                 accounts = repository.loadAccounts()
+                MailSync.schedule(context)
                 messages = null
             })
         }
         return
     }
-    val client = repository.client(account)
-
     BackHandler(enabled = selected != null || composing) { if (composing) composing = false else selected = null }
 
     val open = selected
@@ -175,8 +196,10 @@ fun MailScreen(modifier: Modifier = Modifier) {
 
     if (composing) {
         ComposeView(
-            draft = draft, onClose = { composing = false },
-            onSend = { d, files -> io { client?.send(d.to.trim(), d.cc.trim(), d.subject, d.text, files) ?: error("no password") }.map { Unit } },
+            draft = draft, onChange = { draft = it }, onClose = { composing = false },
+            onSend = { d, files ->
+                io { client?.send(d.to.trim(), d.cc.trim(), d.subject, d.text, files) ?: error("no password") }.map { Unit }.onSuccess { draft = Draft() }
+            },
         )
         return
     }
@@ -189,12 +212,11 @@ fun MailScreen(modifier: Modifier = Modifier) {
         when {
             searching -> { searching = false; query = "" }
             pager.currentPage != 0 -> scope.launch { pager.animateScrollToPage(0) }
-            else -> { folder = INBOX; messages = null }
+            else -> { folder = INBOX; messages = null; limit = MailClient.LIMIT }
         }
     }
-    fun shown(filter: (MailMessage) -> Boolean) = messages?.filter(filter)?.filter {
-        query.isBlank() || it.subject.contains(query, ignoreCase = true) || it.senderName.contains(query, ignoreCase = true)
-    }
+    // The search itself is done by the server (it also looks at the address of the sender), so the list is not narrowed again here.
+    fun shown(filter: (MailMessage) -> Boolean) = messages?.filter(filter)
     fun read(message: MailMessage) {
         selected = message
         body = null
@@ -203,12 +225,22 @@ fun MailScreen(modifier: Modifier = Modifier) {
         scope.launch {
             client?.let { c -> io { c.body(folder, message.id.toLong()) } }
                 ?.onSuccess { body = it }?.onFailure { bodyFailure = it.message ?: it.javaClass.simpleName }
+            recount()
         }
     }
 
-    Column(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding()) {
+    Column(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().centeredContent()) {
         Column(Modifier.padding(start = 24.dp, top = 20.dp, bottom = 4.dp)) {
-            MetroText(account.email.uppercase(), size = 14.sp, weight = FontWeight.Bold, color = LocalAccent.current, maxLines = 1)
+            // With several accounts, a tap on the address goes to the next one.
+            MetroText(
+                account.email.uppercase(), size = 14.sp, weight = FontWeight.Bold, color = LocalAccent.current, maxLines = 1,
+                modifier = Modifier.testTag("mail:account").metroPress(onClick = {
+                    if (accounts.size > 1) {
+                        accountId = accounts[(accounts.indexOf(account) + 1) % accounts.size].id
+                        messages = null; folder = INBOX; error = null; limit = MailClient.LIMIT
+                    }
+                }),
+            )
             PivotHeader(titles, pager, Modifier.padding(top = 4.dp))
         }
         if (searching) MetroTextField(query, { query = it }, stringResource(R.string.mail_bar_search), Modifier.padding(horizontal = 24.dp, vertical = 4.dp).testTag("mail:search"))
@@ -216,22 +248,26 @@ fun MailScreen(modifier: Modifier = Modifier) {
         HorizontalPager(pager, Modifier.weight(1f), beyondViewportPageCount = 1) { page ->
             Box(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                 when (page) {
-                    0 -> InboxPage(shown { true }, ::read)
-                    1 -> InboxPage(shown { it.isUnread }, ::read)
-                    2 -> InboxPage(shown { it.isFlagged }, ::read)
-                    3 -> FoldersPage(client, current = folder) { path -> folder = path; messages = null; scope.launch { pager.animateScrollToPage(0) } }
+                    0 -> InboxPage(shown { true }, ::read, messages.orEmpty().size >= limit, threads) { limit += MailClient.LIMIT }
+                    1 -> InboxPage(shown { it.isUnread }, ::read, messages.orEmpty().size >= limit, threads) { limit += MailClient.LIMIT }
+                    2 -> InboxPage(shown { it.isFlagged }, ::read, messages.orEmpty().size >= limit, threads) { limit += MailClient.LIMIT }
+                    3 -> FoldersPage(client, current = folder) { path -> folder = path; messages = null; limit = MailClient.LIMIT; scope.launch { pager.animateScrollToPage(0) } }
                     else -> AccountsPage(
                         accounts = accounts,
                         onAddAccount = { added, password ->
                             repository.saveAccount(added, password)
                             accounts = repository.loadAccounts()
+                            MailSync.schedule(context)
                             if (accounts.size == 1) messages = null
                         },
                         onRemoveAccount = { id ->
                             repository.removeAccount(id)
+                            MailSync.forget(context, id)
                             accounts = repository.loadAccounts()
+                            MailSync.schedule(context)
                             messages = null
                             folder = INBOX
+                            limit = MailClient.LIMIT
                         },
                     )
                 }
@@ -239,9 +275,10 @@ fun MailScreen(modifier: Modifier = Modifier) {
         }
         AppBar(
             listOf(
-                AppBarItem("＋", stringResource(R.string.mail_bar_new)) { draft = Draft(); composing = true },
+                AppBarItem("＋", stringResource(R.string.mail_bar_new)) { composing = true },
                 AppBarItem("↻", stringResource(R.string.mail_bar_sync)) { reload++ },
                 AppBarItem("⌕", stringResource(R.string.mail_bar_search)) { searching = !searching; if (!searching) query = "" },
+                AppBarItem("☰", stringResource(R.string.mail_bar_threads)) { threads = !threads }.marked(threads),
             ),
         )
     }
@@ -386,8 +423,7 @@ private fun OnboardingAccountSetup(onAccountAdded: (MailAccount, String) -> Unit
 }
 
 @Composable
-private fun InboxPage(messages: List<MailMessage>?, onSelectMessage: (MailMessage) -> Unit) {
-    val colors = LocalMetroColors.current
+private fun InboxPage(messages: List<MailMessage>?, onSelectMessage: (MailMessage) -> Unit, hasMore: Boolean, grouped: Boolean, onMore: () -> Unit) {
     if (messages == null) {
         PageNote(stringResource(R.string.mail_loading), Modifier.padding(top = 16.dp))
         return
@@ -396,20 +432,39 @@ private fun InboxPage(messages: List<MailMessage>?, onSelectMessage: (MailMessag
         PageNote(stringResource(R.string.mail_empty_inbox), Modifier.padding(top = 16.dp))
         return
     }
+    // A conversation opens in place, to show the messages of it one under the other.
+    var open by remember { mutableStateOf(emptySet<String>()) }
+    val threads = remember(messages, grouped) { if (grouped) MailThreads.group(messages) else messages.map { listOf(it) } }
     LazyColumn(Modifier.fillMaxSize().testTag("mail:inbox")) {
-        items(messages, key = { it.id }) { msg ->
-            Row(Modifier.fillMaxWidth().metroPress(onClick = { onSelectMessage(msg) }).padding(vertical = 8.dp), verticalAlignment = Alignment.Top) {
-                Column(Modifier.weight(1f)) {
-                    MetroText(msg.senderName, size = 22.sp, weight = if (msg.isUnread) FontWeight.SemiBold else FontWeight.Light)
-                    MetroText(msg.subject, size = 16.sp, weight = FontWeight.Normal, color = if (msg.isUnread) LocalAccent.current else colors.subtle)
-                    if (msg.snippet.isNotBlank()) MetroText(msg.snippet, size = 13.sp, weight = FontWeight.Normal, color = colors.subtle.copy(alpha = 0.8f))
-                }
-                Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(start = 8.dp)) {
-                    MetroText(whenText(msg.timestamp), size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
-                    if (msg.hasAttachments) MetroText("📎", size = 14.sp, color = colors.subtle)
-                    if (msg.isFlagged) MetroText("⚑", size = 16.sp, color = LocalAccent.current)
-                }
+        threads.forEach { thread ->
+            val head = thread.first()
+            val expanded = thread.size > 1 && head.id in open
+            item(key = head.id) {
+                MessageRow(head, if (thread.size > 1) thread.size else 0, onClick = { if (thread.size == 1) onSelectMessage(head) else open = if (expanded) open - head.id else open + head.id })
             }
+            if (expanded) items(thread, key = { "${head.id}/${it.id}" }) { MessageRow(it, 0, Modifier.padding(start = 20.dp)) { onSelectMessage(it) } }
+        }
+        if (hasMore) item {
+            MetroButton(stringResource(R.string.mail_load_more), Modifier.fillMaxWidth().padding(vertical = 12.dp).testTag("mail:more"), onClick = onMore)
+        }
+    }
+}
+
+/** A line of the list; [count] is how many messages the conversation it stands for has (0 for a message on its own). */
+@Composable
+private fun MessageRow(msg: MailMessage, count: Int, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val colors = LocalMetroColors.current
+    Row(modifier.fillMaxWidth().metroPress(onClick = onClick).padding(vertical = 8.dp), verticalAlignment = Alignment.Top) {
+        Column(Modifier.weight(1f)) {
+            MetroText(msg.senderName, size = 22.sp, weight = if (msg.isUnread) FontWeight.SemiBold else FontWeight.Light)
+            MetroText(msg.subject, size = 16.sp, weight = FontWeight.Normal, color = if (msg.isUnread) LocalAccent.current else colors.subtle)
+            if (msg.snippet.isNotBlank()) MetroText(msg.snippet, size = 13.sp, weight = FontWeight.Normal, color = colors.subtle.copy(alpha = 0.8f))
+        }
+        Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(start = 8.dp)) {
+            MetroText(whenText(msg.timestamp), size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
+            if (count > 0) MetroText(count.toString(), size = 16.sp, color = LocalAccent.current)
+            if (msg.hasAttachments) MetroText("📎", size = 14.sp, color = colors.subtle)
+            if (msg.isFlagged) MetroText("⚑", size = 16.sp, color = LocalAccent.current)
         }
     }
 }

@@ -121,6 +121,35 @@ class NotesModelTest {
         assertEquals(listOf(new, other), NoteBackup.merge(listOf(new, other), listOf(old)))
     }
 
+    @Test
+    fun `the files of a note go in the JSON and the backup, and a name that is a path is dropped`() {
+        val note = Note("f1", "Trip", "x", files = listOf("11111111-2222.jpg", "a.m4a"))
+        assertEquals(listOf("11111111-2222.jpg", "a.m4a"), NoteCodec.decode(NoteCodec.encode(listOf(note))).single().files)
+        val evil = NoteCodec.encode(listOf(note)).replace("a.m4a", "../../x.m4a")
+        assertEquals(listOf("11111111-2222.jpg"), NoteCodec.decode(evil).single().files)
+        assertFalse(Note("f2", files = listOf("a.jpg")).isBlank)
+
+        val dir = folder.newFolder("held")
+        java.io.File(dir, "11111111-2222.jpg").writeBytes(byteArrayOf(9, 8, 7))
+        val out = ByteArrayOutputStream()
+        NoteBackup.write(listOf(note), out, { name -> java.io.File(dir, name) })
+        val got = HashMap<String, List<Byte>>()
+        val notes = NoteBackup.read(ByteArrayInputStream(out.toByteArray())) { name, stream -> got[name] = stream.readBytes().toList() }
+        assertEquals(listOf(note), notes)
+        assertEquals(mapOf("11111111-2222.jpg" to listOf<Byte>(9, 8, 7)), got)
+    }
+
+    @Test
+    fun `an unreadable file is reported and can be dropped`() {
+        val file = folder.newFile("n.dat").also { it.writeText("garbage") }
+        val store = NoteStore(file, Plain)
+        assertFalse(store.hasUnreadable())
+        store.load()
+        assertTrue(store.hasUnreadable())
+        store.discardUnreadable()
+        assertFalse(store.hasUnreadable())
+    }
+
     private object Plain : NoteCrypt {
         override fun encrypt(plain: String) = "enc:$plain"
         override fun decrypt(text: String) = text.removePrefix("enc:").takeIf { text.startsWith("enc:") }

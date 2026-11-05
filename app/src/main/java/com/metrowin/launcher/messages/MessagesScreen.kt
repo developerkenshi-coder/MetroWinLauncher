@@ -1,7 +1,10 @@
 package com.metrowin.launcher.messages
 
+import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.topBarsPadding
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -48,6 +51,7 @@ import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.pages.PageNote
+import com.metrowin.launcher.ui.start.DialogFrame
 import com.metrowin.launcher.ui.start.whenText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -80,30 +84,48 @@ fun MessagesScreen(address: String?, body: String, onAddress: (String?) -> Unit,
     val conversations by produceState<List<Conversation>?>(null, allowed, refresh) {
         value = if (allowed) withContext(Dispatchers.IO) { repository.conversations() } else emptyList()
     }
+    // A message being forwarded waits here until a conversation is chosen for it.
+    var forward by remember { mutableStateOf<String?>(null) }
     BackHandler(enabled = address != null) { onAddress(null); refresh++ }
-    Column(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().imePadding()) {
+    Column(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().imePadding().centeredContent()) {
         when {
             !allowed -> Column(Modifier.padding(24.dp)) {
                 PageNote(stringResource(R.string.messages_need_sms))
                 MetroButton(stringResource(R.string.page_allow), Modifier.fillMaxWidth().padding(top = 8.dp)) { ask.launch(permissions.toTypedArray()) }
             }
-            address != null -> ThreadPage(address, body, onBody, repository, conversations.orEmpty(), onChanged = { refresh++ })
-            else -> ListPage(conversations, repository, onOpen = onAddress, onRefresh = { refresh++ })
+            address != null -> ThreadPage(address, body, onBody, repository, conversations.orEmpty(), onChanged = { refresh++ }, onForward = { forward = it; onAddress(null); refresh++ })
+            else -> ListPage(conversations, repository, forward, onDropForward = { forward = null }, onOpen = { chosen -> forward?.let { onBody(it); forward = null }; onAddress(chosen) }, onRefresh = { refresh++ })
         }
     }
 }
 
 @Composable
-private fun ListPage(conversations: List<Conversation>?, repository: SmsRepository, onOpen: (String) -> Unit, onRefresh: () -> Unit) {
+private fun ListPage(conversations: List<Conversation>?, repository: SmsRepository, forward: String?, onDropForward: () -> Unit, onOpen: (String) -> Unit, onRefresh: () -> Unit) {
     val context = LocalContext.current
     val colors = LocalMetroColors.current
     var isDefault by remember { mutableStateOf(SmsRole.isDefault(context)) }
     val role = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { isDefault = SmsRole.isDefault(context) }
     val roleIntent = remember { SmsRole.requestIntent(context) }
-    var composing by remember { mutableStateOf(false) }
+    var composing by remember(forward) { mutableStateOf(forward != null) }
+    var searching by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    val bodyHits by produceState(emptyList<Conversation>(), query) {
+        value = if (query.trim().length >= 2) withContext(Dispatchers.IO) { repository.search(query.trim()) } else emptyList()
+    }
+    // A name matches too, a text matches by what it says.
+    val shown = if (query.isBlank()) conversations else (conversations.orEmpty().filter { it.title.contains(query.trim(), ignoreCase = true) } + bodyHits).distinctBy { it.threadId }
+    var toDelete by remember { mutableStateOf<Conversation?>(null) }
+    toDelete?.let { item ->
+        DialogFrame(onCancel = { toDelete = null }) {
+            MetroText(item.title, size = 22.sp, maxLines = 1)
+            MetroButton(stringResource(R.string.messages_delete), Modifier.fillMaxWidth().testTag("messages:delete")) {
+                repository.delete(item.threadId); toDelete = null; onRefresh()
+            }
+        }
+    }
     var number by remember { mutableStateOf("") }
     val pager = rememberPagerState { 1 }
-    BackHandler(enabled = composing) { composing = false }
+    BackHandler(enabled = composing || searching) { composing = false; searching = false; query = ""; onDropForward() }
     Column(Modifier.fillMaxSize()) {
         PivotHeader(listOf(stringResource(R.string.messages_title)), pager, Modifier.padding(start = 24.dp, top = 20.dp, bottom = 8.dp))
         Column(Modifier.weight(1f).padding(horizontal = 24.dp)) {
@@ -115,13 +137,14 @@ private fun ListPage(conversations: List<Conversation>?, repository: SmsReposito
                 MetroTextField(number, { number = it.filter { c -> c.isDigit() || c == '+' } }, stringResource(R.string.messages_to_hint), Modifier.padding(bottom = 6.dp).testTag("messages:to"), keyboardType = KeyboardType.Phone)
                 MetroButton(stringResource(R.string.messages_open), Modifier.fillMaxWidth().padding(bottom = 8.dp)) { if (number.isNotEmpty()) { composing = false; onOpen(number); number = "" } }
             }
-            if (conversations?.isEmpty() == true) PageNote(stringResource(R.string.messages_empty), Modifier.testTag("messages:empty"))
+            if (searching) MetroTextField(query, { query = it }, stringResource(R.string.messages_search), Modifier.padding(bottom = 6.dp).testTag("messages:search"))
+            if (shown?.isEmpty() == true) PageNote(stringResource(R.string.messages_empty), Modifier.testTag("messages:empty"))
             LazyColumn(Modifier.fillMaxSize().testTag("messages:list")) {
-                items(conversations.orEmpty(), key = { it.threadId }) { item ->
+                items(shown.orEmpty(), key = { it.threadId }) { item ->
                     Row(
                         Modifier.fillMaxWidth().testTag("messages:thread").metroPress(
                             onClick = { onOpen(item.address) },
-                            onLongClick = { if (isDefault) { repository.delete(item.threadId); onRefresh() } },
+                            onLongClick = { if (isDefault) toDelete = item },
                         ).padding(vertical = 7.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -140,6 +163,7 @@ private fun ListPage(conversations: List<Conversation>?, repository: SmsReposito
         AppBar(
             listOf(
                 AppBarItem("＋", stringResource(R.string.messages_new)) { composing = !composing },
+                AppBarItem("⌕", stringResource(R.string.messages_search)) { searching = !searching; if (!searching) query = "" },
                 AppBarItem("↻", stringResource(R.string.messages_refresh), onRefresh),
             ),
         )
@@ -147,7 +171,7 @@ private fun ListPage(conversations: List<Conversation>?, repository: SmsReposito
 }
 
 @Composable
-private fun ThreadPage(address: String, prefill: String, onBody: (String) -> Unit, repository: SmsRepository, conversations: List<Conversation>, onChanged: () -> Unit) {
+private fun ThreadPage(address: String, prefill: String, onBody: (String) -> Unit, repository: SmsRepository, conversations: List<Conversation>, onChanged: () -> Unit, onForward: (String) -> Unit) {
     val context = LocalContext.current
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
@@ -160,6 +184,18 @@ private fun ThreadPage(address: String, prefill: String, onBody: (String) -> Uni
     var sentHere by remember { mutableStateOf(emptyList<Sms>()) }
     var text by remember(address) { mutableStateOf(prefill.ifEmpty { repository.draft(address) }) }
     var failed by remember { mutableStateOf(false) }
+    var picked by remember { mutableStateOf<Sms?>(null) }
+    picked?.let { sms ->
+        DialogFrame(onCancel = { picked = null }) {
+            if (sms.failed) MetroButton(stringResource(R.string.messages_retry), Modifier.fillMaxWidth().testTag("messages:retry")) {
+                failed = !repository.retry(address, sms); picked = null; version++; onChanged()
+            }
+            MetroButton(stringResource(R.string.messages_copy), Modifier.fillMaxWidth().testTag("messages:copy")) {
+                context.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("sms", sms.body)); picked = null
+            }
+            MetroButton(stringResource(R.string.messages_forward), Modifier.fillMaxWidth().testTag("messages:forward")) { picked = null; onForward(sms.body) }
+        }
+    }
     LaunchedEffect(thread?.threadId) {
         thread?.let {
             withContext(Dispatchers.IO) { repository.markRead(it.threadId) }
@@ -171,12 +207,13 @@ private fun ThreadPage(address: String, prefill: String, onBody: (String) -> Uni
     Column(Modifier.fillMaxSize()) {
         MetroText(title, size = 30.sp, maxLines = 1, modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 8.dp))
         LazyColumn(Modifier.weight(1f).padding(horizontal = 16.dp).testTag("messages:bubbles"), reverseLayout = true, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            items((messages + sentHere).sortedByDescending { it.date }, key = { "${it.id}:${it.date}" }) { sms ->
+            items((messages + sentHere).sortedByDescending { it.date }, key = { "${it.mms}:${it.id}:${it.date}" }) { sms ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = if (sms.outgoing) Arrangement.End else Arrangement.Start) {
                     Column(
-                        Modifier.widthIn(max = 280.dp).background(if (sms.outgoing) accent else colors.surface).padding(horizontal = 12.dp, vertical = 8.dp),
+                        Modifier.widthIn(max = 280.dp).background(if (sms.outgoing) accent else colors.surface).metroPress(onClick = {}, onLongClick = { picked = sms }).padding(horizontal = 12.dp, vertical = 8.dp),
                     ) {
-                        MetroText(sms.body, size = 18.sp, weight = FontWeight.Normal, color = if (sms.outgoing) androidx.compose.ui.graphics.Color.White else colors.foreground)
+                        sms.image?.let { Picture(it, repository) }
+                        if (sms.body.isNotBlank()) MetroText(sms.body, size = 18.sp, weight = FontWeight.Normal, color = if (sms.outgoing) androidx.compose.ui.graphics.Color.White else colors.foreground)
                         MetroText(
                             if (sms.failed) stringResource(R.string.messages_failed) else whenText(sms.date), size = 11.sp, weight = FontWeight.Normal,
                             color = if (sms.outgoing) androidx.compose.ui.graphics.Color.White.copy(alpha = 0.75f) else colors.subtle,
@@ -186,7 +223,8 @@ private fun ThreadPage(address: String, prefill: String, onBody: (String) -> Uni
             }
         }
         if (failed) PageNote(stringResource(R.string.messages_failed), Modifier.padding(horizontal = 24.dp))
-        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        // A group is read here: writing to it is a multimedia message, which this app does not send.
+        if (',' !in address) Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.weight(1f)) { MetroTextField(text, { text = it }, stringResource(R.string.messages_hint), Modifier.testTag("messages:field"), singleLine = false) }
             MetroButton(stringResource(R.string.messages_send), Modifier.padding(start = 8.dp).testTag("messages:send")) {
                 val body = text.trim()
@@ -203,4 +241,11 @@ private fun ThreadPage(address: String, prefill: String, onBody: (String) -> Uni
             }
         }
     }
+}
+
+/** A picture of a multimedia message, read down to the size of a bubble. */
+@Composable
+private fun Picture(uri: android.net.Uri, repository: SmsRepository) {
+    val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, uri) { value = withContext(Dispatchers.IO) { repository.picture(uri, 560) } }
+    bitmap?.let { androidx.compose.foundation.Image(it, null, Modifier.fillMaxWidth().padding(bottom = 4.dp), contentScale = androidx.compose.ui.layout.ContentScale.FillWidth) }
 }

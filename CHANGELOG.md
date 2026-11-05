@@ -3,6 +3,16 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
+## Next release / Prossima versione
+
+**English:**
+- **Search, enter opens the first result**: the search key of the keyboard opens the first row (an app, an answer, a contact, a setting, a tile, a notification, a file, an event, or the web search if nothing else matched); with nothing typed it opens nothing. A search asked for without typing (double press of Home, double touch above Start, search button of the navigation bar) now scrolls the list back to the search box before opening the keyboard. Thanks to [@ls-lnb](https://github.com/ls-lnb) (pull request #2).
+- **Pivot titles are touchable**: as in Windows Phone, a touch on a big title at the top swings to that page, in every screen with a pivot. Thanks to [@ls-lnb](https://github.com/ls-lnb) (pull request #2).
+
+**Italiano:**
+- **Ricerca, invio apre il primo risultato**: il tasto di ricerca della tastiera apre la prima riga (un'app, una risposta, un contatto, un'impostazione, un riquadro, una notifica, un file, un evento, o la ricerca web se nient'altro corrisponde); senza testo non apre nulla. Una ricerca chiesta senza scrivere (doppio Home, doppio tocco sopra Start, pulsante di ricerca della barra di navigazione) riporta prima la lista alla casella di ricerca e poi apre la tastiera. Grazie a [@ls-lnb](https://github.com/ls-lnb) (pull request #2).
+- **Titoli del pivot toccabili**: come in Windows Phone, un tocco sul grande titolo in alto porta a quella pagina, in ogni schermata con un pivot. Grazie a [@ls-lnb](https://github.com/ls-lnb) (pull request #2).
+
 ## 26.6.3S: 2026-11-05
 
 **English:**

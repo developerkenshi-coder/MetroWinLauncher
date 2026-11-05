@@ -1,5 +1,6 @@
 package com.metrowin.launcher.mail
 
+import com.metrowin.launcher.ui.components.centeredContent
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
@@ -14,6 +15,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import com.metrowin.launcher.data.readAtMost
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,10 +56,12 @@ private const val MAX_ATTACHED = 20L * 1024 * 1024
 
 /** The screen where a message is written: the addresses, the subject, the text and the files to send with it. */
 @Composable
-fun ComposeView(draft: Draft, onClose: () -> Unit, onSend: suspend (Draft, List<Outgoing>) -> Result<Unit>) {
+fun ComposeView(draft: Draft, onChange: (Draft) -> Unit, onClose: () -> Unit, onSend: suspend (Draft, List<Outgoing>) -> Result<Unit>) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var current by remember { mutableStateOf(draft) }
+    // The text is kept by the screen, so Back does not lose it; the files are not (shortcut: re-attach after Back).
+    LaunchedEffect(current) { onChange(current) }
     var files by remember { mutableStateOf(emptyList<Outgoing>()) }
     var sending by remember { mutableStateOf(false) }
     var failure by remember { mutableStateOf<String?>(null) }
@@ -65,11 +70,11 @@ fun ComposeView(draft: Draft, onClose: () -> Unit, onSend: suspend (Draft, List<
         scope.launch {
             val read = withContext(Dispatchers.IO) { uris.mapNotNull { runCatching { readFile(context, it) }.getOrNull() } }
             val all = files + read
-            tooBig = all.sumOf { it.third.size.toLong() } > MAX_ATTACHED
+            tooBig = read.size < uris.size || all.sumOf { it.third.size.toLong() } > MAX_ATTACHED
             if (!tooBig) files = all
         }
     }
-    Column(Modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().imePadding().padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().imePadding().centeredContent().padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             MetroButton(stringResource(R.string.mail_back), onClick = onClose)
             MetroButton(stringResource(if (sending) R.string.mail_sending else R.string.mail_send), Modifier.testTag("mail:send")) {
@@ -102,6 +107,7 @@ fun ComposeView(draft: Draft, onClose: () -> Unit, onSend: suspend (Draft, List<
 private fun readFile(context: Context, uri: Uri): Outgoing {
     val resolver = context.contentResolver
     val name = resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { if (it.moveToFirst()) it.getString(0) else null } ?: "file"
-    val bytes = resolver.openInputStream(uri)?.use { it.readBytes() } ?: error("unreadable")
+    // Stops at the limit instead of loading a file of any size into memory.
+    val bytes = resolver.openInputStream(uri)?.use { it.readAtMost(MAX_ATTACHED.toInt()) } ?: error("unreadable or too big")
     return Triple(name, resolver.getType(uri) ?: "application/octet-stream", bytes)
 }

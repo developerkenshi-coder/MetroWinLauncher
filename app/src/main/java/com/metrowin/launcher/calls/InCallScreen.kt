@@ -61,7 +61,7 @@ private val Red = Color(0xFFD13438)
 /** What the screen of a call can do; each is one line of [CallManager] or of the activity. */
 class CallActions(
     val onAnswer: (Int) -> Unit, val onDecline: (Int) -> Unit, val onHangUp: (Int) -> Unit, val onHold: (Int, Boolean) -> Unit,
-    val onMute: (Boolean) -> Unit, val onSpeaker: (Boolean) -> Unit, val onTone: (Int, Char) -> Unit, val onMerge: (Int) -> Unit, val onAddCall: () -> Unit,
+    val onMute: (Boolean) -> Unit, val onRoute: () -> Unit, val onTone: (Int, Char) -> Unit, val onMerge: (Int) -> Unit, val onAddCall: () -> Unit,
 )
 
 /**
@@ -124,7 +124,9 @@ fun InCallScreen(lines: List<CallLine>, audio: CallAudio, actions: CallActions, 
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                         RoundButton(CallIcon.Mute, stringResource(R.string.incall_mute), audio.muted, "incall:mute") { actions.onMute(!audio.muted) }
                         RoundButton(CallIcon.Keypad, stringResource(R.string.incall_keypad), false, "incall:keypad") { keypad = true }
-                        RoundButton(CallIcon.Speaker, stringResource(R.string.incall_speaker), audio.speaker, "incall:speaker") { actions.onSpeaker(!audio.speaker) }
+                        RoundButton(
+                            CallIcon.Speaker, stringResource(if (audio.bluetooth) R.string.incall_bluetooth else R.string.incall_speaker), audio.speaker || audio.bluetooth, "incall:speaker",
+                        ) { actions.onRoute() }
                     }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                         RoundButton(CallIcon.Hold, stringResource(R.string.incall_hold), main.held, "incall:hold", enabled = main.canHold) { actions.onHold(main.id, !main.held) }

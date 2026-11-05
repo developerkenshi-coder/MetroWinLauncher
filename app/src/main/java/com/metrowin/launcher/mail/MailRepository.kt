@@ -36,7 +36,7 @@ class MailRepository(context: Context) {
     /** Adds [account] with its [password]. */
     fun saveAccount(account: MailAccount, password: String) {
         write(loadAccounts().filter { it.id != account.id } + account)
-        prefs.edit { putString(KEY_PASSWORD + account.id, SecureStore.encrypt(password)) }
+        SecureStore.putSecure(prefs, KEY_PASSWORD + account.id, password)
     }
 
     fun removeAccount(accountId: String) {
@@ -70,13 +70,13 @@ class MailRepository(context: Context) {
                 put("snippet", it.snippet); put("time", it.timestamp); put("unread", it.isUnread); put("flagged", it.isFlagged); put("att", it.hasAttachments)
             })
         }
-        prefs.edit { putString(KEY_CACHE + accountId + folder, SecureStore.encrypt(json.toString())) }
+        SecureStore.putSecure(prefs, KEY_CACHE + accountId + folder, json.toString())
     }
 
     /** The way into the mailbox: the password, or, for an account that signed in on the page of Microsoft, a token made from the kept refresh token. */
     fun client(account: MailAccount): MailClient? = password(account.id)?.let { secret ->
         if (account.oauth == "microsoft") {
-            MailClient(account) { MicrosoftOAuth.accessToken(secret) { fresh -> prefs.edit { putString(KEY_PASSWORD + account.id, SecureStore.encrypt(fresh)) } } }
+            MailClient(account) { MicrosoftOAuth.accessToken(secret) { fresh -> SecureStore.putSecure(prefs, KEY_PASSWORD + account.id, fresh) } }
         } else {
             MailClient(account) { secret }
         }
@@ -95,7 +95,7 @@ class MailRepository(context: Context) {
                 },
             )
         }
-        prefs.edit { putString(KEY_ACCOUNTS, SecureStore.encrypt(json.toString())) }
+        SecureStore.putSecure(prefs, KEY_ACCOUNTS, json.toString())
     }
 
     private companion object {

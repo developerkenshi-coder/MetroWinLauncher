@@ -320,7 +320,7 @@ class ExtraTilesUiTest : ScreenshotBase() {
         advance(300)
         compose.onNodeWithTag("restore:Settings").performClick()
         compose.onNodeWithTag("restore:go").performClick()
-        assertEquals(setOf(com.metrowin.launcher.data.RestorePart.Start, com.metrowin.launcher.data.RestorePart.Theme), chosen)
+        assertEquals(setOf(com.metrowin.launcher.data.RestorePart.Start, com.metrowin.launcher.data.RestorePart.Theme, com.metrowin.launcher.data.RestorePart.Data), chosen)
     }
 
     @Test

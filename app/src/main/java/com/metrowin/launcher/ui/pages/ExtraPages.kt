@@ -97,13 +97,14 @@ fun RecorderPage(label: String, allowed: Boolean, onAllow: () -> Unit, modifier:
     val store = remember { Recordings(context) }
     val recorder = remember { VoiceRecorder(context, store) }
     DisposableEffect(recorder) { onDispose { recorder.release() } }
-    var recording by remember { mutableStateOf(false) }
-    var startedAt by remember { mutableLongStateOf(0L) }
+    // The recording is the process's, not the page's: it is still there when the page is back, and a stop from the notification shows here.
+    val recording = VoiceRecorder.active
+    val startedAt = VoiceRecorder.startedAt
     var elapsed by remember { mutableLongStateOf(0L) }
     var playing by remember { mutableStateOf<String?>(null) }
     var failed by remember { mutableStateOf(false) }
     var version by remember { mutableIntStateOf(0) }
-    val files = remember(version) { store.list() }
+    val files = remember(version, recording) { store.list() }
     // The recording being given a name, and the name as typed.
     var renaming by remember { mutableStateOf<String?>(null) }
     var newName by remember { mutableStateOf("") }
@@ -126,12 +127,9 @@ fun RecorderPage(label: String, allowed: Boolean, onAllow: () -> Unit, modifier:
             ) {
                 if (recording) {
                     recorder.stop()
-                    recording = false
                     version++
                 } else if (recorder.start()) {
                     failed = false
-                    startedAt = SystemClock.elapsedRealtime()
-                    recording = true
                 } else {
                     failed = true
                 }

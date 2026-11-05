@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.weather
 
+import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.data.WeatherBlock
 import com.metrowin.launcher.data.OpenMeteo
@@ -64,6 +65,7 @@ fun WeatherScreen(
             .topBarsPadding()
             .navigationBarsPadding()
             .cutoutSidesPadding()
+            .centeredContent()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp),
     ) {

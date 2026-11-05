@@ -90,6 +90,7 @@ fun DataSenseScreen() {
     val reader = remember { UsageReader(context) }
     val prefs = remember { context.getSharedPreferences("metrowin_datasense", Context.MODE_PRIVATE) }
     var limitMb by remember { mutableLongStateOf(prefs.getLong("limit_mb", 0L)) }
+    var billDay by remember { mutableIntStateOf(prefs.getInt("bill_day", 1)) }
     var editingLimit by remember { mutableStateOf(false) }
     var refresh by remember { mutableIntStateOf(0) }
     MiniFrame {
@@ -103,7 +104,7 @@ fun DataSenseScreen() {
                     PageNote(stringResource(R.string.ds_need_access))
                     MetroButton(stringResource(R.string.recorder_allow), Modifier.padding(top = 14.dp).testTag("ds:allow")) { UsageAccess.openSettings(context) }
                 } else when (page) {
-                    0 -> DataPage(reader, limitMb, refresh)
+                    0 -> DataPage(reader, limitMb, billDay, refresh)
                     1 -> StoragePage(reader, refresh)
                     2 -> TimePage(reader, refresh)
                     3 -> BatteryPage(reader, refresh)
@@ -120,12 +121,17 @@ fun DataSenseScreen() {
     }
     if (editingLimit) {
         var text by remember { mutableStateOf(if (limitMb > 0) (limitMb / 1000.0).toString().removeSuffix(".0") else "") }
+        var dayText by remember { mutableStateOf(billDay.toString()) }
         DialogFrame(onCancel = { editingLimit = false }) {
             MetroText(stringResource(R.string.ds_limit_title), size = 20.sp, weight = FontWeight.Normal)
             MetroTextField(text, { text = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(8) }, stringResource(R.string.ds_limit_hint), Modifier.testTag("ds:limit"), keyboardType = KeyboardType.Decimal)
+            MetroTextField(dayText, { dayText = it.filter(Char::isDigit).take(2) }, stringResource(R.string.ds_billing_day), Modifier.testTag("ds:billday"), keyboardType = KeyboardType.Number)
             MetroButton(stringResource(R.string.todo_save), Modifier.fillMaxWidth().testTag("ds:limit:ok")) {
+                billDay = (dayText.toIntOrNull() ?: 1).coerceIn(1, 28)
+                prefs.edit { putInt("bill_day", billDay) }
                 limitMb = ((text.replace(',', '.').toDoubleOrNull() ?: 0.0) * 1000).toLong().coerceIn(0, 100_000_000)
                 prefs.edit { putLong("limit_mb", limitMb) }
+                DataLimitWatch.schedule(context)
                 editingLimit = false
             }
         }
@@ -136,16 +142,16 @@ private val WifiColor = Color(0xFF1BA1E2)
 private val MobileColor = Color(0xFFF09609)
 
 @Composable
-private fun DataPage(reader: UsageReader, limitMb: Long, refresh: Int) {
+private fun DataPage(reader: UsageReader, limitMb: Long, billDay: Int, refresh: Int) {
     var period by remember { mutableStateOf(DataPeriod.Week) }
     var open by remember { mutableStateOf<Int?>(null) }
     val colors = LocalMetroColors.current
     val now = remember(period, refresh) { ZonedDateTime.now() }
-    val data by produceState<Triple<List<Pair<DataBucket, Pair<Long, Long?>>>, List<AppData>, Long?>?>(null, period, refresh) {
+    val data by produceState<Triple<List<Pair<DataBucket, Pair<Long, Long?>>>, List<AppData>, Long?>?>(null, period, refresh, billDay) {
         value = withContext(Dispatchers.IO) {
-            val buckets = DataPeriods.buckets(period, now).map { it to reader.device(it.from, it.to) }
-            val from = DataPeriods.start(period, now).toInstant().toEpochMilli()
-            val monthStart = DataPeriods.start(DataPeriod.ThisMonth, now).toInstant().toEpochMilli()
+            val buckets = DataPeriods.buckets(period, now, billDay).map { it to reader.device(it.from, it.to) }
+            val from = DataPeriods.start(period, now, billDay).toInstant().toEpochMilli()
+            val monthStart = DataPeriods.start(DataPeriod.ThisMonth, now, billDay).toInstant().toEpochMilli()
             Triple(buckets, reader.apps(from, now.toInstant().toEpochMilli()), reader.device(monthStart, now.toInstant().toEpochMilli()).second)
         }
     }
@@ -157,7 +163,7 @@ private fun DataPage(reader: UsageReader, limitMb: Long, refresh: Int) {
                         DataPeriod.Today -> R.string.ds_today
                         DataPeriod.Week -> R.string.ds_7days
                         DataPeriod.Month30 -> R.string.ds_30days
-                        DataPeriod.ThisMonth -> R.string.ds_this_month
+                        DataPeriod.ThisMonth -> if (billDay == 1) R.string.ds_this_month else R.string.ds_cycle
                     },
                 ),
                 period == p, "ds:period:${p.name}",

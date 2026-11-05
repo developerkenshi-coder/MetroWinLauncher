@@ -8,16 +8,21 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.theme.LocalMetroColors
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.roundToInt
@@ -25,6 +30,7 @@ import kotlin.math.roundToInt
 /**
  * The titles of a Windows Phone pivot: large, side by side, the current one in full colour and the next
  * one peeking in at the edge. They slide with the pages, so swiping the pages moves the titles.
+ * As in the Windows Phone settings, a title is touched too: the pivot swings to its page.
  */
 @Composable
 fun PivotHeader(
@@ -36,6 +42,7 @@ fun PivotHeader(
     color: androidx.compose.ui.graphics.Color? = null,
 ) {
     val colors = LocalMetroColors.current
+    val scope = rememberCoroutineScope()
     val widths = remember(titles) { mutableStateListOf<Int>().apply { repeat(titles.size) { add(0) } } }
     val spacing = with(LocalDensity.current) { 24.dp.roundToPx() }
     val position = pagerState.currentPage + pagerState.currentPageOffsetFraction
@@ -64,7 +71,10 @@ fun PivotHeader(
                 size = size,
                 color = if (color == null) lerp(colors.foreground, colors.subtle, abs(position - index).coerceIn(0f, 1f))
                 else color.copy(alpha = 1f - 0.45f * abs(position - index).coerceIn(0f, 1f)),
-                modifier = Modifier.onSizeChanged { widths[index] = it.width },
+                modifier = Modifier
+                    .onSizeChanged { widths[index] = it.width }
+                    .semantics { heading() }
+                    .metroPress(onClick = { scope.launch { pagerState.animateScrollToPage(index) } }),
             )
         }
     }

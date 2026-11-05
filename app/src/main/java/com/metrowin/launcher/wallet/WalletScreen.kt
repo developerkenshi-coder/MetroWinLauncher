@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
+import com.metrowin.launcher.data.readAtMost
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
@@ -105,7 +106,7 @@ fun WalletScreen() {
     val import = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri ?: return@rememberLauncherForActivityResult
         scope.launch {
-            val incoming = withContext(Dispatchers.IO) { runCatching { Wallet.decode(context.contentResolver.openInputStream(uri)!!.use { String(it.readNBytes(4_000_000)) }) }.getOrDefault(emptyList()) }
+            val incoming = withContext(Dispatchers.IO) { runCatching { Wallet.decode(context.contentResolver.openInputStream(uri)!!.use { String(it.readAtMost(4_000_000)!!) }) }.getOrDefault(emptyList()) }
             if (incoming.isEmpty()) Toast.makeText(context, R.string.wal_import_failed, Toast.LENGTH_LONG).show()
             else { commit(Wallet.merge(all, incoming)); Toast.makeText(context, context.getString(R.string.wal_imported, incoming.size), Toast.LENGTH_LONG).show() }
         }

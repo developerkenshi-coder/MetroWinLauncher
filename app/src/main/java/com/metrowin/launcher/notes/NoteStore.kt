@@ -30,11 +30,20 @@ class NoteStore(private val file: File, private val crypt: NoteCrypt = KeystoreC
         if (!file.exists()) return emptyList()
         val plain = runCatching { crypt.decrypt(file.readText()) }.getOrNull()
         if (plain == null) {
-            file.renameTo(File(file.parentFile, "notes.unreadable"))
+            file.renameTo(unreadable())
             return emptyList()
         }
         return NoteCodec.decode(plain)
     }
+
+    /** Whether a file of notes that could not be read is being kept (see [load]). */
+    fun hasUnreadable() = unreadable().exists()
+
+    fun discardUnreadable() {
+        unreadable().delete()
+    }
+
+    private fun unreadable() = File(file.parentFile, "notes.unreadable")
 
     /** False when nothing was written. */
     fun save(notes: List<Note>): Boolean {

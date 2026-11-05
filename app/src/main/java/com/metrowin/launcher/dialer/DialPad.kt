@@ -26,11 +26,12 @@ private val KEYS = listOf(
 )
 
 /**
- * The twelve keys of a phone, in the flat Metro style. A touch gives [onKey]; a long press on the 0 gives the plus, as on every phone.
+ * The twelve keys of a phone, in the flat Metro style. A touch gives [onKey]; a long press on the 0 gives the plus, and on the 1 (when
+ * [onVoicemail] is set) calls the voicemail, as on every phone.
  * Used by the dialer and, to send tones into a call, by the screen of a call.
  */
 @Composable
-fun DialPad(onKey: (Char) -> Unit, modifier: Modifier = Modifier, keyHeight: androidx.compose.ui.unit.Dp = 64.dp) {
+fun DialPad(onKey: (Char) -> Unit, modifier: Modifier = Modifier, keyHeight: androidx.compose.ui.unit.Dp = 64.dp, onVoicemail: (() -> Unit)? = null) {
     val colors = LocalMetroColors.current
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         KEYS.forEach { row ->
@@ -38,7 +39,14 @@ fun DialPad(onKey: (Char) -> Unit, modifier: Modifier = Modifier, keyHeight: and
                 row.forEach { (key, letters) ->
                     Box(
                         Modifier.weight(1f).height(keyHeight).testTag("dial:key:$key")
-                            .metroPress(onClick = { onKey(key) }, onLongClick = if (key == '0') ({ onKey('+') }) else null)
+                            .metroPress(
+                                onClick = { onKey(key) },
+                                onLongClick = when {
+                                    key == '0' -> ({ onKey('+') })
+                                    key == '1' && onVoicemail != null -> onVoicemail
+                                    else -> null
+                                },
+                            )
                             .litFill(false),
                         contentAlignment = Alignment.Center,
                     ) {

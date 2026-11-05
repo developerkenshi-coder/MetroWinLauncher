@@ -1,5 +1,6 @@
 package com.metrowin.launcher.data
 
+import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -73,6 +74,14 @@ class PeopleReader(private val context: Context) {
             }
             found
         }.getOrDefault(emptyList())
+    }
+
+    /** Takes [call] out of the call log. False without the permission to write it, or when nothing was removed. */
+    fun deleteCall(call: RecentCall): Boolean {
+        if (!LivePermissions.isGranted(context, Manifest.permission.WRITE_CALL_LOG)) return false
+        return runCatching {
+            context.contentResolver.delete(CallLog.Calls.CONTENT_URI, "${CallLog.Calls.DATE}=? AND ${CallLog.Calls.NUMBER}=?", arrayOf(call.date.toString(), call.number)) > 0
+        }.getOrDefault(false)
     }
 
     private fun shrink(bitmap: Bitmap): Bitmap {

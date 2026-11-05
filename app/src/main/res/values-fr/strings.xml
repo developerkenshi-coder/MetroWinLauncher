@@ -248,6 +248,9 @@
     <string name="mail_bar_new">nouveau</string>
     <string name="mail_bar_sync">sync</string>
     <string name="mail_bar_search">rechercher</string>
+    <string name="mail_bar_threads">conversations</string>
+    <string name="mail_load_more">charger plus</string>
+    <string name="mail_new_count">%d nouveaux messages</string>
     <string name="mail_folder_inbox">Boîte de réception</string>
     <string name="mail_folder_drafts">Brouillons</string>
     <string name="mail_folder_sent">Envoyés</string>
@@ -256,6 +259,10 @@
     <string name="mail_delete">supprimer</string>
     <string name="mail_flag">suivre</string>
     <string name="dialer_no_history">Aucun appel pour l’instant.</string>
+    <string name="dialer_filter_all">toutes</string>
+    <string name="dialer_filter_missed">manquées</string>
+    <string name="dialer_delete_call">Supprimer de l’historique</string>
+    <string name="dialer_block">Bloquer le numéro</string>
     <string name="incall_incoming">appel entrant</string>
     <string name="incall_calling">appel en cours…</string>
     <string name="incall_on_hold">en attente</string>
@@ -267,6 +274,7 @@
     <string name="incall_keypad">clavier</string>
     <string name="incall_hide_keypad">masquer le clavier</string>
     <string name="incall_speaker">haut-parleur</string>
+    <string name="incall_bluetooth">bluetooth</string>
     <string name="incall_hold">attente</string>
     <string name="incall_add">ajouter un appel</string>
     <string name="incall_merge">fusionner les appels</string>
@@ -571,6 +579,8 @@
     <string name="sync_not_file">Le fichier de synchronisation du dossier est endommagé ou n’est pas celui de MetroWin</string>
     <string name="sync_failed">Impossible d’accéder au dossier</string>
     <string name="sync_hint">La première synchronisation d’un téléphone qui trouve un fichier dans le dossier le reprend et conserve ce qu’il avait comme fichier de sauvegarde dans le dossier. Ensuite, ce qui a changé depuis la dernière synchronisation est transmis ; si les deux téléphones ont changé, celui-ci l’emporte et l’autre est conservé dans un fichier séparé.</string>
+    <string name="sync_others_list">Dispositions gardées après un conflit de synchronisation : touchez-en une pour la remettre</string>
+    <string name="sync_others_clear">Supprimer ces copies</string>
 
     <!-- réponse aux notifications et regroupement -->
     <string name="notif_reply">répondre</string>
@@ -1605,6 +1615,7 @@
     <string name="restore_start">Les écrans Start et leurs raccourcis</string>
     <string name="restore_settings">Les paramètres</string>
     <string name="restore_theme">L’apparence du launcher</string>
+    <string name="restore_data">Les tâches, les rappels, les dispositions nommées et l’emplacement de la voiture</string>
     <string name="restore_go">Remettre</string>
 
     <!-- Météo : ce que la page des prévisions et la tuile peuvent afficher -->
@@ -1828,6 +1839,7 @@
     <string name="update_notification_text">La version %1$s est disponible. Ouvrez les paramètres, À propos, pour l’installer.</string>
     <string name="update_install_failed">La mise à jour n’a pas pu être installée.</string>
     <string name="channel_update">Mises à jour</string>
+    <string name="channel_mail">Courrier</string>
     <string name="update_notes_title">Nouveautés de %1$s</string>
     <string name="qa_device_settings">Paramètres Android</string>
     <string name="ac_arrange">organiser</string>
@@ -1839,6 +1851,7 @@
     <string name="messages_new">nouveau</string>
     <string name="messages_refresh">actualiser</string>
     <string name="messages_empty">Aucun message.</string>
+    <string name="messages_delete">Supprimer la conversation</string>
     <string name="messages_to_hint">À (numéro)</string>
     <string name="messages_open">Ouvrir</string>
     <string name="messages_hint">Écrire un message</string>
@@ -1849,6 +1862,11 @@
     <string name="messages_channel">SMS</string>
     <string name="messages_unknown">Inconnu</string>
     <string name="messages_failed">Le message n’a pas été envoyé.</string>
+    <string name="messages_reply">Répondre</string>
+    <string name="messages_search">chercher</string>
+    <string name="messages_copy">Copier</string>
+    <string name="messages_forward">Transférer</string>
+    <string name="messages_retry">Réessayer</string>
     <string name="mail_signing_in">Connexion…</string>
     <string name="mail_login_failed">Connexion impossible : %1$s</string>
     <string name="mail_loading">Chargement…</string>
@@ -1984,6 +2002,12 @@
     <string name="notes_folder_hint">Nom du dossier</string>
     <string name="notes_share">Partager en texte</string>
     <string name="notes_export_text">Enregistrer en fichier (.md)</string>
+    <string name="notes_lost">Les notes n’ont pas pu être lues : la clé de ce téléphone qui les protégeait a disparu. L’ancien fichier est conservé. Restaure une sauvegarde avec la flèche ci-dessous ou supprime le fichier.</string>
+    <string name="notes_lost_discard">Supprimer le fichier illisible</string>
+    <string name="notes_attach_photo">Joindre une photo</string>
+    <string name="notes_attach_audio">Joindre un son</string>
+    <string name="notes_attach_failed">Le fichier n’a pas pu être joint (trop gros, ou trop nombreux).</string>
+    <string name="notes_export_pdf">Exporter en PDF</string>
     <string name="notes_export_sketch">Enregistrer le croquis en image (.png)</string>
     <string name="notes_sketch_remove">Retirer le croquis</string>
     <string name="notes_delete">Supprimer la note</string>
@@ -2060,7 +2084,9 @@
     <string name="cal_rem_30">30 min avant</string>
     <string name="cal_rem_60">1 h avant</string>
     <string name="cal_rem_day">1 jour avant</string>
-    <string name="cal_repeats_note">Cet événement se répète : la modification vaut pour toutes ses dates.</string>
+    <string name="cal_repeats_note">Cet événement se répète. Appliquer la modification à :</string>
+    <string name="cal_only_this">cet événement seulement</string>
+    <string name="cal_all_events">tous les événements</string>
     <string name="cal_need_permission">Le calendrier a besoin de l’autorisation de lire et d’écrire les événements du téléphone.</string>
     <string name="cal_save_failed">L’événement n’a pas pu être enregistré. Existe-t-il un calendrier qui accepte les événements ?</string>
 
@@ -2084,7 +2110,13 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="ds_limit">limite</string>
     <string name="ds_limit_title">Limite mensuelle des données mobiles</string>
     <string name="ds_limit_hint">Go (0 pour aucune)</string>
-    <string name="ds_limit_used">%1$s sur %2$s ce mois-ci</string>
+    <string name="ds_cycle">cycle de facturation</string>
+    <string name="ds_billing_day">Jour de renouvellement du forfait (1–28)</string>
+    <string name="channel_data">Data Sense</string>
+    <string name="ds_alert_title">Limite des données mobiles</string>
+    <string name="ds_alert_80">80%% atteint : %1$s sur %2$s</string>
+    <string name="ds_alert_100">Limite atteinte : %1$s sur %2$s</string>
+    <string name="ds_limit_used">%1$s sur %2$s</string>
     <string name="ds_photos">photos</string>
     <string name="ds_videos">vidéos</string>
     <string name="ds_music">musique</string>

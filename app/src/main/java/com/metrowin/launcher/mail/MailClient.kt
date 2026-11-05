@@ -5,6 +5,12 @@ import javax.mail.Address
 import javax.mail.FetchProfile
 import javax.mail.Flags
 import javax.mail.Folder
+import javax.mail.FolderClosedException
+import javax.mail.StoreClosedException
+import javax.mail.search.FromStringTerm
+import javax.mail.search.OrTerm
+import javax.mail.search.SearchTerm
+import javax.mail.search.SubjectTerm
 import javax.mail.Message
 import javax.mail.Multipart
 import javax.mail.Part
@@ -15,14 +21,15 @@ import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 import javax.mail.Transport
 
+/** What a look at the inbox found: how many messages are unread, the highest UID there, and the unread ones newer than the last look. */
+data class Arrivals(val unread: Int, val lastUid: Long, val fresh: List<MailMessage>)
+
 /** What the server said about a mail folder: its full [path] (what the server calls it) and the name to show. */
 data class MailFolder(val path: String, val name: String)
 
 /**
  * The mail of an account, read and sent over IMAP and SMTP, always over TLS. Every call blocks on the network: call it off the main thread.
- * A connection is opened for the call and closed after it; nothing is kept between calls.
- *
- * shortcut: one connection per call is slow for long lists, keep one open per screen when it matters.
+ * The IMAP login is kept between calls; whoever makes the client calls [close] when done with it (a dead login is made again on the next call).
  */
 class MailClient(private val account: MailAccount, private val secret: () -> String) {
     private fun properties(): Properties = Properties().apply {
@@ -33,6 +40,9 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
         put("mail.imaps.peek", "true")
         put("mail.imaps.connectiontimeout", TIMEOUT)
         put("mail.imaps.timeout", TIMEOUT)
+        // Folders opened together (the list and the lines of text) share logins from a pool instead of each making a new one.
+        put("mail.imaps.connectionpoolsize", "3")
+        put("mail.imaps.connectionpooltimeout", "300000")
         put("mail.smtp.host", account.smtpHost)
         put("mail.smtp.port", account.smtpPort.toString())
         put("mail.smtp.auth", "true")
@@ -55,14 +65,33 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
         }
     }
 
-    private inline fun <T> store(block: (Store) -> T): T {
+    private var kept: Store? = null
+
+    @Synchronized
+    private fun connected(): Store {
+        kept?.takeIf { it.isConnected }?.let { return it }
+        runCatching { kept?.close() }
         val store = Session.getInstance(properties()).getStore("imaps")
         store.connect(account.imapHost, account.imapPort, account.email, secret())
-        try {
-            return block(store)
-        } finally {
-            runCatching { store.close() }
-        }
+        kept = store
+        return store
+    }
+
+    /** Lets go of the kept login. */
+    @Synchronized
+    fun close() {
+        runCatching { kept?.close() }
+        kept = null
+    }
+
+    private inline fun <T> store(block: (Store) -> T): T = try {
+        block(connected())
+    } catch (e: StoreClosedException) {
+        close()
+        block(connected())
+    } catch (e: FolderClosedException) {
+        close()
+        block(connected())
     }
 
     private inline fun <T> folder(path: String, readWrite: Boolean, block: (UIDFolder) -> T): T = store { store ->
@@ -76,20 +105,35 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
     }
 
     /** Opens a connection with the password, to know it is right. Throws when it is not. */
-    fun check() = store { }
+    fun check() {
+        try {
+            connected()
+        } finally {
+            close()
+        }
+    }
 
     fun folders(): List<MailFolder> = store { store ->
         store.defaultFolder.list("*").filter { (it.type and Folder.HOLDS_MESSAGES) != 0 }.map { MailFolder(it.fullName, it.name) }
     }
 
-    /** The latest [limit] messages of the folder, newest first. The text of each is left for [body]. */
-    fun messages(path: String, limit: Int = LIMIT): List<MailMessage> = folder(path, false) { uids ->
+    /** The latest [limit] messages of the folder, newest first; with a [query], the latest that the server finds it in. The text of each is left for [body]. */
+    fun messages(path: String, limit: Int = LIMIT, query: String = ""): List<MailMessage> = folder(path, false) { uids ->
         val folder = uids as Folder
-        val count = folder.messageCount
-        if (count == 0) return@folder emptyList()
-        val found = folder.getMessages(maxOf(1, count - limit + 1), count)
-        folder.fetch(found, FetchProfile().apply { add(FetchProfile.Item.ENVELOPE); add(FetchProfile.Item.FLAGS); add(FetchProfile.Item.CONTENT_INFO) })
-        found.reversed().map { message ->
+        val all = if (query.isBlank()) {
+            val count = folder.messageCount
+            if (count == 0) return@folder emptyList()
+            folder.getMessages(maxOf(1, count - limit + 1), count)
+        } else {
+            folder.search(searchTerm(query.trim())).takeLast(limit).toTypedArray()
+        }
+        summaries(uids, all)
+    }
+
+    /** The envelope and flags of [found] fetched in one go, newest first. */
+    private fun summaries(uids: UIDFolder, found: Array<Message>): List<MailMessage> {
+        (uids as Folder).fetch(found, FetchProfile().apply { add(FetchProfile.Item.ENVELOPE); add(FetchProfile.Item.FLAGS); add(FetchProfile.Item.CONTENT_INFO) })
+        return found.reversed().map { message ->
             val from = (message.from?.firstOrNull() as? InternetAddress)
             MailMessage(
                 id = uids.getUID(message).toString(), accountId = account.id,
@@ -99,6 +143,26 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
                 hasAttachments = runCatching { message.isMimeType("multipart/mixed") }.getOrDefault(false),
             )
         }
+    }
+
+    /** How many messages of [path] are unread. */
+    fun unread(path: String): Int = folder(path, false) { (it as Folder).unreadMessageCount }
+
+    /**
+     * What the background check needs from [path]: the unread count, the highest UID in it, and the unread messages with a UID above [after]
+     * (newest first; none when [after] is null, which is the first look at the folder).
+     */
+    fun arrivals(path: String, after: Long?): Arrivals = folder(path, false) { uids ->
+        val folder = uids as Folder
+        val count = folder.messageCount
+        val last = if (count == 0) 0L else uids.getUID(folder.getMessage(count))
+        // A range that ends in "*" always brings the last message, even when its UID is not above the start: those are filtered out here.
+        val fresh = if (after == null || last <= after) {
+            emptyList()
+        } else {
+            summaries(uids, uids.getMessagesByUID(after + 1, UIDFolder.LASTUID)).filter { it.id.toLong() > after && it.isUnread }.take(LIMIT)
+        }
+        Arrivals(folder.unreadMessageCount, last, fresh)
     }
 
     /** The first words of the messages [uids], one line each, for the list; a message that cannot be read has none. */
@@ -187,12 +251,26 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
             }
         }
         Transport.send(message, account.email, secret())
+        // Servers that keep no copy of what goes out over SMTP get one in Sent; the big providers already do, and would show it twice.
+        if (account.imapHost !in KEEPS_SENT) {
+            runCatching {
+                store { store ->
+                    store.defaultFolder.list("*").firstOrNull { it is com.sun.mail.imap.IMAPFolder && "\\Sent" in it.attributes }
+                        ?.appendMessages(arrayOf(message.apply { setFlag(Flags.Flag.SEEN, true) }))
+                }
+            }
+        }
     }
 
-    private companion object {
-        const val TIMEOUT = "15000"
-        const val SMTPS_PORT = 465
+    companion object {
+        /** The server looks for [query] in the subject and the sender. A non-ASCII word makes the library search on the phone instead. */
+        fun searchTerm(query: String): SearchTerm = OrTerm(SubjectTerm(query), FromStringTerm(query))
+
+        /** How many messages one page of the list holds. */
         const val LIMIT = 50
-        const val SNIPPET = 140
+        private const val TIMEOUT = "15000"
+        private const val SMTPS_PORT = 465
+        private const val SNIPPET = 140
+        private val KEEPS_SENT = setOf("imap.gmail.com", "outlook.office365.com", "imap-mail.outlook.com", "imap.mail.yahoo.com", "imap.mail.me.com")
     }
 }

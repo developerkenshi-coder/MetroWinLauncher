@@ -138,6 +138,32 @@ class FileOpsTest {
     }
 
     @Test
+    fun `replacing by moving leaves no helper file and keeps the new content`() {
+        val root = tmp.newFolder()
+        val a = file(File(root, "from").also { it.mkdir() }, "f.txt", "new")
+        val dst = File(root, "to").also { it.mkdir() }
+        file(dst, "f.txt", "old")
+        val made = FileOps.move(listOf(a), dst, Conflict.Replace, Progress())
+        assertEquals("new", made.single().readText())
+        assertEquals(listOf("f.txt"), dst.list()!!.toList())
+    }
+
+    @Test
+    fun `a copy leaves no half written file and a cancel keeps the old target`() {
+        val root = tmp.newFolder()
+        val a = file(File(root, "from").also { it.mkdir() }, "f.txt", "new")
+        val dst = File(root, "to").also { it.mkdir() }
+        file(dst, "f.txt", "old")
+        FileOps.copy(listOf(a), dst, Conflict.Replace, Progress())
+        assertEquals(listOf("f.txt"), dst.list()!!.toList())
+        file(dst, "g.txt", "old")
+        val g = file(File(root, "from"), "g.txt", "new")
+        FileOps.copy(listOf(g), dst, Conflict.Replace, Progress().also { it.cancel() })
+        assertEquals("old", File(dst, "g.txt").readText())
+        assertEquals(setOf("f.txt", "g.txt"), dst.list()!!.toSet())
+    }
+
+    @Test
     fun `cancelling stops the copy`() {
         val root = tmp.newFolder()
         val src = File(root, "src").also { it.mkdir() }

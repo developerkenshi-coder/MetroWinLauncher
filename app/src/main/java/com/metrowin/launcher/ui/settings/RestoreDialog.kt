@@ -62,6 +62,7 @@ fun RestoreDialog(onDone: (Set<RestorePart>) -> Unit, onCancel: () -> Unit, modi
                             RestorePart.Start -> R.string.restore_start
                             RestorePart.Settings -> R.string.restore_settings
                             RestorePart.Theme -> R.string.restore_theme
+                            RestorePart.Data -> R.string.restore_data
                         },
                     ),
                     part in parts,

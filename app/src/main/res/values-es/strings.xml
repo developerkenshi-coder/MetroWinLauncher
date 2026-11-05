@@ -248,6 +248,9 @@
     <string name="mail_bar_new">nuevo</string>
     <string name="mail_bar_sync">sincronizar</string>
     <string name="mail_bar_search">buscar</string>
+    <string name="mail_bar_threads">conversaciones</string>
+    <string name="mail_load_more">cargar más</string>
+    <string name="mail_new_count">%d mensajes nuevos</string>
     <string name="mail_folder_inbox">Bandeja de entrada</string>
     <string name="mail_folder_drafts">Borradores</string>
     <string name="mail_folder_sent">Enviados</string>
@@ -256,6 +259,10 @@
     <string name="mail_delete">eliminar</string>
     <string name="mail_flag">marcar</string>
     <string name="dialer_no_history">Aún no hay llamadas.</string>
+    <string name="dialer_filter_all">todas</string>
+    <string name="dialer_filter_missed">perdidas</string>
+    <string name="dialer_delete_call">Borrar del historial</string>
+    <string name="dialer_block">Bloquear número</string>
     <string name="incall_incoming">llamada entrante</string>
     <string name="incall_calling">llamando…</string>
     <string name="incall_on_hold">en espera</string>
@@ -267,6 +274,7 @@
     <string name="incall_keypad">teclado</string>
     <string name="incall_hide_keypad">ocultar teclado</string>
     <string name="incall_speaker">altavoz</string>
+    <string name="incall_bluetooth">bluetooth</string>
     <string name="incall_hold">espera</string>
     <string name="incall_add">añadir llamada</string>
     <string name="incall_merge">combinar llamadas</string>
@@ -571,6 +579,8 @@
     <string name="sync_not_file">El archivo de sincronización de la carpeta está dañado o no es de esta app</string>
     <string name="sync_failed">No se pudo acceder a la carpeta</string>
     <string name="sync_hint">La primera sincronización de un teléfono que encuentra un archivo en la carpeta lo toma y guarda lo que tenía como archivo de copia en la carpeta. Después, lo que haya cambiado desde la última sincronización pasa de un teléfono a otro; si cambiaron los dos, gana este y el otro se guarda como archivo aparte.</string>
+    <string name="sync_others_list">Diseños guardados tras un conflicto de sincronización: toca uno para recuperarlo</string>
+    <string name="sync_others_clear">Eliminar estas copias</string>
 
     <!-- respuesta y agrupación de notificaciones -->
     <string name="notif_reply">responder</string>
@@ -1605,6 +1615,7 @@
     <string name="restore_start">Las pantallas Start y sus accesos directos</string>
     <string name="restore_settings">Los ajustes</string>
     <string name="restore_theme">El aspecto del launcher</string>
+    <string name="restore_data">Las tareas, los recordatorios, los diseños con nombre y el sitio del coche</string>
     <string name="restore_go">Restaurar</string>
 
     <!-- Clima: lo que pueden mostrar la página del pronóstico y el mosaico -->
@@ -1828,6 +1839,7 @@
     <string name="update_notification_text">Ya está disponible la versión %1$s. Abre los ajustes, Acerca de, para instalarla.</string>
     <string name="update_install_failed">No se pudo instalar la actualización.</string>
     <string name="channel_update">Actualizaciones</string>
+    <string name="channel_mail">Correo</string>
     <string name="update_notes_title">Novedades de %1$s</string>
     <string name="qa_device_settings">Ajustes de Android</string>
     <string name="ac_arrange">organizar</string>
@@ -1839,6 +1851,7 @@
     <string name="messages_new">nuevo</string>
     <string name="messages_refresh">actualizar</string>
     <string name="messages_empty">No hay mensajes.</string>
+    <string name="messages_delete">Eliminar conversación</string>
     <string name="messages_to_hint">Para (número)</string>
     <string name="messages_open">Abrir</string>
     <string name="messages_hint">Escribe un mensaje</string>
@@ -1849,6 +1862,11 @@
     <string name="messages_channel">SMS</string>
     <string name="messages_unknown">Desconocido</string>
     <string name="messages_failed">El mensaje no se envió.</string>
+    <string name="messages_reply">Responder</string>
+    <string name="messages_search">buscar</string>
+    <string name="messages_copy">Copiar</string>
+    <string name="messages_forward">Reenviar</string>
+    <string name="messages_retry">Reintentar</string>
     <string name="mail_signing_in">Iniciando sesión…</string>
     <string name="mail_login_failed">No se pudo iniciar sesión: %1$s</string>
     <string name="mail_loading">Cargando…</string>
@@ -1984,6 +2002,12 @@
     <string name="notes_folder_hint">Nombre de la carpeta</string>
     <string name="notes_share">Compartir como texto</string>
     <string name="notes_export_text">Guardar como archivo (.md)</string>
+    <string name="notes_lost">No se pudieron leer las notas: la clave de este teléfono que las protegía ya no existe. El archivo antiguo se conserva. Restaura una copia con la flecha de abajo o borra el archivo.</string>
+    <string name="notes_lost_discard">Borrar el archivo ilegible</string>
+    <string name="notes_attach_photo">Adjuntar una foto</string>
+    <string name="notes_attach_audio">Adjuntar un sonido</string>
+    <string name="notes_attach_failed">No se pudo adjuntar el archivo (demasiado grande o demasiados).</string>
+    <string name="notes_export_pdf">Exportar como PDF</string>
     <string name="notes_export_sketch">Guardar el boceto como imagen (.png)</string>
     <string name="notes_sketch_remove">Quitar el boceto</string>
     <string name="notes_delete">Eliminar la nota</string>
@@ -2060,7 +2084,9 @@
     <string name="cal_rem_30">30 min antes</string>
     <string name="cal_rem_60">1 h antes</string>
     <string name="cal_rem_day">1 día antes</string>
-    <string name="cal_repeats_note">Este evento se repite: el cambio vale para todas sus fechas.</string>
+    <string name="cal_repeats_note">Este evento se repite. Aplicar el cambio a:</string>
+    <string name="cal_only_this">solo este evento</string>
+    <string name="cal_all_events">todos los eventos</string>
     <string name="cal_need_permission">El calendario necesita permiso para leer y escribir los eventos del teléfono.</string>
     <string name="cal_save_failed">No se pudo guardar el evento. ¿Hay un calendario que acepte eventos?</string>
 
@@ -2084,7 +2110,13 @@ en primer plano %3$s · en segundo plano %4$s
     <string name="ds_limit">límite</string>
     <string name="ds_limit_title">Límite mensual de datos móviles</string>
     <string name="ds_limit_hint">GB (0 para ninguno)</string>
-    <string name="ds_limit_used">%1$s de %2$s este mes</string>
+    <string name="ds_cycle">ciclo de facturación</string>
+    <string name="ds_billing_day">Día de renovación del plan (1–28)</string>
+    <string name="channel_data">Data Sense</string>
+    <string name="ds_alert_title">Límite de datos móviles</string>
+    <string name="ds_alert_80">80%% alcanzado: %1$s de %2$s</string>
+    <string name="ds_alert_100">Límite alcanzado: %1$s de %2$s</string>
+    <string name="ds_limit_used">%1$s de %2$s</string>
     <string name="ds_photos">fotos</string>
     <string name="ds_videos">vídeos</string>
     <string name="ds_music">música</string>

@@ -50,13 +50,15 @@ class CalendarRepository(private val context: Context) {
         out
     }.getOrDefault(emptyList())
 
-    /** The minutes before an event at which the first reminder of it rings, or -1 for none. */
-    fun reminderOf(eventId: Long): Int = runCatching {
+    /** The minutes before an event at which its reminders ring, the smallest first (none when it has none). */
+    fun remindersOf(eventId: Long): List<Int> = runCatching {
+        val out = ArrayList<Int>()
         resolver.query(
             CalendarContract.Reminders.CONTENT_URI, arrayOf(CalendarContract.Reminders.MINUTES), "${CalendarContract.Reminders.EVENT_ID} = ?",
             arrayOf(eventId.toString()), null,
-        )?.use { if (it.moveToFirst()) it.getInt(0) else -1 } ?: -1
-    }.getOrDefault(-1)
+        )?.use { while (it.moveToNext()) out += it.getInt(0) }
+        out.filter { it >= 0 }.distinct().sorted()
+    }.getOrDefault(emptyList())
 
     private fun values(event: CalEvent) = ContentValues().apply {
         put(CalendarContract.Events.CALENDAR_ID, event.calendarId)
@@ -73,33 +75,60 @@ class CalendarRepository(private val context: Context) {
     fun insert(event: CalEvent): Long = runCatching {
         val uri = resolver.insert(CalendarContract.Events.CONTENT_URI, values(event)) ?: return 0L
         val id = ContentUris.parseId(uri)
-        setReminder(id, event.reminderMinutes)
+        setReminders(id, event.reminders)
         id
     }.getOrDefault(0L)
 
-    /** Writes [event] over the one with its id (all the times of a repeating one). */
-    fun update(event: CalEvent): Boolean = runCatching {
+    /**
+     * Writes [event] over the one with its id. For one time of a repeating event ([original] is the event as it was shown, [all] false) only that
+     * time is changed: Android keeps it as an exception of the series. With [all] the whole series is changed, and moves by as much as that time did.
+     */
+    fun update(event: CalEvent, original: CalEvent = event, all: Boolean = true): Boolean = runCatching {
         val body = values(event).apply { remove(CalendarContract.Events.CALENDAR_ID) }
-        val changed = resolver.update(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.id), body, null, null) > 0
-        if (changed) setReminder(event.id, event.reminderMinutes)
+        val seriesUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.id)
+        if (original.recurring && !all) {
+            body.put(CalendarContract.Events.ORIGINAL_INSTANCE_TIME, original.start)
+            val exception = resolver.insert(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI, event.id), body) ?: return@runCatching false
+            setReminders(ContentUris.parseId(exception), event.reminders)
+            return@runCatching true
+        }
+        if (original.recurring) {
+            // A repeating event has a length, not an end; its start is the first time of the series, not the one that was opened.
+            val first = resolver.query(seriesUri, arrayOf(CalendarContract.Events.DTSTART), null, null, null)?.use { if (it.moveToFirst()) it.getLong(0) else null }
+            body.put(CalendarContract.Events.DTSTART, CalendarLogic.movedSeriesStart(first ?: original.start, original.start, event.start))
+            body.putNull(CalendarContract.Events.DTEND)
+            body.put(CalendarContract.Events.DURATION, CalendarLogic.duration(event.allDay, event.start, event.end))
+        }
+        val changed = resolver.update(seriesUri, body, null, null) > 0
+        if (changed) setReminders(event.id, event.reminders)
         changed
     }.getOrDefault(false)
 
-    fun delete(eventId: Long): Boolean = runCatching {
-        resolver.delete(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId), null, null) > 0
+    /** Takes [event] out: the one time that was opened when [all] is false and it repeats, else the event with all its times. */
+    fun delete(event: CalEvent, all: Boolean = true): Boolean = runCatching {
+        if (event.recurring && !all) {
+            val cancelled = ContentValues().apply {
+                put(CalendarContract.Events.ORIGINAL_INSTANCE_TIME, event.start)
+                put(CalendarContract.Events.STATUS, CalendarContract.Events.STATUS_CANCELED)
+            }
+            resolver.insert(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI, event.id), cancelled) != null
+        } else {
+            resolver.delete(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.id), null, null) > 0
+        }
     }.getOrDefault(false)
 
-    private fun setReminder(eventId: Long, minutes: Int) {
+    private fun setReminders(eventId: Long, minutes: List<Int>) {
         resolver.delete(CalendarContract.Reminders.CONTENT_URI, "${CalendarContract.Reminders.EVENT_ID} = ?", arrayOf(eventId.toString()))
-        if (minutes < 0) return
-        resolver.insert(
-            CalendarContract.Reminders.CONTENT_URI,
-            ContentValues().apply {
-                put(CalendarContract.Reminders.EVENT_ID, eventId)
-                put(CalendarContract.Reminders.MINUTES, minutes)
-                put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT)
-            },
-        )
+        minutes.distinct().filter { it >= 0 }.forEach { m ->
+            resolver.insert(
+                CalendarContract.Reminders.CONTENT_URI,
+                ContentValues().apply {
+                    put(CalendarContract.Reminders.EVENT_ID, eventId)
+                    put(CalendarContract.Reminders.MINUTES, m)
+                    put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT)
+                },
+            )
+        }
     }
 
     private companion object {

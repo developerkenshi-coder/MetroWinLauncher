@@ -38,7 +38,7 @@ data class CallLine(
 }
 
 @Immutable
-data class CallAudio(val muted: Boolean = false, val speaker: Boolean = false)
+data class CallAudio(val muted: Boolean = false, val speaker: Boolean = false, val bluetooth: Boolean = false)
 
 /**
  * The calls Android hands to the launcher while it is the phone app, and what the screen of a call can do with them. The calls are
@@ -92,7 +92,20 @@ object CallManager {
 
     @Suppress("DEPRECATION") // the new endpoints come only with Android 14; this works on every version the launcher runs on
     internal fun audioChanged(state: CallAudioState?) {
-        _audio.value = CallAudio(muted = state?.isMuted == true, speaker = state?.route == CallAudioState.ROUTE_SPEAKER)
+        route = state?.route ?: 0
+        routes = state?.supportedRouteMask ?: 0
+        _audio.value = CallAudio(muted = state?.isMuted == true, speaker = route == CallAudioState.ROUTE_SPEAKER, bluetooth = route == CallAudioState.ROUTE_BLUETOOTH)
+    }
+
+    private var route = 0
+    private var routes = 0
+
+    /** The route after [current] among those the phone offers now (ear or wired headset, Bluetooth, speaker), going round; [current] unknown gives the first. */
+    internal fun nextRoute(current: Int, supported: Int): Int {
+        val order = listOf(CallAudioState.ROUTE_WIRED_OR_EARPIECE, CallAudioState.ROUTE_BLUETOOTH, CallAudioState.ROUTE_SPEAKER).filter { supported and it != 0 }
+        if (order.isEmpty()) return current
+        val at = order.indexOfFirst { current and it != 0 }
+        return order[(at + 1) % order.size]
     }
 
     private fun publish() {
@@ -138,8 +151,9 @@ object CallManager {
 
     fun mute(on: Boolean) = service?.setMuted(on)
 
+    /** Moves the sound to the next place: ear or headset, Bluetooth when there is one, speaker. With only ear and speaker it is the old switch. */
     @Suppress("DEPRECATION")
-    fun speaker(on: Boolean) = service?.setAudioRoute(if (on) CallAudioState.ROUTE_SPEAKER else CallAudioState.ROUTE_WIRED_OR_EARPIECE)
+    fun cycleRoute() = service?.setAudioRoute(nextRoute(route, routes))
 
     /** Plays the tone of a key of the keypad into the call, for as long as a short press lasts. */
     fun tone(id: Int, key: Char) {

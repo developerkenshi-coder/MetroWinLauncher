@@ -116,6 +116,11 @@ class SettingsEnv(
     val backupCopies: List<String> = emptyList(),
     val onRefreshCopies: () -> Unit = {},
     val onRestoreCopy: (String) -> Unit = {},
+    /** The copies of another phone's layout that a sync with a conflict kept in the folder (names, the newest first), to put back or delete. */
+    val syncOthers: List<String> = emptyList(),
+    val onRefreshSyncOthers: () -> Unit = {},
+    val onRecoverSyncOther: (String) -> Unit = {},
+    val onClearSyncOthers: () -> Unit = {},
     val onShareLayout: () -> Unit = {},
     val onShareTheme: () -> Unit = {},
     val onExportApps: (Uri) -> Unit = {},

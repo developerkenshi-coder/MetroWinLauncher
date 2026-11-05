@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.actioncenter
 
+import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.theme.frame
 import androidx.compose.foundation.rememberScrollState
@@ -254,7 +255,7 @@ fun ActionCenter(
         Column(
             Modifier.fillMaxSize().then(
                 if (contentPadding != null) Modifier.padding(contentPadding) else Modifier.topBarsPadding().navigationBarsPadding().cutoutSidesPadding(),
-            ),
+            ).centeredContent(),
         ) {
             // The buttons, the sliders and the notifications are one list that scrolls together: on a short screen or with big
             // text the notifications are reached by scrolling, not squeezed out of the panel.

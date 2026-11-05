@@ -146,15 +146,15 @@ fun CalendarScreen() {
     editing?.let { event ->
         EventDialog(
             event, repository,
-            onSave = { saved ->
+            onSave = { saved, all ->
                 scope.launch {
-                    val ok = withContext(Dispatchers.IO) { if (saved.id == 0L) repository.insert(saved) != 0L else repository.update(saved) }
+                    val ok = withContext(Dispatchers.IO) { if (saved.id == 0L) repository.insert(saved) != 0L else repository.update(saved, event, all) }
                     if (!ok) android.widget.Toast.makeText(context, R.string.cal_save_failed, android.widget.Toast.LENGTH_LONG).show()
                     version++
                     editing = null
                 }
             },
-            onDelete = { scope.launch { withContext(Dispatchers.IO) { repository.delete(event.id) }; version++; editing = null } },
+            onDelete = { all -> scope.launch { withContext(Dispatchers.IO) { repository.delete(event, all) }; version++; editing = null } },
             onCancel = { editing = null },
         )
     }
@@ -277,10 +277,10 @@ private fun WeekPage(events: List<CalEvent>, selected: LocalDate, today: LocalDa
 }
 
 @Composable
-private fun EventDialog(event: CalEvent, repository: CalendarRepository, onSave: (CalEvent) -> Unit, onDelete: () -> Unit, onCancel: () -> Unit) {
+private fun EventDialog(event: CalEvent, repository: CalendarRepository, onSave: (CalEvent, Boolean) -> Unit, onDelete: (Boolean) -> Unit, onCancel: () -> Unit) {
     val zone = ZoneId.systemDefault()
     val calendars by produceState(emptyList<CalendarInfo>()) { value = withContext(Dispatchers.IO) { repository.writableCalendars() } }
-    val reminder0 by produceState(-2, event.id) { value = if (event.id == 0L) 10 else withContext(Dispatchers.IO) { repository.reminderOf(event.id) } }
+    val reminder0 by produceState(if (event.id == 0L) listOf(10) else emptyList<Int>(), event.id) { if (event.id != 0L) value = withContext(Dispatchers.IO) { repository.remindersOf(event.id) } }
     var title by remember(event.id, event.start) { mutableStateOf(event.title) }
     var location by remember(event.id, event.start) { mutableStateOf(event.location) }
     var notes by remember(event.id, event.start) { mutableStateOf(event.description) }
@@ -291,11 +291,13 @@ private fun EventDialog(event: CalEvent, repository: CalendarRepository, onSave:
     var firstDay by remember(event.id, event.start) { mutableStateOf(span.start) }
     var lastDay by remember(event.id, event.start) { mutableStateOf(span.endInclusive) }
     var calendarId by remember(event.id) { mutableStateOf(event.calendarId) }
-    var reminder by remember(event.id) { mutableStateOf<Int?>(null) }
+    var reminder by remember(event.id) { mutableStateOf<List<Int>?>(null) }
+    // Of a repeating event only the time that was opened is changed, unless the user says all of them.
+    var all by remember(event.id) { mutableStateOf(false) }
     var picking by remember { mutableStateOf<String?>(null) }
     var confirm by remember { mutableStateOf(false) }
     val chosenCalendar = calendarId.takeIf { it != 0L } ?: calendars.firstOrNull()?.id ?: 0L
-    val chosenReminder = reminder ?: reminder0.coerceAtLeast(-1)
+    val chosenReminders = reminder ?: reminder0
     val dateFormat = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
 
     DialogFrame(onCancel = onCancel) {
@@ -316,17 +318,23 @@ private fun EventDialog(event: CalEvent, repository: CalendarRepository, onSave:
         }
         LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             items(listOf(-1, 10, 30, 60, 1440)) { minutes ->
-                PageChip(stringResource(reminderName(minutes)), chosenReminder == minutes, "cal:edit:rem:$minutes") { reminder = minutes }
+                PageChip(stringResource(reminderName(minutes)), if (minutes < 0) chosenReminders.isEmpty() else minutes in chosenReminders, "cal:edit:rem:$minutes") { reminder = CalendarLogic.toggleReminder(chosenReminders, minutes) }
             }
         }
-        if (event.recurring) PageNote(stringResource(R.string.cal_repeats_note))
+        if (event.recurring) {
+            PageNote(stringResource(R.string.cal_repeats_note))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                PageChip(stringResource(R.string.cal_only_this), !all, "cal:edit:only") { all = false }
+                PageChip(stringResource(R.string.cal_all_events), all, "cal:edit:all") { all = true }
+            }
+        }
         MetroButton(stringResource(R.string.todo_save), Modifier.fillMaxWidth().testTag("cal:edit:save")) {
             if (chosenCalendar == 0L) return@MetroButton
             val (s, e) = if (allDay) CalendarLogic.allDayRange(firstDay, lastDay) else startMs to maxOf(endMs, startMs + 60_000L)
-            onSave(event.copy(title = title.trim(), location = location.trim(), description = notes.trim(), allDay = allDay, start = s, end = e, calendarId = chosenCalendar, reminderMinutes = chosenReminder))
+            onSave(event.copy(title = title.trim(), location = location.trim(), description = notes.trim(), allDay = allDay, start = s, end = e, calendarId = chosenCalendar, reminders = chosenReminders), all)
         }
         if (event.id != 0L) MetroButton(stringResource(if (confirm) R.string.notes_delete_confirm else R.string.todo_delete), Modifier.fillMaxWidth().testTag("cal:edit:delete")) {
-            if (confirm) onDelete() else confirm = true
+            if (confirm) onDelete(all) else confirm = true
         }
     }
     when (picking) {

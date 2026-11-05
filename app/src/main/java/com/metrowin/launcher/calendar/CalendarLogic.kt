@@ -21,11 +21,25 @@ data class CalEvent(
     val calendarName: String = "",
     val color: Int = 0,
     val recurring: Boolean = false,
-    val reminderMinutes: Int = -1,
+    /** The minutes before the event at which a reminder rings; none when empty. */
+    val reminders: List<Int> = emptyList(),
 )
 
 /** What the calendar does with days and events. Pure, so it is tested. */
 object CalendarLogic {
+    /** The reminders after a tap on [minutes]: -1 clears them all, another value is added or, when there already, taken away. */
+    fun toggleReminder(current: List<Int>, minutes: Int): List<Int> =
+        if (minutes < 0) emptyList() else if (minutes in current) current - minutes else (current + minutes).sorted()
+
+    /** The length of a repeating event as Android keeps it (such an event has a duration, not an end): whole days for an all-day one. */
+    fun duration(allDay: Boolean, start: Long, end: Long): String =
+        if (allDay) "P${maxOf(1L, (end - start) / DAY_MS)}D" else "P${maxOf(60L, (end - start) / 1000)}S"
+
+    /** Where the first time of a series starts after one time of it, that began at [was], was moved to [now]: the whole series moves by as much. */
+    fun movedSeriesStart(seriesStart: Long, was: Long, now: Long): Long = seriesStart + (now - was)
+
+    private const val DAY_MS = 86_400_000L
+
     /** The first and the last day on which [event] is, in [zone] (an all-day event is on the same dates in every zone). */
     fun days(event: CalEvent, zone: ZoneId = ZoneId.systemDefault()): ClosedRange<LocalDate> {
         val where = if (event.allDay) ZoneOffset.UTC else zone

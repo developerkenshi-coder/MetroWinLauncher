@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.pages
 
+import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.pageSide
 import com.metrowin.launcher.ui.components.topBarsPadding
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -41,6 +42,7 @@ fun PageFrame(header: String, title: String, modifier: Modifier = Modifier, cont
             .topBarsPadding()
             .navigationBarsPadding()
             .cutoutSidesPadding()
+            .centeredContent()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = pageSide(24.dp)),
     ) {

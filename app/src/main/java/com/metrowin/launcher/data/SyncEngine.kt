@@ -44,6 +44,21 @@ object SyncPlanner {
     }
 }
 
+/** The copies of the other phone's layout that a sync with a conflict kept in the folder (see [SyncAction.UploadKeepingTheOther]). */
+object SyncConflicts {
+    /** The copies among [names], the newest first. */
+    fun newestFirst(names: Collection<String>): List<String> =
+        names.filter { stamp(it) != null }.distinct().sortedByDescending { stamp(it) }
+
+    /** When the other layout was written (epoch milliseconds), or null when [name] is not the name of a copy. */
+    fun stamp(name: String): Long? =
+        if (name.startsWith(SyncEngine.CONFLICT_PREFIX) && name.endsWith(".bin")) name.removePrefix(SyncEngine.CONFLICT_PREFIX).removeSuffix(".bin").toLongOrNull() else null
+
+    /** The layout file inside a copy, or null when the passphrase is wrong or the file is not a sync file. */
+    fun layoutOf(blob: ByteArray, passphrase: String): String? =
+        SyncCrypto.decrypt(blob, passphrase)?.let { runCatching { JSONObject(it.decodeToString()).optString("layout") }.getOrNull() }?.ifEmpty { null }
+}
+
 /** What this phone knows about the last sync, and what it is now. */
 data class SyncLocal(
     /** The layout as a [LayoutBackupCodec] file (with its time set to 0, so the same layout always reads the same). */

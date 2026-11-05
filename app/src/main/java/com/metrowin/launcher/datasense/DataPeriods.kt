@@ -11,17 +11,34 @@ enum class DataPeriod { Today, Week, Month30, ThisMonth }
 data class DataBucket(val label: String, val from: Long, val to: Long)
 
 object DataPeriods {
-    /** The moment the period starts at, counted back from [now]. */
-    fun start(period: DataPeriod, now: ZonedDateTime): ZonedDateTime = when (period) {
+    /** The day the cycle of the mobile plan starts: the latest [billDay] (1 to 28) that is not after today. */
+    fun cycleStart(now: ZonedDateTime, billDay: Int): ZonedDateTime {
+        val day = billDay.coerceIn(1, 28)
+        val today = now.toLocalDate()
+        return (if (today.dayOfMonth >= day) today.withDayOfMonth(day) else today.minusMonths(1).withDayOfMonth(day)).atStartOfDay(now.zone)
+    }
+
+    /**
+     * The level of the limit to tell the user about now: 100 when [used] reached [limit], 80 when it reached four fifths of it, and 0 when
+     * there is nothing new to say ([announced] is the level already told in this cycle).
+     */
+    fun alertLevel(used: Long, limit: Long, announced: Int): Int {
+        if (limit <= 0) return 0
+        val level = if (used >= limit) 100 else if (used * 100 >= limit * 80) 80 else 0
+        return if (level > announced) level else 0
+    }
+
+    /** The moment the period starts at, counted back from [now]; "this month" starts on [billDay] of the plan. */
+    fun start(period: DataPeriod, now: ZonedDateTime, billDay: Int = 1): ZonedDateTime = when (period) {
         DataPeriod.Today -> now.toLocalDate().atStartOfDay(now.zone)
         DataPeriod.Week -> now.toLocalDate().minusDays(6).atStartOfDay(now.zone)
         DataPeriod.Month30 -> now.toLocalDate().minusDays(29).atStartOfDay(now.zone)
-        DataPeriod.ThisMonth -> now.toLocalDate().withDayOfMonth(1).atStartOfDay(now.zone)
+        DataPeriod.ThisMonth -> cycleStart(now, billDay)
     }
 
     /** The bars: one for each hour of today up to now, and one for each day of the other periods (today included). */
-    fun buckets(period: DataPeriod, now: ZonedDateTime): List<DataBucket> {
-        val start = start(period, now)
+    fun buckets(period: DataPeriod, now: ZonedDateTime, billDay: Int = 1): List<DataBucket> {
+        val start = start(period, now, billDay)
         if (period == DataPeriod.Today) {
             return (0..now.hour).map { hour ->
                 val from = start.plusHours(hour.toLong())

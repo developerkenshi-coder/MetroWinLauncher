@@ -67,6 +67,8 @@ data class LiveTileData(
     /** The next few events, for the agenda of a wide or large Calendar tile (the first is [nextEvent]). */
     val events: List<LiveEvent> = emptyList(),
     val missedCalls: Int = 0,
+    /** The unread messages of the mail accounts, for the Mail tile (kept by [com.metrowin.launcher.mail.MailSync]). */
+    val unreadMail: Int = 0,
     /** The flashlight is on, for the torch tile. Not read from the phone with the rest: it comes from the torch callback. */
     val torchOn: Boolean = false,
     val battery: BatteryInfo? = null,
@@ -102,6 +104,7 @@ fun LiveTileData.keeping(kinds: Set<LiveKind>, albumIds: Set<String> = emptySet(
     nextEvent = if (LiveKind.Calendar in kinds) nextEvent else null,
     events = if (LiveKind.Calendar in kinds) events else emptyList(),
     missedCalls = if (LiveKind.Phone in kinds) missedCalls else 0,
+    unreadMail = if (LiveKind.Mail in kinds) unreadMail else 0,
     storage = if (LiveKind.Storage in kinds) storage else null,
     nextAlarm = if (LiveKind.Alarm in kinds) nextAlarm else 0L,
     birthdays = if (LiveKind.Birthdays in kinds) birthdays else emptyList(),
@@ -118,6 +121,7 @@ fun LiveTileData.updatedWith(fresh: LiveTileData, kinds: Set<LiveKind>) = copy(
     nextEvent = if (LiveKind.Calendar in kinds) fresh.nextEvent else nextEvent,
     events = if (LiveKind.Calendar in kinds) fresh.events else events,
     missedCalls = if (LiveKind.Phone in kinds) fresh.missedCalls else missedCalls,
+    unreadMail = if (LiveKind.Mail in kinds) fresh.unreadMail else unreadMail,
     storage = if (LiveKind.Storage in kinds) fresh.storage else storage,
     nextAlarm = if (LiveKind.Alarm in kinds) fresh.nextAlarm else nextAlarm,
     birthdays = if (LiveKind.Birthdays in kinds) fresh.birthdays else birthdays,
@@ -148,6 +152,7 @@ class LiveTileRepository(private val context: Context) {
         nextEvent = events.firstOrNull(),
         events = events,
         missedCalls = if (LiveKind.Phone in wanted) missedCalls() else 0,
+        unreadMail = if (LiveKind.Mail in wanted) com.metrowin.launcher.mail.MailSync.unread(context) else 0,
         storage = if (LiveKind.Storage in wanted) StorageInfo.read() else null,
         nextAlarm = if (LiveKind.Alarm in wanted) NextAlarm.read(context) else 0L,
         birthdays = if (LiveKind.Birthdays in wanted) birthdays() else emptyList(),

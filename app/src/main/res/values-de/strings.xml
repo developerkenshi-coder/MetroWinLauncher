@@ -248,6 +248,9 @@
     <string name="mail_bar_new">Neu</string>
     <string name="mail_bar_sync">Sync</string>
     <string name="mail_bar_search">Suchen</string>
+    <string name="mail_bar_threads">Unterhaltungen</string>
+    <string name="mail_load_more">Mehr laden</string>
+    <string name="mail_new_count">%d neue Nachrichten</string>
     <string name="mail_folder_inbox">Posteingang</string>
     <string name="mail_folder_drafts">Entwürfe</string>
     <string name="mail_folder_sent">Gesendet</string>
@@ -256,6 +259,10 @@
     <string name="mail_delete">Löschen</string>
     <string name="mail_flag">Markieren</string>
     <string name="dialer_no_history">Noch keine Anrufe vorhanden.</string>
+    <string name="dialer_filter_all">alle</string>
+    <string name="dialer_filter_missed">verpasst</string>
+    <string name="dialer_delete_call">Aus dem Verlauf löschen</string>
+    <string name="dialer_block">Nummer blockieren</string>
     <string name="incall_incoming">Eingehender Anruf</string>
     <string name="incall_calling">Anruf wird aufgebaut …</string>
     <string name="incall_on_hold">Gehalten</string>
@@ -267,6 +274,7 @@
     <string name="incall_keypad">Tastenfeld</string>
     <string name="incall_hide_keypad">Tastenfeld ausblenden</string>
     <string name="incall_speaker">Lautsprecher</string>
+    <string name="incall_bluetooth">Bluetooth</string>
     <string name="incall_hold">Halten</string>
     <string name="incall_add">Anruf hinzufügen</string>
     <string name="incall_merge">Anrufe zusammenführen</string>
@@ -571,6 +579,8 @@
     <string name="sync_not_file">Die Sync-Datei im Ordner ist beschädigt oder stammt nicht von dieser App</string>
     <string name="sync_failed">Der Ordner ist nicht erreichbar</string>
     <string name="sync_hint">Beim ersten Sync eines Handys, das im Ordner eine Datei findet, übernimmt es diese und behält das, was es hatte, als Backup-Datei im Ordner. Danach wird übertragen, was sich seit dem letzten Sync geändert hat; wurden beide Handys geändert, gewinnt dieses, und das andere bleibt als eigene Datei erhalten.</string>
+    <string name="sync_others_list">Nach einem Sync-Konflikt behaltene Layouts: Antippen, um eines zurückzuholen</string>
+    <string name="sync_others_clear">Diese Kopien löschen</string>
 
     <!-- notification reply and grouping -->
     <string name="notif_reply">Antworten</string>
@@ -1588,6 +1598,7 @@
     <string name="restore_start">Die Start-Bildschirme und ihre Verknüpfungen</string>
     <string name="restore_settings">Die Einstellungen</string>
     <string name="restore_theme">Das Aussehen des Launchers</string>
+    <string name="restore_data">Aufgaben, Erinnerungen, benannte Layouts und der Parkplatz des Autos</string>
     <string name="restore_go">Wiederherstellen</string>
 
     <!-- Weather: what the forecast page and the tile can show -->
@@ -1811,6 +1822,7 @@
     <string name="update_notification_text">Version %1$s ist erschienen. Öffne die Einstellungen, Info, um sie zu installieren.</string>
     <string name="update_install_failed">Das Update konnte nicht installiert werden.</string>
     <string name="channel_update">Updates</string>
+    <string name="channel_mail">E-Mail</string>
     <string name="update_notes_title">Neu in %1$s</string>
     <string name="qa_device_settings">Android-Einstellungen</string>
     <string name="ac_arrange">Anordnen</string>
@@ -1822,6 +1834,7 @@
     <string name="messages_new">neu</string>
     <string name="messages_refresh">aktualisieren</string>
     <string name="messages_empty">Keine Nachrichten.</string>
+    <string name="messages_delete">Unterhaltung löschen</string>
     <string name="messages_to_hint">An (Nummer)</string>
     <string name="messages_open">Öffnen</string>
     <string name="messages_hint">Nachricht schreiben</string>
@@ -1832,6 +1845,11 @@
     <string name="messages_channel">SMS</string>
     <string name="messages_unknown">Unbekannt</string>
     <string name="messages_failed">Die Nachricht wurde nicht gesendet.</string>
+    <string name="messages_reply">Antworten</string>
+    <string name="messages_search">suchen</string>
+    <string name="messages_copy">Kopieren</string>
+    <string name="messages_forward">Weiterleiten</string>
+    <string name="messages_retry">Erneut senden</string>
     <string name="mail_signing_in">Anmeldung…</string>
     <string name="mail_login_failed">Anmeldung fehlgeschlagen: %1$s</string>
     <string name="mail_loading">Wird geladen…</string>
@@ -1967,6 +1985,12 @@
     <string name="notes_folder_hint">Name des Ordners</string>
     <string name="notes_share">Als Text teilen</string>
     <string name="notes_export_text">Als Datei speichern (.md)</string>
+    <string name="notes_lost">Die Notizen konnten nicht gelesen werden: der Schlüssel dieses Telefons, der sie schützte, ist weg. Die alte Datei bleibt erhalten. Stelle ein Backup mit dem Pfeil unten wieder her oder lösche die Datei.</string>
+    <string name="notes_lost_discard">Unlesbare Datei löschen</string>
+    <string name="notes_attach_photo">Foto anhängen</string>
+    <string name="notes_attach_audio">Ton anhängen</string>
+    <string name="notes_attach_failed">Die Datei konnte nicht angehängt werden (zu groß oder zu viele).</string>
+    <string name="notes_export_pdf">Als PDF exportieren</string>
     <string name="notes_export_sketch">Skizze als Bild speichern (.png)</string>
     <string name="notes_sketch_remove">Skizze entfernen</string>
     <string name="notes_delete">Notiz löschen</string>
@@ -2043,7 +2067,9 @@
     <string name="cal_rem_30">30 Min. vorher</string>
     <string name="cal_rem_60">1 Std. vorher</string>
     <string name="cal_rem_day">1 Tag vorher</string>
-    <string name="cal_repeats_note">Dieser Termin wiederholt sich: Änderungen gelten für alle Termine.</string>
+    <string name="cal_repeats_note">Dieser Termin wiederholt sich. Änderung gilt für:</string>
+    <string name="cal_only_this">nur diesen Termin</string>
+    <string name="cal_all_events">alle Termine</string>
     <string name="cal_need_permission">Der Kalender braucht die Erlaubnis, die Termine des Telefons zu lesen und zu schreiben.</string>
     <string name="cal_save_failed">Der Termin konnte nicht gespeichert werden. Gibt es einen Kalender, der Termine annimmt?</string>
 
@@ -2067,7 +2093,13 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="ds_limit">limit</string>
     <string name="ds_limit_title">Monatslimit für Mobilfunkdaten</string>
     <string name="ds_limit_hint">GB (0 für keins)</string>
-    <string name="ds_limit_used">%1$s von %2$s in diesem Monat</string>
+    <string name="ds_cycle">Abrechnungszeitraum</string>
+    <string name="ds_billing_day">Tag der Verlängerung des Tarifs (1–28)</string>
+    <string name="channel_data">Data Sense</string>
+    <string name="ds_alert_title">Limit für Mobilfunkdaten</string>
+    <string name="ds_alert_80">80%% erreicht: %1$s von %2$s</string>
+    <string name="ds_alert_100">Limit erreicht: %1$s von %2$s</string>
+    <string name="ds_limit_used">%1$s von %2$s</string>
     <string name="ds_photos">Fotos</string>
     <string name="ds_videos">Videos</string>
     <string name="ds_music">Musik</string>

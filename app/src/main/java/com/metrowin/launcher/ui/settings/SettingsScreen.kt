@@ -42,6 +42,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.key
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -103,7 +108,7 @@ fun SettingsScreen(
     // Where the name that was touched was on the screen: the title of the page flies up from there (the "continuum" of Windows Phone).
     var tappedTop by remember { mutableFloatStateOf(0f) }
 
-    Box(
+    BoxWithConstraints(
         modifier
             .fillMaxSize()
             .pageBackground()
@@ -113,7 +118,10 @@ fun SettingsScreen(
             .navigationBarsPadding()
             .cutoutSidesPadding(),
     ) {
-        Column(Modifier.fillMaxSize()) {
+        // A wide screen (a tablet, a phone on its side) keeps the list at the left and opens the section beside it.
+        val twoPanes = maxWidth >= TWO_PANES_MIN
+        Row(Modifier.fillMaxSize()) {
+        Column(if (twoPanes) Modifier.width(LIST_PANE).fillMaxHeight() else Modifier.fillMaxSize()) {
             SettingsHeader()
             MetroTextField(
                 value = query, onValueChange = { query = it },
@@ -139,7 +147,17 @@ fun SettingsScreen(
                 }
             }
         }
-        TurnstileHost(show = section != null, away = sectionAway) {
+        if (twoPanes) {
+            Box(Modifier.weight(1f).fillMaxHeight()) {
+                section?.let { opened ->
+                    CompositionLocalProvider(LocalSettingsTarget provides target?.takeIf { SettingsIndex.get(it)?.section == opened }) {
+                        key(opened) { SectionPage(opened, env, 0f) }
+                    }
+                }
+            }
+        }
+        }
+        if (!twoPanes) TurnstileHost(show = section != null, away = sectionAway) {
             shown?.let { opened ->
                 CompositionLocalProvider(LocalSettingsTarget provides target?.takeIf { SettingsIndex.get(it)?.section == opened }) {
                     SectionPage(opened, env, tappedTop)
@@ -148,6 +166,10 @@ fun SettingsScreen(
         }
     }
 }
+
+/** From this width the settings show the list and the open section side by side. */
+private val TWO_PANES_MIN = 720.dp
+private val LIST_PANE = 440.dp
 
 /** What the search of the settings found: each a setting (or a whole section) with the place it is in. */
 @Composable
