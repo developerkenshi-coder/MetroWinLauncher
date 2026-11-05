@@ -25,7 +25,7 @@ class MailActivity : ComponentActivity() {
         )
         super.onCreate(savedInstanceState)
         intent?.data?.let(MicrosoftOAuth::deliver)
-        val settings = SettingsStore(this).load()
+        val settings = SettingsStore.of(this).load()
         setContent {
             OverlayTheme(settings, remember { IconLoader(applicationContext) }) {
                 TurnPage(turn) { MailScreen() }

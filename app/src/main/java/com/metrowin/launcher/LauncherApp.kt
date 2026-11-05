@@ -320,10 +320,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     val usage by vm.usage.collectAsStateWithLifecycle()
     // The list chosen under the search box (its id; null is "all"), and the dialogs that make, rename, delete and fill the lists.
     var selectedList by remember { mutableStateOf<String?>(null) }
-    var newListOpen by remember { mutableStateOf(false) }
-    var listMenuFor by remember { mutableStateOf<String?>(null) }
-    var renamingListId by remember { mutableStateOf<String?>(null) }
-    var addToListFor by remember { mutableStateOf<AppItem?>(null) }
+    val adding = remember { AddTileState() }
+    val naming = remember { NameDialogState() }
     val visibleLists = remember(listItems, settings.appLists, settings.showCategories) {
         if (settings.showCategories) AppLists.visible(settings.appLists, listItems) else null
     }
@@ -425,35 +423,19 @@ fun LauncherApp(vm: LauncherViewModel) {
     var menu by remember { mutableStateOf<MenuState?>(null) }
     var jumpOpen by remember { mutableStateOf(false) }
     var settingsOpen by remember { mutableStateOf(false) }
-    var addMenuOpen by remember { mutableStateOf(false) }
-    var widgetPickerOpen by remember { mutableStateOf(false) }
     /** A widget that has an id and is waiting for the user: to allow it, or to set it up. */
     var pendingWidget by remember { mutableStateOf<Pair<Int, WidgetProvider>?>(null) }
-    var siteDialogOpen by remember { mutableStateOf(false) }
-    var settingPickerOpen by remember { mutableStateOf(false) }
-    var togglePickerOpen by remember { mutableStateOf(false) }
-    var groupEditingId by remember { mutableStateOf<String?>(null) }
     // The tile (entry id) whose color is being chosen, the note being written, and the countdown being made or changed.
     var colorPickFor by remember { mutableStateOf<String?>(null) }
-    var noteEditingId by remember { mutableStateOf<String?>(null) }
-    var countdownEditingId by remember { mutableStateOf<String?>(null) }
-    var countdownNew by remember { mutableStateOf(false) }
     // The language of the launcher chosen in the settings (Android 13 and later).
     var language by remember { mutableStateOf(vm.appLanguage()) }
-    var counterEditingId by remember { mutableStateOf<String?>(null) }
-    var checklistEditingId by remember { mutableStateOf<String?>(null) }
-    var cityPickerOpen by remember { mutableStateOf(false) }
     // The Start screen the add menu puts the new tile on: the selected tile's, or the one on screen after a long press on the empty part.
-    var addPage by remember { mutableIntStateOf(0) }
     val undoState by vm.undo.collectAsStateWithLifecycle()
     val undoDepth by vm.undoDepth.collectAsStateWithLifecycle()
     var weatherOpen by remember { mutableStateOf(false) }
     // The pages of the tiles that do more than show (timer, news, reminders…), and the choices that make some of the tiles.
     val panels = remember { PanelState() }
     val panelAway = remember { Animatable(1f) }
-    var placeDialogOpen by remember { mutableStateOf(false) }
-    var albumPickerOpen by remember { mutableStateOf(false) }
-    var groupPickerOpen by remember { mutableStateOf(false) }
     val ensureNotifications = rememberNotificationPermission()
     // The newest notification that came while the launcher is on screen (see LauncherViewModel.banners).
     var banner by remember { mutableStateOf<NotificationEntry?>(null) }
@@ -473,8 +455,6 @@ fun LauncherApp(vm: LauncherViewModel) {
     SideEffect { MotionStyle.original = settings.launchAnimation == LaunchAnimation.Original && !reduceMotion }
     val voice = rememberVoiceSession()
     var lockServiceEnabled by remember { mutableStateOf(false) }
-    var renamingFolderId by remember { mutableStateOf<String?>(null) }
-    var renamingAppId by remember { mutableStateOf<String?>(null) }
     // An app that asks for the screen lock, waiting for it: the app and the tile it was opened from.
     var pendingLocked by remember { mutableStateOf<Pair<AppItem, String?>?>(null) }
     // The tiles picked so far while several are chosen for a folder (null: not choosing), and the app being put in one.
@@ -693,7 +673,7 @@ fun LauncherApp(vm: LauncherViewModel) {
         editingKey = null
         menu = null
         jumpOpen = false
-        renamingFolderId = null
+        naming.renamingFolderId = null
         openFolderId = null
         query = ""
         if (settingsOpen) {
@@ -705,9 +685,9 @@ fun LauncherApp(vm: LauncherViewModel) {
             comeBack()
         }
         panels.close()
-        placeDialogOpen = false
-        albumPickerOpen = false
-        groupPickerOpen = false
+        adding.placeDialogOpen = false
+        adding.albumPickerOpen = false
+        adding.groupPickerOpen = false
         if (instant) panel.snapTo(0f) else panel.close()
         returnToStart(pagerState, startScrolls.take(pages.size), instant, homePage)
     }
@@ -752,30 +732,30 @@ fun LauncherApp(vm: LauncherViewModel) {
             voice.isOpen -> InstantBack { voice.close() }
             lockPreviewOpen -> InstantBack { lockPreviewOpen = false }
             panel.isShown -> PanelBack(panel)
-            placeDialogOpen -> InstantBack { placeDialogOpen = false }
-            albumPickerOpen -> InstantBack { albumPickerOpen = false }
-            groupPickerOpen -> InstantBack { groupPickerOpen = false }
+            adding.placeDialogOpen -> InstantBack { adding.placeDialogOpen = false }
+            adding.albumPickerOpen -> InstantBack { adding.albumPickerOpen = false }
+            adding.groupPickerOpen -> InstantBack { adding.groupPickerOpen = false }
             panels.isOpen -> TurnstileBack(panelAway, scope) { panels.close() }
-            widgetPickerOpen -> InstantBack { widgetPickerOpen = false }
-            siteDialogOpen -> InstantBack { siteDialogOpen = false }
-            noteEditingId != null -> InstantBack { noteEditingId = null }
-            countdownEditingId != null || countdownNew -> InstantBack {
-                countdownEditingId = null
-                countdownNew = false
+            adding.widgetPickerOpen -> InstantBack { adding.widgetPickerOpen = false }
+            adding.siteDialogOpen -> InstantBack { adding.siteDialogOpen = false }
+            adding.noteEditingId != null -> InstantBack { adding.noteEditingId = null }
+            adding.countdownEditingId != null || adding.countdownNew -> InstantBack {
+                adding.countdownEditingId = null
+                adding.countdownNew = false
             }
-            settingPickerOpen -> InstantBack { settingPickerOpen = false }
-            cityPickerOpen -> InstantBack { cityPickerOpen = false }
-            counterEditingId != null -> InstantBack { counterEditingId = null }
-            checklistEditingId != null -> InstantBack { checklistEditingId = null }
+            adding.settingPickerOpen -> InstantBack { adding.settingPickerOpen = false }
+            adding.cityPickerOpen -> InstantBack { adding.cityPickerOpen = false }
+            adding.counterEditingId != null -> InstantBack { adding.counterEditingId = null }
+            adding.checklistEditingId != null -> InstantBack { adding.checklistEditingId = null }
             colorPickFor != null -> InstantBack { colorPickFor = null }
-            addMenuOpen -> InstantBack { addMenuOpen = false }
-            renamingFolderId != null -> InstantBack { renamingFolderId = null }
+            adding.addMenuOpen -> InstantBack { adding.addMenuOpen = false }
+            naming.renamingFolderId != null -> InstantBack { naming.renamingFolderId = null }
             folderChooserFor != null -> InstantBack { folderChooserFor = null }
             vpnChoices != null -> InstantBack { vpnChoices = null }
-            addToListFor != null -> InstantBack { addToListFor = null }
-            renamingListId != null -> InstantBack { renamingListId = null }
-            listMenuFor != null -> InstantBack { listMenuFor = null }
-            newListOpen -> InstantBack { newListOpen = false }
+            naming.addToListFor != null -> InstantBack { naming.addToListFor = null }
+            naming.renamingListId != null -> InstantBack { naming.renamingListId = null }
+            naming.listMenuFor != null -> InstantBack { naming.listMenuFor = null }
+            naming.newListOpen -> InstantBack { naming.newListOpen = false }
             jumpOpen -> InstantBack { jumpOpen = false }
             menu != null -> InstantBack { menu = null }
             weatherOpen -> TurnstileBack(weatherAway, scope, ::closeWeather)
@@ -913,11 +893,11 @@ fun LauncherApp(vm: LauncherViewModel) {
         // A note and a countdown open their editor on the spot.
         when ((item.launch as? Launch.Internal)?.route) {
             AppRepository.ROUTE_NOTE -> {
-                noteEditingId = item.id
+                adding.noteEditingId = item.id
                 return
             }
             AppRepository.ROUTE_COUNTDOWN -> {
-                countdownEditingId = item.id
+                adding.countdownEditingId = item.id
                 return
             }
             // A counter counts one more where it is; a list opens to be ticked; the clock and the moon only show.
@@ -926,7 +906,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 return
             }
             AppRepository.ROUTE_CHECKLIST -> {
-                checklistEditingId = item.id
+                adding.checklistEditingId = item.id
                 return
             }
             AppRepository.ROUTE_NONE -> return
@@ -1330,7 +1310,7 @@ fun LauncherApp(vm: LauncherViewModel) {
         },
         onResize = { cell -> vm.resize(cell.entryId) },
         onColor = { cell -> colorPickFor = cell.entryId },
-        onRename = { cell -> renamingFolderId = cell.folder.id },
+        onRename = { cell -> naming.renamingFolderId = cell.folder.id },
         onMove = vm::moveTo,
         onMoveAfter = vm::moveAfter,
         onPlace = vm::placeTile,
@@ -1343,10 +1323,10 @@ fun LauncherApp(vm: LauncherViewModel) {
             val item = (cell as? AppCell)?.item
             when {
                 item == null -> Unit
-                item.data is TileData.Counter -> counterEditingId = item.id
-                item.data is TileData.Checklist -> checklistEditingId = item.id
-                item.targetDay != 0L -> countdownEditingId = item.id
-                item.note != null -> noteEditingId = item.id
+                item.data is TileData.Counter -> adding.counterEditingId = item.id
+                item.data is TileData.Checklist -> adding.checklistEditingId = item.id
+                item.targetDay != 0L -> adding.countdownEditingId = item.id
+                item.note != null -> adding.noteEditingId = item.id
             }
         },
         onCounterStep = vm::countStep,
@@ -1357,8 +1337,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                 if (!launching && folderPick == null && !tutorialVisible && menu == null && !settingsOpen && !settings.lockStart) {
                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                     editingKey = null
-                    addPage = lastStartPage.coerceIn(0, pages.size - 1)
-                    addMenuOpen = true
+                    adding.addPage = lastStartPage.coerceIn(0, pages.size - 1)
+                    adding.addMenuOpen = true
                 }
             }
         },
@@ -1371,9 +1351,9 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     // Pull down from the top of Start, or from the top edge of any page, to open the Action Center.
     val pullBlocked = kidsMode || !settings.actionCenterEnabled || voice.isOpen || lockPreviewOpen || launching || settingsOpen || weatherOpen || panels.isOpen ||
-        placeDialogOpen || albumPickerOpen || groupPickerOpen || menu != null || jumpOpen || editingKey != null ||
-        folderPick != null || folderChooserFor != null || vpnChoices != null || newListOpen || listMenuFor != null || renamingListId != null || addToListFor != null ||
-        renamingFolderId != null || tutorialVisible
+        adding.placeDialogOpen || adding.albumPickerOpen || adding.groupPickerOpen || menu != null || jumpOpen || editingKey != null ||
+        folderPick != null || folderChooserFor != null || vpnChoices != null || naming.newListOpen || naming.listMenuFor != null || naming.renamingListId != null || naming.addToListFor != null ||
+        naming.renamingFolderId != null || tutorialVisible
     val currentPullBlocked by rememberUpdatedState(pullBlocked)
     val pullConnections = List(LauncherSettings.MAX_START_PAGES) { page ->
         remember(panel, page) {
@@ -1612,8 +1592,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                             lists = visibleLists.orEmpty(),
                             selectedList = selectedList,
                             onList = { selectedList = it },
-                            onNewList = { newListOpen = true },
-                            onListLongPress = { listMenuFor = it.id },
+                            onNewList = { naming.newListOpen = true },
+                            onListLongPress = { naming.listMenuFor = it.id },
                             answers = answers,
                             onAnswer = touchAnswer,
                             onOpenNotification = { entry ->
@@ -1669,7 +1649,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         onRename = if (!state.item.pinOnly) {
                             {
                                 menu = null
-                                renamingAppId = state.item.id
+                                naming.renamingAppId = state.item.id
                             }
                         } else {
                             null
@@ -1754,7 +1734,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         onAddToList = if (settings.appLists.isNotEmpty()) {
                             {
                                 menu = null
-                                addToListFor = state.item
+                                naming.addToListFor = state.item
                             }
                         } else {
                             null
@@ -1789,7 +1769,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             val made = vm.createFolder(picked)
                             folderPick = null
                             // A folder that was just made gets its name asked for, as on Windows Phone.
-                            if (made != null) renamingFolderId = made
+                            if (made != null) naming.renamingFolderId = made
                         },
                         onCancel = { folderPick = null },
                         modifier = Modifier.align(Alignment.BottomCenter),
@@ -1891,8 +1871,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onDone = { editingKey = null },
                             modifier = Modifier.align(Alignment.BottomCenter).onSizeChanged { editBarHeight = it.height },
                             onAdd = {
-                                addPage = selectedPage
-                                addMenuOpen = true
+                                adding.addPage = selectedPage
+                                adding.addMenuOpen = true
                             },
                             onFolder = {
                                 pickToMove = false
@@ -1912,7 +1892,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                                 settings.largeTiles -> TileSize.entries
                                 else -> TileSize.entries - TileSize.Large
                             },
-                            onGroup = if (settings.groupTitles) ({ groupEditingId = cell.entryId }) else null,
+                            onGroup = if (settings.groupTitles) ({ naming.groupEditingId = cell.entryId }) else null,
                             onStyle = {
                                 val tile = cell as? AppCell ?: return@EditBar
                                 val pictures = tile.item.live == LiveKind.Photos || tile.item.live == LiveKind.Album
@@ -2217,228 +2197,14 @@ fun LauncherApp(vm: LauncherViewModel) {
                     }
                 }
 
-                if (addMenuOpen) {
-                    AddMenu(
-                        onContact = {
-                            addMenuOpen = false
-                            pickContact.launch(null)
-                        },
-                        onSite = {
-                            addMenuOpen = false
-                            siteDialogOpen = true
-                        },
-                        onWidget = {
-                            addMenuOpen = false
-                            widgetPickerOpen = true
-                        },
-                        onSpeedDial = {
-                            addMenuOpen = false
-                            pickNumber.launch(Intent(Intent.ACTION_PICK, android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI))
-                        },
-                        onSetting = {
-                            addMenuOpen = false
-                            settingPickerOpen = true
-                        },
-                        onNote = {
-                            addMenuOpen = false
-                            noteEditingId = vm.addNote(addPage)
-                        },
-                        onCountdown = {
-                            addMenuOpen = false
-                            countdownNew = true
-                        },
-                        onCounter = {
-                            addMenuOpen = false
-                            counterEditingId = vm.addCounter(addPage)
-                        },
-                        onChecklist = {
-                            addMenuOpen = false
-                            checklistEditingId = vm.addChecklist(addPage)
-                        },
-                        onWorldClock = {
-                            addMenuOpen = false
-                            cityPickerOpen = true
-                        },
-                        onMoon = {
-                            addMenuOpen = false
-                            vm.addMoon(addPage)
-                        },
-                        onBirthdays = {
-                            addMenuOpen = false
-                            vm.addBirthdays(addPage)
-                            if (!LivePermissions.isGranted(appContext, LivePermissions.contacts)) birthdaysPermission.launch(LivePermissions.contacts)
-                        },
-                        onPlace = {
-                            addMenuOpen = false
-                            placeDialogOpen = true
-                        },
-                        onAlbum = {
-                            addMenuOpen = false
-                            albumPickerOpen = true
-                        },
-                        onGroup = {
-                            addMenuOpen = false
-                            groupPickerOpen = true
-                        },
-                        onTimer = {
-                            addMenuOpen = false
-                            panels.open(Panel.Timer(vm.addTimer(addPage)))
-                        },
-                        onStopwatch = {
-                            addMenuOpen = false
-                            panels.open(Panel.Stopwatch(vm.addStopwatch(addPage)))
-                        },
-                        onReminders = {
-                            addMenuOpen = false
-                            vm.addRemindersTile(addPage)
-                            ensureNotifications()
-                        },
-                        onNews = {
-                            addMenuOpen = false
-                            vm.addNews(addPage)
-                        },
-                        onFinance = {
-                            addMenuOpen = false
-                            vm.addFinance(addPage)
-                        },
-                        onDialGrid = {
-                            addMenuOpen = false
-                            vm.addDialGrid(addPage)
-                            if (!LivePermissions.isGranted(appContext, LivePermissions.contacts)) birthdaysPermission.launch(LivePermissions.contacts)
-                        },
-                        onPeopleHub = {
-                            addMenuOpen = false
-                            vm.addPeopleHub(addPage)
-                            if (!LivePermissions.isGranted(appContext, LivePermissions.contacts)) birthdaysPermission.launch(LivePermissions.contacts)
-                        },
-                        onSteps = {
-                            addMenuOpen = false
-                            vm.addSteps(addPage)
-                            Steps.permission()?.takeIf { !LivePermissions.isGranted(appContext, it) }?.let(birthdaysPermission::launch)
-                        },
-                        onAppsRecap = {
-                            addMenuOpen = false
-                            vm.addAppsRecap(addPage)
-                        },
-                        onBatteryGraph = {
-                            addMenuOpen = false
-                            vm.addBatteryGraph(addPage)
-                        },
-                        onDataUse = {
-                            addMenuOpen = false
-                            vm.addDataUse(addPage)
-                        },
-                        onMemoryUse = {
-                            addMenuOpen = false
-                            vm.addMemoryUse(addPage)
-                        },
-                        onRecorder = {
-                            addMenuOpen = false
-                            vm.addRecorder(addPage)
-                        },
-                        onCamera = {
-                            addMenuOpen = false
-                            vm.addCamera(addPage)
-                            if (!LivePermissions.canReadPhotos(appContext)) birthdaysPermission.launch(LivePermissions.photos)
-                        },
-                        onWallet = {
-                            addMenuOpen = false
-                            vm.addWallet(addPage)
-                        },
-                        onWhereAmI = {
-                            addMenuOpen = false
-                            vm.addWhereAmI(addPage)
-                        },
-                        onParking = {
-                            addMenuOpen = false
-                            vm.addParking(addPage)
-                        },
-                        onAnalogClock = {
-                            addMenuOpen = false
-                            vm.addAnalogClock(addPage)
-                        },
-                        onSun = {
-                            addMenuOpen = false
-                            vm.addSun(addPage)
-                        },
-                        onWeatherPlus = {
-                            addMenuOpen = false
-                            vm.addWeatherPlus(addPage)
-                        },
-                        onToggle = {
-                            addMenuOpen = false
-                            togglePickerOpen = true
-                        },
-                        onDismiss = { addMenuOpen = false },
-                    )
-                }
-
-                if (togglePickerOpen) {
-                    val choices = remember(appContext) {
-                        QuickAction.toggles.map { Choice(it.id, it.glyph, appContext.getString(it.label)) }
-                    }
-                    ChoiceSheet(
-                        title = stringResource(R.string.add_toggle_title), choices = choices, tagPrefix = "toggle",
-                        onPick = { choice ->
-                            togglePickerOpen = false
-                            QuickAction.fromId(choice.id)?.let { vm.addToggle(it, addPage) }
-                        },
-                        onDismiss = { togglePickerOpen = false },
-                    )
-                }
-
-                if (settingPickerOpen) {
-                    val defs = remember { GlobalSearch.systemSettings.map { it to appContext.getString(it.label) }.sortedBy { it.second.lowercase() } }
-                    SettingPicker(
-                        settings = defs,
-                        onPick = { def ->
-                            settingPickerOpen = false
-                            vm.pinSetting(def, addPage)
-                        },
-                        onDismiss = { settingPickerOpen = false },
-                    )
-                }
-
-                if (placeDialogOpen) {
-                    PlaceDialog(
-                        onDone = { name, address ->
-                            val accepted = vm.addPlace(name, address, addPage)
-                            if (accepted) placeDialogOpen = false
-                            accepted
-                        },
-                        onCancel = { placeDialogOpen = false },
-                    )
-                }
-
-                if (albumPickerOpen) {
-                    var granted by remember { mutableStateOf(LivePermissions.canReadPhotos(appContext)) }
-                    val photosPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-                        granted = LivePermissions.canReadPhotos(appContext)
-                    }
-                    val albums by produceState<List<AlbumInfo>?>(null, granted) { value = if (granted) vm.albums() else emptyList() }
-                    AlbumPicker(
-                        albums = albums, permissionMissing = !granted, onAllow = { photosPermission.launch(LivePermissions.photos) },
-                        onPick = { album ->
-                            albumPickerOpen = false
-                            vm.addAlbum(album, addPage)
-                        },
-                        onDismiss = { albumPickerOpen = false },
-                    )
-                }
-
-                if (groupPickerOpen) {
-                    var granted by remember { mutableStateOf(LivePermissions.isGranted(appContext, LivePermissions.contacts)) }
-                    val contactsPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it }
-                    val groups by produceState<List<GroupInfo>?>(null, granted) { value = if (granted) vm.groups() else emptyList() }
-                    GroupPicker(
-                        groups = groups, permissionMissing = !granted, onAllow = { contactsPermission.launch(LivePermissions.contacts) },
-                        onPick = { group ->
-                            groupPickerOpen = false
-                            vm.addGroup(group, addPage)
-                        },
-                        onDismiss = { groupPickerOpen = false },
-                    )
-                }
+                adding.Dialogs(
+                    vm = vm, items = items, panels = panels,
+                    onPickContact = { pickContact.launch(null) },
+                    onPickNumber = { pickNumber.launch(Intent(Intent.ACTION_PICK, android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI)) },
+                    requestPermission = { birthdaysPermission.launch(it) },
+                    ensureNotifications = ensureNotifications,
+                    addWidget = ::addWidget,
+                )
 
                 colorPickFor?.let { id ->
                     val current = StartPages.all(pages).firstOrNull { it.id == id }?.color ?: 0
@@ -2452,215 +2218,12 @@ fun LauncherApp(vm: LauncherViewModel) {
                     )
                 }
 
-                noteEditingId?.let { id ->
-                    val note = items.firstOrNull { it.id == id }
-                    if (note != null) {
-                        NoteDialog(
-                            initial = note.note.orEmpty(),
-                            onDone = { text ->
-                                vm.saveNote(id, text)
-                                noteEditingId = null
-                            },
-                            onCancel = { noteEditingId = null },
-                        )
-                    }
-                }
-
-                if (cityPickerOpen) {
-                    CityPicker(
-                        onPick = { city ->
-                            cityPickerOpen = false
-                            vm.addWorldClock(city, addPage)
-                        },
-                        onDismiss = { cityPickerOpen = false },
-                    )
-                }
-
-                counterEditingId?.let { id ->
-                    val counter = items.firstOrNull { it.id == id }
-                    if (counter != null) {
-                        CounterDialog(
-                            initialName = counter.label,
-                            count = (counter.data as? TileData.Counter)?.count ?: 0,
-                            onDone = { name, reset ->
-                                vm.saveCounter(id, name, reset)
-                                counterEditingId = null
-                            },
-                            onCancel = { counterEditingId = null },
-                        )
-                    }
-                }
-
-                checklistEditingId?.let { id ->
-                    val list = items.firstOrNull { it.id == id }
-                    if (list != null) {
-                        ChecklistDialog(
-                            initialRaw = (list.data as? TileData.Checklist)?.raw.orEmpty(),
-                            onChange = { raw -> vm.saveChecklist(id, raw) },
-                            onClose = { checklistEditingId = null },
-                        )
-                    }
-                }
-
-                if (countdownNew || countdownEditingId != null) {
-                    val existing = countdownEditingId?.let { id -> items.firstOrNull { it.id == id } }
-                    CountdownDialog(
-                        initialTitle = existing?.label.orEmpty().takeIf { existing != null } ?: "",
-                        initialDay = existing?.targetDay ?: Countdown.defaultDay(java.time.LocalDate.now()),
-                        onDone = { title, day ->
-                            val editing = countdownEditingId
-                            if (editing != null) vm.saveCountdown(editing, title, day) else vm.addCountdown(title, day, addPage)
-                            countdownEditingId = null
-                            countdownNew = false
-                        },
-                        onCancel = {
-                            countdownEditingId = null
-                            countdownNew = false
-                        },
-                    )
-                }
-
-                if (widgetPickerOpen) {
-                    WidgetPicker(
-                        providers = remember { vm.widgets.providers() },
-                        onPick = { provider ->
-                            widgetPickerOpen = false
-                            addWidget(provider)
-                        },
-                    )
-                }
-
-                if (siteDialogOpen) {
-                    SiteDialog(
-                        onDone = { title, address ->
-                            val accepted = vm.pinSite(title, address, addPage)
-                            if (accepted) siteDialogOpen = false
-                            accepted
-                        },
-                        onCancel = { siteDialogOpen = false },
-                    )
-                }
 
                 if (pendingRestore != null) {
                     RestoreDialog(onDone = vm::applyRestore, onCancel = vm::cancelRestore)
                 }
 
-                groupEditingId?.let { id ->
-                    val entry = StartPages.all(pages).firstOrNull { it.id == id }
-                    if (entry != null) {
-                        FolderNameDialog(
-                            initial = entry.group,
-                            title = R.string.group_title_prompt,
-                            maxLength = StartEntries.MAX_GROUP,
-                            onDone = { title ->
-                                vm.setGroupTitle(id, title)
-                                groupEditingId = null
-                            },
-                            onCancel = { groupEditingId = null },
-                        )
-                    }
-                }
-
-                renamingFolderId?.let { id ->
-                    val folder = StartPages.all(pages).firstOrNull { it.id == id } as? Folder
-                    if (folder != null) {
-                        FolderNameDialog(
-                            initial = folder.name,
-                            onDone = { name ->
-                                vm.renameFolder(id, name)
-                                renamingFolderId = null
-                            },
-                            onCancel = { renamingFolderId = null },
-                        )
-                    }
-                }
-
-                renamingAppId?.let { id ->
-                    val app = items.firstOrNull { it.id == id }
-                    if (app != null) {
-                        FolderNameDialog(
-                            initial = app.label,
-                            title = R.string.app_rename_title,
-                            maxLength = AppLabels.MAX,
-                            onDone = { name ->
-                                // An empty name brings the original one back.
-                                val clean = AppLabels.clean(name)
-                                vm.updateSettings { s -> s.copy(appLabels = if (clean == null) s.appLabels - id else s.appLabels + (id to clean)) }
-                                renamingAppId = null
-                            },
-                            onCancel = { renamingAppId = null },
-                        )
-                    }
-                }
-
-                if (newListOpen) {
-                    FolderNameDialog(
-                        initial = "",
-                        title = R.string.list_new_prompt,
-                        maxLength = AppLists.MAX_NAME,
-                        onDone = { name ->
-                            val id = "u" + System.currentTimeMillis().toString(36)
-                            vm.updateSettings { it.copy(appLists = AppLists.create(it.appLists, name, id)) }
-                            if (AppLists.clean(name) != null) selectedList = id
-                            newListOpen = false
-                        },
-                        onCancel = { newListOpen = false },
-                    )
-                }
-
-                listMenuFor?.let { id ->
-                    ChoiceSheet(
-                        title = stringResource(R.string.list_options),
-                        choices = listOf(
-                            Choice("rename", null, stringResource(R.string.list_rename)),
-                            Choice("delete", null, stringResource(R.string.list_delete)),
-                        ),
-                        onPick = { choice ->
-                            listMenuFor = null
-                            if (choice.id == "rename") {
-                                renamingListId = id
-                            } else {
-                                // The apps stay where they are: only the chip goes, and a deleted list does not come back.
-                                vm.updateSettings { it.copy(appLists = AppLists.delete(it.appLists, id)) }
-                                Toast.makeText(appContext, R.string.list_deleted, Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        onDismiss = { listMenuFor = null },
-                        tagPrefix = "listmenu",
-                    )
-                }
-
-                renamingListId?.let { id ->
-                    val list = settings.appLists.firstOrNull { it.id == id }
-                    if (list != null) {
-                        FolderNameDialog(
-                            initial = list.name.ifBlank { list.category?.let { stringResource(it.label) }.orEmpty() },
-                            title = R.string.list_rename_prompt,
-                            maxLength = AppLists.MAX_NAME,
-                            onDone = { name ->
-                                vm.updateSettings { it.copy(appLists = AppLists.rename(it.appLists, id, name)) }
-                                renamingListId = null
-                            },
-                            onCancel = { renamingListId = null },
-                        )
-                    }
-                }
-
-                addToListFor?.let { item ->
-                    ChoiceSheet(
-                        title = stringResource(R.string.list_add_title),
-                        choices = settings.appLists.map { list ->
-                            val name = list.name.ifBlank { list.category?.let { stringResource(it.label) }.orEmpty() }
-                            Choice(list.id, null, (if (item.id in list.items) "✓ " else "") + name)
-                        },
-                        onPick = { choice ->
-                            vm.updateSettings { it.copy(appLists = AppLists.toggle(it.appLists, choice.id, item.id)) }
-                            addToListFor = null
-                        },
-                        onDismiss = { addToListFor = null },
-                        tagPrefix = "addtolist",
-                    )
-                }
+                naming.Dialogs(vm = vm, pages = pages, items = items, settings = settings, onListCreated = { selectedList = it })
 
                 if (lockPreviewOpen) {
                     MetroLockScreen(

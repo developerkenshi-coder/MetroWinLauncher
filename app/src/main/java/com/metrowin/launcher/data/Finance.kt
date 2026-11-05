@@ -198,7 +198,7 @@ object FinanceCodec {
 
 /** Fetches the quotes and keeps the last ones, so the tile has something to show without a connection. */
 class FinanceRepository(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin", Context.MODE_PRIVATE)
+    private val prefs = Prefs.main(context)
 
     fun cached(): FinanceData? = FinanceCodec.decode(prefs.getString(KEY, null))
 
@@ -220,7 +220,7 @@ class FinanceRepository(context: Context) {
 
 /** The headlines on the phone, kept apart from the settings so that a change of the source discards them. */
 class NewsRepository(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin", Context.MODE_PRIVATE)
+    private val prefs = Prefs.main(context)
 
     fun cached(): NewsData? = NewsCodec.decode(prefs.getString(KEY, null))
 

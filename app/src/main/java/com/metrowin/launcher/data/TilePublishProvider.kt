@@ -17,7 +17,7 @@ class TilePublishProvider : ContentProvider() {
 
     override fun call(method: String, arg: String?, extras: Bundle?): Bundle? {
         val context = context ?: return null
-        val enabled = SettingsStore(context).thirdPartyTilesOn()
+        val enabled = SettingsStore.of(context).thirdPartyTilesOn()
         return TileFeed.handle(context, enabled, callingPackage, method, extras)
     }
 

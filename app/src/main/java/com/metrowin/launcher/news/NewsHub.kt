@@ -1,5 +1,6 @@
 package com.metrowin.launcher.news
 
+import com.metrowin.launcher.data.Prefs
 import android.content.Context
 import androidx.core.content.edit
 import com.metrowin.launcher.data.NewsCodec
@@ -94,7 +95,7 @@ object NewsSourceList {
  * of Start, which the settings used to hold.
  */
 class NewsHub(private val context: Context) {
-    private val prefs = context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+    private val prefs = Prefs.open(context, Prefs.NEWS)
 
     fun sources(legacyCode: String, legacyUrl: String, topicName: (String) -> String): List<NewsSourceDef> {
         val saved = NewsSourceList.decode(prefs.getString(KEY_SOURCES, null))
@@ -133,14 +134,13 @@ class NewsHub(private val context: Context) {
         }
 
     companion object {
-        private const val FILE = "metrowin_news"
         private const val KEY_SOURCES = "sources"
         private const val KEY_TILE = "tile_source"
         private const val KEY_IMAGES = "images"
 
         /** The code and address that the News tile reads, for the source the user chose in the app; null until they choose. */
         fun tileChoice(context: Context): Pair<String, String>? {
-            val prefs = context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+            val prefs = Prefs.open(context, Prefs.NEWS)
             val id = prefs.getString(KEY_TILE, "").orEmpty().ifEmpty { return null }
             return NewsSourceList.decode(prefs.getString(KEY_SOURCES, null)).firstOrNull { it.id == id }?.let { it.code to it.url }
         }

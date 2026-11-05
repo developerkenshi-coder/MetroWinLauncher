@@ -1,6 +1,7 @@
 package com.metrowin.launcher.notes
 
 import android.content.Context
+import com.metrowin.launcher.data.AtomicEncryptedFile
 import com.metrowin.launcher.data.SecureStore
 import java.io.File
 
@@ -22,15 +23,17 @@ object KeystoreCrypt : NoteCrypt {
 class NoteStore(private val file: File, private val crypt: NoteCrypt = KeystoreCrypt) {
     constructor(context: Context) : this(File(context.filesDir, "notes.dat"))
 
+    private val sealed = AtomicEncryptedFile(file, crypt)
+
     /**
      * The notes. A file that cannot be read (the key of the Keystore is gone) gives none and is put aside, not left to be written over by
      * the next note: it is kept as `notes.unreadable`.
      */
     fun load(): List<Note> {
-        if (!file.exists()) return emptyList()
-        val plain = runCatching { crypt.decrypt(file.readText()) }.getOrNull()
+        if (!sealed.exists()) return emptyList()
+        val plain = sealed.read()
         if (plain == null) {
-            file.renameTo(unreadable())
+            sealed.putAside(UNREADABLE)
             return emptyList()
         }
         return NoteCodec.decode(plain)
@@ -43,24 +46,14 @@ class NoteStore(private val file: File, private val crypt: NoteCrypt = KeystoreC
         unreadable().delete()
     }
 
-    private fun unreadable() = File(file.parentFile, "notes.unreadable")
+    private fun unreadable() = File(file.parentFile, UNREADABLE)
 
     /** False when nothing was written. */
-    fun save(notes: List<Note>): Boolean {
-        val sealed = crypt.encrypt(NoteCodec.encode(notes))
-        if (sealed.isEmpty()) return false
-        return runCatching {
-            val temporary = File(file.parentFile, file.name + ".tmp")
-            temporary.writeText(sealed)
-            if (!temporary.renameTo(file)) {
-                file.delete()
-                temporary.renameTo(file)
-            }
-            true
-        }.getOrDefault(false)
-    }
+    fun save(notes: List<Note>): Boolean = sealed.write(NoteCodec.encode(notes))
 
     companion object {
+        private const val UNREADABLE = "notes.unreadable"
+
         /** Pinned first, then the most recently changed. */
         fun sorted(notes: List<Note>): List<Note> = notes.sortedWith(compareByDescending<Note> { it.pinned }.thenByDescending { it.updated })
     }

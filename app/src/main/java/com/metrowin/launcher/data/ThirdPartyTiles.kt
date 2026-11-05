@@ -91,7 +91,7 @@ object TileFeed {
     @Volatile
     private var loaded = false
 
-    private fun prefs(context: Context) = context.applicationContext.getSharedPreferences("metrowin_tiles", Context.MODE_PRIVATE)
+    private fun prefs(context: Context) = Prefs.open(context.applicationContext, Prefs.TILES)
 
     /** Reads the saved tiles, once per process. The provider and the launcher both call it first. */
     fun load(context: Context) {

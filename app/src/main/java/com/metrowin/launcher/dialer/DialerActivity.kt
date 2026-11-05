@@ -40,7 +40,7 @@ class DialerActivity : ComponentActivity() {
                 else -> PAGE_HISTORY
             },
         )
-        val settings = SettingsStore(this).load()
+        val settings = SettingsStore.of(this).load()
         setContent {
             OverlayTheme(settings, remember { IconLoader(applicationContext) }) {
                 TurnPage(turn) { DialerScreen(number, { number = it }, onPlaced = { finish() }, initialPage = initialPage) }

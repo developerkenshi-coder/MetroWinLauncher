@@ -1,5 +1,6 @@
 package com.metrowin.launcher.mail
 
+import com.metrowin.launcher.data.Prefs
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -30,7 +31,7 @@ object MailSync {
     private const val EVERY_MS = 30 * 60_000L
     private const val INBOX = "INBOX"
 
-    private fun prefs(context: Context) = context.getSharedPreferences("metrowin_mail_sync", Context.MODE_PRIVATE)
+    private fun prefs(context: Context) = Prefs.open(context, Prefs.MAIL_SYNC)
 
     /** The messages to tell the user about: none on the first look at an account ([known] is null), else the ones above the UID of the last look. */
     fun toNotify(known: Long?, fresh: List<MailMessage>): List<MailMessage> =

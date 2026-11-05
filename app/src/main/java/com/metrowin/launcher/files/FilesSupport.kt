@@ -1,5 +1,6 @@
 package com.metrowin.launcher.files
 
+import com.metrowin.launcher.data.Prefs
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -76,7 +77,7 @@ object FilesSupport {
 
 /** What the file manager remembers: the order, the hidden files, the bookmarks and where each pane was. */
 class FilesPrefs(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin_files", Context.MODE_PRIVATE)
+    private val prefs = Prefs.open(context, Prefs.FILES)
 
     var sort: Sort
         get() = Sort(runCatching { SortKey.valueOf(prefs.getString("sort", "Name")!!) }.getOrDefault(SortKey.Name), prefs.getBoolean("desc", false))

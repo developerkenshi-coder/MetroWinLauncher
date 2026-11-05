@@ -102,7 +102,7 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
     fun show() {
         val height = heightPx()
         barHeight = (height / service.resources.displayMetrics.density).dp
-        SettingsStore(service).load().let { hidden = StatusItem.hiddenIds(it.statusBarHidden); launcherBar = it.metroStatusBar }
+        SettingsStore.of(service).load().let { hidden = StatusItem.hiddenIds(it.statusBarHidden); launcherBar = it.metroStatusBar }
         shown?.let {
             if (it.params.height != height) {
                 it.params.height = height
@@ -110,7 +110,7 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
             }
             return
         }
-        val settings = SettingsStore(service).load()
+        val settings = SettingsStore.of(service).load()
         hidden = StatusItem.hiddenIds(settings.statusBarHidden)
         launcherBar = settings.metroStatusBar
         val dark = service.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES

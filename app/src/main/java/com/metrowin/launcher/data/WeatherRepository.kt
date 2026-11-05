@@ -5,7 +5,7 @@ import androidx.core.content.edit
 
 /** Fetches the weather and finds places on Open-Meteo, and keeps the last weather so the tile has something offline. */
 class WeatherRepository(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin", Context.MODE_PRIVATE)
+    private val prefs = Prefs.main(context)
 
     /** The weather fetched last, or null if there never was one. */
     fun cached(): WeatherData? = prefs.getString(KEY_CACHE, null)?.let(OpenMeteo::decode)

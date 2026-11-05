@@ -1,5 +1,6 @@
 package com.metrowin.launcher.messages
 
+import com.metrowin.launcher.data.Prefs
 import android.app.PendingIntent
 import android.content.ContentValues
 import android.content.Context
@@ -26,7 +27,7 @@ data class Sms(val id: Long, val body: String, val date: Long, val outgoing: Boo
 class SmsRepository(context: Context) {
     private val context = context.applicationContext
     private val resolver get() = context.contentResolver
-    private val drafts = context.getSharedPreferences("metrowin_sms_drafts", Context.MODE_PRIVATE)
+    private val drafts = Prefs.open(context, Prefs.SMS_DRAFTS)
 
     fun conversations(): List<Conversation> {
         val rows = LinkedHashMap<Long, MutableList<Triple<String, Long, Boolean>>>() // body, date, unread

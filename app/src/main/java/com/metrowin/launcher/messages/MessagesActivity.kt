@@ -32,7 +32,7 @@ class MessagesActivity : ComponentActivity() {
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT), navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
         super.onCreate(savedInstanceState)
         read(intent)
-        val settings = SettingsStore(this).load()
+        val settings = SettingsStore.of(this).load()
         setContent {
             OverlayTheme(settings, remember { IconLoader(applicationContext) }) {
                 TurnPage(turn) { MessagesScreen(address, body, onAddress = { address = it }, onBody = { body = it }) }

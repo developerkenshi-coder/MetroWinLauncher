@@ -47,7 +47,7 @@ class MetroDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwne
         super.onAttachedToWindow()
         isInteractive = true
         isFullscreen = true
-        val settings = SettingsStore(this).load()
+        val settings = SettingsStore.of(this).load()
         photo = loadPhoto(settings.hasLockPhoto, settings.hasStartBackground)
         val view = ComposeView(this).apply {
             // A service has no lifecycle of its own for Compose to follow: this one gives it.

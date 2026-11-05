@@ -147,8 +147,8 @@ internal class LockOverlay(private val service: AccessibilityService) {
     }
 
     private fun show() {
-        if (shown != null || !quiet() || !SettingsStore(service).lockOverlayOn()) return
-        val settings = SettingsStore(service).load()
+        if (shown != null || !quiet() || !SettingsStore.of(service).lockOverlayOn()) return
+        val settings = SettingsStore.of(service).load()
         val photo = loadPhoto(settings.hasLockPhoto, settings.hasStartBackground)
         val owner = OverlayWindowOwner()
         val windows = service.getSystemService(WindowManager::class.java)

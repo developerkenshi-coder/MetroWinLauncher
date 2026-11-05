@@ -354,7 +354,7 @@ object ShortcutCodec {
 }
 
 class ShortcutStore(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin", Context.MODE_PRIVATE)
+    private val prefs = Prefs.main(context)
     private val photoDir = java.io.File(context.filesDir, "shortcut_photos").apply { mkdirs() }
 
     fun load(): List<ShortcutDef> = prefs.getString(KEY, null)?.let(ShortcutCodec::decode).orEmpty()

@@ -207,7 +207,7 @@ private fun KeypadPage(number: String, onNumberChange: (String) -> Unit, hasCont
 @Composable
 private fun ContactsPage(hasPermission: Boolean, onRequest: () -> Unit, call: (String) -> Unit) {
     val context = LocalContext.current
-    val store = remember { SettingsStore(context.applicationContext) }
+    val store = remember { SettingsStore.of(context.applicationContext) }
     var mask by remember { mutableIntStateOf(store.load().dialerSources) }
     var query by remember { mutableStateOf("") }
     val vcfPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->

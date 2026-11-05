@@ -124,7 +124,7 @@ object Currencies {
 
 /** Fetches the rates and keeps the last ones, so a conversion works offline with them. */
 class CurrencyRepository(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin", Context.MODE_PRIVATE)
+    private val prefs = Prefs.main(context)
 
     /** The rates fetched last, or null if there never were any. */
     fun cached(): Currencies.Rates? {

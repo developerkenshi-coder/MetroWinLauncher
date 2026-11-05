@@ -673,7 +673,8 @@ data class LauncherSettings(
 }
 
 class SettingsStore(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin", Context.MODE_PRIVATE)
+    private val prefs = Prefs.main(context)
+    private val owner: Context = context.applicationContext ?: context
 
     fun load(): LauncherSettings =
         prefs.getString(KEY_JSON, null)?.let(SettingsCodec::decode) ?: legacy()
@@ -736,9 +737,19 @@ class SettingsStore(context: Context) {
         kidsMode = prefs.getBoolean("kids_mode", false),
     )
 
-    private companion object {
-        const val KEY_JSON = "settings_json"
+    companion object {
+        private const val KEY_JSON = "settings_json"
 
         @Volatile
-        var last: Pair<String, org.json.JSONObject>? = null    }
+        private var last: Pair<String, org.json.JSONObject>? = null
+
+        @Volatile
+        private var shared: SettingsStore? = null
+
+        /** The store of the app: it keeps nothing but the file, so services and screens share one instead of making one at every event. */
+        fun of(context: Context): SettingsStore {
+            val app = context.applicationContext ?: context
+            return shared?.takeIf { it.owner === app } ?: SettingsStore(app).also { shared = it }
+        }
+    }
 }

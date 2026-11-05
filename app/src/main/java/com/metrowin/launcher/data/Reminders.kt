@@ -93,7 +93,7 @@ object Reminders {
 
 /** The reminders kept on the phone. */
 class ReminderStore(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin", Context.MODE_PRIVATE)
+    private val prefs = Prefs.main(context)
 
     fun load(): List<Reminder> = Reminders.decode(prefs.getString(KEY, null))
 

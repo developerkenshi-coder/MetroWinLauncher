@@ -1,6 +1,8 @@
 package com.metrowin.launcher.wallet
 
+import com.metrowin.launcher.data.Prefs
 import android.content.Context
+import com.metrowin.launcher.data.AtomicEncryptedFile
 import com.metrowin.launcher.data.WalletStore
 import com.metrowin.launcher.notes.KeystoreCrypt
 import com.metrowin.launcher.notes.NoteCrypt
@@ -15,8 +17,10 @@ class WalletVault(private val file: File, private val crypt: NoteCrypt = Keystor
     constructor(context: Context) : this(
         File(context.filesDir, "wallet.dat"),
         legacy = { WalletStore(context).load().map { Card(it.id.ifBlank { UUID.randomUUID().toString() }, it.name, it.code) } },
-        dropLegacy = { context.getSharedPreferences("metrowin", Context.MODE_PRIVATE).edit().remove("wallet").apply() },
+        dropLegacy = { Prefs.main(context).edit().remove("wallet").apply() },
     )
+
+    private val sealed = AtomicEncryptedFile(file, crypt)
 
     /** The cards; the ones of the older wallet are brought in the first time. */
     fun load(): List<Card> {
@@ -27,22 +31,13 @@ class WalletVault(private val file: File, private val crypt: NoteCrypt = Keystor
             if (save(old)) dropLegacy()
             return old
         }
-        val plain = runCatching { crypt.decrypt(file.readText()) }.getOrNull()
+        val plain = sealed.read()
         if (plain == null) {
-            file.renameTo(File(file.parentFile, "wallet.unreadable"))
+            sealed.putAside("wallet.unreadable")
             return emptyList()
         }
         return Wallet.decode(plain)
     }
 
-    fun save(cards: List<Card>): Boolean {
-        val sealed = crypt.encrypt(Wallet.encode(cards))
-        if (sealed.isEmpty()) return false
-        return runCatching {
-            val temporary = File(file.parentFile, file.name + ".tmp")
-            temporary.writeText(sealed)
-            if (!temporary.renameTo(file)) { file.delete(); temporary.renameTo(file) }
-            true
-        }.getOrDefault(false)
-    }
+    fun save(cards: List<Card>): Boolean = sealed.write(Wallet.encode(cards))
 }

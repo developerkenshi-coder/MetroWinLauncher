@@ -45,7 +45,7 @@ object Layouts {
 }
 
 class LayoutStore(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin", Context.MODE_PRIVATE)
+    private val prefs = Prefs.main(context)
 
     fun load(): List<SavedLayout> = Layouts.decode(prefs.getString(KEY, null))
 

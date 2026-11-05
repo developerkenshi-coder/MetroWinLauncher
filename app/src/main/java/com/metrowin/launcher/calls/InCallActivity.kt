@@ -48,7 +48,7 @@ class InCallActivity : ComponentActivity() {
             onMerge = { id -> if (!CallManager.merge(id)) android.widget.Toast.makeText(this, com.metrowin.launcher.R.string.incall_merge_failed, android.widget.Toast.LENGTH_SHORT).show() },
             onAddCall = { startActivity(Intent(this, DialerActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) },
         )
-        val settings = SettingsStore(this).load()
+        val settings = SettingsStore.of(this).load()
         setContent {
             val lines by CallManager.lines.collectAsState()
             val audio by CallManager.audio.collectAsState()

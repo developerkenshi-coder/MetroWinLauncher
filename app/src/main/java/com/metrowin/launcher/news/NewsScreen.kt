@@ -99,7 +99,7 @@ fun NewsScreen() {
     val topics = NewsSources.TOPICS.associateWith { context.getString(topicRes(it)).substringAfter(": ") }
     LaunchedEffect(Unit) {
         sources = withContext(Dispatchers.IO) {
-            val legacy = SettingsStore(context).load()
+            val legacy = SettingsStore.of(context).load()
             hub.sources(legacy.newsSource, legacy.newsUrl) { topics[it].orEmpty() }
         }
     }

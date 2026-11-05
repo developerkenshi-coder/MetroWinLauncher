@@ -1,5 +1,6 @@
 package com.metrowin.launcher
 
+import com.metrowin.launcher.data.Prefs
 import com.metrowin.launcher.data.VolumeProfiles
 import com.metrowin.launcher.data.AboutInfo
 import com.metrowin.launcher.data.GallerySource
@@ -13,9 +14,7 @@ import com.metrowin.launcher.data.VpnApp
 import com.metrowin.launcher.data.VpnApps
 import com.metrowin.launcher.data.ParkedCarStore
 import com.metrowin.launcher.data.ParkedCar
-import com.metrowin.launcher.data.WeatherBlock
 import com.metrowin.launcher.data.RestorePart
-import com.metrowin.launcher.data.BackupCopies
 import com.metrowin.launcher.notifications.Mute
 import com.metrowin.launcher.data.ShortcutCodec
 import com.metrowin.launcher.data.TileCodec
@@ -29,7 +28,6 @@ import com.metrowin.launcher.data.FileMatch
 import com.metrowin.launcher.data.SavedApp
 import com.metrowin.launcher.data.AppListBackup
 import com.metrowin.launcher.data.SavedCity
-import com.metrowin.launcher.data.SavedCities
 import com.metrowin.launcher.model.TileData
 import com.metrowin.launcher.data.WhereAmI
 import com.metrowin.launcher.data.WalletStore
@@ -90,7 +88,6 @@ import com.metrowin.launcher.data.LiveTileData
 import kotlinx.coroutines.flow.update
 import com.metrowin.launcher.data.updatedWith
 import com.metrowin.launcher.data.keeping
-import com.metrowin.launcher.data.OpenMeteo
 import com.metrowin.launcher.data.IconPackInfo
 import com.metrowin.launcher.data.IconPackRepository
 import com.metrowin.launcher.data.PhoneCalls
@@ -110,11 +107,6 @@ import com.metrowin.launcher.data.PlaceMatch
 import com.metrowin.launcher.data.ThirdPartyTile
 import com.metrowin.launcher.data.ThirdPartyTiles
 import com.metrowin.launcher.data.TileFeed
-import com.metrowin.launcher.data.SafSyncStorage
-import com.metrowin.launcher.data.SyncConflicts
-import com.metrowin.launcher.data.SyncEngine
-import com.metrowin.launcher.data.SyncLocal
-import com.metrowin.launcher.data.SyncOutcome
 import com.metrowin.launcher.data.readAtMost
 import com.metrowin.launcher.data.ThemeCodec
 import com.metrowin.launcher.data.ProfileInfo
@@ -133,11 +125,8 @@ import com.metrowin.launcher.data.QuickActionsController
 import com.metrowin.launcher.data.BackupExtras
 import com.metrowin.launcher.data.BackupExtrasStore
 import com.metrowin.launcher.data.LayoutBackup
-import com.metrowin.launcher.data.LayoutBackupCodec
 import com.metrowin.launcher.data.LiveTileRepository
-import com.metrowin.launcher.data.SafFolder
 import com.metrowin.launcher.data.SettingsStore
-import com.metrowin.launcher.data.BackupSchedule
 import com.metrowin.launcher.data.ContactMatch
 import com.metrowin.launcher.data.ContactReader
 import com.metrowin.launcher.data.ContactPick
@@ -148,21 +137,16 @@ import com.metrowin.launcher.data.SiteInput
 import com.metrowin.launcher.data.SystemSettingDef
 import com.metrowin.launcher.data.WidgetProvider
 import com.metrowin.launcher.data.WidgetService
-import com.metrowin.launcher.data.WidgetSizing
 import com.metrowin.launcher.data.ShortcutStore
 import com.metrowin.launcher.data.StartBackgroundStore
 import com.metrowin.launcher.data.TileStore
 import com.metrowin.launcher.data.WeatherData
 import com.metrowin.launcher.data.WeatherRepository
 import com.metrowin.launcher.data.AlbumInfo
-import com.metrowin.launcher.data.AppUpdate
 import com.metrowin.launcher.data.GalleryApps
 import com.metrowin.launcher.data.Levels
 import com.metrowin.launcher.data.UpdateCheckJob
-import com.metrowin.launcher.data.UpdateChecker
-import com.metrowin.launcher.data.UpdateInstaller
 import com.metrowin.launcher.data.UpdateState
-import com.metrowin.launcher.data.UpdateStore
 import com.metrowin.launcher.data.TodayPart
 import com.metrowin.launcher.data.NextAlarm
 import com.metrowin.launcher.data.TodayExtras
@@ -216,7 +200,6 @@ import com.metrowin.launcher.notifications.LiveCards
 import com.metrowin.launcher.notifications.LiveReportLine
 import com.metrowin.launcher.notifications.LiveTileInfo
 import com.metrowin.launcher.notifications.NowPlaying
-import com.metrowin.launcher.notifications.TilePeek
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -241,7 +224,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val apps = AppRepository(application)
     private val store = TileStore(application)
     private val liveTiles = LiveTileRepository(application)
-    private val settingsStore = SettingsStore(application)
+    private val settingsStore = SettingsStore.of(application)
     private val backgroundStore = StartBackgroundStore(application)
     private val lockStore = StartBackgroundStore(application, "lock_background.jpg")
     private val quickActions = QuickActionsController(application)
@@ -508,11 +491,6 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         tell(R.string.note_saved_tile)
     }
 
-    /** The weather of the chosen city: the last fetched, shown at once and refreshed when it gets old. */
-    private val _weather = MutableStateFlow(weatherRepository.cached())
-    val weather: StateFlow<WeatherData?> = _weather.asStateFlow()
-    private var weatherJob: Job? = null
-
     // The photo of each Start screen that has one of its own; declared here because the setup below reads it.
     private val pageBackgroundStores = HashMap<Int, StartBackgroundStore>()
     private fun pageBackgroundStore(page: Int) = pageBackgroundStores.getOrPut(page) { StartBackgroundStore(getApplication(), "start_background_p$page.jpg") }
@@ -553,6 +531,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }.distinctUntilChanged().stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     private val throttle = Throttle()
+
+    private val weatherCtl = WeatherController(weatherRepository, viewModelScope, _settings, ::updateSettings, powerSaving, throttle)
+    val weather: StateFlow<WeatherData?> = weatherCtl.weather
     private var loadedLive: Set<LiveKind>? = null
     private var loadedAlbums: Set<String> = emptySet()
     private var loadedGroups: Set<Long> = emptySet()
@@ -714,12 +695,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** The VPN apps of the phone, for the choice. */
     fun vpnApps(): List<VpnApp> = VpnApps.installed(getApplication())
 
-    private val updateStore = UpdateStore(application)
-    private fun installedVersion() = UpdateChecker.installedVersion(getApplication())
-    private val _update = MutableStateFlow<UpdateState>(
-        updateStore.release?.takeIf { AppUpdate.isNewer(it.version, UpdateChecker.installedVersion(application)) }?.let { UpdateState.Available(it.version, it.notes) } ?: UpdateState.Idle,
+    private val updates = UpdateController(application, viewModelScope)
+    val update: StateFlow<UpdateState> = updates.state
+
+    private val backup = BackupController(
+        application, viewModelScope, _settings, ::updateSettings, { withWallet -> currentBackup(withWallet) }, ::restoreBackup, ::restoreBackupParts, ::tell,
     )
-    val update: StateFlow<UpdateState> = _update.asStateFlow()
 
     private var tilesReady = false
     private var loadedLocale: Locale? = null
@@ -734,7 +715,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         NotificationHub.actionCenterOn = _settings.value.actionCenterEnabled
         UpdateCheckJob.schedule(application, _settings.value.updateAuto)
         kotlin.concurrent.thread(name = "mail-schedule") { com.metrowin.launcher.mail.MailSync.schedule(application); com.metrowin.launcher.datasense.DataLimitWatch.schedule(application) }
-        checkUpdateIfDue()
+        updates.checkIfDue(_settings.value.updateAuto)
         reloadApps()
         if (_settings.value.hasStartBackground) loadBackground()
         if (_settings.value.hasLockPhoto) loadLockPhoto()
@@ -946,50 +927,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         return inPlace
     }
 
-    // --- updates from GitHub
-
-    private fun updateBusy() = _update.value is UpdateState.Checking || _update.value is UpdateState.Downloading
-
-    /** Asks GitHub whether there is a newer release; the answer is the [update] state. */
-    fun checkForUpdate() {
-        if (updateBusy()) return
-        _update.value = UpdateState.Checking
-        viewModelScope.launch {
-            val answered = withContext(Dispatchers.IO) { runCatching { UpdateChecker.check(getApplication(), installedVersion()) }.getOrDefault(false) }
-            val found = updateStore.release
-            _update.value = when {
-                !answered -> UpdateState.Failed
-                found != null -> UpdateState.Available(found.version, found.notes)
-                else -> UpdateState.UpToDate
-            }
-        }
-    }
-
-    /** The check every 12 hours also runs when the launcher comes up and the last one is older than that (the job may wait for Android). */
-    private fun checkUpdateIfDue() {
-        if (_settings.value.updateAuto && !updateBusy() && System.currentTimeMillis() - updateStore.lastCheck > AppUpdate.CHECK_EVERY_MS) checkForUpdate()
-    }
-
-    /** Downloads the newer release and hands it to the installer of Android, which opens its confirmation screen by itself. */
-    fun installUpdate() {
-        val release = updateStore.release ?: return
-        if (updateBusy()) return
-        val app = getApplication<Application>()
-        if (!UpdateInstaller.mayInstall(app)) {
-            // Android asks the user once to allow this app to install apps; the next touch goes on from here.
-            _update.value = UpdateState.NeedsPermission
-            UpdateInstaller.openPermissionScreen(app)
-            return
-        }
-        _update.value = UpdateState.Downloading(0)
-        viewModelScope.launch {
-            val file = UpdateInstaller.cacheFile(app)
-            val done = withContext(Dispatchers.IO) {
-                AppUpdate.download(release, file) { percent -> _update.value = UpdateState.Downloading(percent) } && UpdateInstaller.install(app, file)
-            }
-            _update.value = if (done) UpdateState.Available(release.version, release.notes) else UpdateState.Failed
-        }
-    }
+    fun checkForUpdate() = updates.check()
+    fun installUpdate() = updates.install()
 
     /** A long press on a part of the Today card switches that part off; the settings of the search bring it back. */
     fun hideTodayPart(part: TodayPart) {
@@ -1291,71 +1230,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    /** The weather of the other cities that are followed, by [SavedCity.key]; what is not there yet is being fetched. */
-    private val _cityWeather = MutableStateFlow<Map<String, WeatherData>>(emptyMap())
-    val cityWeather: StateFlow<Map<String, WeatherData>> = _cityWeather.asStateFlow()
-
-    /** Reads the weather of the followed cities when the Forecast page is opened: not before, and not again within a few minutes. */
-    fun refreshCities(force: Boolean = false) {
-        val s = _settings.value
-        _cityWeather.update { old -> old.filterKeys { key -> s.weatherCities.any { it.key == key } } }
-        if (s.weatherCities.isEmpty()) return
-        val saving = powerSaving.value
-        if (!force && !throttle.due("cities", PowerPolicy.weatherRetryMs(saving))) return
-        viewModelScope.launch {
-            s.weatherCities.forEach { city ->
-                val fetched = withContext(Dispatchers.IO) { weatherRepository.fetch(city.latitude, city.longitude, s.weatherFahrenheit) }
-                if (fetched != null) _cityWeather.update { it + (city.key to fetched) }
-            }
-        }
-    }
-
-    /** Follows [place] as well: the Forecast page shows it under the city of the tile. */
-    fun followPlace(place: PlaceMatch) {
-        updateSettings { s ->
-            if (s.weatherCities.size >= SavedCities.MAX || s.weatherCities.any { it.latitude == place.latitude && it.longitude == place.longitude }) s
-            else s.copy(weatherCities = s.weatherCities + SavedCity(place.displayName, place.latitude, place.longitude))
-        }
-        refreshCities(force = true)
-    }
-
-    fun unfollowCity(city: SavedCity) {
-        updateSettings { s -> s.copy(weatherCities = s.weatherCities - city) }
-        _cityWeather.update { it - city.key }
-    }
-
-    /** Fetches the weather of the chosen city, unless what is there is recent. [force] fetches in any case. */
-    fun refreshWeather(force: Boolean = false) {
-        val s = _settings.value
-        if (s.weatherLatitude.isNaN() || s.weatherLongitude.isNaN()) {
-            _weather.value = null
-            weatherRepository.save(null)
-            return
-        }
-        val current = _weather.value
-        val saving = powerSaving.value
-        val unitChanged = current != null && current.fahrenheit != s.weatherFahrenheit
-        val wantsAir = WeatherBlock.Air.code in s.weatherBlocks || WeatherBlock.Pollen.code in s.weatherBlocks
-        // The air is a second answer: switched on later, it is asked for at the next visit even if the forecast is recent.
-        val stale = current == null || OpenMeteo.isStale(current, System.currentTimeMillis(), PowerPolicy.weatherMaxAgeMs(saving)) ||
-            (wantsAir && current.air == null)
-        if (!force && !unitChanged && !stale) return
-        // Done or not, the next try waits: with no connection every return to Start would otherwise go to the network again.
-        if (!force && !unitChanged && !throttle.due("weather", PowerPolicy.weatherRetryMs(saving))) return
-        weatherJob?.cancel()
-        weatherJob = viewModelScope.launch {
-            val fetched = withContext(Dispatchers.IO) {
-                weatherRepository.fetch(s.weatherLatitude, s.weatherLongitude, s.weatherFahrenheit)?.let { forecast ->
-                    if (wantsAir) forecast.copy(air = weatherRepository.fetchAir(s.weatherLatitude, s.weatherLongitude)) else forecast
-                }
-            }
-            // Nothing new (no connection): the weather already there stays, however old.
-            if (fetched != null) {
-                _weather.value = fetched
-                weatherRepository.save(fetched)
-            }
-        }
-    }
+    val cityWeather = weatherCtl.cityWeather
+    fun refreshCities(force: Boolean = false) = weatherCtl.refreshCities(force)
+    fun followPlace(place: PlaceMatch) = weatherCtl.follow(place)
+    fun unfollowCity(city: SavedCity) = weatherCtl.unfollow(city)
+    fun refreshWeather(force: Boolean = false) = weatherCtl.refresh(force)
 
     /** The next event and alarm for the Today card: read when the app list comes up, never in the background. */
     private val _today = MutableStateFlow(TodayExtras())
@@ -1486,15 +1365,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                     wallpaperPrefs.edit().remove("key").apply()
                 }
             }
-            val movedWeather = updated.weatherLatitude != previous.weatherLatitude && !(updated.weatherLatitude.isNaN() && previous.weatherLatitude.isNaN()) ||
-                updated.weatherLongitude != previous.weatherLongitude && !(updated.weatherLongitude.isNaN() && previous.weatherLongitude.isNaN()) ||
-                updated.weatherFahrenheit != previous.weatherFahrenheit
-            if (updated.weatherFahrenheit != previous.weatherFahrenheit) _cityWeather.value = emptyMap()
-            if (movedWeather) {
-                // Another city or another unit: the weather on show is not the one asked for.
-                _weather.value = null
-                refreshWeather(force = true)
-            }
+            weatherCtl.onSettingsChanged(previous, updated)
             if (updated.iconPack != previous.iconPack) applyIconPack(updated.iconPack)
             if (updated.updateAuto != previous.updateAuto) UpdateCheckJob.schedule(getApplication(), updated.updateAuto)
             if (updated.galleryApp != previous.galleryApp) {
@@ -1597,7 +1468,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    private val wallpaperPrefs by lazy { getApplication<Application>().getSharedPreferences("metrowin_syswall", android.content.Context.MODE_PRIVATE) }
+    private val wallpaperPrefs by lazy { Prefs.open(getApplication<Application>(), Prefs.SYSTEM_WALLPAPER) }
 
     /**
      * While MetroWin is the home app, the wallpaper of Android is made to match Start: the screen of the recent apps draws it behind
@@ -2429,145 +2300,31 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         backup.extras?.let(::applyExtras)
     }
 
-    /** The name of the backup folder, for the settings; null while none is chosen or it cannot be read. */
-    val backupFolderName: StateFlow<String?> = _settings
-        .map { it.backupFolder }
-        .distinctUntilChanged()
-        .map { uri -> if (uri.isBlank()) null else withContext(Dispatchers.IO) { SafFolder(getApplication(), uri.toUri()).displayName() } }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    // --- backup folder, sync and layout files: see [BackupController]
 
-    /** Keeps [uri] (a folder the user picked) for the backups: the permission is kept past a restart of the phone. */
-    fun setBackupFolder(uri: Uri) {
-        runCatching {
-            getApplication<Application>().contentResolver.takePersistableUriPermission(
-                uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-            )
-        }
-        // Another folder is another sync: what was known about the old one does not apply.
-        updateSettings { it.copy(backupFolder = uri.toString(), lastBackupAt = 0L, syncLastHash = "", syncLastStamp = 0L, syncLastAt = 0L) }
-    }
+    val backupFolderName = backup.folderName
+    val backupCopies = backup.copies
+    val syncOthers = backup.syncOthers
+    val pendingRestore = backup.pendingRestore
 
-    fun clearBackupFolder() {
-        val old = _settings.value.backupFolder
-        if (old.isNotBlank()) {
-            runCatching {
-                getApplication<Application>().contentResolver.releasePersistableUriPermission(
-                    old.toUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-                )
-            }
-        }
-        updateSettings {
-            it.copy(backupFolder = "", backupEveryDays = 0, lastBackupAt = 0L, syncEnabled = false, syncLastHash = "", syncLastStamp = 0L, syncLastAt = 0L)
-        }
-    }
-
-    /** Saves the layout in the backup folder. [announce] says so on screen; an automatic backup does not. */
-    fun backupNow(announce: Boolean = true) {
-        val folder = _settings.value.backupFolder
-        if (folder.isBlank()) return
-        val keep = _settings.value.backupCopies
-        viewModelScope.launch {
-            val saved = withContext(Dispatchers.IO) {
-                val bytes = LayoutBackupCodec.encode(currentBackup(), System.currentTimeMillis()).toByteArray()
-                val files = SafFolder(getApplication(), folder.toUri())
-                val written = files.write(SafFolder.BACKUP_FILE, "application/json", bytes)
-                // With more than one copy asked for, the same file is also kept under the minute it was made, and the oldest ones go.
-                if (written && keep > 1) {
-                    val copy = BackupCopies.name(java.time.LocalDateTime.now())
-                    if (files.write(copy, "application/json", bytes)) BackupCopies.excess(files.names() + copy, keep).forEach(files::delete)
-                }
-                written
-            }
-            if (saved) updateSettings { it.copy(lastBackupAt = System.currentTimeMillis()) }
-            if (announce) tell(if (saved) R.string.backup_saved else R.string.backup_failed)
-            if (saved) refreshBackupCopies()
-        }
-    }
-
-    private val _backupCopies = MutableStateFlow<List<String>>(emptyList())
-
-    /** The names of the copies of the backup in the folder, the newest first (read when the page of the backup opens and after a backup). */
-    val backupCopies: StateFlow<List<String>> = _backupCopies.asStateFlow()
-
-    fun refreshBackupCopies() {
-        val folder = _settings.value.backupFolder
-        if (folder.isBlank()) {
-            _backupCopies.value = emptyList()
-            return
-        }
-        viewModelScope.launch {
-            _backupCopies.value = withContext(Dispatchers.IO) { BackupCopies.newestFirst(SafFolder(getApplication(), folder.toUri()).names()) }
-        }
-    }
-
-    /** Reads one of the copies and asks which parts of it to put back. */
-    fun restoreFromCopy(name: String) {
-        val folder = _settings.value.backupFolder
-        if (folder.isBlank() || BackupCopies.parse(name) == null) return
-        viewModelScope.launch {
-            val bytes = withContext(Dispatchers.IO) { SafFolder(getApplication(), folder.toUri()).read(name) }
-            val backup = bytes?.let { LayoutBackupCodec.decode(it.decodeToString(), _settings.value) }
-            when {
-                bytes == null -> tell(R.string.backup_no_file)
-                backup == null -> tell(R.string.backup_not_layout)
-                else -> _pendingRestore.value = backup
-            }
-        }
-    }
-
-    private val _syncOthers = MutableStateFlow<List<String>>(emptyList())
-
-    /** The copies a sync with a conflict left in the folder, the newest first (read when the page of the backup opens). */
-    val syncOthers: StateFlow<List<String>> = _syncOthers.asStateFlow()
-
-    fun refreshSyncOthers() {
-        val folder = _settings.value.backupFolder
-        viewModelScope.launch {
-            _syncOthers.value = if (folder.isBlank()) emptyList() else withContext(Dispatchers.IO) { SyncConflicts.newestFirst(SafFolder(getApplication(), folder.toUri()).names()) }
-        }
-    }
-
-    /** Opens one of the copies with the sync passphrase and asks which parts of it to put back. */
-    fun recoverSyncOther(name: String) {
-        val s = _settings.value
-        if (s.backupFolder.isBlank() || SyncConflicts.stamp(name) == null) return
-        viewModelScope.launch {
-            val blob = withContext(Dispatchers.IO) { SafFolder(getApplication(), s.backupFolder.toUri()).read(name) }
-            val layout = blob?.let { SyncConflicts.layoutOf(it, s.syncPassphrase) }
-            val backup = layout?.let { LayoutBackupCodec.decode(it, s) }
-            when {
-                blob == null -> tell(R.string.backup_no_file)
-                layout == null -> tell(R.string.sync_wrong_passphrase)
-                backup == null -> tell(R.string.sync_not_file)
-                else -> _pendingRestore.value = backup
-            }
-        }
-    }
-
-    fun clearSyncOthers() {
-        val folder = _settings.value.backupFolder
-        if (folder.isBlank()) return
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) { SafFolder(getApplication(), folder.toUri()).let { files -> SyncConflicts.newestFirst(files.names()).forEach(files::delete) } }
-            refreshSyncOthers()
-        }
-    }
-
-    /** A backup that has been read and waits for the user to say which parts of it to put back. */
-    private val _pendingRestore = MutableStateFlow<LayoutBackup?>(null)
-    val pendingRestore: StateFlow<LayoutBackup?> = _pendingRestore.asStateFlow()
-
-    fun cancelRestore() {
-        _pendingRestore.value = null
-    }
-
-    fun applyRestore(parts: Set<RestorePart>) {
-        val backup = _pendingRestore.value ?: return
-        _pendingRestore.value = null
-        restoreBackupParts(backup, parts)
-        tell(R.string.backup_imported)
-    }
-
+    fun setBackupFolder(uri: Uri) = backup.setFolder(uri)
+    fun clearBackupFolder() = backup.clearFolder()
+    fun backupNow(announce: Boolean = true) = backup.backupNow(announce)
+    fun refreshBackupCopies() = backup.refreshCopies()
+    fun restoreFromCopy(name: String) = backup.restoreFromCopy(name)
+    fun restoreFromBackupFolder() = backup.restoreFromFolder()
+    fun refreshSyncOthers() = backup.refreshSyncOthers()
+    fun recoverSyncOther(name: String) = backup.recoverSyncOther(name)
+    fun clearSyncOthers() = backup.clearSyncOthers()
+    fun cancelRestore() = backup.cancelRestore()
+    fun applyRestore(parts: Set<RestorePart>) = backup.applyRestore(parts)
+    fun shareLayout() = backup.shareLayout()
+    fun shareTheme() = backup.shareTheme()
+    fun backupIfDue() = backup.backupIfDue()
+    fun syncIfDue(minGapMs: Long) = backup.syncIfDue(minGapMs)
+    fun syncNow(announce: Boolean = true) = backup.syncNow(announce)
+    fun exportLayout(uri: Uri) = backup.exportLayout(uri)
+    fun importLayout(uri: Uri) = backup.importLayout(uri)
     /**
      * Puts back only [parts] of [backup]: the Start screens with their shortcuts, the settings (all but how the launcher looks, unless
      * the look is chosen too), or the look alone (see [ThemeCodec]).
@@ -2597,12 +2354,6 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    /** Sends the layout (see [LayoutBackupCodec]) to another app or person as a file, through the share sheet. */
-    fun shareLayout() = shareFile("metrowin-layout.json") { LayoutBackupCodec.encode(currentBackup(), System.currentTimeMillis()) }
-
-    /** The same for the look alone (see [ThemeCodec]): the file the Icons & themes page also reads. */
-    fun shareTheme() = shareFile("metrowin-theme.json") { ThemeCodec.encode(_settings.value) }
-
     /** Opens the mail app with the bug ticket ready: to the author, with the text of the user and the log of the app attached. */
     fun sendBugReport(description: String, about: AboutInfo) {
         viewModelScope.launch {
@@ -2625,126 +2376,6 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             }
             val chooser = Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             if (runCatching { app.startActivity(chooser) }.isFailure) tell(R.string.launch_failed)
-        }
-    }
-
-    private fun shareFile(name: String, text: () -> String) {
-        viewModelScope.launch {
-            val app = getApplication<Application>()
-            val uri = withContext(Dispatchers.IO) {
-                runCatching {
-                    val dir = java.io.File(app.cacheDir, "shared").apply { mkdirs() }
-                    val file = java.io.File(dir, name).apply { writeText(text()) }
-                    androidx.core.content.FileProvider.getUriForFile(app, app.packageName + ".files", file)
-                }.getOrNull()
-            }
-            if (uri == null) {
-                tell(R.string.backup_failed)
-                return@launch
-            }
-            val send = Intent(Intent.ACTION_SEND).setType("application/json").putExtra(Intent.EXTRA_STREAM, uri)
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            val chooser = Intent.createChooser(send, null).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            if (runCatching { app.startActivity(chooser) }.isFailure) tell(R.string.launch_failed)
-        }
-    }
-
-    /** Called when the launcher goes to the background: makes the automatic backup if it is time. */
-    fun backupIfDue() {
-        val s = _settings.value
-        if (BackupSchedule.isDue(s.backupEveryDays, s.backupFolder, s.lastBackupAt, System.currentTimeMillis())) backupNow(announce = false)
-        syncIfDue(SYNC_MIN_GAP_ON_LEAVE_MS)
-    }
-
-    private var syncing = false
-
-    /** An automatic sync, unless one ran a moment ago. */
-    fun syncIfDue(minGapMs: Long) {
-        val s = _settings.value
-        if (!s.syncEnabled || s.syncPassphrase.isEmpty() || s.backupFolder.isBlank()) return
-        if (System.currentTimeMillis() - s.syncLastAt < minGapMs) return
-        syncNow(announce = false)
-    }
-
-    /**
-     * Brings this phone and the sync file in the backup folder in line (see [SyncEngine]). [announce] says how it
-     * went on screen; an automatic sync only speaks when something needs the user.
-     */
-    fun syncNow(announce: Boolean = true) {
-        val s = _settings.value
-        if (!s.syncEnabled || s.backupFolder.isBlank() || s.syncPassphrase.isEmpty()) {
-            if (announce) tell(R.string.sync_not_ready)
-            return
-        }
-        if (syncing) return
-        syncing = true
-        viewModelScope.launch {
-            try {
-                if (s.deviceId.isEmpty()) updateSettings { it.copy(deviceId = java.util.UUID.randomUUID().toString()) }
-                val folder = SafFolder(getApplication(), s.backupFolder.toUri())
-                val outcome = withContext(Dispatchers.IO) {
-                    val layout = LayoutBackupCodec.encode(currentBackup(withWallet = true), 0L, secret = true)
-                    val local = SyncLocal(layout, s.syncPassphrase, _settings.value.deviceId, s.syncLastHash, s.syncLastStamp)
-                    SyncEngine(SafSyncStorage(folder)).sync(local)
-                }
-                applySyncOutcome(outcome, folder, announce)
-            } finally {
-                syncing = false
-            }
-        }
-    }
-
-    private suspend fun applySyncOutcome(outcome: SyncOutcome, folder: SafFolder, announce: Boolean) {
-        val now = System.currentTimeMillis()
-        when (outcome) {
-            SyncOutcome.Nothing -> {
-                updateSettings { it.copy(syncLastAt = now) }
-                if (announce) tell(R.string.sync_up_to_date)
-            }
-            is SyncOutcome.Uploaded -> {
-                updateSettings { it.copy(syncLastHash = outcome.hash, syncLastStamp = outcome.stamp, syncLastAt = now) }
-                if (outcome.keptTheOtherAs != null) {
-                    // Something the user should know: the other phone's layout did not win.
-                    Toast.makeText(getApplication(), getApplication<Application>().getString(R.string.sync_conflict, outcome.keptTheOtherAs), Toast.LENGTH_LONG).show()
-                } else if (announce) {
-                    tell(R.string.sync_uploaded)
-                }
-            }
-            is SyncOutcome.Applied -> {
-                val backup = LayoutBackupCodec.decode(outcome.layoutJson, _settings.value)
-                if (backup == null) {
-                    tell(R.string.sync_not_file)
-                    return
-                }
-                if (_settings.value.syncLastHash.isEmpty()) {
-                    // Joining a sync that already has data: what this phone had is kept as the backup file.
-                    withContext(Dispatchers.IO) {
-                        folder.write(SafFolder.BACKUP_FILE, "application/json", LayoutBackupCodec.encode(currentBackup(), now).toByteArray())
-                    }
-                }
-                restoreBackup(backup)
-                val hash = withContext(Dispatchers.IO) { SyncEngine.hash(LayoutBackupCodec.encode(currentBackup(withWallet = true), 0L, secret = true)) }
-                updateSettings { it.copy(syncLastHash = hash, syncLastStamp = outcome.stamp, syncLastAt = now) }
-                if (announce) tell(R.string.sync_applied)
-            }
-            SyncOutcome.WrongPassphrase -> tell(R.string.sync_wrong_passphrase)
-            SyncOutcome.NotASyncFile -> tell(R.string.sync_not_file)
-            SyncOutcome.Failed -> if (announce) tell(R.string.sync_failed)
-        }
-    }
-
-    /** Puts back the layout saved in the backup folder. */
-    fun restoreFromBackupFolder() {
-        val folder = _settings.value.backupFolder
-        if (folder.isBlank()) return
-        viewModelScope.launch {
-            val bytes = withContext(Dispatchers.IO) { SafFolder(getApplication(), folder.toUri()).read(SafFolder.BACKUP_FILE) }
-            val backup = bytes?.let { LayoutBackupCodec.decode(it.decodeToString(), _settings.value) }
-            when {
-                bytes == null -> tell(R.string.backup_no_file)
-                backup == null -> tell(R.string.backup_not_layout)
-                else -> _pendingRestore.value = backup
-            }
         }
     }
 
@@ -2844,19 +2475,6 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    /** Writes the layout to [uri] (a file the user chose). */
-    fun exportLayout(uri: Uri) {
-        viewModelScope.launch {
-            val written = withContext(Dispatchers.IO) {
-                runCatching {
-                    val text = LayoutBackupCodec.encode(currentBackup(), System.currentTimeMillis())
-                    getApplication<Application>().contentResolver.openOutputStream(uri, "wt")!!.use { it.write(text.toByteArray()) }
-                }.isSuccess
-            }
-            tell(if (written) R.string.backup_exported else R.string.backup_failed)
-        }
-    }
-
     /** The apps of a saved list that this phone does not have (yet), for the page of the backup. */
     private val _savedApps = MutableStateFlow<List<SavedApp>>(emptyList())
     val missingApps: StateFlow<List<SavedApp>> =
@@ -2900,20 +2518,6 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             getApplication<Application>().startActivity(Intent(Intent.ACTION_VIEW, AppListBackup.storeUri(packageName).toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }.isSuccess
         if (!opened) openUrl(AppListBackup.webStoreUri(packageName))
-    }
-
-    /** Reads a layout file and puts it in place. */
-    fun importLayout(uri: Uri) {
-        viewModelScope.launch {
-            val backup = withContext(Dispatchers.IO) {
-                runCatching {
-                    val text = getApplication<Application>().contentResolver.openInputStream(uri)!!.use { it.readAtMost(MAX_LAYOUT_BYTES) }!!
-                        .decodeToString()
-                    LayoutBackupCodec.decode(text, _settings.value)
-                }.getOrNull()
-            }
-            if (backup == null) tell(R.string.backup_not_layout) else _pendingRestore.value = backup
-        }
     }
 
     private fun tell(message: Int) = Toast.makeText(getApplication(), message, Toast.LENGTH_SHORT).show()
@@ -3016,7 +2620,5 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
         /** How long a switch of Android takes to show its new state, before the tile reads it again. */
         const val TOGGLE_SETTLE_MS = 700L
-        const val SYNC_MIN_GAP_ON_LEAVE_MS = 15 * 60_000L
-        const val MAX_LAYOUT_BYTES = 2 * 1024 * 1024
     }
 }

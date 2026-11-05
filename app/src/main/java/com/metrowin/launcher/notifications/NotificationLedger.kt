@@ -1,6 +1,7 @@
 package com.metrowin.launcher.notifications
 
 import android.content.Context
+import com.metrowin.launcher.data.AtomicEncryptedFile
 import com.metrowin.launcher.notes.KeystoreCrypt
 import com.metrowin.launcher.notes.NoteCrypt
 import org.json.JSONArray
@@ -37,15 +38,16 @@ class NotificationLedger(
 ) {
     constructor(context: Context) : this(File(context.filesDir, "notifications.dat"))
 
+    private val sealed = AtomicEncryptedFile(file, crypt)
     private val items = LinkedHashMap<String, LedgerItem>()
     private val journal = ArrayDeque<String>()
     private val queued = AtomicBoolean(false)
 
     /** What the disk has, the old ones out. A file that cannot be read is put aside, not written over. */
     fun load(now: Long = System.currentTimeMillis()): List<LedgerItem> {
-        if (file.exists()) {
-            val plain = runCatching { crypt.decrypt(file.readText()) }.getOrNull()
-            if (plain == null) file.renameTo(File(file.parentFile, "notifications.unreadable")) else decode(plain, now)
+        if (sealed.exists()) {
+            val plain = sealed.read()
+            if (plain == null) sealed.putAside("notifications.unreadable") else decode(plain, now)
         }
         return all(now)
     }
@@ -92,19 +94,7 @@ class NotificationLedger(
     }
 
     /** False when nothing was written (the Keystore cannot encrypt): the file is left as it was. */
-    private fun write(): Boolean {
-        val sealed = crypt.encrypt(encode())
-        if (sealed.isEmpty()) return false
-        return runCatching {
-            val temporary = File(file.parentFile, file.name + ".tmp")
-            temporary.writeText(sealed)
-            if (!temporary.renameTo(file)) {
-                file.delete()
-                temporary.renameTo(file)
-            }
-            true
-        }.getOrDefault(false)
-    }
+    private fun write(): Boolean = sealed.write(encode())
 
     @Synchronized
     private fun encode(): String = JSONObject()

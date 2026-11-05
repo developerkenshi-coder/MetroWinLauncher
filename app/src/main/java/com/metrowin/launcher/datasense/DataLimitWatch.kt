@@ -1,5 +1,6 @@
 package com.metrowin.launcher.datasense
 
+import com.metrowin.launcher.data.Prefs
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -31,7 +32,7 @@ object DataLimitWatch {
     private const val JOB_ID = 7304
     private const val NOTIFICATION_ID = 0x4453
 
-    private fun prefs(context: Context) = context.getSharedPreferences("metrowin_datasense", Context.MODE_PRIVATE)
+    private fun prefs(context: Context) = Prefs.open(context, Prefs.DATA_SENSE)
 
     /** Plans the job when a limit is set and takes it away when there is none. Asking again when it is planned already changes nothing. */
     fun schedule(context: Context) {

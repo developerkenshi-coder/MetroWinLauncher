@@ -109,7 +109,7 @@ object DefaultStart {
 }
 
 class TileStore(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin", Context.MODE_PRIVATE)
+    private val prefs = Prefs.main(context)
 
     /** The Start screens, or null on a fresh install. Reads what version 1 saved (one list) as the first screen. */
     fun loadPages(): List<List<StartEntry>>? =

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.todo
 
+import com.metrowin.launcher.data.Prefs
 import android.content.Context
 import androidx.core.content.edit
 import com.metrowin.launcher.data.Reminder
@@ -9,7 +10,7 @@ import com.metrowin.launcher.notifications.Alerts
 
 /** The things to do kept on the phone. */
 class TodoStore(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin_todo", Context.MODE_PRIVATE)
+    private val prefs = Prefs.open(context, Prefs.TODO)
 
     fun load(): List<TodoItem> = Todos.decode(prefs.getString(KEY, null))
 

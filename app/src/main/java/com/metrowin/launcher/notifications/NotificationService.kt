@@ -37,8 +37,8 @@ class NotificationService : NotificationListenerService() {
         NotificationHub.service = this
         NotificationHub.attach(this)
         runCatching { registerReceiver(screenWatch, IntentFilter(Intent.ACTION_SCREEN_ON).apply { addAction(Intent.ACTION_USER_PRESENT); addAction(Intent.ACTION_SCREEN_OFF) }) }
-        NotificationHub.clearOnOpen = SettingsStore(this).load().clearOnOpen
-        NotificationHub.actionCenterOn = SettingsStore(this).actionCenterOn()
+        NotificationHub.clearOnOpen = SettingsStore.of(this).load().clearOnOpen
+        NotificationHub.actionCenterOn = SettingsStore.of(this).actionCenterOn()
         syncEdge()
         changed()
         // What is in the shade of Android already, when the setting asks for it to be moved away.
@@ -82,7 +82,7 @@ class NotificationService : NotificationListenerService() {
      * intents are read; the pictures wait for a screen that shows them.
      */
     private fun keepAtOnce(sbn: StatusBarNotification) {
-        if (!SettingsStore(this).actionCenterOn()) return
+        if (!SettingsStore.of(this).actionCenterOn()) return
         // What is only live while it lasts (a call, an alarm, a navigation, a progress) is not kept after the app ends it.
         val notification = sbn.notification
         val keepable = NotificationHub.mayHide(
@@ -113,7 +113,7 @@ class NotificationService : NotificationListenerService() {
      * it is cancelled, so the ones that came while you were away would be silent. [screenWatch] moves them when you look at the phone.
      */
     private fun hideSystemCopy(sbn: StatusBarNotification) {
-        val store = SettingsStore(this)
+        val store = SettingsStore.of(this)
         if (!store.actionCenterOn() || !store.hideSystemOn() || awayFromScreen()) return
         hideFromAndroid(sbn, store.load())
     }
@@ -137,7 +137,7 @@ class NotificationService : NotificationListenerService() {
      * rules as for hiding keep what must stay (a call, an alarm, the player of the music). True when it was taken away.
      */
     private fun dropFiltered(sbn: StatusBarNotification, known: LauncherSettings? = null): Boolean {
-        val store = SettingsStore(this)
+        val store = SettingsStore.of(this)
         // With the Action Center off nothing is taken out of the shade of Android, whatever the filter says.
         if (!store.actionCenterOn()) return false
         if (known == null && !store.filterOn()) return false
@@ -156,7 +156,7 @@ class NotificationService : NotificationListenerService() {
 
     /** The same for everything in the shade now: when the listener connects and when a setting that decides it is changed. */
     internal fun hideAllNow() {
-        val store = SettingsStore(this)
+        val store = SettingsStore.of(this)
         if (!store.actionCenterOn() || !store.hideSystemOn() && !store.filterOn()) return
         val settings = store.load()
         runCatching { activeNotifications }.getOrNull()?.forEach { sbn ->
@@ -211,7 +211,7 @@ class NotificationService : NotificationListenerService() {
     private fun showOverBanner(sbn: StatusBarNotification) {
         if (NotificationHub.watched || sbn.packageName == packageName || LockAccessibilityService.safe) return
         if (!Settings.canDrawOverlays(this)) return skipped(sbn, "no permission to draw over apps")
-        val store = SettingsStore(this)
+        val store = SettingsStore.of(this)
         if (!store.actionCenterOn() || !store.overlayBannerOn()) return
         val ranking = NotificationListenerService.Ranking()
         val known = runCatching { currentRanking.getRanking(sbn.key, ranking) }.getOrDefault(false)
@@ -276,7 +276,7 @@ class NotificationService : NotificationListenerService() {
      */
     internal fun syncEdge() {
         // With a game in front the top edge belongs to the strip that calls the status bar back (see GameBars).
-        val wanted = LockAccessibilityService.host() != null && !LockAccessibilityService.safe && !LockAccessibilityService.gameBarsAway && SettingsStore(this).let { it.actionCenterOn() && it.edgeActionCenterOn() }
+        val wanted = LockAccessibilityService.host() != null && !LockAccessibilityService.safe && !LockAccessibilityService.gameBarsAway && SettingsStore.of(this).let { it.actionCenterOn() && it.edgeActionCenterOn() }
         // Not wanted any more (or the accessibility service went, and the system took its windows with it): nothing of it is kept.
         if (wanted) (edge ?: OverlayActionCenter(this, LockAccessibilityService::host, ::syncEdge).also { edge = it }).showStrip() else edge?.dispose()
     }

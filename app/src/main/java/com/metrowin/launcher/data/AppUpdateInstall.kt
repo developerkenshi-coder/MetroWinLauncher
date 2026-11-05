@@ -26,7 +26,7 @@ import kotlin.concurrent.thread
 
 /** What the last check found, kept between runs (the check also runs by itself, with the launcher closed). */
 class UpdateStore(context: Context) {
-    private val prefs = context.getSharedPreferences("updates", Context.MODE_PRIVATE)
+    private val prefs = Prefs.open(context, Prefs.UPDATES)
 
     var lastCheck: Long
         get() = prefs.getLong("lastCheck", 0L)

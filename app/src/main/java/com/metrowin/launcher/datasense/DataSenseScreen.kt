@@ -1,5 +1,6 @@
 package com.metrowin.launcher.datasense
 
+import com.metrowin.launcher.data.Prefs
 import android.content.Context
 import android.os.BatteryManager
 import androidx.compose.foundation.Canvas
@@ -88,7 +89,7 @@ fun DataSenseScreen() {
     }
     val pager = rememberPagerState { 5 }
     val reader = remember { UsageReader(context) }
-    val prefs = remember { context.getSharedPreferences("metrowin_datasense", Context.MODE_PRIVATE) }
+    val prefs = remember { Prefs.open(context, Prefs.DATA_SENSE) }
     var limitMb by remember { mutableLongStateOf(prefs.getLong("limit_mb", 0L)) }
     var billDay by remember { mutableIntStateOf(prefs.getInt("bill_day", 1)) }
     var editingLimit by remember { mutableStateOf(false) }

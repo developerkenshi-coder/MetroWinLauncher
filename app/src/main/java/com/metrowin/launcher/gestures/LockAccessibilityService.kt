@@ -32,7 +32,7 @@ class LockAccessibilityService : AccessibilityService() {
         instance = this
         NotificationHub.edgeChanged()
         contentResolver.registerContentObserver(Settings.Secure.getUriFor("navigation_mode"), false, navigationMode)
-        safeSettings = SettingsStore(this).load()
+        safeSettings = SettingsStore.of(this).load()
         syncNavBar()
         syncStatusBar()
         scheduleNudge()
@@ -48,7 +48,7 @@ class LockAccessibilityService : AccessibilityService() {
         nudgeHandler.postDelayed({
             nudgeTick++
             val (dx, dy) = com.metrowin.launcher.ui.components.BurnIn.at(nudgeTick)
-            val on = SettingsStore(this).antiBurnInOn()
+            val on = SettingsStore.of(this).antiBurnInOn()
             val d = resources.displayMetrics.density
             navBar.nudge(if (on) dx * d else 0f, if (on) dy * d else 0f)
             scheduleNudge()
@@ -112,7 +112,7 @@ class LockAccessibilityService : AccessibilityService() {
      * is asked of the package manager once, and remembered.
      */
     internal fun syncGame(pkg: String?) {
-        val game = pkg != null && SettingsStore(this).hideBarsInGamesOn() &&
+        val game = pkg != null && SettingsStore.of(this).hideBarsInGamesOn() &&
             GameApps.isGame(pkg, safeSettings.gameAdd, safeSettings.gameSkip) { pkg in GameApps.HELPERS || gamePackages.getOrPut(pkg) { GameApps.isGame(packageManager, pkg) } }
         gameBars.set(game)
         NotificationHub.edgeChanged()
@@ -143,7 +143,7 @@ class LockAccessibilityService : AccessibilityService() {
          */
         fun syncNavBar() {
             val service = instance ?: return
-            val store = SettingsStore(service)
+            val store = SettingsStore.of(service)
             if (!safe && store.metroNavBarOn() && NavBarOverlay.threeButtons(service) && !NavBarOverlay.onSide(service)) service.navBar.show(store.navHoldMs(), store.navSpacing())
             else service.navBar.hide()
             service.gameBars.refresh()
@@ -162,7 +162,7 @@ class LockAccessibilityService : AccessibilityService() {
 
         fun syncStatusBar() {
             val service = instance ?: return
-            if (!safe && SettingsStore(service).metroStatusBarOverAppsOn()) service.statusBar.show() else service.statusBar.hide()
+            if (!safe && SettingsStore.of(service).metroStatusBarOverAppsOn()) service.statusBar.show() else service.statusBar.hide()
             service.gameBars.refresh()
         }
 

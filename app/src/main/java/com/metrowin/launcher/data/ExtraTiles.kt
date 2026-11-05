@@ -96,7 +96,7 @@ object Steps {
 
     /** The steps kept for the days before, from the phone. */
     fun history(context: Context): Map<Long, Int> =
-        decodeHistory(context.getSharedPreferences("metrowin", Context.MODE_PRIVATE).getString("steps_history", null))
+        decodeHistory(Prefs.main(context).getString("steps_history", null))
 
     fun permission(): String? = if (Build.VERSION.SDK_INT >= 29) Manifest.permission.ACTIVITY_RECOGNITION else null
 
@@ -122,7 +122,7 @@ object Steps {
                 cont.invokeOnCancellation { manager.unregisterListener(listener) }
             }
         } ?: return null
-        val prefs = context.getSharedPreferences("metrowin", Context.MODE_PRIVATE)
+        val prefs = Prefs.main(context)
         val (steps, base) = today(counter, day, prefs.getLong("steps_day", -1L), prefs.getFloat("steps_base", 0f))
         prefs.edit {
             putLong("steps_day", day)
@@ -184,7 +184,7 @@ class Recordings(context: Context) {
 data class WalletCard(val id: String, val name: String, val code: String)
 
 class WalletStore(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin", Context.MODE_PRIVATE)
+    private val prefs = Prefs.main(context)
 
     fun load(): List<WalletCard> = decode(prefs.getString(KEY, null))
 

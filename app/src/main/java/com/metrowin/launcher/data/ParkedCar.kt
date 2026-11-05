@@ -13,7 +13,7 @@ data class ParkedCar(val latitude: Double, val longitude: Double, val address: S
 
 /** The place of the car, kept on the phone: one place, until a new one is saved or it is forgotten. */
 class ParkedCarStore(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin", Context.MODE_PRIVATE)
+    private val prefs = Prefs.main(context)
 
     fun load(): ParkedCar? = prefs.getString(KEY, null)?.let(::decode)
 

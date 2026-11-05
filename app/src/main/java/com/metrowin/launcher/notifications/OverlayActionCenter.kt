@@ -131,7 +131,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
         if (panel != null) return
         val service = host() ?: return
         val windows = service.getSystemService(WindowManager::class.java)
-        val settings = SettingsStore(app).load()
+        val settings = SettingsStore.of(app).load()
         hideStrip()
         // The service reads the notifications once now and keeps them current while the panel is up.
         NotificationHub.startWatching()

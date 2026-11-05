@@ -1,5 +1,6 @@
 package com.metrowin.launcher.calculator
 
+import com.metrowin.launcher.data.Prefs
 import android.content.Context
 import androidx.core.content.edit
 import com.metrowin.launcher.data.CalcEngine
@@ -9,7 +10,7 @@ import org.json.JSONObject
 
 /** The history, the memory and the angle of the calculator, kept between two visits. */
 class CalcStore(context: Context) {
-    private val prefs = context.getSharedPreferences("metrowin_calc", Context.MODE_PRIVATE)
+    private val prefs = Prefs.open(context, Prefs.CALC)
 
     fun load(): CalcSession {
         val history = runCatching {

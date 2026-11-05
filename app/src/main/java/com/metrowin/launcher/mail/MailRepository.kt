@@ -1,5 +1,6 @@
 package com.metrowin.launcher.mail
 
+import com.metrowin.launcher.data.Prefs
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
@@ -9,7 +10,7 @@ import org.json.JSONObject
 
 /** The mail accounts of the launcher. The accounts and their passwords are kept encrypted (see [SecureStore]); the passwords apart from the accounts. */
 class MailRepository(context: Context) {
-    private val prefs: SharedPreferences = context.getSharedPreferences("metrowin_mail_secure", Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences = Prefs.open(context, Prefs.MAIL_SECURE)
 
     fun loadAccounts(): List<MailAccount> {
         val raw = prefs.getString(KEY_ACCOUNTS, null) ?: return emptyList()
