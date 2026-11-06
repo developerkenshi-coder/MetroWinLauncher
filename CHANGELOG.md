@@ -3,13 +3,25 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
-## Next release / Prossima versione
+## 26.7.2S: 2026-11-06
+
+The complete list is in the notes of the release / L'elenco completo è nelle note della versione.
 
 **English:**
+- **Mail**: several accounts, real-time mail (off by default), new mail in the background with a notification and the unread count on the tile, conversations, a copy in Sent for servers that keep none; the draft is no longer lost with Back.
+- **Phone**: call log grouped, a card for each number with a note, voicemail on a long press of 1, speed dial on 2 to 9, one green bar per SIM, Bluetooth in the audio route of a call, a note when the full-screen call permission is off (Android 14 and later).
+- **File manager**: categories, tiles, sorting by last opened and most recent, zip and 7z, a new bar. **Recorder**: offline transcription, sharing, import of audio files.
+- **Calendar**: one time or all of a repeating event, several reminders. **Data Sense**: alerts at 80% and at the limit, billing day. **Notes**: photos, sounds, export, recovery.
+- **Weather**: touch a day. **Status bar**: the clock stays inside rounded corners. **News**: ANSA. **Wi-Fi and Bluetooth** switch for real with Shizuku. **Sync** merges two phones. Accessibility, wide screens, safer file copy and keystore failures.
 - **Search, enter opens the first result**: the search key of the keyboard opens the first row (an app, an answer, a contact, a setting, a tile, a notification, a file, an event, or the web search if nothing else matched); with nothing typed it opens nothing. A search asked for without typing (double press of Home, double touch above Start, search button of the navigation bar) now scrolls the list back to the search box before opening the keyboard. Thanks to [@ls-lnb](https://github.com/ls-lnb) (pull request #2).
 - **Pivot titles are touchable**: as in Windows Phone, a touch on a big title at the top swings to that page, in every screen with a pivot. Thanks to [@ls-lnb](https://github.com/ls-lnb) (pull request #2).
 
 **Italiano:**
+- **Posta**: più account, posta in tempo reale (spenta di default), posta nuova in background con notifica e non lette sul riquadro, conversazioni, una copia in Inviata per i server che non la tengono; la bozza non si perde più con Indietro.
+- **Telefono**: registro raggruppato, una scheda per ogni numero con una nota, segreteria con pressione lunga su 1, composizione veloce da 2 a 9, una barra verde per SIM, Bluetooth nell'uscita audio di una chiamata, una nota quando il permesso per la chiamata a schermo intero è spento (Android 14 e successivi).
+- **File manager**: categorie, riquadri, ordinamento per ultima apertura e più recenti, zip e 7z, una barra nuova. **Registratore**: trascrizione offline, condivisione, importazione di file audio.
+- **Calendario**: una volta o tutte di un evento ripetuto, più promemoria. **Data Sense**: avvisi all'80% e al limite, giorno di fatturazione. **Note**: foto, suoni, esportazione, recupero.
+- **Meteo**: tocca un giorno. **Barra di stato**: l'orologio resta dentro gli angoli arrotondati. **Notizie**: ANSA. **Wi-Fi e Bluetooth** si accendono davvero con Shizuku. **Sincronizzazione** che unisce due telefoni. Accessibilità, schermi larghi, copia file più sicura ed errori del Keystore.
 - **Ricerca, invio apre il primo risultato**: il tasto di ricerca della tastiera apre la prima riga (un'app, una risposta, un contatto, un'impostazione, un riquadro, una notifica, un file, un evento, o la ricerca web se nient'altro corrisponde); senza testo non apre nulla. Una ricerca chiesta senza scrivere (doppio Home, doppio tocco sopra Start, pulsante di ricerca della barra di navigazione) riporta prima la lista alla casella di ricerca e poi apre la tastiera. Grazie a [@ls-lnb](https://github.com/ls-lnb) (pull request #2).
 - **Titoli del pivot toccabili**: come in Windows Phone, un tocco sul grande titolo in alto porta a quella pagina, in ogni schermata con un pivot. Grazie a [@ls-lnb](https://github.com/ls-lnb) (pull request #2).
 

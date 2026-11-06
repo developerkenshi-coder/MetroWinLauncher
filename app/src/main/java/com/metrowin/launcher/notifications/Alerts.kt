@@ -290,7 +290,10 @@ class AlertReceiver : BroadcastReceiver() {
             Alerts.ACTION_REMINDER -> id.toLongOrNull()?.let { Alerts.onReminderDue(context, it) }
             Alerts.ACTION_REMINDER_DONE -> id.toLongOrNull()?.let { Alerts.onReminderDone(context, it) }
             Alerts.ACTION_REMINDER_SNOOZE -> id.toLongOrNull()?.let { Alerts.onReminderSnooze(context, it) }
-            Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED -> Alerts.rescheduleAll(context)
+            Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED -> {
+                Alerts.rescheduleAll(context)
+                com.metrowin.launcher.mail.MailIdle.sync(context)
+            }
         }
     }
 }

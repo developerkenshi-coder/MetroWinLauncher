@@ -16,14 +16,14 @@ RepoType: git
 Repo: https://github.com/developerkenshi-coder/MetroWinLauncher.git
 
 Builds:
-  - versionName: 26.6.3S
-    versionCode: 42
-    commit: v26.6.3S
+  - versionName: 26.7.2S
+    versionCode: 44
+    commit: v26.7.2S
     subdir: app
     gradle:
       - yes
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 26.6.3S
-CurrentVersionCode: 42
+CurrentVersion: 26.7.2S
+CurrentVersionCode: 44

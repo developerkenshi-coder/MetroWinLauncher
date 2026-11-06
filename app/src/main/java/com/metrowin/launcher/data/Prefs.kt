@@ -19,6 +19,7 @@ internal object Prefs {
     const val TODO = "metrowin_todo"
     const val NEWS = "metrowin_news"
     const val FILES = "metrowin_files"
+    const val DIALER_NUMBERS = "metrowin_dialer_numbers"
     const val TILES = "metrowin_tiles"
     const val UPDATES = "updates"
 

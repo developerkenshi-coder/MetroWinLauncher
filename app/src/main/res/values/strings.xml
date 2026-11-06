@@ -2374,4 +2374,15 @@ in front %3$s · in the background %4$s
     <string name="rec_lang_download">Download the language pack</string>
     <string name="rec_lang_downloading">The phone was asked to download it. When it has finished, try again. If nothing happens, look for offline speech recognition in the settings of the speech service.</string>
     <string name="rec_lang_unknown">Neither the speech recognition of the phone nor its speech service knows %1$s.</string>
+    <string name="channel_mail_idle">Real-time mail</string>
+    <string name="mail_idle_active">Waiting for new mail.</string>
+    <string name="mail_idle_partial">Waiting for new mail. Not supported by the server of %1$s: checked every 30 minutes.</string>
+    <string name="mail_idle_stop">Stop</string>
+    <string name="mail_realtime">Real-time mail</string>
+    <string name="mail_realtime_hint">Keeps a connection open to tell you about new mail at once. It shows a permanent notification and uses a little battery.</string>
+    <string name="dialer_fullscreen_note">Android is not letting calls open at full screen over the lock screen: an incoming call shows only as a banner. Allow it for this app.</string>
+    <string name="dialer_fullscreen_button">Allow full-screen calls</string>
+    <string name="dialer_note_hint">note about this number</string>
+    <string name="dialer_send_sms">Send a message</string>
+    <string name="dialer_assign_key">Call this number with a long press on key:</string>
 </resources>

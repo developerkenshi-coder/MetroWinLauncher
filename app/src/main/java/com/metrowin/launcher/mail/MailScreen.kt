@@ -45,6 +45,7 @@ import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
+import com.metrowin.launcher.ui.components.MetroToggle
 import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.pages.PageNote
 import com.metrowin.launcher.ui.theme.LocalAccent
@@ -514,6 +515,14 @@ private fun AccountsPage(accounts: List<MailAccount>, onAddAccount: (MailAccount
                         if (!busy && emailInput.contains("@") && passwordInput.isNotEmpty()) signIn(emailInput, passwordInput)
                     }
                 }
+            }
+        }
+        if (accounts.isNotEmpty()) item {
+            val context = LocalContext.current
+            var realtime by remember { mutableStateOf(MailIdle.enabled(context)) }
+            Column(Modifier.padding(bottom = 16.dp)) {
+                MetroToggle(stringResource(R.string.mail_realtime), realtime, { realtime = it; MailIdle.setEnabled(context, it) }, Modifier.testTag("mail:realtime"))
+                PageNote(stringResource(R.string.mail_realtime_hint))
             }
         }
         items(accounts, key = { it.id }) { acc ->

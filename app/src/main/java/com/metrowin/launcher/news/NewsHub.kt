@@ -44,14 +44,24 @@ object NewsSourceList {
 
     fun googleTop(): NewsSourceDef = NewsSourceDef("google", "Google News", NewsSources.GOOGLE_TOP)
 
+    fun ansa(): NewsSourceDef = NewsPresets.feeds.first { it.id == "preset:ansa" }
+
+    /** [list] with ANSA right after Google News, for the lists saved before ANSA was a default; unchanged when it is there or the list is full. */
+    fun withAnsa(list: List<NewsSourceDef>): List<NewsSourceDef> {
+        val ansa = ansa()
+        if (list.size >= MAX || list.any { it.id == ansa.id || it.url == ansa.url }) return list
+        val at = list.indexOfFirst { it.id == googleTop().id } + 1
+        return list.take(at) + ansa + list.drop(at)
+    }
+
     fun googleTopic(topic: String, name: String): NewsSourceDef = NewsSourceDef("google:$topic", name, NewsSources.topic(topic))
 
     /**
-     * The list the app starts with: Google News, and the source the News tile was set to in the settings before this app took the choice
+     * The list the app starts with: Google News, ANSA, and the source the News tile was set to in the settings before this app took the choice
      * ([legacyCode] and [legacyUrl]), so nothing the user chose is lost.
      */
     fun initial(legacyCode: String, legacyUrl: String, topicName: (String) -> String): List<NewsSourceDef> {
-        val list = arrayListOf(googleTop())
+        val list = arrayListOf(googleTop(), ansa())
         val code = NewsSources.normalize(legacyCode)
         NewsSources.topicOf(code)?.let { list += googleTopic(it, topicName(it)) }
         if (code == NewsSources.CUSTOM) NewsSources.customUrl(legacyUrl)?.let { url -> list += NewsSourceDef("custom:" + url.hashCode(), java.net.URI(url).host.removePrefix("www."), NewsSources.CUSTOM, url) }
@@ -99,8 +109,11 @@ class NewsHub(private val context: Context) {
 
     fun sources(legacyCode: String, legacyUrl: String, topicName: (String) -> String): List<NewsSourceDef> {
         val saved = NewsSourceList.decode(prefs.getString(KEY_SOURCES, null))
-        if (saved.isNotEmpty()) return saved
-        return NewsSourceList.initial(legacyCode, legacyUrl, topicName).also { saveSources(it) }
+        // ANSA is offered once to a list saved before it was a default; removing it later sticks.
+        if (saved.isNotEmpty() && prefs.getBoolean(KEY_ANSA, false)) return saved
+        val list = if (saved.isEmpty()) NewsSourceList.initial(legacyCode, legacyUrl, topicName) else NewsSourceList.withAnsa(saved)
+        prefs.edit { putBoolean(KEY_ANSA, true) }
+        return list.also { saveSources(it) }
     }
 
     fun saveSources(list: List<NewsSourceDef>) = prefs.edit { putString(KEY_SOURCES, NewsSourceList.encode(list)) }
@@ -135,6 +148,7 @@ class NewsHub(private val context: Context) {
 
     companion object {
         private const val KEY_SOURCES = "sources"
+        private const val KEY_ANSA = "ansa_offered"
         private const val KEY_TILE = "tile_source"
         private const val KEY_IMAGES = "images"
 

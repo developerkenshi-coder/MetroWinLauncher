@@ -2374,4 +2374,15 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="rec_lang_download">Sprachpaket herunterladen</string>
     <string name="rec_lang_downloading">Das Telefon wurde zum Herunterladen aufgefordert. Versuche es nach dem Download erneut. Passiert nichts, suche in den Einstellungen des Sprachdienstes nach der Offline-Spracherkennung.</string>
     <string name="rec_lang_unknown">Weder die Spracherkennung des Telefons noch sein Sprachdienst kennt %1$s.</string>
+    <string name="channel_mail_idle">E-Mail in Echtzeit</string>
+    <string name="mail_idle_active">Wartet auf neue E-Mails.</string>
+    <string name="mail_idle_partial">Wartet auf neue E-Mails. Der Server von %1$s unterstützt das nicht: Prüfung alle 30 Minuten.</string>
+    <string name="mail_idle_stop">Stopp</string>
+    <string name="mail_realtime">E-Mail in Echtzeit</string>
+    <string name="mail_realtime_hint">Hält eine Verbindung offen, um dich sofort über neue E-Mails zu informieren. Zeigt eine dauerhafte Benachrichtigung und braucht etwas Akku.</string>
+    <string name="dialer_fullscreen_note">Android erlaubt keine Anrufe im Vollbild über dem Sperrbildschirm: Ein eingehender Anruf erscheint nur als Banner. Erlaube es für diese App.</string>
+    <string name="dialer_fullscreen_button">Vollbild-Anrufe erlauben</string>
+    <string name="dialer_note_hint">Notiz zu dieser Nummer</string>
+    <string name="dialer_send_sms">SMS senden</string>
+    <string name="dialer_assign_key">Diese Nummer per langem Druck auf die Taste anrufen:</string>
 </resources>

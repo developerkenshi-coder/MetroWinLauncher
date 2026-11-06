@@ -32,14 +32,14 @@ data class MailFolder(val path: String, val name: String)
  * The IMAP login is kept between calls; whoever makes the client calls [close] when done with it (a dead login is made again on the next call).
  */
 class MailClient(private val account: MailAccount, private val secret: () -> String) {
-    private fun properties(): Properties = Properties().apply {
+    private fun properties(readTimeout: String = TIMEOUT): Properties = Properties().apply {
         put("mail.imaps.host", account.imapHost)
         put("mail.imaps.port", account.imapPort.toString())
         put("mail.imaps.ssl.checkserveridentity", "true")
         // Reading a message to show a line of it must not mark it as read.
         put("mail.imaps.peek", "true")
         put("mail.imaps.connectiontimeout", TIMEOUT)
-        put("mail.imaps.timeout", TIMEOUT)
+        put("mail.imaps.timeout", readTimeout)
         // Folders opened together (the list and the lines of text) share logins from a pool instead of each making a new one.
         put("mail.imaps.connectionpoolsize", "3")
         put("mail.imaps.connectionpooltimeout", "300000")
@@ -75,6 +75,50 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
         store.connect(account.imapHost, account.imapPort, account.email, secret())
         kept = store
         return store
+    }
+
+    @Volatile private var idleStore: Store? = null
+
+    /**
+     * Holds [path] open in IMAP IDLE on a login of its own, and calls [onArrival] when the server says the folder changed ([onConnected] first,
+     * once the folder is open). The IDLE is renewed every [renewMs] (servers close it at 30 minutes). Returns false at once when the server
+     * has no IDLE; else blocks until [stopIdle] or throws when the connection drops.
+     */
+    fun idle(path: String, renewMs: Long, onConnected: () -> Unit, onArrival: () -> Unit): Boolean {
+        // The read timeout is longer than the renewal: a connection that died without a word is noticed by the next one.
+        val store = Session.getInstance(properties((renewMs + 5 * 60_000L).toString())).getStore("imaps")
+        idleStore = store
+        val renew = java.util.concurrent.Executors.newSingleThreadScheduledExecutor()
+        try {
+            store.connect(account.imapHost, account.imapPort, account.email, secret())
+            if (!(store as com.sun.mail.imap.IMAPStore).hasCapability("IDLE")) return false
+            val folder = store.getFolder(path) as com.sun.mail.imap.IMAPFolder
+            folder.open(Folder.READ_ONLY)
+            folder.addMessageCountListener(object : javax.mail.event.MessageCountAdapter() {
+                override fun messagesAdded(e: javax.mail.event.MessageCountEvent) = onArrival()
+            })
+            // A NOOP from another thread ends the IDLE that is running; the loop below starts the next one.
+            renew.scheduleAtFixedRate({
+                runCatching { folder.doCommand { it.simpleCommand("NOOP", null); null } }
+            }, renewMs, renewMs, java.util.concurrent.TimeUnit.MILLISECONDS)
+            onConnected()
+            while (store.isConnected) {
+                val began = System.currentTimeMillis()
+                folder.idle()
+                // A server that answers IDLE at once, again and again, must not make a busy loop.
+                if (System.currentTimeMillis() - began < 1000) Thread.sleep(1000)
+            }
+            return true
+        } finally {
+            renew.shutdownNow()
+            runCatching { store.close() }
+            idleStore = null
+        }
+    }
+
+    /** Ends [idle] (it throws or returns on its own thread). */
+    fun stopIdle() {
+        runCatching { idleStore?.close() }
     }
 
     /** Lets go of the kept login. */

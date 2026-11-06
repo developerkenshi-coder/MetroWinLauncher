@@ -2391,4 +2391,15 @@ em primeiro plano %3$s · em segundo plano %4$s
     <string name="rec_lang_download">Transferir o pacote de idioma</string>
     <string name="rec_lang_downloading">Foi pedido ao telemóvel que o transfira. Quando acabar, tente de novo. Se nada acontecer, procure o reconhecimento de voz offline nas definições do serviço de voz.</string>
     <string name="rec_lang_unknown">Nem o reconhecimento de voz do telemóvel nem o seu serviço de voz conhecem o idioma %1$s.</string>
+    <string name="channel_mail_idle">E-mail em tempo real</string>
+    <string name="mail_idle_active">À espera de novos e-mails.</string>
+    <string name="mail_idle_partial">À espera de novos e-mails. O servidor de %1$s não o suporta: verificação a cada 30 minutos.</string>
+    <string name="mail_idle_stop">Parar</string>
+    <string name="mail_realtime">E-mail em tempo real</string>
+    <string name="mail_realtime_hint">Mantém uma ligação aberta para avisar logo que chega e-mail. Mostra uma notificação permanente e gasta um pouco de bateria.</string>
+    <string name="dialer_fullscreen_note">O Android não deixa abrir as chamadas em ecrã inteiro sobre o ecrã de bloqueio: uma chamada recebida aparece só como faixa. Permite-o para esta app.</string>
+    <string name="dialer_fullscreen_button">Permitir chamadas em ecrã inteiro</string>
+    <string name="dialer_note_hint">nota sobre este número</string>
+    <string name="dialer_send_sms">Enviar SMS</string>
+    <string name="dialer_assign_key">Ligar para este número com um toque longo na tecla:</string>
 </resources>

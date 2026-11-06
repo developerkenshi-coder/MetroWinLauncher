@@ -26,6 +26,8 @@
     <!-- A recording goes on, with a notification, when the launcher is left. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <!-- "Real-time mail": the connection that waits for new mail (IMAP IDLE), with a notification that can be stopped. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
     <!-- Only to ask, in the tutorial, that Android does not close the launcher to save battery. -->
     <uses-permission
@@ -398,6 +400,11 @@
         </receiver>
         <receiver android:name=".messages.SmsReplyReceiver" android:exported="false" />
         <receiver android:name=".messages.SmsSentReceiver" android:exported="false" />
+        <service android:name=".mail.MailIdleService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps an IMAP IDLE connection open to the user's mail servers so that new mail is told at once; off by default, stopped from its notification." />
+        </service>
         <service android:name=".recorder.RecorderService" android:exported="false" android:foregroundServiceType="microphone" />
         <service
             android:name=".messages.RespondViaMessageService"

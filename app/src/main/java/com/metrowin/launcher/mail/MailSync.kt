@@ -22,7 +22,8 @@ import kotlin.concurrent.thread
 /**
  * The look at the inbox of each account that runs by itself, every half hour, while there is a connection and the battery is not low:
  * a notification for what came in since the last look, and the unread count that the Mail tile shows. One job of Android, no service
- * that stays on. It exists only while there is an account (see [schedule]).
+ * that stays on. It exists only while there is an account (see [schedule]). With "Real-time mail" on, [MailIdleService] tells at once and
+ * this job stays as the fallback.
  */
 object MailSync {
     const val CHANNEL = "mail_new"
@@ -30,6 +31,8 @@ object MailSync {
     private const val NOTIFICATION_ID = 0x4D41
     private const val EVERY_MS = 30 * 60_000L
     private const val INBOX = "INBOX"
+
+    private val checkLock = Any()
 
     private fun prefs(context: Context) = Prefs.open(context, Prefs.MAIL_SYNC)
 
@@ -52,8 +55,10 @@ object MailSync {
 
     /** Plans the job when there is an account and takes it away when there is none. Asking again when it is planned already changes nothing. */
     fun schedule(context: Context) {
+        val accounts = MailRepository(context).loadAccounts().size
+        MailIdle.sync(context, accounts)
         val scheduler = context.getSystemService(JobScheduler::class.java) ?: return
-        if (MailRepository(context).loadAccounts().isEmpty()) {
+        if (accounts == 0) {
             scheduler.cancel(JOB_ID)
             return
         }
@@ -74,16 +79,11 @@ object MailSync {
     /** Blocking, off the main thread. True when every account answered. */
     fun run(context: Context): Boolean {
         val repository = MailRepository(context)
-        val store = prefs(context)
         var allAnswered = true
         repository.loadAccounts().forEach { account ->
             val client = repository.client(account) ?: return@forEach
             try {
-                val known = store.getLong("uid_${account.id}", -1L).takeIf { it >= 0 }
-                val found = client.arrivals(INBOX, known)
-                val news = toNotify(known, found.fresh)
-                store.edit { putLong("uid_${account.id}", found.lastUid); putInt("unread_${account.id}", found.unread) }
-                if (news.isNotEmpty()) notify(context, account, news)
+                lookAt(context, account, client)
             } catch (e: Exception) {
                 allAnswered = false
             } finally {
@@ -91,6 +91,19 @@ object MailSync {
             }
         }
         return allAnswered
+    }
+
+    /**
+     * One look at the inbox of [account]: the notification for what came in since the last look and the unread count. One at a time, so the
+     * job and the live connection ([MailIdleService]) never tell about the same message twice. Throws when the server cannot be reached.
+     */
+    fun lookAt(context: Context, account: MailAccount, client: MailClient) = synchronized(checkLock) {
+        val store = prefs(context)
+        val known = store.getLong("uid_${account.id}", -1L).takeIf { it >= 0 }
+        val found = client.arrivals(INBOX, known)
+        val news = toNotify(known, found.fresh)
+        store.edit { putLong("uid_${account.id}", found.lastUid); putInt("unread_${account.id}", found.unread) }
+        if (news.isNotEmpty()) notify(context, account, news)
     }
 
     private fun notify(context: Context, account: MailAccount, news: List<MailMessage>) {

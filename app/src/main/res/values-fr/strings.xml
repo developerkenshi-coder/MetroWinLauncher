@@ -2391,4 +2391,15 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="rec_lang_download">Télécharger le pack de langue</string>
     <string name="rec_lang_downloading">Le téléphone a reçu la demande de téléchargement. Quand il a fini, réessayez. Si rien ne se passe, cherchez la reconnaissance vocale hors ligne dans les réglages du service vocal.</string>
     <string name="rec_lang_unknown">Ni la reconnaissance vocale du téléphone ni son service vocal ne connaissent la langue %1$s.</string>
+    <string name="channel_mail_idle">Courrier en temps réel</string>
+    <string name="mail_idle_active">En attente de nouveaux messages.</string>
+    <string name="mail_idle_partial">En attente de nouveaux messages. Le serveur de %1$s ne le prend pas en charge : vérification toutes les 30 minutes.</string>
+    <string name="mail_idle_stop">Arrêter</string>
+    <string name="mail_realtime">Courrier en temps réel</string>
+    <string name="mail_realtime_hint">Garde une connexion ouverte pour vous prévenir tout de suite des nouveaux messages. Affiche une notification permanente et consomme un peu de batterie.</string>
+    <string name="dialer_fullscreen_note">Android n\'autorise pas l\'ouverture des appels en plein écran sur l\'écran de verrouillage : un appel entrant n\'apparaît que comme bannière. Autorisez-le pour cette appli.</string>
+    <string name="dialer_fullscreen_button">Autoriser les appels en plein écran</string>
+    <string name="dialer_note_hint">note sur ce numéro</string>
+    <string name="dialer_send_sms">Envoyer un SMS</string>
+    <string name="dialer_assign_key">Appeler ce numéro par un appui long sur la touche :</string>
 </resources>

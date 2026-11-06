@@ -25,6 +25,19 @@ object DialerRole {
         context.contentResolver.insert(BlockedNumberContract.BlockedNumbers.CONTENT_URI, ContentValues().apply { put(BlockedNumberContract.BlockedNumbers.COLUMN_ORIGINAL_NUMBER, number) }) != null
     }.getOrDefault(false)
 
+    /**
+     * From Android 14 the user can take away the right to open the screen of a call over the lock screen; the call then falls back to a banner
+     * without a word. The note that asks for it back is for the phone app only.
+     */
+    fun needsFullScreenGrant(isDefault: Boolean, sdk: Int, canUse: Boolean): Boolean = isDefault && sdk >= 34 && !canUse
+
+    fun needsFullScreenGrant(context: Context): Boolean = Build.VERSION.SDK_INT >= 34 &&
+        needsFullScreenGrant(isDefault(context), Build.VERSION.SDK_INT, context.getSystemService(android.app.NotificationManager::class.java)?.canUseFullScreenIntent() ?: true)
+
+    /** The page where the user gives the launcher back the right to open the screen of a call at full screen. */
+    fun fullScreenSettings(context: Context): Intent = Intent(android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, Uri.parse("package:${context.packageName}"))
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
     /** The screen where the user makes the launcher the phone app, or null when the phone has none. */
     fun requestIntent(context: Context): Intent? =
         if (Build.VERSION.SDK_INT >= 29) {

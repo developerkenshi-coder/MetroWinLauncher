@@ -2391,4 +2391,15 @@ en primer plano %3$s · en segundo plano %4$s
     <string name="rec_lang_download">Descargar el paquete de idioma</string>
     <string name="rec_lang_downloading">Se le pidió al teléfono que lo descargue. Cuando termine, vuelve a intentarlo. Si no pasa nada, busca el reconocimiento de voz sin conexión en los ajustes del servicio de voz.</string>
     <string name="rec_lang_unknown">Ni el reconocimiento de voz del teléfono ni su servicio de voz conocen el idioma %1$s.</string>
+    <string name="channel_mail_idle">Correo en tiempo real</string>
+    <string name="mail_idle_active">Esperando correo nuevo.</string>
+    <string name="mail_idle_partial">Esperando correo nuevo. El servidor de %1$s no lo admite: se revisa cada 30 minutos.</string>
+    <string name="mail_idle_stop">Detener</string>
+    <string name="mail_realtime">Correo en tiempo real</string>
+    <string name="mail_realtime_hint">Mantiene una conexión abierta para avisarte al instante cuando llega correo. Muestra una notificación permanente y gasta algo de batería.</string>
+    <string name="dialer_fullscreen_note">Android no deja abrir las llamadas a pantalla completa sobre la pantalla de bloqueo: una llamada entrante solo aparece como banner. Permítelo para esta app.</string>
+    <string name="dialer_fullscreen_button">Permitir llamadas a pantalla completa</string>
+    <string name="dialer_note_hint">nota sobre este número</string>
+    <string name="dialer_send_sms">Enviar SMS</string>
+    <string name="dialer_assign_key">Llamar a este número con una pulsación larga de la tecla:</string>
 </resources>

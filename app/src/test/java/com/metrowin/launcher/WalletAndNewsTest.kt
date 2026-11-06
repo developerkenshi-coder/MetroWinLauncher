@@ -65,12 +65,21 @@ class WalletAndNewsTest {
 
     @Test
     fun `the news app starts with Google and the source the settings had`() {
-        assertEquals(listOf("google"), NewsSourceList.initial(NewsSources.GOOGLE_TOP, "") { it }.map { it.id })
+        assertEquals(listOf("google", "preset:ansa"), NewsSourceList.initial(NewsSources.GOOGLE_TOP, "") { it }.map { it.id })
         val topic = NewsSourceList.initial(NewsSources.topic("SPORTS"), "") { "sport" }
-        assertEquals(listOf("google", "google:SPORTS"), topic.map { it.id })
+        assertEquals(listOf("google", "preset:ansa", "google:SPORTS"), topic.map { it.id })
         val custom = NewsSourceList.initial(NewsSources.CUSTOM, "example.com/feed.xml") { it }
         assertEquals("https://example.com/feed.xml", custom.last().url)
-        assertEquals(1, NewsSourceList.initial(NewsSources.CUSTOM, "ftp://bad") { it }.size)
+        assertEquals(2, NewsSourceList.initial(NewsSources.CUSTOM, "ftp://bad") { it }.size)
+    }
+
+    @Test
+    fun `a saved list gets ANSA after Google once and never twice`() {
+        val old = listOf(NewsSourceList.googleTop(), NewsSourceList.googleTopic("SPORTS", "sport"))
+        val migrated = NewsSourceList.withAnsa(old)
+        assertEquals(listOf("google", "preset:ansa", "google:SPORTS"), migrated.map { it.id })
+        assertEquals(migrated, NewsSourceList.withAnsa(migrated))
+        assertEquals(listOf("preset:ansa", "x"), NewsSourceList.withAnsa(listOf(NewsSourceDef("x", "x", NewsSources.GOOGLE_TOP))).map { it.id })
     }
 
     @Test
