@@ -3,6 +3,7 @@ package com.metrowin.launcher
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.ui.components.Hole
 import com.metrowin.launcher.ui.components.TopCutouts
+import com.metrowin.launcher.ui.components.cornerInset
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -45,5 +46,16 @@ class TopCutoutsTest {
 
     @Test fun noHoleMeansNothingToKeepClearOf() {
         assertEquals(TopCutouts(), TopCutouts.of(emptyList(), width, band, density = 2f))
+    }
+
+    @Test fun theCurveOfARoundedCornerPushesTheTextInOnlyNearTheTop() {
+        // Radius 100 px: at the very top the whole radius is in the way, at the height of the centre of the arc nothing is.
+        assertEquals(100f, cornerInset(100, 0f), 0.01f)
+        assertEquals(0f, cornerInset(100, 100f), 0.01f)
+        assertEquals(0f, cornerInset(0, 10f), 0.01f)
+        // Halfway down the corner the curve is at 100 - sqrt(100^2 - 50^2) = 13.4 px.
+        assertEquals(13.4f, cornerInset(100, 50f), 0.1f)
+        // Above the screen (a negative depth) counts as the top.
+        assertEquals(100f, cornerInset(100, -5f), 0.01f)
     }
 }

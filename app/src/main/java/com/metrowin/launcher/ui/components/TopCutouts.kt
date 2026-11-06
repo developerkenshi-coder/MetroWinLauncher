@@ -83,14 +83,30 @@ data class TopCutouts(
 
 private fun readTop(context: Context, view: View, density: Float, bandPx: Int): TopCutouts {
     if (Build.VERSION.SDK_INT < 28) return TopCutouts()
-    val (cutout, width) = if (Build.VERSION.SDK_INT >= 30) {
+    val (insets, width) = if (Build.VERSION.SDK_INT >= 30) {
         val metrics = context.getSystemService(WindowManager::class.java).currentWindowMetrics
-        metrics.windowInsets.displayCutout to metrics.bounds.width()
+        metrics.windowInsets to metrics.bounds.width()
     } else {
-        view.rootWindowInsets?.displayCutout to context.resources.displayMetrics.widthPixels
+        view.rootWindowInsets to context.resources.displayMetrics.widthPixels
     }
-    val holes = cutout?.boundingRects.orEmpty().map { Hole(it.left, it.top, it.right, it.bottom) }
-    return TopCutouts.of(holes, width, bandPx, density)
+    val holes = insets?.displayCutout?.boundingRects.orEmpty().map { Hole(it.left, it.top, it.right, it.bottom) }
+    val base = TopCutouts.of(holes, width, bandPx, density)
+    // shortcut: the rounded corners are read from Android 12 on; before it the bar only keeps clear of cameras.
+    if (Build.VERSION.SDK_INT < 31 || insets == null) return base
+    // The text of the bar sits about the middle of it: that is the depth at which the curve of the corner must not cut it.
+    val depth = bandPx / 2f - 6 * density
+    fun corner(position: Int): Dp = ((insets.getRoundedCorner(position)?.radius ?: 0).let { cornerInset(it, depth) } / density).dp
+    return base.copy(
+        left = maxOf(base.left, corner(android.view.RoundedCorner.POSITION_TOP_LEFT)),
+        right = maxOf(base.right, corner(android.view.RoundedCorner.POSITION_TOP_RIGHT)),
+    )
+}
+
+/** How far in from the edge of the screen the curve of a corner with radius [radius] is at [depth] from the top: nothing below the corner. Pure, so it is tested. */
+internal fun cornerInset(radius: Int, depth: Float): Float {
+    if (radius <= 0 || depth >= radius) return 0f
+    val rise = radius - depth.coerceAtLeast(0f)
+    return radius - kotlin.math.sqrt((radius.toFloat() * radius - rise * rise).coerceAtLeast(0f))
 }
 
 /** The camera holes at the top, read again when the phone turns; empty where the phone has none. [band] is how far from the top edge a hole counts. */

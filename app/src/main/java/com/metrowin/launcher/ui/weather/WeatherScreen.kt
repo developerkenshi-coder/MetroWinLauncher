@@ -6,6 +6,20 @@ import com.metrowin.launcher.data.WeatherBlock
 import com.metrowin.launcher.data.OpenMeteo
 import com.metrowin.launcher.ui.theme.pageBackground
 import android.text.format.DateUtils
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.metrowin.launcher.data.DayForecast
+import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.ui.theme.LocalAccent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -56,6 +70,8 @@ fun WeatherScreen(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalMetroColors.current
+    // The day whose weather is on show (-1: now). A touch on a day brings it in, sliding; a touch on it again goes back to now.
+    var selected by remember { mutableIntStateOf(-1) }
     Column(
         modifier
             .fillMaxSize()
@@ -83,41 +99,64 @@ fun WeatherScreen(
                 maxLines = Int.MAX_VALUE, lineHeight = 24.sp, modifier = Modifier.padding(bottom = 20.dp),
             )
         } else {
-            Row(verticalAlignment = Alignment.Bottom) {
-                MetroText("${weather.temperature}°", size = 96.sp, modifier = Modifier.testTag("weather:temperature"))
-                MetroText(
-                    stringResource(weather.condition.label), size = 24.sp, weight = FontWeight.Normal,
-                    modifier = Modifier.padding(start = 16.dp, bottom = 18.dp),
-                )
-            }
-            if (WeatherBlock.Rain.code in blocks) {
-                OpenMeteo.rainOutlook(weather.condition, weather.hours)?.let { outlook ->
-                    MetroText(
-                        rainOutlookText(outlook), size = 18.sp, weight = FontWeight.Normal, maxLines = 2,
-                        modifier = Modifier.padding(top = 4.dp).testTag("weather:rain"),
-                    )
+            val speed = stringResource(if (weather.fahrenheit) R.string.unit_mph else R.string.unit_kmh)
+            val withExtras = WeatherBlock.DailyExtras.code in blocks
+            AnimatedContent(
+                targetState = selected,
+                transitionSpec = {
+                    val way = if (targetState > initialState) 1 else -1
+                    (slideInHorizontally(tween(260)) { it * way } + fadeIn(tween(260))) togetherWith
+                        (slideOutHorizontally(tween(260)) { -it * way } + fadeOut(tween(160)))
+                },
+                label = "weather-day",
+            ) { shown ->
+                Column {
+                    val day = weather.days.getOrNull(shown)
+                    if (day == null) {
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            MetroText("${weather.temperature}°", size = 96.sp, modifier = Modifier.testTag("weather:temperature"))
+                            MetroText(
+                                stringResource(weather.condition.label), size = 24.sp, weight = FontWeight.Normal,
+                                modifier = Modifier.padding(start = 16.dp, bottom = 18.dp),
+                            )
+                        }
+                        if (WeatherBlock.Rain.code in blocks) {
+                            OpenMeteo.rainOutlook(weather.condition, weather.hours)?.let { outlook ->
+                                MetroText(
+                                    rainOutlookText(outlook), size = 18.sp, weight = FontWeight.Normal, maxLines = 2,
+                                    modifier = Modifier.padding(top = 4.dp).testTag("weather:rain"),
+                                )
+                            }
+                        }
+                        WeatherDetailsBlock(weather, blocks)
+                        if (WeatherBlock.Hourly.code in blocks) HourlyRow(weather)
+                        if (WeatherBlock.Chart.code in blocks) TemperatureChart(weather.hours, Modifier.padding(top = 16.dp))
+                        weather.air?.let { AirBlock(it, WeatherBlock.Air.code in blocks, WeatherBlock.Pollen.code in blocks) }
+                    } else {
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            MetroText("${day.high}°", size = 96.sp, modifier = Modifier.testTag("weather:day:selected"))
+                            MetroText("${day.low}°", size = 40.sp, color = colors.subtle, modifier = Modifier.padding(start = 12.dp, bottom = 14.dp))
+                        }
+                        MetroText(
+                            day.date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault()) + " · " + stringResource(day.condition.label),
+                            size = 24.sp, weight = FontWeight.Normal, maxLines = 2,
+                        )
+                        MetroText(dayDetails(day, withExtras, speed), size = 18.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 3, modifier = Modifier.padding(top = 4.dp))
+                    }
                 }
             }
-            WeatherDetailsBlock(weather, blocks)
-            if (WeatherBlock.Hourly.code in blocks) HourlyRow(weather)
-            if (WeatherBlock.Chart.code in blocks) TemperatureChart(weather.hours, Modifier.padding(top = 16.dp))
-            weather.air?.let { AirBlock(it, WeatherBlock.Air.code in blocks, WeatherBlock.Pollen.code in blocks) }
             Column(Modifier.padding(top = 20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 weather.days.forEachIndexed { index, day ->
-                    Row(Modifier.fillMaxWidth().testTag("weather:day:$index"), verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        Modifier.fillMaxWidth().testTag("weather:day:$index").metroPress(onClick = { selected = if (selected == index) -1 else index }),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Column(Modifier.weight(1f)) {
-                            MetroText(day.date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault()), size = 22.sp)
-                            val withExtras = WeatherBlock.DailyExtras.code in blocks
-                            val speed = stringResource(if (weather.fahrenheit) R.string.unit_mph else R.string.unit_kmh)
                             MetroText(
-                                listOfNotNull(
-                                    stringResource(day.condition.label),
-                                    day.rainChance?.takeIf { it > 0 }?.let { stringResource(R.string.weather_rain_short, it) },
-                                    day.rainMm?.takeIf { withExtras && it >= 0.1 }?.let { "${String.format(Locale.getDefault(), "%.1f", it)} mm" },
-                                    day.windMax?.takeIf { withExtras }?.let { "$it $speed" },
-                                ).joinToString(" · "),
-                                size = 15.sp, weight = FontWeight.Normal, color = colors.subtle,
+                                day.date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault()), size = 22.sp,
+                                color = if (selected == index) LocalAccent.current else colors.foreground,
                             )
+                            MetroText(dayDetails(day, withExtras, speed, withCondition = true), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle)
                         }
                         MetroText("${day.high}°", size = 26.sp)
                         MetroText("${day.low}°", size = 26.sp, color = colors.subtle, modifier = Modifier.padding(start = 14.dp))
@@ -159,6 +198,15 @@ fun WeatherScreen(
         }
     }
 }
+
+/** The words under a day: the sky (when [withCondition]), the chance of rain, the rain and the wind of the day. */
+@Composable
+private fun dayDetails(day: DayForecast, withExtras: Boolean, speed: String, withCondition: Boolean = false): String = listOfNotNull(
+    if (withCondition) stringResource(day.condition.label) else null,
+    day.rainChance?.takeIf { it > 0 }?.let { stringResource(R.string.weather_rain_short, it) },
+    day.rainMm?.takeIf { withExtras && it >= 0.1 }?.let { "${String.format(Locale.getDefault(), "%.1f", it)} mm" },
+    day.windMax?.takeIf { withExtras }?.let { "$it $speed" },
+).joinToString(" · ")
 
 /** The next hours in a row that scrolls sideways: the hour, the temperature, and the chance of rain when there is some. */
 @Composable
