@@ -922,7 +922,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
      * of Android opened for it. Quiet hours without the "do not disturb" access ask for that access first.
      */
     fun activateQuickAction(action: QuickAction): Boolean {
-        val inPlace = quickActions.activate(action, _settings.value.dndMinutes, _settings.value.torchAutoOffMin, _settings.value.torchStrength, _settings.value.vpnApp)
+        val inPlace = quickActions.activate(action, _settings.value.dndMinutes, _settings.value.torchAutoOffMin, _settings.value.torchStrength, _settings.value.vpnApp, _settings.value.useShizuku)
         if ((action == QuickAction.QuietHours || action == QuickAction.QuietTimed) && !inPlace) tell(R.string.qa_quiet_allow)
         return inPlace
     }

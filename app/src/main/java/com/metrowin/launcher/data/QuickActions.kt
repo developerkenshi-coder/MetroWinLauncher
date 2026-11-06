@@ -164,6 +164,12 @@ class QuickActionsController(private val context: Context) {
 
     private var listening = false
 
+    /** What a radio was just asked to become: Android takes a moment to say so, and the button must not show the old state meanwhile. */
+    private val pending = java.util.concurrent.ConcurrentHashMap<QuickAction, Pair<Boolean, Long>>()
+
+    private fun asked(action: QuickAction): Boolean? =
+        pending[action]?.takeIf { System.currentTimeMillis() - it.second < PENDING_MS }?.first
+
     /**
      * Follows the flashlight (the callback also fires whenever a camera app opens or closes, which wakes the process),
      * so it is only registered while the launcher is on screen. Android reports the current state right away.
@@ -185,8 +191,8 @@ class QuickActionsController(private val context: Context) {
     /** On or off, or null for the buttons that have no state to show. */
     fun isOn(action: QuickAction): Boolean? = runCatching {
         when (action) {
-            QuickAction.Wifi -> context.getSystemService(WifiManager::class.java).isWifiEnabled
-            QuickAction.Bluetooth -> context.getSystemService(BluetoothManager::class.java).adapter?.isEnabled
+            QuickAction.Wifi -> asked(action) ?: context.getSystemService(WifiManager::class.java).isWifiEnabled
+            QuickAction.Bluetooth -> asked(action) ?: context.getSystemService(BluetoothManager::class.java).adapter?.isEnabled
             QuickAction.Airplane -> Settings.Global.getInt(context.contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) == 1
             // The mobile data the user switched on, whatever network is in use (Android keeps this switch in its global settings, readable by anyone).
             QuickAction.MobileData -> Settings.Global.getInt(context.contentResolver, "mobile_data", 1) == 1
@@ -237,8 +243,15 @@ class QuickActionsController(private val context: Context) {
      * Switches the flashlight or the quiet hours on the spot, or opens the system screen of the button. True when it was
      * done on the spot. Quiet hours need the "do not disturb" access: without it the screen that gives it opens.
      */
-    fun activate(action: QuickAction, quietMinutes: Int = 60, torchMinutes: Int = 0, torchStrength: Float = 1f, vpnApp: String = ""): Boolean {
+    fun activate(action: QuickAction, quietMinutes: Int = 60, torchMinutes: Int = 0, torchStrength: Float = 1f, vpnApp: String = "", useShizuku: Boolean = false): Boolean {
         val torch = torchId
+        // With Shizuku running and allowed the radio is switched for real; otherwise (the default) it falls through to the panels below, as it always did.
+        if ((action == QuickAction.Wifi || action == QuickAction.Bluetooth) && ShizukuRadio.route(useShizuku, ShizukuRadio.running(), ShizukuRadio.granted())) {
+            val on = isOn(action) != true
+            pending[action] = on to System.currentTimeMillis()
+            ShizukuRadio.switch(action, on) { ok -> if (!ok) pending.remove(action) }
+            return true
+        }
         if (action == QuickAction.Vpn) {
             // Android cannot connect another app's VPN: the app that does is opened (most connect by themselves), or the choice of it.
             val apps = VpnApps.installed(context)
@@ -357,6 +370,7 @@ class QuickActionsController(private val context: Context) {
         /** The panel of Android with the Wi-Fi switch and the networks (Android 11 and later), and the one with Wi-Fi, mobile data and flight mode (Android 10 and later). */
         const val PANEL_WIFI = "android.settings.panel.action.WIFI"
         const val PANEL_INTERNET = "android.settings.panel.action.INTERNET_CONNECTIVITY"
+        const val PENDING_MS = 3_000L
     }
 
     private fun start(intentAction: String): Boolean =

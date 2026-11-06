@@ -194,6 +194,7 @@ object SettingsIndex {
 
         // --- notifications + actions
         e("ac.buttons", Actions, R.string.settings_quick_actions, "toggles", "buttons", "wifi", "bluetooth", "flashlight", "pulsanti", "interruttori", "scorciatoie"),
+        e("ac.shizuku", Actions, R.string.ac_shizuku, "shizuku", "wifi", "bluetooth", "toggle", "switch", "radio", "interruttore", "accendi", "spegni"),
         e("ac.torchoff", Actions, R.string.ac_torch_off, "flashlight", "torch", "timer", "automatic", "torcia", "spegni", "automatico", "minuti"),
         e("ac.profiles", Actions, R.string.ac_profiles, "volume", "presets", "profiles", "sound", "ringtone", "volumi", "profili", "suoneria", "preimpostazioni"),
         e("ac.sliders", Actions, R.string.ac_sliders, "volume", "brightness", "torch", "luminosita", "torcia"),

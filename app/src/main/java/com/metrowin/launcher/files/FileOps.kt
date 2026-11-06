@@ -4,19 +4,27 @@ import java.io.File
 import java.io.IOException
 import java.security.MessageDigest
 import java.util.Locale
+import org.apache.commons.compress.archivers.sevenz.SevenZFile
+import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile
+import org.apache.commons.compress.PasswordRequiredException
+import org.apache.commons.compress.archivers.zip.ZipFile
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
 /** A line of a folder as the file manager lists it. */
-data class Entry(val file: File, val isDir: Boolean, val size: Long, val modified: Long, val hidden: Boolean) {
+data class Entry(val file: File, val isDir: Boolean, val size: Long, val modified: Long, val hidden: Boolean, val opened: Long = 0L) {
     val name: String get() = file.name
     val extension: String get() = if (isDir) "" else file.extension.lowercase(Locale.ROOT)
 }
 
-enum class SortKey { Name, Date, Size, Type }
+/** [Date] is the date of the last change (the newest first when descending); [Opened] is when the file manager last opened the file. */
+enum class SortKey { Name, Date, Size, Type, Opened }
 
 data class Sort(val key: SortKey = SortKey.Name, val descending: Boolean = false)
+
+/** The archives the file manager makes. RAR is not here: nobody can make one without the closed tool of its owner. */
+enum class ArchiveFormat(val extension: String) { Zip("zip"), SevenZ("7z") }
 
 /** What to do with a file that is already where another is going. */
 enum class Conflict { Skip, Replace, KeepBoth }
@@ -28,6 +36,8 @@ class Progress {
     @Volatile var current: String = ""
     @Volatile var cancelled: Boolean = false
     @Volatile var failed: Int = 0
+    /** Why an archive was refused: [FileOps.ENCRYPTED] or [FileOps.DAMAGED]; 0 when it was not. */
+    @Volatile var reason: Int = 0
     fun cancel() { cancelled = true }
 }
 
@@ -41,10 +51,10 @@ object FileOps {
     // --- looking
 
     /** The entries of [dir], sorted; null when it cannot be read. */
-    fun list(dir: File, showHidden: Boolean, sort: Sort = Sort()): List<Entry>? {
+    fun list(dir: File, showHidden: Boolean, sort: Sort = Sort(), opened: Map<String, Long> = emptyMap()): List<Entry>? {
         val files = dir.listFiles() ?: return null
         return files.filter { showHidden || !it.name.startsWith(".") }
-            .map { Entry(it, it.isDirectory, if (it.isDirectory) 0L else it.length(), it.lastModified(), it.name.startsWith(".")) }
+            .map { Entry(it, it.isDirectory, if (it.isDirectory) 0L else it.length(), it.lastModified(), it.name.startsWith("."), opened[it.absolutePath] ?: 0L) }
             .sortedWith(comparator(sort))
     }
 
@@ -55,9 +65,16 @@ object FileOps {
             SortKey.Date -> compareBy { it.modified }
             SortKey.Size -> compareBy<Entry> { it.size }.thenBy(String.CASE_INSENSITIVE_ORDER) { it.name }
             SortKey.Type -> compareBy<Entry> { it.extension }.thenBy(String.CASE_INSENSITIVE_ORDER) { it.name }
+            SortKey.Opened -> compareBy<Entry> { it.opened }.thenBy(String.CASE_INSENSITIVE_ORDER) { it.name }
         }
         val ordered = if (sort.descending) byKey.reversed() else byKey
         return compareByDescending<Entry> { it.isDir }.then(ordered)
+    }
+
+    /** [log] with [path] opened at [now]; when it holds more than [cap] files the ones opened longest ago are dropped. */
+    fun withOpened(log: Map<String, Long>, path: String, now: Long, cap: Int = 300): Map<String, Long> {
+        val all = log + (path to now)
+        return if (all.size <= cap) all else all.entries.sortedByDescending { it.value }.take(cap).associate { it.key to it.value }
     }
 
     /** The total size of [file] (a folder's is the sum of its files). Stops early with what it has when [progress] is cancelled. */
@@ -315,6 +332,99 @@ object FileOps {
         if (entries == 0) throw IOException("empty")
         written
     }.getOrDefault(-1)
+
+    // --- 7z
+
+    /** Makes a 7z of [sources] in [target] (names as in [zip]). False when it could not be written. */
+    fun sevenZip(sources: List<File>, target: File, progress: Progress): Boolean = runCatching {
+        SevenZOutputFile(target).use { out ->
+            fun add(file: File, path: String) {
+                if (progress.cancelled) throw IOException("cancelled")
+                if (runCatching { file.canonicalFile == target.canonicalFile }.getOrDefault(false)) return
+                if (file.isDirectory) {
+                    out.putArchiveEntry(out.createArchiveEntry(file, "$path/"))
+                    out.closeArchiveEntry()
+                    file.listFiles().orEmpty().filter { !isLink(it) }.forEach { add(it, "$path/${it.name}") }
+                } else {
+                    progress.current = file.name
+                    out.putArchiveEntry(out.createArchiveEntry(file, path))
+                    file.inputStream().use { input ->
+                        val buffer = ByteArray(BUFFER)
+                        while (true) {
+                            if (progress.cancelled) throw IOException("cancelled")
+                            val read = input.read(buffer)
+                            if (read < 0) break
+                            out.write(buffer, 0, read)
+                            progress.doneBytes += read
+                        }
+                    }
+                    out.closeArchiveEntry()
+                }
+            }
+            sources.forEach { add(it, it.name) }
+        }
+        true
+    }.getOrElse { target.delete(); false }
+
+    /** Extracts a 7z with the same guards as [unzip]. Returns the files written, [DAMAGED], or [ENCRYPTED] when it needs a password. */
+    fun un7z(archive: File, targetDir: File, progress: Progress, maxBytes: Long = MAX_EXTRACT): Int = runCatching {
+        var written = 0
+        var entries = 0
+        var total = 0L
+        val root = targetDir.canonicalFile
+        SevenZFile.builder().setFile(archive).get().use { input ->
+            while (true) {
+                if (progress.cancelled) throw IOException("cancelled")
+                val entry = input.nextEntry ?: break
+                entries++
+                val out = File(root, entry.name).canonicalFile
+                if (out != root && !out.path.startsWith(root.path + File.separator)) throw IOException("outside the folder")
+                if (entry.isDirectory) { out.mkdirs(); continue }
+                // An anti item marks a file as deleted in an update: there is nothing to write.
+                if (entry.isAntiItem) continue
+                out.parentFile?.mkdirs()
+                progress.current = out.name
+                out.outputStream().use { output ->
+                    val buffer = ByteArray(BUFFER)
+                    while (true) {
+                        val read = input.read(buffer)
+                        if (read < 0) break
+                        total += read
+                        if (total > maxBytes) throw IOException("too big")
+                        output.write(buffer, 0, read)
+                        progress.doneBytes += read
+                    }
+                }
+                if (entry.hasLastModifiedDate) out.setLastModified(entry.lastModifiedDate.time)
+                written++
+            }
+        }
+        if (entries == 0) throw IOException("empty")
+        written
+    }.getOrElse { if (it is PasswordRequiredException) ENCRYPTED else DAMAGED }
+
+    // --- reading archives
+
+    /** Whether a zip has an entry that is encrypted (the library of Java reads such an entry as noise). */
+    fun zipEncrypted(zip: File): Boolean = runCatching {
+        ZipFile.builder().setFile(zip).get().use { z -> z.entries.asSequence().any { it.generalPurposeBit.usesEncryption() } }
+    }.getOrDefault(false)
+
+    const val DAMAGED = -1
+    const val ENCRYPTED = -2
+    private const val MAX_EXTRACT = 64L * 1024 * 1024 * 1024
+
+    /** Extracts a zip or a 7z into [targetDir], and says in [progress] why when it cannot. */
+    fun extract(archive: File, targetDir: File, progress: Progress): Int {
+        val result = if (is7z(archive)) un7z(archive, targetDir, progress) else unzip(archive, targetDir, progress).let { if (it == DAMAGED && zipEncrypted(archive)) ENCRYPTED else it }
+        if (result < 0) progress.reason = result
+        return result
+    }
+
+    fun is7z(file: File): Boolean = !file.isDirectory && file.extension.lowercase(Locale.ROOT) == "7z"
+
+    /** Whether the file manager can extract [file]: a zip, or a 7z (a RAR is not: its library is not free software). */
+    fun isArchive(file: File): Boolean = isZip(file) && !file.name.endsWith(".apk", true) || is7z(file)
 
     // --- reading
 

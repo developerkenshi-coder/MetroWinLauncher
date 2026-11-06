@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.core.net.toUri
+import com.metrowin.launcher.data.AtomicEncryptedFile
 import com.metrowin.launcher.data.BackupCopies
 import com.metrowin.launcher.data.BackupSchedule
 import com.metrowin.launcher.data.LauncherSettings
@@ -19,6 +20,7 @@ import com.metrowin.launcher.data.SyncLocal
 import com.metrowin.launcher.data.SyncOutcome
 import com.metrowin.launcher.data.ThemeCodec
 import com.metrowin.launcher.data.readAtMost
+import com.metrowin.launcher.notes.KeystoreCrypt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -71,6 +73,10 @@ internal class BackupController(
 
     private var syncing = false
 
+    /** The layout both phones agreed on at the last sync, kept encrypted (it holds the wallet): the base of the merge when both change. */
+    private val baseFile = java.io.File(app.filesDir, "sync-base.dat")
+    private val base = AtomicEncryptedFile(baseFile, KeystoreCrypt)
+
     /** Keeps [uri] (a folder the user picked) for the backups: the permission is kept past a restart of the phone. */
     fun setFolder(uri: Uri) {
         runCatching {
@@ -79,6 +85,7 @@ internal class BackupController(
             )
         }
         // Another folder is another sync: what was known about the old one does not apply.
+        baseFile.delete()
         change { it.copy(backupFolder = uri.toString(), lastBackupAt = 0L, syncLastHash = "", syncLastStamp = 0L, syncLastAt = 0L) }
     }
 
@@ -91,6 +98,7 @@ internal class BackupController(
                 )
             }
         }
+        baseFile.delete()
         change {
             it.copy(backupFolder = "", backupEveryDays = 0, lastBackupAt = 0L, syncEnabled = false, syncLastHash = "", syncLastStamp = 0L, syncLastAt = 0L)
         }
@@ -259,8 +267,8 @@ internal class BackupController(
                 val folder = SafFolder(app, s.backupFolder.toUri())
                 val outcome = withContext(Dispatchers.IO) {
                     val layout = LayoutBackupCodec.encode(snapshot(true), 0L, secret = true)
-                    val local = SyncLocal(layout, s.syncPassphrase, settings.value.deviceId, s.syncLastHash, s.syncLastStamp)
-                    SyncEngine(SafSyncStorage(folder)).sync(local)
+                    val local = SyncLocal(layout, s.syncPassphrase, settings.value.deviceId, s.syncLastHash, s.syncLastStamp, base.read())
+                    SyncEngine(SafSyncStorage(folder)).sync(local).also { if (it is SyncOutcome.Uploaded) base.write(layout) }
                 }
                 applySyncOutcome(outcome, folder, announce)
             } finally {
@@ -298,14 +306,36 @@ internal class BackupController(
                     }
                 }
                 restore(backup)
-                val hash = withContext(Dispatchers.IO) { SyncEngine.hash(LayoutBackupCodec.encode(snapshot(true), 0L, secret = true)) }
+                val hash = rememberAgreed()
                 change { it.copy(syncLastHash = hash, syncLastStamp = outcome.stamp, syncLastAt = now) }
                 if (announce) tell(R.string.sync_applied)
+            }
+            is SyncOutcome.Merged -> {
+                val backup = LayoutBackupCodec.decode(outcome.layoutJson, settings.value)
+                if (backup == null) {
+                    tell(R.string.sync_not_file)
+                    return
+                }
+                restore(backup)
+                val hash = rememberAgreed()
+                change { it.copy(syncLastHash = hash, syncLastStamp = outcome.stamp, syncLastAt = now) }
+                when {
+                    outcome.keptTheOtherAs != null -> Toast.makeText(app, app.getString(R.string.sync_conflict_merged, outcome.keptTheOtherAs), Toast.LENGTH_LONG).show()
+                    outcome.kept > 0 -> Toast.makeText(app, app.getString(R.string.sync_merged_kept, outcome.kept), Toast.LENGTH_LONG).show()
+                    announce -> tell(R.string.sync_merged)
+                }
             }
             SyncOutcome.WrongPassphrase -> tell(R.string.sync_wrong_passphrase)
             SyncOutcome.NotASyncFile -> tell(R.string.sync_not_file)
             SyncOutcome.Failed -> if (announce) tell(R.string.sync_failed)
         }
+    }
+
+    /** Takes the layout this phone has now as the one both phones agree on; returns its fingerprint. */
+    private suspend fun rememberAgreed(): String = withContext(Dispatchers.IO) {
+        val layout = LayoutBackupCodec.encode(snapshot(true), 0L, secret = true)
+        base.write(layout)
+        SyncEngine.hash(layout)
     }
 
     /** Writes the layout to [uri] (a file the user chose). */

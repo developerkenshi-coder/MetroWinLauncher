@@ -93,6 +93,19 @@ fun RecorderScreen() {
     val startedAt = VoiceRecorder.startedAt
     var elapsed by remember { mutableLongStateOf(0L) }
     var failed by remember { mutableStateOf(false) }
+    var picked by remember { mutableStateOf(setOf<String>()) }
+    val importer = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+        if (uris.isEmpty()) return@rememberLauncherForActivityResult
+        scope.launch {
+            val (made, refused) = withContext(Dispatchers.IO) { RecorderShare.import(context, store, uris) }
+            version++
+            val text = listOfNotNull(
+                if (made.isNotEmpty()) context.getString(R.string.rec_imported, made.size) else null,
+                if (refused > 0) context.getString(R.string.rec_import_failed, refused) else null,
+            ).joinToString("\n")
+            Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+        }
+    }
     LaunchedEffect(recording) {
         while (recording) {
             elapsed = SystemClock.elapsedRealtime() - startedAt
@@ -100,7 +113,7 @@ fun RecorderScreen() {
         }
     }
     val open = files.firstOrNull { it.name == selected }
-    BackHandler(enabled = open != null) { selected = null }
+    BackHandler(enabled = open != null || picked.isNotEmpty()) { if (open != null) selected = null else picked = emptySet() }
     if (open != null) {
         RecordingDetail(open, store, onChanged = { version++ }, onClose = { selected = null }, onSelect = { selected = it.name; version++ })
         return
@@ -133,14 +146,32 @@ fun RecorderScreen() {
                     if (files.isEmpty()) PageNote(stringResource(R.string.rec_empty), Modifier.testTag("rec:empty"))
                     LazyColumn(Modifier.fillMaxSize().testTag("rec:list")) {
                         items(files, key = { it.name }) { file ->
+                            val chosen = file.name in picked
+                            fun toggle() { picked = if (chosen) picked - file.name else picked + file.name }
                             MetroText(
-                                Recordings.title(file.name), size = 21.sp, weight = FontWeight.Normal,
-                                modifier = Modifier.fillMaxWidth().testTag("rec:row").metroPress(onClick = { if (!recording) selected = file.name }).padding(vertical = 10.dp),
+                                (if (chosen) "✓ " else "") + Recordings.title(file.name) + (if (file.extension != "m4a") "  ·  " + file.extension.uppercase() else ""),
+                                size = 21.sp, weight = FontWeight.Normal,
+                                modifier = Modifier.fillMaxWidth().testTag("rec:row").background(if (chosen) LocalAccent.current.copy(alpha = 0.35f) else androidx.compose.ui.graphics.Color.Transparent)
+                                    .metroPress(onClick = { if (picked.isNotEmpty()) toggle() else if (!recording) selected = file.name }, onLongClick = { toggle() }).padding(vertical = 10.dp),
                             )
                         }
                     }
                 }
             }
+        }
+        // The bar of the list: bring sound in, and send the recordings that are ticked (a long press ticks one).
+        if (pager.currentPage == 1) {
+            AppBar(
+                buildList {
+                    add(AppBarItem("＋", stringResource(R.string.rec_import)) { importer.launch(RecorderShare.IMPORT_TYPES) })
+                    if (picked.isNotEmpty()) {
+                        add(AppBarItem("⇧", stringResource(R.string.recorder_share)) {
+                            RecorderShare.audio(context, files.filter { it.name in picked })?.let { runCatching { context.startActivity(it) } }
+                        })
+                        add(AppBarItem("✕", stringResource(R.string.rec_clear)) { picked = emptySet() })
+                    }
+                },
+            )
         }
     }
 }
@@ -161,6 +192,7 @@ private fun RecordingDetail(file: File, store: Recordings, onChanged: () -> Unit
     var position by remember(file.name) { mutableLongStateOf(0L) }
     var playing by remember { mutableStateOf(false) }
     val player = remember(file.name) { runCatching { MediaPlayer().apply { setDataSource(file.path); prepare() } }.getOrNull() }
+    val cuttable = remember(file.name) { AudioTools.canCut(file) }
     DisposableEffect(player) { onDispose { runCatching { player?.release() } } }
     LaunchedEffect(playing, player) {
         while (playing && player != null) {
@@ -177,6 +209,8 @@ private fun RecordingDetail(file: File, store: Recordings, onChanged: () -> Unit
     var transcript by remember(file.name) { mutableStateOf("") }
     var transcribing by remember { mutableStateOf(false) }
     var transcriptFailed by remember { mutableStateOf(false) }
+    var missing by remember { mutableStateOf(false) }
+    var unknownLanguage by remember { mutableStateOf(false) }
     val transcriber = remember { Transcriber(context) }
     DisposableEffect(Unit) { onDispose { transcriber.release() } }
 
@@ -233,16 +267,14 @@ private fun RecordingDetail(file: File, store: Recordings, onChanged: () -> Unit
                         playing = true
                     }
                 }
-                MetroButton(stringResource(R.string.rec_cut), Modifier.weight(1f).testTag("rec:cut")) { name = ""; naming = "cut" }
+                MetroButton(stringResource(R.string.rec_cut), Modifier.weight(1f).testTag("rec:cut")) { if (cuttable) { name = ""; naming = "cut" } else toast(R.string.rec_cut_unsupported) }
             }
+            if (player == null) PageNote(stringResource(R.string.rec_play_failed), Modifier.padding(top = 8.dp).testTag("rec:noplay"))
+            else if (!cuttable) PageNote(stringResource(R.string.rec_cut_unsupported), Modifier.padding(top = 8.dp).testTag("rec:nocut"))
             Row(Modifier.fillMaxWidth().padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 MetroButton(stringResource(R.string.recorder_rename), Modifier.weight(1f).testTag("rec:rename")) { name = Recordings.nameOf(file.name); naming = "rename" }
                 MetroButton(stringResource(R.string.recorder_share), Modifier.weight(1f).testTag("rec:share")) {
-                    runCatching {
-                        val uri = androidx.core.content.FileProvider.getUriForFile(context, context.packageName + ".files", file)
-                        val send = Intent(Intent.ACTION_SEND).setType("audio/mp4").putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        context.startActivity(Intent.createChooser(send, null))
-                    }
+                    RecorderShare.audio(context, listOf(file))?.let { runCatching { context.startActivity(it) } }
                 }
             }
             MetroButton(
@@ -252,16 +284,29 @@ private fun RecordingDetail(file: File, store: Recordings, onChanged: () -> Unit
             }
             MetroText(stringResource(R.string.rec_transcript), size = 16.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.padding(top = 22.dp, bottom = 6.dp))
             if (!transcriber.isSupported) PageNote(stringResource(R.string.rec_transcribe_unsupported), Modifier.padding(bottom = 8.dp).testTag("rec:unsupported"))
-            else MetroButton(stringResource(if (transcribing) R.string.rec_transcribing else R.string.rec_transcribe), Modifier.fillMaxWidth().testTag("rec:transcribe")) {
+            else {
+                PageNote(stringResource(if (transcriber.mode == Transcriber.Mode.OnDevice) R.string.rec_transcribe_offline else R.string.rec_transcribe_online), Modifier.padding(bottom = 8.dp).testTag("rec:mode"))
+                MetroButton(stringResource(if (transcribing) R.string.rec_transcribing else R.string.rec_transcribe), Modifier.fillMaxWidth().testTag("rec:transcribe")) {
                 if (transcribing) return@MetroButton
                 transcribing = true
                 transcriptFailed = false
                 transcript = ""
-                transcriber.start(file, onText = { transcript = it }, onDone = { transcribing = false }, onFailed = { transcribing = false; transcriptFailed = true })
+                missing = false
+                transcriber.start(file, onText = { transcript = it }, onDone = { transcribing = false }, onFailed = { transcribing = false; transcriptFailed = true; missing = it == Transcriber.ERROR_LANGUAGE_MISSING; unknownLanguage = it == Transcriber.ERROR_LANGUAGE_UNKNOWN })
             }
-            if (transcriptFailed) PageNote(stringResource(R.string.rec_transcribe_failed), Modifier.padding(top = 6.dp).testTag("rec:failed"))
+            }
+            if (missing) {
+                PageNote(stringResource(R.string.rec_lang_missing, java.util.Locale.getDefault().displayLanguage), Modifier.padding(top = 6.dp).testTag("rec:langmissing"))
+                MetroButton(stringResource(R.string.rec_lang_download), Modifier.fillMaxWidth().padding(top = 8.dp).testTag("rec:langdownload")) {
+                    toast(if (transcriber.downloadLanguage()) R.string.rec_lang_downloading else R.string.rec_transcribe_unsupported)
+                }
+            } else if (unknownLanguage) PageNote(stringResource(R.string.rec_lang_unknown, java.util.Locale.getDefault().displayLanguage), Modifier.padding(top = 6.dp).testTag("rec:langunknown"))
+            else if (transcriptFailed) PageNote(stringResource(R.string.rec_transcribe_failed), Modifier.padding(top = 6.dp).testTag("rec:failed"))
             if (transcript.isNotEmpty()) {
                 MetroText(transcript, size = 19.sp, modifier = Modifier.padding(top = 10.dp).testTag("rec:text"))
+                MetroButton(stringResource(R.string.rec_share_text), Modifier.fillMaxWidth().padding(top = 10.dp).testTag("rec:sharetext")) {
+                    runCatching { context.startActivity(RecorderShare.text(transcript, Recordings.title(file.name))) }
+                }
                 MetroButton(stringResource(R.string.rec_to_notes), Modifier.fillMaxWidth().padding(top = 10.dp).testTag("rec:tonotes")) {
                     val text = transcript
                     val title = Recordings.title(file.name)

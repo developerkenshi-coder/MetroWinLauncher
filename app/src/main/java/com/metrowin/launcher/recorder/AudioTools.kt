@@ -3,6 +3,7 @@ package com.metrowin.launcher.recorder
 import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import android.media.MediaMetadataRetriever
 import android.media.MediaMuxer
 import java.io.File
 import java.io.FileOutputStream
@@ -25,8 +26,15 @@ object AudioTools {
         }.getOrElse { extractor.release(); null }
     }
 
-    /** The length of the sound in milliseconds, or 0 when the file cannot be read. */
+    /** The length of the sound in milliseconds, or 0 when the file cannot be read: the retriever of Android knows most formats, the extractor is the second try. */
     fun durationMs(file: File): Long {
+        val retriever = MediaMetadataRetriever()
+        val fromRetriever = runCatching {
+            retriever.setDataSource(file.path)
+            if (retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO) == "yes") retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() else null
+        }.getOrNull()
+        runCatching { retriever.release() }
+        if (fromRetriever != null && fromRetriever > 0) return fromRetriever
         val (extractor, format) = open(file) ?: return 0L
         return try {
             if (format.containsKey(MediaFormat.KEY_DURATION)) format.getLong(MediaFormat.KEY_DURATION) / 1000L else 0L
@@ -34,6 +42,18 @@ object AudioTools {
             extractor.release()
         }
     }
+
+    /**
+     * Whether a piece of [file] can be saved: the compressed sound is copied into an MP4 file, which the muxer of Android takes only for AAC
+     * (the sound of the recorder and of most .m4a files). MP3, WAV, OGG, FLAC and the others can be played and sent, not cut here.
+     */
+    fun canCut(file: File): Boolean {
+        val (extractor, format) = open(file) ?: return false
+        extractor.release()
+        return canCutMime(format.getString(MediaFormat.KEY_MIME))
+    }
+
+    fun canCutMime(mime: String?): Boolean = mime == MediaFormat.MIMETYPE_AUDIO_AAC
 
     /** Decodes [file] and gives each block of 16-bit samples (with its time in microseconds, the rate and the number of channels) to [sink]. */
     private fun decode(file: File, sink: (samples: java.nio.ShortBuffer, timeUs: Long, rate: Int, channels: Int) -> Unit): Boolean {

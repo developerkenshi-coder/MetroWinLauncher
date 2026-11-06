@@ -36,12 +36,12 @@ class NestedScrollDialogsTest : ScreenshotBase() {
         val files = listOf(File("/sdcard/a.zip"))
         show {
             ActionsDialog(
-                files, File("/sdcard/other"), onRename = {}, onZip = {}, onExtract = {}, onToOther = {}, onProperties = {}, onInvert = {}, onSelectAll = {},
+                files, File("/sdcard/other"), onExtract = {}, onToOther = {}, onProperties = {}, onInvert = {}, onSelectAll = {},
                 onCopyPath = {}, onBookmark = {}, bookmarks = emptyList(), onEdit = {}, onCancel = {},
             )
         }
         advance(500)
-        compose.onNodeWithTag("fm:act:zip", useUnmergedTree = true).assertIsDisplayedOrExists()
+        compose.onNodeWithTag("fm:act:extract", useUnmergedTree = true).assertIsDisplayedOrExists()
     }
 
     @Test

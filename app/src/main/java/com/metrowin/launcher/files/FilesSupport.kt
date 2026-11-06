@@ -87,6 +87,21 @@ class FilesPrefs(context: Context) {
         get() = prefs.getBoolean("hidden", false)
         set(value) = prefs.edit { putBoolean("hidden", value) }
 
+    /** Whether the panels show tiles instead of a list. */
+    var tiles: Boolean
+        get() = prefs.getBoolean("tiles", false)
+        set(value) = prefs.edit { putBoolean("tiles", value) }
+
+    /** When the file manager last opened each file (path to time), for the order "last opened"; it holds the newest 300. */
+    var opened: Map<String, Long>
+        get() = runCatching {
+            val json = org.json.JSONObject(prefs.getString("opened", "{}")!!)
+            json.keys().asSequence().associateWith { json.getLong(it) }
+        }.getOrDefault(emptyMap())
+        private set(value) = prefs.edit { putString("opened", org.json.JSONObject(value).toString()) }
+
+    fun markOpened(file: File): Map<String, Long> = FileOps.withOpened(opened, file.absolutePath, System.currentTimeMillis()).also { opened = it }
+
     var bookmarks: List<File>
         get() = runCatching {
             val array = JSONArray(prefs.getString("bookmarks", "[]"))

@@ -19,7 +19,8 @@ import javax.crypto.spec.SecretKeySpec
  */
 object SyncCrypto {
     private val magic = "MWSYNC1".toByteArray(Charsets.US_ASCII)
-    const val ITERATIONS = 200_000
+    /** For new files (OWASP, 2023: 600,000 for PBKDF2 with HMAC-SHA256). A file made with fewer (200,000 before) says so in its header and is read with that number. */
+    const val ITERATIONS = 600_000
 
     /** A file that asks for more than this is refused rather than made to spin: the number is in the file. */
     private const val MAX_ITERATIONS = 2_000_000

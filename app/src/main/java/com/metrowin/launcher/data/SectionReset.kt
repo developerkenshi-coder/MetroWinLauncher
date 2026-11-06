@@ -35,7 +35,7 @@ object SectionReset {
         ),
         "Actions" to setOf(
             "actionSliders", "quickActions", "torchAutoOffMin", "torchStrength", "volumePanel",
-            "volumeProfilesShow", "vpnApp",
+            "volumeProfilesShow", "vpnApp", "useShizuku",
         ),
         "Notifications" to setOf(
             "actionCenterEnabled", "edgeActionCenter", "metroSounds", "panelSounds",

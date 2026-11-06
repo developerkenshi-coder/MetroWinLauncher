@@ -493,6 +493,15 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- Shizuku hands its binder to the launcher through this provider, when the user runs Shizuku. -->
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:enabled="true"
+            android:exported="true"
+            android:multiprocess="false"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+
         <provider
             android:name=".data.TilePublishProvider"
             android:authorities="${applicationId}.tiles"

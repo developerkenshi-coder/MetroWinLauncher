@@ -20,7 +20,10 @@ enum class SyncAction {
     /** Only the other side changed: take the folder's layout. */
     Apply,
 
-    /** Both changed: this phone's layout wins and the other one is kept as a separate file, so nothing is lost. */
+    /**
+     * Both changed: the two are merged (see [SyncMerge]) when the layout of the last sync is known; otherwise, or when the same thing
+     * changed on both phones, this phone's layout wins and the other one is kept as a separate file, so nothing is lost.
+     */
     UploadKeepingTheOther,
 }
 
@@ -67,6 +70,8 @@ data class SyncLocal(
     val deviceId: String,
     val lastHash: String,
     val lastStamp: Long,
+    /** The layout both phones agreed on at the last sync, or null when this phone does not have it (an older version synced last). */
+    val baseJson: String? = null,
 )
 
 sealed interface SyncOutcome {
@@ -77,6 +82,9 @@ sealed interface SyncOutcome {
 
     /** The folder's layout is to be put in place; remember [stamp] (and the hash of what results). */
     data class Applied(val layoutJson: String, val stamp: Long) : SyncOutcome
+
+    /** Both phones had changed and were merged; the folder holds [layoutJson] now: put it in place and remember [stamp]. [kept] items were saved from a deletion. */
+    data class Merged(val layoutJson: String, val stamp: Long, val kept: Int, val keptTheOtherAs: String? = null) : SyncOutcome
 
     data object WrongPassphrase : SyncOutcome
     data object NotASyncFile : SyncOutcome
@@ -106,9 +114,15 @@ class SyncEngine(
             SyncAction.Apply -> SyncOutcome.Applied(remoteLayout!!, remoteStamp)
             SyncAction.Upload -> upload(local, localHash, keptTheOtherAs = null)
             SyncAction.UploadKeepingTheOther -> {
-                val copy = "$CONFLICT_PREFIX$remoteStamp.bin"
-                if (!storage.write(copy, blob!!)) return SyncOutcome.Failed
-                upload(local, localHash, keptTheOtherAs = copy)
+                val merged = local.baseJson?.let { SyncMerge.merge(it, local.layoutJson, remoteLayout!!) }
+                // Without a merge, or when the same thing changed on both phones, the other phone's file is kept aside.
+                val copy = if (merged == null || merged.lost) "$CONFLICT_PREFIX$remoteStamp.bin" else null
+                if (copy != null && !storage.write(copy, blob!!)) return SyncOutcome.Failed
+                if (merged == null) return upload(local, localHash, keptTheOtherAs = copy)
+                when (val up = upload(local.copy(layoutJson = merged.json), hash(merged.json), keptTheOtherAs = copy)) {
+                    is SyncOutcome.Uploaded -> SyncOutcome.Merged(merged.json, up.stamp, merged.kept, copy)
+                    else -> up
+                }
             }
         }
     }

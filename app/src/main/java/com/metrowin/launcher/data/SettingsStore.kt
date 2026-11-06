@@ -619,6 +619,8 @@ data class LauncherSettings(
     val torchStrength: Float = 1f,
     /** The VPN app the VPN button opens (its package); empty: the only VPN app of the phone, or a choice when there are several. */
     val vpnApp: String = "",
+    /** Switches Wi-Fi and Bluetooth through Shizuku when it runs and has been allowed; off, or without Shizuku, the buttons open the panels of Android. */
+    val useShizuku: Boolean = false,
     /** The microphone on Start that starts the voice assistant. */
     val assistantIcon: Boolean = true,
 

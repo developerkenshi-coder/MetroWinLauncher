@@ -223,6 +223,7 @@ object SettingsCodec {
         put("assistantIcon", s.assistantIcon)
         put("torchStrength", s.torchStrength.toDouble())
         put("vpnApp", s.vpnApp)
+        put("useShizuku", s.useShizuku)
         put("updateAuto", s.updateAuto)
         put("reduceMotion", s.reduceMotion)
         put("highContrast", s.highContrast)
@@ -477,6 +478,7 @@ object SettingsCodec {
             assistantIcon = o.optBoolean("assistantIcon", base.assistantIcon),
             torchStrength = o.optDouble("torchStrength", base.torchStrength.toDouble()).toFloat().coerceIn(0.05f, 1f),
             vpnApp = o.optString("vpnApp", base.vpnApp).take(256),
+            useShizuku = o.optBoolean("useShizuku", base.useShizuku),
             updateAuto = o.optBoolean("updateAuto", base.updateAuto),
             reduceMotion = o.optBoolean("reduceMotion", base.reduceMotion),
             highContrast = o.optBoolean("highContrast", base.highContrast),

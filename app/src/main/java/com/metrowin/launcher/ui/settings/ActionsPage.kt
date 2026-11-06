@@ -34,6 +34,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.QuickAction
+import com.metrowin.launcher.data.ShizukuRadio
 import com.metrowin.launcher.ui.actioncenter.QuickButton
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
@@ -116,6 +117,7 @@ fun ActionsPage(env: SettingsEnv) {
                 }
             }
             SettingHint(stringResource(R.string.ac_reorder_hint))
+            ShizukuSetting(env)
             ToggleSetting(
                 label = stringResource(R.string.ac_sliders),
                 checked = env.settings.actionSliders,
@@ -132,6 +134,30 @@ fun ActionsPage(env: SettingsEnv) {
             hint = stringResource(R.string.ac_volume_panel_hint),
             tag = "actions:volumepanel", id = "ac.volume",
         )
+    }
+}
+
+/** The switch that lets Wi-Fi and Bluetooth be switched through Shizuku, what Shizuku is doing now, and the button that asks it for the access. */
+@Composable
+private fun ShizukuSetting(env: SettingsEnv) {
+    var running by remember { mutableStateOf(ShizukuRadio.running()) }
+    var granted by remember { mutableStateOf(ShizukuRadio.granted()) }
+    // Shizuku's own dialog and app are other screens: the answer is read again when the launcher is back.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        running = ShizukuRadio.running()
+        granted = ShizukuRadio.granted()
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        ToggleSetting(
+            label = stringResource(R.string.ac_shizuku),
+            checked = env.settings.useShizuku,
+            onChange = { value -> env.onChange { it.copy(useShizuku = value) } },
+            hint = stringResource(R.string.ac_shizuku_hint) + " " + stringResource(if (running && granted) R.string.ac_shizuku_ready else R.string.ac_shizuku_missing),
+            tag = "actions:shizuku", id = "ac.shizuku",
+        )
+        if (env.settings.useShizuku && running && !granted) {
+            ActionSetting(stringResource(R.string.ac_shizuku_grant), onClick = { ShizukuRadio.requestPermission() }, tag = "actions:shizuku:grant")
+        }
     }
 }
 

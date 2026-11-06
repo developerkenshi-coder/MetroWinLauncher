@@ -5,14 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
@@ -60,14 +60,15 @@ import java.util.Locale
 sealed interface FilesDialog {
     data object New : FilesDialog
     data object Places : FilesDialog
-    data object SortOptions : FilesDialog
+    data object View : FilesDialog
+    data object Categories : FilesDialog
     data object Menu : FilesDialog
     data object Trash : FilesDialog
     data class Conflicts(val count: Int, val then: (Conflict) -> Unit) : FilesDialog
     data class Delete(val count: Int, val then: (Boolean) -> Unit) : FilesDialog
     data class Actions(val files: List<File>) : FilesDialog
     data class Rename(val file: File) : FilesDialog
-    data class ZipName(val files: List<File>) : FilesDialog
+    data class Compress(val files: List<File>) : FilesDialog
     data class Properties(val file: File) : FilesDialog
     data class Editor(val file: File) : FilesDialog
     data class Zip(val file: File) : FilesDialog
@@ -115,30 +116,89 @@ fun PlacesDialog(storages: List<Place>, folders: List<Place>, bookmarks: List<Fi
     }
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-fun SortDialog(sort: Sort, hidden: Boolean, onSort: (Sort) -> Unit, onHidden: (Boolean) -> Unit, onClose: () -> Unit) {
+fun ViewDialog(sort: Sort, hidden: Boolean, tiles: Boolean, onSort: (Sort) -> Unit, onHidden: (Boolean) -> Unit, onTiles: (Boolean) -> Unit, onClose: () -> Unit) {
     DialogFrame(onCancel = onClose) {
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(SortKey.entries) { key ->
+        MetroText(stringResource(R.string.fm_sort), size = 16.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SortKey.entries.forEach { key ->
                 PageChip(
-                    stringResource(when (key) { SortKey.Name -> R.string.fm_sort_name; SortKey.Date -> R.string.fm_sort_date; SortKey.Size -> R.string.fm_sort_size; SortKey.Type -> R.string.fm_sort_type }),
+                    stringResource(when (key) { SortKey.Name -> R.string.fm_sort_name; SortKey.Date -> R.string.fm_sort_date; SortKey.Size -> R.string.fm_sort_size; SortKey.Type -> R.string.fm_sort_type; SortKey.Opened -> R.string.fm_sort_opened }),
                     sort.key == key, "fm:sort:${key.name}",
                 ) { onSort(sort.copy(key = key)) }
             }
         }
         PageChip(stringResource(R.string.fm_descending), sort.descending, "fm:sort:desc") { onSort(sort.copy(descending = !sort.descending)) }
+        MetroText(stringResource(R.string.fm_view), size = 16.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            PageChip(stringResource(R.string.fm_view_list), !tiles, "fm:view:list") { onTiles(false) }
+            PageChip(stringResource(R.string.fm_view_tiles), tiles, "fm:view:tiles") { onTiles(true) }
+        }
         PageChip(stringResource(R.string.fm_hidden), hidden, "fm:hidden") { onHidden(!hidden) }
     }
 }
 
+/** A line of a menu: its text on a row at least 52 dp high, with a tick when [checked] is true. */
 @Composable
-fun MenuDialog(canPaste: Boolean, onPaste: () -> Unit, onSearch: () -> Unit, onSelectAll: () -> Unit, onTrash: () -> Unit, onBookmark: () -> Unit, bookmarked: Boolean, onCancel: () -> Unit) {
+fun MenuRow(text: String, tag: String, checked: Boolean? = null, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().defaultMinSize(minHeight = 52.dp).testTag(tag).metroPress(onClick = onClick),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+    ) {
+        MetroText(text, size = 20.sp, weight = FontWeight.Normal, modifier = Modifier.weight(1f))
+        if (checked == true) MetroText("✓", size = 20.sp, color = LocalAccent.current)
+    }
+}
+
+/** What is left of the bar when nothing is selected: paste, the places, the search, the hidden files, the trash and the bookmark. */
+@Composable
+fun MenuDialog(
+    canPaste: Boolean, hidden: Boolean, bookmarked: Boolean, onPaste: () -> Unit, onPlaces: () -> Unit, onSearch: () -> Unit, onHidden: () -> Unit,
+    onTrash: () -> Unit, onBookmark: () -> Unit, onCancel: () -> Unit,
+) {
     DialogFrame(onCancel = onCancel) {
-        if (canPaste) MetroButton(stringResource(R.string.fm_paste), Modifier.fillMaxWidth(), onPaste)
-        MetroButton(stringResource(R.string.fm_search_hint), Modifier.fillMaxWidth().testTag("fm:menu:search"), onSearch)
-        MetroButton(stringResource(R.string.fm_select_all), Modifier.fillMaxWidth(), onSelectAll)
-        MetroButton(stringResource(if (bookmarked) R.string.fm_unbookmark else R.string.fm_bookmark), Modifier.fillMaxWidth(), onBookmark)
-        MetroButton(stringResource(R.string.fm_trash), Modifier.fillMaxWidth().testTag("fm:menu:trash"), onTrash)
+        if (canPaste) MenuRow(stringResource(R.string.fm_paste), "fm:menu:paste", onClick = onPaste)
+        MenuRow(stringResource(R.string.fm_places), "fm:menu:places", onClick = onPlaces)
+        MenuRow(stringResource(R.string.fm_search_hint), "fm:menu:search", onClick = onSearch)
+        MenuRow(stringResource(R.string.fm_hidden), "fm:menu:hidden", checked = hidden, onClick = onHidden)
+        MenuRow(stringResource(if (bookmarked) R.string.fm_unbookmark else R.string.fm_bookmark), "fm:menu:bookmark", onClick = onBookmark)
+        MenuRow(stringResource(R.string.fm_trash), "fm:menu:trash", onClick = onTrash)
+    }
+}
+
+/** The groups of files: tapping one lists them under the storage of the panel. */
+@Composable
+fun CategoriesDialog(onPick: (Category) -> Unit, onCancel: () -> Unit) {
+    DialogFrame(onCancel = onCancel) {
+        Category.entries.forEach { c -> MenuRow(stringResource(categoryName(c)), "fm:cat:${c.name}") { onPick(c) } }
+    }
+}
+
+fun categoryName(c: Category): Int = when (c) {
+    Category.Documents -> R.string.fm_cat_documents; Category.Photos -> R.string.fm_cat_photos; Category.Videos -> R.string.fm_cat_videos
+    Category.Audio -> R.string.fm_cat_audio; Category.Apk -> R.string.fm_cat_apk; Category.Other -> R.string.fm_cat_other
+}
+
+fun docName(d: DocKind?): Int = when (d) {
+    null -> R.string.fm_doc_all; DocKind.Pdf -> R.string.fm_doc_pdf; DocKind.Word -> R.string.fm_doc_word; DocKind.Excel -> R.string.fm_doc_excel
+    DocKind.PowerPoint -> R.string.fm_doc_powerpoint; DocKind.Text -> R.string.fm_doc_text; DocKind.Ebook -> R.string.fm_doc_ebook; DocKind.Other -> R.string.fm_doc_other
+}
+
+/** The name and the format of a new archive. RAR is not offered: it is a closed format that nobody can make for free. */
+@Composable
+fun CompressDialog(initial: String, onOk: (String, ArchiveFormat) -> Unit, onCancel: () -> Unit) {
+    var name by remember { mutableStateOf(initial) }
+    var format by remember { mutableStateOf(ArchiveFormat.Zip) }
+    DialogFrame(onCancel = onCancel) {
+        MetroText(stringResource(R.string.fm_zip_name), size = 20.sp, weight = FontWeight.Normal)
+        MetroTextField(name, { name = it.take(200) }, stringResource(R.string.fm_name), Modifier.testTag("fm:name"), onSearch = { onOk(name, format) })
+        MetroText(stringResource(R.string.fm_format), size = 16.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ArchiveFormat.entries.forEach { f -> PageChip(".${f.extension}", format == f, "fm:format:${f.extension}") { format = f } }
+        }
+        PageNote(stringResource(R.string.fm_rar_note))
+        MetroButton(stringResource(R.string.fm_compress), Modifier.fillMaxWidth().testTag("fm:name:ok")) { onOk(name, format) }
     }
 }
 
@@ -190,12 +250,11 @@ fun DeleteDialog(count: Int, onChoose: (Boolean) -> Unit, onCancel: () -> Unit) 
     }
 }
 
+/** What the bar of a selection has no room for. */
 @Composable
 fun ActionsDialog(
     files: List<File>,
     otherPath: File,
-    onRename: () -> Unit,
-    onZip: () -> Unit,
     onExtract: (Boolean) -> Unit,
     onToOther: (Boolean) -> Unit,
     onProperties: () -> Unit,
@@ -209,23 +268,19 @@ fun ActionsDialog(
 ) {
     val single = files.singleOrNull()
     DialogFrame(onCancel = onCancel) {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            MetroText(stringResource(R.string.fm_delete_ask, files.size), size = 16.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
-            if (single != null) MetroButton(stringResource(R.string.fm_rename), Modifier.fillMaxWidth().testTag("fm:act:rename"), onRename)
-            MetroButton(stringResource(R.string.fm_zip), Modifier.fillMaxWidth().testTag("fm:act:zip"), onZip)
-            if (single != null && FileOps.isZip(single)) {
-                MetroButton(stringResource(R.string.fm_extract_here), Modifier.fillMaxWidth().testTag("fm:act:extract")) { onExtract(false) }
-                MetroButton(stringResource(R.string.fm_extract_to), Modifier.fillMaxWidth()) { onExtract(true) }
-            }
-            MetroButton(stringResource(R.string.fm_copy_to_other) + " (" + (otherPath.name.ifEmpty { "/" }) + ")", Modifier.fillMaxWidth().testTag("fm:act:copyother")) { onToOther(false) }
-            MetroButton(stringResource(R.string.fm_move_to_other), Modifier.fillMaxWidth().testTag("fm:act:moveother")) { onToOther(true) }
-            if (single != null && FileOps.isText(single)) MetroButton(stringResource(R.string.fm_edit_text), Modifier.fillMaxWidth(), onEdit)
-            if (single != null) MetroButton(stringResource(R.string.fm_properties), Modifier.fillMaxWidth().testTag("fm:act:properties"), onProperties)
-            if (single != null && single.isDirectory) MetroButton(stringResource(if (single in bookmarks) R.string.fm_unbookmark else R.string.fm_bookmark), Modifier.fillMaxWidth(), onBookmark)
-            MetroButton(stringResource(R.string.fm_copy_path), Modifier.fillMaxWidth(), onCopyPath)
-            MetroButton(stringResource(R.string.fm_select_all), Modifier.fillMaxWidth(), onSelectAll)
-            MetroButton(stringResource(R.string.fm_invert), Modifier.fillMaxWidth(), onInvert)
+        MetroText(stringResource(R.string.fm_delete_ask, files.size), size = 16.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+        if (single != null && FileOps.isArchive(single)) {
+            MenuRow(stringResource(R.string.fm_extract_here), "fm:act:extract") { onExtract(false) }
+            MenuRow(stringResource(R.string.fm_extract_to), "fm:act:extractto") { onExtract(true) }
         }
+        MenuRow(stringResource(R.string.fm_copy_to_other) + " (" + (otherPath.name.ifEmpty { "/" }) + ")", "fm:act:copyother") { onToOther(false) }
+        MenuRow(stringResource(R.string.fm_move_to_other), "fm:act:moveother") { onToOther(true) }
+        if (single != null && FileOps.isText(single)) MenuRow(stringResource(R.string.fm_edit_text), "fm:act:edit", onClick = onEdit)
+        if (single != null) MenuRow(stringResource(R.string.fm_properties), "fm:act:properties", onClick = onProperties)
+        if (single != null && single.isDirectory) MenuRow(stringResource(if (single in bookmarks) R.string.fm_unbookmark else R.string.fm_bookmark), "fm:act:bookmark", onClick = onBookmark)
+        MenuRow(stringResource(R.string.fm_copy_path), "fm:act:path", onClick = onCopyPath)
+        MenuRow(stringResource(R.string.fm_select_all), "fm:act:all", onClick = onSelectAll)
+        MenuRow(stringResource(R.string.fm_invert), "fm:act:invert", onClick = onInvert)
     }
 }
 

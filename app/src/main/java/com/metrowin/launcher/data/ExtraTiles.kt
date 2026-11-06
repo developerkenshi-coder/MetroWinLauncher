@@ -133,14 +133,38 @@ object Steps {
     }
 }
 
-/** The voice recordings, kept in the storage of the app, one file each. */
-class Recordings(context: Context) {
-    private val dir = File(context.filesDir, "recordings").apply { mkdirs() }
+/** The voice recordings, kept in the storage of the app, one file each. Those the recorder makes are .m4a; imported sound keeps its own format. */
+class Recordings(private val dir: File) {
+    constructor(context: Context) : this(File(context.filesDir, "recordings"))
 
-    fun list(): List<File> = dir.listFiles { f -> f.extension == "m4a" }.orEmpty().sortedByDescending { it.name }
+    init { dir.mkdirs() }
 
-    fun newFile(now: java.time.LocalDateTime = java.time.LocalDateTime.now()): File =
-        File(dir, "%04d%02d%02d-%02d%02d%02d.m4a".format(now.year, now.monthValue, now.dayOfMonth, now.hour, now.minute, now.second))
+    fun list(): List<File> = dir.listFiles { f -> f.extension.lowercase() in MIME }.orEmpty().sortedByDescending { it.name }
+
+    fun newFile(now: java.time.LocalDateTime = java.time.LocalDateTime.now(), extension: String = "m4a"): File =
+        File(dir, "%04d%02d%02d-%02d%02d%02d.%s".format(now.year, now.monthValue, now.dayOfMonth, now.hour, now.minute, now.second, extension))
+
+    /**
+     * A new file of the recordings for sound that comes from outside, written by [write], named after [displayName] and never over another
+     * recording. The file, or null when [write] failed (nothing is left behind).
+     */
+    fun addImported(displayName: String, extension: String, write: (File) -> Unit): File? {
+        var now = java.time.LocalDateTime.now()
+        var target = newFile(now, extension)
+        // The stamp is the order of the list: a taken one moves a second on, so no recording is ever replaced.
+        while (list().any { STAMP.find(it.name)?.value == STAMP.find(target.name)?.value }) { now = now.plusSeconds(1); target = newFile(now, extension) }
+        val clean = cleanName(displayName.substringBeforeLast('.'))
+        val named = File(dir, target.name.removeSuffix("." + extension) + (if (clean.isEmpty()) "" else " $clean") + "." + extension)
+        val part = File(dir, ".import-${System.nanoTime()}")
+        return try {
+            write(part)
+            if (part.length() > 0 && part.renameTo(named)) named else null
+        } catch (e: Exception) {
+            null
+        } finally {
+            part.delete()
+        }
+    }
 
     fun delete(file: File) {
         if (file.parentFile == dir) file.delete()
@@ -154,7 +178,7 @@ class Recordings(context: Context) {
         if (file.parentFile != dir) return null
         val stamp = STAMP.find(file.name)?.value ?: return null
         val clean = cleanName(name)
-        val target = File(dir, stamp + (if (clean.isEmpty()) "" else " $clean") + ".m4a")
+        val target = File(dir, stamp + (if (clean.isEmpty()) "" else " $clean") + "." + file.extension)
         if (target == file) return file
         if (target.exists()) return null
         return if (file.renameTo(target)) target else null
@@ -163,15 +187,49 @@ class Recordings(context: Context) {
     companion object {
         private val STAMP = Regex("""\d{8}-\d{6}""")
 
+        /** The sound the recorder lists, by extension, with the type each is sent as. What the phone cannot play is told when it is opened. */
+        val MIME = mapOf(
+            "m4a" to "audio/mp4", "mp3" to "audio/mpeg", "wav" to "audio/x-wav", "ogg" to "audio/ogg", "oga" to "audio/ogg", "opus" to "audio/ogg", "flac" to "audio/flac",
+            "amr" to "audio/amr", "awb" to "audio/amr-wb", "3gp" to "audio/3gpp", "aac" to "audio/aac", "wma" to "audio/x-ms-wma", "mka" to "audio/x-matroska",
+        )
+
+        /** The extension of sound called [displayName] or, when the name has none we know, typed [mime]; null when it is neither. */
+        fun extensionFor(displayName: String?, mime: String?): String? {
+            displayName?.substringAfterLast('.', "")?.lowercase()?.takeIf { it in MIME }?.let { return it }
+            val type = mime?.lowercase()?.substringBefore(';') ?: return null
+            return when (type) {
+                "audio/mpeg", "audio/mp3" -> "mp3"
+                "audio/mp4", "audio/x-m4a", "audio/m4a" -> "m4a"
+                "audio/wav", "audio/x-wav", "audio/wave", "audio/vnd.wave" -> "wav"
+                "audio/ogg", "application/ogg" -> "ogg"
+                "audio/opus" -> "opus"
+                "audio/flac", "audio/x-flac" -> "flac"
+                "audio/amr" -> "amr"
+                "audio/amr-wb" -> "awb"
+                "audio/3gpp" -> "3gp"
+                "audio/aac", "audio/aacp" -> "aac"
+                "audio/x-ms-wma" -> "wma"
+                "audio/x-matroska" -> "mka"
+                else -> null
+            }
+        }
+
+        fun mimeOf(file: File): String = MIME[file.extension.lowercase()] ?: "audio/*"
+
         /** A name a file can carry: letters, digits and a few marks, one space at a time, at most 40 characters. */
         fun cleanName(raw: String): String = raw.filter { it.isLetterOrDigit() || it in " -_().,'" }.replace(Regex("\\s+"), " ").trim().trimStart('.').trim().take(40)
 
+        private fun withoutExtension(fileName: String): String {
+            val ext = fileName.substringAfterLast('.', "").lowercase()
+            return if (ext in MIME) fileName.dropLast(ext.length + 1) else fileName
+        }
+
         /** The name after the date, or empty for a recording that has none. */
-        fun nameOf(fileName: String): String = STAMP.find(fileName)?.let { fileName.substring(it.range.last + 1).removeSuffix(".m4a").trim() }.orEmpty()
+        fun nameOf(fileName: String): String = STAMP.find(fileName)?.let { withoutExtension(fileName).substring(it.range.last + 1).trim() }.orEmpty()
 
         /** "2026-10-26 18:30:05" from the name of a file, and " · Lesson" when the recording has a name. */
         fun title(name: String): String {
-            val m = Regex("""(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})""").find(name) ?: return name.removeSuffix(".m4a")
+            val m = Regex("""(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})""").find(name) ?: return withoutExtension(name)
             val (y, mo, d, h, mi, s) = m.destructured
             val given = nameOf(name)
             return "$y-$mo-$d $h:$mi:$s" + if (given.isEmpty()) "" else " · $given"

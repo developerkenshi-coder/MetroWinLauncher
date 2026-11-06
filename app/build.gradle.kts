@@ -20,8 +20,8 @@ android {
         minSdk = 26
         targetSdk = 36
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        versionCode = 42
-        versionName = "26.6.3S"
+        versionCode = 43
+        versionName = "26.7S"
     }
 
     // The key of the official release comes from keystore.properties in the root of the project (never committed: it is in
@@ -102,6 +102,12 @@ dependencies {
     implementation(libs.android.activation)
     // Draws and reads the barcodes of the wallet (QR, Aztec, PDF417, EAN, Code 128, Code 39): Apache 2.0, nothing else is pulled in.
     implementation(libs.zxing.core)
+    // 7z archives: read and write (LZMA2 needs xz).
+    implementation(libs.commons.compress)
+    implementation(libs.xz)
+    // Switches Wi-Fi and Bluetooth for people who run Shizuku (MIT): without Shizuku the buttons open the panels of Android as before.
+    implementation(libs.shizuku.api)
+    implementation(libs.shizuku.provider)
 
     testImplementation(libs.junit)
     testImplementation(libs.org.json)
