@@ -61,6 +61,15 @@ class MetroInCallService : InCallService() {
     @Suppress("DEPRECATION")
     override fun onCallAudioStateChanged(audioState: CallAudioState?) = CallManager.audioChanged(audioState)
 
+    @androidx.annotation.RequiresApi(34)
+    override fun onCallEndpointChanged(callEndpoint: android.telecom.CallEndpoint) = CallManager.endpointChanged(callEndpoint)
+
+    @androidx.annotation.RequiresApi(34)
+    override fun onAvailableCallEndpointsChanged(availableEndpoints: MutableList<android.telecom.CallEndpoint>) = CallManager.endpointsChanged(availableEndpoints)
+
+    @androidx.annotation.RequiresApi(34)
+    override fun onMuteStateChanged(isMuted: Boolean) = CallManager.muteChanged(isMuted)
+
     /** The notification follows the calls; a call that was not seen before opens the screen of calls, unless it is ringing (the notification does that). */
     private fun sync(all: List<CallLine>) {
         val manager = getSystemService(NotificationManager::class.java)

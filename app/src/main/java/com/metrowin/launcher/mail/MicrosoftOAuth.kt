@@ -1,6 +1,7 @@
 package com.metrowin.launcher.mail
 
 import android.net.Uri
+import androidx.core.net.toUri
 import android.util.Base64
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.json.JSONObject
@@ -48,7 +49,7 @@ object MicrosoftOAuth {
         val verifier = random(48)
         val state = random(16)
         pending = Pending(verifier, state, email)
-        return Uri.parse(AUTHORITY + "/authorize").buildUpon()
+        return (AUTHORITY + "/authorize").toUri().buildUpon()
             .appendQueryParameter("client_id", CLIENT_ID)
             .appendQueryParameter("response_type", "code")
             .appendQueryParameter("redirect_uri", REDIRECT)

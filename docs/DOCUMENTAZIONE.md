@@ -903,7 +903,7 @@ app/src/main/java/com/metrowin/launcher/
   Recenti stanno nel launcher di fabbrica, che con uno di terze parti ha meno privilegi. Su **Samsung** l'attesa è voluta: con un
   launcher di terze parti bisogna tenere lo swipe circa un secondo ([lo dice Niagara Launcher](https://help.niagaralauncher.app/article/114-recent-apps-screen-issues),
   che ha lo stesso problema), e altri produttori hanno ritardi simili ([Lawnchair](https://docs.lawnchair.app/troubleshooting/gesture-navigation-issues)); su un **vivo** con un launcher di terze parti c'è chi riferisce Recenti lente ([una segnalazione a Niagara](https://niagaralauncher.featurebase.app/p/recent-apps-navigation-is-slow-and-lagging)), e un riavvio la fa sparire per qualche ora. Con il launcher di fabbrica il ritardo non c'è perché è lui a gestire i gesti.
-- **Font**: Windows Phone usa Segoe WP, proprietario. Qui c'è Open Sans (OFL). Vedi [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
+- **Font**: Windows Phone usa Segoe WP, proprietario. Qui c'è Selawik (Microsoft, OFL). Vedi [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 - **Colori d'accento**: Microsoft ha pubblicato i 20 colori solo come immagine; i valori vengono da trascrizioni.
 - **Marchi**: i nomi delle app stock sono generici (Browser, Hub giochi, Videochiamate, Documenti…) e non quelli di Windows Phone. Stanno in
   `MetroCatalog.kt` e in `strings.xml`. Il catalogo conosce ancora i pacchetti Microsoft (Xbox, Skype, Office…) solo per riconoscere le app installate.

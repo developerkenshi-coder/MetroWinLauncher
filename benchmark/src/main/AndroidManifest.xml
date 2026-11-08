@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The launcher is the home app: the benchmark starts it by its package, as the home button would. -->
+    <queries>
+        <package android:name="com.metrowin.launcher" />
+    </queries>
+</manifest>

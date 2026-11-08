@@ -1,6 +1,7 @@
 package com.metrowin.launcher.data
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.content.Context
@@ -20,6 +21,7 @@ import android.telephony.TelephonyDisplayInfo
 import android.telephony.TelephonyManager
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
+import androidx.core.location.LocationManagerCompat
 import com.metrowin.launcher.R
 
 /** What the status bar can show, each of which the user can turn off (Settings, Status bar). [id] is what is kept in the settings. */
@@ -136,7 +138,7 @@ object StatusIcons {
             airplane = runCatching { Settings.Global.getInt(resolver, Settings.Global.AIRPLANE_MODE_ON, 0) == 1 }.getOrDefault(false),
             hotspot = hotspot,
             vpn = vpn,
-            location = runCatching { context.getSystemService(LocationManager::class.java).isLocationEnabled }.getOrDefault(false),
+            location = runCatching { LocationManagerCompat.isLocationEnabled(context.getSystemService(LocationManager::class.java)) }.getOrDefault(false),
             alarm = runCatching { context.getSystemService(AlarmManager::class.java).nextAlarmClock != null }.getOrDefault(false),
             ringer = ringer,
             dnd = runCatching {
@@ -167,7 +169,7 @@ class CellWatcher(private val context: Context, private val onChange: (CellState
     }
 
     private fun levelNow(): Int = runCatching {
-        if (telephony != null && telephony.simState == TelephonyManager.SIM_STATE_READY) telephony.signalStrength?.level ?: 0 else -1
+        if (telephony != null && telephony.simState == TelephonyManager.SIM_STATE_READY) (if (Build.VERSION.SDK_INT >= 28) telephony.signalStrength?.level ?: 0 else 0) else -1
     }.getOrDefault(-1)
 
     fun start() {
@@ -198,6 +200,7 @@ class CellWatcher(private val context: Context, private val onChange: (CellState
         if (telephony != null && telephony.simState == TelephonyManager.SIM_STATE_READY) strength.level else -1
 
     /** Where the phone cannot tell the display info (before Android 12), the kind of network is asked for now and then. */
+    @SuppressLint("MissingPermission") // hasPhoneState checked on the next line
     fun poll() {
         val manager = telephony ?: return
         if (displayCallback != null || !StatusIcons.hasPhoneState(context)) return

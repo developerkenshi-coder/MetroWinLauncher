@@ -162,6 +162,6 @@ Per un errore, indica il telefono, la versione di Android e la versione del laun
 ## Licenza e crediti
 
 Rilasciato con licenza **GNU General Public License v3.0 o successiva** ([LICENSE](LICENSE)).
-Dati meteo di [Open-Meteo.com](https://open-meteo.com/), licenza CC BY 4.0. Il carattere è Open Sans (SIL Open Font License 1.1). Vedi [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Dati meteo di [Open-Meteo.com](https://open-meteo.com/), licenza CC BY 4.0. Il carattere è Selawik (Microsoft, SIL Open Font License 1.1). Vedi [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 MetroWin Launcher è un progetto indipendente, non affiliato né approvato da Microsoft; Windows Phone è un marchio di Microsoft Corporation.

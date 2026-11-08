@@ -80,7 +80,8 @@ internal class OverlayBanner(context: Context, private val host: () -> Context? 
 
     private class Shown(val view: ComposeView, val owner: OverlayWindowOwner, val windows: WindowManager)
 
-    fun show(entry: NotificationEntry, settings: LauncherSettings) {
+    /** False when the window could not be added (the banner is not on the screen). */
+    fun show(entry: NotificationEntry, settings: LauncherSettings): Boolean {
         hide()
         val owner = OverlayWindowOwner()
         // A window of the accessibility service brings no "shown over other apps" notice; one of the app does.
@@ -112,14 +113,16 @@ internal class OverlayBanner(context: Context, private val host: () -> Context? 
         owner.resume()
         if (runCatching { windows.addView(view, params) }.isFailure) {
             owner.destroy()
-            return
+            return false
         }
         if (settings.metroSounds) sounds.play(MetroSound.Notify)
         shown = Shown(view, owner, windows)
         handler.postDelayed(hideLater, BANNER_MS + SAFETY_MS)
+        return true
     }
 
-    @SuppressLint("DiscouragedApi") // before Android 11 the size of the bar can only be asked by the name of the resource
+    // shortcut: before Android 11 the size of the bar can only be asked by the name of the resource; upgrade when minSdk reaches 30.
+    @SuppressLint("DiscouragedApi", "InternalInsetResource")
     private fun topInset(windows: WindowManager): Dp {
         val px = if (Build.VERSION.SDK_INT >= 30) {
             windows.maximumWindowMetrics.windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars() or WindowInsets.Type.displayCutout()).top

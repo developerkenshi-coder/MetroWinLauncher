@@ -1,6 +1,10 @@
 package com.metrowin.launcher.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -15,7 +19,10 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -26,6 +33,9 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.roundToInt
+
+/** The name of the app in small capitals above its pivot ("SETTINGS" over "system", as in Windows Phone); null for no line. */
+val LocalAppTitle = staticCompositionLocalOf<String?> { null }
 
 /**
  * The titles of a Windows Phone pivot: large, side by side, the current one in full colour and the next
@@ -58,24 +68,30 @@ fun PivotHeader(
     val fraction = (position - lower).coerceIn(0f, 1f)
     val shift = leftOf(lower) + (leftOf(upper) - leftOf(lower)) * fraction
 
-    Row(
-        modifier
-            .clipToBounds()
-            .wrapContentWidth(Alignment.Start, unbounded = true)
-            .offset { IntOffset(-shift.roundToInt(), 0) },
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
-    ) {
-        titles.forEachIndexed { index, title ->
-            MetroText(
-                text = title,
-                size = size,
-                color = if (color == null) lerp(colors.foreground, colors.subtle, abs(position - index).coerceIn(0f, 1f))
-                else color.copy(alpha = 1f - 0.45f * abs(position - index).coerceIn(0f, 1f)),
-                modifier = Modifier
-                    .onSizeChanged { widths[index] = it.width }
-                    .semantics { heading() }
-                    .metroPress(onClick = { scope.launch { pagerState.animateScrollToPage(index) } }),
-            )
+    Column(modifier) {
+        LocalAppTitle.current?.let { appTitle ->
+            MetroText(appTitle.uppercase(), size = 14.sp, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(bottom = 2.dp))
+        }
+        Row(
+            Modifier
+                .clipToBounds()
+                .wrapContentWidth(Alignment.Start, unbounded = true)
+                .offset { IntOffset(-shift.roundToInt(), 0) },
+            horizontalArrangement = Arrangement.spacedBy(24.dp),
+        ) {
+            titles.forEachIndexed { index, title ->
+                MetroText(
+                    text = title,
+                    size = size,
+                    color = if (color == null) lerp(colors.foreground, colors.subtle, abs(position - index).coerceIn(0f, 1f))
+                    else color.copy(alpha = 1f - 0.45f * abs(position - index).coerceIn(0f, 1f)),
+                    modifier = Modifier
+                        .onSizeChanged { widths[index] = it.width }
+                        // A title is a tab of the pivot (the outer role wins over the button one metroPress sets), and says which page it is on.
+                        .semantics { heading(); role = Role.Tab; selected = index == pagerState.currentPage }
+                        .metroPress(onClick = { scope.launch { pagerState.animateScrollToPage(index) } }),
+                )
+            }
         }
     }
 }

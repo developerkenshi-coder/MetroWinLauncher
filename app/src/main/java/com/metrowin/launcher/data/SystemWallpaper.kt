@@ -8,6 +8,7 @@ import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Shader
+import androidx.core.graphics.createBitmap
 
 /**
  * The wallpaper of Android that the launcher puts behind everything it does not draw: the screen of the recent apps shows it behind the
@@ -31,7 +32,7 @@ object SystemWallpaper {
 
     /** The picture of the wallpaper: [photo] placed as [fit] says over [background], or only [background] when there is no photo. */
     fun render(photo: Bitmap?, fit: PhotoFit, zoom: Int, x: Int, y: Int, background: Int, width: Int, height: Int): Bitmap {
-        val out = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val out = createBitmap(width, height)
         val canvas = Canvas(out)
         canvas.drawColor(background)
         if (photo == null) return out

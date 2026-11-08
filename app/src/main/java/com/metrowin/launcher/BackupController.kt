@@ -8,6 +8,7 @@ import androidx.core.net.toUri
 import com.metrowin.launcher.data.AtomicEncryptedFile
 import com.metrowin.launcher.data.BackupCopies
 import com.metrowin.launcher.data.BackupSchedule
+import com.metrowin.launcher.data.logged
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.LayoutBackup
 import com.metrowin.launcher.data.LayoutBackupCodec
@@ -83,7 +84,7 @@ internal class BackupController(
             app.contentResolver.takePersistableUriPermission(
                 uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
             )
-        }
+        }.logged("backup.takeFolder", withMessage = false)
         // Another folder is another sync: what was known about the old one does not apply.
         baseFile.delete()
         change { it.copy(backupFolder = uri.toString(), lastBackupAt = 0L, syncLastHash = "", syncLastStamp = 0L, syncLastAt = 0L) }
@@ -96,7 +97,7 @@ internal class BackupController(
                 app.contentResolver.releasePersistableUriPermission(
                     old.toUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
                 )
-            }
+            }.logged("backup.releaseFolder", withMessage = false)
         }
         baseFile.delete()
         change {
@@ -221,7 +222,7 @@ internal class BackupController(
                     val dir = java.io.File(app.cacheDir, "shared").apply { mkdirs() }
                     val file = java.io.File(dir, name).apply { writeText(text()) }
                     androidx.core.content.FileProvider.getUriForFile(app, app.packageName + ".files", file)
-                }.getOrNull()
+                }.logged("backup.share", withMessage = false).getOrNull()
             }
             if (uri == null) {
                 tell(R.string.backup_failed)
@@ -321,7 +322,7 @@ internal class BackupController(
                 change { it.copy(syncLastHash = hash, syncLastStamp = outcome.stamp, syncLastAt = now) }
                 when {
                     outcome.keptTheOtherAs != null -> Toast.makeText(app, app.getString(R.string.sync_conflict_merged, outcome.keptTheOtherAs), Toast.LENGTH_LONG).show()
-                    outcome.kept > 0 -> Toast.makeText(app, app.getString(R.string.sync_merged_kept, outcome.kept), Toast.LENGTH_LONG).show()
+                    outcome.kept > 0 -> Toast.makeText(app, app.resources.getQuantityString(R.plurals.sync_merged_kept, outcome.kept, outcome.kept), Toast.LENGTH_LONG).show()
                     announce -> tell(R.string.sync_merged)
                 }
             }
@@ -345,7 +346,7 @@ internal class BackupController(
                 runCatching {
                     val text = LayoutBackupCodec.encode(snapshot(false), System.currentTimeMillis())
                     app.contentResolver.openOutputStream(uri, "wt")!!.use { it.write(text.toByteArray()) }
-                }.isSuccess
+                }.logged("backup.export", withMessage = false).isSuccess
             }
             tell(if (written) R.string.backup_exported else R.string.backup_failed)
         }
@@ -358,7 +359,7 @@ internal class BackupController(
                 runCatching {
                     val text = app.contentResolver.openInputStream(uri)!!.use { it.readAtMost(MAX_LAYOUT_BYTES) }!!.decodeToString()
                     LayoutBackupCodec.decode(text, settings.value)
-                }.getOrNull()
+                }.logged("backup.import", withMessage = false).getOrNull()
             }
             if (backup == null) tell(R.string.backup_not_layout) else _pendingRestore.value = backup
         }

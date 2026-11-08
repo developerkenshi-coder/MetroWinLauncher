@@ -6,6 +6,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 import android.provider.ContactsContract
 import android.provider.Telephony
 import android.telephony.SmsManager
@@ -97,7 +98,7 @@ class SmsRepository(context: Context) {
     /** The people of each thread, as the phone keeps them: ids of "canonical addresses". */
     private fun recipients(): Map<Long, List<String>> = runCatching {
         val numbers = HashMap<Long, String>()
-        resolver.query(Uri.parse("content://mms-sms/canonical-addresses"), arrayOf("_id", "address"), null, null, null)?.use { while (it.moveToNext()) numbers[it.getLong(0)] = it.getString(1).orEmpty() }
+        resolver.query("content://mms-sms/canonical-addresses".toUri(), arrayOf("_id", "address"), null, null, null)?.use { while (it.moveToNext()) numbers[it.getLong(0)] = it.getString(1).orEmpty() }
         val threads = HashMap<Long, List<String>>()
         resolver.query(Telephony.Threads.CONTENT_URI.buildUpon().appendQueryParameter("simple", "true").build(), arrayOf("_id", "recipient_ids"), null, null, null)?.use {
             while (it.moveToNext()) threads[it.getLong(0)] = recipientNumbers(it.getString(1).orEmpty(), numbers)
@@ -231,8 +232,8 @@ class SmsRepository(context: Context) {
         const val MAX_ROWS = 3000
         const val MAX_HITS = 200
         const val MMS_INBOX = 1
-        val MMS: Uri = Uri.parse("content://mms")
-        val MMS_PART: Uri = Uri.parse("content://mms/part")
+        val MMS: Uri = "content://mms".toUri()
+        val MMS_PART: Uri = "content://mms/part".toUri()
     }
 }
 

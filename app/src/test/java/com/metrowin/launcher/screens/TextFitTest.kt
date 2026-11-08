@@ -756,3 +756,50 @@ class TextFitItalianHugeTest : TextFitBase(1.7f, ThemeStyle.Classic, 320)
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], qualifiers = "it-w700dp-h340dp-land-xxhdpi")
 class TextFitItalianLandscapeTest : TextFitBase(1f, ThemeStyle.Classic, 700, 340)
+
+/** The other four languages of the app in the same worst case as the Italian one (text 30 percent bigger, 320 dp wide): see docs/progetti/regressione-schermate.md. */
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], qualifiers = "de-w360dp-h760dp-xxhdpi")
+class TextFitGermanStressTest : TextFitBase(1.15f, ThemeStyle.Classic, 360)
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], qualifiers = "de-w360dp-h760dp-xxhdpi")
+class TextFitGermanTourTest : TextFitTourBase(1.15f, ThemeStyle.Classic, 360)
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], qualifiers = "es-w320dp-h760dp-xxhdpi")
+class TextFitSpanishStressTest : TextFitBase(1.3f, ThemeStyle.Classic, 320)
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], qualifiers = "es-w320dp-h760dp-xxhdpi")
+class TextFitSpanishTourTest : TextFitTourBase(1.3f, ThemeStyle.Classic, 320)
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], qualifiers = "fr-w320dp-h760dp-xxhdpi")
+class TextFitFrenchStressTest : TextFitBase(1.3f, ThemeStyle.Classic, 320)
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], qualifiers = "fr-w320dp-h760dp-xxhdpi")
+class TextFitFrenchTourTest : TextFitTourBase(1.3f, ThemeStyle.Classic, 320)
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], qualifiers = "pt-w320dp-h760dp-xxhdpi")
+class TextFitPortugueseStressTest : TextFitBase(1.3f, ThemeStyle.Classic, 320)
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], qualifiers = "pt-w320dp-h760dp-xxhdpi")
+class TextFitPortugueseTourTest : TextFitTourBase(1.3f, ThemeStyle.Classic, 320)
+
+/** Tablets and foldables (docs/progetti/tablet-pieghevoli.md): the same screens on 600 dp and 840 dp wide portrait screens, with the dark and the Glass look. */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], qualifiers = "en-w600dp-h960dp-xxhdpi")
+class TextFitTablet600Test : TextFitBase(1f, ThemeStyle.Classic, 600, 960)
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], qualifiers = "en-w840dp-h1200dp-xxhdpi")
+class TextFitTablet840Test : TextFitBase(1f, ThemeStyle.Glass, 840, 1200)
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], qualifiers = "en-w600dp-h960dp-xxhdpi")
+class TextFitTablet600TourTest : TextFitTourBase(1f, ThemeStyle.Classic, 600)

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.files
 
+import androidx.compose.ui.res.pluralStringResource
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -203,7 +204,7 @@ private fun Manager() {
             when {
                 progress.reason == FileOps.ENCRYPTED -> toast(context.getString(R.string.fm_extract_password))
                 progress.reason == FileOps.DAMAGED -> toast(context.getString(R.string.fm_extract_bad))
-                progress.failed > 0 -> toast(context.getString(R.string.fm_failed, progress.failed))
+                progress.failed > 0 -> toast(context.resources.getQuantityString(R.plurals.fm_failed, progress.failed, progress.failed))
             }
         }
     }
@@ -482,7 +483,7 @@ private fun PanePage(
                 stringResource(if (category != null) R.string.fm_cat_none else if (pane.path.canRead()) R.string.fm_folder_empty else R.string.fm_unreadable),
                 Modifier.testTag("fm:empty:$index"),
             )
-            category != null && files.size >= SCAN_LIMIT -> PageNote(stringResource(R.string.fm_cat_limit, SCAN_LIMIT))
+            category != null && files.size >= SCAN_LIMIT -> PageNote(pluralStringResource(R.plurals.fm_cat_limit, SCAN_LIMIT, SCAN_LIMIT))
         }
         if (tiles) {
             LazyVerticalGrid(

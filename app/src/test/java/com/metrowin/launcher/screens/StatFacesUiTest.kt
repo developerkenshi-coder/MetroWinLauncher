@@ -126,4 +126,12 @@ class StatFacesUiTest : ScreenshotBase() {
         compose.onAllNodesWithTag("memoryuse:part:${com.metrowin.launcher.R.string.tile_mem_videos}").assertCountEquals(0)
         compose.onNodeWithTag("memoryuse:part:${com.metrowin.launcher.R.string.tile_mem_other}").assertExists()
     }
+
+    @Test
+    fun theSystemTileReadsForItselfAndShowsThePowerFirst() {
+        showFace(item("s", TileData.SystemMonitor), TileExtras(), TileSize.Medium)
+        // The read runs on another thread: give it time, and the main thread turns to take its answer.
+        repeat(40) { advance(250); Thread.sleep(50) }
+        compose.onNodeWithTag("system:watts").assertExists()
+    }
 }

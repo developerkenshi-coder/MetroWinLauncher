@@ -79,9 +79,9 @@ fun StepsPage(
                 Box(Modifier.fillMaxWidth().padding(top = 10.dp).height(6.dp).background(LocalMetroColors.current.subtle.copy(alpha = 0.3f))) {
                     Box(Modifier.fillMaxWidth(fraction).height(6.dp).background(LocalAccent.current))
                 }
-                PageNote(stringResource(R.string.steps_goal, goal), Modifier.padding(top = 10.dp))
+                PageNote(pluralStringResource(R.plurals.steps_goal, goal, goal), Modifier.padding(top = 10.dp))
                 Steps.streak(days, goal, day).takeIf { it > 0 }?.let {
-                    PageNote(stringResource(R.string.steps_streak, it), Modifier.padding(top = 4.dp).testTag("steps:streak"))
+                    PageNote(pluralStringResource(R.plurals.steps_streak, it, it), Modifier.padding(top = 4.dp).testTag("steps:streak"))
                 }
             }
             StepsWeek(days, goal, today)

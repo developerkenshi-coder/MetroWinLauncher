@@ -100,8 +100,8 @@ fun RecorderScreen() {
             val (made, refused) = withContext(Dispatchers.IO) { RecorderShare.import(context, store, uris) }
             version++
             val text = listOfNotNull(
-                if (made.isNotEmpty()) context.getString(R.string.rec_imported, made.size) else null,
-                if (refused > 0) context.getString(R.string.rec_import_failed, refused) else null,
+                if (made.isNotEmpty()) context.resources.getQuantityString(R.plurals.rec_imported, made.size, made.size) else null,
+                if (refused > 0) context.resources.getQuantityString(R.plurals.rec_import_failed, refused, refused) else null,
             ).joinToString("\n")
             Toast.makeText(context, text, Toast.LENGTH_LONG).show()
         }

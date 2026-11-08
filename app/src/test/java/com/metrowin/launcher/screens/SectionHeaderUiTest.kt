@@ -36,7 +36,7 @@ class SectionHeaderUiTest : ScreenshotBase() {
                 LazyColumn(Modifier.fillMaxSize(), state = state) {
                     listOf("A", "B").forEach { letter ->
                         sectionHeader("h$letter") { MetroText(letter, size = 20.sp, modifier = Modifier.testTag("head:$letter")) }
-                        items(List(30) { "$letter$it" }, key = { it }) { MetroText(it, size = 20.sp, modifier = Modifier.testTag("row:$it")) }
+                        items(List(60) { "$letter$it" }, key = { it }) { MetroText(it, size = 20.sp, modifier = Modifier.testTag("row:$it")) }
                     }
                 }
             }
@@ -47,8 +47,8 @@ class SectionHeaderUiTest : ScreenshotBase() {
         advance(300)
         compose.onNodeWithTag("head:A").assertIsDisplayed()
         assertEquals(0f, compose.onNodeWithTag("head:A").getUnclippedBoundsInRoot().top.value, 1f)
-        // In B: B's heading has taken its place.
-        compose.runOnIdle { jump(40) }
+        // In B: B's heading has taken its place. (Sixty rows a section: a section must be longer than the screen, whatever the line height of the font, or its heading cannot reach the top.)
+        compose.runOnIdle { jump(70) }
         advance(300)
         assertEquals(0f, compose.onNodeWithTag("head:B").getUnclippedBoundsInRoot().top.value, 1f)
     }

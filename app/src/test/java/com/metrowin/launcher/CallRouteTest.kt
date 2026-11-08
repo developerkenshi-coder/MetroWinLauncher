@@ -16,28 +16,21 @@ class CallRouteTest {
     private val speaker = CallAudioState.ROUTE_SPEAKER
 
     @Test
-    fun withoutBluetoothTheButtonSwitchesBetweenEarAndSpeaker() {
-        val supported = ear or speaker
-        assertEquals(speaker, CallManager.nextRoute(ear, supported))
-        assertEquals(CallAudioState.ROUTE_WIRED_OR_EARPIECE, CallManager.nextRoute(speaker, supported))
+    fun theSpeakerButtonSwitchesTheSpeakerOnFromAnywhere() {
+        // From the ear, and from Bluetooth with the ear and the speaker on offer too: always straight to the speaker.
+        assertEquals(speaker, CallManager.speakerTarget(ear, ear or speaker))
+        assertEquals(speaker, CallManager.speakerTarget(bt, ear or bt or speaker))
+        assertEquals(speaker, CallManager.speakerTarget(CallAudioState.ROUTE_WIRED_HEADSET, CallAudioState.ROUTE_WIRED_HEADSET or speaker))
     }
 
     @Test
-    fun withBluetoothTheSoundGoesRoundEarBluetoothSpeaker() {
-        val supported = ear or bt or speaker
-        assertEquals(bt, CallManager.nextRoute(ear, supported))
-        assertEquals(speaker, CallManager.nextRoute(bt, supported))
-        assertEquals(CallAudioState.ROUTE_WIRED_OR_EARPIECE, CallManager.nextRoute(speaker, supported))
+    fun andOffAgainGoesBackToBluetoothIfThereIsOneElseTheEar() {
+        assertEquals(CallAudioState.ROUTE_WIRED_OR_EARPIECE, CallManager.speakerTarget(speaker, ear or speaker))
+        assertEquals(bt, CallManager.speakerTarget(speaker, ear or bt or speaker))
     }
 
     @Test
-    fun aWiredHeadsetCountsAsTheEar() {
-        val supported = CallAudioState.ROUTE_WIRED_HEADSET or speaker
-        assertEquals(speaker, CallManager.nextRoute(CallAudioState.ROUTE_WIRED_HEADSET, supported))
-    }
-
-    @Test
-    fun nothingOfferedLeavesTheRoute() {
-        assertEquals(speaker, CallManager.nextRoute(speaker, 0))
+    fun nothingOfferedStillSwitchesTheSpeakerOn() {
+        assertEquals(speaker, CallManager.speakerTarget(0, 0))
     }
 }

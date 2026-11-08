@@ -98,7 +98,7 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
                 override fun messagesAdded(e: javax.mail.event.MessageCountEvent) = onArrival()
             })
             // A NOOP from another thread ends the IDLE that is running; the loop below starts the next one.
-            renew.scheduleAtFixedRate({
+            renew.scheduleWithFixedDelay({
                 runCatching { folder.doCommand { it.simpleCommand("NOOP", null); null } }
             }, renewMs, renewMs, java.util.concurrent.TimeUnit.MILLISECONDS)
             onConnected()

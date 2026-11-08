@@ -108,7 +108,7 @@ fun WalletScreen() {
         scope.launch {
             val incoming = withContext(Dispatchers.IO) { runCatching { Wallet.decode(context.contentResolver.openInputStream(uri)!!.use { String(it.readAtMost(4_000_000)!!) }) }.getOrDefault(emptyList()) }
             if (incoming.isEmpty()) Toast.makeText(context, R.string.wal_import_failed, Toast.LENGTH_LONG).show()
-            else { commit(Wallet.merge(all, incoming)); Toast.makeText(context, context.getString(R.string.wal_imported, incoming.size), Toast.LENGTH_LONG).show() }
+            else { commit(Wallet.merge(all, incoming)); Toast.makeText(context, context.resources.getQuantityString(R.plurals.wal_imported, incoming.size, incoming.size), Toast.LENGTH_LONG).show() }
         }
     }
 

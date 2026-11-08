@@ -50,6 +50,8 @@ import android.content.Context
 import android.content.IntentFilter
 import android.location.LocationManager
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
+import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import android.content.ComponentName
 import android.content.Intent
@@ -150,7 +152,6 @@ import com.metrowin.launcher.data.UpdateState
 import com.metrowin.launcher.data.TodayPart
 import com.metrowin.launcher.data.NextAlarm
 import com.metrowin.launcher.data.TodayExtras
-import com.metrowin.launcher.data.BootCount
 import com.metrowin.launcher.data.ContactDirectory
 import com.metrowin.launcher.data.Favourite
 import com.metrowin.launcher.data.Finance
@@ -168,9 +169,6 @@ import com.metrowin.launcher.data.Reminder
 import com.metrowin.launcher.data.ReminderStore
 import com.metrowin.launcher.data.Reminders
 import com.metrowin.launcher.data.SmartDial
-import com.metrowin.launcher.model.StopwatchState
-import com.metrowin.launcher.model.TimerState
-import com.metrowin.launcher.model.TimerStatus
 import com.metrowin.launcher.notifications.Alerts
 import com.metrowin.launcher.notifications.BannerGate
 import com.metrowin.launcher.notifications.MediaSessions
@@ -710,11 +708,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     init {
         TileFeed.load(application)
         applyIconPack(_settings.value.iconPack)
+        icons.useGlass(_settings.value.glassIcons)
         apps.galleryApp = _settings.value.galleryApp
         NotificationHub.clearOnOpen = _settings.value.clearOnOpen
         NotificationHub.actionCenterOn = _settings.value.actionCenterEnabled
         UpdateCheckJob.schedule(application, _settings.value.updateAuto)
-        kotlin.concurrent.thread(name = "mail-schedule") { com.metrowin.launcher.mail.MailSync.schedule(application); com.metrowin.launcher.datasense.DataLimitWatch.schedule(application) }
+        kotlin.concurrent.thread(name = "mail-schedule") { com.metrowin.launcher.mail.MailSync.schedule(application); com.metrowin.launcher.datasense.DataLimitWatch.schedule(application); com.metrowin.launcher.data.ShizukuWatch.schedule(application) }
         updates.checkIfDue(_settings.value.updateAuto)
         reloadApps()
         if (_settings.value.hasStartBackground) loadBackground()
@@ -833,6 +832,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         listeningSince = System.currentTimeMillis()
         if (!watchingNotifications) {
             watchingNotifications = true
+            NotificationHub.launcherShown = true
             NotificationHub.startWatching()
         }
         // What changed while the receivers were off.
@@ -850,6 +850,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         quickActions.stop()
         if (watchingNotifications) {
             watchingNotifications = false
+            NotificationHub.launcherShown = false
             NotificationHub.stopWatching()
         }
     }
@@ -922,7 +923,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
      * of Android opened for it. Quiet hours without the "do not disturb" access ask for that access first.
      */
     fun activateQuickAction(action: QuickAction): Boolean {
-        val inPlace = quickActions.activate(action, _settings.value.dndMinutes, _settings.value.torchAutoOffMin, _settings.value.torchStrength, _settings.value.vpnApp, _settings.value.useShizuku)
+        val inPlace = quickActions.activate(action, _settings.value.dndMinutes, _settings.value.torchAutoOffMin, _settings.value.torchStrength, _settings.value.vpnApp)
         if ((action == QuickAction.QuietHours || action == QuickAction.QuietTimed) && !inPlace) tell(R.string.qa_quiet_allow)
         return inPlace
     }
@@ -1350,7 +1351,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun updateSettings(change: (LauncherSettings) -> LauncherSettings) {
         val previous = _settings.value
-        val updated = change(previous)
+        val updated = StartPages.settled(change(previous))
         if (updated != previous) {
             _settings.value = updated
             // Written at once: what reads the settings back right after (the services, see syncNavBar) must see this change, not the last.
@@ -1362,11 +1363,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             if (previous.systemWallpaperFollows && !updated.systemWallpaperFollows && wallpaperPrefs.contains("key")) {
                 viewModelScope.launch(Dispatchers.IO) {
                     com.metrowin.launcher.data.SystemWallpaper.clear(getApplication())
-                    wallpaperPrefs.edit().remove("key").apply()
+                    wallpaperPrefs.edit { remove("key") }
                 }
             }
             weatherCtl.onSettingsChanged(previous, updated)
             if (updated.iconPack != previous.iconPack) applyIconPack(updated.iconPack)
+            icons.useGlass(updated.glassIcons)
             if (updated.updateAuto != previous.updateAuto) UpdateCheckJob.schedule(getApplication(), updated.updateAuto)
             if (updated.galleryApp != previous.galleryApp) {
                 apps.galleryApp = updated.galleryApp
@@ -1457,7 +1459,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             val outcome = withContext(Dispatchers.IO) {
                 // With no photo the lock screen of Android gets a black one: it shows through the hole of the fingerprint, and it must not be seen.
                 val photo = lockStore.load() ?: backgroundStore.load() ?: getApplication<Application>().resources.displayMetrics.let {
-                    Bitmap.createBitmap(it.widthPixels, it.heightPixels, Bitmap.Config.ARGB_8888).apply { eraseColor(android.graphics.Color.BLACK) }
+                    createBitmap(it.widthPixels, it.heightPixels).apply { eraseColor(android.graphics.Color.BLACK) }
                 }
                 val done = runCatching {
                     WallpaperManager.getInstance(getApplication()).setBitmap(photo, null, true, WallpaperManager.FLAG_LOCK)
@@ -1490,7 +1492,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 photo, s.startPhotoFit, s.startPhotoZoom, s.startPhotoX, s.startPhotoY,
                 if (dark) android.graphics.Color.BLACK else android.graphics.Color.WHITE, width, height,
             )
-            if (com.metrowin.launcher.data.SystemWallpaper.apply(app, picture)) wallpaperPrefs.edit().putString("key", key).apply()
+            if (com.metrowin.launcher.data.SystemWallpaper.apply(app, picture)) wallpaperPrefs.edit { putString("key", key) }
             picture.recycle()
         }
     }
@@ -1891,6 +1893,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun addBatteryGraph(page: Int) = addTile(ShortcutKind.BatteryGraph, R.string.add_batterygraph, page)
     fun addDataUse(page: Int) = addTile(ShortcutKind.DataUse, R.string.add_datause, page)
     fun addMemoryUse(page: Int) = addTile(ShortcutKind.MemoryUse, R.string.add_memoryuse, page)
+    fun addSystemMonitor(page: Int) = addTile(ShortcutKind.SystemMonitor, R.string.add_systemmonitor, page)
     fun addRecorder(page: Int) = addTile(ShortcutKind.Recorder, R.string.recorder_default_label, page)
     fun addCamera(page: Int) = addTile(ShortcutKind.Camera, R.string.camera_default_label, page)
     fun addWallet(page: Int) = addTile(ShortcutKind.Wallet, R.string.wallet_default_label, page)
@@ -2011,76 +2014,31 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    // --- timer: a moment kept in the tile and one alarm of Android; nothing runs while it counts
+    // --- timer and stopwatch: see [ClockTilesController]
 
-    /** Pins a timer of five minutes and gives back its id, so its page can open on it. */
-    fun addTimer(page: Int): String {
-        val id = ShortcutDef.newId(ShortcutKind.Timer, "timer")
-        addShortcut(
-            ShortcutDef(id, ShortcutKind.Timer, getApplication<Application>().getString(R.string.timer_default_label), text = TimerState.Default.encode()),
-            page, TileSize.Medium,
-        )
-        return id
-    }
+    private val clocks = ClockTilesController(getApplication(), { _shortcuts.value }, { def, page, size -> addShortcut(def, page, size) }, ::updateShortcut)
 
-    fun timerStart(id: String) = changeTimer(id) { it.start(System.currentTimeMillis()) }
+    fun addTimer(page: Int): String = clocks.addTimer(page)
 
-    fun timerPause(id: String) = changeTimer(id) { it.pause(System.currentTimeMillis()) }
+    fun timerStart(id: String) = clocks.timerStart(id)
 
-    fun timerReset(id: String) = changeTimer(id) { it.reset() }
+    fun timerPause(id: String) = clocks.timerPause(id)
 
-    /** Another length for the timer, from the beginning. */
-    fun timerLength(id: String, millis: Long) = changeTimer(id) { it.withDuration(millis) }
+    fun timerReset(id: String) = clocks.timerReset(id)
 
-    /** Adds [millis] to the timer that runs (or to the one that waits), up to the longest one. */
-    fun timerAdd(id: String, millis: Long) = changeTimer(id) { state ->
-        val now = System.currentTimeMillis()
-        if (state.running && state.status(now) == TimerStatus.Running) {
-            val longer = (state.durationMs + millis).coerceAtMost(TimerState.MAX_MS)
-            state.copy(durationMs = longer, endAt = state.endAt + (longer - state.durationMs))
-        } else {
-            state.withDuration(state.durationMs + millis)
-        }
-    }
+    fun timerLength(id: String, millis: Long) = clocks.timerLength(id, millis)
 
-    private fun changeTimer(id: String, change: (TimerState) -> TimerState) {
-        val def = _shortcuts.value.firstOrNull { it.id == id && it.kind == ShortcutKind.Timer } ?: return
-        val after = change(TimerState.decode(def.text))
-        updateShortcut(id) { it.copy(text = after.encode()) }
-        val app = getApplication<Application>()
-        // The alarm that rings it is set while it counts, and taken back when it stops; the notification of a timer that rang goes with a reset.
-        if (after.running && after.status(System.currentTimeMillis()) == TimerStatus.Running) {
-            Alerts.scheduleTimer(app, id, def.label, after.endAt)
-        } else {
-            Alerts.cancelTimer(app, id)
-        }
-    }
+    fun timerAdd(id: String, millis: Long) = clocks.timerAdd(id, millis)
 
-    // --- stopwatch: the two clocks of the phone at the start, and arithmetic when somebody looks
+    fun addStopwatch(page: Int): String = clocks.addStopwatch(page)
 
-    fun addStopwatch(page: Int): String {
-        val id = ShortcutDef.newId(ShortcutKind.Stopwatch, "stopwatch")
-        addShortcut(
-            ShortcutDef(id, ShortcutKind.Stopwatch, getApplication<Application>().getString(R.string.stopwatch_default_label), text = StopwatchState().encode()),
-            page, TileSize.Medium,
-        )
-        return id
-    }
+    fun stopwatchStart(id: String) = clocks.stopwatchStart(id)
 
-    fun stopwatchStart(id: String) = changeStopwatch(id) { it.start(android.os.SystemClock.elapsedRealtime(), System.currentTimeMillis(), boot()) }
+    fun stopwatchStop(id: String) = clocks.stopwatchStop(id)
 
-    fun stopwatchStop(id: String) = changeStopwatch(id) { it.stop(android.os.SystemClock.elapsedRealtime(), System.currentTimeMillis(), boot()) }
+    fun stopwatchLap(id: String) = clocks.stopwatchLap(id)
 
-    fun stopwatchLap(id: String) = changeStopwatch(id) { it.lap(android.os.SystemClock.elapsedRealtime(), System.currentTimeMillis(), boot()) }
-
-    fun stopwatchReset(id: String) = changeStopwatch(id) { it.reset() }
-
-    private fun boot() = BootCount.read(getApplication())
-
-    private fun changeStopwatch(id: String, change: (StopwatchState) -> StopwatchState) {
-        val def = _shortcuts.value.firstOrNull { it.id == id && it.kind == ShortcutKind.Stopwatch } ?: return
-        updateShortcut(id) { it.copy(text = change(StopwatchState.decode(def.text)).encode()) }
-    }
+    fun stopwatchReset(id: String) = clocks.stopwatchReset(id)
 
     // --- reminders
 

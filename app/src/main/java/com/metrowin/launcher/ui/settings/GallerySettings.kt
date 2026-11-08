@@ -2,6 +2,7 @@ package com.metrowin.launcher.ui.settings
 
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -92,7 +93,7 @@ private fun ChosenPhotos(env: SettingsEnv) {
         ActionSetting(
             stringResource(R.string.gallery_pick_clear),
             onClick = {
-                picked.forEach { runCatching { resolver.releasePersistableUriPermission(Uri.parse(it), Intent.FLAG_GRANT_READ_URI_PERMISSION) } }
+                picked.forEach { runCatching { resolver.releasePersistableUriPermission(it.toUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION) } }
                 env.onChange { it.copy(galleryPhotos = emptyList()) }
             },
             tag = "gallery:clear",

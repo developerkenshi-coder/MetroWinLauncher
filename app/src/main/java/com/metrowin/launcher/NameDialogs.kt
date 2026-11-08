@@ -39,7 +39,7 @@ internal fun NameDialogState.Dialogs(
     settings: LauncherSettings,
     onListCreated: (String) -> Unit,
 ) {
-    val appContext = LocalContext.current
+        val appContext = LocalContext.current
         groupEditingId?.let { id ->
             val entry = StartPages.all(pages).firstOrNull { it.id == id }
             if (entry != null) {

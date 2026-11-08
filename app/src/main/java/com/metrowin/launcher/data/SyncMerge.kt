@@ -33,7 +33,7 @@ object SyncMerge {
         val extras = listOf(b, l, r).map { it.optJSONObject("extras") }
         if (extras.all { it != null }) out.put("extras", extras(extras[0]!!, extras[1]!!, extras[2]!!, t))
         Result(out.toString(2), t.kept, t.lost)
-    }.getOrNull()
+    }.logged("sync.merge", withMessage = false).getOrNull()
 
     private fun extras(b: JSONObject, l: JSONObject, r: JSONObject, t: Tally): JSONObject {
         val out = JSONObject(l.toString())

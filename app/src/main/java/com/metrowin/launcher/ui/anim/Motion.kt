@@ -284,9 +284,8 @@ fun FlipContainer(
     content: @Composable (face: Int) -> Unit,
 ) {
     var index by remember(resetKey) { mutableIntStateOf(startFace) }
-    // 0 to 180: how far the change has gone, whichever way the tile changes.
+    // Sliding: 0 to 180, how far the change has gone. Turning over: -90 to 90, the face turns away (0 to 90), the next one comes in (-90 to 0).
     val angle = remember(resetKey) { Animatable(0f) }
-    val showingNext by remember { derivedStateOf { angle.value >= 90f } }
     val moving by remember { derivedStateOf { angle.value > 0f } }
     val slide = when (LocalTileTransition.current) {
         TileTransition.Flip -> false
@@ -300,20 +299,23 @@ fun FlipContainer(
     LaunchedWhileStarted(listOf(faces, reduced || saving, slide, resetKey)) {
         // With reduced motion, or while saving battery, the tile keeps its face: nothing flips by itself.
         if (faces <= 1 || reduced || saving) return@LaunchedWhileStarted
-        // Coming back after being off screen in the middle of a change: settle on the face that was coming in.
-        if (angle.value >= 90f) index = (index + 1) % faces
+        // Coming back after being off screen in the middle of a slide: settle on the face that was coming in. (A tile that turns over changes its face at the edge-on moment, so any other angle already shows the right one.)
+        if (slide && angle.value >= 90f) index = (index + 1) % faces
         angle.snapTo(0f)
         delay(1_500L + (seed.mod(6)) * 800L)
         while (true) {
             if (slide) {
                 angle.animateTo(180f, metroTween(durationMillis = Motion.SLIDE_MS, easing = Motion.Decelerate))
+                index = (index + 1) % faces
+                angle.snapTo(0f)
             } else {
                 // As on the phone, the face speeds up as it turns away and the next one slows down as it settles.
                 angle.animateTo(90f, metroTween(durationMillis = Motion.FLIP_HALF_MS, easing = Motion.FlipAway))
-                angle.animateTo(180f, metroTween(durationMillis = Motion.FLIP_HALF_MS, easing = Motion.FlipIn))
+                // The face and the angle change in the same step, with the tile edge-on: the old face is never drawn on the far side, and the new one never waits a frame.
+                index = (index + 1) % faces
+                angle.snapTo(-90f)
+                angle.animateTo(0f, metroTween(durationMillis = Motion.FLIP_HALF_MS, easing = Motion.FlipIn))
             }
-            index = (index + 1) % faces
-            angle.snapTo(0f)
             delay(5_000L + (seed.mod(4)) * 900L)
         }
     }
@@ -326,12 +328,11 @@ fun FlipContainer(
         }
         return
     }
-    val visible = if (faces <= 1) 0 else (index + if (showingNext) 1 else 0) % faces
+    val visible = if (faces <= 1) 0 else index % faces
     Box(
         modifier.graphicsLayer {
-            val a = angle.value
-            // 0..90 the current face turns away, 90..180 the next one comes in from the other side.
-            rotationX = FLIP_SIGN * (if (a < 90f) a else a - 180f)
+            // 0..90 the current face turns away, -90..0 the next one comes in from the other side.
+            rotationX = FLIP_SIGN * angle.value
             cameraDistance = Motion.CAMERA * density
         },
     ) {

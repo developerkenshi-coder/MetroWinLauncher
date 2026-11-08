@@ -14,6 +14,13 @@ object ShizukuRadio {
     /** The one place that decides: only when the user asked for it, Shizuku runs and has allowed this app. */
     fun route(useShizuku: Boolean, running: Boolean, granted: Boolean): Boolean = useShizuku && running && granted
 
+    /** One line for the user when something does not work: whether the launcher has Shizuku's connection, whether it is allowed, and who the commands run as. */
+    fun diagnosis(): String = runCatching {
+        val binder = Shizuku.pingBinder()
+        val permission = if (binder) (if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) "yes" else "no") else "-"
+        "binder: ${if (binder) "yes" else "no"} · permission: $permission" + if (binder) " · Shizuku ${Shizuku.getVersion()} · uid ${Shizuku.getUid()}" else ""
+    }.getOrElse { "error: ${it.message}" }
+
     fun running(): Boolean = runCatching { Shizuku.pingBinder() }.getOrDefault(false)
 
     fun granted(): Boolean = runCatching { Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED }.getOrDefault(false)
@@ -36,19 +43,6 @@ object ShizukuRadio {
     /** Runs the command off the main thread; [done] says whether it ended well. */
     fun switch(action: QuickAction, on: Boolean, done: (Boolean) -> Unit) {
         val args = command(action, on)
-        if (args == null) {
-            done(false)
-            return
-        }
-        Thread {
-            done(
-                runCatching {
-                    // shortcut: Shizuku API 13 keeps newProcess private (it wants a bound user service for anything bigger); reflection is enough for one `svc` call, upgrade if a later version drops it.
-                    val method = Shizuku::class.java.getDeclaredMethod("newProcess", Array<String>::class.java, Array<String>::class.java, String::class.java)
-                    method.isAccessible = true
-                    (method.invoke(null, args, null, null) as Process).waitFor() == 0
-                }.getOrDefault(false),
-            )
-        }.start()
+        if (args == null) done(false) else ShizukuShell.async(listOf(args), done)
     }
 }

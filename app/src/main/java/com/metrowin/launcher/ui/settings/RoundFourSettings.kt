@@ -106,6 +106,11 @@ fun IconLookSettings(env: SettingsEnv) {
             onChange = { v -> env.onChange { it.copy(largeTileIcons = v) } },
             hint = stringResource(R.string.icons_large_tiles_hint), tag = "icons:largetiles", id = "icons.largetiles",
         )
+        ToggleSetting(
+            label = stringResource(R.string.icons_glass), checked = s.glassIcons,
+            onChange = { v -> env.onChange { it.copy(glassIcons = v) } },
+            hint = stringResource(R.string.icons_glass_hint), tag = "icons:glass", id = "icons.glass",
+        )
     }
 }
 

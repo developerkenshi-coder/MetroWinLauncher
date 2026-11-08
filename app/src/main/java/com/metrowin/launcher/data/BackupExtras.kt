@@ -12,6 +12,7 @@ object BackupExtrasStore {
         reminders = ReminderStore(context).load(),
         layouts = LayoutStore(context).load(),
         car = ParkedCarStore(context).load(),
+        prefs = BackupPrefs.read(context),
         wallet = if (withWallet) WalletVault(context).load() else null,
     )
 
@@ -25,6 +26,7 @@ object BackupExtrasStore {
         TodoStore(context).save(extras.todos)
         LayoutStore(context).save(extras.layouts)
         ParkedCarStore(context).save(extras.car)
+        BackupPrefs.apply(context, extras.prefs)
         // A phone that cannot write the vault keeps its own cards; a backup without the wallet leaves them alone.
         extras.wallet?.let { WalletVault(context).save(it) }
     }

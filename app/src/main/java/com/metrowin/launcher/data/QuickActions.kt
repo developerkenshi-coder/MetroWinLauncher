@@ -133,6 +133,16 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
 }
 
 /** The lengths of time the screen may stay on, that the screen timeout button goes through. */
+/**
+ * Whether mobile data is switched on. The telephony service answers the same on every maker's phone (needs the phone permission); the global key
+ * `mobile_data` is AOSP's and some makers (vivo, Xiaomi) keep the switch elsewhere, so it only answers when the service cannot.
+ */
+fun mobileDataOn(context: Context): Boolean {
+    val allowed = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_PHONE_STATE) == android.content.pm.PackageManager.PERMISSION_GRANTED
+    if (allowed) runCatching { context.getSystemService(android.telephony.TelephonyManager::class.java)?.isDataEnabled }.getOrNull()?.let { return it }
+    return Settings.Global.getInt(context.contentResolver, "mobile_data", 1) == 1
+}
+
 object ScreenTimeouts {
     val STEPS = listOf(15_000, 30_000, 60_000, 120_000, 300_000, 600_000)
 
@@ -152,6 +162,10 @@ class QuickActionsController(private val context: Context) {
                 c.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
         }
     }.getOrNull()
+
+    init {
+        ShizukuButtons.attach(context)
+    }
 
     private val _torchOn = MutableStateFlow(false)
     val torchOn: StateFlow<Boolean> = _torchOn.asStateFlow()
@@ -193,9 +207,9 @@ class QuickActionsController(private val context: Context) {
         when (action) {
             QuickAction.Wifi -> asked(action) ?: context.getSystemService(WifiManager::class.java).isWifiEnabled
             QuickAction.Bluetooth -> asked(action) ?: context.getSystemService(BluetoothManager::class.java).adapter?.isEnabled
-            QuickAction.Airplane -> Settings.Global.getInt(context.contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) == 1
+            QuickAction.Airplane -> asked(action) ?: (Settings.Global.getInt(context.contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) == 1)
             // The mobile data the user switched on, whatever network is in use (Android keeps this switch in its global settings, readable by anyone).
-            QuickAction.MobileData -> Settings.Global.getInt(context.contentResolver, "mobile_data", 1) == 1
+            QuickAction.MobileData -> asked(action) ?: mobileDataOn(context)
             QuickAction.Flashlight -> if (torchId == null) null else _torchOn.value
             QuickAction.Vpn -> context.getSystemService(ConnectivityManager::class.java).let { cm ->
                 cm.getNetworkCapabilities(cm.activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true
@@ -204,15 +218,17 @@ class QuickActionsController(private val context: Context) {
                 context.getSystemService(android.app.NotificationManager::class.java).currentInterruptionFilter !=
                     android.app.NotificationManager.INTERRUPTION_FILTER_ALL
             QuickAction.Rotation ->
-                Settings.System.getInt(context.contentResolver, Settings.System.ACCELEROMETER_ROTATION, 1) == 0
+                asked(action) ?: (Settings.System.getInt(context.contentResolver, Settings.System.ACCELEROMETER_ROTATION, 1) == 0)
             QuickAction.Location ->
-                LocationManagerCompat.isLocationEnabled(context.getSystemService(android.location.LocationManager::class.java))
+                asked(action) ?: LocationManagerCompat.isLocationEnabled(context.getSystemService(android.location.LocationManager::class.java))
             QuickAction.AutoBrightness ->
-                Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL) ==
-                    Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
+                asked(action) ?: (Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL) ==
+                    Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC)
             else -> null
         }
     }.getOrNull()
+
+    private fun brightness(): Int? = runCatching { Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_BRIGHTNESS) }.getOrNull()
 
     /** How long the screen stays on, in milliseconds, or null when it cannot be read. */
     fun screenTimeout(): Int? = runCatching { Settings.System.getInt(context.contentResolver, Settings.System.SCREEN_OFF_TIMEOUT) }.getOrNull()
@@ -243,14 +259,18 @@ class QuickActionsController(private val context: Context) {
      * Switches the flashlight or the quiet hours on the spot, or opens the system screen of the button. True when it was
      * done on the spot. Quiet hours need the "do not disturb" access: without it the screen that gives it opens.
      */
-    fun activate(action: QuickAction, quietMinutes: Int = 60, torchMinutes: Int = 0, torchStrength: Float = 1f, vpnApp: String = "", useShizuku: Boolean = false): Boolean {
+    fun activate(action: QuickAction, quietMinutes: Int = 60, torchMinutes: Int = 0, torchStrength: Float = 1f, vpnApp: String = "", useShizuku: Boolean = ShizukuButtons.allowed(context, action)): Boolean {
         val torch = torchId
-        // With Shizuku running and allowed the radio is switched for real; otherwise (the default) it falls through to the panels below, as it always did.
-        if ((action == QuickAction.Wifi || action == QuickAction.Bluetooth) && ShizukuRadio.route(useShizuku, ShizukuRadio.running(), ShizukuRadio.granted())) {
-            val on = isOn(action) != true
-            pending[action] = on to System.currentTimeMillis()
-            ShizukuRadio.switch(action, on) { ok -> if (!ok) pending.remove(action) }
-            return true
+        // The buttons the user chose in the Shizuku Terminal do their work for real; the others (and all of them without Shizuku) fall through to the panels below, as they always did.
+        val shizuku = ShizukuRadio.route(useShizuku, ShizukuRadio.running(), ShizukuRadio.granted())
+        val quiet = action == QuickAction.QuietHours || action == QuickAction.QuietTimed
+        if (shizuku && !quiet) {
+            val plan = ShizukuButtons.plan(action, isOn(action), screenTimeout(), brightness())
+            if (plan != null) {
+                plan.becomes?.let { pending[action] = it to System.currentTimeMillis() }
+                ShizukuShell.async(plan.commands) { ok -> if (!ok) pending.remove(action) }
+                return true
+            }
         }
         if (action == QuickAction.Vpn) {
             // Android cannot connect another app's VPN: the app that does is opened (most connect by themselves), or the choice of it.
@@ -275,13 +295,18 @@ class QuickActionsController(private val context: Context) {
         }
         if (action == QuickAction.QuietHours || action == QuickAction.QuietTimed) {
             val manager = context.getSystemService(android.app.NotificationManager::class.java)
-            if (manager.isNotificationPolicyAccessGranted) {
+            // Shizuku does it without the "do not disturb" access.
+            if (manager.isNotificationPolicyAccessGranted || shizuku) {
                 val on = manager.currentInterruptionFilter != android.app.NotificationManager.INTERRUPTION_FILTER_ALL
                 // Quiet hours on lets the calls and alarms the user allowed through; off lets everything through.
-                runCatching {
-                    manager.setInterruptionFilter(
-                        if (on) android.app.NotificationManager.INTERRUPTION_FILTER_ALL else android.app.NotificationManager.INTERRUPTION_FILTER_PRIORITY,
-                    )
+                if (manager.isNotificationPolicyAccessGranted) {
+                    runCatching {
+                        manager.setInterruptionFilter(
+                            if (on) android.app.NotificationManager.INTERRUPTION_FILTER_ALL else android.app.NotificationManager.INTERRUPTION_FILTER_PRIORITY,
+                        )
+                    }
+                } else {
+                    ShizukuShell.async(ShizukuButtons.plan(action, on, null, null)!!.commands)
                 }
                 // The timed one asks Android to wake the launcher when the time is up; any other switch-off cancels that.
                 if (action == QuickAction.QuietTimed && !on) com.metrowin.launcher.notifications.Alerts.scheduleQuietEnd(context, quietMinutes)

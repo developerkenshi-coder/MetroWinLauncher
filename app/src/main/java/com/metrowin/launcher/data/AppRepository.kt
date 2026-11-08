@@ -360,6 +360,7 @@ class AppRepository(private val context: Context) {
         const val ROUTE_WHEREAMI = "whereami"
         const val ROUTE_PARKING = "parking"
         const val ROUTE_USAGE = "usage"
+        const val ROUTE_MONITOR = "monitor"
         const val WEATHER_ID = "launcher:weather"
         private const val PHOTOS_STOCK = "photos"
         const val ROUTE_WEATHER = "weather"

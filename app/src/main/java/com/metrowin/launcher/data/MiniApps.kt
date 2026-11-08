@@ -10,7 +10,10 @@ import com.metrowin.launcher.mail.MailActivity
 import com.metrowin.launcher.messages.MessagesActivity
 import com.metrowin.launcher.news.NewsActivity
 import com.metrowin.launcher.notes.NotesActivity
+import com.metrowin.launcher.photos.PhotosActivity
 import com.metrowin.launcher.recorder.RecorderActivity
+import com.metrowin.launcher.shizukuterminal.ShizukuTerminalActivity
+import com.metrowin.launcher.systemsettings.SystemSettingsActivity
 import com.metrowin.launcher.todo.TodoActivity
 import com.metrowin.launcher.wallet.WalletActivity
 
@@ -29,6 +32,9 @@ object MiniApps {
         "calendar" to CalendarActivity::class.java,
         "wallet" to WalletActivity::class.java,
         "files" to FilesActivity::class.java,
+        "photohub" to PhotosActivity::class.java,
+        "shizukuterminal" to ShizukuTerminalActivity::class.java,
+        "settings" to SystemSettingsActivity::class.java,
         "datasense" to DataSenseActivity::class.java,
         "storagesense" to DataSenseActivity::class.java,
     )

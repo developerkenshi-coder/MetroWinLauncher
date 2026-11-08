@@ -27,6 +27,13 @@ object GameApps {
         "com.huawei.gameassistant", "com.asus.gamewidget", "com.google.android.play.games",
     )
 
+    /**
+     * A window that is a dialog or a popup of whatever app (its class is the framework's or a library's, not an activity of the app): it can
+     * come over a game and go again without the game sending another event, so it must not take the game's place as the app in front.
+     */
+    fun isPopup(className: String?): Boolean =
+        className != null && (className.startsWith("android.") || className.startsWith("androidx.") || className.startsWith("com.google.android.material."))
+
     /** The user's word comes first: an app they added is a game, one they took out is not; any other is a game when [byPhone] says so. */
     inline fun isGame(packageName: String, added: Set<String>, skipped: Set<String>, byPhone: () -> Boolean): Boolean =
         if (packageName in added) true else if (packageName in skipped) false else byPhone()
@@ -68,8 +75,8 @@ object GameApps {
 
 /**
  * While a game is in front the status bar and the buttons that the launcher draws over the apps slide away: they are windows of the
- * accessibility service, over the game, and cover what the game draws at its edges. They come back for [RECALL_MS] with a swipe up from
- * the bottom edge (the buttons) or down from the top edge (the status bar). Two thin windows, one at each edge, wait for the swipe: they
+ * accessibility service, over the game, and cover what the game draws at its edges. They come back, both together, for [RECALL_MS] with a
+ * swipe up from the bottom edge or down from the top edge. Two thin windows, one at each edge, wait for the swipe: they
  * take the touches that land on them (a few millimetres at the edge of the screen), and only while a game is in front and the bar of that
  * edge is there to be called back.
  */
@@ -86,17 +93,16 @@ internal class GameBars(
     var active = false
         private set
 
-    // A bar called back is on screen over its strip, which would cover its buttons: the strip waits until the bar is gone again.
-    private var topRecalled = false
-    private var bottomRecalled = false
+    // The bars called back are on screen over their strips, which would cover their buttons: the strips wait until the bars are away again.
+    // One swipe at either edge calls both bars (the buttons and the status bar), and one timer takes them away together.
+    private var recalled = false
 
     fun set(on: Boolean) {
         if (on == active) return
         active = on
         if (!on) {
             handler.removeCallbacksAndMessages(null)
-            topRecalled = false
-            bottomRecalled = false
+            recalled = false
         }
         navBar.gameHidden(on)
         statusBar.gameHidden(on)
@@ -105,23 +111,19 @@ internal class GameBars(
 
     /** Puts the strips where a bar is waiting to be called, and takes them away where it is not (or when no game is in front). */
     fun refresh() {
-        bottom = if (active && !bottomRecalled && navBar.isShown()) bottom ?: strip(Gravity.BOTTOM, ::recallBottom) else remove(bottom)
-        top = if (active && !topRecalled && statusBar.isShown()) top ?: strip(Gravity.TOP, ::recallTop) else remove(top)
+        val (bottomWanted, topWanted) = strips(active, recalled, navBar.isShown(), statusBar.isShown())
+        bottom = if (bottomWanted) bottom ?: strip(Gravity.BOTTOM, ::recall) else remove(bottom)
+        top = if (topWanted) top ?: strip(Gravity.TOP, ::recall) else remove(top)
     }
 
-    private fun recallBottom() {
-        bottomRecalled = true
+    private fun recall() {
+        if (recalled) return
+        recalled = true
         navBar.gameHidden(false)
+        statusBar.gameHidden(false)
         // Later than the touch that asked: the strip is not taken away while it handles an event.
         handler.post { refresh() }
-        later(RECALL_MS) { bottomRecalled = false; navBar.gameHidden(true); refresh() }
-    }
-
-    private fun recallTop() {
-        topRecalled = true
-        statusBar.gameHidden(false)
-        handler.post { refresh() }
-        later(RECALL_MS) { topRecalled = false; statusBar.gameHidden(true); refresh() }
+        later(RECALL_MS) { recalled = false; navBar.gameHidden(true); statusBar.gameHidden(true); refresh() }
     }
 
     private fun later(ms: Long, then: () -> Unit) {
@@ -168,7 +170,11 @@ internal class GameBars(
         /** How long a bar called back stays. */
         const val RECALL_MS = 4_000L
 
-        /** The height of each strip: a fingertip, more or less. */
-        const val STRIP_DP = 24
+        /** The height of each strip: thin, so the game or the video keeps the touches near the edge, and a swipe from the very edge is enough. */
+        const val STRIP_DP = 10
+
+        /** Which strips wait for a swipe, as (bottom, top): where a bar is there to call back, while a game is in front and the bars are away. */
+        fun strips(active: Boolean, recalled: Boolean, navShown: Boolean, statusShown: Boolean): Pair<Boolean, Boolean> =
+            (active && !recalled && navShown) to (active && !recalled && statusShown)
     }
 }

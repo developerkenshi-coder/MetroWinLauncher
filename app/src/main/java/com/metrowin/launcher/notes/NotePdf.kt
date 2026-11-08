@@ -5,6 +5,7 @@ import android.graphics.RectF
 import android.graphics.pdf.PdfDocument
 import android.text.StaticLayout
 import android.text.TextPaint
+import androidx.core.graphics.withSave
 import java.io.OutputStream
 
 /** A note as a PDF of A4 pages: its text (the title first) over as many pages as it takes, then its sketch, if it has one, on a page of its own. */
@@ -26,12 +27,10 @@ object NotePdf {
             // As many whole lines as fit under the top margin; one line always goes, so a page is never empty.
             while (end < layout.lineCount && layout.getLineBottom(end) - top <= HEIGHT - 2 * MARGIN) end++
             val page = doc.startPage(PdfDocument.PageInfo.Builder(WIDTH, HEIGHT, number++).create())
-            page.canvas.apply {
-                save()
+            page.canvas.withSave {
                 translate(MARGIN.toFloat(), MARGIN - top.toFloat())
                 clipRect(0f, top.toFloat(), (WIDTH - 2 * MARGIN).toFloat(), layout.getLineBottom(end - 1).toFloat())
                 layout.draw(this)
-                restore()
             }
             doc.finishPage(page)
             line = end

@@ -51,6 +51,7 @@ object AddMenuIndex {
         AddKind("sun", R.string.add_sun, AddCategory.Info, listOf("sunrise", "sunset", "daylight", "alba", "tramonto", "sole", "luce")),
         AddKind("weatherplus", R.string.add_weatherplus, AddCategory.Info, listOf("weather", "forecast", "temperature", "rain", "meteo", "previsioni", "temperatura", "pioggia", "tempo")),
         AddKind("appsrecap", R.string.add_appsrecap, AddCategory.System, listOf("apps", "installed", "most used", "top", "app", "installate", "usate", "classifica")),
+        AddKind("systemmonitor", R.string.add_systemmonitor, AddCategory.System, listOf("power", "watt", "temperature", "ram", "signal", "monitor", "sistema", "potenza", "temperatura", "segnale")),
         AddKind("batterygraph", R.string.add_batterygraph, AddCategory.System, listOf("battery", "charge", "power", "batteria", "carica", "durata", "autonomia")),
         AddKind("datause", R.string.add_datause, AddCategory.System, listOf("data", "internet", "mobile", "wifi", "traffic", "dati", "consumo", "traffico")),
         AddKind("memoryuse", R.string.add_memoryuse, AddCategory.System, listOf("storage", "memory", "space", "free", "memoria", "spazio", "archiviazione", "libero")),

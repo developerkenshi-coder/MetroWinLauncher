@@ -1,7 +1,6 @@
 package com.metrowin.launcher
 
 import com.metrowin.launcher.data.Tips
-import com.metrowin.launcher.data.SystemCommands
 import com.metrowin.launcher.ui.components.asShape
 import com.metrowin.launcher.ui.components.LocalIconShape
 import com.metrowin.launcher.ui.components.LocalMetroStatusBar
@@ -10,7 +9,6 @@ import com.metrowin.launcher.ui.components.metroStatusBarHeight
 import com.metrowin.launcher.data.StatusItem
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.metrowin.launcher.ui.settings.RestoreDialog
-import com.metrowin.launcher.data.SearchOperators
 import com.metrowin.launcher.ui.start.TileFeatures
 import com.metrowin.launcher.ui.start.ChoiceSheet
 import com.metrowin.launcher.ui.start.Choice
@@ -48,7 +46,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -79,12 +76,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.metrowin.launcher.data.AboutInfo
 import com.metrowin.launcher.data.AppFilter
 import com.metrowin.launcher.data.AppLists
-import com.metrowin.launcher.data.AppLabels
 import com.metrowin.launcher.data.AppLock
 import com.metrowin.launcher.data.AppUsage
 import com.metrowin.launcher.data.NewApps
-import com.metrowin.launcher.model.AppCategory
-import com.metrowin.launcher.data.AppSearch
 import com.metrowin.launcher.data.AppSections
 import com.metrowin.launcher.data.AppRepository
 import com.metrowin.launcher.data.LauncherSettings
@@ -114,25 +108,18 @@ import com.metrowin.launcher.data.ContactPick
 import com.metrowin.launcher.data.VoiceCommand
 import com.metrowin.launcher.data.VoiceCommands
 import com.metrowin.launcher.data.VoiceError
-import com.metrowin.launcher.ui.lock.LockOptions
 import com.metrowin.launcher.ui.lock.MetroLockScreen
 import com.metrowin.launcher.ui.lock.rememberLockInfo
 import com.metrowin.launcher.ui.voice.VoiceScreen
 import com.metrowin.launcher.ui.voice.rememberVoiceSession
 import androidx.core.content.ContextCompat
-import com.metrowin.launcher.data.GlobalResults
 import com.metrowin.launcher.data.GlobalSearch
-import com.metrowin.launcher.data.LauncherSettingMatch
-import com.metrowin.launcher.data.TileMatch
-import com.metrowin.launcher.data.TileSearch
 import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.data.PhoneCalls
 import com.metrowin.launcher.data.AppLinks
-import com.metrowin.launcher.data.Currencies
 import com.metrowin.launcher.data.QuickAnswer
 import com.metrowin.launcher.data.Today
 import com.metrowin.launcher.data.TodayAction
-import com.metrowin.launcher.data.QuickAnswers
 import com.metrowin.launcher.data.LocalWidgetHost
 import com.metrowin.launcher.data.RecentApps
 import com.metrowin.launcher.data.WidgetProvider
@@ -181,28 +168,18 @@ import com.metrowin.launcher.ui.kids.KidsHeader
 import com.metrowin.launcher.ui.tutorial.TutorialHost
 import com.metrowin.launcher.data.Tutorial
 import com.metrowin.launcher.ui.settings.SettingsEnv
-import com.metrowin.launcher.ui.settings.SettingsIndex
 import com.metrowin.launcher.ui.settings.SettingsScreen
 import com.metrowin.launcher.ui.settings.SettingsSection
 import com.metrowin.launcher.ui.start.AppCell
-import com.metrowin.launcher.ui.start.AddMenu
 import com.metrowin.launcher.ui.start.AssistantIcon
 import com.metrowin.launcher.ui.start.ClockHeader
 import com.metrowin.launcher.ui.start.EditBar
 import com.metrowin.launcher.ui.start.ExitRequest
 import com.metrowin.launcher.ui.start.FolderCell
-import com.metrowin.launcher.data.Countdown
-import com.metrowin.launcher.ui.start.CountdownDialog
-import com.metrowin.launcher.ui.start.ChecklistDialog
-import com.metrowin.launcher.ui.start.CityPicker
-import com.metrowin.launcher.ui.start.AlbumPicker
-import com.metrowin.launcher.ui.start.GroupPicker
-import com.metrowin.launcher.ui.start.PlaceDialog
 import com.metrowin.launcher.ui.pages.Panel
 import com.metrowin.launcher.ui.pages.PanelContent
 import com.metrowin.launcher.ui.pages.PanelState
 import com.metrowin.launcher.ui.pages.rememberNotificationPermission
-import com.metrowin.launcher.data.Assistant
 import com.metrowin.launcher.calls.CallBar
 import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.actioncenter.ToastBanner
@@ -213,24 +190,15 @@ import com.metrowin.launcher.notifications.rememberMediaInfo
 import com.metrowin.launcher.ui.lock.hiddenOnLock
 import com.metrowin.launcher.ui.lock.lockOptions
 import com.metrowin.launcher.ui.lock.rememberLockStatus
-import com.metrowin.launcher.data.AlbumInfo
-import com.metrowin.launcher.data.GroupInfo
-import com.metrowin.launcher.ui.start.CounterDialog
 import com.metrowin.launcher.model.TileData
-import com.metrowin.launcher.ui.start.NoteDialog
 import com.metrowin.launcher.ui.start.PhotoFrame
-import com.metrowin.launcher.ui.start.SettingPicker
 import com.metrowin.launcher.ui.start.TileColorSheet
 import com.metrowin.launcher.ui.start.UndoBar
-import com.metrowin.launcher.ui.start.FolderNameDialog
-import com.metrowin.launcher.ui.start.SiteDialog
 import com.metrowin.launcher.ui.start.StartActions
 import com.metrowin.launcher.ui.start.StartCell
-import com.metrowin.launcher.ui.start.WidgetPicker
 import com.metrowin.launcher.ui.start.StartScreen
 import com.metrowin.launcher.ui.start.buildStartCells
 import com.metrowin.launcher.ui.start.isTopLevel
-import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.weather.WeatherScreen
 import com.metrowin.launcher.ui.theme.MetroAccents
 import com.metrowin.launcher.ui.theme.AccessibilityPolicy
@@ -263,13 +231,6 @@ private val EDGE_PULL_ZONE = 28.dp
 /** How far two fingers move together for the swipe to count. */
 private val TWO_FINGER_SWIPE = 96.dp
 
-/** The contacts are looked for once the typing has paused this long. */
-private const val CONTACT_SEARCH_DELAY_MS = 220L
-
-/** How many settings of Android, settings of the launcher and tiles of Start the search lists, at most: the best ones. */
-private const val MAX_SETTING_RESULTS = 6
-private const val MAX_TILE_RESULTS = 5
-private const val CURRENCY_DELAY_MS = 350L
 private const val HOME_DOUBLE_DELAY_MS = 350L
 
 /**
@@ -485,108 +446,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     }
     // The setting the open section was opened for, when the search took the user there.
     var settingsTarget by remember { mutableStateOf<String?>(null) }
-    // The apps are indexed once (and again when they or the counts of the opens change), not read again for every key.
-    val appIndex = remember(listItems, usage) {
-        AppSearch.index(
-            listItems, usage,
-            categoryLabel = { appContext.getString(it.label) },
-            profileWords = AppSearch.ProfileWords(appContext.getString(R.string.profile_work), appContext.getString(R.string.profile_private)),
-        )
-    }
-    // A word and a colon in front (`app:`, `contact:`, `file:`...) narrows the search to one kind of result.
-    val scoped = remember(query, settings.searchOperators) { if (settings.searchOperators) SearchOperators.parse(query) else SearchOperators.Parsed(null, query) }
-    val searchResults = remember(scoped, appIndex, listItems) {
-        when {
-            query.isBlank() -> listItems
-            !scoped.allows(SearchOperators.Scope.Apps) -> emptyList()
-            scoped.text.isBlank() -> listItems
-            else -> appIndex.search(scoped.text)
-        }
-    }
-    val launcherSettingsIndex = remember { SettingsIndex.searchIndex(appContext) }
-    val tileIndex = remember(items) { TileSearch.index(items) }
-    val recentSearches by vm.recentSearches.collectAsStateWithLifecycle()
-    // What the search box answers by itself: a sum, a conversion, a number, a link, a timer or an alarm.
-    // A throw of dice or a coin is made again when it is touched.
-    var rollSeed by remember { mutableIntStateOf(0) }
-    val localAnswers = remember(scoped, settings.searchAnswers, rollSeed) {
-        if (settings.searchAnswers && scoped.scope == null) QuickAnswers.of(query) else emptyList()
-    }
-    // A currency conversion needs the rates: they come once the typing pauses, and only when the user allowed it.
-    var currencyAnswer by remember { mutableStateOf<QuickAnswer.Currency?>(null) }
-    LaunchedEffect(scoped, settings.searchAnswers, settings.searchCurrency) {
-        currencyAnswer = null
-        val asked = if (settings.searchAnswers && settings.searchCurrency && scoped.scope == null) Currencies.parse(query) else null
-        if (asked != null) {
-            delay(CURRENCY_DELAY_MS)
-            currencyAnswer = vm.currencyAnswer(asked)
-        }
-    }
-    // A sentence that asks for something (a reminder, an event, a note, a place near, the camera) comes before the plain answers.
-    val assistantAnswers = remember(scoped, settings.searchAssistant) {
-        if (settings.searchAssistant && scoped.scope == null) Assistant.of(query) else emptyList()
-    }
-    val commandAnswers = remember(scoped, settings.searchCommands) {
-        if (settings.searchCommands && scoped.scope == null) listOfNotNull(SystemCommands.of(query)) else emptyList()
-    }
-    val answers = commandAnswers + assistantAnswers + (currencyAnswer?.let { listOf(it) + localAnswers } ?: localAnswers)
-
-    // What the search finds besides apps. The settings and the web offer are known at once; the contacts follow
-    // when the typing pauses, so each key does not query the contacts.
-    var globalResults by remember { mutableStateOf(GlobalResults.Empty) }
-    LaunchedEffect(
-        scoped, settings.searchContacts, settings.searchSettings, settings.searchWeb, settings.searchCalendar,
-        settings.searchLauncherSettings, settings.searchTiles, tileIndex, settings.searchFileTypes, settings.searchNotifications,
-    ) {
-        // What is looked for, without the operator in front of it.
-        val query = scoped.text
-        if (query.isBlank()) {
-            globalResults = GlobalResults.Empty
-            return@LaunchedEffect
-        }
-        globalResults = GlobalResults(
-            settings = if (settings.searchSettings && scoped.allows(SearchOperators.Scope.Settings)) {
-                GlobalSearch.matchSettings(query) { def -> appContext.getString(def.label) }.take(MAX_SETTING_RESULTS)
-            } else {
-                emptyList()
-            },
-            launcherSettings = if (settings.searchLauncherSettings && scoped.allows(SearchOperators.Scope.Settings)) {
-                launcherSettingsIndex.search(query).take(MAX_SETTING_RESULTS).map { hit ->
-                    val place = appContext.getString(hit.section.title)
-                    LauncherSettingMatch(
-                        id = hit.setting?.id,
-                        section = hit.section.name,
-                        title = appContext.getString(hit.setting?.title ?: hit.section.title),
-                        where = if (hit.setting == null) appContext.getString(hit.section.description) else appContext.getString(R.string.search_launcher_setting_where, place),
-                    )
-                }
-            } else {
-                emptyList()
-            },
-            tiles = if (settings.searchTiles && scoped.allows(SearchOperators.Scope.Tiles)) {
-                tileIndex.search(query).take(MAX_TILE_RESULTS).map { TileMatch(it, TileSearch.snippet(it, query)) }
-            } else {
-                emptyList()
-            },
-            webQuery = query.trim().takeIf { settings.searchWeb && scoped.allows(SearchOperators.Scope.Web) },
-            notifications = if (settings.searchNotifications && scoped.allows(SearchOperators.Scope.Notifications)) vm.searchNotifications(query) else emptyList(),
-        )
-        val contacts = settings.searchContacts && scoped.allows(SearchOperators.Scope.Contacts)
-        val events = settings.searchCalendar && scoped.allows(SearchOperators.Scope.Events)
-        val files = settings.searchFileTypes.isNotEmpty() && scoped.allows(SearchOperators.Scope.Files)
-        if (contacts) {
-            delay(CONTACT_SEARCH_DELAY_MS)
-            globalResults = globalResults.copy(contacts = vm.searchContacts(query))
-        }
-        if (events) {
-            if (!contacts) delay(CONTACT_SEARCH_DELAY_MS)
-            globalResults = globalResults.copy(events = vm.searchEvents(query))
-        }
-        if (files) {
-            if (!contacts && !events) delay(CONTACT_SEARCH_DELAY_MS)
-            globalResults = globalResults.copy(files = vm.searchFiles(query))
-        }
-    }
+    val search = rememberSearch(vm, query, listItems, items, usage, settings)
 
     // The Action Center. The panel is one state that follows the finger, whatever starts the pull.
     val panel = rememberPullPanel()
@@ -913,6 +773,15 @@ fun LauncherApp(vm: LauncherViewModel) {
             // The tiles that read the use of the phone: until the usage access is given, a touch opens the screen of Android that gives it.
             AppRepository.ROUTE_USAGE -> {
                 if (!UsageAccess.granted(appContext)) UsageAccess.openSettings(appContext)
+                return
+            }
+            AppRepository.ROUTE_MONITOR -> {
+                runCatching {
+                    appContext.startActivity(
+                        Intent(appContext, com.metrowin.launcher.shizukuterminal.ShizukuTerminalActivity::class.java)
+                            .putExtra(com.metrowin.launcher.shizukuterminal.ShizukuTerminalActivity.EXTRA_PAGE, 2).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                }
                 return
             }
             // The tiles with a page of their own: the page opens over Start, nothing leaves.
@@ -1516,15 +1385,16 @@ fun LauncherApp(vm: LauncherViewModel) {
                             pickedKeys = folderPick,
                             framing = PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY),
                             photoFit = settings.startPhotoFit,
+                            photoInside = settings.startPhotoInside,
                             showNames = settings.showTileNames,
                             spacing = settings.tileSpacing.factor,
-                            features = TileFeatures(settings.tileMusicControls, settings.batteryEstimate, settings.calendarAgenda, settings.weatherBlocks, settings.stepGoal, settings.iconTileColors, settings.clockHours, settings.largeTileIcons, settings.tileOpacity),
+                            features = TileFeatures(settings.tileMusicControls, settings.batteryEstimate, settings.calendarAgenda, settings.weatherBlocks, settings.stepGoal, settings.iconTileColors, settings.clockHours, settings.largeTileIcons, settings.tileOpacity, settings.glassIcons),
                             showGroups = settings.groupTitles,
                             showArrow = settings.showAppsArrow,
                             locked = settings.lockStart,
                             topInset = (screenHeightDp * settings.startLowerPercent / 100f).dp,
                             free = settings.freeLayout,
-                            header = if ((settings.showClock || settings.assistantIcon) && page == 0) {
+                            header = if ((settings.showClock || settings.assistantIcon) && page == StartPages.clockPage(settings.homePage, pages.size)) {
                                 {
                                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
                                         Box(Modifier.weight(1f)) {
@@ -1550,7 +1420,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         // search of the keyboard: no app was found, the first answer is what the user asked for).
                         val touchAnswer: (QuickAnswer) -> Unit = { answer ->
                             if (answer is QuickAnswer.Dice || answer is QuickAnswer.Coin) {
-                                rollSeed++
+                                search.roll()
                             } else if (answer is QuickAnswer.Reminder && answer.at == null) {
                                 // No time was said: the form of the reminders finishes it.
                                 vm.rememberSearch(query)
@@ -1582,9 +1452,9 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onHeaderClick = { jumpOpen = true },
                             query = query,
                             onQueryChange = { query = it },
-                            results = searchResults,
+                            results = search.results,
                             highlight = highlight,
-                            global = globalResults,
+                            global = search.global,
                             searchFocus = if (searchFocus == searchHandled) 0 else searchFocus,
                             onSearchFocusDone = { searchHandled = searchFocus },
                             onVoice = if (settings.voiceButton) ({ voiceRequest++ }) else null,
@@ -1594,7 +1464,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onList = { selectedList = it },
                             onNewList = { naming.newListOpen = true },
                             onListLongPress = { naming.listMenuFor = it.id },
-                            answers = answers,
+                            answers = search.answers,
                             onAnswer = touchAnswer,
                             onOpenNotification = { entry ->
                                 vm.rememberSearch(query)
@@ -1606,7 +1476,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                                 settingsSection = SettingsSection.valueOf(match.section)
                                 settingsOpen = true
                             },
-                            recentSearches = recentSearches.takeIf { settings.rememberSearches }.orEmpty(),
+                            recentSearches = search.recent.takeIf { settings.rememberSearches }.orEmpty(),
                             onClearRecents = vm::clearSearches,
                             engine = settings.searchEngine,
                             onSearchSubmit = vm::rememberSearch,

@@ -89,16 +89,22 @@ object VoiceCommands {
     private val openVerbs = listOf(
         "vai su", "vai a", "vai in", "apri", "aprimi", "avvia", "avviami", "lancia", "mostra", "mostrami",
         "open", "launch", "start", "run", "show me", "show", "go to",
+        // German, Spanish, French and Portuguese (the other languages of the app), written without accents as [normalize] leaves them.
+        "offne", "starte", "zeige mir", "zeige", "abre", "abrir", "abra", "inicia", "iniciar", "muestra", "muestrame",
+        "ouvre", "ouvrir", "lance", "lancer", "montre moi", "montre", "inicie",
     )
-    private val callVerbs = listOf("telefona a", "telefona", "chiama", "chiamami", "contatta", "call", "phone", "ring", "dial", "contact")
+    private val callVerbs = listOf("telefona a", "telefona", "chiama", "chiamami", "contatta", "call", "phone", "ring", "dial", "contact",
+        "ruf", "rufe", "anrufen", "llama a", "llama", "llamar a", "appelle", "appeler", "telefone para", "liga para", "ligar para", "ligue para",
+    )
     private val searchVerbs = listOf(
         "cerca su internet", "cerca sul web", "cerca online", "cerca", "cercami", "ricerca",
         "search for", "search", "look up", "look for", "find", "google",
+        "suche nach", "suche", "suchen nach", "busca", "buscar", "cherche", "chercher", "recherche", "pesquisa", "pesquisar", "procura", "procurar",
     )
-    private val offVerbs = listOf("spegni", "disattiva", "off", "turn off", "switch off")
-    private val onVerbs = listOf("accendi", "attiva", "on", "turn on", "switch on")
-    private val torchWords = listOf("torcia", "torcetta", "flash", "flashlight", "torch")
-    private val weatherWords = listOf("meteo", "weather", "che tempo fa", "previsioni", "forecast")
+    private val offVerbs = listOf("spegni", "disattiva", "off", "turn off", "switch off", "ausschalten", "schalte aus", "apaga", "apagar", "eteins", "eteindre", "desliga", "desligar")
+    private val onVerbs = listOf("accendi", "attiva", "on", "turn on", "switch on", "einschalten", "schalte ein", "enciende", "encender", "allume", "allumer", "ligar", "ligue")
+    private val torchWords = listOf("torcia", "torcetta", "flash", "flashlight", "torch", "taschenlampe", "linterna", "lampe de poche", "lampe torche", "lanterna")
+    private val weatherWords = listOf("meteo", "weather", "che tempo fa", "previsioni", "forecast", "wetter", "clima", "previsao do tempo", "previsiones")
     private val lockWords = listOf("blocca schermo", "blocca lo schermo", "blocca il telefono", "blocca telefono", "lock screen", "lock the screen", "lock phone", "lock the phone", "lock")
     private val actionCenterWords = listOf("centro notifiche", "centro azioni", "centro di notifica", "action center", "notifications", "notifiche")
     private val appListWords = listOf("tutte le app", "lista app", "lista delle app", "elenco app", "all apps", "app list", "app drawer")

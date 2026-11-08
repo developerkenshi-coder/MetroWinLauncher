@@ -155,6 +155,7 @@ object SettingsCodec {
         put("iconShape", s.iconShape.code)
         put("iconTileColors", s.iconTileColors)
         put("largeTileIcons", s.largeTileIcons)
+        put("glassIcons", s.glassIcons)
         put("accentNightIndex", s.accentNightIndex)
         put("volumeProfiles", VolumeProfiles.encode(s.volumeProfiles))
         put("volumeProfilesShow", s.volumeProfilesShow)
@@ -239,6 +240,7 @@ object SettingsCodec {
             // The photos are files of this phone: a copy would point at pictures that are not there.
             put("backgroundRevision", s.backgroundRevision)
             put("startPhotoFit", s.startPhotoFit.code)
+            put("startPhotoInside", s.startPhotoInside)
             put("startPhotoZoom", s.startPhotoZoom)
             put("startPhotoX", s.startPhotoX)
             put("startPhotoY", s.startPhotoY)
@@ -264,6 +266,8 @@ object SettingsCodec {
         fun strings(key: String, default: Collection<String>): List<String> =
             o.optJSONArray(key)?.let { a -> List(a.length()) { a.getString(it) } } ?: default.toList()
 
+        // The home and the favourite Start screen must name a screen that exists (see StartPages.settled): the clock and the Start the launcher opens on follow them.
+        val pageCount = o.optInt("startPages", base.startPages).coerceIn(1, LauncherSettings.MAX_START_PAGES)
         LauncherSettings(
             themeMode = if (o.has("themeMode")) ThemeMode.fromCode(o.optString("themeMode")) else base.themeMode,
             darkFromHour = o.optInt("darkFromHour", base.darkFromHour).coerceIn(0, 23),
@@ -282,9 +286,9 @@ object SettingsCodec {
             backgroundRevision = o.optInt("backgroundRevision", base.backgroundRevision).coerceAtLeast(0),
             parallax = o.optBoolean("parallax", base.parallax),
             tileOpacity = o.optInt("tileOpacity", base.tileOpacity).coerceIn(30, 100),
-            startPages = o.optInt("startPages", base.startPages).coerceIn(1, LauncherSettings.MAX_START_PAGES),
-            homePage = o.optInt("homePage", base.homePage).coerceIn(0, LauncherSettings.MAX_START_PAGES - 1),
-            favoritePage = o.optInt("favoritePage", base.favoritePage).coerceIn(-1, LauncherSettings.MAX_START_PAGES - 1),
+            startPages = pageCount,
+            homePage = o.optInt("homePage", base.homePage).coerceIn(0, pageCount - 1),
+            favoritePage = o.optInt("favoritePage", base.favoritePage).coerceIn(-1, pageCount - 1),
             appListLeft = o.optBoolean("appListLeft", base.appListLeft),
             showAppsArrow = o.optBoolean("showAppsArrow", base.showAppsArrow),
             systemWallpaperFollows = o.optBoolean("systemWallpaperFollows", base.systemWallpaperFollows),
@@ -332,6 +336,7 @@ object SettingsCodec {
             tileSpacing = if (o.has("tileSpacing")) TileSpacing.fromCode(o.optString("tileSpacing")) else base.tileSpacing,
             pagePadding = if (o.has("pagePadding")) PagePadding.fromCode(o.optString("pagePadding")) else base.pagePadding,
             startPhotoFit = if (o.has("startPhotoFit")) PhotoFit.fromCode(o.optString("startPhotoFit")) else base.startPhotoFit,
+            startPhotoInside = o.optBoolean("startPhotoInside", base.startPhotoInside),
             startPhotoZoom = o.optInt("startPhotoZoom", base.startPhotoZoom).coerceIn(100, 300),
             startPhotoX = o.optInt("startPhotoX", base.startPhotoX).coerceIn(0, 100),
             startPhotoY = o.optInt("startPhotoY", base.startPhotoY).coerceIn(0, 100),
@@ -406,6 +411,7 @@ object SettingsCodec {
             iconShape = if (o.has("iconShape")) IconShape.fromCode(o.optString("iconShape")) else base.iconShape,
             iconTileColors = o.optBoolean("iconTileColors", base.iconTileColors),
             largeTileIcons = o.optBoolean("largeTileIcons", base.largeTileIcons),
+            glassIcons = o.optBoolean("glassIcons", base.glassIcons),
             accentNightIndex = o.optInt("accentNightIndex", base.accentNightIndex).coerceIn(-1, 19),
             volumeProfiles = if (o.has("volumeProfiles")) VolumeProfiles.decode(o.optString("volumeProfiles")) else base.volumeProfiles,
             volumeProfilesShow = o.optBoolean("volumeProfilesShow", base.volumeProfilesShow),

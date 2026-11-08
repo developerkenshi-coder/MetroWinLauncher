@@ -44,7 +44,7 @@ class InCallActivity : ComponentActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val actions = CallActions(
             onAnswer = CallManager::answer, onDecline = CallManager::decline, onHangUp = CallManager::hangUp, onHold = CallManager::hold,
-            onMute = CallManager::mute, onRoute = CallManager::cycleRoute, onTone = CallManager::tone,
+            onMute = CallManager::mute, onRoute = CallManager::toggleSpeaker, onTone = CallManager::tone,
             onMerge = { id -> if (!CallManager.merge(id)) android.widget.Toast.makeText(this, com.metrowin.launcher.R.string.incall_merge_failed, android.widget.Toast.LENGTH_SHORT).show() },
             onAddCall = { startActivity(Intent(this, DialerActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) },
         )

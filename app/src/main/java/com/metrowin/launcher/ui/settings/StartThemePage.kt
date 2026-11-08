@@ -219,6 +219,15 @@ fun StartThemePage(env: SettingsEnv) {
             SettingHint(stringResource(R.string.accent_use_hint))
         }
         ToggleSetting(
+            label = stringResource(R.string.theme_photo_inside),
+            checked = settings.startPhotoInside,
+            onChange = { value -> env.onChange { it.copy(startPhotoInside = value) } },
+            hint = stringResource(R.string.theme_photo_inside_hint),
+            enabled = settings.hasStartBackground,
+            tag = "theme:photoinside",
+            id = "theme.photoinside",
+        )
+        ToggleSetting(
             label = stringResource(R.string.theme_parallax),
             checked = settings.parallax,
             onChange = { value -> env.onChange { it.copy(parallax = value) } },

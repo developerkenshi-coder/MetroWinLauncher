@@ -120,7 +120,7 @@ object MailSync {
         val text = if (news.size == 1) {
             "${first.senderName.ifBlank { first.senderAddress }}: ${first.subject}"
         } else {
-            context.getString(R.string.mail_new_count, news.size)
+            context.resources.getQuantityString(R.plurals.mail_new_count, news.size, news.size)
         }
         manager.notify(
             account.id, NOTIFICATION_ID,

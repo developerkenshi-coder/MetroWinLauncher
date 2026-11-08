@@ -364,6 +364,8 @@ data class LauncherSettings(
     val statusBarHidden: String = "",
     /** How the Start photo is framed: zoom in percent (100 to 300), and the point of the photo that stays in view, in percent. */
     val startPhotoFit: PhotoFit = PhotoFit.Fill,
+    /** The Start photo shows only in the tiles, as on Windows Phone, instead of under them and between them. */
+    val startPhotoInside: Boolean = false,
     val startPhotoZoom: Int = 100,
     val startPhotoX: Int = 50,
     val startPhotoY: Int = 50,
@@ -487,6 +489,8 @@ data class LauncherSettings(
     val iconTileColors: Boolean = false,
     /** The icon of an app fills its tile, as the pictures of the tiles did on Windows Phone, instead of sitting small in the middle. */
     val largeTileIcons: Boolean = false,
+    /** Icons of third-party apps turn to translucent glass and their tiles see-through. */
+    val glassIcons: Boolean = false,
     /** Index into the accent colours used while the dark theme is on (-1: the same as by day). */
     val accentNightIndex: Int = -1,
 
@@ -678,8 +682,17 @@ class SettingsStore(context: Context) {
     private val prefs = Prefs.main(context)
     private val owner: Context = context.applicationContext ?: context
 
-    fun load(): LauncherSettings =
-        prefs.getString(KEY_JSON, null)?.let(SettingsCodec::decode) ?: legacy()
+    /**
+     * Prefs hand back the same String until the settings are saved again (and after a restore, which writes a new one), so the decoded
+     * settings are kept against that string: 31 callers do not decode the JSON each. [LauncherSettings] is immutable.
+     */
+    fun load(): LauncherSettings {
+        val json = prefs.getString(KEY_JSON, null) ?: return legacy()
+        decoded?.let { if (it.first === json) return it.second }
+        val settings = SettingsCodec.decode(json) ?: return legacy()
+        decoded = json to settings
+        return settings
+    }
 
     fun save(settings: LauncherSettings) = prefs.edit { putString(KEY_JSON, SettingsCodec.encode(settings)) }
 
@@ -694,6 +707,8 @@ class SettingsStore(context: Context) {
     fun actionCenterOn(): Boolean = switchOn("actionCenterEnabled", true)
 
     fun metroNavBarOn(): Boolean = switchOn("metroNavBar", false)
+
+    fun useShizukuOn(): Boolean = switchOn("useShizuku", false)
 
     fun hideBarsInGamesOn(): Boolean = switchOn("hideBarsInGames", true)
 
@@ -744,6 +759,10 @@ class SettingsStore(context: Context) {
 
         @Volatile
         private var last: Pair<String, org.json.JSONObject>? = null
+
+        /** One immutable pair, swapped as a whole, so readers on any thread see a string with its own settings. */
+        @Volatile
+        private var decoded: Pair<String, LauncherSettings>? = null
 
         @Volatile
         private var shared: SettingsStore? = null

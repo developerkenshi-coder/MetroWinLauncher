@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import com.metrowin.launcher.ui.components.LocalAppTitle
 import androidx.compose.runtime.remember
 import androidx.lifecycle.lifecycleScope
 import androidx.compose.ui.Modifier
@@ -40,7 +42,9 @@ abstract class MiniActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val settings = SettingsStore.of(this).load()
         setContent {
-            OverlayTheme(settings, remember { IconLoader(applicationContext) }) { TurnPage(turn) { Content() } }
+            OverlayTheme(settings, remember { IconLoader(applicationContext) }) {
+                CompositionLocalProvider(LocalAppTitle provides title.toString()) { TurnPage(turn) { Content() } }
+            }
         }
     }
 

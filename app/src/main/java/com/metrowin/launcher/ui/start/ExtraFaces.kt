@@ -177,6 +177,8 @@ data class TileFeatures(
     val largeIcons: Boolean = false,
     /** Percent of the colour a tile keeps over a Start photo. */
     val tileOpacity: Int = 100,
+    /** Icons of third-party apps are glass: their tiles are see-through. */
+    val glassIcons: Boolean = false,
 )
 
 val LocalTileFeatures = staticCompositionLocalOf { TileFeatures() }

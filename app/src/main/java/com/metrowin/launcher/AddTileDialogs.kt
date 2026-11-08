@@ -72,7 +72,7 @@ internal fun AddTileState.Dialogs(
     ensureNotifications: () -> Unit,
     addWidget: (WidgetProvider) -> Unit,
 ) {
-    val appContext = LocalContext.current
+        val appContext = LocalContext.current
         if (addMenuOpen) {
             AddMenu(
                 onContact = {
@@ -187,6 +187,10 @@ internal fun AddTileState.Dialogs(
                 onMemoryUse = {
                     addMenuOpen = false
                     vm.addMemoryUse(addPage)
+                },
+                onSystemMonitor = {
+                    addMenuOpen = false
+                    vm.addSystemMonitor(addPage)
                 },
                 onRecorder = {
                     addMenuOpen = false

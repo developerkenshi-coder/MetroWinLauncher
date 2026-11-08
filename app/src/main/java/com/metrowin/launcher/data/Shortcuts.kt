@@ -122,7 +122,10 @@ enum class ShortcutKind(val code: String) {
     DataUse("datause"),
 
     /** The memory used and free, and what takes it. */
-    MemoryUse("memoryuse");
+    MemoryUse("memoryuse"),
+
+    /** The power, the heat, the memory and the signal of the phone, live. */
+    SystemMonitor("systemmonitor");
 
     companion object {
         fun fromCode(code: String?) = entries.firstOrNull { it.code == code }
@@ -184,6 +187,7 @@ data class ShortcutDef(
             // These read the use of the phone: a touch asks for the access that gives it, until it is given.
             ShortcutKind.AppsRecap, ShortcutKind.DataUse, ShortcutKind.MemoryUse -> Launch.Internal(AppRepository.ROUTE_USAGE)
             ShortcutKind.BatteryGraph -> Launch.Action(BATTERY_ACTION)
+            ShortcutKind.SystemMonitor -> Launch.Internal(AppRepository.ROUTE_MONITOR)
             else -> Launch.Link(uri)
         },
         glyph = when (kind) {
@@ -223,6 +227,7 @@ data class ShortcutDef(
             ShortcutKind.BatteryGraph -> Glyph.Battery
             ShortcutKind.DataUse -> Glyph.Data
             ShortcutKind.MemoryUse -> Glyph.Storage
+            ShortcutKind.SystemMonitor -> Glyph.Terminal
         },
         pinOnly = true,
         photoPath = photoPath,
@@ -269,6 +274,7 @@ data class ShortcutDef(
             ShortcutKind.BatteryGraph -> TileData.BatteryGraph
             ShortcutKind.DataUse -> TileData.DataUse
             ShortcutKind.MemoryUse -> TileData.MemoryUse
+            ShortcutKind.SystemMonitor -> TileData.SystemMonitor
             ShortcutKind.Contact -> TileData.Contact
             ShortcutKind.Site -> TileData.Site(uri)
             else -> null

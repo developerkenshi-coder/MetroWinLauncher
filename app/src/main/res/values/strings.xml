@@ -86,7 +86,6 @@
     <string name="qa_cast">Project my screen</string>
     <string name="qa_brightness">Brightness</string>
     <string name="qa_camera">Camera</string>
-    <string name="settings_actions">notifications+actions</string>
     <string name="settings_quick_actions">quick actions</string>
     <string name="settings_pick_action">Choose what the highlighted button does.</string>
     <string name="settings_notification_access">notification access</string>
@@ -118,7 +117,6 @@
     <!-- settings: structure -->
     <string name="settings_group_tools">tools</string>
     <string name="sec_start_theme_desc">Light or dark, theme, accent color, the photo behind Start</string>
-    <string name="sec_actions_desc">Quick buttons of the Action Center, notification access, replies and groups</string>
     <string name="sec_kids_desc">Share the phone with a child, with only the apps you choose</string>
     <string name="theme_mode">light or dark</string>
     <string name="theme_auto_system">as Android</string>
@@ -213,35 +211,22 @@
     <string name="dialer_no_contacts">There are no contacts to show.</string>
     <string name="dialer_add_contact">add contact</string>
     <string name="dialer_import_vcf">import VCF file</string>
-    <string name="dialer_contact_name">contact name</string>
-    <string name="dialer_contact_phone">phone number</string>
-    <string name="dialer_save_to">save to</string>
-    <string name="dialer_save_button">save contact</string>
-    <string name="dialer_contact_saved">Contact saved</string>
     <string name="mail_app_title">Outlook Mail</string>
     <string name="mail_tab_inbox">inbox</string>
     <string name="mail_tab_unread">unread</string>
     <string name="mail_tab_accounts">accounts</string>
-    <string name="mail_tab_compose">compose</string>
     <string name="mail_add_account">add account</string>
-    <string name="mail_provider_google">Google Mail</string>
-    <string name="mail_provider_outlook">Outlook / Hotmail</string>
-    <string name="mail_provider_yahoo">Yahoo Mail</string>
-    <string name="mail_provider_virgilio">Virgilio / Libero</string>
-    <string name="mail_provider_other">Other IMAP</string>
     <string name="mail_email_address">email address</string>
     <string name="mail_password">password</string>
     <string name="mail_subject">subject</string>
     <string name="mail_body">message</string>
     <string name="mail_send">send</string>
     <string name="mail_empty_inbox">No messages</string>
-    <string name="mail_account_added">Account added</string>
     <string name="mail_setup_title">Set up your email</string>
     <string name="mail_setup_subtitle">Enter your address to auto-detect your mail provider.</string>
     <string name="mail_detected_service">Detected service: %1$s</string>
     <string name="mail_security_note">Encrypted TLS/SSL connection. With two-step verification (Google, Yahoo, iCloud) use an app password. Outlook, Hotmail and Live sign in on Microsoft\'s page.</string>
     <string name="mail_reply">reply</string>
-    <string name="mail_read_message">Message</string>
     <string name="mail_back">back</string>
     <string name="mail_tab_flagged">flagged</string>
     <string name="mail_tab_folders">folders</string>
@@ -250,12 +235,7 @@
     <string name="mail_bar_search">search</string>
     <string name="mail_bar_threads">conversations</string>
     <string name="mail_load_more">load more</string>
-    <string name="mail_new_count">%d new messages</string>
     <string name="mail_folder_inbox">Inbox</string>
-    <string name="mail_folder_drafts">Drafts</string>
-    <string name="mail_folder_sent">Sent</string>
-    <string name="mail_folder_junk">Junk</string>
-    <string name="mail_folder_trash">Trash</string>
     <string name="mail_delete">delete</string>
     <string name="mail_flag">flag</string>
     <string name="dialer_no_history">There are no calls yet.</string>
@@ -544,7 +524,6 @@
     <string name="lock_apply_hint">Photo (or black) as the wallpaper of the Android lock screen.</string>
     <string name="lock_applied">Lock screen photo set</string>
     <string name="lock_apply_failed">Could not set the lock screen photo</string>
-    <string name="lock_no_photo">Choose a photo first, or set a Start photo</string>
     <string name="lock_dream">screen saver</string>
     <string name="lock_dream_button">open the screen saver settings</string>
     <string name="lock_dream_hint">Android does not let a launcher replace its lock screen. The Metro lock screen runs as the screen saver instead: pick “Metro lock screen” there, and it shows while the phone charges or rests on a dock. Swipe it up to leave.</string>
@@ -576,7 +555,6 @@
     <string name="sync_applied">Synced: Start updated from the folder</string>
     <string name="sync_conflict">Both phones changed. This one was kept; the other one is saved in the folder as %1$s</string>
     <string name="sync_merged">Synced: the changes of both phones were combined</string>
-    <string name="sync_merged_kept">Synced. %1$d item(s) deleted on one phone and changed on the other were kept</string>
     <string name="sync_conflict_merged">Both phones changed the same thing. This one was kept; the other version is saved in the folder as %1$s</string>
     <string name="sync_wrong_passphrase">Wrong passphrase for the file in the folder</string>
     <string name="sync_not_file">The sync file in the folder is damaged or is not ours</string>
@@ -894,10 +872,8 @@
     <string name="countdown_title">countdown</string>
     <string name="countdown_name_hint">what is it to? (a trip…)</string>
     <string name="countdown_default_label">Countdown</string>
-    <string name="countdown_day">day</string>
-    <string name="countdown_month">month</string>
-    <string name="countdown_year">year</string>
     <string name="cd_today">today</string>
+    <string name="cd_notification_picture">Picture in the notification</string>
     <string name="add_speed_dial">speed dial</string>
     <string name="add_setting">Android setting</string>
     <string name="add_note">note</string>
@@ -1435,7 +1411,6 @@
     <string name="steps_header">STEPS</string>
     <string name="steps_need_permission">The step counter of the phone needs the permission for physical activity. Nothing leaves the phone.</string>
     <string name="steps_allow">Allow</string>
-    <string name="steps_goal">Goal: %d steps</string>
     <string name="steps_since_note">Counted by the step sensor of the phone, from the first time the tile read it today.</string>
     <string name="recorder_default_label">Recorder</string>
     <string name="recorder_header">VOICE RECORDER</string>
@@ -1566,7 +1541,6 @@
     <string name="ac_filter_hint_field">A word or a piece of one</string>
     <string name="ac_filter_add">Add the word</string>
     <string name="ac_dnd_minutes">Length of the timed quiet mode</string>
-    <string name="dnd_minutes">%d minutes</string>
     <string name="dnd_hours">%d h</string>
     <string name="feel_speed">Speed of the animations</string>
     <string name="feel_speed_hint">100% is as designed; 200% is twice as fast. The springs (the bounce of a tile) keep their own pace.</string>
@@ -1656,7 +1630,6 @@
     </string-array>
 
     <!-- Steps: goal and history -->
-    <string name="steps_streak">%1$d days in a row at the goal</string>
     <string name="steps_week">Last 7 days</string>
     <string name="steps_stats">Average %1$d · best day %2$d</string>
     <string name="steps_goal_setting">Daily step goal</string>
@@ -1700,10 +1673,8 @@
     <!-- Action Center: order, flashlight timer, volume presets -->
     <string name="ac_reorder_hint">Press and hold a button of the row, then drag it to where you want it.</string>
     <string name="ac_torch_off">Put the flashlight out after</string>
-    <string name="ac_shizuku">Switch Wi-Fi and Bluetooth with Shizuku</string>
-    <string name="ac_shizuku_hint">Needs the Shizuku app running: the Wi-Fi and Bluetooth buttons then switch on the spot. Without it they open the panels of Android, as before.</string>
-    <string name="ac_shizuku_missing">Shizuku is not running or not allowed yet.</string>
-    <string name="ac_shizuku_ready">Shizuku is running and allowed.</string>
+    <string name="ac_shizuku">Shizuku buttons</string>
+    <string name="ac_shizuku_hint">The buttons that work on the spot through Shizuku, and how to turn Shizuku on, are in the Shizuku Terminal app.</string>
     <string name="ac_shizuku_grant">Allow Shizuku access</string>
     <string name="ac_torch_off_hint">The flashlight lit from the Action Center or from Start goes out by itself (an alarm of Android: it may be a little late).</string>
     <string name="ac_profiles">Volume presets in the Action Center</string>
@@ -1715,7 +1686,7 @@
 
     <!-- Search commands, tip of the day, undo, reset a page, recordings -->
     <string name="apps_commands">Switches and sound modes by name</string>
-    <string name="apps_commands_hint">Type torch, silent, vibrate, wifi, bluetooth... and the first result does it, as the button of the Action Center does.</string>
+    <string name="apps_commands_hint">Type torch, silent, vibrate, wifi, bluetooth… and the first result does it, as the button of the Action Center does.</string>
     <string name="apps_tip">Tip of the day</string>
     <string name="apps_tip_hint">A different hint about the launcher each day, in the Today card of the app list (needs the Today card).</string>
     <string name="answer_command_here">Command · touch to do it</string>
@@ -1869,9 +1840,10 @@
     <string name="incall_header">METROWIN PHONE</string>
     <string name="icons_large_tiles">Large icons on tiles</string>
     <string name="icons_large_tiles_hint">The icon of an app fills its tile, as the pictures of the tiles did on Windows Phone, instead of sitting small in the middle. Stock apps keep their Metro glyph.</string>
+    <string name="icons_glass">Glass icons</string>
+    <string name="icons_glass_hint">Icons of every app turn to translucent glass and their tiles see through, so a Start background shows behind them. Stock apps keep their Metro glyph.</string>
     <string name="gest_navbar_hold">Time to open the recent apps</string>
     <string name="gest_navbar_hold_hint">How long the Windows logo is held to open the recent apps, from 0.3 to 1.5 seconds. They open as the time is up, without lifting the finger.</string>
-    <string name="notif_earlier">%1$d earlier messages</string>
     <string name="notif_earlier_hide">hide earlier messages</string>
     <string name="mail_app_password_open">Create an app password</string>
     <string name="mail_app_password_hint">With two-step verification the provider asks for a password made for apps: create it on its page (it opens in the browser), then come back and paste it here.</string>
@@ -2003,9 +1975,7 @@
     <string name="notes_sketch_remove">Remove the sketch</string>
     <string name="notes_delete">Delete the note</string>
     <string name="notes_delete_confirm">Tap again to delete</string>
-    <string name="notes_backup_done">Backup saved: %1$d notes</string>
     <string name="notes_backup_failed">The backup could not be saved</string>
-    <string name="notes_restore_done">%1$d notes restored</string>
     <string name="notes_restore_failed">This file is not a backup of the notes</string>
     <string name="notes_save_failed">The notes could not be saved</string>
     <string name="sketch_undo">undo</string>
@@ -2160,7 +2130,6 @@ in front %3$s · in the background %4$s
     <string name="wal_expired">expired</string>
     <string name="wal_save_failed">The cards could not be saved</string>
     <string name="wal_import_failed">This file has no cards of the wallet</string>
-    <string name="wal_imported">%1$d cards restored</string>
 
     <!-- News app -->
     <string name="nws_tile">tile</string>
@@ -2220,7 +2189,6 @@ in front %3$s · in the background %4$s
     <string name="fm_sort_type">type</string>
     <string name="fm_descending">largest or latest first</string>
     <string name="fm_hidden">Show hidden files</string>
-    <string name="fm_conflict_title">%1$d already exist in the folder</string>
     <string name="fm_replace">Replace them</string>
     <string name="fm_keep_both">Keep both</string>
     <string name="fm_skip">Skip them</string>
@@ -2228,16 +2196,12 @@ in front %3$s · in the background %4$s
     <string name="fm_cancel">Cancel</string>
     <string name="fm_to_trash">Move to the trash</string>
     <string name="fm_delete_forever">Delete for good</string>
-    <string name="fm_delete_ask">%1$d selected</string>
-    <string name="fm_failed">%1$d could not be done</string>
-    <string name="fm_checksums">Checksums</string>
     <string name="fm_calculate">Calculate</string>
     <string name="fm_size">Size</string>
     <string name="fm_modified">Modified</string>
     <string name="fm_path">Path</string>
     <string name="fm_type">Type</string>
     <string name="fm_contains">Contains</string>
-    <string name="fm_items">%1$d items</string>
     <string name="fm_edit_text">Edit as text</string>
     <string name="fm_saved">Saved</string>
     <string name="fm_save_failed">The file could not be saved</string>
@@ -2247,7 +2211,6 @@ in front %3$s · in the background %4$s
     <string name="fm_zip_name">Name of the archive</string>
     <string name="fm_extract_bad">This archive could not be extracted (it is damaged or unsafe).</string>
     <string name="fm_path_copied">Path copied</string>
-    <string name="fm_clipboard">%1$d waiting to be pasted</string>
 
     <!-- File manager (more) -->
     <string name="fm_open_with">Open with another app</string>
@@ -2297,7 +2260,6 @@ in front %3$s · in the background %4$s
     <string name="gest_game_apps_hint">The games the phone knows are listed. A game that is not recognised (the bars stay over it): search for it and switch it on. A wrong one: switch it off.</string>
     <string name="a11y_dismiss">Dismiss</string>
     <string name="a11y_unlock">Unlock</string>
-    <string name="a11y_sb_notifications">%1$d notifications</string>
     <string name="a11y_sb_signal">Signal, %1$d of 4 bars</string>
     <string name="a11y_sb_wifi">Wi-Fi</string>
     <string name="a11y_sb_battery">Battery %1$d%%</string>
@@ -2354,7 +2316,6 @@ in front %3$s · in the background %4$s
     <string name="fm_doc_ebook">E-books</string>
     <string name="fm_doc_other">Other</string>
     <string name="fm_cat_scanning">Looking for files…</string>
-    <string name="fm_cat_limit">Only the first %1$d are shown.</string>
     <string name="fm_cat_none">No files of this kind here.</string>
     <string name="fm_compress">compress</string>
     <string name="fm_rename_short">rename</string>
@@ -2363,8 +2324,6 @@ in front %3$s · in the background %4$s
     <string name="fm_extract_password">This archive is protected by a password; it cannot be opened here.</string>
     <string name="rec_import">import</string>
     <string name="rec_clear">clear</string>
-    <string name="rec_imported">%1$d imported</string>
-    <string name="rec_import_failed">%1$d could not be imported: this phone cannot read the format, or the file is not sound.</string>
     <string name="rec_cut_unsupported">This format cannot be cut here: only recordings in AAC (.m4a) can. This one can still be played and sent.</string>
     <string name="rec_play_failed">This phone cannot play this file: its format is not supported. You can still send it to another app.</string>
     <string name="rec_share_text">Send the text</string>
@@ -2385,4 +2344,415 @@ in front %3$s · in the background %4$s
     <string name="dialer_note_hint">note about this number</string>
     <string name="dialer_send_sms">Send a message</string>
     <string name="dialer_assign_key">Call this number with a long press on key:</string>
+
+    <!-- Shizuku Terminal -->
+    <string name="stock_shizukuterminal">Shizuku Terminal</string>
+    <string name="st_buttons">buttons</string>
+    <string name="st_battery">battery</string>
+    <string name="st_terminal">terminal</string>
+    <string name="st_apps">apps</string>
+    <string name="st_system">system</string>
+    <string name="st_copy">Copy</string>
+    <string name="st_state_ready">Shizuku is on and the launcher is allowed.</string>
+    <string name="st_state_not_allowed">Shizuku is on, but the launcher is not allowed yet.</string>
+    <string name="st_state_stopped">Shizuku is installed but not running.</string>
+    <string name="st_state_missing">Shizuku is not installed.</string>
+    <string name="st_how_title">How to turn Shizuku on</string>
+    <string name="st_how_1">Install the Shizuku app (Google Play, F-Droid or GitHub).</string>
+    <string name="st_how_2">In Settings > About phone tap the build number seven times to turn on Developer options.</string>
+    <string name="st_how_3">In Developer options turn on Wireless debugging (Android 11 or later; the phone must be on Wi-Fi).</string>
+    <string name="st_how_4">Open Shizuku, choose \'Pairing\' and pair with the pairing code from Wireless debugging.</string>
+    <string name="st_how_5">Tap \'Start\' in Shizuku. It has to be started again after every restart of the phone.</string>
+    <string name="st_how_6">Come back here and allow the launcher when Shizuku asks.</string>
+    <string name="st_download">Download Shizuku</string>
+    <string name="st_open_shizuku">Open Shizuku</string>
+    <string name="st_pick_title">Button permissions</string>
+    <string name="st_pick_hint">Choose which buttons of the Action Center work on the spot. The others open the panel of Android, as before.</string>
+    <string name="st_pick_locked">Available once Shizuku is on and allowed.</string>
+    <string name="st_all_on">All on</string>
+    <string name="st_all_off">All off</string>
+    <string name="st_h_wifi">Switches Wi-Fi on or off at once.</string>
+    <string name="st_h_bluetooth">Switches Bluetooth on or off at once.</string>
+    <string name="st_h_airplane">Turns airplane mode on or off.</string>
+    <string name="st_h_data">Switches mobile data on or off.</string>
+    <string name="st_h_location">Switches location on or off.</string>
+    <string name="st_h_quiet">Turns Do not disturb on or off without asking for the Do not disturb access.</string>
+    <string name="st_h_rotation">Locks or unlocks the rotation without the permission to change settings.</string>
+    <string name="st_h_autobrightness">Turns automatic brightness on or off without the permission to change settings.</string>
+    <string name="st_h_timeout">Goes to the next screen-off time (15 s to 10 min).</string>
+    <string name="st_h_brightness">Goes to the next level: 10, 30, 50, 70, 100.</string>
+    <string name="st_h_recents">Opens the recent apps (also for the gesture) without the accessibility service.</string>
+    <string name="st_h_screenshot">Takes a screenshot (also for the gesture) without the accessibility service.</string>
+    <string name="st_no_hotspot">Android gives the shell no command for the hotspot: the button opens the hotspot settings.</string>
+    <string name="st_no_vpn">Android lets nobody connect another app\'s VPN from outside: the button opens the VPN app you chose.</string>
+    <string name="st_term_hint">Commands run with the rights of the shell (like adb). What you type is run as it is.</string>
+    <string name="st_term_warning">Warning: a command typed here can delete data and damage the system. It skips the protected list of the Apps page. Do not run commands you do not understand.</string>
+    <string name="st_term_placeholder">command</string>
+    <string name="st_run">Run</string>
+    <string name="st_clear">Clear</string>
+    <string name="st_save">Save</string>
+    <string name="st_remove">Remove</string>
+    <string name="st_apps_hint">Freeze, stop or remove apps for this user. A removed app keeps its data and can be brought back.</string>
+    <string name="st_search">Search</string>
+    <string name="st_f_apps">Apps</string>
+    <string name="st_f_system">System</string>
+    <string name="st_f_frozen">Frozen</string>
+    <string name="st_f_removed">Removed</string>
+    <string name="st_done">done</string>
+    <string name="st_self">This is the launcher itself: it cannot be touched from here.</string>
+    <string name="st_restore">Bring back</string>
+    <string name="st_remove_confirm">The app is removed for this user and its data is kept. Bring it back from the Removed list.</string>
+    <string name="st_remove_yes">Remove now</string>
+    <string name="st_unfreeze">Unfreeze</string>
+    <string name="st_freeze">Freeze</string>
+    <string name="st_force_stop">Force stop</string>
+    <string name="st_remove_app">Remove app</string>
+    <string name="st_sys_hint">Settings of Android that need the shell. They change at once.</string>
+    <string name="st_t_dark">System dark theme</string>
+    <string name="st_t_dark_auto">Auto</string>
+    <string name="st_t_dark_no">Light</string>
+    <string name="st_t_dark_yes">Dark</string>
+    <string name="st_t_animations">Animation scale</string>
+    <string name="st_t_font">Font size</string>
+    <string name="st_t_touches">Show touches</string>
+    <string name="st_t_pointer">Pointer location</string>
+    <string name="st_t_stay_on">Stay awake while charging</string>
+    <string name="st_on">On</string>
+    <string name="st_off">Off</string>
+    <string name="st_x">×</string>
+    <string name="st_a_lock">Lock screen</string>
+    <string name="st_a_shade">Open notifications</string>
+    <string name="st_a_quick">Open quick settings</string>
+    <string name="st_open_terminal">Open Shizuku Terminal</string>
+    <string name="bd_needs_shizuku">needs Shizuku</string>
+    <string name="bd_more_with_shizuku">More data</string>
+    <string name="bd_g_charge">Charge</string>
+    <string name="bd_g_health">Health</string>
+    <string name="bd_g_supply">Power source</string>
+    <string name="bd_g_electrical">Electrical</string>
+    <string name="bd_g_temperature">Temperature</string>
+    <string name="bd_g_system">State and power saving</string>
+    <string name="bd_g_session">Use since the last charge</string>
+    <string name="bd_g_apps">Apps using the most</string>
+    <string name="bd_g_wakelocks">Wake locks</string>
+    <string name="bd_g_raw_broadcast">All data of the system broadcast</string>
+    <string name="bd_g_raw_dumpsys">dumpsys battery (all)</string>
+    <string name="bd_g_raw_sysfs">Battery files of the kernel (sysfs)</string>
+    <string name="bd_level">Level</string>
+    <string name="bd_capacity_level">Capacity level</string>
+    <string name="bd_level_critical">Critical</string>
+    <string name="bd_level_low">Low</string>
+    <string name="bd_level_normal">Normal</string>
+    <string name="bd_level_high">High</string>
+    <string name="bd_full">Full</string>
+    <string name="bd_not_charging">not charging</string>
+    <string name="bd_time_to_full">Time to full</string>
+    <string name="bd_time_left">Time left</string>
+    <string name="bd_charge_now">Charge now</string>
+    <string name="bd_capacity_estimate">Capacity estimated (charge ÷ level)</string>
+    <string name="bd_energy">Energy left</string>
+    <string name="bd_health_computed">Health (full ÷ design)</string>
+    <string name="bd_cycles">Charge cycles</string>
+    <string name="bd_design_capacity">Design capacity</string>
+    <string name="bd_full_capacity">Full capacity now</string>
+    <string name="bd_android_capacity">Capacity estimated by Android</string>
+    <string name="bd_learned_min">Smallest capacity learned</string>
+    <string name="bd_learned_max">Largest capacity learned</string>
+    <string name="bd_source">Connected to</string>
+    <string name="bd_unplugged">nothing</string>
+    <string name="bd_max_current">Charger max current</string>
+    <string name="bd_max_voltage">Charger max voltage</string>
+    <string name="bd_ac">AC powered</string>
+    <string name="bd_usb">USB powered</string>
+    <string name="bd_wireless">Wireless</string>
+    <string name="bd_dock">Dock</string>
+    <string name="bd_charging_state">Charging state (system)</string>
+    <string name="bd_charging_policy">Charging policy (system)</string>
+    <string name="bd_current_now">Current now</string>
+    <string name="bd_current_avg">Current average</string>
+    <string name="bd_power_now">Power now</string>
+    <string name="bd_voltage_sys">Voltage (kernel)</string>
+    <string name="bd_current_sys">Current (kernel)</string>
+    <string name="bd_limit_current">Charging current limit</string>
+    <string name="bd_thermal_status">Thermal state</string>
+    <string name="bd_thermal_none">Normal</string>
+    <string name="bd_thermal_light">Light throttling</string>
+    <string name="bd_thermal_moderate">Moderate throttling</string>
+    <string name="bd_thermal_severe">Severe throttling</string>
+    <string name="bd_thermal_critical">Critical</string>
+    <string name="bd_thermal_emergency">Emergency</string>
+    <string name="bd_thermal_shutdown">Shutting down</string>
+    <string name="bd_headroom">Thermal headroom used</string>
+    <string name="bd_sensors">Sensors of the phone</string>
+    <string name="bd_present">Battery present</string>
+    <string name="bd_saver">Battery saver</string>
+    <string name="bd_location_saver">Location saving mode</string>
+    <string name="bd_mode_n">mode %1$d</string>
+    <string name="bd_doze">Doze (deep sleep)</string>
+    <string name="bd_light_doze">Light Doze</string>
+    <string name="bd_standby">Low-power standby</string>
+    <string name="bd_screen_on">Screen on</string>
+    <string name="bd_optimized">Battery optimization on for MetroWin</string>
+    <string name="bd_sustained">Sustained performance mode</string>
+    <string name="bd_brightness">Brightness</string>
+    <string name="bd_timeout">Screen-off time</string>
+    <string name="bd_on_battery">Time on battery</string>
+    <string name="bd_on_battery_off">On battery, screen off</string>
+    <string name="bd_screen_time">Screen on time</string>
+    <string name="bd_run_time">Total run time</string>
+    <string name="bd_discharged_on">Discharged with screen on</string>
+    <string name="bd_discharged_off">Discharged with screen off</string>
+    <string name="bd_discharged">Discharged since the last full charge</string>
+    <string name="bd_drain">Capacity and drain (mAh)</string>
+    <string name="bd_session">Use per part of the phone (mAh)</string>
+    <string name="bd_apps">Use per app</string>
+    <string name="bd_wakelocks">Wake locks held</string>
+    <string name="bd_none">none</string>
+    <string name="bd_dumpsys">dumpsys battery</string>
+    <string name="bd_sysfs">sysfs</string>
+    <string name="bd_health_voltage">Over voltage</string>
+    <string name="bd_health_failure">Unspecified failure</string>
+
+    <!-- Battery history -->
+    <string name="bh_title">History</string>
+    <string name="bh_7d">7 days</string>
+    <string name="bh_30d">30 days</string>
+    <string name="bh_empty">Not enough readings yet. Come back in a few hours.</string>
+    <string name="bh_off">The history is off. Turn it on to start recording.</string>
+    <string name="bh_drain">Drain on battery</string>
+    <string name="bh_autonomy">A full battery lasts</string>
+    <string name="bh_charge_rate">Charging speed</string>
+    <string name="bh_peak_power">Peak charging power</string>
+    <string name="bh_charges">Charges</string>
+    <string name="bh_temp_max">Highest temperature</string>
+    <string name="bh_temp_avg">Average temperature</string>
+    <string name="bh_capacity">Estimated capacity</string>
+    <string name="bh_samples">Readings</string>
+    <string name="bh_chart_level">Charge level (lit while charging)</string>
+    <string name="bh_chart_temp">Temperature</string>
+    <string name="bh_chart_capacity">Estimated capacity per day</string>
+    <string name="bh_recording">Record the history</string>
+    <string name="bh_recording_hint">A reading every 15 minutes, kept on the phone for 30 days. Nothing leaves it.</string>
+    <string name="bh_clear">Clear the history</string>
+
+    <!-- Shizuku Terminal: monitor, more information, watch -->
+    <string name="st_monitor">sensors and monitor</string>
+    <string name="st_more">more information</string>
+    <string name="mo_chart_cpu">Processor load</string>
+    <string name="mo_chart_ram">Memory in use</string>
+    <string name="mo_chart_heat">Hottest sensor</string>
+    <string name="mo_cpu">Processor</string>
+    <string name="mo_cpu_load">Load</string>
+    <string name="mo_core_off">off</string>
+    <string name="mo_ram">Memory</string>
+    <string name="mo_ram_total">Total</string>
+    <string name="mo_ram_used">Used</string>
+    <string name="mo_ram_free">Available</string>
+    <string name="mo_cached">Cache</string>
+    <string name="mo_swap">Swap used</string>
+    <string name="mo_thermal">Temperatures</string>
+    <string name="mo_display">Screen</string>
+    <string name="mo_current_mode">Mode now</string>
+    <string name="mo_render_rate">Frame rate now</string>
+    <string name="mo_modes">Supported mode</string>
+    <string name="mo_density">Density</string>
+    <string name="mo_size">Diagonal</string>
+    <string name="mo_hdr">HDR</string>
+    <string name="mo_wide">Wide colour</string>
+    <string name="mo_wifi">Wi-Fi</string>
+    <string name="mo_wifi_state">State</string>
+    <string name="mo_not_connected">not connected</string>
+    <string name="mo_wifi_off">off</string>
+    <string name="mo_signal">Signal</string>
+    <string name="mo_link">Link speed</string>
+    <string name="mo_band">Band</string>
+    <string name="mo_channel">channel</string>
+    <string name="mo_standard">Standard</string>
+    <string name="mo_sim">SIM and signal</string>
+    <string name="mo_operator">Network</string>
+    <string name="mo_sim_operator">SIM operator</string>
+    <string name="mo_sim_state">SIM state</string>
+    <string name="mo_sim_ready">ready</string>
+    <string name="mo_sim_absent">absent</string>
+    <string name="mo_net_type">Data network</string>
+    <string name="mo_roaming">Roaming</string>
+    <string name="mo_level">level</string>
+    <string name="mo_bluetooth">Bluetooth</string>
+    <string name="mo_bt_state">State</string>
+    <string name="mo_bt_none">no Bluetooth</string>
+    <string name="mo_bt_bonded">Paired device</string>
+    <string name="mi_faults_by_app">Crashes and blocked apps, by app</string>
+    <string name="mi_faults_recent">Latest events</string>
+    <string name="mi_faults_title">Crashes</string>
+    <string name="mi_no_faults">none in the log</string>
+    <string name="mi_crashes">crashes</string>
+    <string name="mi_crash">crash</string>
+    <string name="mi_security">Security and system</string>
+    <string name="mi_android">Android</string>
+    <string name="mi_security_patch">Security patch</string>
+    <string name="mi_vendor_patch">Vendor patch</string>
+    <string name="mi_device">Device</string>
+    <string name="mi_kernel">Kernel</string>
+    <string name="mi_build">Build</string>
+    <string name="mi_fingerprint">Fingerprint</string>
+    <string name="mi_bootloader">Bootloader</string>
+    <string name="mi_baseband">Baseband</string>
+    <string name="mi_boot_state">Verified boot</string>
+    <string name="mi_vbmeta">Verified boot (vbmeta)</string>
+    <string name="mi_encryption">Encryption</string>
+    <string name="mi_debuggable">Debuggable system</string>
+    <string name="mi_memory">Memory by app</string>
+    <string name="mi_services">Running services, by app</string>
+    <string name="mi_services_unit">services</string>
+    <string name="mi_sensors">Sensors (%1$d)</string>
+    <string name="sw_channel">Shizuku alerts</string>
+    <string name="sw_title">Shizuku is not running</string>
+    <string name="sw_text">The direct buttons do not work until you start it again. Tap to open Shizuku.</string>
+    <string name="sw_toggle">Tell me when Shizuku stops</string>
+    <string name="sw_toggle_hint">A notification, only while buttons that need Shizuku are on; it goes by itself when Shizuku is back.</string>
+    <string name="mo_rotation">Rotation</string>
+
+    <!-- System settings and System tile -->
+    <string name="add_systemmonitor">System</string>
+    <string name="tile_sys_charging">charging</string>
+    <string name="tile_sys_battery">battery</string>
+    <string name="tile_sys_mobile">Mobile</string>
+    <string name="tile_sys_ram">memory in use</string>
+    <string name="ss_cellular">cellular</string>
+    <string name="ss_datetime">date and time</string>
+    <string name="ss_sounds">sounds</string>
+    <string name="ss_android">Android settings</string>
+    <string name="ss_networks">Networks nearby</string>
+    <string name="ss_scanning">Looking for networks…</string>
+    <string name="ss_secured">secured</string>
+    <string name="ss_open">open</string>
+    <string name="ss_saved">Saved networks</string>
+    <string name="ss_password">password</string>
+    <string name="ss_connect">Connect</string>
+    <string name="ss_forget">Forget</string>
+    <string name="ss_forget_hint">The phone forgets the network and its password.</string>
+    <string name="ss_roaming_hint">Using data abroad can cost a lot.</string>
+    <string name="ss_pair">Pair a device</string>
+    <string name="ss_auto_time">Set the time automatically</string>
+    <string name="ss_auto_zone">Set the time zone automatically</string>
+    <string name="ss_24h">24-hour clock</string>
+    <string name="ss_zone">Time zone: %1$s</string>
+    <string name="ss_music">Media</string>
+    <string name="ss_ring">Ringtone</string>
+    <string name="ss_notification">Notifications</string>
+    <string name="ss_alarm">Alarm</string>
+    <string name="ss_call">Call</string>
+
+    <!-- Recent apps cards and power screen -->
+    <string name="rc_title">recent apps</string>
+    <string name="rc_empty">No recent apps.</string>
+    <string name="rc_close_all">Close all</string>
+    <string name="rc_android">Android</string>
+    <string name="pw_swipe">swipe down to power off</string>
+    <string name="pw_going">powering off…</string>
+    <string name="pw_restart">restart</string>
+    <string name="pw_open">Power off or restart</string>
+    <string name="st_test">Test Shizuku</string>
+    <string name="theme_photo_inside">Photo inside the tiles</string>
+    <string name="theme_photo_inside_hint">As on Windows Phone: every tile is a window onto the photo, and there is none between the tiles.</string>
+    <string name="pw_failed">Could not power off. Is Shizuku running?</string>
+    <string name="rc_no_service">Turn on the Metro accessibility service to open Android\'s recent apps.</string>
+    <string name="st_stop">Stop</string>
+    <string name="st_protected">The phone needs this app (system, settings, calls, messages or this launcher): it cannot be frozen or removed from here.</string>
+    <string name="ss_password_short">The password needs at least 8 characters.</string>
+    <string name="ss_connect_failed">Could not connect to %1$s. Check the password and try again.</string>
+    <plurals name="mail_new_count">
+        <item quantity="one">%d new message</item>
+        <item quantity="other">%d new messages</item>
+    </plurals>
+    <plurals name="sync_merged_kept">
+        <item quantity="one">Synced. %1$d item deleted on one phone and changed on the other was kept</item>
+        <item quantity="other">Synced. %1$d items deleted on one phone and changed on the other were kept</item>
+    </plurals>
+    <plurals name="steps_goal">
+        <item quantity="one">Goal: %d step</item>
+        <item quantity="other">Goal: %d steps</item>
+    </plurals>
+    <plurals name="dnd_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <plurals name="steps_streak">
+        <item quantity="one">%1$d day in a row at the goal</item>
+        <item quantity="other">%1$d days in a row at the goal</item>
+    </plurals>
+    <plurals name="notif_earlier">
+        <item quantity="one">%1$d earlier message</item>
+        <item quantity="other">%1$d earlier messages</item>
+    </plurals>
+    <plurals name="notes_backup_done">
+        <item quantity="one">Backup saved: %1$d note</item>
+        <item quantity="other">Backup saved: %1$d notes</item>
+    </plurals>
+    <plurals name="notes_restore_done">
+        <item quantity="one">%1$d note restored</item>
+        <item quantity="other">%1$d notes restored</item>
+    </plurals>
+    <plurals name="wal_imported">
+        <item quantity="one">%1$d card restored</item>
+        <item quantity="other">%1$d cards restored</item>
+    </plurals>
+    <plurals name="fm_conflict_title">
+        <item quantity="one">%1$d already exists in the folder</item>
+        <item quantity="other">%1$d already exist in the folder</item>
+    </plurals>
+    <plurals name="fm_delete_ask">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+    <plurals name="fm_failed">
+        <item quantity="one">%1$d could not be done</item>
+        <item quantity="other">%1$d could not be done</item>
+    </plurals>
+    <plurals name="fm_items">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
+    </plurals>
+    <plurals name="a11y_sb_notifications">
+        <item quantity="one">%1$d notification</item>
+        <item quantity="other">%1$d notifications</item>
+    </plurals>
+    <plurals name="fm_cat_limit">
+        <item quantity="one">Only the first %1$d is shown.</item>
+        <item quantity="other">Only the first %1$d are shown.</item>
+    </plurals>
+    <plurals name="rec_imported">
+        <item quantity="one">%1$d imported</item>
+        <item quantity="other">%1$d imported</item>
+    </plurals>
+    <plurals name="rec_import_failed">
+        <item quantity="one">%1$d could not be imported: this phone cannot read the format, or the file is not sound.</item>
+        <item quantity="other">%1$d could not be imported: this phone cannot read the format, or the file is not sound.</item>
+    </plurals>
+
+    <!-- Photo hub -->
+    <string name="stock_photohub">Photo hub</string>
+    <string name="photos_albums">albums</string>
+    <string name="photos_date">date</string>
+    <string name="photos_favorites">favorites</string>
+    <string name="photos_other">Other</string>
+    <string name="photos_empty">No photos here yet.</string>
+    <string name="photos_allow_why">Allow access to your photos to see them here. They never leave the phone.</string>
+    <string name="photos_allow">Allow</string>
+
+    <!-- Other projects -->
+    <string name="sec_projects">other projects</string>
+    <string name="sec_projects_desc">Free and non-free apps by the same author</string>
+    <string name="kw_projects">projects, apps, keyboard, spesatracker, github, play store, foss, free software</string>
+    <string name="prj_foss">Free software (FOSS)</string>
+    <string name="prj_foss_hint">Open source, no ads, no trackers. Touch a picture to enlarge it.</string>
+    <string name="prj_nonfoss">Not free software</string>
+    <string name="prj_nonfoss_hint">The source code is not published. Touch a picture to enlarge it.</string>
+    <string name="prj_this_app">The app you are using.</string>
+    <string name="prj_launcher_about">The Windows Phone Start screen on Android: live tiles, Action Center, Metro lock screen.</string>
+    <string name="prj_keyboard_about">The Windows Phone keyboard on Android: flat Metro keys, big light type, swipe typing, translation, GIFs, clipboard history and voice typing. No ads, no analytics: what you type stays on your phone. It matches this launcher: same looks, same colours.</string>
+    <string name="prj_public_soon">The repository will be public soon: until then the link may not open.</string>
+    <string name="prj_spesa_about">Track your spending, build a budget and reach your savings goals.</string>
+    <string name="prj_github">GitHub</string>
+    <string name="prj_play">Google Play</string>
 </resources>

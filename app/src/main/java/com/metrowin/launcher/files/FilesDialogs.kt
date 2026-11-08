@@ -1,5 +1,6 @@
 package com.metrowin.launcher.files
 
+import androidx.compose.ui.res.pluralStringResource
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -234,7 +235,7 @@ fun TrashDialog(trash: FileTrash, onChanged: () -> Unit, fallback: File, onClose
 @Composable
 fun ConflictDialog(count: Int, onChoose: (Conflict) -> Unit, onCancel: () -> Unit) {
     DialogFrame(onCancel = onCancel) {
-        MetroText(stringResource(R.string.fm_conflict_title, count), size = 20.sp, weight = FontWeight.Normal)
+        MetroText(pluralStringResource(R.plurals.fm_conflict_title, count, count), size = 20.sp, weight = FontWeight.Normal)
         MetroButton(stringResource(R.string.fm_replace), Modifier.fillMaxWidth().testTag("fm:conflict:replace")) { onChoose(Conflict.Replace) }
         MetroButton(stringResource(R.string.fm_keep_both), Modifier.fillMaxWidth().testTag("fm:conflict:both")) { onChoose(Conflict.KeepBoth) }
         MetroButton(stringResource(R.string.fm_skip), Modifier.fillMaxWidth().testTag("fm:conflict:skip")) { onChoose(Conflict.Skip) }
@@ -244,7 +245,7 @@ fun ConflictDialog(count: Int, onChoose: (Conflict) -> Unit, onCancel: () -> Uni
 @Composable
 fun DeleteDialog(count: Int, onChoose: (Boolean) -> Unit, onCancel: () -> Unit) {
     DialogFrame(onCancel = onCancel) {
-        MetroText(stringResource(R.string.fm_delete_ask, count), size = 20.sp, weight = FontWeight.Normal)
+        MetroText(pluralStringResource(R.plurals.fm_delete_ask, count, count), size = 20.sp, weight = FontWeight.Normal)
         MetroButton(stringResource(R.string.fm_to_trash), Modifier.fillMaxWidth().testTag("fm:delete:trash")) { onChoose(false) }
         MetroButton(stringResource(R.string.fm_delete_forever), Modifier.fillMaxWidth().testTag("fm:delete:forever")) { onChoose(true) }
     }
@@ -268,7 +269,7 @@ fun ActionsDialog(
 ) {
     val single = files.singleOrNull()
     DialogFrame(onCancel = onCancel) {
-        MetroText(stringResource(R.string.fm_delete_ask, files.size), size = 16.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+        MetroText(pluralStringResource(R.plurals.fm_delete_ask, files.size, files.size), size = 16.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
         if (single != null && FileOps.isArchive(single)) {
             MenuRow(stringResource(R.string.fm_extract_here), "fm:act:extract") { onExtract(false) }
             MenuRow(stringResource(R.string.fm_extract_to), "fm:act:extractto") { onExtract(true) }
@@ -308,7 +309,7 @@ fun PropertiesDialog(file: File, onClose: () -> Unit) {
             Row2(stringResource(R.string.fm_path), file.absolutePath)
             Row2(stringResource(R.string.fm_type), if (file.isDirectory) stringResource(R.string.stock_files) else FileOps.mime(file))
             Row2(stringResource(R.string.fm_size), total?.let { size(it.first) } ?: "…")
-            if (file.isDirectory) Row2(stringResource(R.string.fm_contains), total?.let { stringResource(R.string.fm_items, it.second - 1) } ?: "…")
+            if (file.isDirectory) Row2(stringResource(R.string.fm_contains), total?.let { pluralStringResource(R.plurals.fm_items, it.second - 1, it.second - 1) } ?: "…")
             Row2(stringResource(R.string.fm_modified), android.text.format.DateFormat.getMediumDateFormat(context).format(Date(file.lastModified())) + " " + android.text.format.DateFormat.getTimeFormat(context).format(Date(file.lastModified())))
             if (file.isFile) {
                 listOf("MD5", "SHA-1", "SHA-256").forEach { algorithm ->

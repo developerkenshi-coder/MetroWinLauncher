@@ -29,6 +29,7 @@
     <!-- "Real-time mail": the connection that waits for new mail (IMAP IDLE), with a notification that can be stopped. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
     <!-- Only to ask, in the tutorial, that Android does not close the launcher to save battery. -->
     <uses-permission
         android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
@@ -242,6 +243,7 @@
     </queries>
 
     <application
+        android:name=".MetroApp"
         android:requestLegacyExternalStorage="true"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -338,6 +340,34 @@
             android:windowSoftInputMode="adjustResize|stateHidden" />
 
         <activity
+            android:name=".recents.RecentsActivity"
+            android:exported="false"
+            android:label="@string/rc_title"
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true" />
+
+        <activity
+            android:name=".power.PowerActivity"
+            android:exported="false"
+            android:label="@string/pw_open"
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true" />
+
+        <activity
+            android:name=".systemsettings.SystemSettingsActivity"
+            android:exported="false"
+            android:label="@string/stock_settings"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+
+        <activity
+            android:name=".shizukuterminal.ShizukuTerminalActivity"
+            android:exported="false"
+            android:label="@string/stock_shizukuterminal"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+
+        <activity
             android:name=".datasense.DataSenseActivity"
             android:exported="false"
             android:label="@string/stock_datasense"
@@ -354,6 +384,12 @@
             android:name=".news.NewsActivity"
             android:exported="false"
             android:label="@string/stock_news"
+            android:launchMode="singleTask" />
+
+        <activity
+            android:name=".photos.PhotosActivity"
+            android:exported="false"
+            android:label="@string/stock_photohub"
             android:launchMode="singleTask" />
 
         <activity
@@ -470,6 +506,16 @@
         <!-- The look at the mobile data used, every hour while a limit is set. -->
         <service
             android:name=".datasense.DataLimitJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <!-- A look at Shizuku every 15 minutes while buttons that need it are on. -->
+        <service
+            android:name=".data.ShizukuWatchJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <!-- A reading of the battery every 15 minutes, for the history of the battery doctor, while the user keeps it on. -->
+        <service
+            android:name=".data.BatteryLogJob"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" />
         <receiver

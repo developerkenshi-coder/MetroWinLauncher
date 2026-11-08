@@ -249,4 +249,31 @@ class StartPagesTest {
         assertEquals(StartPages.pageOf(pages, "f"), StartPages.pageOf(result, "f"))
         assertEquals(0, StartPages.pageOf(result, "e"))
     }
+
+    @Test
+    fun theClockIsOnTheHomeScreenWhereverTheHomeIs() {
+        // Home first, last or in the middle of three: the clock is on it. Before the screens are read there is one, and the clock is there.
+        assertEquals(0, StartPages.clockPage(0, 3))
+        assertEquals(2, StartPages.clockPage(2, 3))
+        assertEquals(1, StartPages.clockPage(1, 3))
+        assertEquals(0, StartPages.clockPage(2, 1))
+        assertEquals(0, StartPages.clockPage(-1, 0))
+    }
+
+    @Test
+    fun homeAndFavouriteAlwaysNameAScreenThatExists() {
+        val three = com.metrowin.launcher.data.LauncherSettings(startPages = 3, homePage = 2, favoritePage = 2)
+        assertSame(three, StartPages.settled(three))
+        // Down to two screens: the home that was the last is the last again, and the favourite that is gone is the home.
+        val two = StartPages.settled(three.copy(startPages = 2))
+        assertEquals(1, two.homePage)
+        assertEquals(-1, two.favoritePage)
+        // Back to three: the home stays where the main screen is, it does not slide to the new empty one.
+        assertEquals(1, StartPages.settled(two.copy(startPages = 3)).homePage)
+        assertEquals(0, StartPages.settled(three.copy(startPages = 1)).homePage)
+        // A backup that names a home past its screens.
+        val backup = com.metrowin.launcher.data.SettingsCodec.decode("""{"startPages":2,"homePage":5,"favoritePage":4}""")!!
+        assertEquals(1, backup.homePage)
+        assertEquals(1, backup.favoritePage)
+    }
 }

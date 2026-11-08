@@ -129,10 +129,12 @@ fun SettingsScreen(
                 modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 10.dp, bottom = 6.dp).testTag("settings:search"),
             )
             if (query.isBlank()) {
-                PivotHeader(
-                    groups.map { stringResource(it.title) }, pagerState,
-                    Modifier.padding(start = 24.dp, top = 2.dp, bottom = 8.dp),
-                )
+                androidx.compose.runtime.CompositionLocalProvider(com.metrowin.launcher.ui.components.LocalAppTitle provides stringResource(R.string.stock_settings)) {
+                    PivotHeader(
+                        groups.map { stringResource(it.title) }, pagerState,
+                        Modifier.padding(start = 24.dp, top = 2.dp, bottom = 8.dp),
+                    )
+                }
                 HorizontalPager(pagerState, Modifier.weight(1f)) { page ->
                     SectionList(SettingsSection.entries.filter { it.group == groups[page] }) { opened, top ->
                         tappedTop = top
@@ -296,6 +298,7 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, fromTop: Flo
                 SettingsSection.Backup -> BackupPage(env)
                 SettingsSection.Kids -> KidsPage(env)
                 SettingsSection.BugReport -> BugReportPage(env)
+                SettingsSection.OtherProjects -> OtherProjectsPage()
                 SettingsSection.About -> AboutPage(env)
             }
             }

@@ -3,6 +3,38 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
+## 26.8S: 2026-11-08
+
+The complete list is in the notes of the release / L'elenco completo è nelle note della versione.
+
+**English:**
+- **Shizuku Terminal**: direct buttons you choose one by one, a battery doctor with every fact about the battery and its history, sensors and monitor, more information about the phone, a terminal, apps and system pages.
+- **Metro settings** for Wi-Fi, mobile network, Bluetooth, date and time, and sounds, in the look of the launcher.
+- **System tile**: power, heat, memory in use and the signal of the Wi-Fi and of the mobile network on a tile.
+- **Photo hub** (albums, dates, favourites), **glass icons**, the **background inside the tiles** as on Windows Phone, **recent apps as cards**, a **shutdown screen**, and a small title above the pivots.
+- **Other projects** in the settings: MetroWin Keyboard, SpesaTracker and this launcher, with links and pictures that enlarge.
+- **Font**: Selawik (Microsoft, SIL Open Font License 1.1) replaces Open Sans, with the metrics of Segoe UI.
+- **Games and video**: the bars go away reliably, one thin swipe from the edge brings both back, and the Start clock always stays on the main page.
+- **Fix, speakerphone**: the speakerphone button of a call switches the speaker on and off, no more tour of every device.
+- **Fix, lost notifications**: the Metro banner was swallowed while the Metro status bar was up; now it shows, or Android's own stays.
+- **Fix, Shizuku**: the commands work in the stable build and on Android 8 to 12, and the state follows Shizuku.
+- **Fix, tiles**: the flip of the live tiles no longer shows the wrong face for a frame, and an entrance can no longer undo an exit.
+- Many smaller fixes: Android 8 to 12 crashes, permissions checks, plurals, lint errors down to zero, memory and battery use of the new pages.
+
+**Italiano:**
+- **Shizuku Terminal**: pulsanti diretti scelti uno per uno, un medico della batteria con ogni dato sulla batteria e il suo storico, sensori e monitor, maggiori informazioni sul telefono, un terminale, pagine delle app e del sistema.
+- **Impostazioni Metro** per Wi-Fi, rete cellulare, Bluetooth, data e ora, e suoni, nell'aspetto del launcher.
+- **Riquadro Sistema**: potenza, calore, memoria in uso e segnale del Wi-Fi e della rete cellulare su un riquadro.
+- **Hub Foto** (album, date, preferite), **icone di vetro**, lo **sfondo dentro ai riquadri** come su Windows Phone, le **app recenti a schede**, una **schermata di spegnimento** e un piccolo titolo sopra i pivot.
+- **Altri progetti** nelle impostazioni: MetroWin Keyboard, SpesaTracker e questo launcher, con link e immagini che si ingrandiscono.
+- **Carattere**: Selawik (Microsoft, SIL Open Font License 1.1) al posto di Open Sans, con le metriche di Segoe UI.
+- **Giochi e video**: le barre se ne vanno in modo affidabile, uno swipe sottile dal bordo le richiama entrambe, e l'orologio dello Start resta sempre nella pagina principale.
+- **Correzione, vivavoce**: il pulsante del vivavoce di una chiamata accende e spegne l'altoparlante, senza più il giro di tutti i dispositivi.
+- **Correzione, notifiche perse**: il banner Metro veniva inghiottito mentre la barra di stato Metro era su; ora compare, o resta quello di Android.
+- **Correzione, Shizuku**: i comandi funzionano nella build stable e su Android da 8 a 12, e lo stato segue Shizuku.
+- **Correzione, riquadri**: il giro dei riquadri live non mostra più per un fotogramma la faccia sbagliata, e un ingresso non può più annullare un'uscita.
+- Molte correzioni minori: arresti su Android da 8 a 12, controlli dei permessi, plurali, errori lint azzerati, uso di memoria e batteria delle nuove pagine.
+
 ## 26.7.2S: 2026-11-06
 
 The complete list is in the notes of the release / L'elenco completo è nelle note della versione.

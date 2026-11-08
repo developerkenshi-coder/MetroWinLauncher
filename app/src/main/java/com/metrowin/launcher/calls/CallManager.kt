@@ -7,6 +7,8 @@ import android.os.Looper
 import android.provider.ContactsContract
 import android.telecom.Call
 import android.telecom.CallAudioState
+import android.telecom.CallEndpoint
+import android.telecom.CallEndpointException
 import android.telecom.InCallService
 import android.telecom.VideoProfile
 import androidx.compose.runtime.Immutable
@@ -40,6 +42,32 @@ data class CallLine(
 @Immutable
 data class CallAudio(val muted: Boolean = false, val speaker: Boolean = false, val bluetooth: Boolean = false)
 
+/** What the routing of the sound asks of the service of the call: a thin seam, so [CallManager.toggleSpeaker] can be tried with a fake. */
+internal interface CallAudioHost {
+    @Suppress("DEPRECATION")
+    val audioState: CallAudioState?
+
+    fun setMuted(on: Boolean)
+
+    fun setAudioRoute(route: Int)
+
+    @androidx.annotation.RequiresApi(34)
+    fun requestCallEndpointChange(endpoint: CallEndpoint, receiver: android.os.OutcomeReceiver<Void, CallEndpointException>)
+}
+
+private class ServiceAudioHost(private val service: InCallService, private val handler: Handler) : CallAudioHost {
+    @Suppress("DEPRECATION")
+    override val audioState: CallAudioState? get() = service.callAudioState
+
+    override fun setMuted(on: Boolean) = service.setMuted(on)
+
+    override fun setAudioRoute(route: Int) = service.setAudioRoute(route)
+
+    @androidx.annotation.RequiresApi(34)
+    override fun requestCallEndpointChange(endpoint: CallEndpoint, receiver: android.os.OutcomeReceiver<Void, CallEndpointException>) =
+        service.requestCallEndpointChange(endpoint, { handler.post(it) }, receiver)
+}
+
 /**
  * The calls Android hands to the launcher while it is the phone app, and what the screen of a call can do with them. The calls are
  * kept here, and not in the service, so that the screen and the notification read the same thing. Everything runs on the main thread,
@@ -50,6 +78,7 @@ object CallManager {
     private val ids = HashMap<Call, Int>()
     private var nextId = 1
     private var service: InCallService? = null
+    private var audioHost: CallAudioHost? = null
     private val handler = Handler(Looper.getMainLooper())
 
     private val _lines = MutableStateFlow<List<CallLine>>(emptyList())
@@ -67,6 +96,7 @@ object CallManager {
 
     internal fun bind(host: InCallService?) {
         service = host
+        audioHost = host?.let { ServiceAudioHost(it, handler) }
         if (host == null) {
             calls.forEach { it.unregisterCallback(watcher) }
             calls.clear()
@@ -100,12 +130,14 @@ object CallManager {
     private var route = 0
     private var routes = 0
 
-    /** The route after [current] among those the phone offers now (ear or wired headset, Bluetooth, speaker), going round; [current] unknown gives the first. */
-    internal fun nextRoute(current: Int, supported: Int): Int {
-        val order = listOf(CallAudioState.ROUTE_WIRED_OR_EARPIECE, CallAudioState.ROUTE_BLUETOOTH, CallAudioState.ROUTE_SPEAKER).filter { supported and it != 0 }
-        if (order.isEmpty()) return current
-        val at = order.indexOfFirst { current and it != 0 }
-        return order[(at + 1) % order.size]
+    /**
+     * Where the speaker button sends the sound: to the speaker when it is not there, and back to where it was before when it is (the Bluetooth
+     * device when one is connected, else the headset or the ear). Two states, not a tour of every device until the right one comes.
+     */
+    internal fun speakerTarget(current: Int, supported: Int): Int = when {
+        current and CallAudioState.ROUTE_SPEAKER == 0 -> CallAudioState.ROUTE_SPEAKER
+        supported and CallAudioState.ROUTE_BLUETOOTH != 0 -> CallAudioState.ROUTE_BLUETOOTH
+        else -> CallAudioState.ROUTE_WIRED_OR_EARPIECE
     }
 
     private fun publish() {
@@ -149,11 +181,67 @@ object CallManager {
         if (on) call.hold() else call.unhold()
     }
 
-    fun mute(on: Boolean) = service?.setMuted(on)
+    fun mute(on: Boolean) = audioHost?.setMuted(on)
 
-    /** Moves the sound to the next place: ear or headset, Bluetooth when there is one, speaker. With only ear and speaker it is the old switch. */
+    /** Puts a stand-in for the service in place of the real one, or takes it away with null. */
+    internal fun bindAudio(host: CallAudioHost?) {
+        audioHost = host
+    }
+
+    /**
+     * The speaker button: speaker on, or off again (see [speakerTarget]). Android 14 and later talk about "endpoints" and may no longer send the
+     * old audio state, so the places are asked of the service itself when this class has not heard of them: a button that has nothing to go on
+     * must still switch the speaker, not do nothing.
+     */
+    fun toggleSpeaker() {
+        val host = audioHost ?: return
+        if (android.os.Build.VERSION.SDK_INT >= 34 && endpoints.isNotEmpty() && toggleEndpoint(host)) return
+        toggleLegacy(host)
+    }
+
     @Suppress("DEPRECATION")
-    fun cycleRoute() = service?.setAudioRoute(nextRoute(route, routes))
+    private fun toggleLegacy(host: CallAudioHost) {
+        val state = host.audioState
+        val supported = (state?.supportedRouteMask ?: routes).takeIf { it != 0 } ?: (CallAudioState.ROUTE_EARPIECE or CallAudioState.ROUTE_SPEAKER)
+        host.setAudioRoute(speakerTarget(state?.route ?: route, supported))
+    }
+
+    private var endpoints: List<CallEndpoint> = emptyList()
+    private var endpoint: CallEndpoint? = null
+
+    @androidx.annotation.RequiresApi(34)
+    internal fun endpointsChanged(list: List<CallEndpoint>) {
+        endpoints = list
+    }
+
+    @androidx.annotation.RequiresApi(34)
+    internal fun endpointChanged(current: CallEndpoint) {
+        endpoint = current
+        _audio.value = _audio.value.copy(
+            speaker = current.endpointType == CallEndpoint.TYPE_SPEAKER, bluetooth = current.endpointType == CallEndpoint.TYPE_BLUETOOTH,
+        )
+    }
+
+    internal fun muteChanged(muted: Boolean) {
+        _audio.value = _audio.value.copy(muted = muted)
+    }
+
+    @androidx.annotation.RequiresApi(34)
+    private fun toggleEndpoint(host: CallAudioHost): Boolean {
+        val speaker = endpoints.firstOrNull { it.endpointType == CallEndpoint.TYPE_SPEAKER } ?: return false
+        val back = listOf(CallEndpoint.TYPE_BLUETOOTH, CallEndpoint.TYPE_WIRED_HEADSET, CallEndpoint.TYPE_EARPIECE).firstNotNullOfOrNull { type -> endpoints.firstOrNull { it.endpointType == type } }
+        val next = if (endpoint?.endpointType == CallEndpoint.TYPE_SPEAKER) back ?: return false else speaker
+        host.requestCallEndpointChange(
+            next,
+            object : android.os.OutcomeReceiver<Void, CallEndpointException> {
+                override fun onResult(result: Void?) = Unit
+
+                // The endpoints said no (or are out of date): the old way still moves the sound.
+                override fun onError(error: CallEndpointException) = toggleLegacy(host)
+            },
+        )
+        return true
+    }
 
     /** Plays the tone of a key of the keypad into the call, for as long as a short press lasts. */
     fun tone(id: Int, key: Char) {

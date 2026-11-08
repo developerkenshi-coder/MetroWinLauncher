@@ -18,6 +18,7 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.core.net.toUri
 import com.metrowin.launcher.MainActivity
 import com.metrowin.launcher.R
@@ -30,7 +31,7 @@ class UpdateStore(context: Context) {
 
     var lastCheck: Long
         get() = prefs.getLong("lastCheck", 0L)
-        set(value) = prefs.edit().putLong("lastCheck", value).apply()
+        set(value) = prefs.edit { putLong("lastCheck", value) }
 
     /** The newest release found, or null when none was. */
     var release: UpdateRelease?
@@ -39,19 +40,19 @@ class UpdateStore(context: Context) {
             val apk = prefs.getString("apk", null) ?: return null
             return UpdateRelease(version, apk, prefs.getLong("size", 0L), prefs.getString("sums", null), prefs.getString("notes", "").orEmpty())
         }
-        set(value) = prefs.edit().apply {
+        set(value) = prefs.edit {
             if (value == null) {
                 remove("version"); remove("apk"); remove("size"); remove("sums"); remove("notes")
             } else {
                 putString("version", value.version).putString("apk", value.apkUrl).putLong("size", value.apkSize).putString("sums", value.sumsUrl)
                 putString("notes", value.notes)
             }
-        }.apply()
+        }
 
     /** The version the user was told about with a notification: each is told once. */
     var notified: String?
         get() = prefs.getString("notified", null)
-        set(value) = prefs.edit().putString("notified", value).apply()
+        set(value) = prefs.edit { putString("notified", value) }
 }
 
 /** Looks for a new release, keeps what it found, and says so with a notification the first time. */

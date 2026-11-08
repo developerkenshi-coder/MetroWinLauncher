@@ -108,6 +108,53 @@ class SyncMergeTest {
     }
 
     @Test
+    fun theOtherPhoneEndsWithTheSameItemsWhenNothingClashed() {
+        // Phone A merges and uploads; phone B then merges A's file with its own layout and has the same items: the sync converges.
+        val base = layout(shortcuts = listOf(item("s1")), todos = listOf(item("t1", "milk"), item("t2", "eggs")))
+        val a = layout(shortcuts = listOf(item("s1"), item("s2")), todos = listOf(item("t1", "bread"), item("t2", "eggs")))
+        val b = layout(shortcuts = listOf(item("s1"), item("s3")), todos = listOf(item("t1", "milk"), item("t2", "eggs"), item("t4")))
+        val onA = merge(base, a, b)
+        val onB = merge(base, b, onA.json)
+        assertEquals(ids(onA.json, "shortcuts").toSet(), ids(onB.json, "shortcuts").toSet())
+        assertEquals(ids(onA.json, "todos").toSet(), ids(onB.json, "todos").toSet())
+        assertEquals(text(onA.json, "todos", "t1"), text(onB.json, "todos", "t1"))
+        assertFalse(onA.lost || onB.lost)
+    }
+
+    // shortcut of the merge: a clash is won by "this phone" on both phones, so each keeps its own version (see docs/progetti/sincronizzazione.md).
+    @Test
+    fun aClashIsNotSettledForBothPhones() {
+        val base = layout(todos = listOf(item("t1", "milk")))
+        val a = layout(todos = listOf(item("t1", "mine")))
+        val b = layout(todos = listOf(item("t1", "theirs")))
+        val onA = merge(base, a, b)
+        val onB = merge(base, b, onA.json)
+        assertEquals("mine", text(onA.json, "todos", "t1"))
+        assertEquals("theirs", text(onB.json, "todos", "t1"))
+    }
+
+    @Test
+    fun withoutAConflictTheOrderOfThePhonesDoesNotChangeWhatIsKept() {
+        val base = layout(shortcuts = listOf(item("s1"), item("s2")), todos = listOf(item("t1", "milk")))
+        val a = layout(shortcuts = listOf(item("s1"), item("s2"), item("s3")), todos = listOf(item("t1", "bread")))
+        val b = layout(shortcuts = listOf(item("s1"), item("s4")), todos = listOf(item("t1", "milk")))
+        val ab = merge(base, a, b)
+        val ba = merge(base, b, a)
+        assertEquals(ids(ab.json, "shortcuts").toSet(), ids(ba.json, "shortcuts").toSet())
+        assertEquals(setOf("s1", "s3", "s4"), ids(ab.json, "shortcuts").toSet())
+        assertEquals(text(ab.json, "todos", "t1"), text(ba.json, "todos", "t1"))
+        assertFalse(ab.lost || ba.lost)
+    }
+
+    // shortcut of the merge itself: the order is this phone's, see the comment on SyncMerge.list.
+    @Test
+    fun aListOrderedAgainOnlyOnTheOtherPhoneKeepsThisPhonesOrder() {
+        val base = layout(shortcuts = listOf(item("s1"), item("s2")))
+        val remote = layout(shortcuts = listOf(item("s2"), item("s1")))
+        assertEquals(listOf("s1", "s2"), ids(merge(base, base, remote).json, "shortcuts"))
+    }
+
+    @Test
     fun noChangeOnEitherSideGivesTheSameLayout() {
         val base = layout(tiles = listOf(item("a")), shortcuts = listOf(item("s1")), todos = listOf(item("t1")))
         val m = merge(base, base, base)

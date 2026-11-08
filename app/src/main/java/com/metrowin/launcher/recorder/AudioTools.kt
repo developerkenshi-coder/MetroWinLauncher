@@ -160,7 +160,8 @@ object AudioTools {
                 if (time > endUs) break
                 if (time >= startUs) {
                     if (origin < 0) origin = time
-                    info.set(0, size, time - origin, extractor.sampleFlags)
+                    val sync = extractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_SYNC != 0
+                    info.set(0, size, time - origin, if (sync) MediaCodec.BUFFER_FLAG_KEY_FRAME else 0)
                     muxer.writeSampleData(track, buffer, info)
                     wrote = true
                 }

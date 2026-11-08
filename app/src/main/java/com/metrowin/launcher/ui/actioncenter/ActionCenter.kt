@@ -832,7 +832,7 @@ private fun NotificationRow(
                 }
                 entry.picture?.let { picture ->
                     Image(
-                        picture.asImageBitmap(), contentDescription = null, contentScale = ContentScale.Crop,
+                        picture.asImageBitmap(), contentDescription = stringResource(R.string.cd_notification_picture), contentScale = ContentScale.Crop,
                         modifier = Modifier.padding(top = 6.dp).fillMaxWidth().heightIn(max = 160.dp).testTag("notification:picture:${entry.key}"),
                     )
                 }
@@ -853,7 +853,7 @@ private fun NotificationRow(
                     .metroPress(onClick = { earlier = !earlier }).padding(vertical = 6.dp, horizontal = 2.dp),
             ) {
                 MetroText(
-                    if (earlier) stringResource(R.string.notif_earlier_hide) else stringResource(R.string.notif_earlier, lines.size - 1),
+                    if (earlier) stringResource(R.string.notif_earlier_hide) else pluralStringResource(R.plurals.notif_earlier, lines.size - 1, lines.size - 1),
                     size = 14.sp, weight = FontWeight.Normal, color = LocalAccent.current,
                 )
             }

@@ -34,7 +34,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.QuickAction
-import com.metrowin.launcher.data.ShizukuRadio
+import com.metrowin.launcher.shizukuterminal.ShizukuTerminalActivity
 import com.metrowin.launcher.ui.actioncenter.QuickButton
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
@@ -117,7 +117,7 @@ fun ActionsPage(env: SettingsEnv) {
                 }
             }
             SettingHint(stringResource(R.string.ac_reorder_hint))
-            ShizukuSetting(env)
+            ShizukuSetting()
             ToggleSetting(
                 label = stringResource(R.string.ac_sliders),
                 checked = env.settings.actionSliders,
@@ -137,28 +137,16 @@ fun ActionsPage(env: SettingsEnv) {
     }
 }
 
-/** The switch that lets Wi-Fi and Bluetooth be switched through Shizuku, what Shizuku is doing now, and the button that asks it for the access. */
+/** What Shizuku does for the buttons lives in the Shizuku Terminal; this only leads there. */
 @Composable
-private fun ShizukuSetting(env: SettingsEnv) {
-    var running by remember { mutableStateOf(ShizukuRadio.running()) }
-    var granted by remember { mutableStateOf(ShizukuRadio.granted()) }
-    // Shizuku's own dialog and app are other screens: the answer is read again when the launcher is back.
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        running = ShizukuRadio.running()
-        granted = ShizukuRadio.granted()
-    }
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        ToggleSetting(
-            label = stringResource(R.string.ac_shizuku),
-            checked = env.settings.useShizuku,
-            onChange = { value -> env.onChange { it.copy(useShizuku = value) } },
-            hint = stringResource(R.string.ac_shizuku_hint) + " " + stringResource(if (running && granted) R.string.ac_shizuku_ready else R.string.ac_shizuku_missing),
-            tag = "actions:shizuku", id = "ac.shizuku",
-        )
-        if (env.settings.useShizuku && running && !granted) {
-            ActionSetting(stringResource(R.string.ac_shizuku_grant), onClick = { ShizukuRadio.requestPermission() }, tag = "actions:shizuku:grant")
-        }
-    }
+private fun ShizukuSetting() {
+    val context = LocalContext.current
+    ActionSetting(
+        stringResource(R.string.st_open_terminal),
+        onClick = { runCatching { context.startActivity(Intent(context, ShizukuTerminalActivity::class.java)) } },
+        hint = stringResource(R.string.ac_shizuku_hint),
+        tag = "actions:shizuku", id = "ac.shizuku",
+    )
 }
 
 /** What is done with the notifications that arrive: who reads them, which show, which are held, and for which apps. */

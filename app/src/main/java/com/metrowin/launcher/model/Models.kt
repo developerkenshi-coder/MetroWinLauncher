@@ -235,6 +235,9 @@ sealed interface TileData {
     /** The memory used and free, and (wide and large) what takes it: apps, photos, videos, music, the rest. */
     data object MemoryUse : TileData
 
+    /** The power the battery moves and its heat, the memory in use and the signal: it opens the monitor of the Shizuku Terminal. */
+    data object SystemMonitor : TileData
+
     /** The voice recorder. */
     data object Recorder : TileData
 
@@ -286,7 +289,7 @@ enum class Glyph {
     Photos, Podcasts, PowerPoint, Settings, Skype, Sports, Storage, Store, Video, Wallet,
     Weather, Word, Xbox, Theme, Search, Wifi, Bluetooth, Airplane, Moon, Flashlight, Rotation, Hotspot, Vpn,
     Cast, Brightness, Bell, Kids, Globe, Widget, Lock, Star, Home, Gesture, Folder, Recents,
-    Hourglass, Stopwatch, Timeout, AutoBrightness, Notes, Todo,
+    Hourglass, Stopwatch, Timeout, AutoBrightness, Notes, Todo, Terminal,
 
     /** The Metro tiles: the settings of this launcher. */
     Launcher,

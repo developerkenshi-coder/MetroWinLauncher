@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: python3 tools/test_check_translations.py && python3 tools/check-translations.py
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      # lintDebug is left out: it reports 6 errors that were already there (see app/build/reports/lint-results-debug.html).
-      - run: ./gradlew testDebugUnitTest assembleDebug
+      - run: ./gradlew testDebugUnitTest :parsers:test lintDebug assembleDebug

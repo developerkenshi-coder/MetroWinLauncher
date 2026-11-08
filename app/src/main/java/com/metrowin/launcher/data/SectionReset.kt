@@ -12,7 +12,7 @@ object SectionReset {
     val keys: Map<String, Set<String>> = mapOf(
         "StartTheme" to setOf(
             "accentApps", "accentIndex", "accentNightIndex", "accentPanel", "accentStart", "autoAccent", "customAccent", "darkFromHour", "darkToHour",
-            "dynamicColor", "oledMode", "pageBackgrounds", "panoramaTitles", "parallax", "tileOpacity", "startPhotoFit", "startPhotoX", "startPhotoY", "startPhotoZoom",
+            "dynamicColor", "oledMode", "pageBackgrounds", "panoramaTitles", "parallax", "tileOpacity", "startPhotoFit", "startPhotoInside", "startPhotoX", "startPhotoY", "startPhotoZoom",
             "systemWallpaperFollows", "themeMode", "themeStyle",
         ),
         "Start" to setOf(
@@ -50,7 +50,7 @@ object SectionReset {
         "Screen" to setOf("highRefreshRate", "launchAnimation", "orientation", "pagePadding"),
         "Battery" to setOf("batterySaving"),
         "Accessibility" to setOf("appFont", "boldText", "fontRevision", "highContrast", "reduceMotion", "systemFont", "textScale"),
-        "Icons" to setOf("iconPack", "iconShape", "iconTileColors", "largeTileIcons"),
+        "Icons" to setOf("iconPack", "iconShape", "iconTileColors", "largeTileIcons", "glassIcons"),
         "Lock" to setOf("lockShowAlarm", "lockShowBattery", "lockShowEvent", "lockShowNotifications", "lockIconsOneRow", "lockShowWeather", "lockSensorUnderScreen", "lockSensorY", "lockSensorOwnIcon"),
         "Voice" to setOf("assistantIcon", "voiceButton", "voiceCallDirect", "voiceOffline"),
     )

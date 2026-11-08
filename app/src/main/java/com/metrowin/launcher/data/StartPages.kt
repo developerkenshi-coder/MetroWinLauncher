@@ -9,6 +9,23 @@ import com.metrowin.launcher.model.StartEntry
  * ([StartEntries]).
  */
 object StartPages {
+    /**
+     * The screen that has the clock and date (and the voice icon): the home one, always, whatever the number of screens and wherever the
+     * secondary ones are. Before the screens are read there is one, and the clock is on it.
+     */
+    fun clockPage(home: Int, count: Int): Int = home.coerceIn(0, (count - 1).coerceAtLeast(0))
+
+    /**
+     * [settings] with the home and the favourite Start screen naming screens that exist: with fewer screens than before, a home that was
+     * the last one would point at nothing, and with more again at an empty screen that is not the one the user has Start on.
+     */
+    fun settled(settings: LauncherSettings): LauncherSettings {
+        val last = settings.startPages - 1
+        val home = settings.homePage.coerceIn(0, last)
+        val favorite = if (settings.favoritePage > last) -1 else settings.favoritePage
+        return if (home == settings.homePage && favorite == settings.favoritePage) settings else settings.copy(homePage = home, favoritePage = favorite)
+    }
+
     /** Index of the screen holding [id] (as a tile, a folder or an app inside a folder), or -1. */
     fun pageOf(pages: List<List<StartEntry>>, id: String): Int =
         pages.indexOfFirst { page -> StartEntries.isPinned(page, id) }

@@ -138,13 +138,13 @@ fun AccentScope(use: Boolean, content: @Composable () -> Unit) {
 }
 
 /**
- * Open Sans stands in for Segoe WP, which is proprietary. It has the same humanist shapes and the
- * Light weight that gives Windows Phone its look.
+ * Selawik stands in for Segoe WP, which is proprietary. Microsoft made it as the open font with the metrics of Segoe UI, the
+ * successor of Segoe WP: the same humanist shapes and the Light weight that gives Windows Phone its look.
  */
 val MetroFont = FontFamily(
-    Font(R.font.opensans_light, FontWeight.Light),
-    Font(R.font.opensans_regular, FontWeight.Normal),
-    Font(R.font.opensans_semibold, FontWeight.SemiBold),
+    Font(R.font.selawik_light, FontWeight.Light),
+    Font(R.font.selawik_regular, FontWeight.Normal),
+    Font(R.font.selawik_semibold, FontWeight.SemiBold),
 )
 
 @Composable

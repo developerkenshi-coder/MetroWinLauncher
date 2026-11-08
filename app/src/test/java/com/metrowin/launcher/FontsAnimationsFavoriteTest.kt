@@ -75,7 +75,9 @@ class FontsAnimationsFavoriteTest {
         assertEquals(-1, defaults.favoritePage)
         // A bad favourite page is brought back inside the range.
         assertEquals(-1, SettingsCodec.decode("""{"favoritePage":-7}""")!!.favoritePage)
-        assertEquals(LauncherSettings.MAX_START_PAGES - 1, SettingsCodec.decode("""{"favoritePage":99}""")!!.favoritePage)
+        assertEquals(LauncherSettings.MAX_START_PAGES - 1, SettingsCodec.decode("""{"startPages":${LauncherSettings.MAX_START_PAGES},"favoritePage":99}""")!!.favoritePage)
+        // A favourite past the screens there are is the last screen, never one that does not exist.
+        assertEquals(0, SettingsCodec.decode("""{"favoritePage":99}""")!!.favoritePage)
     }
 
     @Test

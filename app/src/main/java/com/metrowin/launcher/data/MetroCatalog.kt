@@ -82,6 +82,8 @@ object MetroCatalog {
                 pkg("com.google.android.apps.photos", "com.sec.android.gallery3d", "com.miui.gallery"),
             live = LiveKind.Photos,
         ),
+        // The hub of the launcher itself (a mini app): the pictures by album, date and favourites. "photos" above stays the gallery the phone has.
+        StockApp("photohub", R.string.stock_photohub, Glyph.Photos),
         StockApp(
             "internetexplorer", R.string.stock_internetexplorer, Glyph.Browser,
             listOf(
@@ -142,6 +144,7 @@ object MetroCatalog {
         // The mini apps of the launcher with no Android app behind them (see MiniApps).
         StockApp("notes", R.string.stock_notes, Glyph.Notes),
         StockApp("todo", R.string.stock_todo, Glyph.Todo),
+        StockApp("shizukuterminal", R.string.stock_shizukuterminal, Glyph.Terminal),
         StockApp("podcasts", R.string.stock_podcasts, Glyph.Podcasts, pkg("com.google.android.apps.podcasts")),
         StockApp("games", R.string.stock_games, Glyph.Games, pkg("com.google.android.play.games")),
         StockApp("xbox", R.string.stock_xbox, Glyph.Xbox, pkg("com.microsoft.xboxone.smartglass")),

@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.os.Process
 import android.util.LruCache
 import androidx.compose.runtime.getValue
@@ -57,6 +58,19 @@ class IconLoader(context: Context) {
     var revision by mutableIntStateOf(0)
         private set
 
+    /** Icons drawn as translucent glass (see [GlassIcon]). */
+    @Volatile
+    private var glass = false
+
+    fun useGlass(on: Boolean) {
+        if (glass == on) return
+        glass = on
+        cache.evictAll()
+        revision++
+    }
+
+    private fun key(item: AppItem, sizePx: Int) = "${item.id}@$sizePx${if (glass) "g" else ""}"
+
     fun usePack(newPack: IconPack?) {
         pack = newPack
         cache.evictAll()
@@ -65,19 +79,20 @@ class IconLoader(context: Context) {
     }
 
     /** The icon if it is already in memory, so a list can draw it in its first frame. */
-    fun peek(item: AppItem, sizePx: Int): Bitmap? = cache.get("${item.id}@$sizePx")
+    fun peek(item: AppItem, sizePx: Int): Bitmap? = cache.get(key(item, sizePx))
 
     /** Null for entries that have no icon of their own (stock apps drawn with a glyph). */
     suspend fun load(item: AppItem, sizePx: Int): Bitmap? {
         val activity = item.launch as? Launch.Activity ?: return loadPackageIcon(item, sizePx)
-        val key = "${item.id}@$sizePx"
+        val key = key(item, sizePx)
         cache.get(key)?.let { return it }
         val bitmap = withContext(Dispatchers.IO) {
             runCatching {
                 val current = pack
                 val own = current?.iconFor(activity.component)?.let { render(it, sizePx) }
                 val icon = own ?: render(iconOf(activity), sizePx).let { original -> current?.dress(original, sizePx, activity.component.packageName) ?: original }
-                icon.also { if (item.isWork) drawWorkBadge(it) else if (item.isPrivate) drawPrivateBadge(it) }
+                val shown = if (glass) glassOf(icon) else icon
+                shown.also { if (item.isWork) drawWorkBadge(it) else if (item.isPrivate) drawPrivateBadge(it) }
             }.getOrNull()
         }
         if (bitmap != null) cache.put(key, bitmap)
@@ -88,9 +103,9 @@ class IconLoader(context: Context) {
     private suspend fun loadPackageIcon(item: AppItem, sizePx: Int): Bitmap? {
         val pkg = item.packageName ?: return null
         if (!item.pinOnly) return null
-        val key = "${item.id}@$sizePx"
+        val key = key(item, sizePx)
         cache.get(key)?.let { return it }
-        val bitmap = withContext(Dispatchers.IO) { runCatching { render(pm.getApplicationIcon(pkg), sizePx) }.getOrNull() }
+        val bitmap = withContext(Dispatchers.IO) { runCatching { render(pm.getApplicationIcon(pkg), sizePx).let { if (glass) glassOf(it) else it } }.getOrNull() }
         if (bitmap != null) cache.put(key, bitmap)
         return bitmap
     }
@@ -129,6 +144,11 @@ class IconLoader(context: Context) {
         canvas.drawRect(size - badge * 0.56f, size - badge * 0.52f, size - badge * 0.44f, size - badge * 0.22f, paint)
     }
 
+    private fun glassOf(icon: Bitmap): Bitmap {
+        val pixels = IntArray(icon.width * icon.height).also { icon.getPixels(it, 0, icon.width, 0, 0, icon.width, icon.height) }
+        return createBitmap(icon.width, icon.height).also { it.setPixels(GlassIcon.of(pixels, icon.width, icon.height), 0, icon.width, 0, 0, icon.width, icon.height) }
+    }
+
     private fun render(drawable: Drawable, size: Int): Bitmap {
         val bitmap = createBitmap(size, size)
         val canvas = Canvas(bitmap)
@@ -137,7 +157,9 @@ class IconLoader(context: Context) {
             // layers across that centre without the system mask: square, like a Metro tile.
             val full = (size * ADAPTIVE_CANVAS / ADAPTIVE_VISIBLE).roundToInt()
             val offset = -(full - size) / 2
-            listOfNotNull(drawable.background, drawable.foreground).forEach { layer ->
+            // As glass only the picture is kept: the themed (monochrome) layer when the app has one, else the foreground.
+            val mono = if (glass && Build.VERSION.SDK_INT >= 33) drawable.monochrome?.mutate()?.apply { setTint(Color.WHITE) } else null
+            (if (mono != null) listOf(mono) else if (glass) listOfNotNull(drawable.foreground) else listOfNotNull(drawable.background, drawable.foreground)).forEach { layer ->
                 layer.setBounds(offset, offset, offset + full, offset + full)
                 layer.draw(canvas)
             }

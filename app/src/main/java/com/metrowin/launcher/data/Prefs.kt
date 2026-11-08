@@ -1,5 +1,6 @@
 package com.metrowin.launcher.data
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 
@@ -19,6 +20,7 @@ internal object Prefs {
     const val TODO = "metrowin_todo"
     const val NEWS = "metrowin_news"
     const val FILES = "metrowin_files"
+    const val SHIZUKU = "metrowin_shizuku"
     const val DIALER_NUMBERS = "metrowin_dialer_numbers"
     const val TILES = "metrowin_tiles"
     const val UPDATES = "updates"
@@ -26,4 +28,28 @@ internal object Prefs {
     fun main(context: Context): SharedPreferences = open(context, MAIN)
 
     fun open(context: Context, name: String): SharedPreferences = context.getSharedPreferences(name, Context.MODE_PRIVATE)
+}
+
+/**
+ * The one place the preference files are brought to the schema the code expects. [steps]`[n]` moves them from schema n to n + 1; the
+ * number reached is kept in the main file. A step must be safe to run twice (it can be cut short by the process dying), and the names
+ * in [Prefs] never change. No step is needed yet: schema 0 is the files as they are.
+ */
+internal object PrefsMigrations {
+    const val VERSION_KEY = "schema_version"
+
+    val steps: List<(Context) -> Unit> = emptyList()
+
+    // commit, not apply: the number must be on disk before the next step runs, or a killed process repeats a step that is not safe twice.
+    @SuppressLint("ApplySharedPref")
+    fun run(context: Context, steps: List<(Context) -> Unit> = this.steps) {
+        val main = Prefs.main(context)
+        var version = main.getInt(VERSION_KEY, 0)
+        if (version >= steps.size) return
+        while (version < steps.size) {
+            steps[version](context)
+            version++
+            main.edit().putInt(VERSION_KEY, version).commit()
+        }
+    }
 }

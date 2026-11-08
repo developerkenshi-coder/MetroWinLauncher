@@ -67,6 +67,7 @@ enum class SettingsSection(
     Backup(SettingsGroup.Tools, R.string.sec_backup, R.string.sec_backup_desc, R.string.kw_backup),
     Kids(SettingsGroup.Tools, R.string.kids_title, R.string.sec_kids_desc, R.string.kw_kids),
     BugReport(SettingsGroup.Tools, R.string.sec_bug, R.string.sec_bug_desc, R.string.kw_bug),
+    OtherProjects(SettingsGroup.Tools, R.string.sec_projects, R.string.sec_projects_desc, R.string.kw_projects),
     About(SettingsGroup.Tools, R.string.sec_about, R.string.sec_about_desc, R.string.kw_about),
 }
 

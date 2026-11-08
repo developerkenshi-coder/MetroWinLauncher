@@ -199,6 +199,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
         }
         private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = ink }
         private val slop = ViewConfiguration.get(service).scaledTouchSlop
+        private val arrowHead = Path()
         private var downX = 0f
         private var downY = 0f
         private var heldOpen = false
@@ -242,7 +243,8 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
             // back: an arrow to the left
             var cx = centers[0]
             canvas.drawLine(cx + s, cy, cx - s, cy, line)
-            val head = Path().apply {
+            val head = arrowHead.apply {
+                rewind()
                 moveTo(cx - s + 0.75f * s, cy - 0.75f * s)
                 lineTo(cx - s, cy)
                 lineTo(cx - s + 0.75f * s, cy + 0.75f * s)
@@ -326,6 +328,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
         }
 
         /** The height of the bar of the system, in pixels; 0 when the phone has none. */
+        @SuppressLint("InternalInsetResource", "DiscouragedApi")
         fun barHeight(context: Context): Int {
             if (android.os.Build.VERSION.SDK_INT >= 30) {
                 // What the bar takes now, when it is there; what it would take (a little more on some phones) only when it is away.
@@ -334,6 +337,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
                 val real = if (shown > 0) shown else insets.getInsetsIgnoringVisibility(android.view.WindowInsets.Type.navigationBars()).bottom
                 if (real > 0) return real
             }
+            // shortcut: Android 8 to 10 give an app no inset outside a window, so the internal resource is asked by name; upgrade when minSdk reaches 30.
             val id = context.resources.getIdentifier("navigation_bar_height", "dimen", "android")
             return if (id > 0) context.resources.getDimensionPixelSize(id) else 0
         }

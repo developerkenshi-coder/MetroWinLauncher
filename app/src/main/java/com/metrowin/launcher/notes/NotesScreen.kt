@@ -98,6 +98,8 @@ fun NotesScreen() {
 
     fun toast(id: Int, vararg args: Any) = Toast.makeText(context, context.getString(id, *args), Toast.LENGTH_LONG).show()
 
+    fun toastCount(id: Int, count: Int) = Toast.makeText(context, context.resources.getQuantityString(id, count, count), Toast.LENGTH_LONG).show()
+
     fun commit(list: List<Note>) {
         notes = list
         scope.launch(Dispatchers.IO) {
@@ -122,7 +124,7 @@ fun NotesScreen() {
                     context.contentResolver.openOutputStream(uri, "wt")!!.use { NoteBackup.write(snapshot, it, noteFiles::file) { note -> sketchPng(note.strokes) } }
                 }.isSuccess
             }
-            if (ok) toast(R.string.notes_backup_done, snapshot.size) else toast(R.string.notes_backup_failed)
+            if (ok) toastCount(R.plurals.notes_backup_done, snapshot.size) else toast(R.string.notes_backup_failed)
         }
     }
     val restore = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -131,7 +133,7 @@ fun NotesScreen() {
             val incoming = withContext(Dispatchers.IO) { runCatching { context.contentResolver.openInputStream(uri)!!.use { NoteBackup.read(it) { name, file -> noteFiles.restore(name, file) } } }.getOrNull() }
             if (incoming == null) toast(R.string.notes_restore_failed) else {
                 commit(NoteBackup.merge(notes.orEmpty(), incoming))
-                toast(R.string.notes_restore_done, incoming.size)
+                toastCount(R.plurals.notes_restore_done, incoming.size)
             }
         }
     }

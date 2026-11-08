@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.components
 
+import androidx.compose.ui.res.pluralStringResource
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -193,7 +194,7 @@ fun MetroStatusBar(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 GlyphIcon(Glyph.Bell, 14.dp, color = color)
                 Spacer(Modifier.width(3.dp))
-                val said = stringResource(R.string.a11y_sb_notifications, notifications.size)
+                val said = pluralStringResource(R.plurals.a11y_sb_notifications, notifications.size, notifications.size)
                 MetroText(notifications.size.toString(), size = 12.sp, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:notifications").semantics { contentDescription = said })
             }
         }

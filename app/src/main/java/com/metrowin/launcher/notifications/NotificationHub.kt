@@ -106,6 +106,10 @@ object NotificationHub {
      */
     val watched: Boolean get() = watchers.get() > 0
 
+    /** The launcher's own screen is on: it draws its banners itself, so none is drawn over it. Not set by the bars and overlays that only read the notifications. */
+    @Volatile
+    var launcherShown = false
+
     /** A screen that shows the notifications came on (the launcher, the screen saver). Pair it with [stopWatching]. */
     fun startWatching() {
         if (watchers.getAndIncrement() == 0) service?.screenOn()

@@ -1,19 +1,7 @@
 package com.metrowin.launcher.ui.start
 
-import com.metrowin.launcher.ui.weather.rainOutlookText
-import androidx.compose.ui.res.stringArrayResource
-import com.metrowin.launcher.data.WeatherBlock
-import com.metrowin.launcher.data.OpenMeteo
-import com.metrowin.launcher.ui.anim.metroTween
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
-import com.metrowin.launcher.notifications.LiveCards
 import com.metrowin.launcher.notifications.LiveCard
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import com.metrowin.launcher.ui.components.AppIcon
 import androidx.compose.ui.draw.clipToBounds
@@ -22,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -30,17 +17,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -49,16 +31,11 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.ui.graphics.graphicsLayer
 import com.metrowin.launcher.data.WidgetSizing
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
@@ -66,31 +43,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
-import com.metrowin.launcher.data.Birthday
 import com.metrowin.launcher.data.Birthdays
 import com.metrowin.launcher.data.Checklist
-import com.metrowin.launcher.data.MoonPhase
-import com.metrowin.launcher.data.WorldCities
 import com.metrowin.launcher.model.TileData
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathOperation
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import com.metrowin.launcher.data.BatteryInfo
-import com.metrowin.launcher.data.BatteryState
-import com.metrowin.launcher.data.ClockFormat
-import com.metrowin.launcher.data.NextAlarm
-import com.metrowin.launcher.data.StorageInfo
-import com.metrowin.launcher.data.Countdown
-import com.metrowin.launcher.data.DayForecast
-import com.metrowin.launcher.data.LiveEvent
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.LocalWidgetHost
-import com.metrowin.launcher.data.WeatherData
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Folder
 import com.metrowin.launcher.model.Glyph
@@ -99,31 +58,13 @@ import com.metrowin.launcher.model.LiveKind
 import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.model.TileStyle
 import com.metrowin.launcher.notifications.TilePeek
-import com.metrowin.launcher.ui.anim.FlipContainer
-import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
-import com.metrowin.launcher.ui.anim.LocalPowerSaving
 import com.metrowin.launcher.ui.anim.LocalTapFeedback
 import com.metrowin.launcher.ui.components.AppArt
-import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
-import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.ColorMath
-import com.metrowin.launcher.ui.theme.toArgbInt
 import com.metrowin.launcher.ui.theme.onTile
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 import android.appwidget.AppWidgetHostView
-import android.graphics.BitmapFactory
 import android.view.View
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
-import java.time.format.TextStyle
-import java.util.Locale
 
 /** Whether the tiles show the name of their app (the "names on the tiles" setting). */
 val LocalTileNames = androidx.compose.runtime.staticCompositionLocalOf { true }
@@ -197,6 +138,7 @@ fun TileFace(
                 item.data is TileData.BatteryGraph -> BatteryGraphFace(item, size, width, height, live.extras.battery)
                 item.data is TileData.DataUse -> DataUseFace(item, size, width, height, live.extras.dataUsage, live.extras.usageAllowed)
                 item.data is TileData.MemoryUse -> MemoryFace(item, size, width, height, live.extras.memory)
+                item.data is TileData.SystemMonitor -> SystemFace(item, size, width, height, seed)
                 item.data is TileData.Toggle -> ToggleFace(item, size, width, height, live.extras.toggles[item.data.action])
                 item.data is TileData.Sun -> SunFace(item, size, width, height, live.weather)
                 item.data is TileData.WeatherPlus -> WeatherPlusFace(item, size, width, height, live.weather)
@@ -268,53 +210,7 @@ private fun NoteFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
     }
 }
 
-/** The days left to a date in large light type, and what they are to: "62 days to Christmas". It counts up after the date. */
-@Composable
-private fun CountdownFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
-    var today by remember { mutableStateOf(LocalDate.now()) }
-    // Once a day, just after midnight, and only while the launcher is on screen.
-    LaunchedWhileStarted(Unit) {
-        while (true) {
-            val now = java.time.LocalDateTime.now()
-            today = now.toLocalDate()
-            delay(java.time.Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay()).toMillis() + 1_000L)
-        }
-    }
-    val days = Countdown.daysLeft(item.targetDay, today)
-    val number = kotlin.math.abs(days).coerceAtMost(99_999L).toInt()
-    Box(Modifier.fillMaxSize()) {
-        Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-            if (days == 0L) {
-                MetroText(stringResource(R.string.cd_today), size = if (size == TileSize.Small) 16.sp else 36.sp, modifier = Modifier.testTag("countdown:days"))
-            } else {
-                MetroText(number.toString(), size = if (size == TileSize.Small) 26.sp else 56.sp, modifier = Modifier.testTag("countdown:days"))
-                if (size != TileSize.Small) {
-                    MetroText(
-                        pluralStringResource(if (days > 0) R.plurals.cd_to else R.plurals.cd_since, number, number, item.label),
-                        size = 15.sp, weight = FontWeight.Normal, maxLines = 2, modifier = Modifier.padding(horizontal = 8.dp),
-                    )
-                }
-            }
-        }
-        if (days == 0L && size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
-    }
-}
 
-/** What the weather is like now besides the temperature: what is felt, the wind and the humidity. */
-@Composable
-private fun WeatherDetailsFace(weather: WeatherData) {
-    val details = weather.details
-    val unit = stringResource(if (weather.fahrenheit) R.string.unit_mph else R.string.unit_kmh)
-    val lines = listOfNotNull(
-        details.feelsLike?.let { stringResource(R.string.weather_feels_like, it) },
-        details.wind?.let { stringResource(R.string.weather_wind_line, it, unit) },
-        details.humidity?.let { stringResource(R.string.weather_humidity_line, it) },
-        details.rainChance?.let { stringResource(R.string.weather_rain_line, it) },
-    ).take(3)
-    Column(Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        lines.forEach { MetroText(it, size = 19.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("weather:detail")) }
-    }
-}
 
 /** A counter: the number in large type, and a small button for one less. A touch on the tile (not here) adds one. */
 @Composable
@@ -374,115 +270,9 @@ private fun ChecklistFace(item: AppItem, size: TileSize, width: Dp, height: Dp, 
     }
 }
 
-/** The time in another city, with the name of the city and, when it is not the same day, which day it is there. */
-@Composable
-private fun WorldClockFace(item: AppItem, size: TileSize, width: Dp, height: Dp, zone: String) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    var now by remember { mutableStateOf(java.time.Instant.now()) }
-    // Redrawn when the minute changes, and only while the launcher is on screen.
-    LaunchedWhileStarted(Unit) {
-        while (true) {
-            now = java.time.Instant.now()
-            delay(60_000L - now.toEpochMilli() % 60_000L + 50L)
-        }
-    }
-    val zoneId = remember(zone) { runCatching { java.time.ZoneId.of(zone) }.getOrNull() }
-    if (zoneId == null) {
-        StaticFace(item, size, width, height)
-        return
-    }
-    val there = WorldCities.timeIn(zoneId, now, java.time.ZoneId.systemDefault())
-    val locale = Locale.getDefault()
-    val is24 = LocalTileFeatures.current.clockHours.is24(android.text.format.DateFormat.is24HourFormat(context))
-    Box(Modifier.fillMaxSize()) {
-        val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.26f else 0.3f).toSp() }
-        Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-            val meridiem = ClockFormat.meridiem(there.time, is24, locale)
-            Row(verticalAlignment = Alignment.Bottom) {
-                MetroText(ClockFormat.time(there.time, is24, locale), size = digits, maxLines = 1, modifier = Modifier.weight(1f, fill = false).testTag("worldclock:time"))
-                // "AM" and "PM" are small, next to the digits: the time never wraps or gets cut on a narrow tile.
-                if (meridiem.isNotEmpty()) MetroText(meridiem, size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.padding(start = 3.dp, bottom = 6.dp))
-            }
-            if (size != TileSize.Small) {
-                MetroText(item.label, size = 18.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("worldclock:city"))
-                when (there.dayOffset) {
-                    1 -> MetroText(stringResource(R.string.live_tomorrow), size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("worldclock:day"))
-                    -1 -> MetroText(stringResource(R.string.worldclock_yesterday), size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("worldclock:day"))
-                }
-            }
-        }
-        if (size == TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
-    }
-}
 
-/** The moon as it is today: a disc with the lit part drawn, and its name and how much of it is lit. */
-@Composable
-private fun MoonFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
-    val today = rememberToday()
-    val ink = LocalMetroColors.current.tileContent
-    val illumination = MoonPhase.illumination(today)
-    val waxing = MoonPhase.waxing(today)
-    val name = MoonPhase.name(today)
-    Box(Modifier.fillMaxSize()) {
-        val disc = minOf(width, height) * if (size == TileSize.Small) 0.6f else 0.5f
-        Canvas(Modifier.align(Alignment.Center).size(disc).testTag("moon:disc")) {
-            val r = this.size.minDimension / 2f
-            // The lit side is the right in the first half of the month and the left in the second.
-            withTransform({ if (!waxing) scale(-1f, 1f, pivot = center) }) {
-                drawCircle(ink.copy(alpha = 0.22f), r)
-                // The lit part: the right half of the disc, less the half of an ellipse for a crescent, plus it for a gibbous moon.
-                // The ellipse is the edge between light and dark, and it gets thinner towards the quarters.
-                val w = r * kotlin.math.abs(1f - 2f * illumination.toFloat())
-                val half = Path().apply { arcTo(Rect(center.x - r, center.y - r, center.x + r, center.y + r), -90f, 180f, true); close() }
-                val edge = Path().apply { addOval(Rect(center.x - w, center.y - r, center.x + w, center.y + r)) }
-                val lit = Path.combine(if (illumination < 0.5) PathOperation.Difference else PathOperation.Union, half, edge)
-                drawPath(lit, ink)
-            }
-        }
-        if (size != TileSize.Small) {
-            Column(Modifier.align(Alignment.BottomStart).padding(start = 9.dp, bottom = 7.dp)) {
-                MetroText(stringResource(name.label), size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("moon:name"))
-                if (size == TileSize.Wide) MetroText(stringResource(R.string.moon_lit, (illumination * 100).toInt()), size = 12.sp, weight = FontWeight.Normal, color = ink.copy(alpha = 0.8f))
-            }
-        }
-    }
-}
 
-/** The next birthdays of the contacts: the nearest in large type, and on the other face the next ones. */
-@Composable
-private fun BirthdaysFace(item: AppItem, size: TileSize, width: Dp, height: Dp, birthdays: List<Birthday>, seed: Int) {
-    val today = rememberToday()
-    val upcoming = remember(birthdays, today) { Birthdays.upcoming(birthdays, today, 3) }
-    if (upcoming.isEmpty()) {
-        StaticFace(item, size, width, height)
-        return
-    }
-    val first = upcoming.first()
-    FlipContainer(if (upcoming.size > 1 && size != TileSize.Small) 2 else 1, seed) { face ->
-        Box(Modifier.fillMaxSize()) {
-            if (face == 0) {
-                Column(Modifier.padding(start = 10.dp, top = 8.dp, end = 10.dp)) {
-                    MetroText(first.name, size = if (size == TileSize.Small) 14.sp else 22.sp, maxLines = 2, lineHeight = 26.sp, modifier = Modifier.testTag("birthday:name"))
-                    if (size != TileSize.Small) {
-                        MetroText(birthdayWhen(first), size = 16.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("birthday:when"))
-                        first.turning?.let { MetroText(stringResource(R.string.birthdays_turning, it), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f)) }
-                    }
-                }
-            } else {
-                Column(Modifier.padding(start = 10.dp, top = 8.dp, end = 10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    upcoming.forEach { MetroText(it.name + " · " + birthdayWhen(it, short = true), size = 15.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("birthday:next")) }
-                }
-            }
-            if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
-        }
-    }
-}
 
-@Composable
-private fun birthdayWhen(next: Birthdays.Next, short: Boolean = false): String = when {
-    next.daysAway == 0 -> stringResource(R.string.birthdays_today)
-    else -> pluralStringResource(R.plurals.birthdays_in, next.daysAway, next.daysAway)
-}
 
 /** The number in the top right corner of a tile. */
 @Composable
@@ -576,31 +366,7 @@ private fun IconicFace(item: AppItem, size: TileSize, width: Dp, height: Dp, cou
     }
 }
 
-/** Windows Phone's Cycle template: photos fading into one another, one after the other. */
-@Composable
-internal fun CycleFace(item: AppItem, photos: List<ImageBitmap>, seed: Int) {
-    var index by remember { mutableIntStateOf(0) }
-    val reduced = LocalReduceMotion.current
-    val saving = LocalPowerSaving.current
-    LaunchedWhileStarted(photos.size to (reduced || saving)) {
-        // With reduced motion, or while saving battery, the tile keeps its photo.
-        if (photos.size < 2 || reduced || saving) return@LaunchedWhileStarted
-        // Tiles start at different moments, so the whole screen does not change at once.
-        delay(1_000L + seed.mod(5) * 700L)
-        while (true) {
-            delay(CYCLE_MS)
-            index = (index + 1) % photos.size
-        }
-    }
-    Box(Modifier.fillMaxSize()) {
-        Crossfade(targetState = index % photos.size, animationSpec = metroTween(durationMillis = 900), label = "cycle") { shown ->
-            Image(bitmap = photos[shown], contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.Low, modifier = Modifier.fillMaxSize())
-        }
-        PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
-    }
-}
 
-private const val CYCLE_MS = 4_500L
 
 /**
  * A widget: the view Android gives for it, filling the tile. Where there is no widget host (previews, tests) or the
@@ -677,441 +443,22 @@ private fun WidgetFace(
     }
 }
 
-/** The tile of a contact: the person's photo over the whole tile, the name on it. Until the photo is read, the glyph. */
-@Composable
-internal fun PhotoShortcutFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
-    val path = item.photoPath
-    val photo by produceState<ImageBitmap?>(null, path) {
-        value = path?.let { withContext(Dispatchers.IO) { BitmapFactory.decodeFile(it)?.asImageBitmap() } }
-    }
-    val bitmap = photo
-    if (bitmap == null) {
-        StaticFace(item, size, width, height)
-    } else {
-        Box(Modifier.fillMaxSize()) {
-            Image(bitmap = bitmap, contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.Low, modifier = Modifier.fillMaxSize())
-            if (size != TileSize.Small) PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
-        }
-    }
-}
 
-/**
- * The tile of an app with something going on: its usual face, then one face for each thing (a conversation, a picture, the
- * song, a download), turning over one after the other.
- */
-@Composable
-private fun CardsFace(item: AppItem, size: TileSize, width: Dp, height: Dp, cards: List<LiveCard>, seed: Int) {
-    // The list of everything waiting comes first and does not count among the faces of the app.
-    val all = cards.filterIsInstance<LiveCard.Inbox>() + cards.filter { it !is LiveCard.Inbox }.take(LiveCards.MAX_CARDS)
-    // A small tile has room for who wrote and a few words: the messages, the notifications and the pictures, not the list or the songs.
-    val shown = if (size == TileSize.Small) all.filter { it is LiveCard.Message || it is LiveCard.Digest || it is LiveCard.Picture } else all
-    // What the app has to say comes first, as on the phone: the tile shows the newest thing at once, and again whenever something new comes in.
-    // Two or more things to say (WhatsApp with two chats): only the inside turns over, the name of the app stays where it is.
-    // One thing: the whole face turns, name included, as before.
-    val inner = shown.size >= 2 && size != TileSize.Small
-    Box(Modifier.fillMaxSize()) {
-        FlipContainer(1 + shown.size, seed, startFace = if (shown.isNotEmpty()) 1 else 0, resetKey = shown.firstOrNull()) { face ->
-            if (face == 0) {
-                StaticFace(item, size, width, height, label = !inner)
-            } else {
-                Box(Modifier.fillMaxSize().testTag("card:${shown[face - 1]::class.simpleName}")) {
-                    when (val card = shown[face - 1]) {
-                        is LiveCard.Message -> if (size == TileSize.Small) SmallCard(card.sender, card.text) else MessageCard(card, size)
-                        is LiveCard.Digest -> if (size == TileSize.Small) SmallCard(card.title, card.text) else DigestCard(card)
-                        is LiveCard.Picture -> PictureCard(card)
-                        is LiveCard.Progress -> ProgressCard(card, width)
-                        is LiveCard.Playing -> PlayingCard(card, size, height)
-                        is LiveCard.Inbox -> InboxCard(card, height)
-                    }
-                    if (size != TileSize.Small && !inner) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
-                }
-            }
-        }
-        if (inner) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
-    }
-}
 
-/** What a small tile says of a notification: who, in a line, and the first words of it. */
-@Composable
-private fun SmallCard(title: String, text: String) {
-    val ink = LocalMetroColors.current.tileContent
-    Column(Modifier.fillMaxSize().padding(start = 7.dp, top = 6.dp, end = 17.dp, bottom = 5.dp)) {
-        MetroText(title, size = 13.sp, maxLines = 1)
-        if (text.isNotBlank()) {
-            MetroText(text, size = 11.sp, weight = FontWeight.Normal, maxLines = 5, lineHeight = 14.sp, color = ink.copy(alpha = 0.9f), modifier = Modifier.padding(top = 2.dp))
-        }
-    }
-}
 
-/** The notifications waiting in the app, newest first: who, when, and the first line of what they said, as many as the tile holds. */
-@Composable
-private fun InboxCard(card: LiveCard.Inbox, height: Dp) {
-    val ink = LocalMetroColors.current.tileContent
-    val fit = ((height - INBOX_LABEL) / INBOX_ROW).toInt().coerceIn(1, LiveCards.MAX_ROWS)
-    Column(Modifier.fillMaxSize().padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = INBOX_LABEL), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        card.rows.take(fit).forEach { row ->
-            Column(Modifier.testTag("card:row")) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    MetroText(row.sender, size = 16.sp, maxLines = 1, modifier = Modifier.weight(1f))
-                    MetroText(whenText(row.time), size = 11.sp, weight = FontWeight.Normal, color = ink.copy(alpha = 0.75f), maxLines = 1, modifier = Modifier.padding(start = 6.dp))
-                }
-                if (row.text.isNotBlank()) MetroText(row.text, size = 13.sp, weight = FontWeight.Normal, maxLines = 1, color = ink.copy(alpha = 0.85f))
-            }
-        }
-    }
-}
 
-private val INBOX_ROW = 40.dp
-private val INBOX_LABEL = 28.dp
 
-/** Someone wrote: their picture (when there is one), their name, the chat it came in, and the last line. */
-@Composable
-private fun MessageCard(card: LiveCard.Message, size: TileSize) {
-    val ink = LocalMetroColors.current.tileContent
-    Box(Modifier.fillMaxSize()) {
-    if (card.more > 0) {
-        MetroText(
-            "+${card.more}", size = 15.sp, color = ink.copy(alpha = 0.9f),
-            modifier = Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 10.dp).testTag("card:more"),
-        )
-    }
-    Row(Modifier.fillMaxSize().padding(start = 10.dp, top = 10.dp, end = if (card.more > 0) 38.dp else 10.dp, bottom = 26.dp)) {
-        card.avatar?.let { avatar ->
-            val side = if (size == TileSize.Wide) 64.dp else 44.dp
-            Image(avatar, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(side).testTag("card:avatar"))
-            Spacer(Modifier.width(10.dp))
-        }
-        Column(Modifier.weight(1f)) {
-            MetroText(card.sender, size = 20.sp, maxLines = 1)
-            card.conversation?.let { chat ->
-                MetroText(chat, size = 13.sp, weight = FontWeight.Normal, maxLines = 1, color = ink.copy(alpha = 0.75f))
-            }
-            if (card.text.isNotBlank()) {
-                MetroText(
-                    card.text, size = 15.sp, weight = FontWeight.Normal, maxLines = 3, lineHeight = 19.sp,
-                    color = ink.copy(alpha = 0.9f), modifier = Modifier.padding(top = 3.dp),
-                )
-            }
-        }
-    }
-    }
-}
 
-/** A notification said in a title and a line, with the picture of who it is from. A dot says it is going on now. */
-@Composable
-private fun DigestCard(card: LiveCard.Digest) {
-    val ink = LocalMetroColors.current.tileContent
-    Box(Modifier.fillMaxSize()) {
-        Row(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 10.dp, end = 10.dp)) {
-            card.avatar?.let { avatar ->
-                Image(avatar, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(40.dp).testTag("card:avatar"))
-                Spacer(Modifier.width(10.dp))
-            }
-            Column(Modifier.weight(1f)) {
-                if (card.title.isNotBlank()) MetroText(card.title, size = 20.sp, maxLines = 2, lineHeight = 24.sp)
-                if (card.text.isNotBlank()) {
-                    MetroText(
-                        card.text, size = 15.sp, weight = FontWeight.Normal, maxLines = 3, lineHeight = 19.sp,
-                        color = ink.copy(alpha = 0.85f), modifier = Modifier.padding(top = 3.dp),
-                    )
-                }
-            }
-        }
-        if (card.live) Box(Modifier.align(Alignment.TopEnd).padding(10.dp).size(9.dp).background(ink, CircleShape).testTag("card:live"))
-    }
-}
 
-/** A notification with a picture: the picture fills the tile, with its words in a shade at the bottom. */
-@Composable
-private fun PictureCard(card: LiveCard.Picture) {
-    Box(Modifier.fillMaxSize()) {
-        Image(card.picture, contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.Low, modifier = Modifier.fillMaxSize())
-        if (card.caption.isNotBlank()) {
-            // Its words sit in a shade over the picture, clear of the name of the app at the bottom.
-            Box(
-                Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth()
-                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f))))
-                    .padding(start = 9.dp, end = 9.dp, top = 22.dp, bottom = 28.dp),
-            ) {
-                MetroText(card.caption, size = 14.sp, weight = FontWeight.Normal, maxLines = 2, lineHeight = 18.sp, color = Color.White)
-            }
-        }
-    }
-}
 
-/** A download, an upload: what it is and how far along, as a bar and a number. */
-@Composable
-private fun ProgressCard(card: LiveCard.Progress, width: Dp) {
-    val ink = LocalMetroColors.current.tileContent
-    Column(Modifier.fillMaxSize().padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 32.dp)) {
-        MetroText(card.title, size = 18.sp, maxLines = 2, lineHeight = 22.sp)
-        Spacer(Modifier.weight(1f))
-        if (card.percent != null) {
-            MetroText("${card.percent}%", size = 34.sp)
-            BatteryBar(card.percent, width * 0.7f)
-        } else {
-            MetroText("…", size = 34.sp, color = ink.copy(alpha = 0.85f))
-        }
-    }
-}
 
-/** The song: its cover (when there is one), its name and its artist, and whether it plays. */
-@Composable
-private fun PlayingCard(card: LiveCard.Playing, size: TileSize, height: Dp) {
-    val ink = LocalMetroColors.current.tileContent
-    Row(Modifier.fillMaxSize().padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 26.dp)) {
-        card.art?.let { art ->
-            val side = (height * 0.55f).coerceAtMost(if (size == TileSize.Wide) 96.dp else 72.dp)
-            Image(art, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(side).testTag("card:art"))
-            Spacer(Modifier.width(10.dp))
-        }
-        Column(Modifier.weight(1f)) {
-            MetroText(card.title, size = 20.sp, maxLines = 2, lineHeight = 24.sp)
-            if (card.artist.isNotBlank()) {
-                MetroText(card.artist, size = 15.sp, weight = FontWeight.Normal, maxLines = 1, color = ink.copy(alpha = 0.85f), modifier = Modifier.padding(top = 3.dp))
-            }
-        }
-        PlayMark(card.playing, ink)
-    }
-}
 
-/** A triangle when the music plays, two bars when it is paused. */
-@Composable
-private fun PlayMark(playing: Boolean, color: Color) {
-    Canvas(Modifier.size(18.dp).testTag(if (playing) "card:playing" else "card:paused")) {
-        if (playing) {
-            val path = androidx.compose.ui.graphics.Path().apply {
-                moveTo(size.width * 0.15f, size.height * 0.05f)
-                lineTo(size.width * 0.95f, size.height * 0.5f)
-                lineTo(size.width * 0.15f, size.height * 0.95f)
-                close()
-            }
-            drawPath(path, color)
-        } else {
-            drawRect(color, androidx.compose.ui.geometry.Offset(size.width * 0.12f, size.height * 0.05f), androidx.compose.ui.geometry.Size(size.width * 0.28f, size.height * 0.9f))
-            drawRect(color, androidx.compose.ui.geometry.Offset(size.width * 0.6f, size.height * 0.05f), androidx.compose.ui.geometry.Size(size.width * 0.28f, size.height * 0.9f))
-        }
-    }
-}
 
-/** The Battery Saver tile: the charge in large type with a bar under it, and on the other face how it is charging. */
-@Composable
-private fun BatteryFace(item: AppItem, size: TileSize, width: Dp, height: Dp, battery: BatteryInfo?, seed: Int) {
-    if (battery == null) {
-        StaticFace(item, size, width, height)
-        return
-    }
-    FlipContainer(if (size == TileSize.Small) 1 else 2, seed) { face ->
-        Box(Modifier.fillMaxSize()) {
-            if (face == 0) {
-                val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.34f else 0.3f).toSp() }
-                Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                    MetroText("${battery.percent}%", size = digits)
-                    if (size != TileSize.Small) BatteryBar(battery.percent, width * 0.46f)
-                }
-            } else {
-                // Above the name of the tile, which sits at the bottom.
-                Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 30.dp)) {
-                    MetroText(
-                        stringResource(
-                            when (battery.state) {
-                                BatteryState.Charging -> R.string.battery_charging
-                                BatteryState.Full -> R.string.battery_full
-                                BatteryState.Discharging -> R.string.battery_discharging
-                            },
-                        ),
-                        size = 22.sp,
-                    )
-                    battery.minutesToFull?.let {
-                        MetroText(
-                            stringResource(R.string.battery_until_full, BatteryInfo.duration(it)),
-                            size = 15.sp, weight = FontWeight.Normal, modifier = Modifier.padding(top = 4.dp),
-                        )
-                    }
-                    if (LocalTileFeatures.current.batteryEstimate) {
-                        battery.minutesLeft?.let {
-                            MetroText(
-                                stringResource(R.string.battery_time_left, BatteryInfo.duration(it)),
-                                size = 15.sp, weight = FontWeight.Normal, modifier = Modifier.padding(top = 4.dp).testTag("battery:left"),
-                            )
-                        }
-                    }
-                }
-            }
-            if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
-        }
-    }
-}
 
-@Composable
-internal fun BatteryBar(percent: Int, width: Dp) {
-    val ink = LocalMetroColors.current.tileContent
-    Box(Modifier.size(width, 14.dp).border(2.dp, ink).padding(2.dp)) {
-        Box(Modifier.fillMaxHeight().fillMaxWidth(percent / 100f).background(ink))
-    }
-}
 
-/** Storage Sense: what is free on the phone in large type, and a bar with how much of it is used. */
-@Composable
-private fun StorageFace(item: AppItem, size: TileSize, width: Dp, height: Dp, storage: StorageInfo?) {
-    if (storage == null) {
-        StaticFace(item, size, width, height)
-        return
-    }
-    val locale = Locale.getDefault()
-    Box(Modifier.fillMaxSize()) {
-        val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.2f else 0.26f).toSp() }
-        Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-            MetroText(StorageInfo.format(storage.freeBytes, locale), size = digits, modifier = Modifier.testTag("storage:free"))
-            if (size != TileSize.Small) {
-                BatteryBar(storage.usedPercent, width * 0.5f)
-                MetroText(
-                    stringResource(R.string.storage_free_of, StorageInfo.format(storage.totalBytes, locale)),
-                    size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.padding(top = 6.dp),
-                )
-            }
-        }
-        if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
-    }
-}
 
-/** The Alarms tile: when the next alarm rings, as a time in large type and the day under it. No alarm: just the mark. */
-@Composable
-private fun AlarmFace(item: AppItem, size: TileSize, width: Dp, height: Dp, triggerMillis: Long, seed: Int = 0) {
-    val next = remember(triggerMillis) { NextAlarm.describe(triggerMillis, System.currentTimeMillis()) }
-    if (next == null) {
-        StaticFace(item, size, width, height)
-        return
-    }
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val locale = Locale.getDefault()
-    val is24 = android.text.format.DateFormat.is24HourFormat(context)
-    Box(Modifier.fillMaxSize()) {
-        val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.26f else 0.3f).toSp() }
-        Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(verticalAlignment = Alignment.Bottom) {
-                MetroText(ClockFormat.time(next.time, is24, locale), size = digits, maxLines = 1, modifier = Modifier.weight(1f, fill = false).testTag("alarm:time"))
-                val meridiem = ClockFormat.meridiem(next.time, is24, locale)
-                if (meridiem.isNotEmpty() && size != TileSize.Small) {
-                    MetroText(meridiem, size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.padding(start = 4.dp, bottom = 6.dp))
-                }
-            }
-            if (size != TileSize.Small) {
-                MetroText(
-                    when (val day = next.day) {
-                        NextAlarm.Day.Today -> stringResource(R.string.live_today)
-                        NextAlarm.Day.Tomorrow -> stringResource(R.string.live_tomorrow)
-                        is NextAlarm.Day.Weekday -> day.dayOfWeek.getDisplayName(TextStyle.FULL, locale)
-                    },
-                    size = 15.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("alarm:day"),
-                )
-            }
-        }
-        if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
-    }
-}
 
-/** The next hours: as many as the tile has room for, the hour over the temperature. */
-@Composable
-private fun HoursFace(weather: WeatherData, width: Dp) {
-    val fontScale = LocalDensity.current.fontScale
-    val shown = weather.hours.drop(1).filterIndexed { i, _ -> i % 2 == 1 }.take(((width - 20.dp) / (56.dp * fontScale + 10.dp)).toInt().coerceIn(2, 5))
-    val clock = remember { java.time.format.DateTimeFormatter.ofPattern("H") }
-    Row(Modifier.fillMaxHeight().padding(start = 10.dp, top = 12.dp, bottom = NAME_ROOM), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        shown.forEach { hour ->
-            Column {
-                MetroText(hour.time.format(clock) + "h", size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f), modifier = Modifier.testTag("weather:hour"))
-                MetroText("${hour.temperature}°", size = 20.sp)
-            }
-        }
-    }
-}
 
-/** The weather tile: the temperature in large type with the weather under it, and on the other face the next days. */
-@Composable
-private fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, weather: WeatherData?, seed: Int) {
-    if (weather == null) {
-        StaticFace(item, size, width, height)
-        return
-    }
-    val withDays = size != TileSize.Small && weather.days.size >= 2
-    val blocks = LocalTileFeatures.current.weatherBlocks
-    val withDetails = size != TileSize.Small && !weather.details.isEmpty && WeatherBlock.Details.code in blocks
-    val withHours = size != TileSize.Small && weather.hours.size >= 3 && WeatherBlock.Hourly.code in blocks
-    // Only when it rains or is about to: a face that says "no rain" every time would be a face nobody needs.
-    val outlook = if (size != TileSize.Small && WeatherBlock.Rain.code in blocks) {
-        OpenMeteo.rainOutlook(weather.condition, weather.hours)?.takeIf { it.raining || it.hours != null }
-    } else {
-        null
-    }
-    val withAir = size != TileSize.Small && WeatherBlock.Air.code in blocks && weather.air?.aqi != null
-    // The faces after the first, in order: the rain, the next hours, the next days, the details, the air.
-    val others = listOfNotNull(
-        if (outlook != null) 'r' else null, if (withHours) 'h' else null, if (withDays) 'd' else null,
-        if (withDetails) 'x' else null, if (withAir) 'a' else null,
-    )
-    FlipContainer(1 + others.size, seed) { face ->
-        Box(Modifier.fillMaxSize()) {
-            val kind = if (face == 0) 'n' else others[(face - 1) % others.size]
-            if (kind == 'x') {
-                WeatherDetailsFace(weather)
-            } else if (kind == 'r' && outlook != null) {
-                MetroText(
-                    rainOutlookText(outlook), size = 20.sp, weight = FontWeight.Normal, maxLines = 4, lineHeight = 24.sp,
-                    modifier = Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = NAME_ROOM).testTag("weather:rain-face"),
-                )
-            } else if (kind == 'a') {
-                val aqi = weather.air?.aqi ?: 0
-                Column(Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp)) {
-                    MetroText(stringResource(R.string.weather_air_title), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f))
-                    MetroText("$aqi", size = 34.sp, modifier = Modifier.testTag("weather:air-face"))
-                    MetroText(stringArrayResource(R.array.aqi_levels)[OpenMeteo.aqiLevel(aqi)], size = 16.sp, weight = FontWeight.Normal, maxLines = 1)
-                }
-            } else if (kind == 'h') {
-                HoursFace(weather, width)
-            } else if (kind == 'n') {
-                val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.46f else 0.38f).toSp() }
-                Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 2.dp)) {
-                    MetroText("${weather.temperature}°", size = digits)
-                    if (size != TileSize.Small) {
-                        MetroText(
-                            stringResource(weather.condition.label),
-                            size = 16.sp, weight = FontWeight.Normal, modifier = Modifier.padding(start = 2.dp),
-                        )
-                    }
-                }
-            } else {
-                // As many days as fit at the size of the text the user chose: a day is two lines tall and about 70 dp wide.
-                val fontScale = LocalDensity.current.fontScale
-                val shown = weather.days.drop(1).take(
-                    if (size == TileSize.Wide) {
-                        ((width - 20.dp) / (70.dp * fontScale + 18.dp)).toInt().coerceIn(1, 3)
-                    } else {
-                        ((height - NAME_ROOM - 8.dp) / (46.dp * fontScale)).toInt().coerceIn(1, 2)
-                    },
-                )
-                val rows: @Composable (DayForecast) -> Unit = { day ->
-                    Column(Modifier.padding(end = 18.dp)) {
-                        MetroText(
-                            day.date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
-                            size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f),
-                        )
-                        MetroText("${day.high}° ${day.low}°", size = 20.sp)
-                    }
-                }
-                // Above the name of the tile, in the room that is left: what does not fit gets smaller, it never runs over the name.
-                if (size == TileSize.Wide) {
-                    Row(Modifier.align(Alignment.TopStart).fillMaxHeight().padding(start = 10.dp, top = 12.dp, bottom = NAME_ROOM)) { shown.forEach { rows(it) } }
-                } else {
-                    Column(Modifier.align(Alignment.TopStart).fillMaxHeight().padding(start = 10.dp, top = 8.dp, bottom = NAME_ROOM)) { shown.forEach { rows(it) } }
-                }
-            }
-            if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
-        }
-    }
-}
 
 /** The text of a tile is never drawn bigger than this times its size: past that it does not fit in a small tile. */
 private const val MAX_TILE_FONT_SCALE = 1.3f
@@ -1119,18 +466,6 @@ private const val MAX_TILE_FONT_SCALE = 1.3f
 /** The room the name of a tile takes along the bottom edge. */
 internal val NAME_ROOM = 26.dp
 
-/** The torch tile: the glyph on the accent colour while the light is off, black on white while it is on. */
-@Composable
-private fun TorchFace(item: AppItem, size: TileSize, width: Dp, height: Dp, on: Boolean) {
-    val light = LocalMetroColors.current.tileContent
-    // Lit, the tile is filled with its text color and the text takes the other one.
-    val ink = if (on) (if (ColorMath.luminance(light.toArgbInt()) > 0.5f) Color.Black else Color.White) else light
-    Box(Modifier.fillMaxSize().then(if (on) Modifier.background(light) else Modifier)) {
-        val art = minOf(width, height) * if (size == TileSize.Small) 0.5f else 0.42f
-        GlyphIcon(item.glyph ?: Glyph.Flashlight, art, Modifier.align(Alignment.Center), color = ink)
-        if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart), color = ink)
-    }
-}
 
 /** Glyph or icon in the middle, name in the bottom left corner, like every Windows Phone tile. */
 @Composable
@@ -1165,128 +500,8 @@ internal fun TileLabel(label: String, modifier: Modifier = Modifier, color: Colo
     )
 }
 
-@Composable
-private fun CalendarFace(item: AppItem, size: TileSize, width: Dp, height: Dp, event: LiveEvent?, events: List<LiveEvent>, seed: Int) {
-    val today = rememberToday()
-    val features = LocalTileFeatures.current
-    if (features.calendarAgenda && size == TileSize.Large) {
-        LargeCalendar(item, events, today)
-        return
-    }
-    val agenda = features.calendarAgenda && size == TileSize.Wide && events.size > 1
-    val faces = if (event != null && size != TileSize.Small) 2 else 1
-    FlipContainer(faces, seed) { face ->
-        Box(Modifier.fillMaxSize()) {
-            if (face == 0 || event == null) {
-                val numberSize = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.46f else 0.4f).toSp() }
-                Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 2.dp)) {
-                    MetroText(today.dayOfMonth.toString(), size = numberSize)
-                    if (size != TileSize.Small) {
-                        MetroText(
-                            today.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault()),
-                            size = 15.sp,
-                            weight = FontWeight.Normal,
-                            modifier = Modifier.padding(start = 2.dp),
-                        )
-                    }
-                }
-                if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
-            } else if (agenda) {
-                AgendaList(events.take(3), today, Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = NAME_ROOM))
-                TileLabel(item.label, Modifier.align(Alignment.BottomStart))
-            } else {
-                Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 10.dp, end = 10.dp)) {
-                    MetroText(describeWhen(event, today), size = 14.sp, weight = FontWeight.Normal)
-                    MetroText(
-                        event.title,
-                        size = 22.sp,
-                        maxLines = 3,
-                        lineHeight = 26.sp,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
-                }
-                TileLabel(item.label, Modifier.align(Alignment.BottomStart))
-            }
-        }
-    }
-}
 
-@Composable
-private fun PhotosFace(item: AppItem, size: TileSize, width: Dp, height: Dp, live: LiveTileData, seed: Int) {
-    val photos = live.photos
-    FlipContainer(if (size == TileSize.Small) 1 else 1 + photos.size, seed) { face ->
-        if (face == 0 || photos.isEmpty()) {
-            StaticFace(item, size, width, height)
-        } else {
-            Box(Modifier.fillMaxSize()) {
-                Image(
-                    bitmap = photos[(face - 1) % photos.size],
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    filterQuality = FilterQuality.High,
-                    modifier = Modifier.fillMaxSize(),
-                )
-                PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
-            }
-        }
-    }
-}
 
-@Composable
-private fun PeopleFace(item: AppItem, size: TileSize, width: Dp, height: Dp, live: LiveTileData, seed: Int) {
-    val people = live.people
-    FlipContainer(if (size == TileSize.Small) 1 else 1 + people.size, seed) { face ->
-        if (face == 0 || people.isEmpty()) {
-            StaticFace(item, size, width, height)
-        } else {
-            val person = people[(face - 1) % people.size]
-            Box(Modifier.fillMaxSize()) {
-                Image(
-                    bitmap = person.photo,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    filterQuality = FilterQuality.High,
-                    modifier = Modifier.fillMaxSize(),
-                )
-                PhotoLabel(person.name, Modifier.align(Alignment.BottomStart))
-            }
-        }
-    }
-}
 
-/** Name over a photo: a soft shade at the bottom keeps it readable on any picture. */
-@Composable
-internal fun PhotoLabel(text: String, modifier: Modifier = Modifier) {
-    if (!LocalTileNames.current) return
-    Box(
-        modifier.background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f)))),
-    ) {
-        TileLabel(text, Modifier.padding(top = 18.dp))
-    }
-}
 
-/** The current date, kept right across midnight. */
-@Composable
-internal fun rememberToday(): LocalDate {
-    var today by remember { mutableStateOf(LocalDate.now()) }
-    LaunchedWhileStarted(Unit) {
-        while (true) {
-            // Coming back after a night off screen, the date is right at once.
-            LocalDate.now().let { if (it != today) today = it }
-            delay(60_000)
-        }
-    }
-    return today
-}
 
-@Composable
-internal fun describeWhen(event: LiveEvent, today: LocalDate): String {
-    val start = Instant.ofEpochMilli(event.startMillis).atZone(ZoneId.systemDefault())
-    val day = when (start.toLocalDate()) {
-        today -> stringResource(R.string.live_today)
-        today.plusDays(1) -> stringResource(R.string.live_tomorrow)
-        else -> start.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())
-    }
-    if (event.allDay) return day
-    return "$day ${start.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))}"
-}

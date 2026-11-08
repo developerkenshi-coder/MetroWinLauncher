@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -49,7 +50,7 @@ fun NotificationExtrasSettings(env: SettingsEnv) {
         val lengths = listOf(15, 30, 60, 120, 240)
         DropdownSetting(
             label = stringResource(R.string.ac_dnd_minutes),
-            options = lengths.map { if (it < 60) stringResource(R.string.dnd_minutes, it) else stringResource(R.string.dnd_hours, it / 60) },
+            options = lengths.map { if (it < 60) pluralStringResource(R.plurals.dnd_minutes, it, it) else stringResource(R.string.dnd_hours, it / 60) },
             selected = lengths.indexOf(lengths.minByOrNull { kotlin.math.abs(it - s.dndMinutes) }),
             onSelect = { i -> env.onChange { it.copy(dndMinutes = lengths[i]) } },
             tag = "notifications:dnd", id = "ac.dndminutes",

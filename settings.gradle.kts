@@ -22,3 +22,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "MetroWinLauncher"
 include(":app")
+include(":parsers")
+include(":benchmark")

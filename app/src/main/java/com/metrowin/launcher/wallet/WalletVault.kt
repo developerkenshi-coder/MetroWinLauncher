@@ -2,6 +2,7 @@ package com.metrowin.launcher.wallet
 
 import com.metrowin.launcher.data.Prefs
 import android.content.Context
+import androidx.core.content.edit
 import com.metrowin.launcher.data.AtomicEncryptedFile
 import com.metrowin.launcher.data.WalletStore
 import com.metrowin.launcher.notes.KeystoreCrypt
@@ -17,7 +18,7 @@ class WalletVault(private val file: File, private val crypt: NoteCrypt = Keystor
     constructor(context: Context) : this(
         File(context.filesDir, "wallet.dat"),
         legacy = { WalletStore(context).load().map { Card(it.id.ifBlank { UUID.randomUUID().toString() }, it.name, it.code) } },
-        dropLegacy = { Prefs.main(context).edit().remove("wallet").apply() },
+        dropLegacy = { Prefs.main(context).edit { remove("wallet") } },
     )
 
     private val sealed = AtomicEncryptedFile(file, crypt)

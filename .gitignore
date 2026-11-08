@@ -16,3 +16,6 @@ app/build/
 /keystore.properties
 keystore/
 /graphify-out/
+benchmark/build/
+parsers/build/
+__pycache__/

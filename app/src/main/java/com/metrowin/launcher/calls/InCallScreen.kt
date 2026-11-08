@@ -125,7 +125,7 @@ fun InCallScreen(lines: List<CallLine>, audio: CallAudio, actions: CallActions, 
                         RoundButton(CallIcon.Mute, stringResource(R.string.incall_mute), audio.muted, "incall:mute") { actions.onMute(!audio.muted) }
                         RoundButton(CallIcon.Keypad, stringResource(R.string.incall_keypad), false, "incall:keypad") { keypad = true }
                         RoundButton(
-                            CallIcon.Speaker, stringResource(if (audio.bluetooth) R.string.incall_bluetooth else R.string.incall_speaker), audio.speaker || audio.bluetooth, "incall:speaker",
+                            CallIcon.Speaker, stringResource(if (audio.bluetooth) R.string.incall_bluetooth else R.string.incall_speaker), audio.speaker, "incall:speaker",
                         ) { actions.onRoute() }
                     }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {

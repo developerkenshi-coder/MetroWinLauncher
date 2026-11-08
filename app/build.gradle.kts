@@ -7,6 +7,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+composeCompiler {
+    stabilityConfigurationFiles.add(layout.projectDirectory.file("compose_stability.conf"))
+}
+
 android {
     // The two mail libraries each carry the same licence files.
     packaging {
@@ -20,8 +24,8 @@ android {
         minSdk = 26
         targetSdk = 36
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        versionCode = 44
-        versionName = "26.7.2S"
+        versionCode = 45
+        versionName = "26.8S"
     }
 
     // The key of the official release comes from keystore.properties in the root of the project (never committed: it is in
@@ -47,6 +51,9 @@ android {
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             if (official != null) signingConfig = official
+            // AGP writes the hash of the git commit into the APK (META-INF/version-control-info.textproto): a build from a checkout of
+            // the tag and one from the working tree would differ by those bytes, which breaks a reproducible build (docs/progetti/build-riproducibile.md).
+            vcsInfo.include = false
         }
         // The release build (shrunk and optimized, nothing of the debugging in it: the one to live with, it draws less battery than the
         // debug build) signed with the debug key, so that it installs over the debug build without losing anything. The release build
@@ -89,6 +96,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":parsers"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.exifinterface)

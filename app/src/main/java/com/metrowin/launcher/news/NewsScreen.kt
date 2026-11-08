@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.produceState
+import androidx.core.net.toUri
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -188,7 +189,7 @@ internal fun NewsList(items: List<NewsItem>, images: NewsPictures, showImages: B
 }
 
 private fun open(context: android.content.Context, link: String) {
-    runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(link)).addCategory(Intent.CATEGORY_BROWSABLE)) }
+    runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, link.toUri()).addCategory(Intent.CATEGORY_BROWSABLE)) }
 }
 
 /** The line under a headline: who published it in the accent colour, and how long ago. */

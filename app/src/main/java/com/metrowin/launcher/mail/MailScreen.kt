@@ -4,6 +4,7 @@ import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.topBarsPadding
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -378,7 +379,7 @@ private fun AppPasswordHelp(config: MailProviderConfig) {
         PageNote(stringResource(R.string.mail_app_password_hint))
         MetroButton(
             stringResource(R.string.mail_app_password_open), Modifier.fillMaxWidth().testTag("mail:apppassword"),
-            onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } },
+            onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } },
         )
     }
 }

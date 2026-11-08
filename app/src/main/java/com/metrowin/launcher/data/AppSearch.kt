@@ -95,6 +95,7 @@ object SearchAliases {
         Glyph.Office -> listOf("office", "documents", "ufficio", "documenti")
         Glyph.OneDrive -> listOf("cloud", "drive", "storage", "backup", "archivio")
         Glyph.OneNote, Glyph.Notes -> listOf("notes", "note", "notebook", "memo", "sketch", "appunti", "blocco", "schizzo")
+        Glyph.Terminal -> listOf("shizuku", "terminal", "adb", "shell", "battery doctor", "medico batteria", "comandi", "console")
         Glyph.Todo -> listOf("todo", "to do", "tasks", "checklist", "reminders", "da fare", "attività", "promemoria", "lista")
         Glyph.People -> listOf("people", "contacts", "address", "book", "persone", "contatti", "rubrica")
         Glyph.Phone -> listOf("phone", "dialer", "call", "calls", "telefono", "chiama", "chiamate", "tastierino")

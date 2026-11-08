@@ -13,6 +13,7 @@ import com.metrowin.launcher.ui.settings.SettingsSection.Backup
 import com.metrowin.launcher.ui.settings.SettingsSection.Battery
 import com.metrowin.launcher.ui.settings.SettingsSection.Gestures
 import com.metrowin.launcher.ui.settings.SettingsSection.Notifications
+import com.metrowin.launcher.ui.settings.SettingsSection.OtherProjects
 import com.metrowin.launcher.ui.settings.SettingsSection.StartBars
 import com.metrowin.launcher.ui.settings.SettingsSection.StatusBar
 import com.metrowin.launcher.ui.settings.SettingsSection.StartBehaviour
@@ -70,6 +71,7 @@ object SettingsIndex {
         e("theme.accentuse", StartTheme, R.string.accent_use, "accent", "colour", "color", "where", "grey", "colore", "dove", "grigio", "tinta"),
         e("theme.framing", StartTheme, R.string.photo_framing, "zoom", "crop", "position", "inquadratura", "ritaglio", "posizione"),
         e("theme.tileopacity", StartTheme, R.string.theme_tile_opacity, "transparent", "translucent", "see through", "photo", "tiles", "trasparenza", "trasparente", "riquadri", "foto", "sfondo"),
+        e("theme.photoinside", StartTheme, R.string.theme_photo_inside, "photo", "background", "inside", "tiles", "window", "foto", "sfondo", "dentro", "riquadri", "finestra"),
         e("theme.parallax", StartTheme, R.string.theme_parallax, "parallax", "parallasse", "scroll", "depth", "motion", "scorrimento", "profondita", "movimento"),
         e("theme.panorama", StartTheme, R.string.theme_panorama, "panorama", "title", "big title", "parallax", "titolo", "titoli", "parallasse", "pagine"),
 
@@ -134,6 +136,7 @@ object SettingsIndex {
         e("gest.gamebars", Gestures, R.string.gest_game_bars, "game", "games", "bars", "hide", "status bar", "navigation", "gioco", "giochi", "barre", "nascondi", "barra di stato", "navigazione"),
         e("gest.navspacing", Gestures, R.string.gest_navbar_spacing, "navigation", "bar", "spacing", "distance", "buttons", "barra", "distanza", "tasti", "spaziatura"),
         e("gest.navbarhold", Gestures, R.string.gest_navbar_hold, "navigation", "bar", "hold", "recent", "long", "barra", "tieni", "recenti", "lunga"),
+        e("icons.glass", Icons, R.string.icons_glass, "glass", "transparent", "see-through", "icon", "tile", "vetro", "trasparente", "icona", "riquadro"),
         e("icons.largetiles", Icons, R.string.icons_large_tiles, "large", "big", "tile", "icon", "full", "grandi", "grande", "riquadro", "icona", "riempie"),
         e("icons.find", Icons, R.string.icons_pack_find, "play store", "download", "icon pack", "install", "scarica", "cerca", "icone"),
         e("icons.pack", Icons, R.string.icons_pack, "icons", "icon pack", "nova", "adw", "apex", "go launcher", "icone"),
@@ -319,6 +322,8 @@ object SettingsIndex {
         e("about.phoneinfo", About, R.string.about_phone_toggle, "phone", "model", "memory", "storage", "uptime", "telefono", "modello", "memoria", "spazio"),
         e("about.phone", About, R.string.about_phone_title, "phone", "model", "ram", "patch", "telefono", "modello", "informazioni"),
         e("about.tutorial", About, R.string.tut_replay, "tour", "help", "guide", "intro", "aiuto", "guida", "tutorial"),
+        e("projects.foss", OtherProjects, R.string.prj_foss, "foss", "open source", "keyboard", "tastiera", "launcher", "github", "software libero"),
+        e("projects.nonfoss", OtherProjects, R.string.prj_nonfoss, "spesatracker", "play store", "google play", "spese", "budget", "non foss"),
         e("about.credits", About, R.string.about_credits, "licenses", "thanks", "open source", "licenze", "ringraziamenti"),
     )
 

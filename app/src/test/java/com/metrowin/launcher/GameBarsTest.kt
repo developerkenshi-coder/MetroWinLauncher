@@ -4,6 +4,7 @@ import android.content.pm.ApplicationInfo
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.SettingsCodec
 import com.metrowin.launcher.gestures.GameApps
+import com.metrowin.launcher.gestures.GameBars
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -72,5 +73,27 @@ class GameBarsTest {
         assertTrue(GameApps.isGameActivity("com.epicgames.ue4.GameActivity"))
         assertFalse(GameApps.isGameActivity("com.android.chrome.Main"))
         assertFalse(GameApps.isGameActivity("com.example.MainActivity"))
+    }
+
+    @Test
+    fun aDialogOrPopupOfAnotherAppDoesNotTakeTheGamesPlace() {
+        assertTrue(GameApps.isPopup("android.app.AlertDialog"))
+        assertTrue(GameApps.isPopup("androidx.appcompat.app.AlertDialog"))
+        assertTrue(GameApps.isPopup("android.widget.PopupWindow\$PopupDecorView"))
+        assertFalse(GameApps.isPopup("com.example.MainActivity"))
+        assertFalse(GameApps.isPopup("com.unity3d.player.UnityPlayerActivity"))
+        assertFalse(GameApps.isPopup(null))
+    }
+
+    @Test
+    fun oneSwipeCallsBothBarsAndTheStripsWaitWhileTheyAreOnScreen() {
+        // A game in front, both bars there: both strips wait (bottom, top).
+        assertEquals(true to true, GameBars.strips(active = true, recalled = false, navShown = true, statusShown = true))
+        // A bar that is not there has no strip; no game or bars called back: no strips at all.
+        assertEquals(true to false, GameBars.strips(true, false, navShown = true, statusShown = false))
+        assertEquals(false to false, GameBars.strips(false, false, true, true))
+        assertEquals(false to false, GameBars.strips(true, true, true, true))
+        // Thin: a swipe from the very edge, and the game keeps the touches near it.
+        assertTrue(GameBars.STRIP_DP in 8..12)
     }
 }

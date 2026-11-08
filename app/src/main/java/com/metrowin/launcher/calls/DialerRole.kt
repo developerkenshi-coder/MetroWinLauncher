@@ -1,16 +1,19 @@
 package com.metrowin.launcher.calls
 
+import android.annotation.SuppressLint
 import android.app.role.RoleManager
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.core.net.toUri
 import android.os.Build
 import android.provider.BlockedNumberContract
 import android.telecom.PhoneAccount
 import android.telecom.PhoneAccountHandle
 import android.telecom.TelecomManager
 import com.metrowin.launcher.data.PhoneCalls
+import com.metrowin.launcher.data.logged
 
 /** Being the phone app of the phone: the role that makes Android show the calls on the screens of the launcher. */
 object DialerRole {
@@ -23,7 +26,7 @@ object DialerRole {
     /** Puts [number] on the blocklist of Android, whose calls the phone then refuses before they ring. True when it was added. */
     fun block(context: Context, number: String): Boolean = runCatching {
         context.contentResolver.insert(BlockedNumberContract.BlockedNumbers.CONTENT_URI, ContentValues().apply { put(BlockedNumberContract.BlockedNumbers.COLUMN_ORIGINAL_NUMBER, number) }) != null
-    }.getOrDefault(false)
+    }.logged("dialer.block", withMessage = false).getOrDefault(false)
 
     /**
      * From Android 14 the user can take away the right to open the screen of a call over the lock screen; the call then falls back to a banner
@@ -35,7 +38,7 @@ object DialerRole {
         needsFullScreenGrant(isDefault(context), Build.VERSION.SDK_INT, context.getSystemService(android.app.NotificationManager::class.java)?.canUseFullScreenIntent() ?: true)
 
     /** The page where the user gives the launcher back the right to open the screen of a call at full screen. */
-    fun fullScreenSettings(context: Context): Intent = Intent(android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, Uri.parse("package:${context.packageName}"))
+    fun fullScreenSettings(context: Context): Intent = Intent(android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, "package:${context.packageName}".toUri())
         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
     /** The screen where the user makes the launcher the phone app, or null when the phone has none. */
@@ -59,11 +62,12 @@ object DialerRole {
         }.onFailure {
             runCatching {
                 context.startActivity(intent())
-            }
+            }.logged("dialer.call", withMessage = false)
         }
     }
 
     /** The SIMs that can call, when there are two or more (with one, or none, the phone chooses and no choice is asked). Needs the phone permission. */
+    @SuppressLint("MissingPermission") // runCatching absorbs the SecurityException
     fun sims(context: Context): List<PhoneAccountHandle> = runCatching {
         val telecom = context.getSystemService(TelecomManager::class.java)
         telecom.callCapablePhoneAccounts.filter { telecom.getPhoneAccount(it)?.hasCapabilities(PhoneAccount.CAPABILITY_SIM_SUBSCRIPTION) == true }

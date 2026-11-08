@@ -1,6 +1,7 @@
 package com.metrowin.launcher.notifications
 
 import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.data.logged
 import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationManager
@@ -18,6 +19,7 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.scale
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.gestures.LockAccessibilityService
 
@@ -70,8 +72,8 @@ class NotificationService : NotificationListenerService() {
             return
         }
         keepAtOnce(sbn)
-        showOverBanner(sbn)
-        hideSystemCopy(sbn)
+        // A banner that was due and could not be drawn leaves the notification of Android where it is: it is shown by one of the two, never by none.
+        if (showOverBanner(sbn)) hideSystemCopy(sbn)
         changed()
         clearIfSeen(sbn)
     }
@@ -159,7 +161,7 @@ class NotificationService : NotificationListenerService() {
         val store = SettingsStore.of(this)
         if (!store.actionCenterOn() || !store.hideSystemOn() && !store.filterOn()) return
         val settings = store.load()
-        runCatching { activeNotifications }.getOrNull()?.forEach { sbn ->
+        runCatching { activeNotifications }.logged("notifications.hideFiltered").getOrNull()?.forEach { sbn ->
             if (!dropFiltered(sbn, settings) && settings.hideSystemNotifications) hideFromAndroid(sbn, settings)
         }
         changed()
@@ -208,15 +210,16 @@ class NotificationService : NotificationListenerService() {
      * screen of the launcher is on, so every check that costs something comes after the cheap ones: users who did not allow
      * drawing over other apps, or did not turn the banner on, stop at the first lines.
      */
-    private fun showOverBanner(sbn: StatusBarNotification) {
-        if (NotificationHub.watched || sbn.packageName == packageName || LockAccessibilityService.safe) return
-        if (!Settings.canDrawOverlays(this)) return skipped(sbn, "no permission to draw over apps")
+    private fun showOverBanner(sbn: StatusBarNotification): Boolean {
+        // Only the launcher's own screen shows its banner itself. The Metro status bar over other apps and the lock screen also count as "watching" (they read the notifications), but they draw no banner: counting them here swallowed every banner while the bar was up.
+        if (NotificationHub.launcherShown || sbn.packageName == packageName || LockAccessibilityService.safe) return true
+        if (!Settings.canDrawOverlays(this)) return true.also { skipped(sbn, "no permission to draw over apps") }
         val store = SettingsStore.of(this)
-        if (!store.actionCenterOn() || !store.overlayBannerOn()) return
+        if (!store.actionCenterOn() || !store.overlayBannerOn()) return true
         val ranking = NotificationListenerService.Ranking()
         val known = runCatching { currentRanking.getRanking(sbn.key, ranking) }.getOrDefault(false)
-        val entry = toEntry(sbn) ?: return skipped(sbn, "not worth showing (ongoing, group summary or empty)")
-        if (BannerGate.same(overlaySeen[sbn.key], entry)) return skipped(sbn, "the same post again")
+        val entry = toEntry(sbn) ?: return true.also { skipped(sbn, "not worth showing (ongoing, group summary or empty)") }
+        if (BannerGate.same(overlaySeen[sbn.key], entry)) return true.also { skipped(sbn, "the same post again") }
         val settings = store.load()
         val allowed = OverlayRules.shows(
             settings, sbn.packageName,
@@ -226,14 +229,15 @@ class NotificationService : NotificationListenerService() {
             importance = if (known) ranking.importance else NotificationManager.IMPORTANCE_DEFAULT,
             passesDoNotDisturb = !known || ranking.matchesInterruptionFilter(),
         )
-        if (!allowed) return skipped(sbn, "rules: importance=${if (known) ranking.importance else -1} interactive/locked/DnD")
+        if (!allowed) return true.also { skipped(sbn, "rules: importance=${if (known) ranking.importance else -1} interactive/locked/DnD") }
+        if (!overlay.show(entry, settings)) return false.also { skipped(sbn, "the window of the banner could not be added") }
         if (overlaySeen.size >= MAX_OVERLAY_KEYS) overlaySeen.clear()
         overlaySeen[sbn.key] = BannerGate.signature(entry)
-        overlay.show(entry, settings)
         if (settings.hideSystemNotifications) {
             keepForLive(sbn)
             NotificationHub.hold(entry)
         }
+        return true
     }
 
     private fun skipped(sbn: StatusBarNotification, why: String) {
@@ -285,7 +289,7 @@ class NotificationService : NotificationListenerService() {
 
     private fun refresh() {
         pacer.read(SystemClock.elapsedRealtime())
-        val active = runCatching { activeNotifications }.getOrNull()
+        val active = runCatching { activeNotifications }.logged("notifications.refresh").getOrNull()
         if (active == null) {
             // Android refused (the listener is still connecting, or busy): try again a few times, so the list is not left out of date.
             if (failedReads++ < MAX_READ_RETRIES) act(pacer.changed(SystemClock.elapsedRealtime(), NotificationHub.watched))
@@ -293,14 +297,27 @@ class NotificationService : NotificationListenerService() {
         }
         failedReads = 0
         NotificationHub.update(
-            active.mapNotNull(::toEntry).sortedByDescending { it.postTime },
+            active.mapNotNull(::entryOf).sortedByDescending { it.postTime },
         )
+        entries.keys.retainAll(active.mapTo(HashSet()) { it.key })
         refreshLive(active)
+    }
+
+    /**
+     * The entry of a notification as last built, with the post time it was built for: a notification that is posted again has a new post
+     * time, so only the ones that changed are rebuilt (their pictures and icons decoded) when the whole list is read again.
+     */
+    private val entries = HashMap<String, Pair<Long, NotificationEntry?>>()
+
+    private fun entryOf(sbn: StatusBarNotification): NotificationEntry? {
+        entries[sbn.key]?.takeIf { it.first == sbn.postTime }?.let { return it.second }
+        return toEntry(sbn).also { entries[sbn.key] = sbn.postTime to it }
     }
 
     /** Reads the notifications again, after the settings changed what the live tiles use. */
     fun reload() {
         seen.clear()
+        entries.clear()
         changed()
     }
 
@@ -414,7 +431,7 @@ class NotificationService : NotificationListenerService() {
             bitmap
         } else {
             val scale = PICTURE_MAX_PX.toFloat() / longest
-            android.graphics.Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt().coerceAtLeast(1), (bitmap.height * scale).toInt().coerceAtLeast(1), true)
+            bitmap.scale((bitmap.width * scale).toInt().coerceAtLeast(1), (bitmap.height * scale).toInt().coerceAtLeast(1))
         }
     }.getOrNull()
 

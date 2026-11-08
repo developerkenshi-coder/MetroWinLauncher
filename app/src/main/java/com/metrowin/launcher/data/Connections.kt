@@ -166,6 +166,7 @@ class ConnectionController(private val context: Context) {
         if (wifiAccess() == ConnectionAccess.Ok) runCatching { wifi?.startScan() }
     }
 
+    @SuppressLint("MissingPermission") // wifiAccess() checks the location permission
     @Suppress("DEPRECATION")
     fun networks(): List<WifiNetwork> {
         if (wifiAccess() != ConnectionAccess.Ok) return emptyList()

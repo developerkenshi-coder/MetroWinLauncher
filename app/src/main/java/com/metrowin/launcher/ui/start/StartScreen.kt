@@ -5,7 +5,6 @@ import com.metrowin.launcher.ui.components.rememberIconTileColor
 import com.metrowin.launcher.ui.anim.metroTween
 import com.metrowin.launcher.ui.components.MetroText
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.wrapContentHeight
 import com.metrowin.launcher.ui.theme.toArgbInt
 import com.metrowin.launcher.ui.theme.ColorMath
@@ -21,9 +20,7 @@ import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -60,14 +57,9 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.ImageShader
-import androidx.compose.ui.graphics.ShaderBrush
-import androidx.compose.ui.graphics.TileMode
 import com.metrowin.launcher.data.PhotoFit
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -75,7 +67,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -101,13 +92,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import kotlin.math.roundToInt
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.zIndex
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.data.LiveTileData
-import com.metrowin.launcher.data.PhotoFraming
 import com.metrowin.launcher.data.Placement
 import com.metrowin.launcher.data.TileGrid
 import com.metrowin.launcher.model.AppItem
@@ -274,13 +263,16 @@ fun StartScreen(
     locked: Boolean = false,
     /** Room added above the clock and the tiles, to bring them down to the thumb. */
     topInset: androidx.compose.ui.unit.Dp = 0.dp,
-    /** Free mode (see [LauncherSettings.freeLayout]): tiles stay on the cell they are dropped on; the titles of groups are not drawn. */
     free: Boolean = false,
+    /** The photo is not under the tiles but in them, as on Windows Phone: each tile is a window onto it, and between the tiles there is none. */
+    photoInside: Boolean = false,
 ) {
     val currentActions by rememberUpdatedState(actions)
-    CompositionLocalProvider(LocalTileNames provides showNames, LocalTileSpacing provides spacing, LocalTileFeatures provides features) {
-    Box(modifier.fillMaxSize()) {
-        if (background != null) ParallaxBackground(background, scrollState, parallax, framing, photoFit)
+    val area = remember { mutableStateOf<LayoutCoordinates?>(null) }
+    val window = if (background != null && photoInside) remember(background, scrollState, parallax, framing, photoFit) { PhotoWindow(background, scrollState, parallax, framing, photoFit, area) } else null
+    CompositionLocalProvider(LocalTileNames provides showNames, LocalTileSpacing provides spacing, LocalTileFeatures provides features, LocalPhotoWindow provides window) {
+    Box(modifier.fillMaxSize().onGloballyPositioned { area.value = it }) {
+        if (background != null && window == null) ParallaxBackground(background, scrollState, parallax, framing, photoFit)
         Column(
             Modifier
                 .fillMaxSize()
@@ -316,44 +308,6 @@ fun StartScreen(
 /** The space between the tiles is the look's times this (see the "space between the tiles" setting). */
 val LocalTileSpacing = androidx.compose.runtime.staticCompositionLocalOf { 1f }
 
-/** How the Start photo is framed: zoom in percent, and the point that stays in view in percent. */
-@Immutable
-data class PhotoFrame(val zoom: Int = 100, val x: Int = 50, val y: Int = 50)
-
-/** The photo, drawn taller than the screen and moved up slower than the tiles. */
-@Composable
-private fun ParallaxBackground(image: ImageBitmap, scrollState: ScrollState, parallax: Boolean, framing: PhotoFrame, fit: PhotoFit) {
-    val travel = if (parallax) 120.dp else 0.dp
-    BoxWithConstraints(Modifier.fillMaxSize().clipToBounds()) {
-        val travelPx = with(LocalDensity.current) { travel.toPx() }
-        val moving = Modifier
-            .fillMaxWidth()
-            .height(maxHeight + travel)
-            .graphicsLayer {
-                translationY = -(scrollState.value * PARALLAX).coerceAtMost(travelPx)
-                // Zoomed in around the point the user chose, so that point stays where it is (only when the photo covers the screen).
-                val zoom = if (fit == PhotoFit.Fill) framing.zoom / 100f else 1f
-                scaleX = zoom
-                scaleY = zoom
-                transformOrigin = TransformOrigin(framing.x / 100f, framing.y / 100f)
-            }
-        if (fit == PhotoFit.Tile) {
-            Box(moving.drawBehind { drawRect(ShaderBrush(ImageShader(image, TileMode.Repeated, TileMode.Repeated))) })
-        } else {
-            Image(
-                bitmap = image,
-                contentDescription = null,
-                contentScale = fit.contentScale(),
-                alignment = if (fit == PhotoFit.Fill) BiasAlignment(PhotoFraming.bias(framing.x), PhotoFraming.bias(framing.y)) else Alignment.Center,
-                modifier = moving,
-            )
-        }
-        // A light shade keeps the white glyphs readable on a bright photo.
-        Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.12f)))
-    }
-}
-
-private const val PARALLAX = 0.2f
 
 /** The room above the first row of a group for its title. */
 private val GROUP_HEADER = 40.dp
@@ -864,11 +818,14 @@ private fun PositionedTile(
     // 1 = turned away, 0 = facing the screen. A new token makes a new Animatable that starts turned away:
     // resetting an existing one from an effect would only happen after the frame that shows the tiles in place.
     val away = remember(enterToken) { Animatable(if (origin != null) 0f else 1f) }
+    val leaving by rememberUpdatedState(exitRequest != null)
     LaunchedEffect(away) {
         if (origin != null) return@LaunchedEffect
         // Reduced motion: every tile fades in at once, quickly.
         val original = MotionStyle.original
         if (!reduced) delay(if (original) LaunchPlans.inDelay(placement.row / 2) else entryDelay(placement, index))
+        // An app was touched while this tile still waited for its turn to come in: the entrance must not start now and take the tile back from the exit.
+        if (leaving) return@LaunchedEffect
         if (original) {
             away.animateTo(0f, metroTween(durationMillis = LaunchPlans.ORIGINAL_IN_MS, easing = Motion.ExpoOut))
         } else {
@@ -905,8 +862,11 @@ private fun PositionedTile(
         is AppCell -> cell.tile.color
         is FolderCell -> cell.folder.color
     }
-    val transparent = hasBackground && cell is AppCell && cell.item.glyph != null && !highContrast && ownColor == 0
-    val iconColor = if ((LocalTileFeatures.current.iconColors || LocalTileFeatures.current.largeIcons) && cell is AppCell && ownColor == 0 && cell.item.glyph == null && cell.item.data == null) {
+    val glass = LocalTileFeatures.current.glassIcons && cell is AppCell && cell.item.glyph == null && cell.item.data == null
+    val photoWindow = LocalPhotoWindow.current
+    val inside = photoWindow != null
+    val transparent = (glass || inside || hasBackground && cell is AppCell && cell.item.glyph != null) && !highContrast && ownColor == 0
+    val iconColor = if (!glass && !inside && (LocalTileFeatures.current.iconColors || LocalTileFeatures.current.largeIcons) && cell is AppCell && ownColor == 0 && cell.item.glyph == null && cell.item.data == null) {
         rememberIconTileColor(cell.item)
     } else {
         null
@@ -914,7 +874,8 @@ private fun PositionedTile(
     val tileColor = when {
         ownColor != 0 -> Color(ownColor)
         iconColor != null -> iconColor
-        transparent -> Color.Black.copy(alpha = 0.12f)
+        // A window onto the photo: nothing of its own (the photo brings its own light shade).
+        transparent -> if (inside) Color.Transparent else Color.Black.copy(alpha = 0.12f)
         else -> colors.tileColor(index, LocalAccent.current)
     }.let { if (hasBackground && !transparent) it.copy(alpha = it.alpha * LocalTileFeatures.current.tileOpacity / 100f) else it }
     val shape = style.tileShapeFor(cell.size)
@@ -969,6 +930,7 @@ private fun PositionedTile(
             .then(if (highContrast) Modifier.border(HIGH_CONTRAST_FRAME, TileWhite, shape) else Modifier)
             .clipToBounds(),
     ) {
+        if (photoWindow != null && !highContrast && ownColor == 0) PhotoSlice(photoWindow) { coordinates }
         // In Modern Droid the tiles take the containers in turn, each with its own ink.
         CompositionLocalProvider(
             LocalMetroColors provides colors.onTile(

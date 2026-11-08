@@ -106,7 +106,7 @@ class VoiceRecognizer(private val context: Context, private val listener: VoiceL
     /** Asks for a model that works without a connection when the phone has one. */
     private fun create(preferOffline: Boolean): SpeechRecognizer? = runCatching {
         onDevice = preferOffline && Build.VERSION.SDK_INT >= 33 && SpeechRecognizer.isOnDeviceRecognitionAvailable(context)
-        if (onDevice) SpeechRecognizer.createOnDeviceSpeechRecognizer(context) else SpeechRecognizer.createSpeechRecognizer(context)
+        if (onDevice && Build.VERSION.SDK_INT >= 33) SpeechRecognizer.createOnDeviceSpeechRecognizer(context) else SpeechRecognizer.createSpeechRecognizer(context)
     }.getOrNull()
 
     /** Starts again in a moment, unless [release] was called in the meantime. */

@@ -295,7 +295,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                         QuickAction.Recents -> system(LockAccessibilityService::recents)
                         else -> {
                             // The flashlight and the quiet hours switch on the spot and the panel stays; anything else opens a screen.
-                            if (quick.activate(action, settings.dndMinutes, settings.torchAutoOffMin, settings.torchStrength, settings.vpnApp, settings.useShizuku)) {
+                            if (quick.activate(action, settings.dndMinutes, settings.torchAutoOffMin, settings.torchStrength, settings.vpnApp)) {
                                 readStates()
                             } else {
                                 if (action == QuickAction.QuietHours) Toast.makeText(app, R.string.qa_quiet_allow, Toast.LENGTH_LONG).show()

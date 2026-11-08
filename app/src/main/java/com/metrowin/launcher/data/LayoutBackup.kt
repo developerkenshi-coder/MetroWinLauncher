@@ -17,7 +17,7 @@ data class LayoutBackup(
 )
 
 /**
- * What the user keeps apart from the layout: things to do, reminders, named layouts and the place of the car. (Timers, the extra tiles and
+ * What the user keeps apart from the layout: things to do, reminders, named layouts, the place of the car and the choices of the small apps. (Timers, the extra tiles and
  * the Finance choices are shortcuts and settings, so the backup already holds them.) The [wallet] is null unless the file is encrypted
  * (the sync file): its codes are worth stealing, so a backup in the clear never carries them.
  */
@@ -27,6 +27,8 @@ data class BackupExtras(
     val layouts: List<SavedLayout>,
     val car: ParkedCar?,
     val wallet: List<Card>? = null,
+    /** The choices of the small apps in their own preference files, see [BackupPrefs]; empty for a file from before they were kept. */
+    val prefs: Map<String, Any> = emptyMap(),
 )
 
 /**
@@ -55,6 +57,7 @@ object LayoutBackupCodec {
         put("reminders", JSONArray(Reminders.encode(e.reminders)))
         put("layouts", JSONArray(Layouts.encode(e.layouts)))
         e.car?.let { put("car", JSONObject(ParkedCarStore.encode(it))) }
+        if (e.prefs.isNotEmpty()) put("prefs", BackupPrefs.encode(e.prefs))
         if (secret) e.wallet?.let { put("wallet", JSONArray(Wallet.encode(it))) }
     }
 
@@ -64,6 +67,7 @@ object LayoutBackupCodec {
         layouts = Layouts.decode(o.optJSONArray("layouts")?.toString()),
         car = o.optJSONObject("car")?.let { ParkedCarStore.decode(it.toString()) },
         wallet = o.optJSONArray("wallet")?.let { Wallet.decode(it.toString()) },
+        prefs = o.optJSONObject("prefs")?.let(BackupPrefs::decode).orEmpty(),
     )
 
     /**

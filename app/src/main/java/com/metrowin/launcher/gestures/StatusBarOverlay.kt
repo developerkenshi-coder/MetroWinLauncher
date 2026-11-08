@@ -3,6 +3,7 @@ package com.metrowin.launcher.gestures
 import android.accessibilityservice.AccessibilityService
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -87,14 +88,15 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
         if (on) NotificationHub.startWatching() else NotificationHub.stopWatching()
     }
 
+    @SuppressLint("InternalInsetResource", "DiscouragedApi")
     private fun heightPx(): Int {
         val density = service.resources.displayMetrics.density
-        val id = service.resources.getIdentifier("status_bar_height", "dimen", "android")
-        var px = if (id > 0) service.resources.getDimensionPixelSize(id) else 0
-        if (Build.VERSION.SDK_INT >= 30) {
-            val insets = service.getSystemService(WindowManager::class.java).currentWindowMetrics.windowInsets
-                .getInsetsIgnoringVisibility(WindowInsets.Type.statusBars() or WindowInsets.Type.displayCutout())
-            px = maxOf(px, insets.top)
+        val px = if (Build.VERSION.SDK_INT >= 30) {
+            service.getSystemService(WindowManager::class.java).currentWindowMetrics.windowInsets
+                .getInsetsIgnoringVisibility(WindowInsets.Type.statusBars() or WindowInsets.Type.displayCutout()).top
+        } else {
+            // shortcut: Android 8 to 10 give an app no inset outside a window, so the internal resource is asked by name; upgrade when minSdk reaches 30.
+            service.resources.getIdentifier("status_bar_height", "dimen", "android").takeIf { it > 0 }?.let(service.resources::getDimensionPixelSize) ?: 0
         }
         return maxOf(px, (MIN_DP * density).toInt())
     }
