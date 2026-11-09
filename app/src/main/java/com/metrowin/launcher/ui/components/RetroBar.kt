@@ -1,6 +1,17 @@
 package com.metrowin.launcher.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import com.metrowin.launcher.ui.anim.Motion
+import com.metrowin.launcher.ui.anim.metroTween
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -54,6 +65,7 @@ internal fun RetroBar(buttons: List<AppBarItem>, items: List<AppBarItem>, modifi
     if (buttons.isEmpty() && items.isEmpty()) return
     val colors = LocalMetroColors.current
     var open by remember { mutableStateOf(false) }
+    val reduced = LocalReduceMotion.current
     Column(modifier.fillMaxWidth().background(retroBackground()).animateContentSize()) {
         AnimatedVisibility(open && items.isNotEmpty(), enter = metroExpand, exit = metroCollapse) {
             // Five items fit without scrolling, as the guidelines ask; more of them scroll inside this height.
@@ -83,8 +95,13 @@ internal fun RetroBar(buttons: List<AppBarItem>, items: List<AppBarItem>, modifi
                             MetroText(item.symbol, size = 18.sp, weight = FontWeight.Normal)
                         }
                         // The names are under the buttons only while the bar is open.
-                        if (open) MetroText(item.label, size = 12.sp, weight = FontWeight.Normal, maxLines = 1, color = colors.foreground, modifier = Modifier.padding(top = 2.dp, bottom = 6.dp))
-                        else Box(Modifier.padding(bottom = (BAR_HEIGHT - BUTTON) / 2))
+                        // They slide down from under the buttons as the bar rises.
+                        AnimatedVisibility(
+                            open,
+                            enter = if (reduced) EnterTransition.None else slideInVertically(metroTween(260)) { -it } + expandVertically(metroTween(260)) + fadeIn(metroTween(260)),
+                            exit = if (reduced) ExitTransition.None else slideOutVertically(metroTween(180, easing = Motion.Accelerate)) { -it } + shrinkVertically(metroTween(180, easing = Motion.Accelerate)) + fadeOut(metroTween(180)),
+                        ) { MetroText(item.label, size = 12.sp, weight = FontWeight.Normal, maxLines = 1, color = colors.foreground, modifier = Modifier.padding(top = 2.dp, bottom = 6.dp)) }
+                        Box(Modifier.padding(bottom = if (open) 0.dp else (BAR_HEIGHT - BUTTON) / 2))
                     }
                 }
             }

@@ -1,6 +1,9 @@
 package com.metrowin.launcher.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import com.metrowin.launcher.ui.anim.metroCollapse
+import com.metrowin.launcher.ui.anim.metroExpand
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,7 +62,7 @@ fun AppBar(items: List<AppBarItem>, modifier: Modifier = Modifier, menu: List<Ap
     }
     var more by remember { mutableStateOf(false) }
     SuperBar(items + AppBarItem("…", stringResource(R.string.mail_more)) { more = !more }, modifier)
-    if (more) SuperBar(menu, modifier)
+    AnimatedVisibility(more, enter = metroExpand, exit = metroCollapse) { SuperBar(menu, modifier) }
 }
 
 @Composable

@@ -1631,6 +1631,7 @@
     <string name="weather_dew">Punto de rocío</string>
     <string name="weather_moon">Luna</string>
     <string name="weather_chart_description">Temperatura de las próximas horas, de %1$d° a %2$d°</string>
+    <string name="weather_now">Ahora</string>
     <string name="weather_air_title">Aire</string>
     <string name="weather_pollen_title">Polen</string>
     <string-array name="wind_compass">

@@ -1614,6 +1614,7 @@
     <string name="weather_dew">Dew point</string>
     <string name="weather_moon">Moon</string>
     <string name="weather_chart_description">Temperature of the next hours, from %1$d° to %2$d°</string>
+    <string name="weather_now">Now</string>
     <string name="weather_air_title">Air</string>
     <string name="weather_pollen_title">Pollen</string>
     <string-array name="wind_compass">

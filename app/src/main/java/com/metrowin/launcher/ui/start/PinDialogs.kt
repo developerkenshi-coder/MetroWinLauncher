@@ -1,5 +1,15 @@
 package com.metrowin.launcher.ui.start
 
+import kotlinx.coroutines.launch
+import com.metrowin.launcher.ui.theme.LocalStyle
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
+import com.metrowin.launcher.ui.anim.metroTween
+import com.metrowin.launcher.ui.anim.Motion
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.animation.core.Animatable
 import com.metrowin.launcher.ui.components.hideKeyboardWhenGone
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -69,16 +79,33 @@ import java.util.Locale
 /**
  * A dimmed page with [content] in a panel in the middle; touching outside it calls [onCancel]. The panel scrolls by itself when its content is
  * long: never put a vertically scrolling list or column in [content] without a fixed height (it would be measured with no limit and crash).
+ * In the classic look the panel swivels in from its top edge and, when closed by a touch outside, swivels out again before [onCancel] runs;
+ * a dialog the content itself closes (its own button) just goes, as it is taken off the screen at once.
  */
 @Composable
 internal fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val colors = LocalMetroColors.current
     val currentCancel by rememberUpdatedState(onCancel)
+    val scope = rememberCoroutineScope()
+    val animated = !LocalReduceMotion.current && LocalStyle.current.isClassic
+    // 1 while the panel is turned away, 0 when it faces the screen.
+    val away = remember { Animatable(if (animated) 1f else 0f) }
+    LaunchedEffect(Unit) { if (animated) away.animateTo(0f, metroTween(durationMillis = TURN_MS, easing = Motion.Decelerate)) }
+    var leaving by remember { mutableStateOf(false) }
+    fun cancel() {
+        if (leaving) return
+        if (!animated) { currentCancel(); return }
+        leaving = true
+        scope.launch {
+            away.animateTo(1f, metroTween(durationMillis = TURN_OUT_MS, easing = Motion.Accelerate))
+            currentCancel()
+        }
+    }
     Box(
         modifier
             .fillMaxSize()
-            .background(colors.background.copy(alpha = 0.85f))
-            .pointerInput(Unit) { detectTapGestures { currentCancel() } }
+            .drawBehind { drawRect(colors.background.copy(alpha = 0.85f), alpha = 1f - away.value) }
+            .pointerInput(Unit) { detectTapGestures { cancel() } }
             .imePadding(),
         contentAlignment = Alignment.Center,
     ) {
@@ -86,6 +113,12 @@ internal fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, co
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
+                .graphicsLayer {
+                    transformOrigin = TransformOrigin(0.5f, 0f)
+                    rotationX = -SWIVEL_DEGREES * away.value
+                    cameraDistance = Motion.CAMERA * density
+                    alpha = 1f - away.value * away.value
+                }
                 .panel()
                 .pointerInput(Unit) { detectTapGestures { } }
                 // On a short screen or with big text the panel scrolls: its last button can always be reached.
@@ -95,6 +128,10 @@ internal fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, co
         ) { content() }
     }
 }
+
+private const val TURN_MS = 250
+private const val TURN_OUT_MS = 180
+private const val SWIVEL_DEGREES = 85f
 
 /** The text of a note tile, written on several lines. */
 @Composable

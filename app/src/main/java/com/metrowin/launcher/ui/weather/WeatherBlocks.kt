@@ -2,7 +2,9 @@ package com.metrowin.launcher.ui.weather
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -83,7 +85,10 @@ internal fun extraCells(weather: WeatherData, blocks: Set<String>): List<Pair<St
     }
 }
 
-/** The temperature of the next hours as a line, with the chance of rain as bars under it. */
+/**
+ * The temperature of the next hours as a thin accent line with a dot for each hour, and the chance of rain as bars under it. The hours are
+ * written under it every third one, and the first, now, is the one with the big dot and its word in the accent colour.
+ */
 @Composable
 internal fun TemperatureChart(hours: List<HourForecast>, modifier: Modifier = Modifier) {
     if (hours.size < 3) return
@@ -95,34 +100,50 @@ internal fun TemperatureChart(hours: List<HourForecast>, modifier: Modifier = Mo
     val clock = java.time.format.DateTimeFormatter.ofLocalizedTime(java.time.format.FormatStyle.SHORT)
     Column(modifier.fillMaxWidth().testTag("weather:chart"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Canvas(Modifier.fillMaxWidth().height(110.dp).semantics { contentDescription = description }) {
-            val padTop = 6.dp.toPx()
-            val padBottom = 6.dp.toPx()
+            val padTop = 10.dp.toPx()
+            val padBottom = 10.dp.toPx()
             val usable = size.height - padTop - padBottom
-            val step = size.width / (hours.size - 1)
+            // Each hour has its own slot, and the dot of it is in the middle, over the label under it.
+            val slot = size.width / hours.size
             val range = (high - low).coerceAtLeast(1)
+            fun point(i: Int) = Offset((i + 0.5f) * slot, padTop + usable * (1f - (hours[i].temperature - low).toFloat() / range))
             hours.forEachIndexed { i, hour ->
                 val chance = (hour.rainChance ?: 0) / 100f
                 if (chance > 0f) {
-                    val barWidth = (step * 0.6f).coerceAtLeast(2f)
+                    val barWidth = (slot * 0.6f).coerceAtLeast(2f)
                     drawRect(
                         colors.subtle.copy(alpha = 0.35f),
-                        Offset(i * step - barWidth / 2, size.height - chance * size.height * 0.5f),
+                        Offset((i + 0.5f) * slot - barWidth / 2, size.height - chance * size.height * 0.5f),
                         Size(barWidth, chance * size.height * 0.5f),
                     )
                 }
             }
             val path = Path()
+            hours.indices.forEach { i -> point(i).let { if (i == 0) path.moveTo(it.x, it.y) else path.lineTo(it.x, it.y) } }
+            drawPath(path, accent, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round))
+            hours.indices.forEach { i -> if (i > 0) drawCircle(accent, 3.dp.toPx(), point(i)) }
+            // Now: a ring round a dot, so it reads as the place the line starts from.
+            drawCircle(accent, 7.dp.toPx(), point(0), style = Stroke(width = 2.dp.toPx()))
+            drawCircle(accent, 3.5.dp.toPx(), point(0))
+        }
+        Row(Modifier.fillMaxWidth()) {
             hours.forEachIndexed { i, hour ->
-                val point = Offset(i * step, padTop + usable * (1f - (hour.temperature - low).toFloat() / range))
-                if (i == 0) path.moveTo(point.x, point.y) else path.lineTo(point.x, point.y)
+                Box(Modifier.weight(1f), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                    val label = when {
+                        i == 0 -> stringResource(R.string.weather_now)
+                        i >= 2 && i % 3 == 0 -> hour.time.format(clock)
+                        else -> null
+                    }
+                    if (label != null) {
+                        MetroText(
+                            label, size = 11.sp, weight = if (i == 0) FontWeight.Bold else FontWeight.Normal, color = if (i == 0) accent else colors.subtle,
+                            maxLines = 1, minScale = 1f, modifier = Modifier.wrapContentWidth(unbounded = true),
+                        )
+                    }
+                }
             }
-            drawPath(path, accent, style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round))
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            MetroText(hours.first().time.format(clock), size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
-            MetroText("$low° – $high°", size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
-            MetroText(hours.last().time.format(clock), size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
-        }
+        MetroText("$low° – $high°", size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1, modifier = Modifier.align(androidx.compose.ui.Alignment.CenterHorizontally))
     }
 }
 

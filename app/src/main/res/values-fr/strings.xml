@@ -1631,6 +1631,7 @@
     <string name="weather_dew">Point de rosée</string>
     <string name="weather_moon">Lune</string>
     <string name="weather_chart_description">Température des prochaines heures, de %1$d° à %2$d°</string>
+    <string name="weather_now">Maint.</string>
     <string name="weather_air_title">Air</string>
     <string name="weather_pollen_title">Pollen</string>
     <string-array name="wind_compass">

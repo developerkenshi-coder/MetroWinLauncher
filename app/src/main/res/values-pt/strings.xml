@@ -1631,6 +1631,7 @@
     <string name="weather_dew">Ponto de orvalho</string>
     <string name="weather_moon">Lua</string>
     <string name="weather_chart_description">Temperatura das próximas horas, de %1$d° a %2$d°</string>
+    <string name="weather_now">Agora</string>
     <string name="weather_air_title">Ar</string>
     <string name="weather_pollen_title">Pólen</string>
     <string-array name="wind_compass">

@@ -1624,6 +1624,7 @@
     <string name="weather_dew">Punto di rugiada</string>
     <string name="weather_moon">Luna</string>
     <string name="weather_chart_description">Temperatura delle prossime ore, da %1$d° a %2$d°</string>
+    <string name="weather_now">Adesso</string>
     <string name="weather_air_title">Aria</string>
     <string name="weather_pollen_title">Pollini</string>
     <string-array name="wind_compass">
