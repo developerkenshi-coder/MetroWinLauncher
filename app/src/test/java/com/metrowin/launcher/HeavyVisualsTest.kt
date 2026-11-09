@@ -6,6 +6,7 @@ import com.metrowin.launcher.photos.panLimit
 import com.metrowin.launcher.photos.zoomAbout
 import com.metrowin.launcher.calendar.CalEvent
 import com.metrowin.launcher.calendar.DayLayout
+import com.metrowin.launcher.mail.thumbSample
 import com.metrowin.launcher.music.playbackPosition
 import com.metrowin.launcher.people.PeopleBook
 import com.metrowin.launcher.people.Person
@@ -76,5 +77,13 @@ class HeavyVisualsTest {
         assertEquals(2, blocks.getValue(3).columns)
         assertEquals(1, blocks.getValue(4).columns)
         assertEquals(15 * 60, blocks.getValue(4).startMin)
+    }
+
+    @Test
+    fun aThumbnailIsShrunkByPowersOfTwoButNotBelowItsSize() {
+        assertEquals(1, thumbSample(100))
+        assertEquals(1, thumbSample(300))
+        assertEquals(2, thumbSample(320))
+        assertEquals(16, thumbSample(4000))
     }
 }

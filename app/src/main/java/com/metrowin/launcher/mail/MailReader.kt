@@ -174,7 +174,7 @@ private fun Attachments(
                 }).padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                MetroText("📎", size = 18.sp)
+                AttachmentThumb(file, fetch)
                 MetroText(file.name, size = 15.sp, weight = FontWeight.Normal, color = LocalAccent.current, modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
                 MetroText(if (busy) "…" else sizeText(file.size), size = 12.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
             }
