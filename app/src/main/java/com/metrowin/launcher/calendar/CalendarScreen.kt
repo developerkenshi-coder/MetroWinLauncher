@@ -1,5 +1,7 @@
 package com.metrowin.launcher.calendar
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.Manifest
 import android.text.format.DateFormat
@@ -118,7 +120,8 @@ fun CalendarScreen() {
 
     MiniFrame {
         PivotHeader(
-            listOf(stringResource(R.string.cal_pivot_agenda), stringResource(R.string.cal_pivot_month), stringResource(R.string.cal_pivot_week)),
+            // The title of the middle page is the month on show: it changes as the months are swiped.
+            listOf(stringResource(R.string.cal_pivot_agenda), monthTitle(month), stringResource(R.string.cal_pivot_week)),
             pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp),
         )
         if (!canRead) {
@@ -160,6 +163,12 @@ fun CalendarScreen() {
         )
     }
 }
+
+private fun monthTitle(month: YearMonth): String = month.month.getDisplayName(TextStyle.FULL_STANDALONE, Locale.getDefault()) + " " + month.year
+
+/** How many months the grid can be swiped each way from the month of today. */
+private const val MONTHS_EACH_WAY = 240
+private val DAY_ROW = 46.dp
 
 private fun dayTitle(day: LocalDate, today: LocalDate): String =
     day.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)).let { if (day == today) "• $it" else it }
@@ -216,37 +225,46 @@ private fun MonthPage(
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
     val first = remember { firstDayOfWeek() }
-    val weeks = remember(month) { CalendarLogic.weeks(month, first) }
-    val busy = remember(events, month) { CalendarLogic.busyDays(events, weeks.first().first()..weeks.last().last(), zone) }
+    // The months are pages: a swipe on the grid goes to the next or the one before (the pivot above says which), and the month that is
+    // set from outside (the Today button, a day of another month) brings its page in.
+    val origin = remember { YearMonth.from(today) }
+    val monthPager = rememberPagerState(initialPage = MONTHS_EACH_WAY + java.time.temporal.ChronoUnit.MONTHS.between(origin, month).toInt()) { 2 * MONTHS_EACH_WAY + 1 }
+    LaunchedEffect(monthPager) { snapshotFlow { monthPager.settledPage }.collect { onMonth(origin.plusMonths((it - MONTHS_EACH_WAY).toLong())) } }
+    LaunchedEffect(month) {
+        val target = MONTHS_EACH_WAY + java.time.temporal.ChronoUnit.MONTHS.between(origin, month).toInt()
+        if (monthPager.settledPage != target) monthPager.animateScrollToPage(target)
+    }
+    val busy = remember(events, month) {
+        val weeks = CalendarLogic.weeks(month, first)
+        CalendarLogic.busyDays(events, weeks.first().first()..weeks.last().last(), zone)
+    }
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-        Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            MetroText("‹", size = 34.sp, modifier = Modifier.testTag("cal:prev").metroPress(onClick = { onMonth(month.minusMonths(1)) }).padding(horizontal = 14.dp))
-            MetroText(
-                month.month.getDisplayName(TextStyle.FULL_STANDALONE, Locale.getDefault()) + " " + month.year, size = 24.sp, textAlign = TextAlign.Center,
-                modifier = Modifier.weight(1f).testTag("cal:month"),
-            )
-            MetroText("›", size = 34.sp, modifier = Modifier.testTag("cal:next").metroPress(onClick = { onMonth(month.plusMonths(1)) }).padding(horizontal = 14.dp))
-        }
         Row(Modifier.fillMaxWidth()) {
-            weeks.first().forEach { d ->
+            CalendarLogic.weeks(month, first).first().forEach { d ->
                 MetroText(d.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.getDefault()), size = 13.sp, weight = FontWeight.Normal, color = colors.subtle, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
             }
         }
-        weeks.forEach { row ->
-            Row(Modifier.fillMaxWidth().height(46.dp)) {
-                row.forEach { day ->
-                    val inMonth = YearMonth.from(day) == month
-                    val isSelected = day == selected
-                    Column(
-                        Modifier.weight(1f).fillMaxHeight().padding(1.dp).testTag("cal:day:$day").metroPress(onClick = { onSelect(day); if (!inMonth) onMonth(YearMonth.from(day)) })
-                            .background(if (isSelected) accent else Color.Transparent),
-                        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
-                    ) {
-                        MetroText(
-                            day.dayOfMonth.toString(), size = 19.sp, weight = if (day == today) FontWeight.SemiBold else FontWeight.Light,
-                            color = when { isSelected -> onAccent(); day == today -> accent; inMonth -> colors.foreground; else -> colors.subtle },
-                        )
-                        MetroText(if (day in busy) "●" else " ", size = 8.sp, color = if (isSelected) onAccent() else accent)
+        // Tall enough for six weeks, so the list under it does not jump from a month to the next.
+        HorizontalPager(monthPager, Modifier.fillMaxWidth().height(DAY_ROW * 6).testTag("cal:months")) { page ->
+            val shownMonth = origin.plusMonths((page - MONTHS_EACH_WAY).toLong())
+            Column(Modifier.fillMaxWidth().testTag("cal:month:$shownMonth")) {
+                CalendarLogic.weeks(shownMonth, first).forEach { row ->
+                    Row(Modifier.fillMaxWidth().height(DAY_ROW)) {
+                        row.forEach { day ->
+                            val inMonth = YearMonth.from(day) == shownMonth
+                            val isSelected = day == selected
+                            Column(
+                                Modifier.weight(1f).fillMaxHeight().padding(1.dp).testTag("cal:day:$day").metroPress(onClick = { onSelect(day); if (!inMonth) onMonth(YearMonth.from(day)) })
+                                    .background(if (isSelected) accent else Color.Transparent),
+                                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
+                            ) {
+                                MetroText(
+                                    day.dayOfMonth.toString(), size = 19.sp, weight = if (day == today) FontWeight.SemiBold else FontWeight.Light,
+                                    color = when { isSelected -> onAccent(); day == today -> accent; inMonth -> colors.foreground; else -> colors.subtle },
+                                )
+                                MetroText(if (day in busy) "●" else " ", size = 8.sp, color = if (isSelected) onAccent() else accent)
+                            }
+                        }
                     }
                 }
             }
