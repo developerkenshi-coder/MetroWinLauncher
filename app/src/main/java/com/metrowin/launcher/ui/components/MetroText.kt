@@ -13,6 +13,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
+import com.metrowin.launcher.ui.theme.ColorMath
+import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import kotlin.math.ceil
@@ -39,11 +41,15 @@ fun MetroText(
     minScale: Float = DEFAULT_MIN_SCALE,
 ) {
     val style = LocalStyle.current
+    // An accent used as the color of text is made to read on the page (the yellow accent on the white of the light theme would not).
+    val accent = LocalAccent.current
+    val background = LocalMetroColors.current.background
+    val ink = if (color == accent) ColorMath.readableOn(color, background) else color
     BasicText(
         text = text,
         modifier = if (minScale < 1f) modifier.shrinkToFit(minScale, singleLine = maxLines == 1) else modifier,
         style = TextStyle(
-            color = color,
+            color = ink,
             fontSize = size,
             fontWeight = style.weight(weight),
             fontFamily = style.font,
