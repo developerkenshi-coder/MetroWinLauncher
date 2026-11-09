@@ -52,6 +52,7 @@ fun SelectableRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onLongClick: (() -> Unit)? = null,
+    verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
     content: @Composable RowScope.() -> Unit,
 ) {
     val reduced = LocalReduceMotion.current
@@ -60,7 +61,7 @@ fun SelectableRow(
     Row(
         modifier.fillMaxWidth().background(if (checked) LocalAccent.current.copy(alpha = 0.35f) else androidx.compose.ui.graphics.Color.Transparent)
             .metroPress(onClick = onClick, onLongClick = onLongClick),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = verticalAlignment,
     ) {
         AnimatedVisibility(
             selecting && classic,

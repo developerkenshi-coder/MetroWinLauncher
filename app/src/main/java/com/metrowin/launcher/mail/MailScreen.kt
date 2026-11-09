@@ -1,5 +1,8 @@
 package com.metrowin.launcher.mail
 
+import com.metrowin.launcher.ui.components.SelectableRow
+import com.metrowin.launcher.ui.anim.swivel
+import com.metrowin.launcher.ui.anim.rememberRowSwivel
 import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.topBarsPadding
 import android.content.Intent
@@ -101,6 +104,8 @@ fun MailScreen(modifier: Modifier = Modifier) {
     var threads by remember { mutableStateOf(false) }
     // The server is being asked: five dots run under the title.
     var syncing by remember { mutableStateOf(false) }
+    // The messages ticked with a long press, by id.
+    var picked by remember { mutableStateOf(emptySet<String>()) }
     // One login to the server for as long as the screen is there (and the account is the same).
     val client = remember(account?.id) { account?.let(repository::client) }
     DisposableEffect(client) { onDispose { client?.close() } }
@@ -215,8 +220,9 @@ fun MailScreen(modifier: Modifier = Modifier) {
         .map { stringResource(it) }
     val pager = rememberPagerState { titles.size }
     // Back goes one step back inside the app: the search closes, another folder gives way to the inbox, another tab to the first one.
-    BackHandler(enabled = searching || folder != INBOX || pager.currentPage != 0) {
+    BackHandler(enabled = picked.isNotEmpty() || searching || folder != INBOX || pager.currentPage != 0) {
         when {
+            picked.isNotEmpty() -> picked = emptySet()
             searching -> { searching = false; query = "" }
             pager.currentPage != 0 -> scope.launch { pager.animateScrollToPage(0) }
             else -> { folder = INBOX; messages = null; limit = MailClient.LIMIT }
@@ -224,6 +230,15 @@ fun MailScreen(modifier: Modifier = Modifier) {
     }
     // The search itself is done by the server (it also looks at the address of the sender), so the list is not narrowed again here.
     fun shown(filter: (MailMessage) -> Boolean) = messages?.filter(filter)
+    fun togglePick(message: MailMessage) { picked = if (message.id in picked) picked - message.id else picked + message.id }
+
+    /** Does [change] to every ticked message on the server, and [local] to the list at once. */
+    fun forPicked(local: (List<MailMessage>) -> List<MailMessage>, change: (MailClient, Long) -> Unit) {
+        val ids = picked
+        picked = emptySet()
+        messages = messages?.let(local)
+        scope.launch { client?.let { c -> ids.forEach { id -> io { change(c, id.toLong()) } } } }
+    }
     fun read(message: MailMessage) {
         selected = message
         body = null
@@ -256,9 +271,9 @@ fun MailScreen(modifier: Modifier = Modifier) {
         HorizontalPager(pager, Modifier.weight(1f), beyondViewportPageCount = 1) { page ->
             Box(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                 when (page) {
-                    0 -> InboxPage(shown { true }, ::read, messages.orEmpty().size >= limit, threads) { limit += MailClient.LIMIT }
-                    1 -> InboxPage(shown { it.isUnread }, ::read, messages.orEmpty().size >= limit, threads) { limit += MailClient.LIMIT }
-                    2 -> InboxPage(shown { it.isFlagged }, ::read, messages.orEmpty().size >= limit, threads) { limit += MailClient.LIMIT }
+                    0 -> InboxPage(shown { true }, ::read, messages.orEmpty().size >= limit, threads, picked, ::togglePick) { limit += MailClient.LIMIT }
+                    1 -> InboxPage(shown { it.isUnread }, ::read, messages.orEmpty().size >= limit, threads, picked, ::togglePick) { limit += MailClient.LIMIT }
+                    2 -> InboxPage(shown { it.isFlagged }, ::read, messages.orEmpty().size >= limit, threads, picked, ::togglePick) { limit += MailClient.LIMIT }
                     3 -> FoldersPage(client, current = folder) { path -> folder = path; messages = null; limit = MailClient.LIMIT; scope.launch { pager.animateScrollToPage(0) } }
                     else -> AccountsPage(
                         accounts = accounts,
@@ -281,7 +296,20 @@ fun MailScreen(modifier: Modifier = Modifier) {
                 }
             }
         }
-        AppBar(
+        if (picked.isNotEmpty()) AppBar(
+            listOf(
+                AppBarItem("✕", stringResource(R.string.mail_delete)) { forPicked({ all -> all.filter { it.id !in picked } }) { c, id -> c.delete(folder, id) } },
+                AppBarItem("⚑", stringResource(R.string.mail_flag)) {
+                    val ids = picked
+                    forPicked({ all -> all.map { if (it.id in ids) it.copy(isFlagged = true) else it } }) { c, id -> c.setFlag(folder, id, Flags.Flag.FLAGGED, true) }
+                },
+                AppBarItem("✉", stringResource(R.string.mail_mark_unread)) {
+                    val ids = picked
+                    forPicked({ all -> all.map { if (it.id in ids) it.copy(isUnread = true) else it } }) { c, id -> c.setFlag(folder, id, Flags.Flag.SEEN, false) }
+                },
+                AppBarItem("✓", stringResource(R.string.rec_clear)) { picked = emptySet() },
+            ),
+        ) else AppBar(
             listOf(
                 AppBarItem("＋", stringResource(R.string.mail_bar_new)) { composing = true },
                 AppBarItem("↻", stringResource(R.string.mail_bar_sync)) { reload++ },
@@ -431,7 +459,10 @@ private fun OnboardingAccountSetup(onAccountAdded: (MailAccount, String) -> Unit
 }
 
 @Composable
-private fun InboxPage(messages: List<MailMessage>?, onSelectMessage: (MailMessage) -> Unit, hasMore: Boolean, grouped: Boolean, onMore: () -> Unit) {
+private fun InboxPage(
+    messages: List<MailMessage>?, onSelectMessage: (MailMessage) -> Unit, hasMore: Boolean, grouped: Boolean,
+    picked: Set<String>, onPick: (MailMessage) -> Unit, onMore: () -> Unit,
+) {
     if (messages == null) {
         PageNote(stringResource(R.string.mail_loading), Modifier.padding(top = 16.dp))
         return
@@ -443,14 +474,24 @@ private fun InboxPage(messages: List<MailMessage>?, onSelectMessage: (MailMessag
     // A conversation opens in place, to show the messages of it one under the other.
     var open by remember { mutableStateOf(emptySet<String>()) }
     val threads = remember(messages, grouped) { if (grouped) MailThreads.group(messages) else messages.map { listOf(it) } }
+    val swivel = rememberRowSwivel()
+    val selecting = picked.isNotEmpty()
+    // A touch opens the message, with the swivel of the row; while some are ticked it ticks instead.
+    fun openOrPick(m: MessageKey) { if (selecting) onPick(m.message) else swivel.open(m.key) { onSelectMessage(m.message) } }
     LazyColumn(Modifier.fillMaxSize().testTag("mail:inbox")) {
         threads.forEach { thread ->
             val head = thread.first()
             val expanded = thread.size > 1 && head.id in open
             item(key = head.id) {
-                MessageRow(head, if (thread.size > 1) thread.size else 0, onClick = { if (thread.size == 1) onSelectMessage(head) else open = if (expanded) open - head.id else open + head.id })
+                MessageRow(
+                    head, if (thread.size > 1) thread.size else 0, Modifier.swivel(swivel, head.id), selecting, head.id in picked, onLongClick = { onPick(head) },
+                    onClick = { if (thread.size == 1) openOrPick(MessageKey(head.id, head)) else if (selecting) onPick(head) else open = if (expanded) open - head.id else open + head.id },
+                )
             }
-            if (expanded) items(thread, key = { "${head.id}/${it.id}" }) { MessageRow(it, 0, Modifier.padding(start = 20.dp)) { onSelectMessage(it) } }
+            if (expanded) items(thread, key = { "${head.id}/${it.id}" }) {
+                val key = "${head.id}/${it.id}"
+                MessageRow(it, 0, Modifier.padding(start = 20.dp).swivel(swivel, key), selecting, it.id in picked, onLongClick = { onPick(it) }) { openOrPick(MessageKey(key, it)) }
+            }
         }
         if (hasMore) item {
             MetroButton(stringResource(R.string.mail_load_more), Modifier.fillMaxWidth().padding(vertical = 12.dp).testTag("mail:more"), onClick = onMore)
@@ -458,11 +499,16 @@ private fun InboxPage(messages: List<MailMessage>?, onSelectMessage: (MailMessag
     }
 }
 
+private class MessageKey(val key: Any, val message: MailMessage)
+
 /** A line of the list; [count] is how many messages the conversation it stands for has (0 for a message on its own). */
 @Composable
-private fun MessageRow(msg: MailMessage, count: Int, modifier: Modifier = Modifier, onClick: () -> Unit) {
+private fun MessageRow(
+    msg: MailMessage, count: Int, modifier: Modifier = Modifier, selecting: Boolean = false, checked: Boolean = false,
+    onLongClick: (() -> Unit)? = null, onClick: () -> Unit,
+) {
     val colors = LocalMetroColors.current
-    Row(modifier.fillMaxWidth().metroPress(onClick = onClick).padding(vertical = 8.dp), verticalAlignment = Alignment.Top) {
+    SelectableRow(selecting, checked, onClick, modifier.padding(vertical = 8.dp), onLongClick, verticalAlignment = Alignment.Top) {
         Column(Modifier.weight(1f)) {
             MetroText(msg.senderName, size = 22.sp, weight = if (msg.isUnread) FontWeight.SemiBold else FontWeight.Light)
             MetroText(msg.subject, size = 16.sp, weight = if (msg.isUnread) FontWeight.SemiBold else FontWeight.Normal, color = if (msg.isUnread) LocalAccent.current else colors.subtle)
