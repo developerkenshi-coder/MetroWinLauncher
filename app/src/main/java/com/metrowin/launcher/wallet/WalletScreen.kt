@@ -1,5 +1,10 @@
 package com.metrowin.launcher.wallet
 
+import androidx.compose.foundation.lazy.itemsIndexed
+import com.metrowin.launcher.ui.theme.LocalStyle
+import com.metrowin.launcher.ui.components.PivotHeader
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.pager.HorizontalPager
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.app.Activity
 import android.graphics.BitmapFactory
@@ -138,31 +143,23 @@ fun WalletScreen() {
 private fun CardList(cards: List<Card>?, onOpen: (Card) -> Unit, onNew: () -> Unit, onExport: () -> Unit, onImport: () -> Unit) {
     val colors = LocalMetroColors.current
     var query by remember { mutableStateOf("") }
-    var kind by remember { mutableStateOf<CardKind?>(null) }
     val today = remember { LocalDate.now().toEpochDay() }
-    val shown = cards.orEmpty().filter { (kind == null || it.kind == kind) && (query.isBlank() || it.name.contains(query, true)) }.sortedBy { it.name.lowercase() }
+    // One page of the pivot for all the cards and one for each kind.
+    val kinds = listOf<CardKind?>(null) + CardKind.entries
+    val pager = rememberPagerState { kinds.size }
+    val stacked = LocalStyle.current.isClassic
+    fun shown(kind: CardKind?) = cards.orEmpty().filter { (kind == null || it.kind == kind) && (query.isBlank() || it.name.contains(query, true)) }.sortedBy { it.name.lowercase() }
     MiniFrame {
-        MetroText(stringResource(R.string.wal_title), size = 44.sp, modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp))
-        Column(Modifier.weight(1f).padding(horizontal = 24.dp)) {
-            MetroTextField(query, { query = it.take(60) }, stringResource(R.string.wal_search), Modifier.testTag("wal:search"))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 10.dp)) {
-                item { PageChip(stringResource(R.string.notes_all), kind == null, "wal:kind:all") { kind = null } }
-                items(CardKind.entries) { k -> PageChip(stringResource(kindName(k)), kind == k, "wal:kind:${k.name}") { kind = k } }
-            }
-            if (cards != null && shown.isEmpty()) PageNote(stringResource(R.string.wal_empty), Modifier.testTag("wal:empty"))
-            LazyColumn(Modifier.fillMaxSize().testTag("wal:list"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(shown, key = { it.id }) { card ->
-                    val left = Wallet.daysLeft(card, today)
-                    Row(Modifier.fillMaxWidth().height(72.dp).testTag("wal:card").metroPress(onClick = { onOpen(card) }).background(cardColor(card.color) ?: LocalAccent.current)) {
-                        Column(Modifier.weight(1f).padding(horizontal = 14.dp), verticalArrangement = Arrangement.Center) {
-                            MetroText(card.name, size = 24.sp, color = Color.White)
-                            val sub = when {
-                                left == null -> stringResource(kindName(card.kind))
-                                left < 0 -> stringResource(R.string.wal_expired)
-                                else -> stringResource(R.string.wal_expires, LocalDate.ofEpochDay(card.expiry).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)))
-                            }
-                            MetroText(sub, size = 14.sp, weight = FontWeight.Normal, color = Color.White.copy(alpha = 0.85f))
-                        }
+        PivotHeader(kinds.map { stringResource(if (it == null) R.string.notes_all else kindName(it)) }, pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp))
+        Column(Modifier.weight(1f)) {
+            MetroTextField(query, { query = it.take(60) }, stringResource(R.string.wal_search), Modifier.padding(horizontal = 24.dp, vertical = 4.dp).testTag("wal:search"))
+            HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
+                val rows = shown(kinds[page])
+                Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+                    if (cards != null && rows.isEmpty()) PageNote(stringResource(R.string.wal_empty), Modifier.padding(top = 10.dp).testTag("wal:empty"))
+                    // The cards are stacked: each shows the strip with its name, as if the next one lay over it; the last one is whole. Touching a strip opens that card.
+                    LazyColumn(Modifier.fillMaxSize().padding(top = 8.dp).testTag("wal:list"), verticalArrangement = Arrangement.spacedBy(if (stacked) 0.dp else 8.dp)) {
+                        itemsIndexed(rows, key = { _, c -> c.id }) { i, card -> WalletTile(card, today, stacked, whole = i == rows.lastIndex) { onOpen(card) } }
                     }
                 }
             }
@@ -174,6 +171,29 @@ private fun CardList(cards: List<Card>?, onOpen: (Card) -> Unit, onNew: () -> Un
                 AppBarItem("⇩", stringResource(R.string.notes_restore), onImport),
             ),
         )
+    }
+}
+
+private val CARD_HEIGHT = 120.dp
+private val CARD_STRIP = 60.dp
+
+/** A card as a square tile of its colour; stacked, only the top strip shows, except for the last card, which is whole. */
+@Composable
+private fun WalletTile(card: Card, today: Long, stacked: Boolean, whole: Boolean, onClick: () -> Unit) {
+    val left = Wallet.daysLeft(card, today)
+    Box(
+        Modifier.fillMaxWidth().height(if (!stacked) 72.dp else if (whole) CARD_HEIGHT else CARD_STRIP).testTag("wal:card").metroPress(onClick = onClick)
+            .background(cardColor(card.color) ?: LocalAccent.current).then(if (stacked) Modifier.border(1.dp, Color.Black.copy(alpha = 0.25f)) else Modifier),
+    ) {
+        Column(Modifier.fillMaxWidth().height(if (stacked) CARD_STRIP else 72.dp).padding(horizontal = 14.dp), verticalArrangement = Arrangement.Center) {
+            MetroText(card.name, size = if (stacked) 22.sp else 24.sp, color = Color.White, maxLines = 1)
+            val sub = when {
+                left == null -> stringResource(kindName(card.kind))
+                left < 0 -> stringResource(R.string.wal_expired)
+                else -> stringResource(R.string.wal_expires, LocalDate.ofEpochDay(card.expiry).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)))
+            }
+            MetroText(sub, size = 14.sp, weight = FontWeight.Normal, color = Color.White.copy(alpha = 0.85f), maxLines = 1)
+        }
     }
 }
 
