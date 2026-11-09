@@ -57,6 +57,7 @@ import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
+import com.metrowin.launcher.ui.components.LoadingDots
 import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.mini.MiniFrame
 import com.metrowin.launcher.ui.pages.PageChip
@@ -171,6 +172,7 @@ private fun SourcePage(
         }
     }
     Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+        if (loading) LoadingDots(Modifier.padding(vertical = 6.dp).testTag("nws:loading"))
         if (loading && shown == null) PageNote(stringResource(R.string.rec_working))
         if (!loading && shown == null && failed) PageNote(stringResource(R.string.nws_offline), Modifier.testTag("nws:offline"))
         NewsList(shown?.items.orEmpty(), images, showImages) { open(context, it.link) }

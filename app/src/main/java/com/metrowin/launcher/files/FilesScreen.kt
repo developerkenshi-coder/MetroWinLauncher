@@ -62,7 +62,10 @@ import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.GlyphIcon
+import com.metrowin.launcher.ui.components.LoadingDots
 import com.metrowin.launcher.ui.components.MetroButton
+import com.metrowin.launcher.ui.components.SelectableRow
+import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.PivotHeader
@@ -435,6 +438,7 @@ private fun PanePage(
     val crumbs = if (category == null) relative(places, pane.path).map { it.first to it.second }
     else listOf(relative(places, pane.scanRoot).first().let { it.first to it.second })
     val files = data.files
+    val classic = LocalStyle.current.isClassic
     // The items come in one after the other each time the folder, the group or the way of showing them changes.
     val feather = Triple(pane.path, pane.category to pane.doc, tiles)
 
@@ -478,7 +482,10 @@ private fun PanePage(
             )
         }
         when {
-            data.loading && category != null -> PageNote(stringResource(R.string.fm_cat_scanning), Modifier.testTag("fm:scanning:$index"))
+            data.loading && category != null -> {
+                LoadingDots(Modifier.padding(vertical = 6.dp))
+                PageNote(stringResource(R.string.fm_cat_scanning), Modifier.testTag("fm:scanning:$index"))
+            }
             !data.loading && files.isEmpty() -> PageNote(
                 stringResource(if (category != null) R.string.fm_cat_none else if (pane.path.canRead()) R.string.fm_folder_empty else R.string.fm_unreadable),
                 Modifier.testTag("fm:empty:$index"),
@@ -499,16 +506,14 @@ private fun PanePage(
                 itemsIndexed(files, key = { _, f -> f.absolutePath }) { i, file ->
                     val chosen = file.absolutePath in pane.selection
                     val dir = file.isDirectory
-                    Row(
-                        Modifier.fillMaxWidth().testTag("fm:row").then(if (i < 14) Modifier.featherIn(i, feather) else Modifier)
-                            .background(if (chosen) accent.copy(alpha = 0.35f) else Color.Transparent)
-                            .metroPress(onClick = { click(file) }, onLongClick = { longClick(file) }).padding(vertical = 6.dp, horizontal = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                    SelectableRow(
+                        selecting = pane.selection.isNotEmpty(), checked = chosen, onClick = { click(file) }, onLongClick = { longClick(file) },
+                        modifier = Modifier.testTag("fm:row").then(if (i < 14) Modifier.featherIn(i, feather) else Modifier).padding(vertical = 6.dp, horizontal = 4.dp),
                     ) {
                         // The tiles are in the accent colour, as the icons of the app list of the launcher are.
                         Box(Modifier.size(44.dp).background(accent), contentAlignment = Alignment.Center) {
                             when {
-                                chosen -> MetroText("✓", size = 22.sp, color = onAccent())
+                                chosen && !classic -> MetroText("✓", size = 22.sp, color = onAccent())
                                 dir -> GlyphIcon(Glyph.Folder, 28.dp, color = onAccent())
                                 else -> MetroText(file.extension.take(4).uppercase(Locale.ROOT).ifEmpty { "·" }, size = 12.sp, weight = FontWeight.SemiBold, minScale = 0.5f, maxLines = 1, color = onAccent())
                             }

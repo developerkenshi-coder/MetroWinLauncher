@@ -47,6 +47,7 @@ import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.MetroToggle
+import com.metrowin.launcher.ui.components.LoadingDots
 import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.pages.PageNote
 import com.metrowin.launcher.ui.theme.LocalAccent
@@ -98,6 +99,8 @@ fun MailScreen(modifier: Modifier = Modifier) {
     var query by remember { mutableStateOf("") }
     var limit by remember { mutableIntStateOf(MailClient.LIMIT) }
     var threads by remember { mutableStateOf(false) }
+    // The server is being asked: five dots run under the title.
+    var syncing by remember { mutableStateOf(false) }
     // One login to the server for as long as the screen is there (and the account is the same).
     val client = remember(account?.id) { account?.let(repository::client) }
     DisposableEffect(client) { onDispose { client?.close() } }
@@ -115,6 +118,7 @@ fun MailScreen(modifier: Modifier = Modifier) {
         client ?: return@LaunchedEffect
         account ?: return@LaunchedEffect
         error = null
+        syncing = true
         val serverSearch = query.isNotBlank()
         // Typing a search waits for a pause before the server is asked.
         if (serverSearch) delay(400)
@@ -132,6 +136,7 @@ fun MailScreen(modifier: Modifier = Modifier) {
                 recount()
             }
             .onFailure { error = it.message ?: it.javaClass.simpleName; messages = messages ?: emptyList() }
+        syncing = false
     }
 
     if (account == null) {
@@ -245,6 +250,7 @@ fun MailScreen(modifier: Modifier = Modifier) {
             )
             PivotHeader(titles, pager, Modifier.padding(top = 4.dp))
         }
+        if (syncing) LoadingDots(Modifier.padding(horizontal = 24.dp, vertical = 4.dp).testTag("mail:syncing"))
         if (searching) MetroTextField(query, { query = it }, stringResource(R.string.mail_bar_search), Modifier.padding(horizontal = 24.dp, vertical = 4.dp).testTag("mail:search"))
         error?.let { PageNote(stringResource(R.string.mail_error, it), Modifier.padding(horizontal = 24.dp, vertical = 4.dp)) }
         HorizontalPager(pager, Modifier.weight(1f), beyondViewportPageCount = 1) { page ->
@@ -459,8 +465,8 @@ private fun MessageRow(msg: MailMessage, count: Int, modifier: Modifier = Modifi
     Row(modifier.fillMaxWidth().metroPress(onClick = onClick).padding(vertical = 8.dp), verticalAlignment = Alignment.Top) {
         Column(Modifier.weight(1f)) {
             MetroText(msg.senderName, size = 22.sp, weight = if (msg.isUnread) FontWeight.SemiBold else FontWeight.Light)
-            MetroText(msg.subject, size = 16.sp, weight = FontWeight.Normal, color = if (msg.isUnread) LocalAccent.current else colors.subtle)
-            if (msg.snippet.isNotBlank()) MetroText(msg.snippet, size = 13.sp, weight = FontWeight.Normal, color = colors.subtle.copy(alpha = 0.8f))
+            MetroText(msg.subject, size = 16.sp, weight = if (msg.isUnread) FontWeight.SemiBold else FontWeight.Normal, color = if (msg.isUnread) LocalAccent.current else colors.subtle)
+            if (msg.snippet.isNotBlank()) MetroText(msg.snippet, size = 13.sp, weight = FontWeight.Normal, color = colors.subtle.copy(alpha = 0.8f), maxLines = 2)
         }
         Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(start = 8.dp)) {
             MetroText(whenText(msg.timestamp), size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)

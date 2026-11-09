@@ -86,6 +86,10 @@ class VoiceRecorder(private val context: Context, private val recordings: Record
 
         val active get() = startedAt != 0L
 
+        /** How loud it is now, 0..1 (the biggest swing since the last time it was asked); 0 when there is no recording. */
+        @Synchronized
+        fun level(): Float = runCatching { (recorder?.maxAmplitude ?: 0) / 32767f }.getOrDefault(0f).coerceIn(0f, 1f)
+
         /** Ends the recording; the file, or null when it was too short to hold anything (it is then thrown away). */
         @Synchronized
         fun stopRecording(): File? {

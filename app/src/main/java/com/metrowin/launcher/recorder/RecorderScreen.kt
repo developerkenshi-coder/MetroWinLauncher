@@ -2,6 +2,16 @@ package com.metrowin.launcher.recorder
 
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.Manifest
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.graphicsLayer
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.SystemClock
@@ -59,7 +69,10 @@ import com.metrowin.launcher.notes.NoteStore
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
+import com.metrowin.launcher.ui.components.LoadingDots
 import com.metrowin.launcher.ui.components.MetroButton
+import com.metrowin.launcher.ui.components.SelectableRow
+import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.PivotHeader
@@ -94,10 +107,13 @@ fun RecorderScreen() {
     var elapsed by remember { mutableLongStateOf(0L) }
     var failed by remember { mutableStateOf(false) }
     var picked by remember { mutableStateOf(setOf<String>()) }
+    var importing by remember { mutableStateOf(false) }
     val importer = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         if (uris.isEmpty()) return@rememberLauncherForActivityResult
         scope.launch {
+            importing = true
             val (made, refused) = withContext(Dispatchers.IO) { RecorderShare.import(context, store, uris) }
+            importing = false
             version++
             val text = listOfNotNull(
                 if (made.isNotEmpty()) context.resources.getQuantityString(R.plurals.rec_imported, made.size, made.size) else null,
@@ -110,6 +126,15 @@ fun RecorderScreen() {
         while (recording) {
             elapsed = SystemClock.elapsedRealtime() - startedAt
             delay(250L)
+        }
+    }
+    // The loudness of the last moments, one bar each, while recording.
+    var levels by remember { mutableStateOf(emptyList<Float>()) }
+    LaunchedEffect(recording) {
+        levels = emptyList()
+        while (recording) {
+            levels = (levels + VoiceRecorder.level()).takeLast(WAVE_BARS)
+            delay(WAVE_STEP_MS)
         }
     }
     val open = files.firstOrNull { it.name == selected }
@@ -127,7 +152,11 @@ fun RecorderScreen() {
                         PageNote(stringResource(R.string.recorder_need_permission))
                         MetroButton(stringResource(R.string.recorder_allow), Modifier.padding(top = 14.dp).testTag("rec:allow")) { ask.launch(Manifest.permission.RECORD_AUDIO) }
                     } else {
-                        MetroText(TimerFormat.stopwatch(if (recording) elapsed else 0L, tenths = false), size = 80.sp, maxLines = 1, modifier = Modifier.testTag("rec:time"))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (recording) RecordingDot(Modifier.padding(end = 14.dp))
+                            MetroText(TimerFormat.stopwatch(if (recording) elapsed else 0L, tenths = false), size = 80.sp, maxLines = 1, modifier = Modifier.testTag("rec:time"))
+                        }
+                        if (recording) LiveWave(levels, Modifier.fillMaxWidth().height(72.dp).padding(top = 12.dp).testTag("rec:live"))
                         MetroButton(stringResource(if (recording) R.string.recorder_stop else R.string.recorder_start), Modifier.fillMaxWidth().padding(top = 24.dp).testTag("rec:toggle")) {
                             if (recording) {
                                 recorder.stop()
@@ -143,17 +172,21 @@ fun RecorderScreen() {
                 }
             } else {
                 Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+                    if (importing) LoadingDots(Modifier.padding(vertical = 6.dp).testTag("rec:importing"))
                     if (files.isEmpty()) PageNote(stringResource(R.string.rec_empty), Modifier.testTag("rec:empty"))
                     LazyColumn(Modifier.fillMaxSize().testTag("rec:list")) {
                         items(files, key = { it.name }) { file ->
                             val chosen = file.name in picked
                             fun toggle() { picked = if (chosen) picked - file.name else picked + file.name }
-                            MetroText(
-                                (if (chosen) "✓ " else "") + Recordings.title(file.name) + (if (file.extension != "m4a") "  ·  " + file.extension.uppercase() else ""),
-                                size = 21.sp, weight = FontWeight.Normal,
-                                modifier = Modifier.fillMaxWidth().testTag("rec:row").background(if (chosen) LocalAccent.current.copy(alpha = 0.35f) else androidx.compose.ui.graphics.Color.Transparent)
-                                    .metroPress(onClick = { if (picked.isNotEmpty()) toggle() else if (!recording) selected = file.name }, onLongClick = { toggle() }).padding(vertical = 10.dp),
-                            )
+                            SelectableRow(
+                                selecting = picked.isNotEmpty(), checked = chosen, onClick = { if (picked.isNotEmpty()) toggle() else if (!recording) selected = file.name },
+                                onLongClick = { toggle() }, modifier = Modifier.testTag("rec:row").padding(vertical = 10.dp),
+                            ) {
+                                MetroText(
+                                    (if (chosen && !LocalStyle.current.isClassic) "✓ " else "") + Recordings.title(file.name) + (if (file.extension != "m4a") "  ·  " + file.extension.uppercase() else ""),
+                                    size = 21.sp, weight = FontWeight.Normal,
+                                )
+                            }
                         }
                     }
                 }
@@ -172,6 +205,34 @@ fun RecorderScreen() {
                     }
                 },
             )
+        }
+    }
+}
+
+private const val WAVE_BARS = 48
+private const val WAVE_STEP_MS = 80L
+
+/** The red dot of a recording, on and off about once a second; steady with reduced motion. */
+@Composable
+private fun RecordingDot(modifier: Modifier = Modifier) {
+    val reduced = LocalReduceMotion.current
+    val alpha = if (reduced) 1f else rememberInfiniteTransition(label = "recDot").animateFloat(
+        1f, 0.15f, infiniteRepeatable(tween(500, easing = LinearEasing), RepeatMode.Reverse), label = "alpha",
+    ).value
+    Box(modifier.size(18.dp).graphicsLayer { this.alpha = alpha }.background(androidx.compose.ui.graphics.Color(0xFFE51400), CircleShape).testTag("rec:dot"))
+}
+
+/** The sound of the last moments as bars, the newest at the right, each at least a thin line so a silence still reads as a baseline. */
+@Composable
+private fun LiveWave(levels: List<Float>, modifier: Modifier = Modifier) {
+    val accent = LocalAccent.current
+    Canvas(modifier) {
+        val slot = size.width / WAVE_BARS
+        val offset = WAVE_BARS - levels.size
+        levels.forEachIndexed { i, level ->
+            // The microphone's swing is small most of the time: a square root makes speech fill the picture.
+            val h = (kotlin.math.sqrt(level) * size.height).coerceAtLeast(3f)
+            drawRect(accent, Offset((offset + i) * slot, (size.height - h) / 2f), Size(maxOf(slot - 2f, 1f), h))
         }
     }
 }
@@ -320,7 +381,8 @@ private fun RecordingDetail(file: File, store: Recordings, onChanged: () -> Unit
                     }
                 }
             }
-            if (busy) PageNote(stringResource(R.string.rec_working), Modifier.padding(top = 8.dp))
+            if (transcribing) LoadingDots(Modifier.padding(top = 10.dp).testTag("rec:transcribing"))
+            if (busy) { LoadingDots(Modifier.padding(top = 10.dp)); PageNote(stringResource(R.string.rec_working), Modifier.padding(top = 8.dp)) }
         }
         AppBar(listOf(AppBarItem("←", stringResource(R.string.rec_back)) { onClose() }))
     }
