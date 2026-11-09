@@ -45,6 +45,7 @@ class LockAccessibilityService : AccessibilityService() {
         syncStatusBar()
         scheduleNudge()
         lockScreen.start()
+        plugReceiver = ChargeAnnounce.listen(this)
         syncGameFromUsage()
     }
 
@@ -60,6 +61,8 @@ class LockAccessibilityService : AccessibilityService() {
             }
         }
     }
+
+    private var plugReceiver: android.content.BroadcastReceiver? = null
 
     private val nudgeHandler = Handler(Looper.getMainLooper())
     private var nudgeTick = 0
@@ -80,6 +83,8 @@ class LockAccessibilityService : AccessibilityService() {
     override fun onUnbind(intent: android.content.Intent?): Boolean {
         nudgeHandler.removeCallbacksAndMessages(null)
         lockScreen.stop()
+        plugReceiver?.let { runCatching { unregisterReceiver(it) } }
+        plugReceiver = null
         runCatching { contentResolver.unregisterContentObserver(navigationMode) }
         gameBars.set(false)
         navBar.hide()
@@ -231,6 +236,7 @@ class LockAccessibilityService : AccessibilityService() {
                     service.statusBar.hide()
                     service.lockScreen.hide()
                     NotificationHub.service?.hideOverlays()
+                    ChargeAnnounce.hide()
                 }
                 // Back: each window comes back if its own switch says so.
                 else {

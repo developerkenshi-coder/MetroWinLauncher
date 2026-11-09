@@ -78,6 +78,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.data.BatteryInfo
 import com.metrowin.launcher.data.BatteryState
+import com.metrowin.launcher.gestures.ChargeAnnounce
+import kotlin.math.PI
+import kotlin.math.sin
 import com.metrowin.launcher.data.ClockFormat
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.notifications.NotificationHub
@@ -154,6 +157,8 @@ fun MetroStatusBar(
     hidden: Set<String> = emptySet(),
     /** What a screen reader's "activate" does on the bar: the pull down from the top edge has no other way for someone who cannot swipe. */
     onOpenActionCenter: (() -> Unit)? = null,
+    /** The battery fills in sweeps and the bolt pulses while the phone charges (the setting "charging animation"). */
+    chargeAnimation: Boolean = true,
 ) {
     val context = LocalContext.current
     // The polls run only while the bar is on screen (started): with the screen off, as over the lock screen, they stop and the phone can sleep; back, they read at once.
@@ -233,8 +238,10 @@ fun MetroStatusBar(
             MetroText("${it.percent}%", size = 12.sp, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:battery").semantics { contentDescription = said })
         }
         if (on(StatusItem.Battery)) battery?.let {
-            if (it.state == BatteryState.Charging) Said(R.string.a11y_sb_charging) { Bolt(color) }
-            BatteryCell(it, color)
+            val charging = it.state == BatteryState.Charging
+            val sweep = rememberChargeSweep(charging && chargeAnimation, ChargeAnnounce.plugs.collectAsState().value)
+            if (charging) Said(R.string.a11y_sb_charging) { Bolt(color, alpha = { 1f - 0.55f * sin(PI.toFloat() * sweep.value) }) }
+            BatteryCell(it, color, sweep = { sweep.value })
         }
         if (on(StatusItem.Time)) MetroText(
             ClockFormat.time(clock, is24, java.util.Locale.getDefault()), size = 13.sp, color = color, maxLines = 1,
@@ -363,8 +370,8 @@ private fun SaverPlus(color: Color) {
 
 /** A small lightning bolt: the battery is charging. */
 @Composable
-private fun Bolt(color: Color) {
-    Canvas(Modifier.size(width = 7.dp, height = 11.dp)) {
+internal fun Bolt(color: Color, modifier: Modifier = Modifier.size(width = 7.dp, height = 11.dp), alpha: () -> Float = { 1f }) {
+    Canvas(modifier) {
         val w = size.width
         val h = size.height
         val bolt = Path().apply {
@@ -376,13 +383,19 @@ private fun Bolt(color: Color) {
             lineTo(w * 0.55f, h * 0.38f)
             close()
         }
-        drawPath(bolt, color)
+        drawPath(bolt, color, alpha = alpha())
     }
 }
 
 /** The battery lying down with its nub; filled to the charge, red when it is low. */
 @Composable
-internal fun BatteryCell(battery: BatteryInfo, color: Color, modifier: Modifier = Modifier.size(width = 20.dp, height = 11.dp)) {
+internal fun BatteryCell(
+    battery: BatteryInfo,
+    color: Color,
+    modifier: Modifier = Modifier.size(width = 20.dp, height = 11.dp),
+    /** 0 to 1: how far the faint fill has gone from the charge toward full, while charging (see [rememberChargeSweep]); read in the draw block. */
+    sweep: () -> Float = { 0f },
+) {
     Canvas(modifier) {
         val stroke = 1.2.dp.toPx()
         val nub = 2.dp.toPx()
@@ -396,5 +409,10 @@ internal fun BatteryCell(battery: BatteryInfo, color: Color, modifier: Modifier 
             if (low) Color(0xFFE51400) else color,
             topLeft = Offset(stroke * 2, stroke * 2), size = Size(fill, size.height - stroke * 4),
         )
+        val s = sweep()
+        if (s > 0f) {
+            val reach = (inner - fill) * s
+            drawRect(color.copy(alpha = 0.55f * (1f - s * s)), topLeft = Offset(stroke * 2 + fill, stroke * 2), size = Size(reach, size.height - stroke * 4))
+        }
     }
 }

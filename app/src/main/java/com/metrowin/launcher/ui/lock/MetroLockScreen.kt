@@ -51,6 +51,7 @@ import androidx.compose.ui.platform.LocalDensity
 import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -100,6 +101,13 @@ import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.calls.elapsed
 import com.metrowin.launcher.ui.components.BatteryCell
+import com.metrowin.launcher.ui.components.Bolt
+import com.metrowin.launcher.ui.components.rememberChargeSweep
+import com.metrowin.launcher.data.BatteryInfo
+import com.metrowin.launcher.data.BatteryState
+import com.metrowin.launcher.gestures.ChargeAnnounce
+import kotlin.math.PI
+import kotlin.math.sin
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.shrinkToHeight
@@ -124,12 +132,15 @@ data class LockOptions(
     val showMusic: Boolean = false,
     /** The apps with counters in one smaller row, with a "+N" when they do not all fit. */
     val iconsOneRow: Boolean = false,
+    /** The battery fills in sweeps while charging, and a word says so for a moment when the cable goes in. */
+    val chargeAnimation: Boolean = true,
 )
 
 /** The options the settings give the lock screen. */
 fun LauncherSettings.lockOptions() = LockOptions(
     lockShowAlarm, lockShowNotifications, lockShowBattery, lockShowWeather, lockShowEvent,
     showStatus = lockQuickStatus || lockDetailApp.isNotEmpty(), showMusic = lockShowMusic, iconsOneRow = lockIconsOneRow,
+    chargeAnimation = chargeAnimation,
 )
 
 /**
@@ -275,14 +286,10 @@ fun MetroLockScreen(
         val holes = rememberTopCutouts()
         val battery = info.battery
         if (options.showBattery && battery != null) {
-            Row(
+            ChargeCorner(
+                battery, options.chargeAnimation,
                 Modifier.align(Alignment.TopEnd).then(rise).lockTopPadding(holes).padding(start = 20.dp, top = 20.dp, bottom = 20.dp, end = 20.dp + holes.right).testTag("lock:battery"),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                BatteryCell(battery, Color.White, Modifier.size(width = 28.dp, height = 15.dp))
-                Spacer(Modifier.width(8.dp))
-                MetroText("${battery.percent}%", size = 18.sp, color = Color.White)
-            }
+            )
         }
 
         val hasStatus = options.showStatus && (status.quick.isNotEmpty() || status.detail != null)
@@ -640,3 +647,41 @@ private const val WIDE_RATIO = 1.2f
 private const val MIN_FIT = 0.6f
 private const val UNLOCK_FRACTION = 0.25f
 private const val UNLOCK_VELOCITY = 1_500f
+
+/**
+ * The battery in the corner of the lock screen. While charging it fills in sweeps and the bolt pulses (a short sweep now and then, not a loop that
+ * runs all the time); a cable plugged in while this is on screen starts the sweep at once and says "charging" for a moment.
+ */
+@Composable
+private fun ChargeCorner(battery: BatteryInfo, animate: Boolean, modifier: Modifier) {
+    val plugs by ChargeAnnounce.plugs.collectAsState()
+    val firstPlugs = remember { plugs }
+    // The battery is read once a minute: a cable plugged in while this is on screen counts at once.
+    val charging = battery.state == BatteryState.Charging || plugs != firstPlugs
+    val sweep = rememberChargeSweep(charging && animate, plugs)
+    val word = remember { Animatable(0f) }
+    LaunchedEffect(plugs) {
+        if (animate && plugs != firstPlugs) {
+            word.animateTo(1f, metroTween(durationMillis = 220))
+            delay(ChargeAnnounce.SHOW_MS)
+            word.animateTo(0f, metroTween(durationMillis = 400))
+        }
+    }
+    Column(modifier, horizontalAlignment = Alignment.End) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (charging) {
+                Bolt(Color.White, Modifier.size(width = 10.dp, height = 16.dp), alpha = { 1f - 0.55f * sin(PI.toFloat() * sweep.value) })
+                Spacer(Modifier.width(6.dp))
+            }
+            BatteryCell(battery, Color.White, Modifier.size(width = 28.dp, height = 15.dp), sweep = { sweep.value })
+            Spacer(Modifier.width(8.dp))
+            MetroText("${battery.percent}%", size = 18.sp, color = Color.White)
+        }
+        // Not there at all while it is not said, so it takes no room from what is under the corner.
+        val saying by remember { derivedStateOf { word.value > 0f } }
+        if (saying) MetroText(
+            stringResource(R.string.battery_charging), size = 13.sp, color = Color.White.copy(alpha = 0.8f), maxLines = 1,
+            modifier = Modifier.graphicsLayer { alpha = word.value },
+        )
+    }
+}

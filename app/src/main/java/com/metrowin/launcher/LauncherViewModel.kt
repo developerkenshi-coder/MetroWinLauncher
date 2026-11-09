@@ -79,6 +79,7 @@ import com.metrowin.launcher.data.AppUsage
 import com.metrowin.launcher.gestures.RecentsTileService
 import com.metrowin.launcher.data.AppRepository
 import com.metrowin.launcher.data.BatteryInfo
+import com.metrowin.launcher.gestures.ChargeAnnounce
 import com.metrowin.launcher.data.AppSection
 import com.metrowin.launcher.data.AppSections
 import com.metrowin.launcher.data.DefaultStart
@@ -503,6 +504,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    private var plugReceiver: BroadcastReceiver? = null
+
     private val powerManager = application.getSystemService(PowerManager::class.java)
     private val _androidBatterySaver = MutableStateFlow(powerManager?.isPowerSaveMode == true)
     private val powerSaveReceiver = object : BroadcastReceiver() {
@@ -745,7 +748,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
         // The Windows Phone status bar over other apps comes and goes with its switch.
         viewModelScope.launch {
-            _settings.map { Triple(it.metroStatusBarOverApps, it.statusBarHidden, it.metroStatusBar) }.distinctUntilChanged().collect { LockAccessibilityService.syncStatusBar() }
+            _settings.map { listOf(it.metroStatusBarOverApps, it.statusBarHidden, it.metroStatusBar, it.chargeAnimation) }.distinctUntilChanged().collect { LockAccessibilityService.syncStatusBar() }
         }
         // The bars that slide away in games: a switch changed while a game is in front takes effect at once.
         viewModelScope.launch {
@@ -825,6 +828,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         ContextCompat.registerReceiver(app, batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(app, powerSaveReceiver, IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(app, alarmReceiver, IntentFilter(android.app.AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
+        plugReceiver = ChargeAnnounce.listen(app)
         syncAlarm()
         quickActions.start()
         // The service reads the notifications again when a screen comes on: a moment of quiet, so they are not all announced.
@@ -847,6 +851,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         runCatching { app.unregisterReceiver(batteryReceiver) }
         runCatching { app.unregisterReceiver(powerSaveReceiver) }
         runCatching { app.unregisterReceiver(alarmReceiver) }
+        plugReceiver?.let { runCatching { app.unregisterReceiver(it) } }
+        plugReceiver = null
         quickActions.stop()
         if (watchingNotifications) {
             watchingNotifications = false

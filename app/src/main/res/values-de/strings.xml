@@ -1887,6 +1887,8 @@
     <string name="sec_statusbar_desc">Die Windows-Phone-Leiste: im Launcher und in anderen Apps, und welche Symbole sie zeigt</string>
     <string name="statusbar_items">was sie zeigt</string>
     <string name="statusbar_items_hint">Schalte die Symbole aus, die du nicht willst. Ein Symbol erscheint nur, wenn es etwas zu sagen hat: das Flugzeug bei Flugmodus, und so weiter.</string>
+    <string name="charge_animation">Ladeanimation</string>
+    <string name="charge_animation_hint">Ein kurzes Banner beim Einstecken des Kabels, und der Akku füllt sich in der Statusleiste und auf dem Sperrbildschirm, solange er lädt. Bei reduzierter Bewegung bleibt nur der Zustand.</string>
     <string name="statusbar_notifications">Benachrichtigungen</string>
     <string name="statusbar_airplane">Flugmodus</string>
     <string name="statusbar_hotspot">Hotspot</string>

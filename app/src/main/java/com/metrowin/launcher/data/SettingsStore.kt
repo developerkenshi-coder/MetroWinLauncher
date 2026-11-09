@@ -373,6 +373,8 @@ data class LauncherSettings(
     val metroStatusBarOverApps: Boolean = false,
     /** The ids of [StatusItem] the user turned off in the status bar, comma-separated; empty shows them all. */
     val statusBarHidden: String = "",
+    /** The animations of charging: a banner when the cable goes in, the battery filling in the status bar and on the lock screen. */
+    val chargeAnimation: Boolean = true,
     /** How the Start photo is framed: zoom in percent (100 to 300), and the point of the photo that stays in view, in percent. */
     val startPhotoFit: PhotoFit = PhotoFit.Fill,
     /** The Start photo shows only in the tiles, as on Windows Phone, instead of under them and between them. */
@@ -724,6 +726,8 @@ class SettingsStore(context: Context) {
     fun hideBarsInGamesOn(): Boolean = switchOn("hideBarsInGames", true)
 
     fun metroStatusBarOverAppsOn(): Boolean = switchOn("metroStatusBarOverApps", false)
+
+    fun chargeAnimationOn(): Boolean = switchOn("chargeAnimation", true)
 
     fun antiBurnInOn(): Boolean = switchOn("antiBurnIn", true)
 

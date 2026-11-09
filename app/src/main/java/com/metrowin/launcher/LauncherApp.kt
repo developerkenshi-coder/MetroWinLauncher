@@ -186,6 +186,8 @@ import com.metrowin.launcher.ui.pages.rememberNotificationPermission
 import com.metrowin.launcher.calls.CallBar
 import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.actioncenter.ToastBanner
+import com.metrowin.launcher.ui.components.ChargeBanner
+import com.metrowin.launcher.gestures.ChargeAnnounce
 import com.metrowin.launcher.ui.actioncenter.VolumeHudPanel
 import com.metrowin.launcher.notifications.NotificationEntry
 import com.metrowin.launcher.notifications.NotificationHub
@@ -2052,6 +2054,14 @@ fun LauncherApp(vm: LauncherViewModel) {
                     }
                 }
 
+                // A cable just plugged in, while the launcher is on screen (over the apps it is a window of the service, see ChargeAnnounce).
+                val chargeCue by ChargeAnnounce.cue.collectAsStateWithLifecycle()
+                chargeCue?.let { cue ->
+                    if (!panel.isShown && !lockPreviewOpen && !tutorialVisible && !voice.isOpen) {
+                        AccentScope(settings.accentPanel) { ChargeBanner(cue.battery, onDone = { ChargeAnnounce.cueDone(cue.id) }, modifier = Modifier.align(Alignment.TopCenter)) }
+                    }
+                }
+
                 // The toasts of the launcher itself (see MetroToast): the same banner, with the app's icon.
                 if (!tutorialVisible) AccentScope(settings.accentPanel) { MetroToastHost(Modifier.align(Alignment.TopCenter)) }
 
@@ -2144,7 +2154,7 @@ fun LauncherApp(vm: LauncherViewModel) {
 
                 // With the bar over the apps on (it is on the launcher as well, without a background) this one would be a second copy under it.
                 if (settings.metroStatusBar && !(settings.metroStatusBarOverApps && lockServiceEnabled)) {
-                    MetroStatusBar(battery, Modifier.align(Alignment.TopStart), hidden = StatusItem.hiddenIds(settings.statusBarHidden), onOpenActionCenter = panel::open)
+                    MetroStatusBar(battery, Modifier.align(Alignment.TopStart), hidden = StatusItem.hiddenIds(settings.statusBarHidden), onOpenActionCenter = panel::open, chargeAnimation = settings.chargeAnimation)
                 }
 
                 if (tutorialVisible) {

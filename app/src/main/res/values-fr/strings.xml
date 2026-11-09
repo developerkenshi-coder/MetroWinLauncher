@@ -1904,6 +1904,8 @@
     <string name="sec_statusbar_desc">La barre Windows Phone : dans le launcher et dans les autres applications, et les icônes affichées</string>
     <string name="statusbar_items">ce qu’elle affiche</string>
     <string name="statusbar_items_hint">Désactivez les icônes dont vous ne voulez pas. Une icône n’apparaît que lorsqu’elle a quelque chose à dire : l’avion quand le mode avion est actif, et ainsi de suite.</string>
+    <string name="charge_animation">Animation de charge</string>
+    <string name="charge_animation_hint">Une courte bannière quand le câble est branché, et la batterie qui se remplit dans la barre d’état et sur l’écran de verrouillage pendant la charge. Avec le mouvement réduit, seul l’état reste.</string>
     <string name="statusbar_notifications">notifications</string>
     <string name="statusbar_airplane">mode avion</string>
     <string name="statusbar_hotspot">point d’accès</string>
