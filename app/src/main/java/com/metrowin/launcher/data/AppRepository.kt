@@ -159,6 +159,7 @@ class AppRepository(private val context: Context) {
         LaunchAnimation.Rise -> R.anim.app_enter_rise
         LaunchAnimation.Zoom -> R.anim.app_enter_zoom
         LaunchAnimation.Instant -> 0
+        LaunchAnimation.Turnstile -> R.anim.app_enter_turnstile
         else -> R.anim.app_enter
     }
 
@@ -167,7 +168,7 @@ class AppRepository(private val context: Context) {
      * without it the app opens with the fade of the launcher.
      */
     fun launch(item: AppItem, sourceBounds: Rect?, growFrom: Rect? = null, anchor: View? = null, original: Boolean = false, window: LaunchAnimation = LaunchAnimation.Turnstile): Boolean {
-        val ownPage = original && (item.launch as? Launch.Activity)?.component?.packageName == context.packageName
+        val ownPage = (original || window == LaunchAnimation.Turnstile) && (item.launch as? Launch.Activity)?.component?.packageName == context.packageName
         val options = when {
             growFrom != null && anchor != null ->
                 ActivityOptions.makeScaleUpAnimation(anchor, growFrom.left, growFrom.top, growFrom.width(), growFrom.height()).toBundle()

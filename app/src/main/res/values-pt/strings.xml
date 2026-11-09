@@ -2773,6 +2773,9 @@ em primeiro plano %3$s · em segundo plano %4$s
     <string name="photos_empty">Ainda não há fotos.</string>
     <string name="photos_allow_why">Permita o acesso às fotos para as ver aqui. Nunca saem do telemóvel.</string>
     <string name="photos_allow">Permitir</string>
+    <string name="pv_share">Partilhar</string>
+    <string name="pv_delete">Eliminar</string>
+    <string name="pv_info">Informação</string>
 
     <!-- Other projects -->
     <string name="sec_projects">outros projetos</string>

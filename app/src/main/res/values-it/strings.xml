@@ -2766,6 +2766,9 @@ in primo piano %3$s · in background %4$s
     <string name="photos_empty">Ancora nessuna foto.</string>
     <string name="photos_allow_why">Consenti l\'accesso alle foto per vederle qui. Non escono mai dal telefono.</string>
     <string name="photos_allow">Consenti</string>
+    <string name="pv_share">Condividi</string>
+    <string name="pv_delete">Elimina</string>
+    <string name="pv_info">Info</string>
 
     <!-- Other projects -->
     <string name="sec_projects">altri progetti</string>

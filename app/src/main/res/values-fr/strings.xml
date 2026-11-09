@@ -2773,6 +2773,9 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="photos_empty">Aucune photo pour le moment.</string>
     <string name="photos_allow_why">Autorisez l’accès à vos photos pour les voir ici. Elles ne quittent jamais le téléphone.</string>
     <string name="photos_allow">Autoriser</string>
+    <string name="pv_share">Partager</string>
+    <string name="pv_delete">Supprimer</string>
+    <string name="pv_info">Infos</string>
 
     <!-- Other projects -->
     <string name="sec_projects">autres projets</string>
