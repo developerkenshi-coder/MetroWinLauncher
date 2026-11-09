@@ -2773,6 +2773,13 @@ en primer plano %3$s · en segundo plano %4$s
     <string name="photos_empty">Aún no hay fotos.</string>
     <string name="photos_allow_why">Permite el acceso a tus fotos para verlas aquí. Nunca salen del teléfono.</string>
     <string name="photos_allow">Permitir</string>
+    <string name="wal_scan">Escanear con la cámara</string>
+    <string name="wal_scan_why">Para leer el código de una tarjeta el launcher necesita la cámara. No se guarda ni se envía nada.</string>
+    <string name="wal_scan_hint">Pon el código dentro del marco.</string>
+    <string name="wal_scan_found">Código encontrado</string>
+    <string name="wal_scan_use">Usar este código</string>
+    <string name="wal_scan_again">Escanear de nuevo</string>
+    <string name="wal_scan_no_camera">Este teléfono no tiene cámara trasera para leer.</string>
     <string name="cal_pivot_day">día</string>
     <string name="stock_nowplaying">Reproduciendo</string>
     <string name="np_now">reproduciendo</string>

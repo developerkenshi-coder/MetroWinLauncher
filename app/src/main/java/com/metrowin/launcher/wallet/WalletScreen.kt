@@ -256,6 +256,7 @@ private fun CardEdit(initial: Card, onSave: (Card) -> Unit, onCancel: () -> Unit
     var note by remember(initial.id) { mutableStateOf(initial.note) }
     var color by remember(initial.id) { mutableStateOf(initial.color) }
     var picking by remember { mutableStateOf(false) }
+    var scanning by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val valid = name.isNotBlank() && Wallet.valid(code.trim(), format)
     BackHandler { onCancel() }
@@ -274,6 +275,7 @@ private fun CardEdit(initial: Card, onSave: (Card) -> Unit, onCancel: () -> Unit
             MetroTextField(name, { name = it.take(60) }, stringResource(R.string.wallet_name), Modifier.testTag("wal:edit:name"))
             MetroTextField(code, { code = it.take(Wallet.MAX_CODE) }, stringResource(R.string.wal_code), Modifier.testTag("wal:edit:code"))
             MetroButton(stringResource(R.string.wal_from_picture), Modifier.fillMaxWidth().testTag("wal:edit:picture")) { picture.launch("image/*") }
+            MetroButton(stringResource(R.string.wal_scan), Modifier.fillMaxWidth().testTag("wal:edit:scan")) { scanning = true }
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { items(CodeFormat.entries) { f -> PageChip(f.name, format == f, "wal:edit:format:${f.name}") { format = f } } }
             if (code.isNotBlank() && !valid && name.isNotBlank()) PageNote(stringResource(R.string.wal_format_invalid), Modifier.testTag("wal:edit:invalid"))
             if (code.isNotBlank() && Wallet.valid(code.trim(), format)) CodeImage(code.trim(), format, Modifier.fillMaxWidth(0.8f))
@@ -304,6 +306,7 @@ private fun CardEdit(initial: Card, onSave: (Card) -> Unit, onCancel: () -> Unit
             ),
         )
     }
+    if (scanning) CodeScanDialog(onUse = { text, f -> code = text.take(Wallet.MAX_CODE); format = f; scanning = false }, onCancel = { scanning = false })
     if (picking) DateTimeDialog(
         (if (expiry == 0L) LocalDate.now().plusMonths(6) else LocalDate.ofEpochDay(expiry)).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(), dateOnly = true,
         onChoose = { ms -> expiry = Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault()).toLocalDate().toEpochDay(); picking = false },

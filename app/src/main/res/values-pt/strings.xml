@@ -2773,6 +2773,13 @@ em primeiro plano %3$s · em segundo plano %4$s
     <string name="photos_empty">Ainda não há fotos.</string>
     <string name="photos_allow_why">Permita o acesso às fotos para as ver aqui. Nunca saem do telemóvel.</string>
     <string name="photos_allow">Permitir</string>
+    <string name="wal_scan">Digitalizar com a câmara</string>
+    <string name="wal_scan_why">Para ler o código de um cartão o launcher precisa da câmara. Nada é guardado nem enviado.</string>
+    <string name="wal_scan_hint">Põe o código dentro do quadro.</string>
+    <string name="wal_scan_found">Código encontrado</string>
+    <string name="wal_scan_use">Usar este código</string>
+    <string name="wal_scan_again">Digitalizar de novo</string>
+    <string name="wal_scan_no_camera">Este telemóvel não tem câmara traseira para ler.</string>
     <string name="cal_pivot_day">dia</string>
     <string name="stock_nowplaying">A reproduzir</string>
     <string name="np_now">a reproduzir</string>

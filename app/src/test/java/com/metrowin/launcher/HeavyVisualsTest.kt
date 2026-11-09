@@ -7,6 +7,7 @@ import com.metrowin.launcher.photos.zoomAbout
 import com.metrowin.launcher.calendar.CalEvent
 import com.metrowin.launcher.calendar.DayLayout
 import com.metrowin.launcher.mail.thumbSample
+import com.metrowin.launcher.wallet.bestSize
 import com.metrowin.launcher.music.playbackPosition
 import com.metrowin.launcher.people.PeopleBook
 import com.metrowin.launcher.people.Person
@@ -85,5 +86,13 @@ class HeavyVisualsTest {
         assertEquals(1, thumbSample(300))
         assertEquals(2, thumbSample(320))
         assertEquals(16, thumbSample(4000))
+    }
+
+    @Test
+    fun theCameraIsReadAtTheLargestSizeThatIsStillQuick() {
+        assertEquals(1280 to 720, bestSize(listOf(1920 to 1080, 1280 to 720, 640 to 480)))
+        assertEquals(640 to 480, bestSize(listOf(4000 to 3000, 640 to 480)))
+        // Nothing small enough: the smallest there is.
+        assertEquals(1920 to 1080, bestSize(listOf(4000 to 3000, 1920 to 1080)))
     }
 }
