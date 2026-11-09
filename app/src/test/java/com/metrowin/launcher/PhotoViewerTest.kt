@@ -19,4 +19,11 @@ class PhotoViewerTest {
         assertEquals(540f, panLimit(1080f, 2f), 0.001f)
         assertEquals(0f, panLimit(1080f, 0.5f), 0f)
     }
+
+    @Test
+    fun `the word searched for is marked wherever it is, in any case`() {
+        val marked = com.metrowin.launcher.ui.components.highlighted("Camera and CAMERA roll", " camera ", androidx.compose.ui.graphics.Color.Red)
+        assertEquals(listOf(0 to 6, 11 to 17), marked.spanStyles.map { it.start to it.end })
+        assertEquals(0, com.metrowin.launcher.ui.components.highlighted("Notes", "", androidx.compose.ui.graphics.Color.Red).spanStyles.size)
+    }
 }

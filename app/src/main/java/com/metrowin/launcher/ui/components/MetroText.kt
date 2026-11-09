@@ -1,5 +1,10 @@
 package com.metrowin.launcher.ui.components
 
+import com.metrowin.launcher.ui.theme.LocalAccent
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.runtime.remember
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -37,22 +42,37 @@ fun MetroText(
     lineHeight: TextUnit = TextUnit.Unspecified,
     textAlign: TextAlign = TextAlign.Unspecified,
     minScale: Float = DEFAULT_MIN_SCALE,
+    /** A word to show in the accent colour wherever the text has it (what was searched for); blank for none. */
+    highlight: String = "",
 ) {
     val style = LocalStyle.current
-    BasicText(
-        text = text,
-        modifier = if (minScale < 1f) modifier.shrinkToFit(minScale, singleLine = maxLines == 1) else modifier,
-        style = TextStyle(
-            color = color,
-            fontSize = size,
-            fontWeight = style.weight(weight),
-            fontFamily = style.font,
-            lineHeight = lineHeight,
-            textAlign = textAlign,
-        ),
-        maxLines = maxLines,
-        overflow = TextOverflow.Ellipsis,
+    val textStyle = TextStyle(
+        color = color,
+        fontSize = size,
+        fontWeight = style.weight(weight),
+        fontFamily = style.font,
+        lineHeight = lineHeight,
+        textAlign = textAlign,
     )
+    val shaped = if (minScale < 1f) modifier.shrinkToFit(minScale, singleLine = maxLines == 1) else modifier
+    if (highlight.isBlank()) {
+        BasicText(text = text, modifier = shaped, style = textStyle, maxLines = maxLines, overflow = TextOverflow.Ellipsis)
+    } else {
+        val accent = LocalAccent.current
+        BasicText(text = remember(text, highlight, accent) { highlighted(text, highlight, accent) }, modifier = shaped, style = textStyle, maxLines = maxLines, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+/** [text] with every place that has [term] (any case) in [color]. */
+fun highlighted(text: String, term: String, color: Color): AnnotatedString = buildAnnotatedString {
+    append(text)
+    val word = term.trim()
+    if (word.isEmpty()) return@buildAnnotatedString
+    var from = text.indexOf(word, ignoreCase = true)
+    while (from >= 0) {
+        addStyle(SpanStyle(color = color), from, from + word.length)
+        from = text.indexOf(word, from + word.length, ignoreCase = true)
+    }
 }
 
 /**
