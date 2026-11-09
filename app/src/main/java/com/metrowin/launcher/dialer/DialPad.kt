@@ -1,5 +1,18 @@
 package com.metrowin.launcher.dialer
 
+import com.metrowin.launcher.ui.theme.onAccent
+import com.metrowin.launcher.ui.theme.LocalStyle
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,12 +52,16 @@ fun DialPad(onKey: (Char) -> Unit, modifier: Modifier = Modifier, keyHeight: and
     marked: Set<Char> = emptySet(),
 ) {
     val colors = LocalMetroColors.current
+    val accent = LocalAccent.current
+    val classic = LocalStyle.current.isClassic
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         KEYS.forEach { row ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 row.forEach { (key, letters) ->
+                    var pressed by remember { mutableStateOf(false) }
                     Box(
                         Modifier.weight(1f).height(keyHeight).testTag("dial:key:$key")
+                            .then(if (classic) Modifier.watchPress { pressed = it } else Modifier)
                             .metroPress(
                                 onClick = { onKey(key) },
                                 onLongClick = when {
@@ -54,17 +71,34 @@ fun DialPad(onKey: (Char) -> Unit, modifier: Modifier = Modifier, keyHeight: and
                                     else -> null
                                 },
                             )
-                            .litFill(false),
+                            // Classic: an outline of 2 dp that fills with the accent colour under the finger; the other looks keep their fill.
+                            .then(
+                                if (classic) Modifier.background(if (pressed) accent else Color.Transparent).border(2.dp, if (pressed) accent else colors.foreground)
+                                else Modifier.litFill(false),
+                            ),
                         contentAlignment = Alignment.Center,
                     ) {
                         if (key in marked) MetroText("●", size = 8.sp, color = LocalAccent.current, modifier = Modifier.align(Alignment.TopEnd).padding(6.dp))
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            MetroText(key.toString(), size = 30.sp, weight = FontWeight.Normal)
-                            if (letters.isNotEmpty()) MetroText(letters, size = 10.sp, weight = FontWeight.Normal, color = colors.subtle)
+                            // The digits are large and light, the letters small, as on Windows Phone.
+                            MetroText(key.toString(), size = if (classic) 36.sp else 30.sp, weight = if (classic) FontWeight.Light else FontWeight.Normal, color = if (classic && pressed) onAccent() else colors.foreground)
+                            if (letters.isNotEmpty()) MetroText(letters, size = 10.sp, weight = FontWeight.Normal, color = if (classic && pressed) onAccent() else colors.subtle)
                         }
                     }
                 }
             }
         }
+    }
+}
+
+/** Tells whether a finger is on the key, without taking the touch from what handles it. */
+private fun Modifier.watchPress(onChange: (Boolean) -> Unit): Modifier = pointerInput(Unit) {
+    awaitEachGesture {
+        awaitFirstDown(requireUnconsumed = false)
+        onChange(true)
+        do {
+            val event = awaitPointerEvent(PointerEventPass.Initial)
+        } while (event.changes.any { it.pressed })
+        onChange(false)
     }
 }
