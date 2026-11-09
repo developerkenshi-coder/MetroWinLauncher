@@ -45,7 +45,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
-import com.metrowin.launcher.ui.components.PivotHeader
+import com.metrowin.launcher.ui.components.HubPager
 import com.metrowin.launcher.ui.mini.MiniFrame
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -58,41 +58,34 @@ private val GAP = 4.dp
 
 /**
  * The Photo hub: the title, a pivot with three pages (albums, date, favourites) and a grid of small pictures on each. [photos] is null while they
- * are being read; with [needsPermission] the page asks for the access instead. No editing, no deleting: a tap opens the picture in a gallery.
+ * are being read; with [needsPermission] the page asks for the access instead. No editing, no deleting: a tap opens the picture in the viewer, which grows out of the small picture ([onOpen] gets where that was, in window pixels).
  */
 @Composable
-fun PhotosScreen(photos: List<Photo>?, needsPermission: Boolean, onAllow: () -> Unit, onOpen: (Photo) -> Unit) {
+fun PhotosScreen(photos: List<Photo>?, needsPermission: Boolean, onAllow: () -> Unit, onOpen: (Photo, Rect) -> Unit) {
     val pager = rememberPagerState { 3 }
-    // The picture in the viewer, and where its small one was: the viewer grows out of that place. [onOpen] is the gallery of the phone, by a long press.
-    var viewing by remember { mutableStateOf<Pair<Photo, Rect>?>(null) }
-    val view: (Photo, Rect) -> Unit = { photo, from -> viewing = photo to from }
     // The open album is kept here, not in the page: the pager drops the page that is swiped away.
     var album by rememberSaveable { mutableStateOf<String?>(null) }
     BackHandler(enabled = album != null) { album = null }
 
-    Box(Modifier.fillMaxSize()) {
     MiniFrame {
-        MetroText(stringResource(R.string.stock_photohub).lowercase(), size = 62.sp, modifier = Modifier.padding(start = SIDE, top = 4.dp).testTag("photos:title"))
-        PivotHeader(
+        HubPager(
+            stringResource(R.string.stock_photohub),
             listOf(stringResource(R.string.photos_albums), stringResource(R.string.photos_date), stringResource(R.string.photos_favorites)), pager,
-            Modifier.padding(start = SIDE, top = 2.dp, bottom = 8.dp), size = 27.sp, color = LocalAccent.current,
-        )
-        when {
-            needsPermission -> Column(Modifier.fillMaxWidth().padding(horizontal = SIDE).testTag("photos:permission"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                MetroText(stringResource(R.string.photos_allow_why), size = 18.sp, color = LocalMetroColors.current.subtle)
-                MetroButton(stringResource(R.string.photos_allow), Modifier.testTag("photos:allow"), onClick = onAllow)
-            }
-            photos == null -> Box(Modifier.fillMaxSize().testTag("photos:loading"))
-            else -> HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth().clipToBounds(), beyondViewportPageCount = 0) { page ->
-                when (page) {
-                    0 -> AlbumsPage(photos, album, onAlbum = { album = it }, view)
-                    1 -> DatePage(photos, view)
-                    else -> PhotoGrid(PhotoLibrary.favorites(photos), view, "photos:favorites")
+            userScrollEnabled = !needsPermission && photos != null, titleTag = "photos:title", pagerTag = "photos:pager",
+        ) { page ->
+            when {
+                needsPermission -> if (page == 0) Column(Modifier.fillMaxWidth().padding(horizontal = SIDE).testTag("photos:permission"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    MetroText(stringResource(R.string.photos_allow_why), size = 18.sp, color = LocalMetroColors.current.subtle)
+                    MetroButton(stringResource(R.string.photos_allow), Modifier.testTag("photos:allow"), onClick = onAllow)
+                }
+                photos == null -> Box(Modifier.fillMaxSize().testTag("photos:loading"))
+                else -> when (page) {
+                    0 -> AlbumsPage(photos, album, onAlbum = { album = it }, onOpen)
+                    1 -> DatePage(photos, onOpen)
+                    else -> PhotoGrid(PhotoLibrary.favorites(photos), onOpen, "photos:favorites")
                 }
             }
         }
-    }
-    viewing?.let { (photo, from) -> PhotoViewer(photo, from, onClose = { viewing = null }, onGallery = { onOpen(photo) }) }
     }
 }
 

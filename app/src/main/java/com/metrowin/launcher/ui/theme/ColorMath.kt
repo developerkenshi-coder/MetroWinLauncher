@@ -63,6 +63,23 @@ object ColorMath {
     /** Black or white, whichever reads better on [background]: at least 4.5:1 on any color. */
     fun inkOn(background: Color): Color = if (contrast(Color.White, background) >= contrast(Color.Black, background)) Color.White else Color.Black
 
+    /**
+     * [color] as text on [background]: itself when it already reads ([minimum] 3:1 is the least for large text, which is what an accent heading is),
+     * else drawn towards the ink of the background (black on a light one, white on a dark one) just far enough. A yellow accent on the white
+     * of the light theme becomes a dark yellow instead of vanishing.
+     */
+    fun readableOn(color: Color, background: Color, minimum: Float = 3f): Color {
+        if (contrast(color, background) >= minimum) return color
+        val ink = if (luminance(background.toArgbInt()) > 0.5f) Color.Black else Color.White
+        var step = 1
+        while (step <= 20) {
+            val blended = androidx.compose.ui.graphics.lerp(color, ink, step * 0.05f)
+            if (contrast(blended, background) >= minimum) return blended
+            step++
+        }
+        return ink
+    }
+
     /** [color] with its hue turned by [degrees]. */
     fun rotateHue(color: Color, degrees: Float): Color {
         val hsv = argbToHsv(color.toArgbInt())

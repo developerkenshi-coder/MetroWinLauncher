@@ -16,10 +16,12 @@ import com.metrowin.launcher.ui.theme.LocalMetroColors
  * [onClick] a touch on it does something (the lists with letters open the jump list).
  */
 @OptIn(ExperimentalFoundationApi::class)
-fun LazyListScope.sectionHeader(key: Any, onClick: (() -> Unit)? = null, content: @Composable () -> Unit) {
+fun LazyListScope.sectionHeader(key: Any, onClick: (() -> Unit)? = null, animated: Boolean = false, content: @Composable () -> Unit) {
     stickyHeader(key = key, contentType = "section") {
         Box(
             Modifier
+                // The heading glides to its new place when the order of the list changes.
+                .then(if (animated) Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null, placementSpec = ReorderSpring) else Modifier)
                 .fillMaxWidth()
                 // Opaque enough that the rows under it do not read through the heading.
                 .background(LocalMetroColors.current.background.copy(alpha = STRIP_ALPHA))
@@ -29,6 +31,9 @@ fun LazyListScope.sectionHeader(key: Any, onClick: (() -> Unit)? = null, content
 }
 
 private const val STRIP_ALPHA = 0.96f
+
+/** How the rows of a list glide to their places when the order changes: soft, no bounce. */
+val ReorderSpring = androidx.compose.animation.core.spring<androidx.compose.ui.unit.IntOffset>(stiffness = androidx.compose.animation.core.Spring.StiffnessLow)
 
 /** Where each section starts in a list: [sizes] are the rows of every section, each with one heading before them, from item [first]. */
 fun sectionStarts(sizes: List<Int>, first: Int = 0): List<Int> {

@@ -55,4 +55,13 @@ class ContrastTest {
     fun theInkOnAnAccentReadsOnEveryAccent() {
         for (accent in MetroAccents) assertText("ink on ${accent.value}", ColorMath.inkOn(accent), accent)
     }
+
+    @Test
+    fun anAccentUsedAsTextReadsOnThePageOfEveryTheme() {
+        for (accent in MetroAccents) for (colors in listOf(DarkColors, LightColors)) {
+            assertText("accent ${accent.value} text on ${colors.background}", ColorMath.readableOn(accent, colors.background), colors.background, 3f)
+        }
+        // One that already reads is left alone.
+        assertEquals(Color(0xFF0050EF), ColorMath.readableOn(Color(0xFF0050EF), Color.White))
+    }
 }

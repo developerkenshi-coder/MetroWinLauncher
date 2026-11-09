@@ -97,7 +97,7 @@ internal fun WeatherPlusFace(item: AppItem, size: TileSize, width: Dp, height: D
     Box(Modifier.fillMaxSize()) {
         if (size == TileSize.Wide) {
             val days = weather.days.drop(1).take(3)
-            Row(Modifier.fillMaxSize().padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = NAME_ROOM), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(Modifier.fillMaxSize().padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Headline(Modifier.weight(1f))
                 Details((room / lineHeight).toInt().coerceIn(1, lines.size.coerceAtLeast(1)), Modifier.weight(1.5f))
                 if (days.isNotEmpty()) {
@@ -113,7 +113,7 @@ internal fun WeatherPlusFace(item: AppItem, size: TileSize, width: Dp, height: D
             }
         } else {
             val headline = height * 0.24f * 1.15f + lineHeight * 2
-            Column(Modifier.align(Alignment.TopStart).fillMaxSize().padding(start = 10.dp, top = 6.dp, end = 8.dp, bottom = NAME_ROOM)) {
+            Column(Modifier.align(Alignment.TopStart).fillMaxSize().padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM)) {
                 Headline()
                 Details(((room - headline) / lineHeight).toInt().coerceIn(0, lines.size))
             }

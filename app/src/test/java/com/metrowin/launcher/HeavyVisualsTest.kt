@@ -1,0 +1,163 @@
+package com.metrowin.launcher
+
+import androidx.compose.ui.geometry.Offset
+import com.metrowin.launcher.photos.fitSize
+import com.metrowin.launcher.photos.panLimit
+import com.metrowin.launcher.photos.zoomAbout
+import com.metrowin.launcher.calendar.CalEvent
+import com.metrowin.launcher.data.LiveEvent
+import com.metrowin.launcher.data.TileGrid
+import com.metrowin.launcher.ui.anim.turnStart
+import com.metrowin.launcher.ui.lock.glancePlace
+import com.metrowin.launcher.data.LockText
+import com.metrowin.launcher.data.StartEntries
+import com.metrowin.launcher.model.Tile
+import com.metrowin.launcher.model.TileSize
+import com.metrowin.launcher.calendar.DayLayout
+import com.metrowin.launcher.mail.thumbSample
+import com.metrowin.launcher.notes.Pt
+import com.metrowin.launcher.notes.SketchGeometry
+import com.metrowin.launcher.notes.Stroke
+import com.metrowin.launcher.notes.Tool
+import com.metrowin.launcher.wallet.bestSize
+import com.metrowin.launcher.music.playbackPosition
+import com.metrowin.launcher.people.PeopleBook
+import com.metrowin.launcher.people.Person
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import java.time.LocalDate
+import java.time.ZoneOffset
+
+/** The small pure parts of the Classic visuals that are not worth a screen test. */
+class HeavyVisualsTest {
+    @Test
+    fun photoFitsWholeAndPansOnlyWhenZoomed() {
+        val (w, h) = fitSize(4000f, 3000f, 1000f, 2000f)
+        assertEquals(1000f, w, 0.01f)
+        assertEquals(750f, h, 0.01f)
+        assertEquals(0f, panLimit(1000f, w, 1f), 0f)
+        assertEquals(1000f, panLimit(1000f, w, 3f), 0.01f)
+        // At 3x the picture is 750 high x3 = 2250, the box 2000: it may move 125 up or down.
+        assertEquals(125f, panLimit(2000f, h, 3f), 0.01f)
+    }
+
+    @Test
+    fun theFingersStayOnTheSamePointWhileZooming() {
+        val centroid = Offset(100f, 50f)
+        val next = zoomAbout(Offset.Zero, centroid, 1f, 2f)
+        assertEquals(Offset(-100f, -50f), next)
+        assertEquals(Offset.Zero, zoomAbout(next, centroid, 2f, 1f))
+    }
+
+    @Test
+    fun peopleAreListedUnderTheirLetterWithoutAccents() {
+        val people = listOf("Émile", "anna", "Zoe", "3 Pizza", "Bob").map { Person(it, it, false, null) }
+        assertEquals(listOf("A", "B", "E", "Z", "#"), PeopleBook.grouped(people).map { it.first })
+    }
+
+    @Test
+    fun aNumberIsTheSameLineHoweverItIsWritten() {
+        assertTrue(PeopleBook.sameNumber("+39 333 1234567", "3331234567"))
+        assertFalse(PeopleBook.sameNumber("3331234567", "3331234568"))
+        assertFalse(PeopleBook.sameNumber("", "3331234567"))
+    }
+
+    @Test
+    fun theSongMovesOnWhilePlayingAndStaysInsideItself() {
+        assertEquals(3000L, playbackPosition(1000L, 0L, 2000L, 1f, playing = true, duration = 10_000L))
+        assertEquals(1000L, playbackPosition(1000L, 0L, 2000L, 1f, playing = false, duration = 10_000L))
+        assertEquals(10_000L, playbackPosition(9000L, 0L, 5000L, 1f, playing = true, duration = 10_000L))
+    }
+
+    private fun at(h: Int, m: Int = 0) = LocalDate.of(2026, 11, 9).atTime(h, m).toInstant(ZoneOffset.UTC).toEpochMilli()
+    private fun event(id: Long, from: Long, to: Long, allDay: Boolean = false) = CalEvent(id, 1, "e$id", from, to, allDay)
+
+    @Test
+    fun overlappingEventsShareColumnsAndLoneOnesTakeTheWholeWidth() {
+        val day = LocalDate.of(2026, 11, 9)
+        val blocks = DayLayout.blocks(
+            listOf(event(1, at(9), at(11)), event(2, at(10), at(12)), event(3, at(11), at(12, 30)), event(4, at(15), at(16)), event(5, at(0), at(0), allDay = true)),
+            day, ZoneOffset.UTC,
+        ).associateBy { it.event.id }
+        assertEquals(null, blocks[5])
+        // 1 and 2 overlap, 3 starts when 1 ends and takes its column: two columns for the three of them.
+        assertEquals(2, blocks.getValue(1).columns)
+        assertEquals(0, blocks.getValue(1).column)
+        assertEquals(1, blocks.getValue(2).column)
+        assertEquals(0, blocks.getValue(3).column)
+        assertEquals(2, blocks.getValue(3).columns)
+        assertEquals(1, blocks.getValue(4).columns)
+        assertEquals(15 * 60, blocks.getValue(4).startMin)
+    }
+
+    @Test
+    fun aThumbnailIsShrunkByPowersOfTwoButNotBelowItsSize() {
+        assertEquals(1, thumbSample(100))
+        assertEquals(1, thumbSample(300))
+        assertEquals(2, thumbSample(320))
+        assertEquals(16, thumbSample(4000))
+    }
+
+    @Test
+    fun theCameraIsReadAtTheLargestSizeThatIsStillQuick() {
+        assertEquals(1280 to 720, bestSize(listOf(1920 to 1080, 1280 to 720, 640 to 480)))
+        assertEquals(640 to 480, bestSize(listOf(4000 to 3000, 640 to 480)))
+        // Nothing small enough: the smallest there is.
+        assertEquals(1920 to 1080, bestSize(listOf(4000 to 3000, 1920 to 1080)))
+    }
+
+    @Test
+    fun aTileDroppedOnAnotherPushesItOutAndTheOthersStay() {
+        val entries = listOf(
+            Tile("a", TileSize.Medium, col = 0, row = 0), Tile("b", TileSize.Medium, col = 2, row = 0), Tile("c", TileSize.Small, col = 0, row = 2),
+        )
+        val current = mapOf("a" to (0 to 0), "b" to (2 to 0), "c" to (0 to 2))
+        val placed = StartEntries.place(entries, "c", 2, 0, current).associateBy { it.id }
+        assertEquals(2, placed.getValue("c").col)
+        // b was under it: it flows again. a was not: it keeps its cell.
+        assertEquals(-1, placed.getValue("b").col)
+        assertEquals(0, placed.getValue("a").col)
+    }
+
+    @Test
+    fun theLockLineCountsTheMinutesToTheNextEvent() {
+        assertEquals(25, LockText.minutesTo(LiveEvent("x", 25 * 60_000L + 5_000, false), 0L))
+        assertEquals(null, LockText.minutesTo(LiveEvent("x", 1_000L, true), 0L))
+        assertEquals(null, LockText.minutesTo(LiveEvent("x", 1_000L, false), 2_000L))
+    }
+
+    @Test
+    fun aPhoneOnItsSideHasSixColumnsAndATabletKeepsWhatFits() {
+        assertEquals(6, TileGrid.columnsFor(800f, more = false, heightDp = 360f))
+        assertEquals(4, TileGrid.columnsFor(360f, more = false, heightDp = 800f))
+        assertEquals(12, TileGrid.columnsFor(1280f, more = true, heightDp = 800f))
+    }
+
+    @Test
+    fun thePageComesRoundFromWhereItWas() {
+        assertEquals(0f, turnStart(0, 0), 0f)
+        assertEquals(90f, turnStart(0, 1), 0f)
+        assertEquals(-90f, turnStart(1, 0), 0f)
+        assertEquals(180f, turnStart(0, 2), 0f)
+        assertEquals(-90f, turnStart(0, 3), 0f)
+    }
+
+    @Test
+    fun theGlanceMovesEveryMinuteAndStaysOnTheScreen() {
+        val places = (0L..60L).map { glancePlace(it) }
+        assertTrue(places.zipWithNext().all { (a, b) -> a != b })
+        assertTrue(places.all { (x, y) -> x in -1f..1f && y in -1f..1f })
+    }
+
+    @Test
+    fun theHighlighterIsWiderThanThePenAndTheEraserFindsIt() {
+        val pen = Stroke(Tool.Pen, 0, 6f, listOf(Pt(0f, 0f), Pt(100f, 0f)))
+        val marker = pen.copy(tool = Tool.Highlighter)
+        assertEquals(6f * SketchGeometry.HIGHLIGHT, SketchGeometry.widthOf(marker), 0.001f)
+        // 30 units above the line: out of reach of the pen at radius 22, within reach of the marker (reach 22 + 7.8).
+        assertFalse(SketchGeometry.hit(pen, 50f, 30f, 22f))
+        assertTrue(SketchGeometry.hit(marker, 50f, 29f, 22f))
+    }
+}

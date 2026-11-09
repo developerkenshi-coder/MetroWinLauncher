@@ -29,6 +29,9 @@ object TileGrid {
     private const val BLOCK = 2
     private const val MAX_COLUMNS = 12
 
+    /** A screen wider than high and no higher than this is a phone on its side. */
+    private const val LANDSCAPE_PHONE_HEIGHT_DP = 500f
+
     /** The lowest row a tile can be given in free mode: a saved file with a huge row must not make the grid, or the memory, huge. */
     private const val MAX_FREE_ROW = 200
     const val MAX_CUSTOM_COLUMNS = MAX_COLUMNS
@@ -50,11 +53,13 @@ object TileGrid {
 
     /**
      * How many columns of small tiles fit a screen [widthDp] wide, in whole blocks, so the tiles keep the size they
-     * have on a portrait phone (4 columns, 6 with [more]) and a wider screen, such as a phone in landscape, gets more
-     * of them instead of bigger ones.
+     * have on a portrait phone (4 columns, 6 with [more]) and a wider screen gets more of them instead of bigger ones;
+     * a phone in landscape (see [heightDp]) has six.
      */
-    fun columnsFor(widthDp: Float, more: Boolean, sidesDp: Float = SIDES_DP, custom: Int = 0): Int {
+    fun columnsFor(widthDp: Float, more: Boolean, sidesDp: Float = SIDES_DP, custom: Int = 0, heightDp: Float = 0f): Int {
         if (custom > 0) return custom.coerceIn(DEFAULT_COLUMNS, maxOf(DEFAULT_COLUMNS, customMax(widthDp, sidesDp)))
+        // A phone turned on its side has six columns, as the landscape Start of Windows Phone (a tablet, which is as high as a phone is wide, keeps what fits).
+        if (heightDp in 1f..LANDSCAPE_PHONE_HEIGHT_DP && widthDp > heightDp) return MORE_COLUMNS
         val unit = if (more) MORE_UNIT_DP else UNIT_DP
         val fit = (widthDp - sidesDp + GAP_DP) / (unit + GAP_DP)
         return (BLOCK * Math.round(fit / BLOCK)).coerceIn(if (more) MORE_COLUMNS else DEFAULT_COLUMNS, MAX_COLUMNS)

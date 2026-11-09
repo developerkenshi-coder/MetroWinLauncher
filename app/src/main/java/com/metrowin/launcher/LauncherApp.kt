@@ -98,6 +98,7 @@ import com.metrowin.launcher.ui.start.FolderPickBar
 import com.metrowin.launcher.ui.start.MovePickBar
 import com.metrowin.launcher.data.StartEntries
 import com.metrowin.launcher.data.LaunchAnimation
+import com.metrowin.launcher.ui.anim.LaunchSplash
 import com.metrowin.launcher.data.LaunchPlans
 import androidx.compose.ui.platform.LocalView
 import com.metrowin.launcher.data.TileGrid
@@ -490,10 +491,13 @@ fun LauncherApp(vm: LauncherViewModel) {
     var listExiting by remember { mutableStateOf(false) }
     var launching by remember { mutableStateOf(false) }
     var launched by remember { mutableStateOf(false) }
+    // The app of someone else that is starting: its icon on the accent colour until it is up (the splash of Windows Phone).
+    var splashItem by remember { mutableStateOf<AppItem?>(null) }
     var cameBackFromBackground by remember { mutableStateOf(false) }
 
     fun comeBack() {
         launching = false
+        splashItem = null
         launched = false
         exitRequest = null
         listExiting = false
@@ -661,7 +665,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     fun finishWidget(id: Int, provider: WidgetProvider) {
         // The smallest tile the widget fits whole in, with the real size of the tiles of this phone and this setting.
         val sides = TileGrid.sidesFor(settings.pagePadding, screenWidthDp)
-        val columns = TileGrid.columnsFor(screenWidthDp, settings.moreTiles, sides, settings.tileColumns)
+        val columns = TileGrid.columnsFor(screenWidthDp, settings.moreTiles, sides, settings.tileColumns, screenHeightDp)
         val size = WidgetSizing.tileSizeFor(provider, TileGrid.unitDp(screenWidthDp, columns, sidesDp = sides), gapDp = 6f)
         vm.addWidget(id, provider, lastStartPage.coerceIn(0, pages.size - 1), size)
         pendingWidget = null
@@ -838,7 +842,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 return
             }
             AppRepository.ROUTE_PEOPLEHUB -> {
-                panels.open(Panel.PeopleHub)
+                appContext.startActivity(android.content.Intent(appContext, com.metrowin.launcher.people.PeopleActivity::class.java).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
                 return
             }
             // An album and a group lead to the apps that hold them.
@@ -862,6 +866,7 @@ fun LauncherApp(vm: LauncherViewModel) {
         scope.launch {
             if (plan.waitMs > 0) delay(plan.waitMs)
             val internal = item.launch as? Launch.Internal
+            if (plan.tilesTurnAway && settings.themeStyle == ThemeStyle.Classic && (item.launch as? Launch.Activity)?.component?.packageName.let { it != null && it != appContext.packageName }) splashItem = item
             when {
                 internal?.route == AppRepository.ROUTE_KIDS ->
                     if (settings.kidsApps.isEmpty()) {
@@ -875,7 +880,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                     settingsSection = null
                     settingsOpen = true
                 }
-                vm.launch(item, growFrom = growFrom, anchor = decorView, original = plan.original, window = plan.window) -> launched = true
+                vm.launch(item, growFrom = growFrom, anchor = decorView, original = plan.original, window = if (reduceMotion) LaunchAnimation.Fade else plan.window) -> launched = true
                 else -> comeBack()
             }
         }
@@ -1373,7 +1378,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             live = liveNow,
                             badges = badges,
                             peeks = peeks,
-                            columns = TileGrid.columnsFor(screenWidthDp, settings.moreTiles, TileGrid.sidesFor(settings.pagePadding, screenWidthDp), settings.tileColumns),
+                            columns = TileGrid.columnsFor(screenWidthDp, settings.moreTiles, TileGrid.sidesFor(settings.pagePadding, screenWidthDp), settings.tileColumns, screenHeightDp),
                             background = pageBackgrounds[page] ?: startBackground,
                             enterToken = enterToken,
                             exitRequest = exitRequest,
@@ -2049,6 +2054,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                     }
                 }
 
+                splashItem?.let { LaunchSplash(it) }
+
                 // What was just done to Start, with a way to take it back; it goes by itself after a few seconds.
                 if (!kidsMode && !tutorialVisible && !settingsOpen && !weatherOpen) {
                     undoState?.let { state ->
@@ -2115,6 +2122,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         state = state,
                         onRetry = { voiceRequest++ },
                         onCancel = voice::close,
+                        onSuggest = voice::say,
                         onSearchWeb = { query ->
                             voice.close()
                             vm.launch(AppItem("search:web", query, Launch.Link(GlobalSearch.webUrl(query, settings.searchEngine))))

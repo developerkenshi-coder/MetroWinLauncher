@@ -1,7 +1,26 @@
 package com.metrowin.launcher.calls
 
 import com.metrowin.launcher.ui.components.topBarsPadding
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.provider.ContactsContract
+import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import com.metrowin.launcher.ui.anim.Motion
+import com.metrowin.launcher.ui.anim.flipIn
+import com.metrowin.launcher.ui.anim.metroTween
+import com.metrowin.launcher.ui.theme.DarkColors
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -71,14 +90,21 @@ class CallActions(
  */
 @Composable
 fun InCallScreen(lines: List<CallLine>, audio: CallAudio, actions: CallActions, modifier: Modifier = Modifier) {
-    val colors = LocalMetroColors.current
     val main = lines.firstOrNull { it.ringing } ?: lines.firstOrNull { !it.held } ?: lines.firstOrNull()
+    // With a photo of the caller the screen is that photo under a flat veil, and the ink is white whatever the theme.
+    val photo = rememberCallerPhoto(main?.number.orEmpty())
+    val colors = if (photo != null) DarkColors else LocalMetroColors.current
     var keypad by remember { mutableStateOf(false) }
     var typed by remember { mutableStateOf("") }
     // Back closes the keypad of the call before it leaves the screen of the call.
     androidx.activity.compose.BackHandler(enabled = keypad) { keypad = false }
+    CompositionLocalProvider(LocalMetroColors provides colors) { Box(modifier.fillMaxSize().then(if (photo == null) Modifier.pageBackground() else Modifier)) {
+    if (photo != null) {
+        Image(photo, null, Modifier.fillMaxSize().testTag("incall:photo"), contentScale = ContentScale.Crop)
+        Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.55f)))
+    }
     Column(
-        modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().padding(horizontal = 24.dp, vertical = 16.dp),
+        Modifier.fillMaxSize().topBarsPadding().navigationBarsPadding().padding(horizontal = 24.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
         if (main == null) {
@@ -105,7 +131,11 @@ fun InCallScreen(lines: List<CallLine>, audio: CallAudio, actions: CallActions, 
             }
         }
         if (keypad && !main.ringing) {
-            Column {
+            // The keypad rises from the bottom and fades in.
+            val reduced = LocalReduceMotion.current
+            val enter = remember { Animatable(if (reduced) 1f else 0f) }
+            LaunchedEffect(Unit) { enter.animateTo(1f, metroTween(durationMillis = 320, easing = Motion.Decelerate)) }
+            Column(Modifier.graphicsLayer { translationY = (1f - enter.value) * 96.dp.toPx(); alpha = enter.value }) {
                 MetroText(typed, size = 30.sp, maxLines = 1, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp).testTag("incall:typed"))
                 DialPad(onKey = { key ->
                     typed = (typed + key).takeLast(20)
@@ -117,21 +147,21 @@ fun InCallScreen(lines: List<CallLine>, audio: CallAudio, actions: CallActions, 
             // The picture of the caller: a big square, the first letter of the name in it. It gives way when the room is short.
             BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 val side = minOf(maxWidth * 0.62f, maxHeight, 260.dp)
-                if (side >= 96.dp) Portrait(main, side)
+                if (side >= 96.dp && photo == null) Portrait(main, side)
             }
             if (!main.ringing) {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.padding(bottom = 16.dp)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                        RoundButton(CallIcon.Mute, stringResource(R.string.incall_mute), audio.muted, "incall:mute") { actions.onMute(!audio.muted) }
-                        RoundButton(CallIcon.Keypad, stringResource(R.string.incall_keypad), false, "incall:keypad") { keypad = true }
+                        RoundButton(CallIcon.Mute, stringResource(R.string.incall_mute), audio.muted, "incall:mute", Modifier.flipIn(0, keypad)) { actions.onMute(!audio.muted) }
+                        RoundButton(CallIcon.Keypad, stringResource(R.string.incall_keypad), false, "incall:keypad", Modifier.flipIn(1, keypad)) { keypad = true }
                         RoundButton(
-                            CallIcon.Speaker, stringResource(if (audio.bluetooth) R.string.incall_bluetooth else R.string.incall_speaker), audio.speaker, "incall:speaker",
+                            CallIcon.Speaker, stringResource(if (audio.bluetooth) R.string.incall_bluetooth else R.string.incall_speaker), audio.speaker, "incall:speaker", Modifier.flipIn(2, keypad),
                         ) { actions.onRoute() }
                     }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                        RoundButton(CallIcon.Hold, stringResource(R.string.incall_hold), main.held, "incall:hold", enabled = main.canHold) { actions.onHold(main.id, !main.held) }
-                        RoundButton(CallIcon.Add, stringResource(R.string.incall_add), false, "incall:add") { actions.onAddCall() }
-                        RoundButton(CallIcon.Merge, stringResource(R.string.incall_merge), false, "incall:merge", enabled = lines.size > 1 || main.canMerge) { actions.onMerge(main.id) }
+                        RoundButton(CallIcon.Hold, stringResource(R.string.incall_hold), main.held, "incall:hold", Modifier.flipIn(3, keypad), enabled = main.canHold) { actions.onHold(main.id, !main.held) }
+                        RoundButton(CallIcon.Add, stringResource(R.string.incall_add), false, "incall:add", Modifier.flipIn(4, keypad)) { actions.onAddCall() }
+                        RoundButton(CallIcon.Merge, stringResource(R.string.incall_merge), false, "incall:merge", Modifier.flipIn(5, keypad), enabled = lines.size > 1 || main.canMerge) { actions.onMerge(main.id) }
                     }
                 }
             }
@@ -145,6 +175,23 @@ fun InCallScreen(lines: List<CallLine>, audio: CallAudio, actions: CallActions, 
             BigButton(stringResource(R.string.incall_hang_up), Red, "incall:hangup", Modifier.fillMaxWidth()) { actions.onHangUp(main.id) }
         }
     }
+    } }
+}
+
+/** The photo of whoever is on the line (read from the contacts by the number, away from the screen), or null when there is none or it cannot be read. */
+@Composable
+private fun rememberCallerPhoto(number: String): ImageBitmap? {
+    val context = LocalContext.current.applicationContext
+    val photo by produceState<ImageBitmap?>(null, number) {
+        value = if (number.isEmpty()) null else withContext(Dispatchers.IO) {
+            runCatching {
+                val lookup = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number))
+                context.contentResolver.query(lookup, arrayOf(ContactsContract.PhoneLookup.PHOTO_URI), null, null, null)?.use { c -> if (c.moveToFirst()) c.getString(0) else null }
+                    ?.let { uri -> context.contentResolver.openInputStream(Uri.parse(uri))?.use { BitmapFactory.decodeStream(it) }?.asImageBitmap() }
+            }.getOrNull()
+        }
+    }
+    return photo
 }
 
 /** The big square of the caller: the accent colour, with the first letter of the name, or a person when there is no name. */

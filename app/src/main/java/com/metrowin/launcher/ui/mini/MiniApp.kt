@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.notifications.OverlayTheme
+import com.metrowin.launcher.ui.anim.rotateOnTurn
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.theme.pageBackground
@@ -43,7 +45,7 @@ abstract class MiniActivity : ComponentActivity() {
         val settings = SettingsStore.of(this).load()
         setContent {
             OverlayTheme(settings, remember { IconLoader(applicationContext) }) {
-                CompositionLocalProvider(LocalAppTitle provides title.toString()) { TurnPage(turn) { Content() } }
+                CompositionLocalProvider(LocalAppTitle provides title.toString()) { TurnPage(turn) { Box(Modifier.rotateOnTurn()) { Content() } } }
             }
         }
     }

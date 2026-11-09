@@ -107,7 +107,7 @@ fun CalendarScreen() {
     var month by remember { mutableStateOf(YearMonth.from(today)) }
     var version by remember { mutableIntStateOf(0) }
     var editing by remember { mutableStateOf<CalEvent?>(null) }
-    val pager = rememberPagerState { 3 }
+    val pager = rememberPagerState { 4 }
     val zone = ZoneId.systemDefault()
 
     // What the three pages need: from the month before the one shown to a few months after, and four months from today for the agenda.
@@ -128,7 +128,7 @@ fun CalendarScreen() {
     MiniFrame {
         PivotHeader(
             // The title of the middle page is the month on show: it changes as the months are swiped.
-            listOf(stringResource(R.string.cal_pivot_agenda), monthTitle(month), stringResource(R.string.cal_pivot_week)),
+            listOf(stringResource(R.string.cal_pivot_agenda), monthTitle(month), stringResource(R.string.cal_pivot_week), stringResource(R.string.cal_pivot_day)),
             pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp),
         )
         if (!canRead) {
@@ -141,7 +141,8 @@ fun CalendarScreen() {
                 when (page) {
                     0 -> AgendaPage(events, today, zone) { editing = it }
                     1 -> MonthPage(events, month, selected, today, zone, onMonth = { month = it }, onSelect = { selected = it }, onEdit = { editing = it })
-                    else -> WeekPage(events, selected, today, zone, onShift = { selected = selected.plusDays(it * 7L); month = YearMonth.from(selected) }, onEdit = { editing = it })
+                    2 -> WeekPage(events, selected, today, zone, onShift = { selected = selected.plusDays(it * 7L); month = YearMonth.from(selected) }, onEdit = { editing = it })
+                    else -> DayPage(events, selected, today, zone, onShift = { selected = selected.plusDays(it.toLong()); month = YearMonth.from(selected) }, onEdit = { editing = it })
                 }
             }
         }

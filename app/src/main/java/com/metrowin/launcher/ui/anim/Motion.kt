@@ -286,6 +286,8 @@ fun FlipContainer(
     /** The face the tile starts on, and starts on again whenever [resetKey] changes (a new message: it is the first thing the tile says). */
     startFace: Int = 0,
     resetKey: Any? = null,
+    /** How this kind of tile moves on the phone, which the "mixed" setting follows: lists of text (headlines, the agenda) slide, the rest turn over. */
+    slides: Boolean = false,
     content: @Composable (face: Int) -> Unit,
 ) {
     var index by remember(resetKey) { mutableIntStateOf(startFace) }
@@ -295,8 +297,8 @@ fun FlipContainer(
     val slide = when (LocalTileTransition.current) {
         TileTransition.Flip -> false
         TileTransition.Slide -> true
-        // Each tile keeps to one way: half of Start turns over, the other half slides.
-        TileTransition.Mixed -> seed.mod(2) == 1
+        // Each kind of tile keeps to its own way, as on the phone.
+        TileTransition.Mixed -> slides
     }
 
     val reduced = LocalReduceMotion.current

@@ -95,6 +95,14 @@ class VoiceSession(context: Context) {
         recognizer.start(preferOffline)
     }
 
+    /** A phrase the user touched instead of speaking it: carried out as if it had been heard. */
+    fun say(text: String) {
+        recognizer.release()
+        failures = 0
+        state = VoiceUiState.Understood(text)
+        onHeard(listOf(text))
+    }
+
     /** Shows [message] without listening, for what the host found out itself. */
     fun problem(@StringRes message: Int, argument: String? = null, webQuery: String? = null) {
         recognizer.release()

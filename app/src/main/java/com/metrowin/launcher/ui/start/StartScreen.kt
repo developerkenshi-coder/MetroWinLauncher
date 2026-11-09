@@ -19,6 +19,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ScrollState
@@ -339,6 +340,10 @@ private class TileDragState {
     /** Free mode: the cell the dragged tile would be put on if let go now (the one nearest its corner that is free), or null when there is none. */
     var freeCell by mutableStateOf<Pair<Int, Int>?>(null)
 
+    /** Free mode: how far the cell [freeCell] is from the tile, which the tile is drawn part of the way towards (the pull of the grid), and whether it would push other tiles out of the way. */
+    var pull by mutableStateOf(Offset.Zero)
+    var bump by mutableStateOf(false)
+
     fun start(key: String, at: Offset) {
         draggedKey = key
         position = at
@@ -347,6 +352,8 @@ private class TileDragState {
         justMovedOver = null
         pendingReorder = null
         freeCell = null
+        pull = Offset.Zero
+        bump = false
     }
 
     fun finish() {
@@ -356,8 +363,13 @@ private class TileDragState {
         justMovedOver = null
         pendingReorder = null
         freeCell = null
+        pull = Offset.Zero
+        bump = false
     }
 }
+
+/** How much of the way to the cell the grid pulls a tile that is dragged in free mode: the tile still follows the finger, but is drawn halfway to where it will rest. */
+private const val MAGNET = 0.5f
 
 private fun placementRect(p: Placement, unitPx: Float, gapPx: Float, extraY: Float = 0f): Rect {
     val x = p.col * (unitPx + gapPx)
@@ -447,17 +459,20 @@ private fun TileGridView(
                 small = list.map { it.size == TileSize.Small },
             )
             if (free) {
-                // The cell nearest the corner of the tile, if the tile fits there without touching another one (the apps of a folder
-                // that is being moved go with it).
+                // The cell nearest the corner of the tile: small tiles sit on any cell, the others on the blocks of two cells, as in Windows Phone. A tile that lands
+                // on others pushes them out of the way (they flow around it when it is let go); the frame says so.
                 val step = currentMetrics.first + currentMetrics.second
-                val col = (drag.position.x / step).roundToInt().coerceIn(0, (columns - dragged.size.cols).coerceAtLeast(0))
-                val row = (drag.position.y / step).roundToInt().coerceIn(0, currentLayout.rows)
+                val align = if (dragged.size == TileSize.Small) 1 else 2
+                val col = ((drag.position.x / (step * align)).roundToInt() * align).coerceIn(0, (columns - dragged.size.cols).coerceAtLeast(0))
+                val row = ((drag.position.y / (step * align)).roundToInt() * align).coerceIn(0, currentLayout.rows / align * align)
                 val taken = list.indices.any { j ->
                     val other = currentLayout.placements[j]
                     j != draggedIndex && (list[j].isTopLevel || dragged !is FolderCell) &&
                         col < other.col + other.cols && other.col < col + dragged.size.cols && row < other.row + other.rows && other.row < row + dragged.size.rows
                 }
-                drag.freeCell = if (taken) null else col to row
+                drag.freeCell = col to row
+                drag.bump = taken
+                drag.pull = Offset(col * step, row * step) - drag.position
             }
             // What the finger rests on now: the move just made is not made again until the finger has left that place (no bouncing back and forth).
             val resting = when (outcome) {
@@ -525,7 +540,12 @@ private fun TileGridView(
                 val dragged = list.firstOrNull { it.key == draggedKey }
                 if (dragged != null) {
                     val now = list.indices.filter { list[it].isTopLevel }.associate { list[it].entryId to (currentLayout.placements[it].col to currentLayout.placements[it].row) }
-                    placed = now + (dragged.entryId to cell)
+                    // The tiles under the one that lands have no cell any more (-1): they flow around it, and glide to where they go.
+                    val pushed = list.indices.filter { list[it].isTopLevel && list[it].entryId != dragged.entryId }.filter { j ->
+                        val at = currentLayout.placements[j]
+                        at.col < cell.first + dragged.size.cols && cell.first < at.col + at.cols && at.row < cell.second + dragged.size.rows && cell.second < at.row + at.rows
+                    }.associate { list[it].entryId to (-1 to -1) }
+                    placed = now + pushed + (dragged.entryId to cell)
                     currentActions.onPlace(dragged.entryId, cell.first, cell.second, now)
                 }
             }
@@ -605,7 +625,7 @@ private fun TileGridView(
                         .offset { IntOffset(r.left.roundToInt(), r.top.roundToInt()) }
                         .size(with(density) { r.width.toDp() }, with(density) { r.height.toDp() })
                         .testTag("free:${landing.first}:${landing.second}")
-                        .border(3.dp, LocalMetroColors.current.foreground.copy(alpha = 0.7f), if (draggedCell.size == TileSize.Small) dropStyle.smallTileShape else dropStyle.tileShape),
+                        .border(3.dp, if (drag.bump) LocalAccent.current else LocalMetroColors.current.foreground.copy(alpha = 0.7f), if (draggedCell.size == TileSize.Small) dropStyle.smallTileShape else dropStyle.tileShape),
                 )
             }
             titles.forEachIndexed { index, title ->
@@ -855,6 +875,8 @@ private fun PositionedTile(
         animationSpec = spring(dampingRatio = 0.7f, stiffness = Spring.StiffnessMedium),
         label = "editScale",
     )
+    // The grid pulls the dragged tile towards the cell it would land on: it glides there instead of jumping when the cell changes.
+    val pull by animateOffsetAsState(if (dragging) drag.pull else Offset.Zero, spring(stiffness = Spring.StiffnessMedium), label = "pull")
     val lift by animateFloatAsState(if (dragging) 1.07f else 1f, spring(stiffness = Spring.StiffnessMedium), label = "lift")
     val armedForFolder = drag.mergeTarget == cell.key
 
@@ -885,7 +907,7 @@ private fun PositionedTile(
     Box(
         Modifier
             .zIndex(if (dragging) 1f else 0f)
-            .offset { if (dragging) drag.position.round() else position.value }
+            .offset { if (dragging) (drag.position + pull * MAGNET).round() else position.value }
             .size(width, height)
             // After the offset: the semantics (and so TalkBack and the tests) must be where the tile really is.
             .testTag("tile:${cell.key}")

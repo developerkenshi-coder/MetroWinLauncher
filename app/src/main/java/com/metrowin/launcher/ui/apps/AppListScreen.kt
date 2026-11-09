@@ -115,6 +115,7 @@ import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
+import com.metrowin.launcher.ui.components.ReorderSpring
 import com.metrowin.launcher.ui.anim.turnstile
 import com.metrowin.launcher.ui.components.AppSquare
 import com.metrowin.launcher.ui.components.MetroText
@@ -421,6 +422,7 @@ fun AppListScreen(
             ListRow.Search, ListRow.Today, ListRow.Categories, is ListRow.Header, is ListRow.Section -> Unit
         }
     }
+    val glide = LocalStyle.current.isClassic && !LocalReduceMotion.current
     // Rows composed within this window after the page opens animate in; rows that scroll into view later do not.
     val openedAt = remember(replayToken) { System.nanoTime() }
 
@@ -441,7 +443,7 @@ fun AppListScreen(
     ) {
         rows.forEachIndexed { index, row ->
             if (row is ListRow.Header) {
-                sectionHeader(row.key, onClick = onHeaderClick) { HeaderRow(row.letter, index, listState, openedAt, exiting, onHeaderClick) }
+                sectionHeader(row.key, onClick = onHeaderClick, animated = glide) { HeaderRow(row.letter, index, listState, openedAt, exiting, onHeaderClick) }
                 return@forEachIndexed
             }
             val content: @Composable () -> Unit = {
@@ -505,7 +507,10 @@ fun AppListScreen(
             if (query.isNotBlank() && row is ListRow.Section) {
                 stickyHeader(key = row.key, contentType = row::class) { Box(Modifier.background(LocalMetroColors.current.background)) { content() } }
             } else {
-                item(key = row.key, contentType = row::class) { content() }
+                item(key = row.key, contentType = row::class) {
+                    // A new order (by name, by use) is a reshuffle you see: the rows glide to their places, the groups with them.
+                    Box(if (glide) Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null, placementSpec = ReorderSpring) else Modifier) { content() }
+                }
             }
         }
     }

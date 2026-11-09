@@ -43,6 +43,10 @@ object LockText {
         return event.title + " · " + alarm(event.startMillis, nowMillis, zone, is24Hour, locale)
     }
 
+    /** Whole minutes from [nowMillis] to the start of [event], or null for an event of the whole day (it has no hour) or one that has begun. */
+    fun minutesTo(event: LiveEvent, nowMillis: Long): Int? =
+        if (event.allDay || event.startMillis < nowMillis) null else ((event.startMillis - nowMillis) / 60_000L).toInt()
+
     /** Milliseconds from [nowMillis] to the start of the next minute, when the clock changes. */
     fun untilNextMinute(nowMillis: Long): Long = 60_000L - nowMillis.mod(60_000L)
 }

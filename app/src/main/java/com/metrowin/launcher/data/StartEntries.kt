@@ -79,12 +79,19 @@ object StartEntries {
      * there first, so that nothing else moves, whether they had a cell of their own or not.
      */
     fun place(entries: List<StartEntry>, id: String, col: Int, row: Int, current: Map<String, Pair<Int, Int>>): List<StartEntry> {
-        if (entries.none { it.id == id } || col < 0 || row < 0) return entries
+        val moved = entries.firstOrNull { it.id == id } ?: return entries
+        if (col < 0 || row < 0) return entries
         return entries.map { entry ->
-            val (c, r) = if (entry.id == id) col to row else current[entry.id] ?: (entry.col to entry.row)
-            if (c == entry.col && r == entry.row) entry else entry.at(c, r)
+            if (entry.id == id) return@map if (col == entry.col && row == entry.row) entry else entry.at(col, row)
+            val (c, r) = current[entry.id] ?: (entry.col to entry.row)
+            // A tile under the one that lands is pushed out: it has no cell of its own any more and flows around the others.
+            if (c >= 0 && r >= 0 && overlaps(c, r, entry.size, col, row, moved.size)) unplaced(entry)
+            else if (c == entry.col && r == entry.row) entry else entry.at(c, r)
         }
     }
+
+    private fun overlaps(c1: Int, r1: Int, s1: TileSize, c2: Int, r2: Int, s2: TileSize) =
+        c1 < c2 + s2.cols && c2 < c1 + s1.cols && r1 < r2 + s2.rows && r2 < r1 + s1.rows
 
     /** [entry] without the cell it was given in free mode: it goes where the flow puts it. */
     fun unplaced(entry: StartEntry): StartEntry = entry.at(-1, -1)

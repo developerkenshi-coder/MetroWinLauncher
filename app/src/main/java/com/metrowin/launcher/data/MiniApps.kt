@@ -8,6 +8,7 @@ import com.metrowin.launcher.dialer.DialerActivity
 import com.metrowin.launcher.files.FilesActivity
 import com.metrowin.launcher.mail.MailActivity
 import com.metrowin.launcher.messages.MessagesActivity
+import com.metrowin.launcher.music.NowPlayingActivity
 import com.metrowin.launcher.news.NewsActivity
 import com.metrowin.launcher.notes.NotesActivity
 import com.metrowin.launcher.photos.PhotosActivity
@@ -33,6 +34,7 @@ object MiniApps {
         "wallet" to WalletActivity::class.java,
         "files" to FilesActivity::class.java,
         "photohub" to PhotosActivity::class.java,
+        "nowplaying" to NowPlayingActivity::class.java,
         "shizukuterminal" to ShizukuTerminalActivity::class.java,
         "settings" to SystemSettingsActivity::class.java,
         "datasense" to DataSenseActivity::class.java,

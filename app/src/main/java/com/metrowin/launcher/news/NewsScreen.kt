@@ -63,6 +63,7 @@ import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.MetroProgressBar
 import com.metrowin.launcher.ui.components.PivotHeader
+import com.metrowin.launcher.ui.components.HubPager
 import com.metrowin.launcher.ui.mini.MiniFrame
 import com.metrowin.launcher.ui.pages.PageChip
 import com.metrowin.launcher.ui.pages.PageNote
@@ -114,12 +115,9 @@ fun NewsScreen() {
     BackHandler(enabled = managing) { managing = false }
 
     MiniFrame {
-        MetroText(stringResource(R.string.stock_news).lowercase(), size = 62.sp, modifier = Modifier.padding(start = 24.dp, top = 4.dp).testTag("nws:title"))
-        PivotHeader(
-            list.map { it.name }.ifEmpty { listOf(stringResource(R.string.stock_news)) }, pager, Modifier.padding(start = 24.dp, top = 2.dp, bottom = 8.dp),
-            size = 27.sp, color = LocalAccent.current,
-        )
-        HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth(), beyondViewportPageCount = 0) { page ->
+        HubPager(
+            stringResource(R.string.stock_news), list.map { it.name }.ifEmpty { listOf(stringResource(R.string.stock_news)) }, pager,
+        ) { page ->
             val source = list.getOrNull(page)
             if (source != null) {
                 SourcePage(source, hub, images, showImages, data[source.id], failed[source.id] == true, refresh, onLoaded = { data[source.id] = it; failed[source.id] = false }, onFailed = { failed[source.id] = true })
