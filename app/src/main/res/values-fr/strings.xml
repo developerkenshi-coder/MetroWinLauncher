@@ -2773,6 +2773,7 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="photos_empty">Aucune photo pour le moment.</string>
     <string name="photos_allow_why">Autorisez l’accès à vos photos pour les voir ici. Elles ne quittent jamais le téléphone.</string>
     <string name="photos_allow">Autoriser</string>
+    <string name="cal_pivot_day">jour</string>
     <string name="stock_nowplaying">Lecture en cours</string>
     <string name="np_now">lecture en cours</string>
     <string name="np_queue">file d\'attente</string>

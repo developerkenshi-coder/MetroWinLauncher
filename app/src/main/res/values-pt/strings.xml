@@ -2773,6 +2773,7 @@ em primeiro plano %3$s · em segundo plano %4$s
     <string name="photos_empty">Ainda não há fotos.</string>
     <string name="photos_allow_why">Permita o acesso às fotos para as ver aqui. Nunca saem do telemóvel.</string>
     <string name="photos_allow">Permitir</string>
+    <string name="cal_pivot_day">dia</string>
     <string name="stock_nowplaying">A reproduzir</string>
     <string name="np_now">a reproduzir</string>
     <string name="np_queue">fila</string>

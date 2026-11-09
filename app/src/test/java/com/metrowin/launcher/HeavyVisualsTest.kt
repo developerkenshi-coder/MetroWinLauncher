@@ -4,6 +4,8 @@ import androidx.compose.ui.geometry.Offset
 import com.metrowin.launcher.photos.fitSize
 import com.metrowin.launcher.photos.panLimit
 import com.metrowin.launcher.photos.zoomAbout
+import com.metrowin.launcher.calendar.CalEvent
+import com.metrowin.launcher.calendar.DayLayout
 import com.metrowin.launcher.music.playbackPosition
 import com.metrowin.launcher.people.PeopleBook
 import com.metrowin.launcher.people.Person
@@ -11,6 +13,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 /** The small pure parts of the Classic visuals that are not worth a screen test. */
 class HeavyVisualsTest {
@@ -51,5 +55,26 @@ class HeavyVisualsTest {
         assertEquals(3000L, playbackPosition(1000L, 0L, 2000L, 1f, playing = true, duration = 10_000L))
         assertEquals(1000L, playbackPosition(1000L, 0L, 2000L, 1f, playing = false, duration = 10_000L))
         assertEquals(10_000L, playbackPosition(9000L, 0L, 5000L, 1f, playing = true, duration = 10_000L))
+    }
+
+    private fun at(h: Int, m: Int = 0) = LocalDate.of(2026, 11, 9).atTime(h, m).toInstant(ZoneOffset.UTC).toEpochMilli()
+    private fun event(id: Long, from: Long, to: Long, allDay: Boolean = false) = CalEvent(id, 1, "e$id", from, to, allDay)
+
+    @Test
+    fun overlappingEventsShareColumnsAndLoneOnesTakeTheWholeWidth() {
+        val day = LocalDate.of(2026, 11, 9)
+        val blocks = DayLayout.blocks(
+            listOf(event(1, at(9), at(11)), event(2, at(10), at(12)), event(3, at(11), at(12, 30)), event(4, at(15), at(16)), event(5, at(0), at(0), allDay = true)),
+            day, ZoneOffset.UTC,
+        ).associateBy { it.event.id }
+        assertEquals(null, blocks[5])
+        // 1 and 2 overlap, 3 starts when 1 ends and takes its column: two columns for the three of them.
+        assertEquals(2, blocks.getValue(1).columns)
+        assertEquals(0, blocks.getValue(1).column)
+        assertEquals(1, blocks.getValue(2).column)
+        assertEquals(0, blocks.getValue(3).column)
+        assertEquals(2, blocks.getValue(3).columns)
+        assertEquals(1, blocks.getValue(4).columns)
+        assertEquals(15 * 60, blocks.getValue(4).startMin)
     }
 }
