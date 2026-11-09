@@ -17,6 +17,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
@@ -46,15 +47,18 @@ fun ColumnScope.HubPager(
     pager: PagerState,
     modifier: Modifier = Modifier,
     userScrollEnabled: Boolean = true,
+    /** The tags of the title and of the pager, for the tests. */
+    titleTag: String = "hub:title",
+    pagerTag: String = "hub:pager",
     content: @Composable (page: Int) -> Unit,
 ) {
     val style = LocalStyle.current
     val accent = LocalAccent.current
     val side = 24.dp
     if (!style.isClassic) {
-        MetroText(title.lowercase(), size = 62.sp, modifier = Modifier.padding(start = side, top = 4.dp))
+        MetroText(title.lowercase(), size = 62.sp, modifier = Modifier.padding(start = side, top = 4.dp).testTag(titleTag))
         PivotHeader(titles, pager, Modifier.padding(start = side, top = 2.dp, bottom = 8.dp), size = 27.sp, color = accent)
-        HorizontalPager(pager, modifier.weight(1f).fillMaxWidth().clipToBounds(), beyondViewportPageCount = 0, userScrollEnabled = userScrollEnabled) { content(it) }
+        HorizontalPager(pager, modifier.weight(1f).fillMaxWidth().clipToBounds().testTag(pagerTag), beyondViewportPageCount = 0, userScrollEnabled = userScrollEnabled) { content(it) }
         return
     }
     val speed = if (LocalReduceMotion.current) 1f else PANORAMA_SPEED
@@ -90,10 +94,10 @@ fun ColumnScope.HubPager(
                             }
                         }
                     }
-                    .padding(start = 16.dp),
+                    .padding(start = 16.dp).testTag(titleTag),
             )
             HorizontalPager(
-                pager, Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(end = PEEK),
+                pager, Modifier.weight(1f).fillMaxWidth().testTag(pagerTag), contentPadding = PaddingValues(end = PEEK),
                 beyondViewportPageCount = 0, userScrollEnabled = userScrollEnabled,
             ) { page ->
                 Column(Modifier.fillMaxSize()) {

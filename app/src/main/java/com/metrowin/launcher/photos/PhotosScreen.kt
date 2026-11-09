@@ -64,7 +64,7 @@ fun PhotosScreen(photos: List<Photo>?, needsPermission: Boolean, onAllow: () -> 
         HubPager(
             stringResource(R.string.stock_photohub),
             listOf(stringResource(R.string.photos_albums), stringResource(R.string.photos_date), stringResource(R.string.photos_favorites)), pager,
-            userScrollEnabled = !needsPermission && photos != null,
+            userScrollEnabled = !needsPermission && photos != null, titleTag = "photos:title", pagerTag = "photos:pager",
         ) { page ->
             when {
                 needsPermission -> if (page == 0) Column(Modifier.fillMaxWidth().padding(horizontal = SIDE).testTag("photos:permission"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
