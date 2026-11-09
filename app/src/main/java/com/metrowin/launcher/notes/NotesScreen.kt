@@ -1,5 +1,13 @@
 package com.metrowin.launcher.notes
 
+import com.metrowin.launcher.ui.theme.LocalStyle
+import com.metrowin.launcher.ui.start.whenText
+import com.metrowin.launcher.ui.anim.swivel
+import com.metrowin.launcher.ui.anim.rememberRowSwivel
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.content.Intent
 import android.media.MediaPlayer
@@ -214,9 +222,18 @@ private fun NoteList(
                 }
             }
             if (notes != null && shown.isEmpty()) PageNote(stringResource(R.string.notes_empty), Modifier.padding(top = 14.dp).testTag("notes:empty"))
+            val swivel = rememberRowSwivel()
+            if (LocalStyle.current.isClassic) {
+                // The notes as tiles, like Start: a colour each (the one picked, or one that comes round), the first lines, and the date.
+                LazyVerticalGrid(GridCells.Fixed(2), Modifier.fillMaxSize().padding(top = 8.dp).testTag("notes:list"), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    itemsIndexed(shown, key = { _, n -> n.id }) { i, note ->
+                        NoteTile(note, i, Modifier.swivel(swivel, note.id)) { swivel.open(note.id) { onOpen(note) } }
+                    }
+                }
+            } else
             LazyColumn(Modifier.fillMaxSize().padding(top = 8.dp).testTag("notes:list")) {
                 items(shown, key = { it.id }) { note ->
-                    Row(Modifier.fillMaxWidth().testTag("notes:item").metroPress(onClick = { onOpen(note) }).padding(vertical = 7.dp)) {
+                    Row(Modifier.fillMaxWidth().testTag("notes:item").swivel(swivel, note.id).metroPress(onClick = { swivel.open(note.id) { onOpen(note) } }).padding(vertical = 7.dp)) {
                         Box(Modifier.width(6.dp).fillMaxHeight().background(noteColor(note.color) ?: colors.subtle.copy(alpha = 0.25f)))
                         Column(Modifier.weight(1f).padding(start = 12.dp)) {
                             MetroText(
@@ -244,6 +261,19 @@ private fun NoteList(
                 AppBarItem("⇩", stringResource(R.string.notes_restore), onRestore),
             ),
         )
+    }
+}
+
+/** A note as a tile: coloured, with its title, the beginning of its text and when it was changed. */
+@Composable
+private fun NoteTile(note: Note, index: Int, modifier: Modifier, onClick: () -> Unit) {
+    val fill = noteColor(note.color) ?: MetroAccents[index % MetroAccents.size]
+    val ink = if (fill.luminance() > 0.5f) androidx.compose.ui.graphics.Color.Black else androidx.compose.ui.graphics.Color.White
+    Column(modifier.fillMaxWidth().aspectRatio(1f).testTag("notes:item").metroPress(onClick = onClick).background(fill).padding(12.dp)) {
+        MetroText((if (note.pinned) "★ " else "") + note.title.ifBlank { snippet(note).ifBlank { stringResource(R.string.notes_untitled) } }, size = 19.sp, weight = FontWeight.SemiBold, color = ink, maxLines = 2)
+        val line = if (note.title.isBlank()) "" else snippet(note)
+        MetroText(line, size = 14.sp, weight = FontWeight.Normal, color = ink.copy(alpha = 0.85f), maxLines = 4, modifier = Modifier.weight(1f).padding(top = 4.dp))
+        MetroText(whenText(note.updated), size = 12.sp, weight = FontWeight.Normal, color = ink.copy(alpha = 0.75f), maxLines = 1)
     }
 }
 
