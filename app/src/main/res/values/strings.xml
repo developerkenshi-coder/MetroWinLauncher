@@ -2739,6 +2739,10 @@ in front %3$s · in the background %4$s
     <string name="photos_empty">No photos here yet.</string>
     <string name="photos_allow_why">Allow access to your photos to see them here. They never leave the phone.</string>
     <string name="photos_allow">Allow</string>
+    <string name="stock_nowplaying">Now Playing</string>
+    <string name="np_now">now playing</string>
+    <string name="np_queue">queue</string>
+    <string name="np_nothing">Nothing is playing. Start a song in your music app; the launcher needs notification access to see it.</string>
     <string name="ppl_all">all</string>
     <string name="ppl_call">Call</string>
     <string name="ppl_message">Message</string>

@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import com.metrowin.launcher.photos.fitSize
 import com.metrowin.launcher.photos.panLimit
 import com.metrowin.launcher.photos.zoomAbout
+import com.metrowin.launcher.music.playbackPosition
 import com.metrowin.launcher.people.PeopleBook
 import com.metrowin.launcher.people.Person
 import org.junit.Assert.assertEquals
@@ -43,5 +44,12 @@ class HeavyVisualsTest {
         assertTrue(PeopleBook.sameNumber("+39 333 1234567", "3331234567"))
         assertFalse(PeopleBook.sameNumber("3331234567", "3331234568"))
         assertFalse(PeopleBook.sameNumber("", "3331234567"))
+    }
+
+    @Test
+    fun theSongMovesOnWhilePlayingAndStaysInsideItself() {
+        assertEquals(3000L, playbackPosition(1000L, 0L, 2000L, 1f, playing = true, duration = 10_000L))
+        assertEquals(1000L, playbackPosition(1000L, 0L, 2000L, 1f, playing = false, duration = 10_000L))
+        assertEquals(10_000L, playbackPosition(9000L, 0L, 5000L, 1f, playing = true, duration = 10_000L))
     }
 }

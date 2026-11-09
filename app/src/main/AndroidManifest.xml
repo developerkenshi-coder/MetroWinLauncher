@@ -393,6 +393,12 @@
             android:launchMode="singleTask" />
 
         <activity
+            android:name=".music.NowPlayingActivity"
+            android:exported="false"
+            android:label="@string/stock_nowplaying"
+            android:launchMode="singleTask" />
+
+        <activity
             android:name=".photos.PhotosActivity"
             android:exported="false"
             android:label="@string/stock_photohub"

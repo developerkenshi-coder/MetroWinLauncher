@@ -2766,6 +2766,10 @@ in primo piano %3$s · in background %4$s
     <string name="photos_empty">Ancora nessuna foto.</string>
     <string name="photos_allow_why">Consenti l\'accesso alle foto per vederle qui. Non escono mai dal telefono.</string>
     <string name="photos_allow">Consenti</string>
+    <string name="stock_nowplaying">In riproduzione</string>
+    <string name="np_now">in riproduzione</string>
+    <string name="np_queue">coda</string>
+    <string name="np_nothing">Non sta suonando niente. Avvia un brano nella tua app musicale; il launcher ha bisogno dell\'accesso alle notifiche per vederlo.</string>
     <string name="ppl_all">tutti</string>
     <string name="ppl_call">Chiama</string>
     <string name="ppl_message">Messaggio</string>
