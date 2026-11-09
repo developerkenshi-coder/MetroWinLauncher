@@ -18,6 +18,8 @@ data class TodoItem(
     val list: String = "",
     val reminderId: Long = 0L,
     val created: Long = 0L,
+    /** Where the user put it by dragging (1, 2, 3… among the items of its section); 0 while it was never moved, which puts it after the moved ones. */
+    val order: Long = 0L,
 )
 
 /** The things to do and what is done with them. Pure, so it is tested with words and dates. */
@@ -59,16 +61,22 @@ object Todos {
         }
     }
 
-    /** The open items of [list] (all of them when it is null) as the page shows them: by section, then starred first, then by date. */
+    /** The open items of [list] (all of them when it is null) as the page shows them: by section, then the ones the user placed, then starred first, then by date. */
     fun open(items: List<TodoItem>, list: String?, now: Long, zone: ZoneId = ZoneId.systemDefault()): Map<Section, List<TodoItem>> =
         items.filter { !it.done && (list == null || it.list == list) }
-            .sortedWith(compareByDescending<TodoItem> { it.starred }.thenBy { if (it.due == 0L) Long.MAX_VALUE else it.due }.thenBy { it.created })
+            .sortedWith(compareBy<TodoItem> { it.order == 0L }.thenBy { it.order }.thenByDescending { it.starred }.thenBy { if (it.due == 0L) Long.MAX_VALUE else it.due }.thenBy { it.created })
             .groupBy { section(it, now, zone) }
             .toSortedMap()
 
     /** The done items of [list], the last one done first (the highest id stands for it). */
     fun finished(items: List<TodoItem>, list: String?): List<TodoItem> =
         items.filter { it.done && (list == null || it.list == list) }.sortedByDescending { it.id }
+
+    /** [items] with the ones in [ids] placed one after the other in that order, as the page shows them after a drag. */
+    fun reorder(items: List<TodoItem>, ids: List<Long>): List<TodoItem> {
+        val place = ids.withIndex().associate { (i, id) -> id to i + 1L }
+        return items.map { item -> place[item.id]?.let { item.copy(order = it) } ?: item }
+    }
 
     fun lists(items: List<TodoItem>): List<String> = items.map { it.list }.filter { it.isNotEmpty() }.distinct().sorted()
 
@@ -78,7 +86,7 @@ object Todos {
         items.forEach {
             array.put(
                 JSONObject().put("id", it.id).put("text", it.text).put("done", it.done).put("due", it.due).put("star", it.starred)
-                    .put("list", it.list).put("rid", it.reminderId).put("created", it.created),
+                    .put("list", it.list).put("rid", it.reminderId).put("created", it.created).put("ord", it.order),
             )
         }
     }.toString()
@@ -91,7 +99,7 @@ object Todos {
                 val text = clean(o.getString("text")) ?: return@runCatching null
                 TodoItem(
                     o.getLong("id"), text, o.optBoolean("done"), o.optLong("due"), o.optBoolean("star"),
-                    cleanList(o.optString("list")), o.optLong("rid"), o.optLong("created"),
+                    cleanList(o.optString("list")), o.optLong("rid"), o.optLong("created"), o.optLong("ord"),
                 )
             }.getOrNull()
         }

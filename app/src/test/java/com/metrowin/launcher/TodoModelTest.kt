@@ -61,4 +61,15 @@ class TodoModelTest {
         assertTrue(Todos.decode("nope").isEmpty())
         assertEquals(listOf(2L), Todos.decode("""[{"x":1},{"id":2,"text":"ok"}]""").map { it.id })
     }
+
+    @Test
+    fun `dragging an item puts it where it was dropped and the order is kept`() {
+        val items = listOf(TodoItem(1, "a", created = 1), TodoItem(2, "b", created = 2), TodoItem(3, "c", created = 3))
+        val moved = Todos.reorder(items, listOf(3, 1, 2))
+        assertEquals(listOf("c", "a", "b"), Todos.open(moved, null, now, zone).getValue(Section.NoDate).map { it.text })
+        // A new item comes after the ones that were placed.
+        val more = Todos.add(moved, "d", now = 4)
+        assertEquals(listOf("c", "a", "b", "d"), Todos.open(more, null, now, zone).getValue(Section.NoDate).map { it.text })
+        assertEquals(moved, Todos.decode(Todos.encode(moved)))
+    }
 }

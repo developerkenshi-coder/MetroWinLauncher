@@ -1,5 +1,14 @@
 package com.metrowin.launcher.todo
 
+import com.metrowin.launcher.ui.anim.swivel
+import com.metrowin.launcher.ui.anim.rememberRowSwivel
+import androidx.compose.ui.zIndex
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import android.text.format.DateFormat
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -118,7 +127,7 @@ fun TodoScreen() {
         }
         HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth()) { page ->
             if (page == 0) {
-                OpenPage(all, list, items != null, onToggle = { change(it.copy(done = !it.done)) }, onEdit = { editing = it }, onAdd = ::create, listName = list.orEmpty())
+                OpenPage(all, list, items != null, onToggle = { change(it.copy(done = !it.done)) }, onEdit = { editing = it }, onAdd = ::create, listName = list.orEmpty(), onReorder = { ids -> commit(Todos.reorder(all, ids)) })
             } else {
                 DonePage(Todos.finished(all, list), onToggle = { change(it.copy(done = !it.done)) }, onEdit = { editing = it })
             }
@@ -146,6 +155,7 @@ private fun OpenPage(
     onEdit: (TodoItem) -> Unit,
     onAdd: (String, Long, String) -> Unit,
     listName: String,
+    onReorder: (List<Long>) -> Unit,
 ) {
     val now = System.currentTimeMillis()
     val sections = Todos.open(all, list, now)
@@ -153,10 +163,41 @@ private fun OpenPage(
     var due by remember { mutableStateOf(0L) }
     var picking by remember { mutableStateOf(false) }
     val quick = remember { Reminders.QuickTime.entries }
+    val listState = rememberLazyListState()
+    // A long press picks a row up; while it is held the rows of its section are in the order it would leave them in.
+    var dragId by remember { mutableStateOf<Long?>(null) }
+    var dragOffset by remember { mutableFloatStateOf(0f) }
+    var working by remember { mutableStateOf<Pair<Todos.Section, List<TodoItem>>?>(null) }
+    var swappedAt by remember { mutableLongStateOf(0L) }
+    val swivel = rememberRowSwivel()
+
+    // shortcut: the list does not scroll by itself when a row is dragged to its edge; add it if long lists need it.
+    fun swapUnderDrag() {
+        val w = working ?: return
+        // The list needs a frame to place the rows after a swap; looking again before that would swap twice.
+        if (System.nanoTime() - swappedAt < SWAP_PAUSE_NS) return
+        val visible = listState.layoutInfo.visibleItemsInfo
+        val me = visible.firstOrNull { it.key == dragId } ?: return
+        val centre = me.offset + me.size / 2f + dragOffset
+        val target = visible.firstOrNull { it.key != dragId && it.key is Long && centre >= it.offset && centre <= it.offset + it.size && w.second.any { r -> r.id == it.key } } ?: return
+        val from = w.second.indexOfFirst { it.id == dragId }
+        val to = w.second.indexOfFirst { it.id == target.key }
+        if (from < 0 || to < 0) return
+        working = w.first to w.second.toMutableList().apply { add(to, removeAt(from)) }
+        // The row sits at the place of the one it passed; the finger has not moved, so the offset takes the difference.
+        dragOffset -= (if (to > from) target.size else target.offset - me.offset).toFloat()
+        swappedAt = System.nanoTime()
+    }
+
+    fun drop() {
+        working?.let { onReorder(it.second.map { r -> r.id }) }
+        dragId = null; dragOffset = 0f; working = null
+    }
     Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
         if (loaded && sections.isEmpty()) PageNote(stringResource(R.string.todo_empty), Modifier.padding(bottom = 8.dp).testTag("todo:empty"))
-        LazyColumn(Modifier.weight(1f).testTag("todo:list")) {
-            sections.forEach { (section, rows) ->
+        LazyColumn(Modifier.weight(1f).testTag("todo:list"), state = listState) {
+            sections.forEach { (section, shownRows) ->
+                val rows = working?.takeIf { it.first == section }?.second ?: shownRows
                 sectionHeader("h:$section") {
                     MetroText(
                         stringResource(
@@ -171,7 +212,22 @@ private fun OpenPage(
                         modifier = Modifier.padding(top = 10.dp, bottom = 2.dp),
                     )
                 }
-                items(rows, key = { it.id }) { item -> TodoRow(item, now, onToggle, onEdit) }
+                items(rows, key = { it.id }) { item ->
+                    val dragging = dragId == item.id
+                    TodoRow(
+                        item, now, onToggle, onEdit = { swivel.open(item.id) { onEdit(item) } },
+                        modifier = (if (dragging) Modifier.zIndex(1f).graphicsLayer { translationY = dragOffset; scaleX = 1.03f; scaleY = 1.03f } else Modifier.animateItem())
+                            .swivel(swivel, item.id)
+                            .pointerInput(item.id) {
+                                detectDragGesturesAfterLongPress(
+                                    onDragStart = { dragId = item.id; dragOffset = 0f; working = section to rows },
+                                    onDrag = { change, amount -> change.consume(); dragOffset += amount.y; swapUnderDrag() },
+                                    onDragEnd = { drop() },
+                                    onDragCancel = { dragId = null; dragOffset = 0f; working = null },
+                                )
+                            },
+                    )
+                }
             }
         }
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
@@ -192,6 +248,8 @@ private fun OpenPage(
     if (picking) DateTimeDialog(if (due != 0L) due else System.currentTimeMillis() + 3_600_000L, onChoose = { due = it; picking = false }, onCancel = { picking = false })
 }
 
+private const val SWAP_PAUSE_NS = 90_000_000L
+
 private fun quickName(which: Reminders.QuickTime) = when (which) {
     Reminders.QuickTime.InOneHour -> R.string.todo_in_one_hour
     Reminders.QuickTime.ThisEvening -> R.string.todo_this_evening
@@ -208,10 +266,10 @@ private fun DonePage(rows: List<TodoItem>, onToggle: (TodoItem) -> Unit, onEdit:
 }
 
 @Composable
-private fun TodoRow(item: TodoItem, now: Long, onToggle: (TodoItem) -> Unit, onEdit: (TodoItem) -> Unit) {
+private fun TodoRow(item: TodoItem, now: Long, onToggle: (TodoItem) -> Unit, onEdit: (TodoItem) -> Unit, modifier: Modifier = Modifier) {
     val colors = LocalMetroColors.current
     val late = !item.done && item.due != 0L && item.due < now
-    Row(Modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.Top) {
+    Row(modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.Top) {
         MetroText(
             if (item.done) "☑" else "☐", size = 28.sp, color = LocalAccent.current,
             modifier = Modifier.width(44.dp).testTag("todo:box:${item.id}").metroPress(onClick = { onToggle(item) }),
