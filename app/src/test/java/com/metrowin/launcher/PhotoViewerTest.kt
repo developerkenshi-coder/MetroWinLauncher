@@ -9,7 +9,8 @@ class PhotoViewerTest {
     @Test
     fun `a big picture is read down by a power of two and a small one whole`() {
         assertEquals(1, sampleFor(1000, 800, 2048))
-        assertEquals(2, sampleFor(4000, 3000, 2048))
+        assertEquals(1, sampleFor(4000, 3000, 2048))
+        assertEquals(2, sampleFor(5000, 3000, 2048))
         assertEquals(4, sampleFor(12000, 9000, 2048))
     }
 
