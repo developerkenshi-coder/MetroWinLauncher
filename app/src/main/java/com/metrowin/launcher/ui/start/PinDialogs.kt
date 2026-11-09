@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,12 +51,16 @@ import com.metrowin.launcher.data.Countdown
 import com.metrowin.launcher.data.SystemSettingDef
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.GlyphIcon
+import com.metrowin.launcher.ui.components.LocalInDialog
+import com.metrowin.launcher.ui.components.Mark
+import com.metrowin.launcher.ui.components.MarkIcon
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroDatePicker
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.theme.MetroAccents
 import com.metrowin.launcher.ui.theme.fieldTextStyle
 import com.metrowin.launcher.ui.theme.panel
@@ -71,7 +76,7 @@ import java.util.Locale
  * long: never put a vertically scrolling list or column in [content] without a fixed height (it would be measured with no limit and crash).
  */
 @Composable
-internal fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+internal fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, title: String? = null, content: @Composable () -> Unit) {
     val colors = LocalMetroColors.current
     val currentCancel by rememberUpdatedState(onCancel)
     Box(
@@ -92,7 +97,14 @@ internal fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, co
                 .verticalScroll(rememberScrollState())
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) { content() }
+        ) {
+            // The MessageBox of Windows Phone has its title in small capitals above the text; the other looks keep the quiet caption.
+            if (title != null) {
+                if (LocalStyle.current.isClassic) MetroText(title.uppercase(Locale.getDefault()), size = 14.sp, weight = FontWeight.SemiBold)
+                else MetroText(title, size = 15.sp, weight = FontWeight.Normal, color = colors.subtle)
+            }
+            CompositionLocalProvider(LocalInDialog provides true) { content() }
+        }
     }
 }
 
@@ -103,8 +115,7 @@ fun NoteDialog(initial: String, onDone: (String) -> Unit, onCancel: () -> Unit, 
     var text by remember { mutableStateOf(initial) }
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { focus.requestFocus() }
-    DialogFrame(onCancel, modifier) {
-        MetroText(stringResource(R.string.note_title), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle)
+    DialogFrame(onCancel, modifier, title = stringResource(R.string.note_title)) {
         BasicTextField(
             value = text,
             onValueChange = { text = it.take(MAX_NOTE) },
@@ -134,8 +145,7 @@ fun CountdownDialog(
     var title by remember { mutableStateOf(initialTitle) }
     var date by remember { mutableStateOf(Countdown.date(initialDay)) }
     val locale = Locale.getDefault()
-    DialogFrame(onCancel, modifier) {
-        MetroText(stringResource(R.string.countdown_title), size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+    DialogFrame(onCancel, modifier, title = stringResource(R.string.countdown_title)) {
         MetroTextField(
             value = title, onValueChange = { title = it.take(MAX_TITLE) },
             placeholder = stringResource(R.string.countdown_name_hint), modifier = Modifier.testTag("countdown:title"),
@@ -164,8 +174,7 @@ fun CounterDialog(
 ) {
     var name by remember { mutableStateOf(initialName) }
     var reset by remember { mutableStateOf(false) }
-    DialogFrame(onCancel, modifier) {
-        MetroText(stringResource(R.string.counter_title), size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+    DialogFrame(onCancel, modifier, title = stringResource(R.string.counter_title)) {
         MetroTextField(
             value = name, onValueChange = { name = it.take(MAX_TITLE) },
             placeholder = stringResource(R.string.counter_name_hint), modifier = Modifier.testTag("counter:name"),
@@ -194,8 +203,7 @@ fun ChecklistDialog(initialRaw: String, onChange: (String) -> Unit, onClose: () 
         change(Checklist.add(items, draft))
         draft = ""
     }
-    DialogFrame(onClose, modifier) {
-        MetroText(stringResource(R.string.checklist_title), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle)
+    DialogFrame(onClose, modifier, title = stringResource(R.string.checklist_title)) {
         Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState()).testTag("checklist:items")) {
             if (items.isEmpty()) MetroText(stringResource(R.string.checklist_empty), size = 17.sp, weight = FontWeight.Normal, color = colors.subtle)
             items.forEachIndexed { index, item ->
@@ -355,7 +363,7 @@ fun TileColorSheet(current: Int, onPick: (Int) -> Unit, onDismiss: () -> Unit, m
                                 .background(color),
                             contentAlignment = Alignment.Center,
                         ) {
-                            if (current == argb) MetroText("✓", size = 26.sp, weight = FontWeight.Normal, color = Color.White)
+                            if (current == argb) MarkIcon(Mark.Check, 28.dp, color = Color.White)
                         }
                     }
                 }

@@ -21,7 +21,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -46,7 +48,21 @@ import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
+import com.metrowin.launcher.ui.components.LocalAppTitle
+import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.components.MetroButton
+import com.metrowin.launcher.ui.components.featherRow
+import com.metrowin.launcher.ui.components.scrollIndicator
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
+import java.util.Locale
+import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.PivotHeader
@@ -139,10 +155,11 @@ private fun ListPage(conversations: List<Conversation>?, repository: SmsReposito
             }
             if (searching) MetroTextField(query, { query = it }, stringResource(R.string.messages_search), Modifier.padding(bottom = 6.dp).testTag("messages:search"))
             if (shown?.isEmpty() == true) PageNote(stringResource(R.string.messages_empty), Modifier.testTag("messages:empty"))
-            LazyColumn(Modifier.fillMaxSize().testTag("messages:list")) {
-                items(shown.orEmpty(), key = { it.threadId }) { item ->
+            val listState = rememberLazyListState()
+            LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("messages:list"), state = listState) {
+                itemsIndexed(shown.orEmpty(), key = { _, it -> it.threadId }) { index, item ->
                     Row(
-                        Modifier.fillMaxWidth().testTag("messages:thread").metroPress(
+                        Modifier.fillMaxWidth().featherRow(index).testTag("messages:thread").metroPress(
                             onClick = { onOpen(item.address) },
                             onLongClick = { if (isDefault) toDelete = item },
                         ).padding(vertical = 7.dp),
@@ -175,6 +192,7 @@ private fun ThreadPage(address: String, prefill: String, onBody: (String) -> Uni
     val context = LocalContext.current
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
+    val classic = LocalStyle.current.isClassic
     val thread = conversations.firstOrNull { it.address == address }
     var version by remember { mutableIntStateOf(0) }
     val messages by produceState(emptyList<Sms>(), thread?.threadId, version) {
@@ -205,12 +223,21 @@ private fun ThreadPage(address: String, prefill: String, onBody: (String) -> Uni
     DisposableEffect(address) { onDispose { repository.saveDraft(address, text); onBody("") } }
     val title = thread?.title ?: repository.nameOf(address) ?: address
     Column(Modifier.fillMaxSize()) {
-        MetroText(title, size = 30.sp, maxLines = 1, modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 8.dp))
+        if (classic) {
+            // The page title of Windows Phone: the name of the app in small capitals, and the title lowercase and large under it.
+            Column(Modifier.padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 8.dp)) {
+                LocalAppTitle.current?.let { MetroText(it.uppercase(Locale.getDefault()), size = 14.sp, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(bottom = 2.dp)) }
+                MetroText(title.lowercase(Locale.getDefault()), size = 40.sp, maxLines = 1)
+            }
+        } else {
+            MetroText(title, size = 30.sp, maxLines = 1, modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 8.dp))
+        }
         LazyColumn(Modifier.weight(1f).padding(horizontal = 16.dp).testTag("messages:bubbles"), reverseLayout = true, verticalArrangement = Arrangement.spacedBy(6.dp)) {
             items((messages + sentHere).sortedByDescending { it.date }, key = { "${it.mms}:${it.id}:${it.date}" }) { sms ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = if (sms.outgoing) Arrangement.End else Arrangement.Start) {
                     Column(
-                        Modifier.widthIn(max = 280.dp).background(if (sms.outgoing) accent else colors.surface).metroPress(onClick = {}, onLongClick = { picked = sms }).padding(horizontal = 12.dp, vertical = 8.dp),
+                        Modifier.widthIn(max = 280.dp).background(if (sms.outgoing) accent else colors.surface, if (classic) BubbleShape(sms.outgoing) else RectangleShape)
+                            .metroPress(onClick = {}, onLongClick = { picked = sms }).padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = if (classic) 8.dp + BubbleShape.TAIL else 8.dp),
                     ) {
                         sms.image?.let { Picture(it, repository) }
                         if (sms.body.isNotBlank()) MetroText(sms.body, size = 18.sp, weight = FontWeight.Normal, color = if (sms.outgoing) androidx.compose.ui.graphics.Color.White else colors.foreground)
@@ -224,11 +251,10 @@ private fun ThreadPage(address: String, prefill: String, onBody: (String) -> Uni
         }
         if (failed) PageNote(stringResource(R.string.messages_failed), Modifier.padding(horizontal = 24.dp))
         // A group is read here: writing to it is a multimedia message, which this app does not send.
-        if (',' !in address) Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f)) { MetroTextField(text, { text = it }, stringResource(R.string.messages_hint), Modifier.testTag("messages:field"), singleLine = false) }
-            MetroButton(stringResource(R.string.messages_send), Modifier.padding(start = 8.dp).testTag("messages:send")) {
+        if (',' !in address) {
+            fun send() {
                 val body = text.trim()
-                if (body.isEmpty()) return@MetroButton
+                if (body.isEmpty()) return
                 if (repository.send(address, body)) {
                     failed = false
                     text = ""
@@ -239,7 +265,36 @@ private fun ThreadPage(address: String, prefill: String, onBody: (String) -> Uni
                     failed = true
                 }
             }
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f)) { MetroTextField(text, { text = it }, stringResource(R.string.messages_hint), Modifier.testTag("messages:field"), singleLine = false) }
+                if (!classic) MetroButton(stringResource(R.string.messages_send), Modifier.padding(start = 8.dp).testTag("messages:send"), onClick = ::send)
+            }
+            // In Windows Phone sending is a button of the application bar, an arrow.
+            if (classic) AppBar(listOf(AppBarItem("→", stringResource(R.string.messages_send), ::send).icon(Mark.Arrow)))
         }
+    }
+}
+
+/** The bubble of Windows Phone: square corners and a small tail under the side of whoever wrote it. */
+private class BubbleShape(private val outgoing: Boolean) : Shape {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+        val tail = with(density) { TAIL.toPx() }
+        val inset = with(density) { 10.dp.toPx() }
+        val body = size.height - tail
+        val path = Path().apply {
+            addRect(Rect(0f, 0f, size.width, body))
+            val edge = if (outgoing) size.width - inset else inset
+            val toward = if (outgoing) -tail else tail
+            moveTo(edge + toward, body)
+            lineTo(edge, body)
+            lineTo(edge, body + tail)
+            close()
+        }
+        return Outline.Generic(path)
+    }
+
+    companion object {
+        val TAIL = 8.dp
     }
 }
 

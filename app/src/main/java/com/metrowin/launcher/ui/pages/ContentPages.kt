@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.pages
 
+import com.metrowin.launcher.ui.start.TrendText
 import com.metrowin.launcher.ui.anim.metroTween
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -64,7 +65,6 @@ import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.start.ageText
-import com.metrowin.launcher.ui.start.arrow
 import com.metrowin.launcher.ui.start.whenText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -144,7 +144,7 @@ fun FinancePage(
                             MetroText("${Finance.format(quote.value, locale)} ${finance.base}", size = 24.sp, maxLines = 1)
                             val change = Finance.formatChange(quote.changePercent, locale)
                             if (change != null) {
-                                MetroText(arrow(Finance.trend(quote.changePercent)) + " " + change, size = 16.sp, weight = FontWeight.Normal, color = colors.subtle)
+                                TrendText(Finance.trend(quote.changePercent), change, 16.sp, colors.subtle)
                             }
                         }
                     }

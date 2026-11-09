@@ -1,5 +1,9 @@
 package com.metrowin.launcher.ui.pages
 
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
 import com.metrowin.launcher.data.ParkedCar
 import android.os.SystemClock
 import androidx.compose.foundation.Canvas
@@ -193,10 +197,13 @@ fun RecorderPage(label: String, allowed: Boolean, onAllow: () -> Unit, modifier:
 @Composable
 private fun RecordingRow(file: File, playing: Boolean, modifier: Modifier, onPlay: () -> Unit, onRename: () -> Unit, onShare: () -> Unit, onDelete: () -> Unit) {
     Row(modifier.fillMaxWidth().testTag("recorder:row"), verticalAlignment = Alignment.CenterVertically) {
-        MetroText(
-            (if (playing) "▶ " else "") + Recordings.title(file.name), size = 20.sp, weight = FontWeight.Normal,
-            modifier = Modifier.weight(1f).metroPress(onClick = onPlay).padding(vertical = 8.dp).testTag("recorder:play"),
-        )
+        Row(Modifier.weight(1f).metroPress(onClick = onPlay).padding(vertical = 8.dp).testTag("recorder:play"), verticalAlignment = Alignment.CenterVertically) {
+            if (playing) {
+                MarkIcon(Mark.Play, 16.dp)
+                Spacer(Modifier.width(8.dp))
+            }
+            MetroText(Recordings.title(file.name), size = 20.sp, weight = FontWeight.Normal)
+        }
         MetroText(
             stringResource(R.string.recorder_rename), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
             modifier = Modifier.metroPress(onClick = onRename).padding(6.dp).testTag("recorder:rename"),

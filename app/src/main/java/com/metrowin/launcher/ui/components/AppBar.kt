@@ -40,6 +40,12 @@ class AppBarItem(val symbol: String, val label: String, val onClick: () -> Unit)
         private set
 
     fun marked(on: Boolean) = apply { marked = on }
+
+    /** A drawn mark in place of the [symbol] text, for the signs the font of the launcher does not have. */
+    var icon: Mark? = null
+        private set
+
+    fun icon(mark: Mark) = apply { icon = mark }
 }
 
 /**
@@ -73,7 +79,7 @@ private fun SuperBar(items: List<AppBarItem>, modifier: Modifier) {
         items.forEach { item ->
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.metroPress(onClick = item.onClick).padding(horizontal = 12.dp)) {
                 Box(Modifier.size(40.dp).border(2.dp, colors.foreground, CircleShape).clip(CircleShape), contentAlignment = Alignment.Center) {
-                    MetroText(item.symbol, size = 20.sp, weight = FontWeight.Normal)
+                    item.icon?.let { MarkIcon(it, 20.dp) } ?: MetroText(item.symbol, size = 20.sp, weight = FontWeight.Normal)
                 }
                 MetroText(item.label, size = 11.sp, color = colors.subtle, modifier = Modifier.padding(top = 2.dp))
             }

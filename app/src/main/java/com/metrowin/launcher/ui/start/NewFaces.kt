@@ -1,5 +1,8 @@
 package com.metrowin.launcher.ui.start
 
+import androidx.compose.ui.graphics.Color
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
 import android.os.SystemClock
 import android.text.format.DateFormat
 import androidx.compose.foundation.Image
@@ -276,10 +279,7 @@ internal fun FinanceFace(item: AppItem, size: TileSize, width: Dp, height: Dp, f
                         MetroText(Finance.format(quote.value, locale), size = 17.sp, maxLines = 1)
                         val trend = Finance.trend(quote.changePercent)
                         val change = if (size == TileSize.Wide) Finance.formatChange(quote.changePercent, locale).orEmpty() else ""
-                        MetroText(
-                            arrow(trend) + change, size = 12.sp, weight = FontWeight.Normal, maxLines = 1, color = ink.copy(alpha = 0.85f),
-                            modifier = Modifier.padding(start = 6.dp),
-                        )
+                        TrendText(trend, change, 12.sp, ink.copy(alpha = 0.85f), Modifier.padding(start = 6.dp))
                     }
                 }
             }
@@ -288,11 +288,17 @@ internal fun FinanceFace(item: AppItem, size: TileSize, width: Dp, height: Dp, f
     }
 }
 
-/** A mark for the way a value moved: up, down, or still. */
-internal fun arrow(trend: Int): String = when {
-    trend > 0 -> "▲"
-    trend < 0 -> "▼"
-    else -> "–"
+/** The way a value moved (a triangle up, a triangle down, or a dash when still) and then [text]. The triangles are drawn: the font has none. */
+@Composable
+internal fun TrendText(trend: Int, text: String, size: androidx.compose.ui.unit.TextUnit, color: Color, modifier: Modifier = Modifier) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        when {
+            trend > 0 -> MarkIcon(Mark.Up, with(LocalDensity.current) { (size * 0.8f).toDp() }, color = color)
+            trend < 0 -> MarkIcon(Mark.Down, with(LocalDensity.current) { (size * 0.8f).toDp() }, color = color)
+            else -> MetroText("–", size = size, weight = FontWeight.Normal, maxLines = 1, color = color)
+        }
+        if (text.isNotEmpty()) MetroText(text, size = size, weight = FontWeight.Normal, maxLines = 1, color = color, modifier = Modifier.padding(start = 3.dp))
+    }
 }
 
 /** The reminders that wait: how many, and the next one with its time. With none the tile is just the bell. */

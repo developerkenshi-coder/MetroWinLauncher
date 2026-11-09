@@ -192,8 +192,11 @@ fun Modifier.metroPress(
     pressedScale: Float = 0.95f,
     /** What TalkBack calls the long press ("More options"). */
     longClickLabel: String? = null,
+    /** Told when the finger goes down (true) and when it is up or the touch is lost (false): for a control that changes colour while pressed. */
+    onPressedChange: ((Boolean) -> Unit)? = null,
 ): Modifier {
     val scope = rememberCoroutineScope()
+    val currentPressed by rememberUpdatedState(onPressedChange)
     val tiltX = remember { Animatable(0f) }
     val tiltY = remember { Animatable(0f) }
     val scale = remember { Animatable(1f) }
@@ -241,7 +244,9 @@ fun Modifier.metroPress(
                     scope.launch { tiltY.animateTo(TILT_Y_SIGN * dx * tilt, PressSpring) }
                     scope.launch { tiltX.animateTo(TILT_X_SIGN * dy * tilt, PressSpring) }
                     scope.launch { scale.animateTo(pressedScale, PressSpring) }
+                    currentPressed?.invoke(true)
                     tryAwaitRelease()
+                    currentPressed?.invoke(false)
                     scope.launch { tiltY.animateTo(0f, ReleaseSpring) }
                     scope.launch { tiltX.animateTo(0f, ReleaseSpring) }
                     scope.launch { scale.animateTo(1f, ReleaseSpring) }

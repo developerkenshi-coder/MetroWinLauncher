@@ -14,6 +14,9 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import java.util.Locale
 import androidx.compose.ui.platform.testTag
 import kotlin.math.roundToInt
 import androidx.compose.ui.semantics.setProgress
@@ -86,19 +89,27 @@ import com.metrowin.launcher.ui.theme.TileWhite
 fun MetroButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val style = LocalStyle.current
     val colors = LocalMetroColors.current
-    val pressable = modifier.metroPress(onClick = onClick)
+    // The Windows Phone button fills with the foreground colour while it is touched, and its text takes the colour of the page.
+    var pressed by remember { mutableStateOf(false) }
+    val pressable = modifier.metroPress(onClick = onClick, onPressedChange = { pressed = it })
     val surface = when (style.kind) {
-        ThemeStyle.Classic -> pressable.border(2.dp, colors.foreground)
+        ThemeStyle.Classic -> pressable.border(2.dp, colors.foreground).background(if (pressed) colors.foreground else Color.Transparent)
         ThemeStyle.Glass -> pressable.glass(style.controlShape, veil = if (colors.dark) 0.16f else 0.55f)
         ThemeStyle.Droid -> pressable.clip(style.controlShape).background(colors.containers.getOrElse(1) { colors.surface })
     }
-    val ink = if (style.kind == ThemeStyle.Droid) colors.onContainers.getOrElse(1) { colors.foreground } else colors.foreground
+    val ink = when {
+        style.isClassic && pressed -> colors.background
+        style.kind == ThemeStyle.Droid -> colors.onContainers.getOrElse(1) { colors.foreground }
+        else -> colors.foreground
+    }
     val wide = if (style.isClassic) 16.dp else 22.dp
+    // Like the MessageBox of Windows Phone, the buttons of a dialog are lowercase.
+    val label = if (style.isClassic && LocalInDialog.current) text.lowercase(Locale.getDefault()) else text
     Box(
         surface.padding(horizontal = wide, vertical = if (style.isClassic) 11.dp else 12.dp),
         contentAlignment = Alignment.Center,
     ) {
-        MetroText(text, size = 19.sp, weight = FontWeight.Normal, color = ink, textAlign = TextAlign.Center)
+        MetroText(label, size = 19.sp, weight = FontWeight.Normal, color = ink, textAlign = TextAlign.Center)
     }
 }
 
@@ -382,8 +393,12 @@ fun MetroTextField(
     val colors = LocalMetroColors.current
     val style = LocalStyle.current
     val field = RoundedCornerShape(16.dp)
+    // The TextBox of Windows Phone: an outline on the page, and while it is typed in a white box with black text.
+    var focused by remember { mutableStateOf(false) }
+    val lit = style.isClassic && focused
+    val ink = if (lit) Color.Black else colors.foreground
     val surface = when (style.kind) {
-        ThemeStyle.Classic -> modifier.fillMaxWidth().heightIn(min = 52.dp).background(colors.surface)
+        ThemeStyle.Classic -> modifier.fillMaxWidth().heightIn(min = 52.dp).border(2.dp, colors.foreground).background(if (lit) Color.White else Color.Transparent)
         ThemeStyle.Glass -> modifier.fillMaxWidth().heightIn(min = 52.dp).glass(field, veil = if (colors.dark) 0.12f else 0.55f)
         ThemeStyle.Droid -> modifier.fillMaxWidth().heightIn(min = 52.dp).clip(field).background(colors.surface)
     }
@@ -392,12 +407,12 @@ fun MetroTextField(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.weight(1f)) {
-            if (value.isEmpty()) MetroText(placeholder, size = 20.sp, color = colors.subtle)
+            if (value.isEmpty()) MetroText(placeholder, size = 20.sp, color = if (lit) Color(0xFF666666) else colors.subtle)
             BasicTextField(
                 value = value,
                 onValueChange = onValueChange,
                 singleLine = singleLine,
-                textStyle = fieldTextStyle(colors.foreground, 20.sp),
+                textStyle = fieldTextStyle(ink, 20.sp),
                 cursorBrush = SolidColor(LocalAccent.current),
                 keyboardOptions = KeyboardOptions(
                     imeAction = if (singleLine) ImeAction.Search else ImeAction.Default,
@@ -406,8 +421,20 @@ fun MetroTextField(
                 ),
                 visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
                 keyboardActions = KeyboardActions(onSearch = { onSearch?.invoke() }),
-                modifier = Modifier.fillMaxWidth().hideKeyboardWhenGone(),
+                modifier = Modifier.fillMaxWidth().hideKeyboardWhenGone().onFocusChanged { focused = it.isFocused },
             )
+        }
+        if (lit && value.isNotEmpty()) {
+            val description = stringResource(R.string.search_clear)
+            // A cross drawn, not typed: it does not depend on the font. It sits on the white box, so it is black.
+            Canvas(
+                Modifier.padding(start = 8.dp).size(36.dp).semantics { contentDescription = description }
+                    .pointerInput(Unit) { detectTapGestures { onValueChange("") } }.padding(12.dp),
+            ) {
+                val stroke = 2.dp.toPx()
+                drawLine(Color.Black, Offset(0f, 0f), Offset(size.width, size.height), stroke)
+                drawLine(Color.Black, Offset(size.width, 0f), Offset(0f, size.height), stroke)
+            }
         }
     }
 }
