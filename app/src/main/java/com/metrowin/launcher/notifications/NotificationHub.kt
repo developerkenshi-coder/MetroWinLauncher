@@ -348,6 +348,15 @@ object NotificationHub {
     fun mayHide(ongoing: Boolean, clearable: Boolean, fromUs: Boolean, category: String?, fullScreen: Boolean, hiddenFromCenter: Boolean): Boolean =
         !ongoing && clearable && !fromUs && !fullScreen && !hiddenFromCenter && category !in KEPT_CATEGORIES
 
+    /** A notification of the launcher itself is not news for the banner and the Action Center, except what it tells the user (a text message, a new mail, a timer, a reminder, a data limit): those are news like the ones of any other app. What stays on in the shade (a call, a recording, the mail connection) and the quiet notices (an update, Shizuku) are not. */
+    fun isOwn(packageName: String, ownPackage: String, channelId: String?): Boolean =
+        packageName == ownPackage && channelId !in NEWS_CHANNELS
+
+    private val NEWS_CHANNELS = setOf(
+        com.metrowin.launcher.messages.SmsReceiver.CHANNEL, com.metrowin.launcher.mail.MailSync.CHANNEL, com.metrowin.launcher.datasense.DataLimitWatch.CHANNEL,
+        Alerts.CHANNEL_TIMER, Alerts.CHANNEL_REMINDER,
+    )
+
     /** With the screen off or locked a notification is left in the shade of Android: taking it away would cut its sound. */
     fun keepForSound(interactive: Boolean, locked: Boolean): Boolean = !interactive || locked
 

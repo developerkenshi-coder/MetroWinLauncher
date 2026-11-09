@@ -61,6 +61,8 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
@@ -101,6 +103,12 @@ fun metroStatusBarHeight(): Dp {
 
 private val MIN_BAR = 24.dp
 
+/** A soft veil behind a bar with no background of its own, of the opposite shade to the text: a light photo or page never swallows it. */
+private fun scrim(text: Color): androidx.compose.ui.graphics.Brush {
+    val veil = if (text.luminance() > 0.5f) Color.Black else Color.White
+    return androidx.compose.ui.graphics.Brush.verticalGradient(0f to veil.copy(alpha = 0.55f), 0.7f to veil.copy(alpha = 0.35f), 1f to Color.Transparent)
+}
+
 /**
  * The last broadcast of any of [actions] (null before the first), received while this is composed: a change is on the bar as the phone says
  * it, not at the next poll. Each broadcast is a new value, so what is keyed on it starts again. A sticky one (the battery) answers at once.
@@ -139,7 +147,7 @@ private val RADIO_ACTIONS = arrayOf(
 fun MetroStatusBar(
     battery: BatteryInfo?,
     modifier: Modifier = Modifier,
-    color: Color = Color.White,
+    color: Color = if (com.metrowin.launcher.ui.theme.LocalMetroColors.current.dark) Color.White else Color(0xFF202020),
     /** Where the bar is the window of a service, over other apps, the launcher's insets say nothing: it is told how high it is, and it has a background to cover the bar of Android. */
     height: Dp = metroStatusBarHeight(),
     background: Color = Color.Transparent,
@@ -236,7 +244,7 @@ fun MetroStatusBar(
     val gap = Arrangement.spacedBy(7.dp)
     val openLabel = stringResource(R.string.gact_action_center)
     Row(
-        modifier.fillMaxWidth().background(background).windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)).height(height)
+        modifier.fillMaxWidth().background(background).then(if (background == Color.Transparent) Modifier.drawBehind { drawRect(scrim(color)) } else Modifier).windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)).height(height)
             .padding(start = 10.dp + holes.left, end = 10.dp + holes.right)
             .testTag("statusbar")
             .then(if (onOpenActionCenter == null) Modifier else Modifier.semantics { onClick(label = openLabel) { onOpenActionCenter(); true } }),

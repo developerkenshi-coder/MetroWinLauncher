@@ -88,7 +88,7 @@ class NotificationService : NotificationListenerService() {
         // What is only live while it lasts (a call, an alarm, a navigation, a progress) is not kept after the app ends it.
         val notification = sbn.notification
         val keepable = NotificationHub.mayHide(
-            ongoing = sbn.isOngoing, clearable = sbn.isClearable, fromUs = sbn.packageName == packageName,
+            ongoing = sbn.isOngoing, clearable = sbn.isClearable, fromUs = isOwn(sbn),
             category = notification.category, fullScreen = notification.fullScreenIntent != null, hiddenFromCenter = false,
         )
         if (!keepable) return
@@ -120,6 +120,8 @@ class NotificationService : NotificationListenerService() {
         hideFromAndroid(sbn, store.load())
     }
 
+    private fun isOwn(sbn: StatusBarNotification) = NotificationHub.isOwn(sbn.packageName, packageName, sbn.notification.channelId)
+
     private fun awayFromScreen() = NotificationHub.keepForSound(
         interactive = getSystemService(PowerManager::class.java).isInteractive,
         locked = getSystemService(KeyguardManager::class.java).isKeyguardLocked,
@@ -149,7 +151,7 @@ class NotificationService : NotificationListenerService() {
         if (!NotificationControl.filtered(entry, settings)) return false
         val notification = sbn.notification
         val allowed = NotificationHub.mayHide(
-            ongoing = sbn.isOngoing, clearable = sbn.isClearable, fromUs = sbn.packageName == packageName,
+            ongoing = sbn.isOngoing, clearable = sbn.isClearable, fromUs = isOwn(sbn),
             category = notification.category, fullScreen = notification.fullScreenIntent != null, hiddenFromCenter = false,
         )
         if (allowed) cancelNotification(sbn.key)
@@ -170,7 +172,7 @@ class NotificationService : NotificationListenerService() {
     private fun hideFromAndroid(sbn: StatusBarNotification, settings: LauncherSettings) {
         val notification = sbn.notification
         val allowed = NotificationHub.mayHide(
-            ongoing = sbn.isOngoing, clearable = sbn.isClearable, fromUs = sbn.packageName == packageName,
+            ongoing = sbn.isOngoing, clearable = sbn.isClearable, fromUs = isOwn(sbn),
             category = notification.category, fullScreen = notification.fullScreenIntent != null,
             hiddenFromCenter = settings.notifControl && sbn.packageName in settings.notifHideCenter,
         )
@@ -212,7 +214,7 @@ class NotificationService : NotificationListenerService() {
      */
     private fun showOverBanner(sbn: StatusBarNotification): Boolean {
         // Only the launcher's own screen shows its banner itself. The Metro status bar over other apps and the lock screen also count as "watching" (they read the notifications), but they draw no banner: counting them here swallowed every banner while the bar was up.
-        if (NotificationHub.launcherShown || sbn.packageName == packageName || LockAccessibilityService.safe) return true
+        if (NotificationHub.launcherShown || isOwn(sbn) || LockAccessibilityService.safe) return true
         if (!Settings.canDrawOverlays(this)) return true.also { skipped(sbn, "no permission to draw over apps") }
         val store = SettingsStore.of(this)
         if (!store.actionCenterOn() || !store.overlayBannerOn()) return true
@@ -386,7 +388,7 @@ class NotificationService : NotificationListenerService() {
         val worthShowing = NotificationHub.isWorthShowing(
             ongoing = sbn.isOngoing || !sbn.isClearable,
             groupSummary = summary && !groupHeadings,
-            fromUs = sbn.packageName == packageName,
+            fromUs = isOwn(sbn),
             title = title,
             text = text,
         )

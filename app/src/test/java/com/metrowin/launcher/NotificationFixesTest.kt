@@ -145,6 +145,17 @@ class NotificationFixesTest {
     }
 
     @Test
+    fun aMessageOrMailOfTheLauncherIsNewsButItsOtherNoticesAreNot() {
+        assertFalse(NotificationHub.isOwn("l", "l", com.metrowin.launcher.messages.SmsReceiver.CHANNEL))
+        assertFalse(NotificationHub.isOwn("l", "l", "mail_new"))
+        for (channel in listOf("data_limit", "timer", "reminder")) assertFalse(channel, NotificationHub.isOwn("l", "l", channel))
+        assertTrue("a quiet notice", NotificationHub.isOwn("l", "l", "update"))
+        assertTrue(NotificationHub.isOwn("l", "l", "incall_ongoing"))
+        assertTrue(NotificationHub.isOwn("l", "l", null))
+        assertFalse(NotificationHub.isOwn("other", "l", "incall_ongoing"))
+    }
+
+    @Test
     fun whatMustStayInTheShadeStays() {
         fun may(ongoing: Boolean = false, clearable: Boolean = true, fromUs: Boolean = false, category: String? = null, fullScreen: Boolean = false, hidden: Boolean = false) =
             NotificationHub.mayHide(ongoing, clearable, fromUs, category, fullScreen, hidden)

@@ -12,6 +12,7 @@ import android.provider.Telephony
 import androidx.core.app.NotificationCompat
 import androidx.core.app.RemoteInput
 import com.metrowin.launcher.R
+import com.metrowin.launcher.notifications.NotificationHub
 
 /** A text message arriving: it is written among the messages of Android (the role of messaging app) and told in a notification. */
 class SmsReceiver : BroadcastReceiver() {
@@ -31,8 +32,13 @@ class SmsReceiver : BroadcastReceiver() {
         const val CHANNEL = "sms_incoming"
         const val NOTIFICATION_ID = 0x534D
 
-        fun cancel(context: Context, address: String) =
+        /** The conversation was read: its notification goes, and so does the copy the launcher kept in the Action Center (the key ends with the tag, the address). */
+        fun cancel(context: Context, address: String) {
             context.getSystemService(NotificationManager::class.java).cancel(address, NOTIFICATION_ID)
+            NotificationHub.entries.value
+                .filter { it.packageName == context.packageName && it.key.contains("|$NOTIFICATION_ID|$address|") }
+                .forEach { NotificationHub.forget(it.key) }
+        }
 
         /** The notification of a conversation, with a box to reply from it. */
         fun notify(context: Context, repository: SmsRepository, address: String, body: String) {
