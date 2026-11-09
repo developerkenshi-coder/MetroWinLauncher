@@ -2739,6 +2739,13 @@ in front %3$s · in the background %4$s
     <string name="photos_empty">No photos here yet.</string>
     <string name="photos_allow_why">Allow access to your photos to see them here. They never leave the phone.</string>
     <string name="photos_allow">Allow</string>
+    <string name="ppl_all">all</string>
+    <string name="ppl_call">Call</string>
+    <string name="ppl_message">Message</string>
+    <string name="ppl_back">Back</string>
+    <string name="ppl_history">history</string>
+    <string name="ppl_no_history">Nothing yet with this person.</string>
+    <string name="ppl_empty">No contacts with a number yet.</string>
     <string name="pv_share">Share</string>
     <string name="pv_delete">Delete</string>
     <string name="pv_info">Info</string>

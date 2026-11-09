@@ -387,6 +387,12 @@
             android:launchMode="singleTask" />
 
         <activity
+            android:name=".people.PeopleActivity"
+            android:exported="false"
+            android:label="@string/stock_people"
+            android:launchMode="singleTask" />
+
+        <activity
             android:name=".photos.PhotosActivity"
             android:exported="false"
             android:label="@string/stock_photohub"

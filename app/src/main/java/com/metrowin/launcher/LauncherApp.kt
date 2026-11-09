@@ -841,7 +841,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 return
             }
             AppRepository.ROUTE_PEOPLEHUB -> {
-                panels.open(Panel.PeopleHub)
+                appContext.startActivity(android.content.Intent(appContext, com.metrowin.launcher.people.PeopleActivity::class.java).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
                 return
             }
             // An album and a group lead to the apps that hold them.

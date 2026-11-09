@@ -4,7 +4,11 @@ import androidx.compose.ui.geometry.Offset
 import com.metrowin.launcher.photos.fitSize
 import com.metrowin.launcher.photos.panLimit
 import com.metrowin.launcher.photos.zoomAbout
+import com.metrowin.launcher.people.PeopleBook
+import com.metrowin.launcher.people.Person
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** The small pure parts of the Classic visuals that are not worth a screen test. */
@@ -26,5 +30,18 @@ class HeavyVisualsTest {
         val next = zoomAbout(Offset.Zero, centroid, 1f, 2f)
         assertEquals(Offset(-100f, -50f), next)
         assertEquals(Offset.Zero, zoomAbout(next, centroid, 2f, 1f))
+    }
+
+    @Test
+    fun peopleAreListedUnderTheirLetterWithoutAccents() {
+        val people = listOf("Émile", "anna", "Zoe", "3 Pizza", "Bob").map { Person(it, it, false, null) }
+        assertEquals(listOf("A", "B", "E", "Z", "#"), PeopleBook.grouped(people).map { it.first })
+    }
+
+    @Test
+    fun aNumberIsTheSameLineHoweverItIsWritten() {
+        assertTrue(PeopleBook.sameNumber("+39 333 1234567", "3331234567"))
+        assertFalse(PeopleBook.sameNumber("3331234567", "3331234568"))
+        assertFalse(PeopleBook.sameNumber("", "3331234567"))
     }
 }

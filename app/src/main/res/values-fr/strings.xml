@@ -2773,6 +2773,13 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="photos_empty">Aucune photo pour le moment.</string>
     <string name="photos_allow_why">Autorisez l’accès à vos photos pour les voir ici. Elles ne quittent jamais le téléphone.</string>
     <string name="photos_allow">Autoriser</string>
+    <string name="ppl_all">tous</string>
+    <string name="ppl_call">Appeler</string>
+    <string name="ppl_message">Message</string>
+    <string name="ppl_back">Retour</string>
+    <string name="ppl_history">historique</string>
+    <string name="ppl_no_history">Rien encore avec cette personne.</string>
+    <string name="ppl_empty">Aucun contact avec numéro.</string>
     <string name="pv_share">Partager</string>
     <string name="pv_delete">Supprimer</string>
     <string name="pv_info">Infos</string>

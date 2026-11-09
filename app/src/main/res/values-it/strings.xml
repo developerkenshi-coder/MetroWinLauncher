@@ -2766,6 +2766,13 @@ in primo piano %3$s · in background %4$s
     <string name="photos_empty">Ancora nessuna foto.</string>
     <string name="photos_allow_why">Consenti l\'accesso alle foto per vederle qui. Non escono mai dal telefono.</string>
     <string name="photos_allow">Consenti</string>
+    <string name="ppl_all">tutti</string>
+    <string name="ppl_call">Chiama</string>
+    <string name="ppl_message">Messaggio</string>
+    <string name="ppl_back">Indietro</string>
+    <string name="ppl_history">cronologia</string>
+    <string name="ppl_no_history">Ancora niente con questa persona.</string>
+    <string name="ppl_empty">Ancora nessun contatto con un numero.</string>
     <string name="pv_share">Condividi</string>
     <string name="pv_delete">Elimina</string>
     <string name="pv_info">Info</string>
