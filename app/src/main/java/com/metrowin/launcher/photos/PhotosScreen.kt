@@ -38,7 +38,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
-import com.metrowin.launcher.ui.components.PivotHeader
+import com.metrowin.launcher.ui.components.HubPager
 import com.metrowin.launcher.ui.mini.MiniFrame
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -61,19 +61,18 @@ fun PhotosScreen(photos: List<Photo>?, needsPermission: Boolean, onAllow: () -> 
     BackHandler(enabled = album != null) { album = null }
 
     MiniFrame {
-        MetroText(stringResource(R.string.stock_photohub).lowercase(), size = 62.sp, modifier = Modifier.padding(start = SIDE, top = 4.dp).testTag("photos:title"))
-        PivotHeader(
+        HubPager(
+            stringResource(R.string.stock_photohub),
             listOf(stringResource(R.string.photos_albums), stringResource(R.string.photos_date), stringResource(R.string.photos_favorites)), pager,
-            Modifier.padding(start = SIDE, top = 2.dp, bottom = 8.dp), size = 27.sp, color = LocalAccent.current,
-        )
-        when {
-            needsPermission -> Column(Modifier.fillMaxWidth().padding(horizontal = SIDE).testTag("photos:permission"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                MetroText(stringResource(R.string.photos_allow_why), size = 18.sp, color = LocalMetroColors.current.subtle)
-                MetroButton(stringResource(R.string.photos_allow), Modifier.testTag("photos:allow"), onClick = onAllow)
-            }
-            photos == null -> Box(Modifier.fillMaxSize().testTag("photos:loading"))
-            else -> HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth().clipToBounds(), beyondViewportPageCount = 0) { page ->
-                when (page) {
+            userScrollEnabled = !needsPermission && photos != null,
+        ) { page ->
+            when {
+                needsPermission -> if (page == 0) Column(Modifier.fillMaxWidth().padding(horizontal = SIDE).testTag("photos:permission"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    MetroText(stringResource(R.string.photos_allow_why), size = 18.sp, color = LocalMetroColors.current.subtle)
+                    MetroButton(stringResource(R.string.photos_allow), Modifier.testTag("photos:allow"), onClick = onAllow)
+                }
+                photos == null -> Box(Modifier.fillMaxSize().testTag("photos:loading"))
+                else -> when (page) {
                     0 -> AlbumsPage(photos, album, onAlbum = { album = it }, onOpen)
                     1 -> DatePage(photos, onOpen)
                     else -> PhotoGrid(PhotoLibrary.favorites(photos), onOpen, "photos:favorites")
