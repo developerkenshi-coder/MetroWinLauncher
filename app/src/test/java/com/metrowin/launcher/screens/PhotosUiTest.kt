@@ -41,7 +41,7 @@ class PhotosUiTest : ScreenshotBase() {
     }
 
     @Test
-    fun anAlbumOpensIntoItsPicturesAndAPictureIsHandedOver() {
+    fun anAlbumOpensIntoItsPicturesAndAPictureOpensInTheViewer() {
         var opened: Photo? = null
         screen(onOpen = { opened = it })
         compose.onNodeWithTag("album:Camera").performClick()
@@ -49,8 +49,10 @@ class PhotosUiTest : ScreenshotBase() {
         compose.onNodeWithTag("photo:1").assertIsDisplayed()
         compose.onNodeWithTag("photo:3").assertDoesNotExist()
         compose.onNodeWithTag("photo:1").performClick()
-        advance(300)
-        assertEquals(1L, opened?.id)
+        advance(600)
+        // The picture opens in the viewer of the hub; the gallery of the phone is only for a long press in it.
+        compose.onNodeWithTag("photos:viewer").assertIsDisplayed()
+        assertEquals(null, opened)
     }
 
     @Test

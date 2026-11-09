@@ -1,5 +1,8 @@
 package com.metrowin.launcher.photos
 
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.geometry.Rect
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -56,10 +59,14 @@ private val GAP = 4.dp
 @Composable
 fun PhotosScreen(photos: List<Photo>?, needsPermission: Boolean, onAllow: () -> Unit, onOpen: (Photo) -> Unit) {
     val pager = rememberPagerState { 3 }
+    // The picture in the viewer, and where its small one was: the viewer grows out of that place. [onOpen] is the gallery of the phone, by a long press.
+    var viewing by remember { mutableStateOf<Pair<Photo, Rect>?>(null) }
+    val view: (Photo, Rect) -> Unit = { photo, from -> viewing = photo to from }
     // The open album is kept here, not in the page: the pager drops the page that is swiped away.
     var album by rememberSaveable { mutableStateOf<String?>(null) }
     BackHandler(enabled = album != null) { album = null }
 
+    Box(Modifier.fillMaxSize()) {
     MiniFrame {
         MetroText(stringResource(R.string.stock_photohub).lowercase(), size = 62.sp, modifier = Modifier.padding(start = SIDE, top = 4.dp).testTag("photos:title"))
         PivotHeader(
@@ -74,12 +81,14 @@ fun PhotosScreen(photos: List<Photo>?, needsPermission: Boolean, onAllow: () -> 
             photos == null -> Box(Modifier.fillMaxSize().testTag("photos:loading"))
             else -> HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth().clipToBounds(), beyondViewportPageCount = 0) { page ->
                 when (page) {
-                    0 -> AlbumsPage(photos, album, onAlbum = { album = it }, onOpen)
-                    1 -> DatePage(photos, onOpen)
-                    else -> PhotoGrid(PhotoLibrary.favorites(photos), onOpen, "photos:favorites")
+                    0 -> AlbumsPage(photos, album, onAlbum = { album = it }, view)
+                    1 -> DatePage(photos, view)
+                    else -> PhotoGrid(PhotoLibrary.favorites(photos), view, "photos:favorites")
                 }
             }
         }
+    }
+    viewing?.let { (photo, from) -> PhotoViewer(photo, from, onClose = { viewing = null }, onGallery = { onOpen(photo) }) }
     }
 }
 
@@ -100,7 +109,7 @@ private fun day(date: LocalDate): String = date.format(DateTimeFormatter.ofLocal
 private fun Empty(tag: String) = MetroText(stringResource(R.string.photos_empty), size = 18.sp, color = LocalMetroColors.current.subtle, modifier = Modifier.padding(horizontal = SIDE).testTag(tag))
 
 @Composable
-private fun PhotoGrid(photos: List<Photo>, onOpen: (Photo) -> Unit, tag: String) {
+private fun PhotoGrid(photos: List<Photo>, onOpen: (Photo, Rect) -> Unit, tag: String) {
     if (photos.isEmpty()) return Empty("$tag:empty")
     LazyVerticalGrid(
         GridCells.Adaptive(96.dp), Modifier.fillMaxSize().testTag(tag), contentPadding = PaddingValues(start = SIDE, end = SIDE, bottom = 16.dp),
@@ -111,13 +120,17 @@ private fun PhotoGrid(photos: List<Photo>, onOpen: (Photo) -> Unit, tag: String)
 }
 
 @Composable
-private fun PhotoCell(photo: Photo, onOpen: (Photo) -> Unit) {
+private fun PhotoCell(photo: Photo, onOpen: (Photo, Rect) -> Unit) {
     val description = day(java.time.Instant.ofEpochMilli(photo.takenAt).atZone(java.time.ZoneId.systemDefault()).toLocalDate())
-    Thumb(photo, Modifier.testTag("photo:${photo.id}").semantics { contentDescription = description }.metroPress(onClick = { onOpen(photo) }))
+    var bounds by remember { mutableStateOf(Rect.Zero) }
+    Thumb(
+        photo,
+        Modifier.testTag("photo:${photo.id}").semantics { contentDescription = description }.onGloballyPositioned { bounds = it.boundsInWindow() }.metroPress(onClick = { onOpen(photo, bounds) }),
+    )
 }
 
 @Composable
-private fun AlbumsPage(photos: List<Photo>, open: String?, onAlbum: (String?) -> Unit, onOpen: (Photo) -> Unit) {
+private fun AlbumsPage(photos: List<Photo>, open: String?, onAlbum: (String?) -> Unit, onOpen: (Photo, Rect) -> Unit) {
     val albums = PhotoLibrary.albums(photos)
     val inside = albums.firstOrNull { it.first == open }
     if (inside != null) return PhotoGrid(inside.second, onOpen, "photos:album")
@@ -138,7 +151,7 @@ private fun AlbumsPage(photos: List<Photo>, open: String?, onAlbum: (String?) ->
 }
 
 @Composable
-private fun DatePage(photos: List<Photo>, onOpen: (Photo) -> Unit) {
+private fun DatePage(photos: List<Photo>, onOpen: (Photo, Rect) -> Unit) {
     val days = remember(photos) { PhotoLibrary.byDay(photos) }
     if (days.isEmpty()) return Empty("photos:date:empty")
     LazyVerticalGrid(
