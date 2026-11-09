@@ -2766,6 +2766,9 @@ in primo piano %3$s · in background %4$s
     <string name="photos_empty">Ancora nessuna foto.</string>
     <string name="photos_allow_why">Consenti l\'accesso alle foto per vederle qui. Non escono mai dal telefono.</string>
     <string name="photos_allow">Consenti</string>
+    <string name="lock_now">adesso</string>
+    <string name="lock_in_minutes">tra %1$d min</string>
+    <string name="lock_in_hours">tra %1$d h</string>
     <string name="wal_scan">Scansiona con la fotocamera</string>
     <string name="wal_scan_why">Per leggere il codice di una carta il launcher ha bisogno della fotocamera. Niente viene salvato o inviato.</string>
     <string name="wal_scan_hint">Metti il codice dentro il riquadro.</string>

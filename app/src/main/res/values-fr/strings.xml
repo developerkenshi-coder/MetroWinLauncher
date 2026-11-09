@@ -2773,6 +2773,9 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="photos_empty">Aucune photo pour le moment.</string>
     <string name="photos_allow_why">Autorisez l’accès à vos photos pour les voir ici. Elles ne quittent jamais le téléphone.</string>
     <string name="photos_allow">Autoriser</string>
+    <string name="lock_now">maintenant</string>
+    <string name="lock_in_minutes">dans %1$d min</string>
+    <string name="lock_in_hours">dans %1$d h</string>
     <string name="wal_scan">Scanner avec l\'appareil photo</string>
     <string name="wal_scan_why">Pour lire le code d\'une carte, le launcher a besoin de l\'appareil photo. Rien n\'est conservé ni envoyé.</string>
     <string name="wal_scan_hint">Place le code dans le cadre.</string>

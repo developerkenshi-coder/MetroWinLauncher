@@ -2773,6 +2773,9 @@ em primeiro plano %3$s · em segundo plano %4$s
     <string name="photos_empty">Ainda não há fotos.</string>
     <string name="photos_allow_why">Permita o acesso às fotos para as ver aqui. Nunca saem do telemóvel.</string>
     <string name="photos_allow">Permitir</string>
+    <string name="lock_now">agora</string>
+    <string name="lock_in_minutes">em %1$d min</string>
+    <string name="lock_in_hours">em %1$d h</string>
     <string name="wal_scan">Digitalizar com a câmara</string>
     <string name="wal_scan_why">Para ler o código de um cartão o launcher precisa da câmara. Nada é guardado nem enviado.</string>
     <string name="wal_scan_hint">Põe o código dentro do quadro.</string>

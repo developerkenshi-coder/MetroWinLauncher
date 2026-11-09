@@ -5,6 +5,8 @@ import com.metrowin.launcher.photos.fitSize
 import com.metrowin.launcher.photos.panLimit
 import com.metrowin.launcher.photos.zoomAbout
 import com.metrowin.launcher.calendar.CalEvent
+import com.metrowin.launcher.data.LiveEvent
+import com.metrowin.launcher.data.LockText
 import com.metrowin.launcher.data.StartEntries
 import com.metrowin.launcher.model.Tile
 import com.metrowin.launcher.model.TileSize
@@ -110,5 +112,12 @@ class HeavyVisualsTest {
         // b was under it: it flows again. a was not: it keeps its cell.
         assertEquals(-1, placed.getValue("b").col)
         assertEquals(0, placed.getValue("a").col)
+    }
+
+    @Test
+    fun theLockLineCountsTheMinutesToTheNextEvent() {
+        assertEquals(25, LockText.minutesTo(LiveEvent("x", 25 * 60_000L + 5_000, false), 0L))
+        assertEquals(null, LockText.minutesTo(LiveEvent("x", 1_000L, true), 0L))
+        assertEquals(null, LockText.minutesTo(LiveEvent("x", 1_000L, false), 2_000L))
     }
 }

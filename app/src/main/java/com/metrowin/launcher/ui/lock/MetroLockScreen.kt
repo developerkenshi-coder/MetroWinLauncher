@@ -4,6 +4,15 @@ import com.metrowin.launcher.ui.components.lockTopPadding
 import com.metrowin.launcher.ui.components.rememberTopCutouts
 import com.metrowin.launcher.ui.anim.metroTween
 import android.text.format.DateFormat
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import com.metrowin.launcher.ui.anim.featherIn
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
+import kotlinx.coroutines.delay
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -208,6 +217,13 @@ fun MetroLockScreen(
         }
     }
 
+    // What is written on the screen goes up a little ahead of the picture and is gone before the picture is: the picture is what is left to see, and it is the first
+    // thing of the launcher that comes out from under it.
+    val rise = Modifier.graphicsLayer {
+        val done = (-lift.value / height).coerceIn(0f, 1f)
+        translationY = lift.value * RISE
+        alpha = (1f - done * 1.6f).coerceIn(0f, 1f)
+    }
     BoxWithConstraints(
         modifier
             .fillMaxSize()
@@ -260,7 +276,7 @@ fun MetroLockScreen(
         val battery = info.battery
         if (options.showBattery && battery != null) {
             Row(
-                Modifier.align(Alignment.TopEnd).lockTopPadding(holes).padding(start = 20.dp, top = 20.dp, bottom = 20.dp, end = 20.dp + holes.right).testTag("lock:battery"),
+                Modifier.align(Alignment.TopEnd).then(rise).lockTopPadding(holes).padding(start = 20.dp, top = 20.dp, bottom = 20.dp, end = 20.dp + holes.right).testTag("lock:battery"),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 BatteryCell(battery, Color.White, Modifier.size(width = 28.dp, height = 15.dp))
@@ -278,7 +294,7 @@ fun MetroLockScreen(
         if (onUnlock != null && fingerprint) {
             MetroText(
                 stringResource(R.string.lock_fingerprint_hint), size = 13.sp, color = Color.White.copy(alpha = 0.7f), maxLines = 1,
-                modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 10.dp).testTag("lock:fingerprint"),
+                modifier = Modifier.align(Alignment.BottomCenter).then(rise).navigationBarsPadding().padding(bottom = 10.dp).testTag("lock:fingerprint"),
             )
         }
         val clock = @Composable { LockClock(time, is24Hour, locale) }
@@ -287,7 +303,7 @@ fun MetroLockScreen(
         if (maxWidth > maxHeight * WIDE_RATIO && (playing != null || hasStatus)) {
             // A screen that is wide and short (a phone on its dock): the time on the left, what is going on on the right.
             Row(
-                Modifier.fillMaxSize().lockTopPadding(holes).navigationBarsPadding().padding(start = 24.dp, end = 24.dp, top = 56.dp, bottom = 24.dp),
+                Modifier.fillMaxSize().then(rise).lockTopPadding(holes).navigationBarsPadding().padding(start = 24.dp, end = 24.dp, top = 56.dp, bottom = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.Bottom) {
@@ -306,7 +322,7 @@ fun MetroLockScreen(
                 }
             }
         } else {
-            Column(Modifier.fillMaxSize().lockTopPadding(holes).navigationBarsPadding().padding(start = 24.dp, end = 24.dp, top = if (playing != null || call != null) 64.dp else 16.dp, bottom = 40.dp + reserve)) {
+            Column(Modifier.fillMaxSize().then(rise).lockTopPadding(holes).navigationBarsPadding().padding(start = 24.dp, end = 24.dp, top = if (playing != null || call != null) 64.dp else 16.dp, bottom = 40.dp + reserve)) {
                 if (call != null) CallCard(call)
                 if (call != null && playing != null) Spacer(Modifier.height(16.dp))
                 if (playing != null) MusicCard(playing)
@@ -380,15 +396,25 @@ private fun LockLines(info: LockInfo, options: LockOptions, zone: ZoneId, is24Ho
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         val weather = info.weather
         if (options.showWeather && weather != null) {
-            LockLine(Glyph.Weather, "${weather.temperature}° · ${stringResource(weather.condition.label)}", "lock:weather")
+            // The day on the other face of the line: the high and the low of today.
+            val today = weather.days.firstOrNull()
+            LockLine(Glyph.Weather, "${weather.temperature}° · ${stringResource(weather.condition.label)}", "lock:weather", 0, today?.let { "↑ ${it.high}°  ↓ ${it.low}°" })
         }
         val alarm = info.nextAlarmMillis
         if (options.showAlarm && alarm != null) {
-            LockLine(Glyph.Alarm, LockText.alarm(alarm, info.nowMillis, zone, is24Hour, locale), "lock:alarm")
+            LockLine(Glyph.Alarm, LockText.alarm(alarm, info.nowMillis, zone, is24Hour, locale), "lock:alarm", 1)
         }
         val event = info.nextEvent
         if (options.showEvent && event != null) {
-            LockLine(Glyph.Calendar, LockText.event(event, info.nowMillis, zone, is24Hour, locale), "lock:event")
+            // The event, and how long it is to it.
+            val minutes = LockText.minutesTo(event, info.nowMillis)
+            LockLine(Glyph.Calendar, LockText.event(event, info.nowMillis, zone, is24Hour, locale), "lock:event", 2, minutes?.let { m ->
+                when {
+                    m < 1 -> stringResource(R.string.lock_now)
+                    m < 60 -> stringResource(R.string.lock_in_minutes, m)
+                    else -> stringResource(R.string.lock_in_hours, m / 60)
+                }
+            })
         }
         if (countOnly && options.showNotifications && info.notifications > 0) {
             LockLine(Glyph.Bell, info.notifications.toString(), "lock:notifications")
@@ -571,11 +597,28 @@ private fun TransportButton(kind: Transport, description: String, tag: String, o
 }
 
 @Composable
-private fun LockLine(glyph: Glyph, text: String, tag: String) {
-    Row(Modifier.padding(top = 4.dp).testTag(tag), verticalAlignment = Alignment.CenterVertically) {
+private fun LockLine(glyph: Glyph, text: String, tag: String, index: Int = 0, detail: String? = null) {
+    val reduced = LocalReduceMotion.current
+    var other by remember { mutableStateOf(false) }
+    // A line with a detail shows it for a moment now and then, the old text sliding up and the new one coming in under it; with reduced motion it stays as it is.
+    LaunchedEffect(detail, reduced) {
+        if (detail == null || reduced) return@LaunchedEffect
+        delay(3_500L + index * 900L)
+        while (true) {
+            other = true
+            delay(2_500L)
+            other = false
+            delay(5_000L)
+        }
+    }
+    Row(Modifier.featherIn(index, stepMs = 90).padding(top = 4.dp).testTag(tag), verticalAlignment = Alignment.CenterVertically) {
         GlyphIcon(glyph, 24.dp, color = Color.White)
         Spacer(Modifier.width(12.dp))
-        MetroText(text, size = 22.sp, color = Color.White)
+        AnimatedContent(
+            targetState = if (other && detail != null) detail else text,
+            transitionSpec = { (slideInVertically(tween(320)) { it / 2 } + fadeIn(tween(320))) togetherWith (slideOutVertically(tween(240)) { -it / 2 } + fadeOut(tween(200))) },
+            label = "lock-line",
+        ) { shown -> MetroText(shown, size = 22.sp, color = Color.White) }
     }
 }
 
@@ -583,6 +626,9 @@ private const val ICON_PX = 96
 
 /** The radius of the spot for the finger, as a share of the width: what the sensor of a phone with one under the screen takes. */
 internal const val SENSOR_R = 0.072f
+
+/** How much further than the finger what is written on the lock screen goes up (the picture goes with the finger). */
+private const val RISE = 0.3f
 
 /** How high a tap makes the screen hop. */
 private val HOP = 40.dp
