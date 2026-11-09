@@ -1,5 +1,6 @@
 package com.metrowin.launcher.recents
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.content.Intent
 import android.provider.Settings
-import android.widget.Toast
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.RecentTasks
 import com.metrowin.launcher.gestures.LockAccessibilityService
@@ -89,7 +89,7 @@ fun RecentsScreen(finish: () -> Unit) {
                 AppBarItem("▭", stringResource(R.string.rc_android)) {
                     // Without the service there is nothing to ask: the cards stay, and the user is told why and taken to where it is switched on.
                     if (LockAccessibilityService.systemRecents()) finish() else {
-                        Toast.makeText(context, R.string.rc_no_service, Toast.LENGTH_LONG).show()
+                        MetroToast.show(context, R.string.rc_no_service)
                         runCatching { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
                     }
                 },

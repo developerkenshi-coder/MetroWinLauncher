@@ -1,10 +1,10 @@
 package com.metrowin.launcher.recorder
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.Manifest
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.SystemClock
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -103,7 +103,7 @@ fun RecorderScreen() {
                 if (made.isNotEmpty()) context.resources.getQuantityString(R.plurals.rec_imported, made.size, made.size) else null,
                 if (refused > 0) context.resources.getQuantityString(R.plurals.rec_import_failed, refused, refused) else null,
             ).joinToString("\n")
-            Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+            MetroToast.show(context, text)
         }
     }
     LaunchedEffect(recording) {
@@ -214,7 +214,7 @@ private fun RecordingDetail(file: File, store: Recordings, onChanged: () -> Unit
     val transcriber = remember { Transcriber(context) }
     DisposableEffect(Unit) { onDispose { transcriber.release() } }
 
-    fun toast(id: Int) = Toast.makeText(context, id, Toast.LENGTH_LONG).show()
+    fun toast(id: Int) = MetroToast.show(context, id)
 
     MiniFrame {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {

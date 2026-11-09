@@ -1,12 +1,12 @@
 package com.metrowin.launcher.systemsettings
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 import android.net.wifi.WifiManager
 import android.provider.Settings
-import android.widget.Toast
 import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -152,7 +152,7 @@ private fun WifiPage(refresh: Int) {
             if (net.secured) MetroTextField(password, { password = it }, stringResource(R.string.ss_password), Modifier.fillMaxWidth(), password = true)
             MetroButton(stringResource(R.string.ss_connect), Modifier.fillMaxWidth()) {
                 if (net.secured && password.length < 8) {
-                    Toast.makeText(context, R.string.ss_password_short, Toast.LENGTH_SHORT).show()
+                    MetroToast.show(context, R.string.ss_password_short)
                     return@MetroButton
                 }
                 chosen = null

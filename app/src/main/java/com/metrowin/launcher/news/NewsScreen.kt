@@ -1,7 +1,7 @@
 package com.metrowin.launcher.news
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.content.Intent
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -126,7 +126,7 @@ fun NewsScreen() {
                 AppBarItem("★", stringResource(R.string.nws_tile)) {
                     list.getOrNull(pager.currentPage)?.let {
                         hub.tileSource = it.id
-                        Toast.makeText(context, context.getString(R.string.nws_tile_set, it.name), Toast.LENGTH_LONG).show()
+                        MetroToast.show(context, context.getString(R.string.nws_tile_set, it.name))
                     }
                 },
                 AppBarItem("⚙", stringResource(R.string.nws_sources)) { managing = true },

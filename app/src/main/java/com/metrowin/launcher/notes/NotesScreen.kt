@@ -1,5 +1,6 @@
 package com.metrowin.launcher.notes
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
@@ -7,7 +8,6 @@ import android.webkit.MimeTypeMap
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.graphics.asImageBitmap
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -96,9 +96,9 @@ fun NotesScreen() {
     var page by remember { mutableStateOf<Page>(Page.List) }
     LaunchedEffect(Unit) { withContext(Dispatchers.IO) { store.load().also { lost = store.hasUnreadable() } }.let { notes = it } }
 
-    fun toast(id: Int, vararg args: Any) = Toast.makeText(context, context.getString(id, *args), Toast.LENGTH_LONG).show()
+    fun toast(id: Int, vararg args: Any) = MetroToast.show(context, context.getString(id, *args))
 
-    fun toastCount(id: Int, count: Int) = Toast.makeText(context, context.resources.getQuantityString(id, count, count), Toast.LENGTH_LONG).show()
+    fun toastCount(id: Int, count: Int) = MetroToast.show(context, context.resources.getQuantityString(id, count, count))
 
     fun commit(list: List<Note>) {
         notes = list
@@ -299,7 +299,7 @@ private fun NoteEditor(
                     context.contentResolver.openInputStream(uri)!!.use { noteFiles.add(it, ext) }
                 }.getOrNull()
             }
-            if (name == null) Toast.makeText(context, R.string.notes_attach_failed, Toast.LENGTH_LONG).show() else onChange(snapshot().let { it.copy(files = it.files + name) })
+            if (name == null) MetroToast.show(context, R.string.notes_attach_failed) else onChange(snapshot().let { it.copy(files = it.files + name) })
         }
     }
     val photo = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { attach(it) }

@@ -1,5 +1,7 @@
 package com.metrowin.launcher
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
+import com.metrowin.launcher.ui.actioncenter.MetroToastHost
 import com.metrowin.launcher.data.Tips
 import com.metrowin.launcher.ui.components.asShape
 import com.metrowin.launcher.ui.components.LocalIconShape
@@ -19,7 +21,6 @@ import android.app.KeyguardManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.content.Intent
-import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -904,7 +905,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     }
 
     // A locked Start says why nothing happens when a tile is held or an app is pinned.
-    fun lockedNotice() = Toast.makeText(appContext, R.string.start_locked_notice, Toast.LENGTH_SHORT).show()
+    fun lockedNotice() = MetroToast.show(appContext, R.string.start_locked_notice)
 
     fun togglePin(item: AppItem) {
         if (settings.lockStart) {
@@ -939,7 +940,7 @@ fun LauncherApp(vm: LauncherViewModel) {
         // Screenshot, power menu, split screen and Android's own panels: the accessibility service does them.
         action.system?.let { system ->
             if (!LockAccessibilityService.perform(system)) {
-                Toast.makeText(appContext, R.string.gest_lock_needs_service, Toast.LENGTH_LONG).show()
+                MetroToast.show(appContext, R.string.gest_lock_needs_service)
                 vm.openAccessibilitySettings()
             }
             return
@@ -948,12 +949,12 @@ fun LauncherApp(vm: LauncherViewModel) {
             GestureAction.None -> Unit
             GestureAction.LockScreen -> if (!LockAccessibilityService.lock()) {
                 // Locking needs the accessibility service: say so, and take the user to where it is turned on.
-                Toast.makeText(appContext, R.string.gest_lock_needs_service, Toast.LENGTH_LONG).show()
+                MetroToast.show(appContext, R.string.gest_lock_needs_service)
                 vm.openAccessibilitySettings()
             }
             GestureAction.Recents -> if (!LockAccessibilityService.recents()) {
                 // The same service that locks the screen opens the recent apps at once.
-                Toast.makeText(appContext, R.string.gest_lock_needs_service, Toast.LENGTH_LONG).show()
+                MetroToast.show(appContext, R.string.gest_lock_needs_service)
                 vm.openAccessibilitySettings()
             }
             GestureAction.OpenSettings -> vm.openSystemSettings()
@@ -968,7 +969,7 @@ fun LauncherApp(vm: LauncherViewModel) {
             }
             GestureAction.OpenApp -> {
                 val app = items.firstOrNull { it.id == appId }
-                if (app != null) open(app, null) else Toast.makeText(appContext, R.string.gest_app_none, Toast.LENGTH_LONG).show()
+                if (app != null) open(app, null) else MetroToast.show(appContext, R.string.gest_app_none)
             }
             // Done by the service above.
             GestureAction.Screenshot, GestureAction.PowerMenu, GestureAction.SplitScreen,
@@ -1566,7 +1567,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             } else if (keyguard?.isDeviceSecure == true) {
                                 vm.updateSettings { it.copy(lockedApps = it.lockedApps + state.item.id) }
                             } else {
-                                Toast.makeText(appContext, needsScreenLock, Toast.LENGTH_LONG).show()
+                                MetroToast.show(appContext, needsScreenLock)
                             }
                         },
                         onPinToggle = {
@@ -1674,7 +1675,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         onPick = { choice ->
                             vm.addToFolder(item.id, choice.id)
                             folderChooserFor = null
-                            Toast.makeText(appContext, R.string.folder_added, Toast.LENGTH_SHORT).show()
+                            MetroToast.show(appContext, R.string.folder_added)
                         },
                         onCancel = { folderChooserFor = null },
                     )
@@ -2033,6 +2034,9 @@ fun LauncherApp(vm: LauncherViewModel) {
                         ) }
                     }
                 }
+
+                // The toasts of the launcher itself (see MetroToast): the same banner, with the app's icon.
+                if (!tutorialVisible) AccentScope(settings.accentPanel) { MetroToastHost(Modifier.align(Alignment.TopCenter)) }
 
                 // The volume panel: over everything but the tutorial, while the launcher is on screen.
                 val volumeHud by vm.volumeHud.collectAsStateWithLifecycle()

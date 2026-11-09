@@ -1,7 +1,7 @@
 package com.metrowin.launcher.files
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import androidx.compose.ui.res.pluralStringResource
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -382,7 +382,7 @@ fun TextEditor(file: File, onClose: () -> Unit) {
                     if (!tooBig) {
                         val ok = runCatching { file.writeText(text) }.isSuccess
                         if (ok) original = text
-                        Toast.makeText(context, if (ok) R.string.fm_saved else R.string.fm_save_failed, Toast.LENGTH_SHORT).show()
+                        MetroToast.show(context, if (ok) R.string.fm_saved else R.string.fm_save_failed)
                     }
                 },
             ),

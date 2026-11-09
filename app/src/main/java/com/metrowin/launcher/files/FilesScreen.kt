@@ -1,11 +1,11 @@
 package com.metrowin.launcher.files
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import androidx.compose.ui.res.pluralStringResource
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.text.format.DateFormat
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -190,7 +190,7 @@ private fun Manager() {
     val current = pane(active)
     val other = pane(1 - active)
 
-    fun toast(text: String) = Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+    fun toast(text: String) = MetroToast.show(context, text)
 
     /** Runs [work] away from the screen with a bar that shows how far it is and a button to stop it. */
     fun run(title: String, total: Long, work: (Progress) -> Unit) {

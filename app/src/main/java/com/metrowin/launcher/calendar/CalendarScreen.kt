@@ -1,5 +1,6 @@
 package com.metrowin.launcher.calendar
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.Manifest
 import android.text.format.DateFormat
 import androidx.activity.compose.BackHandler
@@ -149,7 +150,7 @@ fun CalendarScreen() {
             onSave = { saved, all ->
                 scope.launch {
                     val ok = withContext(Dispatchers.IO) { if (saved.id == 0L) repository.insert(saved) != 0L else repository.update(saved, event, all) }
-                    if (!ok) android.widget.Toast.makeText(context, R.string.cal_save_failed, android.widget.Toast.LENGTH_LONG).show()
+                    if (!ok) MetroToast.show(context, R.string.cal_save_failed)
                     version++
                     editing = null
                 }

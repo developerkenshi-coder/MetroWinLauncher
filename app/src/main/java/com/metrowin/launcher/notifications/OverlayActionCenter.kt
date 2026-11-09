@@ -1,5 +1,6 @@
 package com.metrowin.launcher.notifications
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.data.VolumeProfiles
 import android.annotation.SuppressLint
 import android.content.Context
@@ -18,7 +19,6 @@ import android.view.WindowInsets
 import android.view.ViewConfiguration
 import android.view.WindowManager
 import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -206,7 +206,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
         close()
         handler.postDelayed({
             if (!run()) {
-                Toast.makeText(app, R.string.gest_lock_needs_service, Toast.LENGTH_LONG).show()
+                MetroToast.show(app, R.string.gest_lock_needs_service)
                 runCatching { app.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
             }
         }, AFTER_PANEL_MS)
@@ -298,7 +298,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                             if (quick.activate(action, settings.dndMinutes, settings.torchAutoOffMin, settings.torchStrength, settings.vpnApp)) {
                                 readStates()
                             } else {
-                                if (action == QuickAction.QuietHours) Toast.makeText(app, R.string.qa_quiet_allow, Toast.LENGTH_LONG).show()
+                                if (action == QuickAction.QuietHours) MetroToast.show(app, R.string.qa_quiet_allow)
                                 close()
                             }
                         }
@@ -366,7 +366,7 @@ internal class OverlayActionCenter(context: Context, private val host: () -> Con
                 },
                 onSnooze = { entry, option ->
                     val millis = Snooze.millis(option, java.time.Instant.now(), java.time.ZoneId.systemDefault())
-                    if (!NotificationHub.snooze(entry.key, millis)) Toast.makeText(app, R.string.launch_failed, Toast.LENGTH_SHORT).show()
+                    if (!NotificationHub.snooze(entry.key, millis)) MetroToast.show(app, R.string.launch_failed)
                 },
                 onAppNotificationSettings = { entry ->
                     go(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, entry.packageName))

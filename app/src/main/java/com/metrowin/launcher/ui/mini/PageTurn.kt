@@ -67,7 +67,10 @@ fun TurnPage(turn: PageTurn, content: @Composable () -> Unit) {
             cameraDistance = Motion.CAMERA * density
             alpha = if (a >= 0.999f) 0f else 1f
         },
-    ) { content() }
+    ) {
+        content()
+        com.metrowin.launcher.ui.actioncenter.MetroToastHost(Modifier.align(androidx.compose.ui.Alignment.TopCenter))
+    }
 }
 
 /**

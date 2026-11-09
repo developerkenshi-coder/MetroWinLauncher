@@ -1,8 +1,8 @@
 package com.metrowin.launcher
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.start.ChoiceSheet
 import com.metrowin.launcher.ui.start.Choice
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -117,7 +117,7 @@ internal fun NameDialogState.Dialogs(
                     } else {
                         // The apps stay where they are: only the chip goes, and a deleted list does not come back.
                         vm.updateSettings { it.copy(appLists = AppLists.delete(it.appLists, id)) }
-                        Toast.makeText(appContext, R.string.list_deleted, Toast.LENGTH_SHORT).show()
+                        MetroToast.show(appContext, R.string.list_deleted)
                     }
                 },
                 onDismiss = { listMenuFor = null },

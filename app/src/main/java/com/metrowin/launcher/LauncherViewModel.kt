@@ -1,5 +1,6 @@
 package com.metrowin.launcher
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.data.Prefs
 import com.metrowin.launcher.data.VolumeProfiles
 import com.metrowin.launcher.data.AboutInfo
@@ -64,7 +65,6 @@ import android.graphics.Bitmap
 import androidx.core.graphics.scale
 import android.graphics.Rect
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
@@ -1394,7 +1394,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 updateSettings { it.copy(backgroundRevision = it.backgroundRevision + 1) }
                 loadBackground()
             } else {
-                Toast.makeText(getApplication(), R.string.photo_failed, Toast.LENGTH_SHORT).show()
+                MetroToast.show(getApplication(), R.string.photo_failed)
             }
         }
     }
@@ -1615,7 +1615,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 if (opened != null) NotificationHub.appOpened(opened)
             }
         } else {
-            Toast.makeText(getApplication(), R.string.launch_failed, Toast.LENGTH_SHORT).show()
+            MetroToast.show(getApplication(), R.string.launch_failed)
         }
         return opened
     }
@@ -2422,7 +2422,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun setPageBackground(page: Int, uri: Uri) {
         viewModelScope.launch {
             val saved = withContext(Dispatchers.IO) { pageBackgroundStore(page).save(uri) }
-            if (saved) loadPageBackgrounds() else Toast.makeText(getApplication(), R.string.photo_failed, Toast.LENGTH_SHORT).show()
+            if (saved) loadPageBackgrounds() else MetroToast.show(getApplication(), R.string.photo_failed)
         }
     }
 
@@ -2478,7 +2478,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         if (!opened) openUrl(AppListBackup.webStoreUri(packageName))
     }
 
-    private fun tell(message: Int) = Toast.makeText(getApplication(), message, Toast.LENGTH_SHORT).show()
+    private fun tell(message: Int) = MetroToast.show(getApplication(), message)
 
     private fun syncTiles(items: List<AppItem>) {
         if (items.isEmpty()) return // never prune the Start screen on a failed or empty load

@@ -1,9 +1,9 @@
 package com.metrowin.launcher
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.app.Application
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import androidx.core.net.toUri
 import com.metrowin.launcher.data.AtomicEncryptedFile
 import com.metrowin.launcher.data.BackupCopies
@@ -289,7 +289,7 @@ internal class BackupController(
                 change { it.copy(syncLastHash = outcome.hash, syncLastStamp = outcome.stamp, syncLastAt = now) }
                 if (outcome.keptTheOtherAs != null) {
                     // Something the user should know: the other phone's layout did not win.
-                    Toast.makeText(app, app.getString(R.string.sync_conflict, outcome.keptTheOtherAs), Toast.LENGTH_LONG).show()
+                    MetroToast.show(app, app.getString(R.string.sync_conflict, outcome.keptTheOtherAs))
                 } else if (announce) {
                     tell(R.string.sync_uploaded)
                 }
@@ -321,8 +321,8 @@ internal class BackupController(
                 val hash = rememberAgreed()
                 change { it.copy(syncLastHash = hash, syncLastStamp = outcome.stamp, syncLastAt = now) }
                 when {
-                    outcome.keptTheOtherAs != null -> Toast.makeText(app, app.getString(R.string.sync_conflict_merged, outcome.keptTheOtherAs), Toast.LENGTH_LONG).show()
-                    outcome.kept > 0 -> Toast.makeText(app, app.resources.getQuantityString(R.plurals.sync_merged_kept, outcome.kept, outcome.kept), Toast.LENGTH_LONG).show()
+                    outcome.keptTheOtherAs != null -> MetroToast.show(app, app.getString(R.string.sync_conflict_merged, outcome.keptTheOtherAs))
+                    outcome.kept > 0 -> MetroToast.show(app, app.resources.getQuantityString(R.plurals.sync_merged_kept, outcome.kept, outcome.kept))
                     announce -> tell(R.string.sync_merged)
                 }
             }

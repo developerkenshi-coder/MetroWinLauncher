@@ -1,5 +1,6 @@
 package com.metrowin.launcher.data
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.app.PendingIntent
 import android.app.job.JobInfo
 import android.app.job.JobParameters
@@ -15,7 +16,6 @@ import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
@@ -190,7 +190,7 @@ class UpdateResultReceiver : BroadcastReceiver() {
                 UpdateInstaller.cacheFile(context).delete()
                 UpdateChecker.clearNotification(context)
             }
-            else -> Toast.makeText(context, context.getString(R.string.update_install_failed), Toast.LENGTH_LONG).show()
+            else -> MetroToast.show(context, context.getString(R.string.update_install_failed))
         }
     }
 }

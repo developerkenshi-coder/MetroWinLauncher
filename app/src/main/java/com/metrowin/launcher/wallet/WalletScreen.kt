@@ -1,8 +1,8 @@
 package com.metrowin.launcher.wallet
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.app.Activity
 import android.graphics.BitmapFactory
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -94,7 +94,7 @@ fun WalletScreen() {
     fun commit(next: List<Card>) {
         cards = next
         scope.launch(Dispatchers.IO) {
-            if (!lock.withLock { vault.save(next) }) withContext(Dispatchers.Main) { Toast.makeText(context, R.string.wal_save_failed, Toast.LENGTH_LONG).show() }
+            if (!lock.withLock { vault.save(next) }) withContext(Dispatchers.Main) { MetroToast.show(context, R.string.wal_save_failed) }
         }
     }
 
@@ -107,8 +107,8 @@ fun WalletScreen() {
         uri ?: return@rememberLauncherForActivityResult
         scope.launch {
             val incoming = withContext(Dispatchers.IO) { runCatching { Wallet.decode(context.contentResolver.openInputStream(uri)!!.use { String(it.readAtMost(4_000_000)!!) }) }.getOrDefault(emptyList()) }
-            if (incoming.isEmpty()) Toast.makeText(context, R.string.wal_import_failed, Toast.LENGTH_LONG).show()
-            else { commit(Wallet.merge(all, incoming)); Toast.makeText(context, context.resources.getQuantityString(R.plurals.wal_imported, incoming.size, incoming.size), Toast.LENGTH_LONG).show() }
+            if (incoming.isEmpty()) MetroToast.show(context, R.string.wal_import_failed)
+            else { commit(Wallet.merge(all, incoming)); MetroToast.show(context, context.resources.getQuantityString(R.plurals.wal_imported, incoming.size, incoming.size)) }
         }
     }
 
@@ -265,7 +265,7 @@ private fun CardEdit(initial: Card, onSave: (Card) -> Unit, onCancel: () -> Unit
             val found = withContext(Dispatchers.IO) {
                 runCatching { context.contentResolver.openInputStream(uri)!!.use { BitmapFactory.decodeStream(it) }?.let { Wallet.read(it) } }.getOrNull()
             }
-            if (found == null) Toast.makeText(context, R.string.wal_picture_failed, Toast.LENGTH_LONG).show() else { code = found.first; format = found.second }
+            if (found == null) MetroToast.show(context, R.string.wal_picture_failed) else { code = found.first; format = found.second }
         }
     }
     MiniFrame {

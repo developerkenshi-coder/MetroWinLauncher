@@ -1,6 +1,6 @@
 package com.metrowin.launcher.power
 
-import android.widget.Toast
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -60,7 +60,7 @@ fun PowerScreen(finish: () -> Unit) {
                             // A phone that really switches off never gets here; failing or timing out, the curtain goes back up with a reason.
                             if (!result.ok) {
                                 going = false
-                                Toast.makeText(context, R.string.pw_failed, Toast.LENGTH_LONG).show()
+                                MetroToast.show(context, R.string.pw_failed)
                                 drag.animateTo(0f)
                             }
                         } else if (!going) drag.animateTo(0f)

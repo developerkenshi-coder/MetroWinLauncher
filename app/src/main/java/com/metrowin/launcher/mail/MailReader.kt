@@ -1,5 +1,6 @@
 package com.metrowin.launcher.mail
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.components.centeredContent
 import android.content.ContentValues
 import android.content.Context
@@ -11,7 +12,6 @@ import android.provider.MediaStore
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -161,14 +161,14 @@ private fun Attachments(
                         fetch(file.index).onSuccess { (name, mime, bytes) ->
                             val saved = withContext(Dispatchers.IO) { runCatching { saveDownload(context, name, mime, bytes) }.getOrNull() }
                             if (saved == null) {
-                                Toast.makeText(context, R.string.mail_download_failed, Toast.LENGTH_SHORT).show()
+                                MetroToast.show(context, R.string.mail_download_failed)
                             } else {
-                                Toast.makeText(context, context.getString(R.string.mail_saved, name), Toast.LENGTH_SHORT).show()
+                                MetroToast.show(context, context.getString(R.string.mail_saved, name))
                                 runCatching {
                                     context.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(saved, mime).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK))
                                 }
                             }
-                        }.onFailure { Toast.makeText(context, R.string.mail_download_failed, Toast.LENGTH_SHORT).show() }
+                        }.onFailure { MetroToast.show(context, R.string.mail_download_failed) }
                         busy = false
                     }
                 }).padding(vertical = 4.dp),
