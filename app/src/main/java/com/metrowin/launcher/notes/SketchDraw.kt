@@ -28,18 +28,21 @@ val SketchPaper = Color(0xFFFAFAF5)
 /** Draws [strokes] on a page whose width is the width of the scope ([SketchPage.WIDTH] units across). */
 fun DrawScope.drawStrokes(strokes: List<Stroke>) {
     val k = size.width / SketchPage.WIDTH
-    strokes.forEach { drawStroke(it, k) }
+    // The highlighter goes under everything else, as a marker goes over the words and not over the pen that wrote them.
+    strokes.filter { it.tool == Tool.Highlighter }.forEach { drawStroke(it, k) }
+    strokes.filter { it.tool != Tool.Highlighter }.forEach { drawStroke(it, k) }
 }
 
 fun DrawScope.drawStroke(stroke: Stroke, k: Float) {
-    val color = Color(stroke.color)
-    val style = DrawStroke(width = stroke.width * k, cap = StrokeCap.Round, join = StrokeJoin.Round)
+    val marker = stroke.tool == Tool.Highlighter
+    val color = Color(stroke.color).let { if (marker) it.copy(alpha = 0.4f) else it }
+    val style = DrawStroke(width = SketchGeometry.widthOf(stroke) * k, cap = if (marker) StrokeCap.Square else StrokeCap.Round, join = StrokeJoin.Round)
     fun at(p: Pt) = Offset(p.x * k, p.y * k)
     val p = stroke.points
     if (p.isEmpty()) return
     when (stroke.tool) {
-        Tool.Pen -> if (p.size == 1) {
-            drawCircle(color, radius = stroke.width * k / 2f, center = at(p[0]))
+        Tool.Pen, Tool.Highlighter -> if (p.size == 1) {
+            drawCircle(color, radius = SketchGeometry.widthOf(stroke) * k / 2f, center = at(p[0]))
         } else {
             val path = Path().apply {
                 moveTo(p[0].x * k, p[0].y * k)

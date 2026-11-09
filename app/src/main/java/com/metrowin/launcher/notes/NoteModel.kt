@@ -6,11 +6,11 @@ import org.json.JSONObject
 /** A point of a sketch, in the 1000 x 1400 units of the page of a sketch. */
 data class Pt(val x: Float, val y: Float)
 
-/** What a stroke of a sketch is: free pen, or a shape for a diagram. */
-enum class Tool { Pen, Line, Arrow, Rect, Ellipse, Text }
+/** What a stroke of a sketch is: free pen, the highlighter (a wide translucent pen), or a shape for a diagram. */
+enum class Tool { Pen, Line, Arrow, Rect, Ellipse, Text, Highlighter }
 
 /**
- * One thing drawn on a sketch. A pen has many [points]; a line, an arrow, a rectangle and an ellipse have two (the corners or the
+ * One thing drawn on a sketch. A pen and a highlighter have many [points]; a line, an arrow, a rectangle and an ellipse have two (the corners or the
  * ends); a text has one, where it starts, and its [text].
  */
 data class Stroke(val tool: Tool, val color: Int, val width: Float, val points: List<Pt>, val text: String = "")

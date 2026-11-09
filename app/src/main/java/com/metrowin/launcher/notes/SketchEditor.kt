@@ -15,7 +15,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.text.font.FontWeight
+import com.metrowin.launcher.ui.components.MetroText
+import com.metrowin.launcher.ui.theme.LocalAccent
+import com.metrowin.launcher.ui.theme.MetroAccents
+import com.metrowin.launcher.ui.theme.onAccent
+import com.metrowin.launcher.ui.theme.toArgbInt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -45,15 +55,36 @@ import com.metrowin.launcher.ui.pages.PageChip
 import com.metrowin.launcher.ui.start.DialogFrame
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 
-private val inks = listOf(0xFF111111, 0xFF0050EF, 0xFFE51400, 0xFF008A00, 0xFFFA6800, 0xFF6A00FF, 0xFF7A7A7A).map { it.toInt() }
+/** Black, then the twenty accent colours of the phone: the same palette as everything else of the launcher. */
+private val inks: List<Int> = listOf(0xFF111111.toInt()) + MetroAccents.map { it.toArgbInt() }
 private val widths = listOf(3f, 6f, 12f)
 
-/** What the finger does on the sketch: a tool of [Tool], or the eraser. */
+/** What the finger does on the sketch: a tool of [Tool], or the eraser. The first three are the ink, the others make shapes and labels. */
 private enum class Pencil(val symbol: String, val tool: Tool?) {
-    Pen("✎", Tool.Pen), Line("╱", Tool.Line), Arrow("→", Tool.Arrow), Rect("▭", Tool.Rect), Ellipse("◯", Tool.Ellipse), Text("T", Tool.Text), Eraser("⌫", null)
+    Pen("✎", Tool.Pen), Highlighter("▬", Tool.Highlighter), Eraser("⌫", null),
+    Line("╱", Tool.Line), Arrow("→", Tool.Arrow), Rect("▭", Tool.Rect), Ellipse("◯", Tool.Ellipse), Text("T", Tool.Text),
 }
 
-/** The sketch of a note: pen and shapes for a diagram, text labels, an eraser, undo and redo. [onDone] gets the strokes when it is closed. */
+/** A round button of the tools, with the edge of 2 dp of the buttons of the bars of Windows Phone; filled with the accent while it is the tool in hand. */
+@Composable
+private fun ToolButton(pencil: Pencil, selected: Boolean, onClick: () -> Unit) {
+    val colors = LocalMetroColors.current
+    val ink = if (selected) onAccent() else colors.foreground
+    Box(
+        Modifier.size(44.dp).testTag("sketch:tool:${pencil.name}").metroPress(onClick = onClick)
+            .then(if (selected) Modifier.background(LocalAccent.current, CircleShape) else Modifier.border(2.dp, colors.foreground, CircleShape)),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (pencil == Pencil.Highlighter) {
+            // The marker: a wide bar, as it draws.
+            Box(Modifier.size(width = 22.dp, height = 10.dp).background(ink.copy(alpha = 0.75f)))
+        } else {
+            MetroText(pencil.symbol, size = 20.sp, weight = FontWeight.Normal, color = ink)
+        }
+    }
+}
+
+/** The sketch of a note: pen, highlighter and eraser, shapes for a diagram, text labels, the accent colours, undo and redo. [onDone] gets the strokes when it is closed. */
 @Composable
 fun SketchEditor(initial: List<Stroke>, onDone: (List<Stroke>) -> Unit) {
     var strokes by remember { mutableStateOf(initial) }
@@ -75,13 +106,17 @@ fun SketchEditor(initial: List<Stroke>, onDone: (List<Stroke>) -> Unit) {
     BackHandler { onDone(strokes) }
 
     MiniFrame {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Pencil.entries.forEach { p -> PageChip(p.symbol, pencil == p, "sketch:tool:${p.name}") { pencil = p } }
+        // The ink (pen, highlighter, eraser) and then the shapes, as round buttons.
+        Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Pencil.entries.take(3).forEach { p -> ToolButton(p, pencil == p) { pencil = p } }
+            Box(Modifier.padding(horizontal = 6.dp).size(width = 2.dp, height = 28.dp).background(colors.subtle))
+            Pencil.entries.drop(3).forEach { p -> ToolButton(p, pencil == p) { pencil = p } }
         }
-        Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            inks.forEachIndexed { index, value ->
+        // The colours: black and the accents of the phone, side by side.
+        LazyRow(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            itemsIndexed(inks) { index, value ->
                 Box(
-                    Modifier.size(30.dp).testTag("sketch:ink:$index").metroPress(onClick = { ink = index }).background(Color(value))
+                    Modifier.size(32.dp).testTag("sketch:ink:$index").metroPress(onClick = { ink = index }).background(Color(value))
                         .border(if (ink == index) 3.dp else 1.dp, if (ink == index) colors.foreground else colors.subtle),
                 )
             }
@@ -121,12 +156,12 @@ fun SketchEditor(initial: List<Stroke>, onDone: (List<Stroke>) -> Unit) {
                                     drag(down.id) { change ->
                                         change.consume()
                                         val p = at(change.position)
-                                        current = if (tool == Tool.Pen) current.copy(points = current.points + p) else current.copy(points = listOf(first, p))
+                                        current = if (tool == Tool.Pen || tool == Tool.Highlighter) current.copy(points = current.points + p) else current.copy(points = listOf(first, p))
                                         live = current
                                     }
                                     live = null
-                                    // A tap with a shape draws nothing; with the pen it is a dot.
-                                    if (tool == Tool.Pen || current.points.size >= 2 && current.points[1] != first) commit(strokes + current.copy(points = current.points.take(NoteCodec.MAX_POINTS)))
+                                    // A tap with a shape draws nothing; with the pen or the marker it is a dot.
+                                    if (tool == Tool.Pen || tool == Tool.Highlighter || current.points.size >= 2 && current.points[1] != first) commit(strokes + current.copy(points = current.points.take(NoteCodec.MAX_POINTS)))
                                 }
                             }
                         }

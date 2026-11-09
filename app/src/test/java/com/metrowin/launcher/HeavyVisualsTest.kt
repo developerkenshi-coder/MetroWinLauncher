@@ -15,6 +15,10 @@ import com.metrowin.launcher.model.Tile
 import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.calendar.DayLayout
 import com.metrowin.launcher.mail.thumbSample
+import com.metrowin.launcher.notes.Pt
+import com.metrowin.launcher.notes.SketchGeometry
+import com.metrowin.launcher.notes.Stroke
+import com.metrowin.launcher.notes.Tool
 import com.metrowin.launcher.wallet.bestSize
 import com.metrowin.launcher.music.playbackPosition
 import com.metrowin.launcher.people.PeopleBook
@@ -145,5 +149,15 @@ class HeavyVisualsTest {
         val places = (0L..60L).map { glancePlace(it) }
         assertTrue(places.zipWithNext().all { (a, b) -> a != b })
         assertTrue(places.all { (x, y) -> x in -1f..1f && y in -1f..1f })
+    }
+
+    @Test
+    fun theHighlighterIsWiderThanThePenAndTheEraserFindsIt() {
+        val pen = Stroke(Tool.Pen, 0, 6f, listOf(Pt(0f, 0f), Pt(100f, 0f)))
+        val marker = pen.copy(tool = Tool.Highlighter)
+        assertEquals(6f * SketchGeometry.HIGHLIGHT, SketchGeometry.widthOf(marker), 0.001f)
+        // 30 units above the line: out of reach of the pen at radius 22, within reach of the marker (reach 22 + 7.8).
+        assertFalse(SketchGeometry.hit(pen, 50f, 30f, 22f))
+        assertTrue(SketchGeometry.hit(marker, 50f, 29f, 22f))
     }
 }

@@ -11,13 +11,19 @@ object SketchGeometry {
     /** The size of the text of a text stroke, in units of the page. */
     fun textSize(stroke: Stroke) = stroke.width * 5f + 20f
 
+    /** How much wider the highlighter is than the pen of the same size. */
+    const val HIGHLIGHT = 2.6f
+
+    /** The width a stroke is drawn at, in units of the page. */
+    fun widthOf(stroke: Stroke) = if (stroke.tool == Tool.Highlighter) stroke.width * HIGHLIGHT else stroke.width
+
     /** Whether the point ([x], [y]) is within [radius] of the lines of [stroke] (or, for a text, of its box). */
     fun hit(stroke: Stroke, x: Float, y: Float, radius: Float): Boolean {
-        val reach = radius + stroke.width / 2f
+        val reach = radius + widthOf(stroke) / 2f
         val p = stroke.points
         if (p.isEmpty()) return false
         return when (stroke.tool) {
-            Tool.Pen -> if (p.size == 1) hypot(x - p[0].x, y - p[0].y) <= reach else p.zipWithNext().any { (a, b) -> near(a, b, x, y, reach) }
+            Tool.Pen, Tool.Highlighter -> if (p.size == 1) hypot(x - p[0].x, y - p[0].y) <= reach else p.zipWithNext().any { (a, b) -> near(a, b, x, y, reach) }
             Tool.Line, Tool.Arrow -> p.size >= 2 && near(p[0], p[1], x, y, reach)
             Tool.Rect -> p.size >= 2 && outline(p[0], p[1]).any { (a, b) -> near(a, b, x, y, reach) }
             Tool.Ellipse -> p.size >= 2 && ellipse(p[0], p[1]).zipWithNext().any { (a, b) -> near(a, b, x, y, reach) }
