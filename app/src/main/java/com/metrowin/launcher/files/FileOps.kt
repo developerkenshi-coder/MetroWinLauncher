@@ -453,3 +453,16 @@ object FileOps {
     fun mime(file: File): String =
         android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension.lowercase(Locale.ROOT)) ?: "application/octet-stream"
 }
+
+/** The letter a name is listed under in a list sorted by name: its first letter in capitals, or # for a digit or a sign. */
+fun letterOf(name: String): String = name.firstOrNull()?.takeIf { it.isLetter() }?.uppercaseChar()?.toString() ?: "#"
+
+/** [items] cut into the runs that share a letter, in the order they come: a folder list put before the files has each letter twice. */
+fun <T> letterRuns(items: List<T>, name: (T) -> String): List<Pair<String, List<T>>> {
+    val runs = ArrayList<Pair<String, MutableList<T>>>()
+    items.forEach { item ->
+        val letter = letterOf(name(item))
+        if (runs.lastOrNull()?.first == letter) runs.last().second += item else runs += letter to mutableListOf(item)
+    }
+    return runs
+}

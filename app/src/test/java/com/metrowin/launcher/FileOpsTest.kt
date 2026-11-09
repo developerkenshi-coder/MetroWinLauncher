@@ -270,4 +270,11 @@ class FileOpsTest {
         trash.empty()
         assertTrue(trash.list().isEmpty())
     }
+
+    @Test
+    fun `a list by name is cut into runs of one letter`() {
+        val runs = com.metrowin.launcher.files.letterRuns(listOf("Apple", "avocado", "Bean", "9lives", "_x", "Apricot")) { it }
+        assertEquals(listOf("A", "B", "#", "A"), runs.map { it.first })
+        assertEquals(listOf(2, 1, 2, 1), runs.map { it.second.size })
+    }
 }

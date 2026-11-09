@@ -1,5 +1,8 @@
 package com.metrowin.launcher.files
 
+import com.metrowin.launcher.ui.components.sectionStarts
+import com.metrowin.launcher.ui.components.sectionHeader
+import com.metrowin.launcher.ui.apps.JumpList
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import androidx.compose.ui.res.pluralStringResource
 import android.content.ClipData
@@ -268,7 +271,7 @@ private fun Manager() {
             if (wide) {
                 Row(Modifier.fillMaxSize()) {
                     for (i in 0..1) Box(Modifier.weight(1f).fillMaxSize()) {
-                        PanePage(pane(i), i, places, bookmarks, data(i), tiles, onActivate = { active = i }, onGo = { go(pane(i), it, i) }, onOpenFile = ::openFile)
+                        PanePage(pane(i), i, places, bookmarks, data(i), tiles, onActivate = { active = i }, onGo = { go(pane(i), it, i) }, onOpenFile = ::openFile, lettered = sort.key == SortKey.Name)
                     }
                 }
             } else {
@@ -279,7 +282,7 @@ private fun Manager() {
                     )
                     androidx.compose.runtime.LaunchedEffect(pager.currentPage) { active = pager.currentPage }
                     HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth(), beyondViewportPageCount = 1) { i ->
-                        PanePage(pane(i), i, places, bookmarks, data(i), tiles, onActivate = { active = i }, onGo = { go(pane(i), it, i) }, onOpenFile = ::openFile)
+                        PanePage(pane(i), i, places, bookmarks, data(i), tiles, onActivate = { active = i }, onGo = { go(pane(i), it, i) }, onOpenFile = ::openFile, lettered = sort.key == SortKey.Name)
                     }
                 }
             }
@@ -430,6 +433,8 @@ private fun PanePage(
     onActivate: () -> Unit,
     onGo: (File) -> Unit,
     onOpenFile: (File) -> Unit,
+    /** The list is by name: each letter has a heading, and a touch on one opens the grid of letters. */
+    lettered: Boolean = false,
 ) {
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
@@ -502,8 +507,25 @@ private fun PanePage(
                 }
             }
         } else {
-            LazyColumn(Modifier.fillMaxSize().testTag("fm:list:$index")) {
-                itemsIndexed(files, key = { _, f -> f.absolutePath }) { i, file ->
+            val runs = if (lettered) letterRuns(files) { it.name } else listOf("" to files)
+            var jumping by remember { mutableStateOf(false) }
+            val listState = rememberLazyListState()
+            val scope = rememberCoroutineScope()
+            // Where each letter first starts in the list, for the grid of letters.
+            val startOf = remember(runs) {
+                val starts = sectionStarts(runs.map { it.second.size })
+                LinkedHashMap<String, Int>().also { m -> runs.forEachIndexed { r, run -> m.putIfAbsent(run.first, starts[r]) } }
+            }
+            Box(Modifier.fillMaxSize()) {
+            LazyColumn(Modifier.fillMaxSize().testTag("fm:list:$index"), state = listState) {
+                var base = 0
+                runs.forEachIndexed { r, (letter, group) ->
+                    if (lettered) sectionHeader("h$r", onClick = { jumping = true }) {
+                        MetroText(letter, size = 24.sp, color = accent, modifier = Modifier.padding(top = 8.dp, bottom = 2.dp, start = 4.dp))
+                    }
+                    val first = base
+                    itemsIndexed(group, key = { _, f -> f.absolutePath }) { n, file ->
+                        val i = first + n
                     val chosen = file.absolutePath in pane.selection
                     val dir = file.isDirectory
                     SelectableRow(
@@ -527,7 +549,20 @@ private fun PanePage(
                             )
                         }
                     }
+                    }
+                    base += group.size
                 }
+            }
+            if (jumping) {
+                JumpList(
+                    keys = ('A'..'Z').map { it.toString() } + startOf.keys.filter { it.single() !in 'A'..'Z' },
+                    available = startOf.keys,
+                    onPick = { key -> jumping = false; startOf[key]?.let { start -> scope.launch { listState.scrollToItem(start) } } },
+                    onDismiss = { jumping = false },
+                    showRecent = false,
+                    modifier = Modifier.testTag("fm:jump:$index"),
+                )
+            }
             }
         }
     }
