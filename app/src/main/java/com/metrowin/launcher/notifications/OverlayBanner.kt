@@ -88,7 +88,7 @@ internal class OverlayBanner(context: Context, private val host: () -> Context? 
         val service = host()
         val windows = (service ?: app).getSystemService(WindowManager::class.java)
         // The window is given no insets: it is told how much the status bar and the camera hole take at the top.
-        val topInset = topInset(windows)
+        val topInset = overlayTopInset(app, windows)
         val view = ComposeView(service ?: app).apply {
             setViewTreeLifecycleOwner(owner)
             setViewTreeSavedStateRegistryOwner(owner)
@@ -121,17 +121,6 @@ internal class OverlayBanner(context: Context, private val host: () -> Context? 
         return true
     }
 
-    // shortcut: before Android 11 the size of the bar can only be asked by the name of the resource; upgrade when minSdk reaches 30.
-    @SuppressLint("DiscouragedApi", "InternalInsetResource")
-    private fun topInset(windows: WindowManager): Dp {
-        val px = if (Build.VERSION.SDK_INT >= 30) {
-            windows.maximumWindowMetrics.windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars() or WindowInsets.Type.displayCutout()).top
-        } else {
-            app.resources.getIdentifier("status_bar_height", "dimen", "android").takeIf { it > 0 }?.let(app.resources::getDimensionPixelSize) ?: 0
-        }
-        return (px / app.resources.displayMetrics.density).dp
-    }
-
     fun hide() {
         handler.removeCallbacks(hideLater)
         val current = shown ?: return
@@ -144,6 +133,17 @@ internal class OverlayBanner(context: Context, private val host: () -> Context? 
         /** Time past the banner's own that the window is taken away anyway. */
         const val SAFETY_MS = 1_500L
     }
+}
+
+// shortcut: before Android 11 the size of the bar can only be asked by the name of the resource; upgrade when minSdk reaches 30.
+@SuppressLint("DiscouragedApi", "InternalInsetResource")
+internal fun overlayTopInset(app: Context, windows: WindowManager): Dp {
+    val px = if (Build.VERSION.SDK_INT >= 30) {
+        windows.maximumWindowMetrics.windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars() or WindowInsets.Type.displayCutout()).top
+    } else {
+        app.resources.getIdentifier("status_bar_height", "dimen", "android").takeIf { it > 0 }?.let(app.resources::getDimensionPixelSize) ?: 0
+    }
+    return (px / app.resources.displayMetrics.density).dp
 }
 
 /** The look of the launcher, as LauncherApp builds it (without the accent from the photo, which needs the picture), for a window of the service. */

@@ -49,6 +49,7 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
     private var watching = false
     private var barHeight by mutableStateOf(0.dp)
     private var hidden by mutableStateOf(emptySet<String>())
+    private var chargeAnimation by mutableStateOf(true)
 
     // Drawn by the launcher over its own page (its own bar is this one, see LauncherApp): then it has no background of its own, because
     // the launcher already took away the bar of Android there.
@@ -104,7 +105,7 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
     fun show() {
         val height = heightPx()
         barHeight = (height / service.resources.displayMetrics.density).dp
-        SettingsStore.of(service).load().let { hidden = StatusItem.hiddenIds(it.statusBarHidden); launcherBar = it.metroStatusBar }
+        SettingsStore.of(service).load().let { hidden = StatusItem.hiddenIds(it.statusBarHidden); launcherBar = it.metroStatusBar; chargeAnimation = it.chargeAnimation }
         shown?.let {
             if (it.params.height != height) {
                 it.params.height = height
@@ -115,6 +116,7 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
         val settings = SettingsStore.of(service).load()
         hidden = StatusItem.hiddenIds(settings.statusBarHidden)
         launcherBar = settings.metroStatusBar
+        chargeAnimation = settings.chargeAnimation
         val dark = service.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
         val owner = OverlayWindowOwner()
         val host = Host(service) { visible -> systemBar(visible) }
@@ -131,6 +133,7 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
                     MetroStatusBar(
                         battery, Modifier, if (dark) Color.White else Color(0xFF202020), barHeight,
                         if (inLauncher && launcherBar) Color.Transparent else solid, hidden,
+                        chargeAnimation = chargeAnimation,
                     )
                 }
             }

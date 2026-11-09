@@ -1887,6 +1887,8 @@
     <string name="sec_statusbar_desc">Windows Phone bar: in the launcher and in other apps, and which icons it shows</string>
     <string name="statusbar_items">what it shows</string>
     <string name="statusbar_items_hint">Turn off the icons you do not want. An icon only shows while it has something to say: the airplane while airplane mode is on, and so on.</string>
+    <string name="charge_animation">Charging animation</string>
+    <string name="charge_animation_hint">A short banner when the cable goes in, and the battery filling in the status bar and on the lock screen while it charges. Off with reduced motion: only the state stays.</string>
     <string name="statusbar_notifications">notifications</string>
     <string name="statusbar_airplane">airplane mode</string>
     <string name="statusbar_hotspot">hotspot</string>

@@ -86,6 +86,7 @@ object SettingsCodec {
         put("metroStatusBar", s.metroStatusBar)
         put("metroStatusBarOverApps", s.metroStatusBarOverApps)
         put("statusBarHidden", s.statusBarHidden)
+        put("chargeAnimation", s.chargeAnimation)
 
         put("orientation", s.orientation.code)
         put("highRefreshRate", s.highRefreshRate)
@@ -326,6 +327,7 @@ object SettingsCodec {
             metroStatusBar = o.optBoolean("metroStatusBar", base.metroStatusBar),
             metroStatusBarOverApps = o.optBoolean("metroStatusBarOverApps", base.metroStatusBarOverApps),
             statusBarHidden = o.optString("statusBarHidden", base.statusBarHidden),
+            chargeAnimation = o.optBoolean("chargeAnimation", base.chargeAnimation),
             showTileNames = o.optBoolean("showTileNames", base.showTileNames),
             boldText = o.optBoolean("boldText", base.boldText),
             systemFont = o.optBoolean("systemFont", base.systemFont),

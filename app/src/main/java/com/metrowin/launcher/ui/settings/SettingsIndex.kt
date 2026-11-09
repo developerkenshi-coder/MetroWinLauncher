@@ -90,6 +90,7 @@ object SettingsIndex {
         e("start.antiburnin", StartBehaviour, R.string.theme_anti_burn_in, "burn", "burn-in", "oled", "amoled", "screen", "pixel", "schermo", "bruciare", "ritenzione", "immagine fantasma"),
         e("start.hidestatus", StartBars, R.string.theme_hide_status_bar, "fullscreen", "full screen", "status bar", "notch", "schermo intero", "barra"),
         e("statusbar.metro", StatusBar, R.string.theme_metro_status_bar, "windows phone", "status bar", "signal", "wifi", "battery", "percentage", "clock", "barra di stato", "segnale", "batteria", "percentuale", "orario"),
+        e("statusbar.charge", StatusBar, R.string.charge_animation, "charging", "charge", "battery", "animation", "ricarica", "animazione", "batteria"),
         e("statusbar.apps", StatusBar, R.string.theme_metro_status_bar_apps, "windows phone", "status bar", "other apps", "over apps", "barra di stato", "altre app", "sopra le app"),
         e("statusbar.notifications", StatusBar, R.string.statusbar_notifications, "status bar", "notifications", "bell", "barra di stato", "notifiche", "campanella"),
         e("statusbar.airplane", StatusBar, R.string.statusbar_airplane, "status bar", "airplane", "flight", "barra di stato", "aereo", "volo"),

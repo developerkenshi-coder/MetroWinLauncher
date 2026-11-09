@@ -34,6 +34,14 @@ fun StatusBarPage(env: SettingsEnv) {
                 tag = "statusbar:apps",
                 id = "statusbar.apps",
             )
+            ToggleSetting(
+                label = stringResource(R.string.charge_animation),
+                checked = settings.chargeAnimation,
+                onChange = { value -> env.onChange { it.copy(chargeAnimation = value) } },
+                hint = stringResource(R.string.charge_animation_hint),
+                tag = "statusbar:charge",
+                id = "statusbar.charge",
+            )
             SettingHeading(stringResource(R.string.statusbar_items))
             SettingHint(stringResource(R.string.statusbar_items_hint))
             StatusItem.entries.forEach { item ->

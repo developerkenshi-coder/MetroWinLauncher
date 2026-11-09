@@ -21,6 +21,7 @@ import android.util.Log
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.scale
 import com.metrowin.launcher.data.SettingsStore
+import com.metrowin.launcher.gestures.ChargeAnnounce
 import com.metrowin.launcher.gestures.LockAccessibilityService
 
 /**
@@ -33,11 +34,13 @@ class NotificationService : NotificationListenerService() {
     private val pacer = NotificationPacer()
     private val handler = Handler(Looper.getMainLooper())
     private val readLater = Runnable { refresh() }
+    private var plugReceiver: android.content.BroadcastReceiver? = null
 
     override fun onListenerConnected() {
         Log.i(TAG, "listener connected")
         NotificationHub.service = this
         NotificationHub.attach(this)
+        plugReceiver = ChargeAnnounce.listen(this)
         runCatching { registerReceiver(screenWatch, IntentFilter(Intent.ACTION_SCREEN_ON).apply { addAction(Intent.ACTION_USER_PRESENT); addAction(Intent.ACTION_SCREEN_OFF) }) }
         NotificationHub.clearOnOpen = SettingsStore.of(this).load().clearOnOpen
         NotificationHub.actionCenterOn = SettingsStore.of(this).actionCenterOn()
@@ -51,6 +54,8 @@ class NotificationService : NotificationListenerService() {
         Log.i(TAG, "listener disconnected")
         if (NotificationHub.service === this) NotificationHub.service = null
         runCatching { unregisterReceiver(screenWatch) }
+        plugReceiver?.let { runCatching { unregisterReceiver(it) } }
+        plugReceiver = null
         handler.removeCallbacks(readLater)
         overlay.hide()
         overlaySeen.clear()
