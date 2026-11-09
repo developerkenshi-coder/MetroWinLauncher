@@ -267,13 +267,15 @@ fun StartScreen(
     free: Boolean = false,
     /** The photo is not under the tiles but in them, as on Windows Phone: each tile is a window onto it, and between the tiles there is none. */
     photoInside: Boolean = false,
+    /** The photo is drawn by the caller, behind the pages (see [StartBackdrop]): the tiles still know there is one. */
+    photoBehind: Boolean = false,
 ) {
     val currentActions by rememberUpdatedState(actions)
     val area = remember { mutableStateOf<LayoutCoordinates?>(null) }
     val window = if (background != null && photoInside) remember(background, scrollState, parallax, framing, photoFit) { PhotoWindow(background, scrollState, parallax, framing, photoFit, area) } else null
     CompositionLocalProvider(LocalTileNames provides showNames, LocalTileSpacing provides spacing, LocalTileFeatures provides features, LocalPhotoWindow provides window) {
     Box(modifier.fillMaxSize().onGloballyPositioned { area.value = it }) {
-        if (background != null && window == null) ParallaxBackground(background, scrollState, parallax, framing, photoFit)
+        if (background != null && window == null && !photoBehind) ParallaxBackground(background, { scrollState.value }, parallax, framing, photoFit)
         Column(
             Modifier
                 .fillMaxSize()

@@ -11,6 +11,7 @@ import com.metrowin.launcher.ui.components.metroStatusBarHeight
 import com.metrowin.launcher.data.StatusItem
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.metrowin.launcher.ui.settings.RestoreDialog
+import com.metrowin.launcher.ui.start.StartBackdrop
 import com.metrowin.launcher.ui.start.TileFeatures
 import com.metrowin.launcher.ui.start.ChoiceSheet
 import com.metrowin.launcher.ui.start.Choice
@@ -1372,6 +1373,16 @@ fun LauncherApp(vm: LauncherViewModel) {
                         scaleY = scaleX
                         alpha = 1f - Motion.TURNSTILE_DIM * front
                     },
+                    behind = {
+                        // One photo behind all the Starts: swiping between them moves the tiles only (see StartBackdrop).
+                        if ((startBackground != null || pageBackgrounds.isNotEmpty()) && !settings.startPhotoInside) {
+                            StartBackdrop(
+                                pagerState, pages.size, settings.appListLeft, startScrolls,
+                                { pageBackgrounds[it] ?: startBackground },
+                                settings.parallax, PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY), settings.startPhotoFit,
+                            )
+                        }
+                    },
                     start = { page ->
                         StartScreen(
                             cells = cellsByPage.getOrElse(page) { emptyList() },
@@ -1392,6 +1403,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             framing = PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY),
                             photoFit = settings.startPhotoFit,
                             photoInside = settings.startPhotoInside,
+                            photoBehind = true,
                             showNames = settings.showTileNames,
                             spacing = settings.tileSpacing.factor,
                             features = TileFeatures(settings.tileMusicControls, settings.batteryEstimate, settings.calendarAgenda, settings.weatherBlocks, settings.stepGoal, settings.iconTileColors, settings.clockHours, settings.largeTileIcons, settings.tileOpacity, settings.glassIcons),

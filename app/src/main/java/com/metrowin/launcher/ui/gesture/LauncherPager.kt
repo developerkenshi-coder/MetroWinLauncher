@@ -62,19 +62,24 @@ fun LauncherPager(
     appsAccent: Boolean = true,
     /** The pages in the other order, from the right: the app list is then to the left of Start instead of to its right. */
     reverse: Boolean = false,
+    /** Drawn under the pages, still while they turn (the Start photo): it shares the [modifier] with them. */
+    behind: @Composable () -> Unit = {},
 ) {
     val reduced = LocalReduceMotion.current
-    HorizontalPager(
-        state = state,
-        modifier = modifier.fillMaxSize(),
-        userScrollEnabled = userScrollEnabled,
-        reverseLayout = reverse,
-        beyondViewportPageCount = 1,
-        flingBehavior = PagerDefaults.flingBehavior(state, snapPositionalThreshold = 0.3f),
-        key = { it },
-    ) { page ->
-        Box(Modifier.fillMaxSize().pageTurnstile(state, page, reduced)) {
-            if (page < startPages) AccentScope(startAccent) { start(page) } else AccentScope(appsAccent) { apps() }
+    Box(modifier.fillMaxSize()) {
+        behind()
+        HorizontalPager(
+            state = state,
+            modifier = Modifier.fillMaxSize(),
+            userScrollEnabled = userScrollEnabled,
+            reverseLayout = reverse,
+            beyondViewportPageCount = 1,
+            flingBehavior = PagerDefaults.flingBehavior(state, snapPositionalThreshold = 0.3f),
+            key = { it },
+        ) { page ->
+            Box(Modifier.fillMaxSize().pageTurnstile(state, page, reduced)) {
+                if (page < startPages) AccentScope(startAccent) { start(page) } else AccentScope(appsAccent) { apps() }
+            }
         }
     }
 }
