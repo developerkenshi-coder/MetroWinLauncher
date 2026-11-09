@@ -2739,6 +2739,15 @@ in front %3$s · in the background %4$s
     <string name="photos_empty">No photos here yet.</string>
     <string name="photos_allow_why">Allow access to your photos to see them here. They never leave the phone.</string>
     <string name="photos_allow">Allow</string>
+    <string name="voice_say">Say something, or touch one of these:</string>
+    <string name="voice_sec_apps">apps</string>
+    <string name="voice_sec_people">people</string>
+    <string name="voice_sec_phone">phone</string>
+    <string name="voice_sec_web">web</string>
+    <string name="voice_try_apps">open Maps</string>
+    <string name="voice_try_people">call Anna</string>
+    <string name="voice_try_phone">turn on the torch</string>
+    <string name="voice_try_web">search for pizza</string>
     <string name="glance_dream_label">Metro glance</string>
     <string name="lock_now">now</string>
     <string name="lock_in_minutes">in %1$d min</string>

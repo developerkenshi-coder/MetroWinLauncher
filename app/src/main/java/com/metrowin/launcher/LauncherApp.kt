@@ -2118,6 +2118,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         state = state,
                         onRetry = { voiceRequest++ },
                         onCancel = voice::close,
+                        onSuggest = voice::say,
                         onSearchWeb = { query ->
                             voice.close()
                             vm.launch(AppItem("search:web", query, Launch.Link(GlobalSearch.webUrl(query, settings.searchEngine))))

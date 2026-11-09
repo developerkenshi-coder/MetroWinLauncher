@@ -2773,6 +2773,15 @@ en primer plano %3$s · en segundo plano %4$s
     <string name="photos_empty">Aún no hay fotos.</string>
     <string name="photos_allow_why">Permite el acceso a tus fotos para verlas aquí. Nunca salen del teléfono.</string>
     <string name="photos_allow">Permitir</string>
+    <string name="voice_say">Di algo o toca una de estas:</string>
+    <string name="voice_sec_apps">apps</string>
+    <string name="voice_sec_people">personas</string>
+    <string name="voice_sec_phone">teléfono</string>
+    <string name="voice_sec_web">web</string>
+    <string name="voice_try_apps">abre Mapas</string>
+    <string name="voice_try_people">llama a Ana</string>
+    <string name="voice_try_phone">enciende la linterna</string>
+    <string name="voice_try_web">busca pizza</string>
     <string name="glance_dream_label">Metro glance</string>
     <string name="lock_now">ahora</string>
     <string name="lock_in_minutes">en %1$d min</string>

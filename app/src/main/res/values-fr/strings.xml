@@ -2773,6 +2773,15 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="photos_empty">Aucune photo pour le moment.</string>
     <string name="photos_allow_why">Autorisez l’accès à vos photos pour les voir ici. Elles ne quittent jamais le téléphone.</string>
     <string name="photos_allow">Autoriser</string>
+    <string name="voice_say">Dites quelque chose ou touchez l\'une d\'elles :</string>
+    <string name="voice_sec_apps">applis</string>
+    <string name="voice_sec_people">contacts</string>
+    <string name="voice_sec_phone">téléphone</string>
+    <string name="voice_sec_web">web</string>
+    <string name="voice_try_apps">ouvre Cartes</string>
+    <string name="voice_try_people">appelle Anna</string>
+    <string name="voice_try_phone">allume la lampe torche</string>
+    <string name="voice_try_web">recherche pizza</string>
     <string name="glance_dream_label">Metro glance</string>
     <string name="lock_now">maintenant</string>
     <string name="lock_in_minutes">dans %1$d min</string>
