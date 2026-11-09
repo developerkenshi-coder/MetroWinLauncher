@@ -5,6 +5,9 @@ import com.metrowin.launcher.photos.fitSize
 import com.metrowin.launcher.photos.panLimit
 import com.metrowin.launcher.photos.zoomAbout
 import com.metrowin.launcher.calendar.CalEvent
+import com.metrowin.launcher.data.StartEntries
+import com.metrowin.launcher.model.Tile
+import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.calendar.DayLayout
 import com.metrowin.launcher.mail.thumbSample
 import com.metrowin.launcher.wallet.bestSize
@@ -94,5 +97,18 @@ class HeavyVisualsTest {
         assertEquals(640 to 480, bestSize(listOf(4000 to 3000, 640 to 480)))
         // Nothing small enough: the smallest there is.
         assertEquals(1920 to 1080, bestSize(listOf(4000 to 3000, 1920 to 1080)))
+    }
+
+    @Test
+    fun aTileDroppedOnAnotherPushesItOutAndTheOthersStay() {
+        val entries = listOf(
+            Tile("a", TileSize.Medium, col = 0, row = 0), Tile("b", TileSize.Medium, col = 2, row = 0), Tile("c", TileSize.Small, col = 0, row = 2),
+        )
+        val current = mapOf("a" to (0 to 0), "b" to (2 to 0), "c" to (0 to 2))
+        val placed = StartEntries.place(entries, "c", 2, 0, current).associateBy { it.id }
+        assertEquals(2, placed.getValue("c").col)
+        // b was under it: it flows again. a was not: it keeps its cell.
+        assertEquals(-1, placed.getValue("b").col)
+        assertEquals(0, placed.getValue("a").col)
     }
 }
