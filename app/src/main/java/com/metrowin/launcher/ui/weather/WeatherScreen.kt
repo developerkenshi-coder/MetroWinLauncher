@@ -48,7 +48,7 @@ import com.metrowin.launcher.data.SavedCity
 import com.metrowin.launcher.data.WeatherData
 import com.metrowin.launcher.ui.anim.featherIn
 import com.metrowin.launcher.ui.components.MetroButton
-import com.metrowin.launcher.ui.components.LoadingDots
+import com.metrowin.launcher.ui.components.MetroProgressBar
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import java.time.format.TextStyle
@@ -95,7 +95,7 @@ fun WeatherScreen(
             modifier = Modifier.padding(top = 2.dp, bottom = 12.dp).testTag("weather:place"),
         )
         // A city is chosen but the forecast has not come yet.
-        if (weather == null && place.isNotBlank()) LoadingDots(Modifier.padding(bottom = 12.dp).testTag("weather:loading"))
+        if (weather == null && place.isNotBlank()) MetroProgressBar(Modifier.padding(bottom = 12.dp).testTag("weather:loading"))
         if (weather == null) {
             MetroText(
                 stringResource(R.string.weather_not_set), size = 17.sp, weight = FontWeight.Normal, color = colors.subtle,

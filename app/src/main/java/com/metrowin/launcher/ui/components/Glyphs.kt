@@ -32,8 +32,18 @@ import kotlin.math.sin
  * (the Phone handset is the one exception, on a 24x24 grid, see [PHONE]).
  */
 @Composable
-fun GlyphIcon(glyph: Glyph, size: Dp, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.foreground) {
-    val spec = remember(glyph) { specOf(glyph) }
+fun GlyphIcon(glyph: Glyph, size: Dp, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.foreground) =
+    SpecIcon(remember(glyph) { specOf(glyph) }, size, modifier, color)
+
+/** Small marks the font of the launcher does not have (Selawik has no ticks or triangles, the font of the phone stands in): drawn like the glyphs. */
+enum class Mark { Check, Checked, Up, Down, Dot, Play, Arrow }
+
+@Composable
+fun MarkIcon(mark: Mark, size: Dp, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.foreground) =
+    SpecIcon(remember(mark) { markSpec(mark) }, size, modifier, color)
+
+@Composable
+private fun SpecIcon(spec: Spec, size: Dp, modifier: Modifier, color: Color) {
     val density = LocalDensity.current
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
@@ -122,6 +132,16 @@ private const val PHONE =
     "M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57" +
         ".55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 " +
         "0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"
+
+private fun markSpec(mark: Mark): Spec = when (mark) {
+    Mark.Check -> spec(stroke("M20 54L42 76L82 28"))
+    Mark.Checked -> spec(stroke(rect(18f, 18f, 64f, 64f), "M32 50L45 63L70 36"))
+    Mark.Up -> spec(fill("M50 24L84 78H16Z"))
+    Mark.Down -> spec(fill("M50 76L84 22H16Z"))
+    Mark.Dot -> spec(fill(circle(50f, 50f, 30f)))
+    Mark.Play -> spec(fill("M26 14L86 50L26 86Z"))
+    Mark.Arrow -> spec(stroke("M10 50H86", "M58 22L88 50L58 78"))
+}
 
 private fun document() = stroke("M26 10H62L78 26V90H26Z", "M62 10V26H78")
 

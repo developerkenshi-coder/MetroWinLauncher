@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.apps
 
+import androidx.compose.runtime.LaunchedEffect
+import com.metrowin.launcher.ui.anim.LocalTapFeedback
 import com.metrowin.launcher.ui.theme.panel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -91,6 +93,9 @@ fun AppContextMenu(
         onStore, onShare, onAddToList, onSelect,
     )
     val currentDismiss by rememberUpdatedState(onDismiss)
+    // A short tick as the menu opens, if the settings ask for touch feedback.
+    val feedback = LocalTapFeedback.current
+    LaunchedEffect(Unit) { feedback() }
     BoxWithConstraints(
         modifier
             .fillMaxSize()

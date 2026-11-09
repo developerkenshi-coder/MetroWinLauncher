@@ -1,7 +1,6 @@
 package com.metrowin.launcher.screens
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -25,7 +24,7 @@ class TodoUiTest : ScreenshotBase() {
         repeat(20) { Thread.sleep(50); advance(100) }
         compose.onNodeWithTag("todo:item", useUnmergedTree = true).assertIsDisplayed()
         capture("todo_open")
-        compose.onNodeWithTag("todo:box:1", useUnmergedTree = true).assertTextEquals("☐")
+        compose.onNodeWithTag("todo:box:1", useUnmergedTree = true).assertIsDisplayed()
         compose.onNodeWithTag("todo:box:1", useUnmergedTree = true).performClick()
         // The change is saved on another thread; give it the moment it takes, and the screen the frames to show it.
         repeat(20) { Thread.sleep(50); advance(100) }

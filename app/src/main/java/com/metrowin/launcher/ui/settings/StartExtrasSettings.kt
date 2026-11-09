@@ -1,5 +1,9 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -78,10 +82,13 @@ fun LayoutsSettings(env: SettingsEnv) {
         SettingHint(stringResource(R.string.layouts_hint))
         env.layouts.forEach { layout ->
             Column(Modifier.fillMaxWidth().testTag("layouts:row:${layout.id}"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                MetroText(
-                    (if (layout.id == s.activeLayout) "● " else "") + layout.name, size = 22.sp,
-                    modifier = Modifier.padding(top = 6.dp).testTag("layouts:name:${layout.id}"),
-                )
+                Row(Modifier.padding(top = 6.dp).testTag("layouts:name:${layout.id}"), verticalAlignment = Alignment.CenterVertically) {
+                    if (layout.id == s.activeLayout) {
+                        MarkIcon(Mark.Dot, 14.dp)
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    MetroText(layout.name, size = 22.sp)
+                }
                 DropdownSetting(
                     label = stringResource(R.string.layouts_hour), options = hours, selected = layout.hour + 1,
                     onSelect = { i -> env.onLayoutHour(layout.id, i - 1) }, tag = "layouts:hour:${layout.id}",

@@ -1,6 +1,10 @@
 package com.metrowin.launcher.recorder
 
 import com.metrowin.launcher.ui.actioncenter.MetroToast
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.metrowin.launcher.ui.components.featherRow
+import com.metrowin.launcher.ui.components.scrollIndicator
 import android.Manifest
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -69,7 +73,7 @@ import com.metrowin.launcher.notes.NoteStore
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
-import com.metrowin.launcher.ui.components.LoadingDots
+import com.metrowin.launcher.ui.components.MetroProgressBar
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.SelectableRow
 import com.metrowin.launcher.ui.theme.LocalStyle
@@ -172,15 +176,16 @@ fun RecorderScreen() {
                 }
             } else {
                 Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
-                    if (importing) LoadingDots(Modifier.padding(vertical = 6.dp).testTag("rec:importing"))
+                    if (importing) MetroProgressBar(Modifier.padding(vertical = 6.dp).testTag("rec:importing"))
                     if (files.isEmpty()) PageNote(stringResource(R.string.rec_empty), Modifier.testTag("rec:empty"))
-                    LazyColumn(Modifier.fillMaxSize().testTag("rec:list")) {
-                        items(files, key = { it.name }) { file ->
+                    val listState = rememberLazyListState()
+                    LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("rec:list"), state = listState) {
+                        itemsIndexed(files, key = { _, it -> it.name }) { index, file ->
                             val chosen = file.name in picked
                             fun toggle() { picked = if (chosen) picked - file.name else picked + file.name }
                             SelectableRow(
                                 selecting = picked.isNotEmpty(), checked = chosen, onClick = { if (picked.isNotEmpty()) toggle() else if (!recording) selected = file.name },
-                                onLongClick = { toggle() }, modifier = Modifier.testTag("rec:row").padding(vertical = 10.dp),
+                                onLongClick = { toggle() }, modifier = Modifier.featherRow(index).testTag("rec:row").padding(vertical = 10.dp),
                             ) {
                                 MetroText(
                                     (if (chosen && !LocalStyle.current.isClassic) "✓ " else "") + Recordings.title(file.name) + (if (file.extension != "m4a") "  ·  " + file.extension.uppercase() else ""),
@@ -381,8 +386,8 @@ private fun RecordingDetail(file: File, store: Recordings, onChanged: () -> Unit
                     }
                 }
             }
-            if (transcribing) LoadingDots(Modifier.padding(top = 10.dp).testTag("rec:transcribing"))
-            if (busy) { LoadingDots(Modifier.padding(top = 10.dp)); PageNote(stringResource(R.string.rec_working), Modifier.padding(top = 8.dp)) }
+            if (transcribing) MetroProgressBar(Modifier.padding(top = 10.dp).testTag("rec:transcribing"))
+            if (busy) { MetroProgressBar(Modifier.padding(top = 10.dp)); PageNote(stringResource(R.string.rec_working), Modifier.padding(top = 8.dp)) }
         }
         AppBar(listOf(AppBarItem("←", stringResource(R.string.rec_back)) { onClose() }))
     }

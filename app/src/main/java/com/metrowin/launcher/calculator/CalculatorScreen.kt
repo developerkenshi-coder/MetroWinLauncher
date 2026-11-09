@@ -1,5 +1,6 @@
 package com.metrowin.launcher.calculator
 
+import com.metrowin.launcher.ui.theme.LocalStyle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -247,15 +248,22 @@ private fun Key(
 ) {
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
+    val classic = LocalStyle.current.isClassic
+    // The keys of Windows Phone are flat, 2 dp apart, and turn to the accent colour while they are touched.
+    var pressed by remember { mutableStateOf(false) }
+    val lit = classic && pressed
     val fill = when {
-        equals -> accent
+        lit || equals -> accent
         digit -> colors.containers.getOrElse(1) { colors.surface }
         else -> colors.containers.getOrElse(0) { colors.surface }
     }
-    Box(modifier.fillMaxHeight().padding(2.dp).testTag(tag).metroPress(onClick = onClick).background(fill), contentAlignment = Alignment.Center) {
+    Box(
+        modifier.fillMaxHeight().padding(if (classic) 1.dp else 2.dp).testTag(tag).metroPress(onClick = onClick, onPressedChange = { pressed = it }).background(fill),
+        contentAlignment = Alignment.Center,
+    ) {
         MetroText(
             label, size = if (small) 15.sp else 28.sp, weight = if (digit || equals) FontWeight.Normal else FontWeight.Light,
-            color = if (equals) onAccent() else if (operator) accent else colors.foreground, maxLines = 1,
+            color = if (lit || equals) onAccent() else if (operator) accent else colors.foreground, maxLines = 1,
         )
     }
 }

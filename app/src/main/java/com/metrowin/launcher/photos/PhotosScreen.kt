@@ -3,6 +3,10 @@ package com.metrowin.launcher.photos
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import com.metrowin.launcher.ui.components.featherRow
+import com.metrowin.launcher.ui.theme.LocalStyle
+import com.metrowin.launcher.ui.components.arrival
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -93,13 +97,18 @@ fun PhotosScreen(photos: List<Photo>?, needsPermission: Boolean, onAllow: () -> 
 }
 
 @Composable
-private fun Placeholder() = Box(Modifier.fillMaxSize().background(LocalAccent.current.copy(alpha = 0.35f)))
+private fun Placeholder() = Box(Modifier.fillMaxSize().background(LocalAccent.current.copy(alpha = if (LocalStyle.current.isClassic) 1f else 0.35f)))
 
 @Composable
 private fun Thumb(photo: Photo, modifier: Modifier = Modifier) {
     val bitmap = PhotoThumbs.load(photo.id)
+    // A thumbnail that was not ready when the cell came up fades in over the colour of the accent; one from the cache is just there.
+    val cached = remember { bitmap != null }
     Box(modifier.aspectRatio(1f).clipToBounds()) {
-        if (bitmap == null) Placeholder() else Image(bitmap, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+        if (bitmap == null) Placeholder() else {
+            Placeholder()
+            Image(bitmap, null, Modifier.fillMaxSize().arrival(instant = cached), contentScale = ContentScale.Crop)
+        }
     }
 }
 
@@ -115,17 +124,17 @@ private fun PhotoGrid(photos: List<Photo>, onOpen: (Photo, Rect) -> Unit, tag: S
         GridCells.Adaptive(96.dp), Modifier.fillMaxSize().testTag(tag), contentPadding = PaddingValues(start = SIDE, end = SIDE, bottom = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(GAP), verticalArrangement = Arrangement.spacedBy(GAP),
     ) {
-        items(photos, key = { it.id }) { photo -> PhotoCell(photo, onOpen) }
+        itemsIndexed(photos, key = { _, it -> it.id }) { index, photo -> PhotoCell(photo, onOpen, Modifier.featherRow(index)) }
     }
 }
 
 @Composable
-private fun PhotoCell(photo: Photo, onOpen: (Photo, Rect) -> Unit) {
+private fun PhotoCell(photo: Photo, onOpen: (Photo, Rect) -> Unit, modifier: Modifier = Modifier) {
     val description = day(java.time.Instant.ofEpochMilli(photo.takenAt).atZone(java.time.ZoneId.systemDefault()).toLocalDate())
     var bounds by remember { mutableStateOf(Rect.Zero) }
     Thumb(
         photo,
-        Modifier.testTag("photo:${photo.id}").semantics { contentDescription = description }.onGloballyPositioned { bounds = it.boundsInWindow() }.metroPress(onClick = { onOpen(photo, bounds) }),
+        modifier.testTag("photo:${photo.id}").semantics { contentDescription = description }.onGloballyPositioned { bounds = it.boundsInWindow() }.metroPress(onClick = { onOpen(photo, bounds) }),
     )
 }
 

@@ -1,6 +1,7 @@
 package com.metrowin.launcher.ui.apps
 
 import com.metrowin.launcher.ui.anim.featherIn
+import com.metrowin.launcher.ui.components.scrollIndicator
 import com.metrowin.launcher.ui.components.pageSide
 import com.metrowin.launcher.data.AppList
 import com.metrowin.launcher.data.LaunchPlans
@@ -430,7 +431,7 @@ fun AppListScreen(
         state = listState,
         // The top inset shrinks the list itself, not its content padding: a sticky heading sticks to the top of the list and
         // ignores the content padding, so it would sit under the status bar and cover the first row.
-        modifier = Modifier.fillMaxSize().padding(top = insets.calculateTopPadding()),
+        modifier = Modifier.fillMaxSize().padding(top = insets.calculateTopPadding()).scrollIndicator(listState),
         contentPadding = PaddingValues(
             start = sides.calculateStartPadding(direction),
             end = sides.calculateEndPadding(direction),

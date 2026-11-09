@@ -21,6 +21,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.Box
+import com.metrowin.launcher.ui.components.featherRow
+import com.metrowin.launcher.ui.components.scrollIndicator
+import com.metrowin.launcher.ui.kids.CheckSquare
+import com.metrowin.launcher.ui.theme.LocalStyle
+import java.util.Locale
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
@@ -195,28 +203,31 @@ private fun OpenPage(
     }
     Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
         if (loaded && sections.isEmpty()) PageNote(stringResource(R.string.todo_empty), Modifier.padding(bottom = 8.dp).testTag("todo:empty"))
-        LazyColumn(Modifier.weight(1f).testTag("todo:list"), state = listState) {
+        val classic = LocalStyle.current.isClassic
+        LazyColumn(Modifier.weight(1f).scrollIndicator(listState).testTag("todo:list"), state = listState) {
             sections.forEach { (section, shownRows) ->
                 val rows = working?.takeIf { it.first == section }?.second ?: shownRows
                 sectionHeader("h:$section") {
-                    MetroText(
-                        stringResource(
-                            when (section) {
-                                Todos.Section.Late -> R.string.todo_late
-                                Todos.Section.Today -> R.string.todo_today
-                                Todos.Section.Later -> R.string.todo_later
-                                Todos.Section.NoDate -> R.string.todo_no_date
-                            },
-                        ),
-                        size = 16.sp, weight = FontWeight.SemiBold, color = if (section == Todos.Section.Late) LocalAccent.current else LocalMetroColors.current.subtle,
+                    val name = stringResource(
+                        when (section) {
+                            Todos.Section.Late -> R.string.todo_late
+                            Todos.Section.Today -> R.string.todo_today
+                            Todos.Section.Later -> R.string.todo_later
+                            Todos.Section.NoDate -> R.string.todo_no_date
+                        },
+                    )
+                    // A group of Windows Phone is named in the accent colour, lowercase and large.
+                    if (classic) MetroText(name.lowercase(Locale.getDefault()), size = 20.sp, color = LocalAccent.current, modifier = Modifier.padding(top = 10.dp, bottom = 2.dp))
+                    else MetroText(
+                        name, size = 16.sp, weight = FontWeight.SemiBold, color = if (section == Todos.Section.Late) LocalAccent.current else LocalMetroColors.current.subtle,
                         modifier = Modifier.padding(top = 10.dp, bottom = 2.dp),
                     )
                 }
-                items(rows, key = { it.id }) { item ->
+                itemsIndexed(rows, key = { _, it -> it.id }) { index, item ->
                     val dragging = dragId == item.id
                     TodoRow(
                         item, now, onToggle, onEdit = { swivel.open(item.id) { onEdit(item) } },
-                        modifier = (if (dragging) Modifier.zIndex(1f).graphicsLayer { translationY = dragOffset; scaleX = 1.03f; scaleY = 1.03f } else Modifier.animateItem())
+                        modifier = (if (dragging) Modifier.zIndex(1f).graphicsLayer { translationY = dragOffset; scaleX = 1.03f; scaleY = 1.03f } else Modifier.animateItem()).featherRow(index)
                             .swivel(swivel, item.id)
                             .pointerInput(item.id) {
                                 detectDragGesturesAfterLongPress(
@@ -261,7 +272,10 @@ private fun DonePage(rows: List<TodoItem>, onToggle: (TodoItem) -> Unit, onEdit:
     val now = System.currentTimeMillis()
     Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
         if (rows.isEmpty()) PageNote(stringResource(R.string.todo_nothing_done), Modifier.testTag("todo:done:empty"))
-        LazyColumn(Modifier.fillMaxSize().testTag("todo:done")) { items(rows, key = { it.id }) { TodoRow(it, now, onToggle, onEdit) } }
+        val listState = rememberLazyListState()
+        LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("todo:done"), state = listState) {
+            itemsIndexed(rows, key = { _, it -> it.id }) { index, item -> TodoRow(item, now, onToggle, onEdit, Modifier.featherRow(index)) }
+        }
     }
 }
 
@@ -270,10 +284,14 @@ private fun TodoRow(item: TodoItem, now: Long, onToggle: (TodoItem) -> Unit, onE
     val colors = LocalMetroColors.current
     val late = !item.done && item.due != 0L && item.due < now
     Row(modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.Top) {
-        MetroText(
-            if (item.done) "☑" else "☐", size = 28.sp, color = LocalAccent.current,
-            modifier = Modifier.width(44.dp).testTag("todo:box:${item.id}").metroPress(onClick = { onToggle(item) }),
-        )
+        if (LocalStyle.current.isClassic) {
+            Box(Modifier.width(44.dp).testTag("todo:box:${item.id}").metroPress(onClick = { onToggle(item) }).padding(top = 2.dp)) { CheckSquare(item.done) }
+        } else {
+            MetroText(
+                if (item.done) "☑" else "☐", size = 28.sp, color = LocalAccent.current,
+                modifier = Modifier.width(44.dp).testTag("todo:box:${item.id}").metroPress(onClick = { onToggle(item) }),
+            )
+        }
         Column(Modifier.weight(1f).testTag("todo:item").metroPress(onClick = { onEdit(item) })) {
             androidx.compose.foundation.text.BasicText(
                 text = (if (item.starred) "★ " else "") + item.text,
@@ -306,11 +324,13 @@ private fun EditDialog(item: TodoItem, names: List<String>, onSave: (TodoItem) -
         }
         MetroTextField(listName, { listName = it.take(Todos.MAX_LIST) }, stringResource(R.string.todo_list_hint), Modifier.testTag("todo:edit:list"))
         if (names.isNotEmpty()) LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) { items(names) { n -> PageChip(n, listName == n, "todo:edit:pick:$n") { listName = n } } }
-        MetroButton(stringResource(R.string.todo_save), Modifier.fillMaxWidth().testTag("todo:edit:save")) {
-            Todos.clean(text)?.let { onSave(item.copy(text = it, due = due, starred = star, list = Todos.cleanList(listName))) }
-        }
-        MetroButton(stringResource(if (confirm) R.string.notes_delete_confirm else R.string.todo_delete), Modifier.fillMaxWidth().testTag("todo:edit:delete")) {
-            if (confirm) onDelete() else confirm = true
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            MetroButton(stringResource(R.string.todo_save), Modifier.weight(1f).testTag("todo:edit:save")) {
+                Todos.clean(text)?.let { onSave(item.copy(text = it, due = due, starred = star, list = Todos.cleanList(listName))) }
+            }
+            MetroButton(stringResource(if (confirm) R.string.notes_delete_confirm else R.string.todo_delete), Modifier.weight(1f).testTag("todo:edit:delete")) {
+                if (confirm) onDelete() else confirm = true
+            }
         }
     }
     if (picking) DateTimeDialog(if (due != 0L) due else System.currentTimeMillis() + 3_600_000L, onChoose = { due = it; picking = false }, onCancel = { picking = false })

@@ -6,6 +6,9 @@ import com.metrowin.launcher.ui.components.PivotHeader
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.pager.HorizontalPager
 import com.metrowin.launcher.ui.actioncenter.MetroToast
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.metrowin.launcher.ui.components.featherRow
+import com.metrowin.launcher.ui.components.scrollIndicator
 import android.app.Activity
 import android.graphics.BitmapFactory
 import androidx.activity.compose.BackHandler
@@ -158,8 +161,9 @@ private fun CardList(cards: List<Card>?, onOpen: (Card) -> Unit, onNew: () -> Un
                 Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                     if (cards != null && rows.isEmpty()) PageNote(stringResource(R.string.wal_empty), Modifier.padding(top = 10.dp).testTag("wal:empty"))
                     // The cards are stacked: each shows the strip with its name, as if the next one lay over it; the last one is whole. Touching a strip opens that card.
-                    LazyColumn(Modifier.fillMaxSize().padding(top = 8.dp).testTag("wal:list"), verticalArrangement = Arrangement.spacedBy(if (stacked) 0.dp else 8.dp)) {
-                        itemsIndexed(rows, key = { _, c -> c.id }) { i, card -> WalletTile(card, today, stacked, whole = i == rows.lastIndex) { onOpen(card) } }
+                    val listState = rememberLazyListState()
+                    LazyColumn(Modifier.fillMaxSize().padding(top = 8.dp).scrollIndicator(listState).testTag("wal:list"), state = listState, verticalArrangement = Arrangement.spacedBy(if (stacked) 0.dp else 8.dp)) {
+                        itemsIndexed(rows, key = { _, c -> c.id }) { i, card -> WalletTile(card, today, stacked, whole = i == rows.lastIndex, index = i) { onOpen(card) } }
                     }
                 }
             }
@@ -179,10 +183,10 @@ private val CARD_STRIP = 60.dp
 
 /** A card as a square tile of its colour; stacked, only the top strip shows, except for the last card, which is whole. */
 @Composable
-private fun WalletTile(card: Card, today: Long, stacked: Boolean, whole: Boolean, onClick: () -> Unit) {
+private fun WalletTile(card: Card, today: Long, stacked: Boolean, whole: Boolean, index: Int, onClick: () -> Unit) {
     val left = Wallet.daysLeft(card, today)
     Box(
-        Modifier.fillMaxWidth().height(if (!stacked) 72.dp else if (whole) CARD_HEIGHT else CARD_STRIP).testTag("wal:card").metroPress(onClick = onClick)
+        Modifier.fillMaxWidth().height(if (!stacked) 72.dp else if (whole) CARD_HEIGHT else CARD_STRIP).featherRow(index).testTag("wal:card").metroPress(onClick = onClick)
             .background(cardColor(card.color) ?: LocalAccent.current).then(if (stacked) Modifier.border(1.dp, Color.Black.copy(alpha = 0.25f)) else Modifier),
     ) {
         Column(Modifier.fillMaxWidth().height(if (stacked) CARD_STRIP else 72.dp).padding(horizontal = 14.dp), verticalArrangement = Arrangement.Center) {

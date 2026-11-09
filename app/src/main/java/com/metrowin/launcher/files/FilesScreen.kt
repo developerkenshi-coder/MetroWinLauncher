@@ -4,6 +4,8 @@ import com.metrowin.launcher.ui.components.sectionStarts
 import com.metrowin.launcher.ui.components.sectionHeader
 import com.metrowin.launcher.ui.apps.JumpList
 import com.metrowin.launcher.ui.actioncenter.MetroToast
+import com.metrowin.launcher.ui.theme.LocalStyle
+import com.metrowin.launcher.ui.components.scrollIndicator
 import androidx.compose.ui.res.pluralStringResource
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -65,7 +67,7 @@ import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.GlyphIcon
-import com.metrowin.launcher.ui.components.LoadingDots
+import com.metrowin.launcher.ui.components.MetroProgressBar
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.SelectableRow
 import com.metrowin.launcher.ui.theme.LocalStyle
@@ -440,10 +442,11 @@ private fun PanePage(
     val accent = LocalAccent.current
     val context = LocalContext.current
     val category = pane.category
+    // The name of where you are is the heading of the list: in Windows Phone a group is named large, in the accent colour.
+    val classic = LocalStyle.current.isClassic
     val crumbs = if (category == null) relative(places, pane.path).map { it.first to it.second }
     else listOf(relative(places, pane.scanRoot).first().let { it.first to it.second })
     val files = data.files
-    val classic = LocalStyle.current.isClassic
     // The items come in one after the other each time the folder, the group or the way of showing them changes.
     val feather = Triple(pane.path, pane.category to pane.doc, tiles)
 
@@ -466,7 +469,7 @@ private fun PanePage(
             items(crumbs.size + if (category != null) 1 else 0) { i ->
                 val last = i == (if (category != null) crumbs.size else crumbs.lastIndex)
                 MetroText(
-                    (if (i > 0) "› " else "") + (if (i < crumbs.size) crumbs[i].first else stringResource(categoryName(category!!))), size = 17.sp, weight = if (last) FontWeight.SemiBold else FontWeight.Normal,
+                    (if (i > 0) "› " else "") + (if (i < crumbs.size) crumbs[i].first else stringResource(categoryName(category!!))), size = if (last && classic) 20.sp else 17.sp, weight = if (last && !classic) FontWeight.SemiBold else FontWeight.Normal,
                     color = if (last) accent else colors.subtle, maxLines = 1, minScale = 1f,
                     modifier = Modifier.metroPress(onClick = { onActivate(); if (i < crumbs.size) onGo(crumbs[i].second) }).padding(vertical = 6.dp, horizontal = 3.dp),
                 )
@@ -488,7 +491,7 @@ private fun PanePage(
         }
         when {
             data.loading && category != null -> {
-                LoadingDots(Modifier.padding(vertical = 6.dp))
+                MetroProgressBar(Modifier.padding(vertical = 6.dp))
                 PageNote(stringResource(R.string.fm_cat_scanning), Modifier.testTag("fm:scanning:$index"))
             }
             !data.loading && files.isEmpty() -> PageNote(
@@ -517,7 +520,7 @@ private fun PanePage(
                 LinkedHashMap<String, Int>().also { m -> runs.forEachIndexed { r, run -> m.putIfAbsent(run.first, starts[r]) } }
             }
             Box(Modifier.fillMaxSize()) {
-            LazyColumn(Modifier.fillMaxSize().testTag("fm:list:$index"), state = listState) {
+            LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("fm:list:$index"), state = listState) {
                 var base = 0
                 runs.forEachIndexed { r, (letter, group) ->
                     if (lettered) sectionHeader("h$r", onClick = { jumping = true }) {

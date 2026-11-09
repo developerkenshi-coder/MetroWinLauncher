@@ -35,6 +35,7 @@ import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.LocalActionBar
+import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.components.RetroBar
 import com.metrowin.launcher.ui.components.retroBackground
 import com.metrowin.launcher.ui.components.MetroText
@@ -182,8 +183,8 @@ private fun RetroEditBar(
     val buttons = listOfNotNull(
         onAdd?.let { AppBarItem("＋", stringResource(R.string.edit_label_add), it) },
         onFolder?.let { AppBarItem("▣", stringResource(R.string.edit_label_folder), it) },
-        onSelectMany?.let { AppBarItem("☑", stringResource(R.string.edit_label_select), it) },
-        AppBarItem("✓", stringResource(R.string.edit_done), onDone),
+        onSelectMany?.let { AppBarItem("☑", stringResource(R.string.edit_label_select), it).icon(Mark.Checked) },
+        AppBarItem("✓", stringResource(R.string.edit_done), onDone).icon(Mark.Check),
     )
     val sizeItems = TileSize.entries.filter { it in sizes || it == size }.map { option ->
         val name = when (option) {

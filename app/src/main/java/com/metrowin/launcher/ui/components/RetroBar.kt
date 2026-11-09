@@ -92,7 +92,7 @@ internal fun RetroBar(buttons: List<AppBarItem>, items: List<AppBarItem>, modifi
                             Modifier.padding(top = (BAR_HEIGHT - BUTTON) / 2).size(BUTTON).border(2.dp, colors.foreground, CircleShape).clip(CircleShape),
                             contentAlignment = Alignment.Center,
                         ) {
-                            MetroText(item.symbol, size = 18.sp, weight = FontWeight.Normal)
+                            item.icon?.let { MarkIcon(it, 18.dp) } ?: MetroText(item.symbol, size = 18.sp, weight = FontWeight.Normal)
                         }
                         // The names are under the buttons only while the bar is open.
                         // They slide down from under the buttons as the bar rises.

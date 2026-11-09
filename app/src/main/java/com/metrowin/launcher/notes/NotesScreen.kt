@@ -9,6 +9,10 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.GridCells
 import com.metrowin.launcher.ui.actioncenter.MetroToast
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.metrowin.launcher.ui.components.featherRow
+import com.metrowin.launcher.ui.components.scrollIndicator
 import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
@@ -223,17 +227,17 @@ private fun NoteList(
             }
             if (notes != null && shown.isEmpty()) PageNote(stringResource(R.string.notes_empty), Modifier.padding(top = 14.dp).testTag("notes:empty"))
             val swivel = rememberRowSwivel()
+            val listState = rememberLazyListState()
             if (LocalStyle.current.isClassic) {
                 // The notes as tiles, like Start: a colour each (the one picked, or one that comes round), the first lines, and the date.
                 LazyVerticalGrid(GridCells.Fixed(2), Modifier.fillMaxSize().padding(top = 8.dp).testTag("notes:list"), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     itemsIndexed(shown, key = { _, n -> n.id }) { i, note ->
-                        NoteTile(note, i, Modifier.swivel(swivel, note.id)) { swivel.open(note.id) { onOpen(note) } }
+                        NoteTile(note, i, Modifier.featherRow(i).swivel(swivel, note.id)) { swivel.open(note.id) { onOpen(note) } }
                     }
                 }
-            } else
-            LazyColumn(Modifier.fillMaxSize().padding(top = 8.dp).testTag("notes:list")) {
-                items(shown, key = { it.id }) { note ->
-                    Row(Modifier.fillMaxWidth().testTag("notes:item").swivel(swivel, note.id).metroPress(onClick = { swivel.open(note.id) { onOpen(note) } }).padding(vertical = 7.dp)) {
+            } else LazyColumn(Modifier.fillMaxSize().padding(top = 8.dp).scrollIndicator(listState).testTag("notes:list"), state = listState) {
+                itemsIndexed(shown, key = { _, it -> it.id }) { index, note ->
+                    Row(Modifier.fillMaxWidth().featherRow(index).testTag("notes:item").swivel(swivel, note.id).metroPress(onClick = { swivel.open(note.id) { onOpen(note) } }).padding(vertical = 7.dp)) {
                         Box(Modifier.width(6.dp).fillMaxHeight().background(noteColor(note.color) ?: colors.subtle.copy(alpha = 0.25f)))
                         Column(Modifier.weight(1f).padding(start = 12.dp)) {
                             MetroText(

@@ -3,6 +3,7 @@ package com.metrowin.launcher.mail
 import com.metrowin.launcher.ui.components.SelectableRow
 import com.metrowin.launcher.ui.anim.swivel
 import com.metrowin.launcher.ui.anim.rememberRowSwivel
+import com.metrowin.launcher.ui.components.scrollIndicator
 import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.topBarsPadding
 import android.content.Intent
@@ -50,7 +51,7 @@ import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.MetroToggle
-import com.metrowin.launcher.ui.components.LoadingDots
+import com.metrowin.launcher.ui.components.MetroProgressBar
 import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.pages.PageNote
 import com.metrowin.launcher.ui.theme.LocalAccent
@@ -265,7 +266,7 @@ fun MailScreen(modifier: Modifier = Modifier) {
             )
             PivotHeader(titles, pager, Modifier.padding(top = 4.dp))
         }
-        if (syncing) LoadingDots(Modifier.padding(horizontal = 24.dp, vertical = 4.dp).testTag("mail:syncing"))
+        if (syncing) MetroProgressBar(Modifier.padding(horizontal = 24.dp, vertical = 4.dp).testTag("mail:syncing"))
         if (searching) MetroTextField(query, { query = it }, stringResource(R.string.mail_bar_search), Modifier.padding(horizontal = 24.dp, vertical = 4.dp).testTag("mail:search"))
         error?.let { PageNote(stringResource(R.string.mail_error, it), Modifier.padding(horizontal = 24.dp, vertical = 4.dp)) }
         HorizontalPager(pager, Modifier.weight(1f), beyondViewportPageCount = 1) { page ->
@@ -478,7 +479,8 @@ private fun InboxPage(
     val selecting = picked.isNotEmpty()
     // A touch opens the message, with the swivel of the row; while some are ticked it ticks instead.
     fun openOrPick(m: MessageKey) { if (selecting) onPick(m.message) else swivel.open(m.key) { onSelectMessage(m.message) } }
-    LazyColumn(Modifier.fillMaxSize().testTag("mail:inbox")) {
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+    LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("mail:inbox"), state = listState) {
         threads.forEach { thread ->
             val head = thread.first()
             val expanded = thread.size > 1 && head.id in open

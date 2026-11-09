@@ -1,6 +1,10 @@
 package com.metrowin.launcher.news
 
 import com.metrowin.launcher.ui.actioncenter.MetroToast
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.metrowin.launcher.ui.components.scrollIndicator
+import com.metrowin.launcher.ui.components.featherRow
+import com.metrowin.launcher.ui.components.arrival
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -57,7 +61,7 @@ import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
-import com.metrowin.launcher.ui.components.LoadingDots
+import com.metrowin.launcher.ui.components.MetroProgressBar
 import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.mini.MiniFrame
 import com.metrowin.launcher.ui.pages.PageChip
@@ -172,7 +176,7 @@ private fun SourcePage(
         }
     }
     Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
-        if (loading) LoadingDots(Modifier.padding(vertical = 6.dp).testTag("nws:loading"))
+        if (loading) MetroProgressBar(Modifier.padding(vertical = 6.dp).testTag("nws:loading"))
         if (loading && shown == null) PageNote(stringResource(R.string.rec_working))
         if (!loading && shown == null && failed) PageNote(stringResource(R.string.nws_offline), Modifier.testTag("nws:offline"))
         NewsList(shown?.items.orEmpty(), images, showImages) { open(context, it.link) }
@@ -183,9 +187,10 @@ private fun SourcePage(
 @Composable
 internal fun NewsList(items: List<NewsItem>, images: NewsPictures, showImages: Boolean, onOpen: (NewsItem) -> Unit) {
     val pictured = showImages && items.any { it.image.isNotEmpty() }
-    LazyColumn(Modifier.fillMaxSize().testTag("nws:list")) {
+    val listState = rememberLazyListState()
+    LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("nws:list"), state = listState) {
         itemsIndexed(items, key = { _, item -> item.link }) { index, item ->
-            if (index == 0) TopStory(item, images, pictured, onOpen) else Headline(item, images, pictured, onOpen)
+            Box(Modifier.featherRow(index)) { if (index == 0) TopStory(item, images, pictured, onOpen) else Headline(item, images, pictured, onOpen) }
         }
     }
 }
@@ -240,7 +245,7 @@ private fun Headline(item: NewsItem, images: NewsPictures, pictured: Boolean, on
 private fun RemoteImage(url: String, images: NewsPictures, modifier: Modifier, maxWidth: Int) {
     val bitmap by produceState<ImageBitmap?>(null, url) { value = withContext(Dispatchers.IO) { images.load(url, maxWidth)?.asImageBitmap() } }
     Box(modifier.background(LocalMetroColors.current.surface)) {
-        bitmap?.let { Image(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
+        bitmap?.let { Image(it, null, Modifier.fillMaxSize().arrival(), contentScale = ContentScale.Crop) }
     }
 }
 

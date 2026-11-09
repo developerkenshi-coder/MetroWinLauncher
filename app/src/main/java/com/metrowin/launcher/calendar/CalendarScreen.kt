@@ -21,6 +21,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.metrowin.launcher.ui.components.featherRow
+import com.metrowin.launcher.ui.components.scrollIndicator
+import com.metrowin.launcher.ui.theme.LocalStyle
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -174,7 +181,7 @@ private fun dayTitle(day: LocalDate, today: LocalDate): String =
     day.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)).let { if (day == today) "• $it" else it }
 
 @Composable
-private fun EventRow(event: CalEvent, day: LocalDate?, zone: ZoneId, onClick: () -> Unit) {
+private fun EventRow(event: CalEvent, day: LocalDate?, zone: ZoneId, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val colors = LocalMetroColors.current
     val context = LocalContext.current
     val time = if (event.allDay) stringResource(R.string.cal_all_day) else {
@@ -183,7 +190,7 @@ private fun EventRow(event: CalEvent, day: LocalDate?, zone: ZoneId, onClick: ()
         // A multi-day event shows its time only on the days it starts and ends.
         format.format(Date(event.start)) + " – " + format.format(Date(event.end)).let { if (day != null && first != day && CalendarLogic.days(event, zone).endInclusive != day) "" else it }
     }
-    Row(Modifier.fillMaxWidth().testTag("cal:event").metroPress(onClick = onClick).padding(vertical = 6.dp)) {
+    Row(modifier.fillMaxWidth().testTag("cal:event").metroPress(onClick = onClick).padding(vertical = 6.dp)) {
         Box(Modifier.width(6.dp).fillMaxHeight().background(if (event.color != 0) Color(event.color) else LocalAccent.current))
         Column(Modifier.weight(1f).padding(start = 12.dp)) {
             MetroText(event.title.ifBlank { stringResource(R.string.cal_untitled) }, size = 21.sp)
@@ -202,10 +209,11 @@ private fun AgendaPage(events: List<CalEvent>, today: LocalDate, zone: ZoneId, o
     }
     Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
         if (days.isEmpty()) PageNote(stringResource(R.string.cal_no_events), Modifier.testTag("cal:empty"))
-        LazyColumn(Modifier.fillMaxSize().testTag("cal:agenda")) {
+        val listState = rememberLazyListState()
+        LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("cal:agenda"), state = listState) {
             days.forEach { (day, list) ->
                 sectionHeader("d:$day") { MetroText(dayTitle(day, today), size = 16.sp, weight = FontWeight.SemiBold, color = LocalAccent.current, modifier = Modifier.padding(top = 12.dp, bottom = 2.dp)) }
-                items(list, key = { "e:$day:${it.id}:${it.start}" }) { EventRow(it, day, zone) { onEdit(it) } }
+                itemsIndexed(list, key = { _, it -> "e:$day:${it.id}:${it.start}" }) { index, it -> EventRow(it, day, zone, Modifier.featherRow(index)) { onEdit(it) } }
             }
         }
     }
@@ -224,6 +232,7 @@ private fun MonthPage(
 ) {
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
+    val classic = LocalStyle.current.isClassic
     val first = remember { firstDayOfWeek() }
     // The months are pages: a swipe on the grid goes to the next or the one before (the pivot above says which), and the month that is
     // set from outside (the Today button, a day of another month) brings its page in.
@@ -253,16 +262,21 @@ private fun MonthPage(
                         row.forEach { day ->
                             val inMonth = YearMonth.from(day) == shownMonth
                             val isSelected = day == selected
+                            val isToday = day == today
+                            // In Windows Phone today is the cell filled with the accent colour, a chosen day is outlined, and a bar marks a day with events.
+                            val filled = if (classic) isToday else isSelected
                             Column(
                                 Modifier.weight(1f).fillMaxHeight().padding(1.dp).testTag("cal:day:$day").metroPress(onClick = { onSelect(day); if (!inMonth) onMonth(YearMonth.from(day)) })
-                                    .background(if (isSelected) accent else Color.Transparent),
+                                    .background(if (filled) accent else Color.Transparent)
+                                    .then(if (classic && isSelected && !isToday) Modifier.border(2.dp, accent) else Modifier),
                                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
                             ) {
                                 MetroText(
                                     day.dayOfMonth.toString(), size = 19.sp, weight = if (day == today) FontWeight.SemiBold else FontWeight.Light,
-                                    color = when { isSelected -> onAccent(); day == today -> accent; inMonth -> colors.foreground; else -> colors.subtle },
+                                    color = when { filled -> onAccent(); classic -> if (inMonth) colors.foreground else colors.subtle; day == today -> accent; inMonth -> colors.foreground; else -> colors.subtle },
                                 )
-                                MetroText(if (day in busy) "●" else " ", size = 8.sp, color = if (isSelected) onAccent() else accent)
+                                if (classic) Box(Modifier.padding(top = 2.dp).size(14.dp, 3.dp).background(if (day !in busy) Color.Transparent else if (filled) onAccent() else accent))
+                                else MetroText(if (day in busy) "●" else " ", size = 8.sp, color = if (isSelected) onAccent() else accent)
                             }
                         }
                     }
@@ -272,7 +286,10 @@ private fun MonthPage(
         MetroText(dayTitle(selected, today), size = 16.sp, weight = FontWeight.SemiBold, color = accent, modifier = Modifier.padding(top = 10.dp, bottom = 2.dp))
         val list = CalendarLogic.on(events, selected, zone)
         if (list.isEmpty()) PageNote(stringResource(R.string.cal_no_events), Modifier.testTag("cal:day:empty"))
-        LazyColumn(Modifier.weight(1f).fillMaxWidth().testTag("cal:day:list")) { items(list, key = { "${it.id}:${it.start}" }) { EventRow(it, selected, zone) { onEdit(it) } } }
+        val listState = rememberLazyListState()
+        LazyColumn(Modifier.weight(1f).fillMaxWidth().scrollIndicator(listState).testTag("cal:day:list"), state = listState) {
+            itemsIndexed(list, key = { _, it -> "${it.id}:${it.start}" }) { index, it -> EventRow(it, selected, zone, Modifier.featherRow(index)) { onEdit(it) } }
+        }
     }
 }
 
@@ -286,10 +303,11 @@ private fun WeekPage(events: List<CalEvent>, selected: LocalDate, today: LocalDa
             MetroText(days.first().format(formatter) + " – " + days.last().format(formatter), size = 18.sp, weight = FontWeight.Normal, textAlign = TextAlign.Center, modifier = Modifier.weight(1f).testTag("cal:week"))
             MetroText("›", size = 34.sp, modifier = Modifier.testTag("cal:week:next").metroPress(onClick = { onShift(1) }).padding(start = 14.dp))
         }
-        LazyColumn(Modifier.fillMaxSize().testTag("cal:weeklist")) {
+        val listState = rememberLazyListState()
+        LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("cal:weeklist"), state = listState) {
             days.forEach { day ->
                 item(key = "w:$day") { MetroText(dayTitle(day, today), size = 16.sp, weight = FontWeight.SemiBold, color = if (day == today) LocalAccent.current else LocalMetroColors.current.subtle, modifier = Modifier.padding(top = 10.dp, bottom = 2.dp)) }
-                items(CalendarLogic.on(events, day, zone), key = { "w:$day:${it.id}:${it.start}" }) { EventRow(it, day, zone) { onEdit(it) } }
+                itemsIndexed(CalendarLogic.on(events, day, zone), key = { _, it -> "w:$day:${it.id}:${it.start}" }) { index, it -> EventRow(it, day, zone, Modifier.featherRow(index)) { onEdit(it) } }
             }
         }
     }
