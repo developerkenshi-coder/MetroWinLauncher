@@ -3,6 +3,13 @@ package com.metrowin.launcher.ui.mini
 import androidx.compose.animation.core.Animatable
 import android.view.Choreographer
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import com.metrowin.launcher.ui.actioncenter.MetroToastHost
+import com.metrowin.launcher.ui.apps.LocalRowMenu
+import com.metrowin.launcher.ui.apps.RowMenuHost
+import com.metrowin.launcher.ui.apps.RowMenuState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.foundation.layout.Box
@@ -59,17 +66,21 @@ class PageTurn(private val on: Boolean) {
 @Composable
 fun TurnPage(turn: PageTurn, content: @Composable () -> Unit) {
     LaunchedEffect(turn) { turn.enter() }
-    Box(
-        Modifier.graphicsLayer {
-            val a = turn.away.value
-            transformOrigin = TransformOrigin(-0.1f, 0.5f)
-            rotationY = -Motion.ORIGINAL_PAGE_DEGREES * a
-            cameraDistance = Motion.CAMERA * density
-            alpha = if (a >= 0.999f) 0f else 1f
-        },
-    ) {
-        content()
-        com.metrowin.launcher.ui.actioncenter.MetroToastHost(Modifier.align(androidx.compose.ui.Alignment.TopCenter))
+    val rowMenu = remember { RowMenuState() }
+    CompositionLocalProvider(LocalRowMenu provides rowMenu) {
+        Box(
+            Modifier.graphicsLayer {
+                val a = turn.away.value
+                transformOrigin = TransformOrigin(-0.1f, 0.5f)
+                rotationY = -Motion.ORIGINAL_PAGE_DEGREES * a
+                cameraDistance = Motion.CAMERA * density
+                alpha = if (a >= 0.999f) 0f else 1f
+            },
+        ) {
+            content()
+            RowMenuHost(rowMenu)
+            MetroToastHost(Modifier.align(Alignment.TopCenter))
+        }
     }
 }
 
