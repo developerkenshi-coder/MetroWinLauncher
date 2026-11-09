@@ -34,6 +34,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
@@ -61,6 +63,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import com.metrowin.launcher.data.AppsHint
 import com.metrowin.launcher.data.PhotoFit
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -259,7 +262,7 @@ fun StartScreen(
     /** The titles of the groups of tiles are shown, and the groups start on a row of their own. */
     showGroups: Boolean = true,
     /** The round arrow under the last tile is drawn (the swipe that it stands for works either way). */
-    showArrow: Boolean = true,
+    appsHint: AppsHint = AppsHint.Arrow,
     /** The tiles stay where they are: no move, no resize, no removal (the arrow to the app list stays). */
     locked: Boolean = false,
     /** Room added above the clock and the tiles, to bring them down to the thumb. */
@@ -298,7 +301,11 @@ fun StartScreen(
                 enterToken, exitRequest, editingKey, scrollState, actions, readOnly || locked, pickedKeys, showGroups, free, bottomRoom,
             )
             Box(Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 18.dp), contentAlignment = Alignment.CenterEnd) {
-                if (!readOnly && showArrow) NextPageArrow(actions.onNextPage)
+                if (!readOnly) when (appsHint) {
+                    AppsHint.Arrow -> NextPageArrow(actions.onNextPage)
+                    AppsHint.Dots -> NextPageDots(actions.onNextPage)
+                    AppsHint.None -> Unit
+                }
             }
             Spacer(Modifier.navigationBarsPadding().height(bottomRoom))
         }
@@ -1162,6 +1169,19 @@ private fun DrawScope.line(x0: Float, y0: Float, x1: Float, y1: Float, strokeWid
         strokeWidth,
         StrokeCap.Round,
     )
+}
+
+/** Three plain dots after the last tile, in place of the arrow: they lead to the app list the same way. */
+@Composable
+private fun NextPageDots(onClick: () -> Unit) {
+    val color = LocalMetroColors.current.foreground
+    Row(
+        Modifier.height(48.dp).metroPress(onClick = onClick).padding(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        repeat(3) { Box(Modifier.size(6.dp).background(color, CircleShape)) }
+    }
 }
 
 /** The circled arrow after the last tile, which leads to the app list. */

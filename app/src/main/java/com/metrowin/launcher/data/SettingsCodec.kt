@@ -43,7 +43,7 @@ object SettingsCodec {
         put("homePage", s.homePage)
         put("favoritePage", s.favoritePage)
         put("appListLeft", s.appListLeft)
-        put("showAppsArrow", s.showAppsArrow)
+        put("appsHint", s.appsHint.code)
         put("systemWallpaperFollows", s.systemWallpaperFollows)
         put("showClock", s.showClock)
         put("clockTaps", s.clockTaps)
@@ -290,7 +290,8 @@ object SettingsCodec {
             homePage = o.optInt("homePage", base.homePage).coerceIn(0, pageCount - 1),
             favoritePage = o.optInt("favoritePage", base.favoritePage).coerceIn(-1, pageCount - 1),
             appListLeft = o.optBoolean("appListLeft", base.appListLeft),
-            showAppsArrow = o.optBoolean("showAppsArrow", base.showAppsArrow),
+            // A backup from before the dots: the arrow switched off is "none".
+            appsHint = if (o.has("appsHint")) AppsHint.fromCode(o.optString("appsHint")) else if (!o.optBoolean("showAppsArrow", true)) AppsHint.None else base.appsHint,
             systemWallpaperFollows = o.optBoolean("systemWallpaperFollows", base.systemWallpaperFollows),
             showClock = o.optBoolean("showClock", base.showClock),
             clockTaps = o.optBoolean("clockTaps", base.clockTaps),

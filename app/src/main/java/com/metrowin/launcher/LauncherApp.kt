@@ -1396,7 +1396,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             spacing = settings.tileSpacing.factor,
                             features = TileFeatures(settings.tileMusicControls, settings.batteryEstimate, settings.calendarAgenda, settings.weatherBlocks, settings.stepGoal, settings.iconTileColors, settings.clockHours, settings.largeTileIcons, settings.tileOpacity, settings.glassIcons),
                             showGroups = settings.groupTitles,
-                            showArrow = settings.showAppsArrow,
+                            appsHint = settings.appsHint,
                             locked = settings.lockStart,
                             topInset = (screenHeightDp * settings.startLowerPercent / 100f).dp,
                             free = settings.freeLayout,

@@ -2234,8 +2234,11 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="fm_open_with">Ouvrir avec une autre app</string>
 
     <!-- Start arrow -->
-    <string name="theme_apps_arrow">Afficher la flèche sous les vignettes</string>
-    <string name="theme_apps_arrow_hint">La flèche ronde en bas à droite de Start. Désactivée, elle n’est pas dessinée, mais glisser vers la page suivante ou la liste des apps fonctionne comme avant.</string>
+    <string name="theme_apps_arrow">Indicateur sous les vignettes</string>
+    <string name="theme_apps_arrow_hint">Ce qui mène à la liste des apps après la dernière vignette : la flèche ronde, trois simples points, ou rien pour un écran plus épuré. Glisser vers la page suivante ou la liste des apps fonctionne comme avant.</string>
+    <string name="theme_apps_hint_arrow">Flèche</string>
+    <string name="theme_apps_hint_dots">Points</string>
+    <string name="theme_apps_hint_none">Aucun</string>
 
     <!-- Action Center switch -->
     <string name="ac_enabled">Utiliser l’Action Center</string>

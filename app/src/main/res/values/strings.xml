@@ -2217,8 +2217,11 @@ in front %3$s · in the background %4$s
     <string name="fm_open_with">Open with another app</string>
 
     <!-- Start arrow -->
-    <string name="theme_apps_arrow">Show the arrow under the tiles</string>
-    <string name="theme_apps_arrow_hint">The round arrow at the bottom right of Start. Turned off, it is not drawn, but swiping to the next page or to the list of apps works as before.</string>
+    <string name="theme_apps_arrow">Indicator under the tiles</string>
+    <string name="theme_apps_arrow_hint">What leads to the list of apps after the last tile: the round arrow, three plain dots, or nothing for a cleaner screen. Swiping to the next page or to the list of apps works as before.</string>
+    <string name="theme_apps_hint_arrow">Arrow</string>
+    <string name="theme_apps_hint_dots">Dots</string>
+    <string name="theme_apps_hint_none">None</string>
 
     <!-- Action Center switch -->
     <string name="ac_enabled">Use the Action Center</string>

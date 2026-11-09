@@ -23,6 +23,7 @@ import com.metrowin.launcher.model.Launch
 import com.metrowin.launcher.ui.settings.SettingsEnv
 import com.metrowin.launcher.ui.settings.SettingsScreen
 import com.metrowin.launcher.ui.settings.SettingsSection
+import com.metrowin.launcher.data.AppsHint
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -90,12 +91,21 @@ class NewSettingsUiTest : ScreenshotBase() {
     }
 
     @Test
-    fun theArrowUnderTheTilesIsShownUntilSwitchedOffAndComesBackWithTheCodec() {
+    fun theIndicatorUnderTheTilesIsAnArrowUntilChangedToDotsOrNothingAndComesBackWithTheCodec() {
         open(SettingsSection.Start)
-        assertTrue(current.showAppsArrow)
-        tap("start:appsarrow")
-        assertFalse(current.showAppsArrow)
-        assertFalse(com.metrowin.launcher.data.SettingsCodec.decode(com.metrowin.launcher.data.SettingsCodec.encode(current!!))!!.showAppsArrow)
+        val codec = com.metrowin.launcher.data.SettingsCodec
+        assertEquals(AppsHint.Arrow, current.appsHint)
+        tap("start:appsarrow:header")
+        tap("start:appsarrow:1")
+        assertEquals(AppsHint.Dots, current.appsHint)
+        assertEquals(AppsHint.Dots, codec.decode(codec.encode(current!!))!!.appsHint)
+        tap("start:appsarrow:header")
+        tap("start:appsarrow:2")
+        assertEquals(AppsHint.None, current.appsHint)
+        assertEquals(AppsHint.None, codec.decode(codec.encode(current!!))!!.appsHint)
+        // A backup made when the arrow was only on or off.
+        assertEquals(AppsHint.None, codec.decode(org.json.JSONObject().put("showAppsArrow", false).toString())!!.appsHint)
+        assertEquals(AppsHint.Arrow, codec.decode(org.json.JSONObject().put("showAppsArrow", true).toString())!!.appsHint)
     }
 
     @Test

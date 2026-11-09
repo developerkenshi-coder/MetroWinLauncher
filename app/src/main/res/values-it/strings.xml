@@ -2227,8 +2227,11 @@ in primo piano %3$s · in background %4$s
     <string name="fm_open_with">Apri con un’altra app</string>
 
     <!-- Start arrow -->
-    <string name="theme_apps_arrow">Mostra la freccia sotto i riquadri</string>
-    <string name="theme_apps_arrow_hint">La freccia rotonda in basso a destra di Start. Se la spegni non si vede più, ma scorrere verso la pagina successiva o l’elenco delle app funziona come prima.</string>
+    <string name="theme_apps_arrow">Indicatore sotto i riquadri</string>
+    <string name="theme_apps_arrow_hint">Ciò che porta all’elenco delle app dopo l’ultimo riquadro: la freccia rotonda, tre semplici puntini, o niente per uno schermo più pulito. Scorrere verso la pagina successiva o l’elenco delle app funziona come prima.</string>
+    <string name="theme_apps_hint_arrow">Freccia</string>
+    <string name="theme_apps_hint_dots">Puntini</string>
+    <string name="theme_apps_hint_none">Nessuno</string>
 
     <!-- Action Center switch -->
     <string name="ac_enabled">Usa l’Action Center</string>

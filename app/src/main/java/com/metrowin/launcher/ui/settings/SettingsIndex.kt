@@ -86,7 +86,7 @@ object SettingsIndex {
         e("start.favorite", Start, R.string.theme_favorite_page, "favourite", "favorite", "return", "page", "screen", "preferito", "preferita", "ritorno", "pagina", "schermata"),
         e("start.home", Start, R.string.theme_home_page, "home", "main", "second", "left", "secondary", "principale", "secondario", "sinistra", "destra"),
         e("start.appsleft", Start, R.string.theme_apps_left, "left", "apps", "list", "side", "sinistra", "elenco", "app", "lato"),
-        e("start.appsarrow", Start, R.string.theme_apps_arrow, "arrow", "next", "button", "circle", "freccia", "pulsante", "cerchio", "avanti", "nascondi"),
+        e("start.appsarrow", Start, R.string.theme_apps_arrow, "arrow", "next", "button", "circle", "freccia", "pulsante", "cerchio", "avanti", "nascondi", "dots", "puntini", "punti"),
         e("start.antiburnin", StartBehaviour, R.string.theme_anti_burn_in, "burn", "burn-in", "oled", "amoled", "screen", "pixel", "schermo", "bruciare", "ritenzione", "immagine fantasma"),
         e("start.hidestatus", StartBars, R.string.theme_hide_status_bar, "fullscreen", "full screen", "status bar", "notch", "schermo intero", "barra"),
         e("statusbar.metro", StatusBar, R.string.theme_metro_status_bar, "windows phone", "status bar", "signal", "wifi", "battery", "percentage", "clock", "barra di stato", "segnale", "batteria", "percentuale", "orario"),

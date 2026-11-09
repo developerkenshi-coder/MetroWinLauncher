@@ -2234,8 +2234,11 @@ em primeiro plano %3$s · em segundo plano %4$s
     <string name="fm_open_with">Abrir com outra app</string>
 
     <!-- Start arrow -->
-    <string name="theme_apps_arrow">Mostrar a seta sob os mosaicos</string>
-    <string name="theme_apps_arrow_hint">A seta redonda em baixo à direita do Início. Desligada, não é desenhada, mas deslizar para a página seguinte ou para a lista de apps funciona como antes.</string>
+    <string name="theme_apps_arrow">Indicador sob os mosaicos</string>
+    <string name="theme_apps_arrow_hint">O que leva à lista de apps depois do último mosaico: a seta redonda, três pontos simples ou nada para um ecrã mais limpo. Deslizar para a página seguinte ou para a lista de apps funciona como antes.</string>
+    <string name="theme_apps_hint_arrow">Seta</string>
+    <string name="theme_apps_hint_dots">Pontos</string>
+    <string name="theme_apps_hint_none">Nenhum</string>
 
     <!-- Action Center switch -->
     <string name="ac_enabled">Usar o Action Center</string>

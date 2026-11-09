@@ -9,6 +9,17 @@ import com.metrowin.launcher.gestures.SystemAction
 import androidx.core.content.edit
 
 /** How the photo of Start fills the screen. */
+/** What leads to the list of apps after the last tile of Start. */
+enum class AppsHint(val code: String) {
+    Arrow("arrow"),
+    Dots("dots"),
+    None("none");
+
+    companion object {
+        fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: Arrow
+    }
+}
+
 enum class PhotoFit(val code: String) {
     /** Covers the screen, cropped; the zoom and the point in view apply. */
     Fill("fill"),
@@ -279,7 +290,7 @@ data class LauncherSettings(
     val appListLeft: Boolean = false,
 
     /** The round arrow at the bottom of Start (it goes to the next page, or to the list of apps) is drawn. The swipe does the same either way. */
-    val showAppsArrow: Boolean = true,
+    val appsHint: AppsHint = AppsHint.Arrow,
     /** The time and date above the tiles. */
     val showClock: Boolean = false,
     /** A touch on the time opens the clock, on the date the calendar. */

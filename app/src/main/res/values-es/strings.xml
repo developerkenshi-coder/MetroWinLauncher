@@ -2234,8 +2234,11 @@ en primer plano %3$s · en segundo plano %4$s
     <string name="fm_open_with">Abrir con otra app</string>
 
     <!-- Start arrow -->
-    <string name="theme_apps_arrow">Mostrar la flecha bajo los mosaicos</string>
-    <string name="theme_apps_arrow_hint">La flecha redonda abajo a la derecha de Inicio. Desactivada no se dibuja, pero deslizar a la página siguiente o a la lista de apps funciona como antes.</string>
+    <string name="theme_apps_arrow">Indicador bajo los mosaicos</string>
+    <string name="theme_apps_arrow_hint">Lo que lleva a la lista de apps tras el último mosaico: la flecha redonda, tres puntos sencillos o nada para una pantalla más limpia. Deslizar a la página siguiente o a la lista de apps funciona como antes.</string>
+    <string name="theme_apps_hint_arrow">Flecha</string>
+    <string name="theme_apps_hint_dots">Puntos</string>
+    <string name="theme_apps_hint_none">Ninguno</string>
 
     <!-- Action Center switch -->
     <string name="ac_enabled">Usar el Action Center</string>

@@ -2217,8 +2217,11 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="fm_open_with">Mit einer anderen App öffnen</string>
 
     <!-- Start arrow -->
-    <string name="theme_apps_arrow">Pfeil unter den Kacheln zeigen</string>
-    <string name="theme_apps_arrow_hint">Der runde Pfeil unten rechts auf Start. Ausgeschaltet wird er nicht gezeichnet, aber das Wischen zur nächsten Seite oder zur App-Liste funktioniert wie zuvor.</string>
+    <string name="theme_apps_arrow">Anzeige unter den Kacheln</string>
+    <string name="theme_apps_arrow_hint">Was nach der letzten Kachel zur App-Liste führt: der runde Pfeil, drei einfache Punkte oder nichts für einen aufgeräumteren Bildschirm. Das Wischen zur nächsten Seite oder zur App-Liste funktioniert wie zuvor.</string>
+    <string name="theme_apps_hint_arrow">Pfeil</string>
+    <string name="theme_apps_hint_dots">Punkte</string>
+    <string name="theme_apps_hint_none">Keine</string>
 
     <!-- Action Center switch -->
     <string name="ac_enabled">Action Center verwenden</string>

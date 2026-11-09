@@ -123,14 +123,15 @@ fun StartPage(env: SettingsEnv) {
             tag = "start:appsleft",
             id = "start.appsleft",
         )
-        ToggleSetting(
+        DropdownSetting(
             label = stringResource(R.string.theme_apps_arrow),
-            checked = settings.showAppsArrow,
-            onChange = { value -> env.onChange { it.copy(showAppsArrow = value) } },
-            hint = stringResource(R.string.theme_apps_arrow_hint),
+            options = listOf(R.string.theme_apps_hint_arrow, R.string.theme_apps_hint_dots, R.string.theme_apps_hint_none).map { stringResource(it) },
+            selected = settings.appsHint.ordinal,
+            onSelect = { index -> env.onChange { it.copy(appsHint = com.metrowin.launcher.data.AppsHint.entries[index]) } },
             tag = "start:appsarrow",
             id = "start.appsarrow",
         )
+        SettingHint(stringResource(R.string.theme_apps_arrow_hint))
         StartFeaturesSettings(env)
         LayoutsSettings(env)
         // Two touches: the first one asks, the second one restores.
