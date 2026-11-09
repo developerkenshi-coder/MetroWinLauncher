@@ -57,7 +57,7 @@ internal fun AppsFace(item: AppItem, size: TileSize, width: Dp, height: Dp, stat
     val digits = with(androidx.compose.ui.platform.LocalDensity.current) { (height * if (size == TileSize.Small) 0.34f else 0.3f).toSp() }
     if (size == TileSize.Wide || size == TileSize.Large) {
         Box(Modifier.fillMaxSize()) {
-            Row(Modifier.fillMaxSize().padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = NAME_ROOM), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxSize().padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(0.4f), horizontalAlignment = Alignment.CenterHorizontally) {
                     MetroText(stats.installed.toString(), size = digits, maxLines = 1, modifier = Modifier.testTag("apps:count"))
                     MetroText(stringResource(R.string.tile_apps_installed), size = 14.sp, weight = FontWeight.Normal)
@@ -131,7 +131,7 @@ internal fun BatteryGraphFace(item: AppItem, size: TileSize, width: Dp, height: 
             MetroText("${battery.percent}%", size = digits, maxLines = 1, modifier = Modifier.align(Alignment.Center).testTag("batterygraph:percent"))
         } else {
             val extended = size != TileSize.Medium
-            Column(Modifier.fillMaxSize().padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = NAME_ROOM)) {
+            Column(Modifier.fillMaxSize().padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM)) {
                 Row(verticalAlignment = Alignment.Bottom) {
                     MetroText("${battery.percent}%", size = digits, maxLines = 1, modifier = Modifier.testTag("batterygraph:percent"))
                     if (extended) {
@@ -206,7 +206,7 @@ internal fun DataUseFace(item: AppItem, size: TileSize, width: Dp, height: Dp, u
             MetroText(bytes(usage.wifiToday + (usage.mobileToday ?: 0L)), size = 22.sp, maxLines = 1, modifier = Modifier.align(Alignment.Center).testTag("datause:total"))
         } else {
             val extended = size != TileSize.Medium
-            Column(Modifier.fillMaxSize().padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = NAME_ROOM), verticalArrangement = Arrangement.Center) {
+            Column(Modifier.fillMaxSize().padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM), verticalArrangement = Arrangement.Center) {
                 Row(Modifier.fillMaxWidth()) {
                     Spacer(Modifier.width(NAME_WIDTH))
                     MetroText(stringResource(R.string.tile_data_today), size = 13.sp, weight = FontWeight.Normal, maxLines = 1, modifier = Modifier.weight(1f))
@@ -257,7 +257,7 @@ internal fun MemoryFace(item: AppItem, size: TileSize, width: Dp, height: Dp, me
                 Triple(R.string.tile_mem_videos, memory.videos, 0.6f), Triple(R.string.tile_mem_music, memory.music, 0.45f),
                 Triple(R.string.tile_mem_other, memory.other, 0.3f),
             ).filter { it.second != null }
-            Column(Modifier.fillMaxSize().padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = NAME_ROOM), verticalArrangement = Arrangement.Center) {
+            Column(Modifier.fillMaxSize().padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM), verticalArrangement = Arrangement.Center) {
                 Row(verticalAlignment = Alignment.Bottom) {
                     MetroText(StorageInfo.format(memory.used, locale), size = digits, maxLines = 1, modifier = Modifier.testTag("memoryuse:used"))
                     MetroText(

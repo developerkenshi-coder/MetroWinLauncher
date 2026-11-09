@@ -52,7 +52,7 @@ internal fun WeatherDetailsFace(weather: WeatherData) {
         details.humidity?.let { stringResource(R.string.weather_humidity_line, it) },
         details.rainChance?.let { stringResource(R.string.weather_rain_line, it) },
     ).take(3)
-    Column(Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         lines.forEach { MetroText(it, size = 19.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("weather:detail")) }
     }
 }
@@ -64,7 +64,7 @@ internal fun HoursFace(weather: WeatherData, width: Dp) {
     val fontScale = LocalDensity.current.fontScale
     val shown = weather.hours.drop(1).filterIndexed { i, _ -> i % 2 == 1 }.take(((width - 20.dp) / (56.dp * fontScale + 10.dp)).toInt().coerceIn(2, 5))
     val clock = remember { java.time.format.DateTimeFormatter.ofPattern("H") }
-    Row(Modifier.fillMaxHeight().padding(start = 10.dp, top = 12.dp, bottom = NAME_ROOM), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+    Row(Modifier.fillMaxHeight().padding(start = FACE_MARGIN, top = FACE_MARGIN, bottom = NAME_ROOM), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         shown.forEach { hour ->
             Column {
                 MetroText(hour.time.format(clock) + "h", size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f), modifier = Modifier.testTag("weather:hour"))
@@ -106,11 +106,11 @@ internal fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, w
             } else if (kind == 'r' && outlook != null) {
                 MetroText(
                     rainOutlookText(outlook), size = 20.sp, weight = FontWeight.Normal, maxLines = 4, lineHeight = 24.sp,
-                    modifier = Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = NAME_ROOM).testTag("weather:rain-face"),
+                    modifier = Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM).testTag("weather:rain-face"),
                 )
             } else if (kind == 'a') {
                 val aqi = weather.air?.aqi ?: 0
-                Column(Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp)) {
+                Column(Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN)) {
                     MetroText(stringResource(R.string.weather_air_title), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f))
                     MetroText("$aqi", size = 34.sp, modifier = Modifier.testTag("weather:air-face"))
                     MetroText(stringArrayResource(R.array.aqi_levels)[OpenMeteo.aqiLevel(aqi)], size = 16.sp, weight = FontWeight.Normal, maxLines = 1)
@@ -119,7 +119,7 @@ internal fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, w
                 HoursFace(weather, width)
             } else if (kind == 'n') {
                 val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.46f else 0.38f).toSp() }
-                Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 2.dp)) {
+                Column(Modifier.align(Alignment.TopStart).padding(start = FACE_MARGIN, top = 2.dp)) {
                     MetroText("${weather.temperature}°", size = digits)
                     if (size != TileSize.Small) {
                         MetroText(
@@ -149,9 +149,9 @@ internal fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, w
                 }
                 // Above the name of the tile, in the room that is left: what does not fit gets smaller, it never runs over the name.
                 if (size == TileSize.Wide) {
-                    Row(Modifier.align(Alignment.TopStart).fillMaxHeight().padding(start = 10.dp, top = 12.dp, bottom = NAME_ROOM)) { shown.forEach { rows(it) } }
+                    Row(Modifier.align(Alignment.TopStart).fillMaxHeight().padding(start = FACE_MARGIN, top = FACE_MARGIN, bottom = NAME_ROOM)) { shown.forEach { rows(it) } }
                 } else {
-                    Column(Modifier.align(Alignment.TopStart).fillMaxHeight().padding(start = 10.dp, top = 8.dp, bottom = NAME_ROOM)) { shown.forEach { rows(it) } }
+                    Column(Modifier.align(Alignment.TopStart).fillMaxHeight().padding(start = FACE_MARGIN, top = FACE_MARGIN, bottom = NAME_ROOM)) { shown.forEach { rows(it) } }
                 }
             }
             if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))

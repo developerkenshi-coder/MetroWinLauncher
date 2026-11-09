@@ -59,7 +59,7 @@ internal fun BatteryFace(item: AppItem, size: TileSize, width: Dp, height: Dp, b
                 }
             } else {
                 // Above the name of the tile, which sits at the bottom.
-                Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 30.dp)) {
+                Column(Modifier.align(Alignment.TopStart).padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = 30.dp)) {
                     MetroText(
                         stringResource(
                             when (battery.state) {

@@ -110,7 +110,7 @@ internal fun NoteLineFace(item: AppItem, size: TileSize, width: Dp, height: Dp, 
         return
     }
     Box(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = NAME_ROOM), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             AppArt(item, minOf(width, height) * 0.3f)
             MetroText(
                 line, size = 14.sp, weight = FontWeight.Normal, maxLines = if (size == TileSize.Wide) 2 else 3, lineHeight = 18.sp,
@@ -144,14 +144,14 @@ internal fun LinkFace(item: AppItem, size: TileSize, width: Dp, height: Dp, news
         base()
         return
     }
-    FlipContainer(2, seed) { face ->
+    FlipContainer(2, seed, slides = true) { face ->
         if (face == 0) {
             base()
         } else {
             Box(Modifier.fillMaxSize()) {
                 MetroText(
                     news, size = 16.sp, weight = FontWeight.Normal, maxLines = if (size == TileSize.Wide) 3 else 5, lineHeight = 20.sp,
-                    modifier = Modifier.padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = NAME_ROOM).testTag("link:news"),
+                    modifier = Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM).testTag("link:news"),
                 )
                 TileLabel(item.label, Modifier.align(Alignment.BottomStart))
             }
@@ -232,7 +232,7 @@ internal fun SunFace(item: AppItem, size: TileSize, width: Dp, height: Dp, weath
     val clock = remember { DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT) }
     val minutes = Duration.between(rise, set).toMinutes().toInt().coerceAtLeast(0)
     Box(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = NAME_ROOM), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Column(Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             MetroText(stringResource(R.string.weather_sunrise), size = 13.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f))
             MetroText(rise.format(clock), size = 26.sp, maxLines = 1, modifier = Modifier.testTag("sun:rise"))
             MetroText(stringResource(R.string.weather_sunset), size = 13.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.tileContent.copy(alpha = 0.85f))
@@ -317,7 +317,7 @@ internal fun LargeCalendar(item: AppItem, events: List<LiveEvent>, today: LocalD
     val weeks = (lead + month.lengthOfMonth() + 6) / 7
     val ink = LocalMetroColors.current.tileContent
     Box(Modifier.fillMaxSize().testTag("calendar:month")) {
-        Column(Modifier.padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = NAME_ROOM), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Column(Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             MetroText(month.month.getDisplayName(TextStyle.FULL, locale) + " " + month.year, size = 20.sp, maxLines = 1)
             Row(Modifier.fillMaxWidth()) {
                 repeat(7) { i ->

@@ -99,7 +99,7 @@ internal fun PlaceFace(item: AppItem, size: TileSize, width: Dp, height: Dp, add
         return
     }
     Box(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = NAME_ROOM), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             GlyphIcon(item.glyph ?: Glyph.Maps, minOf(width, height) * 0.3f)
             MetroText(
                 address, size = 14.sp, weight = FontWeight.Normal, maxLines = if (size == TileSize.Wide) 2 else 3, lineHeight = 18.sp,
@@ -230,10 +230,10 @@ internal fun NewsFace(item: AppItem, size: TileSize, width: Dp, height: Dp, news
         return
     }
     val ink = LocalMetroColors.current.tileContent
-    FlipContainer(headlines.size, seed) { face ->
+    FlipContainer(headlines.size, seed, slides = true) { face ->
         val headline = headlines[face % headlines.size]
         Box(Modifier.fillMaxSize()) {
-            Column(Modifier.padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = NAME_ROOM)) {
+            Column(Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM)) {
                 MetroText(
                     headline.title, size = 16.sp, weight = FontWeight.Normal, maxLines = if (size == TileSize.Wide) 3 else 5, lineHeight = 20.sp,
                     modifier = Modifier.testTag("news:headline"),
@@ -267,7 +267,7 @@ internal fun FinanceFace(item: AppItem, size: TileSize, width: Dp, height: Dp, f
             }
         } else {
             Column(
-                Modifier.padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = NAME_ROOM).fillMaxSize(),
+                Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM).fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(3.dp),
             ) {
                 quotes.take(if (size == TileSize.Wide) 4 else 3).forEach { quote ->
@@ -310,7 +310,7 @@ internal fun RemindersFace(item: AppItem, size: TileSize, width: Dp, height: Dp,
         if (size == TileSize.Small) {
             MetroText(upcoming.size.toString(), size = digits, modifier = Modifier.align(Alignment.Center).testTag("reminders:count"))
         } else {
-            Column(Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp, bottom = NAME_ROOM)) {
+            Column(Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM)) {
                 MetroText(upcoming.size.toString(), size = digits, modifier = Modifier.testTag("reminders:count"))
                 MetroText(
                     next.text, size = 15.sp, weight = FontWeight.Normal, maxLines = if (size == TileSize.Wide) 2 else 1, lineHeight = 19.sp,

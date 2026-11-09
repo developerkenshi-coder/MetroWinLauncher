@@ -92,7 +92,7 @@ internal fun CardsFace(item: AppItem, size: TileSize, width: Dp, height: Dp, car
 @Composable
 internal fun SmallCard(title: String, text: String) {
     val ink = LocalMetroColors.current.tileContent
-    Column(Modifier.fillMaxSize().padding(start = 7.dp, top = 6.dp, end = 17.dp, bottom = 5.dp)) {
+    Column(Modifier.fillMaxSize().padding(start = FACE_MARGIN, top = FACE_MARGIN, end = 17.dp, bottom = 5.dp)) {
         MetroText(title, size = 13.sp, maxLines = 1)
         if (text.isNotBlank()) {
             MetroText(text, size = 11.sp, weight = FontWeight.Normal, maxLines = 5, lineHeight = 14.sp, color = ink.copy(alpha = 0.9f), modifier = Modifier.padding(top = 2.dp))
@@ -106,7 +106,7 @@ internal fun SmallCard(title: String, text: String) {
 internal fun InboxCard(card: LiveCard.Inbox, height: Dp) {
     val ink = LocalMetroColors.current.tileContent
     val fit = ((height - INBOX_LABEL) / INBOX_ROW).toInt().coerceIn(1, LiveCards.MAX_ROWS)
-    Column(Modifier.fillMaxSize().padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = INBOX_LABEL), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    Column(Modifier.fillMaxSize().padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = INBOX_LABEL), verticalArrangement = Arrangement.spacedBy(2.dp)) {
         card.rows.take(fit).forEach { row ->
             Column(Modifier.testTag("card:row")) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -134,10 +134,10 @@ internal fun MessageCard(card: LiveCard.Message, size: TileSize) {
     if (card.more > 0) {
         MetroText(
             "+${card.more}", size = 15.sp, color = ink.copy(alpha = 0.9f),
-            modifier = Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 10.dp).testTag("card:more"),
+            modifier = Modifier.align(Alignment.TopEnd).padding(top = FACE_MARGIN, end = FACE_MARGIN).testTag("card:more"),
         )
     }
-    Row(Modifier.fillMaxSize().padding(start = 10.dp, top = 10.dp, end = if (card.more > 0) 38.dp else 10.dp, bottom = 26.dp)) {
+    Row(Modifier.fillMaxSize().padding(start = FACE_MARGIN, top = FACE_MARGIN, end = if (card.more > 0) 38.dp else 10.dp, bottom = 26.dp)) {
         card.avatar?.let { avatar ->
             val side = if (size == TileSize.Wide) 64.dp else 44.dp
             Image(avatar, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(side).testTag("card:avatar"))
@@ -165,7 +165,7 @@ internal fun MessageCard(card: LiveCard.Message, size: TileSize) {
 internal fun DigestCard(card: LiveCard.Digest) {
     val ink = LocalMetroColors.current.tileContent
     Box(Modifier.fillMaxSize()) {
-        Row(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 10.dp, end = 10.dp)) {
+        Row(Modifier.align(Alignment.TopStart).padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN)) {
             card.avatar?.let { avatar ->
                 Image(avatar, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(40.dp).testTag("card:avatar"))
                 Spacer(Modifier.width(10.dp))
@@ -197,7 +197,7 @@ internal fun PictureCard(card: LiveCard.Picture) {
                     .align(Alignment.BottomStart)
                     .fillMaxWidth()
                     .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f))))
-                    .padding(start = 9.dp, end = 9.dp, top = 22.dp, bottom = 28.dp),
+                    .padding(start = FACE_MARGIN, end = FACE_MARGIN, top = 22.dp, bottom = 28.dp),
             ) {
                 MetroText(card.caption, size = 14.sp, weight = FontWeight.Normal, maxLines = 2, lineHeight = 18.sp, color = Color.White)
             }
@@ -210,7 +210,7 @@ internal fun PictureCard(card: LiveCard.Picture) {
 @Composable
 internal fun ProgressCard(card: LiveCard.Progress, width: Dp) {
     val ink = LocalMetroColors.current.tileContent
-    Column(Modifier.fillMaxSize().padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 32.dp)) {
+    Column(Modifier.fillMaxSize().padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = 32.dp)) {
         MetroText(card.title, size = 18.sp, maxLines = 2, lineHeight = 22.sp)
         Spacer(Modifier.weight(1f))
         if (card.percent != null) {
@@ -227,7 +227,7 @@ internal fun ProgressCard(card: LiveCard.Progress, width: Dp) {
 @Composable
 internal fun PlayingCard(card: LiveCard.Playing, size: TileSize, height: Dp) {
     val ink = LocalMetroColors.current.tileContent
-    Row(Modifier.fillMaxSize().padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 26.dp)) {
+    Row(Modifier.fillMaxSize().padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = 26.dp)) {
         card.art?.let { art ->
             val side = (height * 0.55f).coerceAtMost(if (size == TileSize.Wide) 96.dp else 72.dp)
             Image(art, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(side).testTag("card:art"))

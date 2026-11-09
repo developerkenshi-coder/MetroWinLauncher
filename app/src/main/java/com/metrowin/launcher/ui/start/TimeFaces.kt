@@ -161,7 +161,7 @@ internal fun MoonFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
             }
         }
         if (size != TileSize.Small) {
-            Column(Modifier.align(Alignment.BottomStart).padding(start = 9.dp, bottom = 7.dp)) {
+            Column(Modifier.align(Alignment.BottomStart).padding(start = FACE_MARGIN, bottom = FACE_MARGIN)) {
                 MetroText(stringResource(name.label), size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("moon:name"))
                 if (size == TileSize.Wide) MetroText(stringResource(R.string.moon_lit, (illumination * 100).toInt()), size = 12.sp, weight = FontWeight.Normal, color = ink.copy(alpha = 0.8f))
             }
@@ -180,10 +180,10 @@ internal fun BirthdaysFace(item: AppItem, size: TileSize, width: Dp, height: Dp,
         return
     }
     val first = upcoming.first()
-    FlipContainer(if (upcoming.size > 1 && size != TileSize.Small) 2 else 1, seed) { face ->
+    FlipContainer(if (upcoming.size > 1 && size != TileSize.Small) 2 else 1, seed, slides = true) { face ->
         Box(Modifier.fillMaxSize()) {
             if (face == 0) {
-                Column(Modifier.padding(start = 10.dp, top = 8.dp, end = 10.dp)) {
+                Column(Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN)) {
                     MetroText(first.name, size = if (size == TileSize.Small) 14.sp else 22.sp, maxLines = 2, lineHeight = 26.sp, modifier = Modifier.testTag("birthday:name"))
                     if (size != TileSize.Small) {
                         MetroText(birthdayWhen(first), size = 16.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("birthday:when"))
@@ -191,7 +191,7 @@ internal fun BirthdaysFace(item: AppItem, size: TileSize, width: Dp, height: Dp,
                     }
                 }
             } else {
-                Column(Modifier.padding(start = 10.dp, top = 8.dp, end = 10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Column(Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     upcoming.forEach { MetroText(it.name + " · " + birthdayWhen(it, short = true), size = 15.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("birthday:next")) }
                 }
             }
@@ -259,7 +259,7 @@ internal fun CalendarFace(item: AppItem, size: TileSize, width: Dp, height: Dp, 
         Box(Modifier.fillMaxSize()) {
             if (face == 0 || event == null) {
                 val numberSize = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.46f else 0.4f).toSp() }
-                Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 2.dp)) {
+                Column(Modifier.align(Alignment.TopStart).padding(start = FACE_MARGIN, top = 2.dp)) {
                     MetroText(today.dayOfMonth.toString(), size = numberSize)
                     if (size != TileSize.Small) {
                         MetroText(
@@ -272,10 +272,10 @@ internal fun CalendarFace(item: AppItem, size: TileSize, width: Dp, height: Dp, 
                 }
                 if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
             } else if (agenda) {
-                AgendaList(events.take(3), today, Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = NAME_ROOM))
+                AgendaList(events.take(3), today, Modifier.align(Alignment.TopStart).padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM))
                 TileLabel(item.label, Modifier.align(Alignment.BottomStart))
             } else {
-                Column(Modifier.align(Alignment.TopStart).padding(start = 10.dp, top = 10.dp, end = 10.dp)) {
+                Column(Modifier.align(Alignment.TopStart).padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN)) {
                     MetroText(describeWhen(event, today), size = 14.sp, weight = FontWeight.Normal)
                     MetroText(
                         event.title,

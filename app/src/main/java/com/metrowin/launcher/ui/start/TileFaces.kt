@@ -203,7 +203,7 @@ private fun NoteFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
         } else {
             MetroText(
                 text, size = 17.sp, weight = FontWeight.Normal, maxLines = if (size == TileSize.Wide) 4 else 6, lineHeight = 22.sp,
-                modifier = Modifier.padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 32.dp).testTag("note:text"),
+                modifier = Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = 32.dp).testTag("note:text"),
             )
         }
         if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
@@ -256,7 +256,7 @@ private fun ChecklistFace(item: AppItem, size: TileSize, width: Dp, height: Dp, 
         if (size == TileSize.Small) {
             MetroText("$done/$total", size = 22.sp, modifier = Modifier.align(Alignment.Center).testTag("checklist:progress"))
         } else {
-            Column(Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp, bottom = 30.dp)) {
+            Column(Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = 30.dp)) {
                 MetroText(stringResource(R.string.checklist_progress, done, total), size = 30.sp, modifier = Modifier.testTag("checklist:progress"))
                 val pending = Checklist.pending(items, if (size == TileSize.Wide) 3 else 4)
                 if (pending.isEmpty()) {
@@ -281,7 +281,7 @@ fun CountBadge(count: Int, size: TileSize, modifier: Modifier = Modifier) {
     MetroText(
         text = if (count > 99) "99+" else count.toString(),
         size = if (size == TileSize.Small) 16.sp else 30.sp,
-        modifier = modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+        modifier = modifier.padding(horizontal = FACE_MARGIN, vertical = 4.dp),
     )
 }
 
@@ -466,6 +466,9 @@ private const val MAX_TILE_FONT_SCALE = 1.3f
 /** The room the name of a tile takes along the bottom edge. */
 internal val NAME_ROOM = 26.dp
 
+/** The space between the edge of a tile and what is written on it, on every face (the 6 of Windows Phone); the name sits in the bottom left corner of it. */
+internal val FACE_MARGIN = 6.dp
+
 
 /** Glyph or icon in the middle, name in the bottom left corner, like every Windows Phone tile. */
 @Composable
@@ -496,7 +499,7 @@ internal fun TileLabel(label: String, modifier: Modifier = Modifier, color: Colo
         color = color,
         // The name of an app: one line (smaller if it must be, then cut: it may be any length).
         maxLines = 1,
-        modifier = modifier.padding(start = 9.dp, end = 9.dp, bottom = 7.dp),
+        modifier = modifier.padding(start = FACE_MARGIN, end = FACE_MARGIN, bottom = FACE_MARGIN),
     )
 }
 
