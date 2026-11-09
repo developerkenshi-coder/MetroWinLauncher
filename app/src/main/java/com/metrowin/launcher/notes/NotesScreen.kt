@@ -1,5 +1,9 @@
 package com.metrowin.launcher.notes
 
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.metrowin.launcher.ui.components.featherRow
+import com.metrowin.launcher.ui.components.scrollIndicator
 import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
@@ -214,9 +218,10 @@ private fun NoteList(
                 }
             }
             if (notes != null && shown.isEmpty()) PageNote(stringResource(R.string.notes_empty), Modifier.padding(top = 14.dp).testTag("notes:empty"))
-            LazyColumn(Modifier.fillMaxSize().padding(top = 8.dp).testTag("notes:list")) {
-                items(shown, key = { it.id }) { note ->
-                    Row(Modifier.fillMaxWidth().testTag("notes:item").metroPress(onClick = { onOpen(note) }).padding(vertical = 7.dp)) {
+            val listState = rememberLazyListState()
+            LazyColumn(Modifier.fillMaxSize().padding(top = 8.dp).scrollIndicator(listState).testTag("notes:list"), state = listState) {
+                itemsIndexed(shown, key = { _, it -> it.id }) { index, note ->
+                    Row(Modifier.fillMaxWidth().featherRow(index).testTag("notes:item").metroPress(onClick = { onOpen(note) }).padding(vertical = 7.dp)) {
                         Box(Modifier.width(6.dp).fillMaxHeight().background(noteColor(note.color) ?: colors.subtle.copy(alpha = 0.25f)))
                         Column(Modifier.weight(1f).padding(start = 12.dp)) {
                             MetroText(

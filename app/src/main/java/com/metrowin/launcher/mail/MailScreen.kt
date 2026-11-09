@@ -1,5 +1,6 @@
 package com.metrowin.launcher.mail
 
+import com.metrowin.launcher.ui.components.scrollIndicator
 import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.topBarsPadding
 import android.content.Intent
@@ -437,7 +438,8 @@ private fun InboxPage(messages: List<MailMessage>?, onSelectMessage: (MailMessag
     // A conversation opens in place, to show the messages of it one under the other.
     var open by remember { mutableStateOf(emptySet<String>()) }
     val threads = remember(messages, grouped) { if (grouped) MailThreads.group(messages) else messages.map { listOf(it) } }
-    LazyColumn(Modifier.fillMaxSize().testTag("mail:inbox")) {
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+    LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("mail:inbox"), state = listState) {
         threads.forEach { thread ->
             val head = thread.first()
             val expanded = thread.size > 1 && head.id in open

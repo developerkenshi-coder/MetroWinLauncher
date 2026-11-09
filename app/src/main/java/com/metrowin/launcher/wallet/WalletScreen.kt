@@ -1,5 +1,9 @@
 package com.metrowin.launcher.wallet
 
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.metrowin.launcher.ui.components.featherRow
+import com.metrowin.launcher.ui.components.scrollIndicator
 import android.app.Activity
 import android.graphics.BitmapFactory
 import android.widget.Toast
@@ -150,10 +154,11 @@ private fun CardList(cards: List<Card>?, onOpen: (Card) -> Unit, onNew: () -> Un
                 items(CardKind.entries) { k -> PageChip(stringResource(kindName(k)), kind == k, "wal:kind:${k.name}") { kind = k } }
             }
             if (cards != null && shown.isEmpty()) PageNote(stringResource(R.string.wal_empty), Modifier.testTag("wal:empty"))
-            LazyColumn(Modifier.fillMaxSize().testTag("wal:list"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(shown, key = { it.id }) { card ->
+            val listState = rememberLazyListState()
+            LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("wal:list"), state = listState, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                itemsIndexed(shown, key = { _, it -> it.id }) { index, card ->
                     val left = Wallet.daysLeft(card, today)
-                    Row(Modifier.fillMaxWidth().height(72.dp).testTag("wal:card").metroPress(onClick = { onOpen(card) }).background(cardColor(card.color) ?: LocalAccent.current)) {
+                    Row(Modifier.fillMaxWidth().height(72.dp).featherRow(index).testTag("wal:card").metroPress(onClick = { onOpen(card) }).background(cardColor(card.color) ?: LocalAccent.current)) {
                         Column(Modifier.weight(1f).padding(horizontal = 14.dp), verticalArrangement = Arrangement.Center) {
                             MetroText(card.name, size = 24.sp, color = Color.White)
                             val sub = when {

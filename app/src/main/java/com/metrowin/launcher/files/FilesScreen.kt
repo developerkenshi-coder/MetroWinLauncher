@@ -1,5 +1,7 @@
 package com.metrowin.launcher.files
 
+import com.metrowin.launcher.ui.theme.LocalStyle
+import com.metrowin.launcher.ui.components.scrollIndicator
 import androidx.compose.ui.res.pluralStringResource
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -432,6 +434,8 @@ private fun PanePage(
     val accent = LocalAccent.current
     val context = LocalContext.current
     val category = pane.category
+    // The name of where you are is the heading of the list: in Windows Phone a group is named large, in the accent colour.
+    val classic = LocalStyle.current.isClassic
     val crumbs = if (category == null) relative(places, pane.path).map { it.first to it.second }
     else listOf(relative(places, pane.scanRoot).first().let { it.first to it.second })
     val files = data.files
@@ -457,7 +461,7 @@ private fun PanePage(
             items(crumbs.size + if (category != null) 1 else 0) { i ->
                 val last = i == (if (category != null) crumbs.size else crumbs.lastIndex)
                 MetroText(
-                    (if (i > 0) "› " else "") + (if (i < crumbs.size) crumbs[i].first else stringResource(categoryName(category!!))), size = 17.sp, weight = if (last) FontWeight.SemiBold else FontWeight.Normal,
+                    (if (i > 0) "› " else "") + (if (i < crumbs.size) crumbs[i].first else stringResource(categoryName(category!!))), size = if (last && classic) 20.sp else 17.sp, weight = if (last && !classic) FontWeight.SemiBold else FontWeight.Normal,
                     color = if (last) accent else colors.subtle, maxLines = 1, minScale = 1f,
                     modifier = Modifier.metroPress(onClick = { onActivate(); if (i < crumbs.size) onGo(crumbs[i].second) }).padding(vertical = 6.dp, horizontal = 3.dp),
                 )
@@ -495,7 +499,8 @@ private fun PanePage(
                 }
             }
         } else {
-            LazyColumn(Modifier.fillMaxSize().testTag("fm:list:$index")) {
+            val listState = rememberLazyListState()
+            LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("fm:list:$index"), state = listState) {
                 itemsIndexed(files, key = { _, f -> f.absolutePath }) { i, file ->
                     val chosen = file.absolutePath in pane.selection
                     val dir = file.isDirectory

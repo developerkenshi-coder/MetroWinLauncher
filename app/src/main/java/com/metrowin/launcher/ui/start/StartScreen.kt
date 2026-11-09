@@ -779,6 +779,8 @@ private fun PositionedTile(
     val colors = LocalMetroColors.current
     val currentActions by rememberUpdatedState(actions)
     val currentCell by rememberUpdatedState(cell)
+    // The tile lifts under the finger with a short tick.
+    val dragFeedback by rememberUpdatedState(LocalTapFeedback.current)
     val step = unit + TileGap
     val slot = with(density) { IntOffset((step * placement.col).roundToPx(), (step * placement.row).roundToPx() + extraY.roundToInt()) }
     val width by animateDpAsState(unit * placement.cols + TileGap * (placement.cols - 1), spring(stiffness = Spring.StiffnessLow), label = "tileWidth")
@@ -910,6 +912,7 @@ private fun PositionedTile(
                     Modifier.pointerInput(Unit) {
                         detectDragGesturesAfterLongPress(
                             onDragStart = {
+                                dragFeedback()
                                 val at = position.value
                                 onDragStart(currentCell, Offset(at.x.toFloat(), at.y.toFloat()))
                             },

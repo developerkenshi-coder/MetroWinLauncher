@@ -1,5 +1,9 @@
 package com.metrowin.launcher.recorder
 
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.metrowin.launcher.ui.components.featherRow
+import com.metrowin.launcher.ui.components.scrollIndicator
 import android.Manifest
 import android.content.Intent
 import android.media.MediaPlayer
@@ -144,14 +148,15 @@ fun RecorderScreen() {
             } else {
                 Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                     if (files.isEmpty()) PageNote(stringResource(R.string.rec_empty), Modifier.testTag("rec:empty"))
-                    LazyColumn(Modifier.fillMaxSize().testTag("rec:list")) {
-                        items(files, key = { it.name }) { file ->
+                    val listState = rememberLazyListState()
+                    LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("rec:list"), state = listState) {
+                        itemsIndexed(files, key = { _, it -> it.name }) { index, file ->
                             val chosen = file.name in picked
                             fun toggle() { picked = if (chosen) picked - file.name else picked + file.name }
                             MetroText(
                                 (if (chosen) "✓ " else "") + Recordings.title(file.name) + (if (file.extension != "m4a") "  ·  " + file.extension.uppercase() else ""),
                                 size = 21.sp, weight = FontWeight.Normal,
-                                modifier = Modifier.fillMaxWidth().testTag("rec:row").background(if (chosen) LocalAccent.current.copy(alpha = 0.35f) else androidx.compose.ui.graphics.Color.Transparent)
+                                modifier = Modifier.fillMaxWidth().featherRow(index).testTag("rec:row").background(if (chosen) LocalAccent.current.copy(alpha = 0.35f) else androidx.compose.ui.graphics.Color.Transparent)
                                     .metroPress(onClick = { if (picked.isNotEmpty()) toggle() else if (!recording) selected = file.name }, onLongClick = { toggle() }).padding(vertical = 10.dp),
                             )
                         }

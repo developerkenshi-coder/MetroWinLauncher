@@ -1,5 +1,9 @@
 package com.metrowin.launcher.news
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.metrowin.launcher.ui.components.scrollIndicator
+import com.metrowin.launcher.ui.components.featherRow
+import com.metrowin.launcher.ui.components.arrival
 import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -181,9 +185,10 @@ private fun SourcePage(
 @Composable
 internal fun NewsList(items: List<NewsItem>, images: NewsPictures, showImages: Boolean, onOpen: (NewsItem) -> Unit) {
     val pictured = showImages && items.any { it.image.isNotEmpty() }
-    LazyColumn(Modifier.fillMaxSize().testTag("nws:list")) {
+    val listState = rememberLazyListState()
+    LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("nws:list"), state = listState) {
         itemsIndexed(items, key = { _, item -> item.link }) { index, item ->
-            if (index == 0) TopStory(item, images, pictured, onOpen) else Headline(item, images, pictured, onOpen)
+            Box(Modifier.featherRow(index)) { if (index == 0) TopStory(item, images, pictured, onOpen) else Headline(item, images, pictured, onOpen) }
         }
     }
 }
@@ -238,7 +243,7 @@ private fun Headline(item: NewsItem, images: NewsPictures, pictured: Boolean, on
 private fun RemoteImage(url: String, images: NewsPictures, modifier: Modifier, maxWidth: Int) {
     val bitmap by produceState<ImageBitmap?>(null, url) { value = withContext(Dispatchers.IO) { images.load(url, maxWidth)?.asImageBitmap() } }
     Box(modifier.background(LocalMetroColors.current.surface)) {
-        bitmap?.let { Image(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
+        bitmap?.let { Image(it, null, Modifier.fillMaxSize().arrival(), contentScale = ContentScale.Crop) }
     }
 }
 
