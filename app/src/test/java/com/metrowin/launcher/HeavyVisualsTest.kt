@@ -8,6 +8,7 @@ import com.metrowin.launcher.calendar.CalEvent
 import com.metrowin.launcher.data.LiveEvent
 import com.metrowin.launcher.data.TileGrid
 import com.metrowin.launcher.ui.anim.turnStart
+import com.metrowin.launcher.ui.lock.glancePlace
 import com.metrowin.launcher.data.LockText
 import com.metrowin.launcher.data.StartEntries
 import com.metrowin.launcher.model.Tile
@@ -137,5 +138,12 @@ class HeavyVisualsTest {
         assertEquals(-90f, turnStart(1, 0), 0f)
         assertEquals(180f, turnStart(0, 2), 0f)
         assertEquals(-90f, turnStart(0, 3), 0f)
+    }
+
+    @Test
+    fun theGlanceMovesEveryMinuteAndStaysOnTheScreen() {
+        val places = (0L..60L).map { glancePlace(it) }
+        assertTrue(places.zipWithNext().all { (a, b) -> a != b })
+        assertTrue(places.all { (x, y) -> x in -1f..1f && y in -1f..1f })
     }
 }

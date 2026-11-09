@@ -2739,6 +2739,7 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="photos_empty">Hier sind noch keine Fotos.</string>
     <string name="photos_allow_why">Erlaube den Zugriff auf deine Fotos, um sie hier zu sehen. Sie verlassen das Telefon nie.</string>
     <string name="photos_allow">Erlauben</string>
+    <string name="glance_dream_label">Metro Glance</string>
     <string name="lock_now">jetzt</string>
     <string name="lock_in_minutes">in %1$d Min.</string>
     <string name="lock_in_hours">in %1$d Std.</string>

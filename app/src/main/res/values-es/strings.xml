@@ -2773,6 +2773,7 @@ en primer plano %3$s · en segundo plano %4$s
     <string name="photos_empty">Aún no hay fotos.</string>
     <string name="photos_allow_why">Permite el acceso a tus fotos para verlas aquí. Nunca salen del teléfono.</string>
     <string name="photos_allow">Permitir</string>
+    <string name="glance_dream_label">Metro glance</string>
     <string name="lock_now">ahora</string>
     <string name="lock_in_minutes">en %1$d min</string>
     <string name="lock_in_hours">en %1$d h</string>

@@ -604,6 +604,18 @@
             </intent-filter>
         </service>
 
+        <!-- The glance screen (the time and the icons of the apps with news on black, moving every minute), offered as another screen saver. -->
+        <service
+            android:name=".ui.lock.MetroGlanceService"
+            android:exported="true"
+            android:label="@string/glance_dream_label"
+            android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+
         <!--
             Lets the launcher lock the screen for a gesture. Turned on by the user in the accessibility settings;
             it reads nothing from the screen (see res/xml/lock_accessibility_service.xml).

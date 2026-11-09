@@ -16,6 +16,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.notifications.rememberMediaInfo
@@ -27,7 +28,7 @@ import java.io.File
  * it lets the user pick any screen saver for when the phone charges or sits on a dock: this is that, with the photo,
  * the big time, the next alarm and the notifications of the Windows Phone lock screen. Swiping up leaves it.
  */
-class MetroDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner {
+open class MetroDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner {
     private val registry = LifecycleRegistry(this)
     private val savedState = SavedStateRegistryController.create(this)
 
@@ -54,16 +55,7 @@ class MetroDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwne
             setViewTreeLifecycleOwner(this@MetroDreamService)
             setViewTreeSavedStateRegistryOwner(this@MetroDreamService)
             setContent {
-                MetroTheme(accent = com.metrowin.launcher.ui.theme.MetroAccents[settings.accentIndex], dark = true) {
-                    MetroLockScreen(
-                        info = rememberLockInfo(settings.hiddenOnLock()),
-                        photo = photo,
-                        options = settings.lockOptions(),
-                        onUnlock = ::finish,
-                        status = rememberLockStatus(settings),
-                        media = rememberMediaInfo(settings.lockShowMusic),
-                    )
-                }
+                MetroTheme(accent = com.metrowin.launcher.ui.theme.MetroAccents[settings.accentIndex], dark = true) { Screen(settings) }
             }
         }
         setContentView(view)
@@ -71,6 +63,19 @@ class MetroDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwne
         // The notification service reads the notifications only while a screen shows them.
         NotificationHub.startWatching()
         watching = true
+    }
+
+    /** What the screen saver shows: the lock screen, or (see [MetroGlanceService]) the glance. */
+    @androidx.compose.runtime.Composable
+    protected open fun Screen(settings: LauncherSettings) {
+        MetroLockScreen(
+            info = rememberLockInfo(settings.hiddenOnLock()),
+            photo = photo,
+            options = settings.lockOptions(),
+            onUnlock = ::finish,
+            status = rememberLockStatus(settings),
+            media = rememberMediaInfo(settings.lockShowMusic),
+        )
     }
 
     private var watching = false
@@ -90,5 +95,13 @@ class MetroDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwne
         return names.firstNotNullOfOrNull { name ->
             runCatching { BitmapFactory.decodeFile(File(filesDir, name).path)?.asImageBitmap() }.getOrNull()
         }
+    }
+}
+
+/** The glance screen of Windows Phone as a screen saver of its own: black, the time and the icons of the apps with news, moving every minute. */
+class MetroGlanceService : MetroDreamService() {
+    @androidx.compose.runtime.Composable
+    override fun Screen(settings: LauncherSettings) {
+        GlanceScreen(info = rememberLockInfo(settings.hiddenOnLock()), status = rememberLockStatus(settings), onExit = ::finish)
     }
 }

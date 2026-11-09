@@ -2739,6 +2739,7 @@ in front %3$s · in the background %4$s
     <string name="photos_empty">No photos here yet.</string>
     <string name="photos_allow_why">Allow access to your photos to see them here. They never leave the phone.</string>
     <string name="photos_allow">Allow</string>
+    <string name="glance_dream_label">Metro glance</string>
     <string name="lock_now">now</string>
     <string name="lock_in_minutes">in %1$d min</string>
     <string name="lock_in_hours">in %1$d h</string>
