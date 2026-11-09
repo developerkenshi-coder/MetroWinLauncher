@@ -664,7 +664,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     fun finishWidget(id: Int, provider: WidgetProvider) {
         // The smallest tile the widget fits whole in, with the real size of the tiles of this phone and this setting.
         val sides = TileGrid.sidesFor(settings.pagePadding, screenWidthDp)
-        val columns = TileGrid.columnsFor(screenWidthDp, settings.moreTiles, sides, settings.tileColumns)
+        val columns = TileGrid.columnsFor(screenWidthDp, settings.moreTiles, sides, settings.tileColumns, screenHeightDp)
         val size = WidgetSizing.tileSizeFor(provider, TileGrid.unitDp(screenWidthDp, columns, sidesDp = sides), gapDp = 6f)
         vm.addWidget(id, provider, lastStartPage.coerceIn(0, pages.size - 1), size)
         pendingWidget = null
@@ -1377,7 +1377,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             live = liveNow,
                             badges = badges,
                             peeks = peeks,
-                            columns = TileGrid.columnsFor(screenWidthDp, settings.moreTiles, TileGrid.sidesFor(settings.pagePadding, screenWidthDp), settings.tileColumns),
+                            columns = TileGrid.columnsFor(screenWidthDp, settings.moreTiles, TileGrid.sidesFor(settings.pagePadding, screenWidthDp), settings.tileColumns, screenHeightDp),
                             background = pageBackgrounds[page] ?: startBackground,
                             enterToken = enterToken,
                             exitRequest = exitRequest,

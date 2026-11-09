@@ -6,6 +6,8 @@ import com.metrowin.launcher.photos.panLimit
 import com.metrowin.launcher.photos.zoomAbout
 import com.metrowin.launcher.calendar.CalEvent
 import com.metrowin.launcher.data.LiveEvent
+import com.metrowin.launcher.data.TileGrid
+import com.metrowin.launcher.ui.anim.turnStart
 import com.metrowin.launcher.data.LockText
 import com.metrowin.launcher.data.StartEntries
 import com.metrowin.launcher.model.Tile
@@ -119,5 +121,21 @@ class HeavyVisualsTest {
         assertEquals(25, LockText.minutesTo(LiveEvent("x", 25 * 60_000L + 5_000, false), 0L))
         assertEquals(null, LockText.minutesTo(LiveEvent("x", 1_000L, true), 0L))
         assertEquals(null, LockText.minutesTo(LiveEvent("x", 1_000L, false), 2_000L))
+    }
+
+    @Test
+    fun aPhoneOnItsSideHasSixColumnsAndATabletKeepsWhatFits() {
+        assertEquals(6, TileGrid.columnsFor(800f, more = false, heightDp = 360f))
+        assertEquals(4, TileGrid.columnsFor(360f, more = false, heightDp = 800f))
+        assertEquals(12, TileGrid.columnsFor(1280f, more = true, heightDp = 800f))
+    }
+
+    @Test
+    fun thePageComesRoundFromWhereItWas() {
+        assertEquals(0f, turnStart(0, 0), 0f)
+        assertEquals(90f, turnStart(0, 1), 0f)
+        assertEquals(-90f, turnStart(1, 0), 0f)
+        assertEquals(180f, turnStart(0, 2), 0f)
+        assertEquals(-90f, turnStart(0, 3), 0f)
     }
 }
