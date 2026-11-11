@@ -1879,6 +1879,7 @@
     <string name="lock_sensor_own">MetroWin Fingerabdruck verwenden</string>
     <string name="lock_sensor_own_hint">Verdeckt den Fingerabdruck von Android mit einem von MetroWin. Bei manchen Telefonen liest der Sensor dann nicht mehr: Wenn der Finger nicht mehr entsperrt, ausschalten.</string>
     <string name="lock_fingerprint_hint">nach oben wischen oder Fingerabdruck nutzen</string>
+    <string name="lock_pin_hint">nach oben wischen und mit der PIN entsperren</string>
     <string name="theme_metro_status_bar">Windows-Phone-Statusleiste</string>
     <string name="theme_metro_status_bar_hint">Zeichnet die Statusleiste von Windows Phone anstelle der von Android: links die Benachrichtigungen, rechts Signal, WLAN, Akku mit Prozentzahl und die Uhrzeit. Die Leiste von Android wird ausgeblendet.</string>
     <string name="theme_metro_status_bar_apps">Windows-Phone-Statusleiste in anderen Apps</string>

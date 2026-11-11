@@ -201,8 +201,10 @@ fun MetroLockScreen(
     media: MediaInfo? = null,
     /** A call that is on: a card with the time, mute and end call, so the call can be handled without leaving the lock screen. */
     call: LockCall? = null,
-    /** A fingerprint is saved on the phone: a line says that it opens it. */
+    /** A fingerprint is saved on the phone and Android takes it now: a line says that it opens it. */
     fingerprint: Boolean = false,
+    /** Android asks for the PIN (the fingerprint is not taken now): the line says to swipe up and use it. */
+    pin: Boolean = false,
     /** Where the fingerprint sensor is under the screen, as a share of the height from the top; null when it is not under the screen. */
     sensorY: Float? = null,
     /** Draw a fingerprint of ours where the finger goes, over the icon of Android, instead of leaving a hole for it. */
@@ -298,9 +300,9 @@ fun MetroLockScreen(
         val spotRadius = maxWidth * SENSOR_R
         val reserve = if (sensorY != null) maxHeight * (1f - sensorY) + spotRadius * 1.3f else 0.dp
 
-        if (onUnlock != null && fingerprint) {
+        if (onUnlock != null && (fingerprint || pin)) {
             MetroText(
-                stringResource(R.string.lock_fingerprint_hint), size = 13.sp, color = Color.White.copy(alpha = 0.7f), maxLines = 1,
+                stringResource(if (pin) R.string.lock_pin_hint else R.string.lock_fingerprint_hint), size = 13.sp, color = Color.White.copy(alpha = 0.7f), maxLines = 1,
                 modifier = Modifier.align(Alignment.BottomCenter).then(rise).navigationBarsPadding().padding(bottom = 10.dp).testTag("lock:fingerprint"),
             )
         }

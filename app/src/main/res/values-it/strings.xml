@@ -1889,6 +1889,7 @@
     <string name="lock_sensor_own">Usa fingerprint MetroWin</string>
     <string name="lock_sensor_own_hint">Nasconde l\'impronta di Android sotto una di MetroWin. Su alcuni telefoni il sensore smette di leggere: se il dito non sblocca più, disattivalo.</string>
     <string name="lock_fingerprint_hint">scorri verso l\'alto o usa l\'impronta</string>
+    <string name="lock_pin_hint">scorri verso l\'alto e sblocca con il PIN</string>
     <string name="theme_metro_status_bar">Barra di stato Windows Phone</string>
     <string name="theme_metro_status_bar_hint">Disegna la barra di stato di Windows Phone al posto di quella di Android: a sinistra le notifiche, a destra segnale, Wi-Fi, batteria con la percentuale e ora. Toglie anche di mezzo la barra di Android.</string>
     <string name="theme_metro_status_bar_apps">Barra di stato Windows Phone nelle altre app</string>

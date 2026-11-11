@@ -56,7 +56,7 @@ import java.io.File
  * a call coming in takes it away at once, as the screen of the call must be reachable.
  */
 internal class LockOverlay(private val service: AccessibilityService) {
-    private class Shown(val view: ComposeView, val owner: OverlayWindowOwner, val windows: WindowManager, val touch: List<View>, val unlock: MutableIntState) {
+    private class Shown(val view: ComposeView, val owner: OverlayWindowOwner, val windows: WindowManager, val touch: List<View>, val unlock: MutableIntState, val way: LockAssist.Way) {
         var lifting = false
     }
 
@@ -71,7 +71,7 @@ internal class LockOverlay(private val service: AccessibilityService) {
                     show()
                 }
                 // A call coming in, or an alarm going off, wakes the screen: the lock screen would be over it.
-                Intent.ACTION_SCREEN_ON -> if (!quiet()) hide() else watchKeyguard()
+                Intent.ACTION_SCREEN_ON -> if (!quiet()) hide() else refresh()
                 Intent.ACTION_USER_PRESENT -> liftAndHide()
             }
         }
@@ -111,6 +111,38 @@ internal class LockOverlay(private val service: AccessibilityService) {
         }
     }
 
+    /**
+     * The screen came on: what Android will take to unlock may have changed while it was off (the 72 hours without the PIN pass in the
+     * night), or the SIM now asks for its PIN. The screen is made again for that, else it goes on to wait for the lock of Android to go.
+     */
+    private fun refresh() {
+        val current = shown ?: return
+        val decision = decide()
+        if (!decision.showOverlay || decision.way != current.way) {
+            hide()
+            show()
+        }
+        watchKeyguard()
+    }
+
+    /** What the lock of Android is expected to take, from what Android says (see [LockAssist]). */
+    private fun decide(): LockAssist.Decision {
+        val keyguard = service.getSystemService(KeyguardManager::class.java)
+        val since = if (Build.VERSION.SDK_INT >= 35) runCatching {
+            val last = service.getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+                .getLastAuthenticationTime(android.hardware.biometrics.BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+            LockAssist.sinceCredential(last, android.os.SystemClock.elapsedRealtime())
+        }.getOrNull() else null
+        return LockAssist.decide(keyguard?.isDeviceSecure == true, fingerprintEnrolled(), since, simNeedsPin())
+    }
+
+    /** A SIM waits for its PIN or PUK: the screen of Android that asks for it must not be under ours. */
+    private fun simNeedsPin(): Boolean = runCatching {
+        val phone = service.getSystemService(android.telephony.TelephonyManager::class.java) ?: return@runCatching false
+        val slots = if (Build.VERSION.SDK_INT >= 30) maxOf(1, phone.activeModemCount) else 1
+        (0 until slots).any { phone.getSimState(it) == android.telephony.TelephonyManager.SIM_STATE_PIN_REQUIRED || phone.getSimState(it) == android.telephony.TelephonyManager.SIM_STATE_PUK_REQUIRED }
+    }.getOrDefault(false)
+
     private fun watchKeyguard() {
         if (shown == null) return
         handler.removeCallbacks(keyguardCheck)
@@ -148,6 +180,8 @@ internal class LockOverlay(private val service: AccessibilityService) {
 
     private fun show() {
         if (shown != null || !quiet() || !SettingsStore.of(service).lockOverlayOn()) return
+        val decision = decide()
+        if (!decision.showOverlay) return
         val settings = SettingsStore.of(service).load()
         val photo = loadPhoto(settings.hasLockPhoto, settings.hasStartBackground)
         val owner = OverlayWindowOwner()
@@ -158,7 +192,7 @@ internal class LockOverlay(private val service: AccessibilityService) {
         // in the picture (Android's icon shows in it) and no window that takes touches below it. Sideways, or with a sensor on the side or
         // the back, there is no spot.
         val upright = screen.height > screen.width
-        val sensorShare = settings.lockSensorY.takeIf { upright && settings.lockSensorUnderScreen }
+        val sensorShare = settings.lockSensorY.takeIf { upright && settings.lockSensorUnderScreen && decision.fingerprintSpot }
         val sensorY = screen.height * (sensorShare ?: 0f)
         val sensorR = screen.width * SENSOR_R
         val unlock = mutableIntStateOf(0)
@@ -177,7 +211,8 @@ internal class LockOverlay(private val service: AccessibilityService) {
                         photo = photo,
                         options = settings.lockOptions(),
                         onUnlock = ::unlock,
-                        fingerprint = fingerprintEnrolled(),
+                        fingerprint = decision.way == LockAssist.Way.Fingerprint,
+                        pin = decision.way == LockAssist.Way.Pin,
                         sensorY = sensorShare,
                         ownIcon = settings.lockSensorOwnIcon,
                         unlockSignal = unlock.intValue,
@@ -219,7 +254,7 @@ internal class LockOverlay(private val service: AccessibilityService) {
                 if (runCatching { windows.addView(catcher, params) }.isSuccess) touch += catcher
             }
         }
-        shown = Shown(view, owner, windows, touch, unlock)
+        shown = Shown(view, owner, windows, touch, unlock, decision.way)
         // The notification service reads the notifications only while a screen shows them.
         NotificationHub.startWatching()
     }
@@ -248,10 +283,13 @@ internal class LockOverlay(private val service: AccessibilityService) {
         if (shown != null && service.getSystemService(android.os.PowerManager::class.java)?.isInteractive == true) hide()
     }
 
-    /** The phone has a fingerprint (or other biometric) saved: the lock screen says it can be used. */
+    /** The phone has a fingerprint (or other strong biometric) saved. */
     @Suppress("DEPRECATION")
     private fun fingerprintEnrolled(): Boolean = runCatching {
-        if (android.os.Build.VERSION.SDK_INT >= 29) {
+        if (android.os.Build.VERSION.SDK_INT >= 30) {
+            service.getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+                .canAuthenticate(android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG) == android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS
+        } else if (android.os.Build.VERSION.SDK_INT >= 29) {
             service.getSystemService(android.hardware.biometrics.BiometricManager::class.java).canAuthenticate() ==
                 android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS
         } else {

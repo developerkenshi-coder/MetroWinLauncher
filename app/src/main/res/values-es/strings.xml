@@ -1896,6 +1896,7 @@
     <string name="lock_sensor_own">Usar huella de MetroWin</string>
     <string name="lock_sensor_own_hint">Oculta la huella de Android bajo una de MetroWin. En algunos teléfonos el sensor deja de leer: si el dedo ya no desbloquea, desactívalo.</string>
     <string name="lock_fingerprint_hint">desliza hacia arriba o usa tu huella</string>
+    <string name="lock_pin_hint">desliza hacia arriba y desbloquea con tu PIN</string>
     <string name="theme_metro_status_bar">Barra de estado de Windows Phone</string>
     <string name="theme_metro_status_bar_hint">Dibuja la barra de estado de Windows Phone en lugar de la de Android: las notificaciones a la izquierda y, a la derecha, la señal, el Wi-Fi, la batería con su porcentaje y la hora. También oculta la barra de Android.</string>
     <string name="theme_metro_status_bar_apps">Barra de estado de Windows Phone en otras aplicaciones</string>

@@ -1896,6 +1896,7 @@
     <string name="lock_sensor_own">Usar impressão digital do MetroWin</string>
     <string name="lock_sensor_own_hint">Esconde a impressão digital do Android sob uma do MetroWin. Em alguns telemóveis o sensor deixa de ler: se o dedo já não desbloqueia, desative.</string>
     <string name="lock_fingerprint_hint">deslize para cima ou use a impressão digital</string>
+    <string name="lock_pin_hint">deslize para cima e desbloqueie com o PIN</string>
     <string name="theme_metro_status_bar">Barra de status do Windows Phone</string>
     <string name="theme_metro_status_bar_hint">Desenha a barra de status do Windows Phone no lugar da do Android: as notificações à esquerda e, à direita, o sinal, o Wi-Fi, a bateria com a porcentagem e a hora. Também tira a barra do Android do caminho.</string>
     <string name="theme_metro_status_bar_apps">Barra de status do Windows Phone em outros apps</string>

@@ -1896,6 +1896,7 @@
     <string name="lock_sensor_own">Utiliser l\'empreinte MetroWin</string>
     <string name="lock_sensor_own_hint">Cache l\'empreinte d\'Android sous une empreinte de MetroWin. Sur certains téléphones le capteur ne lit alors plus : si le doigt ne déverrouille plus, désactivez.</string>
     <string name="lock_fingerprint_hint">balayez vers le haut ou utilisez votre empreinte</string>
+    <string name="lock_pin_hint">balayez vers le haut et déverrouillez avec votre code</string>
     <string name="theme_metro_status_bar">Barre d’état Windows Phone</string>
     <string name="theme_metro_status_bar_hint">Dessine la barre d’état de Windows Phone à la place de celle d’Android : les notifications à gauche, et à droite le signal, le Wi-Fi, la batterie avec son pourcentage et l’heure. Elle masque aussi la barre d’Android.</string>
     <string name="theme_metro_status_bar_apps">Barre d’état Windows Phone dans les autres applications</string>
