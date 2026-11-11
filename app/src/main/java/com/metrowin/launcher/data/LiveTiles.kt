@@ -307,8 +307,8 @@ class LiveTileRepository(private val context: Context) {
             resolver.query(
                 CallLog.Calls.CONTENT_URI,
                 arrayOf(CallLog.Calls._ID),
-                "${CallLog.Calls.TYPE}=? AND ${CallLog.Calls.NEW}=1",
-                arrayOf(CallLog.Calls.MISSED_TYPE.toString()),
+                "${CallLog.Calls.TYPE}=? AND ${CallLog.Calls.NEW}=1 AND ${CallLog.Calls.DATE}>?",
+                arrayOf(CallLog.Calls.MISSED_TYPE.toString(), MissedCalls.seenAt(context).toString()),
                 null,
             )?.use { it.count } ?: 0
         }.getOrDefault(0)

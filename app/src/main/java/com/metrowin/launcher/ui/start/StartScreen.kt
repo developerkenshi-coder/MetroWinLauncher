@@ -109,6 +109,7 @@ import com.metrowin.launcher.model.StartEntry
 import com.metrowin.launcher.model.Tile
 import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.notifications.LiveCard
+import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.LocalTapFeedback
 import com.metrowin.launcher.ui.anim.metroPress
@@ -978,14 +979,14 @@ private fun PositionedTile(
             when (cell) {
                 is AppCell -> TileFace(
                     cell.item, cell.size, width, height, live,
-                    seed = cell.key.hashCode(), notifications = badges[cell.item.packageName] ?: 0,
+                    seed = cell.key.hashCode(), notifications = NotificationHub.badgeOf(badges, cell.item.packageName, cell.item.id),
                     style = cell.tile.style, cards = peeks[cell.item.packageName].orEmpty(),
                     interactive = editingKey == null, onLongClick = { currentActions.onLongClick(currentCell) },
                     onCounterStep = { delta -> currentActions.onCounterStep(cell.item.id, delta) },
                 )
                 is FolderCell -> FolderFace(
                     cell.folder, cell.items, cell.expanded, cell.size, width, height,
-                    notifications = cell.items.sumOf { badges[it.packageName] ?: 0 },
+                    notifications = cell.items.sumOf { NotificationHub.badgeOf(badges, it.packageName, it.id) },
                 )
             }
         }
@@ -1086,7 +1087,7 @@ private fun Modifier.tileSemantics(
 ): Modifier {
     val currentActions by rememberUpdatedState(actions)
     val currentCell by rememberUpdatedState(cell)
-    val notifications = (cell as? AppCell)?.let { badges[it.item.packageName] ?: 0 } ?: 0
+    val notifications = (cell as? AppCell)?.let { NotificationHub.badgeOf(badges, it.item.packageName, it.item.id) } ?: 0
     val selectedState = picked?.let { stringResource(if (it) R.string.a11y_selected else R.string.a11y_not_selected) }
     val state = when {
         selectedState != null -> selectedState

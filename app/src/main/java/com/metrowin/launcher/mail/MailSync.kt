@@ -28,7 +28,7 @@ import kotlin.concurrent.thread
 object MailSync {
     const val CHANNEL = "mail_new"
     private const val JOB_ID = 7303
-    private const val NOTIFICATION_ID = 0x4D41
+    const val NOTIFICATION_ID = 0x4D41
     private const val EVERY_MS = 30 * 60_000L
     private const val INBOX = "INBOX"
 

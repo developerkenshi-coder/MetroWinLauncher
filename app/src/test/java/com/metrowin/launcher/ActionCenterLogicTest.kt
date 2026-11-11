@@ -20,6 +20,19 @@ class ActionCenterLogicTest {
     }
 
     @Test
+    fun ownNotificationsOnlyCountOnTheirOwnTile() {
+        val sms = entry("0|me|${com.metrowin.launcher.messages.SmsReceiver.NOTIFICATION_ID}|+39|1", "me")
+        val mail = entry("0|me|${com.metrowin.launcher.mail.MailSync.NOTIFICATION_ID}|acc|1", "me")
+        val timer = entry("0|me|1|null|1", "me")
+        val own = NotificationHub.ownTileCounts(listOf(sms, sms.copy(key = "0|me|${com.metrowin.launcher.messages.SmsReceiver.NOTIFICATION_ID}|+40|1"), mail, timer, entry("0|a|7|null|2", "a")), "me")
+        assertEquals(mapOf("stock:messaging" to 2, "stock:mail" to 1), own)
+        // The Phone tile (the launcher's package, id stock:phone) gets nothing from them; a tile of another app keeps its count.
+        assertEquals(0, NotificationHub.badgeOf(own, "me", "stock:phone"))
+        assertEquals(2, NotificationHub.badgeOf(own, "me", "stock:messaging"))
+        assertEquals(3, NotificationHub.badgeOf(mapOf("a" to 3), "a", "app:a/x"))
+    }
+
+    @Test
     fun onlyUsefulNotificationsAreShown() {
         fun worth(ongoing: Boolean = false, summary: Boolean = false, ours: Boolean = false, title: String? = "Hi", text: String? = "x") =
             NotificationHub.isWorthShowing(ongoing, summary, ours, title, text)

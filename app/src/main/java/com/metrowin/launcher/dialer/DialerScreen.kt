@@ -57,6 +57,7 @@ import com.metrowin.launcher.data.DialerContactReader
 import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.data.PeopleReader
 import com.metrowin.launcher.data.PhoneCalls
+import com.metrowin.launcher.data.MissedCalls
 import com.metrowin.launcher.data.RecentCall
 import com.metrowin.launcher.messages.MessagesActivity
 import com.metrowin.launcher.data.SettingsStore
@@ -126,6 +127,12 @@ fun DialerScreen(
     val scope = rememberCoroutineScope()
     // The numbers on the keys 2 to 9 (long press), set from the history and shown on the keypad.
     var keys by remember { mutableStateOf(NumberBookStore(context).keys()) }
+    // The missed calls are seen when the history is: the number on the Phone tile goes (and goes again when the history is left, for what came meanwhile).
+    val onHistory = pager.currentPage == PAGE_HISTORY && hasCallLog
+    androidx.compose.runtime.DisposableEffect(onHistory) {
+        if (onHistory) scope.launch(Dispatchers.IO) { MissedCalls.markSeen(context.applicationContext) }
+        onDispose { if (onHistory) Thread { MissedCalls.markSeen(context.applicationContext) }.start() }
+    }
     // Back from another page goes to the one the phone opened on; only from there it leaves.
     val home = initialPage.coerceIn(0, 3)
     androidx.activity.compose.BackHandler(enabled = pager.currentPage != home) { scope.launch { pager.animateScrollToPage(home) } }

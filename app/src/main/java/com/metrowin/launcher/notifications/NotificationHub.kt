@@ -333,6 +333,22 @@ object NotificationHub {
     fun countsByPackage(entries: List<NotificationEntry>): Map<String, Int> =
         entries.groupingBy { it.packageName }.eachCount()
 
+    /**
+     * Every tile of an app of the launcher itself (Phone, People, Messages, Mail, the notes...) has the package of the launcher, so the
+     * count by package would put the text messages and the new mail on all of them. What is counted for them is only their own: the
+     * messages on the tile of Messages, the new mail on the tile of Mail (by the tile's id, see [badgeOf]); the Phone tile counts missed calls.
+     */
+    fun ownTileCounts(entries: List<NotificationEntry>, ownPackage: String): Map<String, Int> {
+        val own = entries.filter { it.packageName == ownPackage }
+        return mapOf(
+            "stock:messaging" to own.count { it.key.contains("|${com.metrowin.launcher.messages.SmsReceiver.NOTIFICATION_ID}|") },
+            "stock:mail" to own.count { it.key.contains("|${com.metrowin.launcher.mail.MailSync.NOTIFICATION_ID}|") },
+        ).filterValues { it > 0 }
+    }
+
+    /** The number for the tile of [id] in [packageName]: the app's notifications, or for the apps of the launcher the tile's own. */
+    fun badgeOf(badges: Map<String, Int>, packageName: String?, id: String): Int = packageName?.let(badges::get) ?: badges[id] ?: 0
+
     /** The most recent notification of each app (the entries come newest first), as the tiles flip to show it. */
     fun latestByPackage(entries: List<NotificationEntry>): Map<String, TilePeek> {
         val latest = LinkedHashMap<String, TilePeek>()

@@ -609,10 +609,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** How many notifications each app has: the counters on the tiles. */
     val badges: StateFlow<Map<String, Int>> =
         combine(NotificationHub.entries, TileFeed.tiles, _settings, liveInfo) { entries, published, settings, info ->
-            val counts = NotificationHub.countsByPackage(entries)
+            val counts = NotificationHub.countsByPackage(entries) - application.packageName
             // Messages are counted one by one: a chat with five waiting is five, not one.
             val counted = counts.mapValues { (pkg, n) -> maxOf(n, info[pkg]?.unread ?: 0) } +
-                info.filter { (pkg, i) -> pkg !in counts && i.unread > 0 }.mapValues { it.value.unread }
+                info.filter { (pkg, i) -> pkg !in counts && i.unread > 0 }.mapValues { it.value.unread } +
+                NotificationHub.ownTileCounts(entries, application.packageName)
             // The number an app published for its own tile wins over the count of its notifications.
             if (settings.thirdPartyTiles) counted + ThirdPartyTiles.counts(published) else counted
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
