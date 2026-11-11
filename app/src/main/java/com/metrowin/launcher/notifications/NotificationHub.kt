@@ -360,6 +360,12 @@ object NotificationHub {
     /** With the screen off or locked a notification is left in the shade of Android: taking it away would cut its sound. */
     fun keepForSound(interactive: Boolean, locked: Boolean): Boolean = !interactive || locked
 
+    /** How long after it came a notification may still be playing its sound or vibration. */
+    const val SOUND_GRACE_MS = 5_000L
+
+    /** True while a notification that came at [postTime] may still be sounding: cancelling it now would cut it. */
+    fun soundMayPlay(postTime: Long, now: Long): Boolean = now - postTime < SOUND_GRACE_MS
+
     /** Every notification up now that may be hidden is moved to the Action Center: at once, when the setting is turned on. */
     fun sweep() {
         service?.hideAllNow()

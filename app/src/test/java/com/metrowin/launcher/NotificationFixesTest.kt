@@ -176,4 +176,10 @@ class NotificationFixesTest {
         assertTrue("locked", NotificationHub.keepForSound(interactive = true, locked = true))
         assertFalse("screen on and unlocked", NotificationHub.keepForSound(interactive = true, locked = false))
     }
+
+    @Test
+    fun `a notification that just came is not cancelled while its sound may play`() {
+        assertTrue(NotificationHub.soundMayPlay(postTime = 10_000, now = 10_100))
+        assertFalse(NotificationHub.soundMayPlay(postTime = 10_000, now = 10_000 + NotificationHub.SOUND_GRACE_MS))
+    }
 }

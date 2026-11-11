@@ -163,14 +163,25 @@ class NotificationService : NotificationListenerService() {
         return allowed
     }
 
-    /** The same for everything in the shade now: when the listener connects and when a setting that decides it is changed. */
+    private val sweepLater = Runnable { hideAllNow() }
+
+    /**
+     * The same for everything in the shade now: when the listener connects, when the phone is looked at and when a setting that decides
+     * it is changed. Not with the screen off or locked (the sound of what came is not cut), and a notification that came a moment ago is
+     * left until its sound is over: the screen that a notification lights up is "on" before the sound has played.
+     */
     internal fun hideAllNow() {
         val store = SettingsStore.of(this)
-        if (!store.actionCenterOn() || !store.hideSystemOn() && !store.filterOn()) return
+        if (!store.actionCenterOn() || !store.hideSystemOn() && !store.filterOn() || awayFromScreen()) return
         val settings = store.load()
+        val now = System.currentTimeMillis()
+        var waiting = false
         runCatching { activeNotifications }.logged("notifications.hideFiltered").getOrNull()?.forEach { sbn ->
-            if (!dropFiltered(sbn, settings) && settings.hideSystemNotifications) hideFromAndroid(sbn, settings)
+            if (dropFiltered(sbn, settings) || !settings.hideSystemNotifications) return@forEach
+            if (NotificationHub.soundMayPlay(sbn.postTime, now)) waiting = true else hideFromAndroid(sbn, settings)
         }
+        handler.removeCallbacks(sweepLater)
+        if (waiting) handler.postDelayed(sweepLater, NotificationHub.SOUND_GRACE_MS)
         changed()
     }
 
