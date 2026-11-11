@@ -307,6 +307,14 @@
             </intent-filter>
         </activity>
 
+        <!-- The People app: the dialer screen opened on the contacts. -->
+        <activity
+            android:name=".dialer.PeopleActivity"
+            android:exported="false"
+            android:label="@string/stock_people"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+
         <!-- The mini apps that are only opened from the launcher (see MiniApps): not exported, nothing else may start them. -->
         <activity
             android:name=".calculator.CalculatorActivity"

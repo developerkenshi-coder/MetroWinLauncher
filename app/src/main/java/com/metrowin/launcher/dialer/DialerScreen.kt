@@ -120,14 +120,15 @@ fun DialerScreen(
         DialerRole.voicemail(context)
         onPlaced()
     }
-    // As on Windows Phone, the history comes first; the keypad is a page of its own, one tap away on the bar.
+    // The pivot keeps the order of Windows Phone, but the phone opens on the page it was asked for (the keypad); the history is a swipe away.
     val titles = listOf(R.string.dialer_tab_history, R.string.dialer_tab_favourites, R.string.dialer_tab_contacts, R.string.dialer_tab_keypad).map { stringResource(it) }
     val pager = rememberPagerState(initialPage = initialPage.coerceIn(0, 3)) { titles.size }
     val scope = rememberCoroutineScope()
     // The numbers on the keys 2 to 9 (long press), set from the history and shown on the keypad.
     var keys by remember { mutableStateOf(NumberBookStore(context).keys()) }
-    // Back from the keypad, the contacts or the favourites goes to the history, where the phone starts; only from there it leaves.
-    androidx.activity.compose.BackHandler(enabled = pager.currentPage != PAGE_HISTORY) { scope.launch { pager.animateScrollToPage(PAGE_HISTORY) } }
+    // Back from another page goes to the one the phone opened on; only from there it leaves.
+    val home = initialPage.coerceIn(0, 3)
+    androidx.activity.compose.BackHandler(enabled = pager.currentPage != home) { scope.launch { pager.animateScrollToPage(home) } }
     Column(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().centeredContent()) {
         PivotHeader(titles, pager, Modifier.padding(start = 24.dp, top = 20.dp, bottom = 8.dp))
         HorizontalPager(pager, Modifier.weight(1f), beyondViewportPageCount = 1) { page ->

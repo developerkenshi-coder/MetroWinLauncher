@@ -24,7 +24,10 @@ import com.metrowin.launcher.notifications.OverlayTheme
  * The phone app of the launcher. Android opens it for a `tel:` link or for "dial" from any app, once the launcher is the phone app of the
  * phone (or the user picks it), and the launcher opens it from the Phone tile. A number in the link is written in the keypad, not called.
  */
-class DialerActivity : ComponentActivity() {
+open class DialerActivity : ComponentActivity() {
+    /** The page that opens first: the keypad, to type a number. [PeopleActivity] opens the contacts. */
+    protected open val firstPage = PAGE_KEYPAD
+
     private val turn by lazy { PageTurn(intent.getBooleanExtra(PageTurn.EXTRA, false)) }
     private var number by mutableStateOf("")
 
@@ -37,7 +40,7 @@ class DialerActivity : ComponentActivity() {
             when {
                 intent.action == "com.metrowin.launcher.ACTION_CONTACTS" -> PAGE_CONTACTS
                 number.isNotEmpty() -> PAGE_KEYPAD
-                else -> PAGE_HISTORY
+                else -> firstPage
             },
         )
         val settings = SettingsStore.of(this).load()
@@ -59,4 +62,9 @@ class DialerActivity : ComponentActivity() {
     }
 
     private fun numberIn(intent: Intent) = PhoneCalls.numberOf(intent.dataString.orEmpty().let { android.net.Uri.decode(it) }).orEmpty()
+}
+
+/** The People app: the same screen as the dialer, opened on the contacts (the phone one opens on the keypad). */
+class PeopleActivity : DialerActivity() {
+    override val firstPage = PAGE_CONTACTS
 }

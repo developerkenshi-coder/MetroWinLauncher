@@ -5,6 +5,7 @@ import com.metrowin.launcher.calculator.CalculatorActivity
 import com.metrowin.launcher.calendar.CalendarActivity
 import com.metrowin.launcher.datasense.DataSenseActivity
 import com.metrowin.launcher.dialer.DialerActivity
+import com.metrowin.launcher.dialer.PeopleActivity
 import com.metrowin.launcher.files.FilesActivity
 import com.metrowin.launcher.mail.MailActivity
 import com.metrowin.launcher.messages.MessagesActivity
@@ -24,7 +25,7 @@ object MiniApps {
         "mail" to MailActivity::class.java,
         "messaging" to MessagesActivity::class.java,
         "phone" to DialerActivity::class.java,
-        "people" to DialerActivity::class.java,
+        "people" to PeopleActivity::class.java,
         "calculator" to CalculatorActivity::class.java,
         "notes" to NotesActivity::class.java,
         "news" to NewsActivity::class.java,
