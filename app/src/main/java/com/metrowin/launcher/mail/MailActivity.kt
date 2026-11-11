@@ -25,6 +25,8 @@ class MailActivity : ComponentActivity() {
         )
         super.onCreate(savedInstanceState)
         intent?.data?.let(MicrosoftOAuth::deliver)
+        // The accounts are read and the login to the server is made while the screen is drawn, not after it.
+        Thread { MailClients.warm(applicationContext) }.start()
         val settings = SettingsStore.of(this).load()
         setContent {
             OverlayTheme(settings, remember { IconLoader(applicationContext) }) {

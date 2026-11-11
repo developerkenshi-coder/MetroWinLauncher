@@ -61,4 +61,18 @@ class MailPartsTest {
         MailParts.walk(message(), found)
         assertEquals("contratto", String(found.wanted!!.inputStream.readBytes()))
     }
+
+    @Test
+    fun aLineOfTheListReadsOnlyTheFirstTextAndNotTheHugePageThatRepeatsIt() {
+        val alternative = MimeMultipart("alternative").apply {
+            addBodyPart(MimeBodyPart().apply { setContent("Ciao a tutti", "text/plain; charset=utf-8") })
+            addBodyPart(MimeBodyPart().apply { setContent("<p>" + "x".repeat(100_000) + "</p>", "text/html; charset=utf-8") })
+        }
+        val session = Session.getInstance(java.util.Properties())
+        val wire = java.io.ByteArrayOutputStream().also { MimeMessage(session).apply { setContent(alternative); saveChanges() }.writeTo(it) }.toByteArray()
+        val found = MailParts.Collected(light = true)
+        MailParts.walk(MimeMessage(session, wire.inputStream()), found)
+        assertEquals("Ciao a tutti", found.plain.toString())
+        assertEquals("", found.html.toString())
+    }
 }

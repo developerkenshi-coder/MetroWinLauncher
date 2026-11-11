@@ -79,9 +79,6 @@ private suspend fun <T> io(block: () -> T): Result<T> = withContext(Dispatchers.
 
 private const val INBOX = "INBOX"
 
-/** How many of the latest messages get a line of their text in the list. */
-private const val SNIPPETS = 15
-
 @Composable
 fun MailScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
@@ -107,9 +104,9 @@ fun MailScreen(modifier: Modifier = Modifier) {
     var syncing by remember { mutableStateOf(false) }
     // The messages ticked with a long press, by id.
     var picked by remember { mutableStateOf(emptySet<String>()) }
-    // One login to the server for as long as the screen is there (and the account is the same).
-    val client = remember(account?.id) { account?.let(repository::client) }
-    DisposableEffect(client) { onDispose { client?.close() } }
+    // The login to the server is the one already made (see MailClients: the activity makes it while the screen is drawn), and stays for a few minutes after the screen is left.
+    val client = remember(account?.id) { account?.let { MailClients.of(it, repository) } }
+    DisposableEffect(Unit) { onDispose { MailClients.release() } }
     // The mail is on screen: the notification of the account is no use now.
     LaunchedEffect(account?.id) { account?.let { MailSync.dismiss(context, it.id) } }
     // What the Mail tile counts is what the inbox has unread, so it follows what is read here.
@@ -119,8 +116,8 @@ fun MailScreen(modifier: Modifier = Modifier) {
         io { c.unread(INBOX) }.onSuccess { MailSync.setUnread(context, a.id, it) }
     }
 
-    // The messages follow the account, the folder, the search, the page size and the refresh button.
-    LaunchedEffect(account?.id, folder, reload, limit, query) {
+    // The messages follow the account, the folder, the search and the refresh button; more pages are asked by [loadMore], not by this.
+    LaunchedEffect(account?.id, folder, reload, query) {
         client ?: return@LaunchedEffect
         account ?: return@LaunchedEffect
         error = null
@@ -128,21 +125,43 @@ fun MailScreen(modifier: Modifier = Modifier) {
         val serverSearch = query.isNotBlank()
         // Typing a search waits for a pause before the server is asked.
         if (serverSearch) delay(400)
-        // What was seen last time is shown at once, and the server's answer replaces it.
-        if (messages == null && !serverSearch) messages = repository.cached(account.id, folder)
-        io { client.messages(folder, limit, query) }
+        // What was seen last time is shown at once (read off the main thread: it is decrypted), and the server's answer replaces it.
+        if (messages == null && !serverSearch) messages = withContext(Dispatchers.IO) { repository.cached(account.id, folder) }
+        if (!serverSearch) limit = MailClient.LIMIT
+        val kept = messages
+        io { MailListing.firstPage(client, folder, limit, query, kept) }
             .onSuccess { fresh ->
-                // The lines of the messages already read stay while the new list comes in.
-                val known = messages.orEmpty().associate { it.id to it.snippet }
-                messages = fresh.map { it.copy(snippet = known[it.id].orEmpty()) }
-                io { client.snippets(folder, fresh.take(SNIPPETS).map { it.id.toLong() }) }.onSuccess { lines ->
-                    messages = messages?.map { m -> lines[m.id]?.let { m.copy(snippet = it) } ?: m }
-                }
-                if (!serverSearch) messages?.let { repository.cache(account.id, folder, it.take(MailClient.LIMIT)) }
+                messages = fresh
+                // The list is there: the bar of dots stops here, and what is left (lines of text, the count) fills in behind it.
+                syncing = false
+                io { MailListing.lines(client, folder, fresh) }.onSuccess { lines -> messages = messages?.let { MailListing.withLines(it, lines) } }
+                if (!serverSearch) messages?.let { shown -> withContext(Dispatchers.IO) { repository.cache(account.id, folder, shown.take(MailClient.LIMIT)) } }
                 recount()
             }
-            .onFailure { error = it.message ?: it.javaClass.simpleName; messages = messages ?: emptyList() }
+            .onFailure { error = it.message ?: it.javaClass.simpleName; messages = messages ?: emptyList(); client.close() }
         syncing = false
+    }
+
+    /** The next page: only the older headers are asked of the server and added below, the ones shown are not fetched again (a search asks again for more). */
+    fun loadMore() {
+        val c = client ?: return
+        if (query.isNotBlank()) {
+            limit += MailClient.LIMIT
+            reload++
+            return
+        }
+        val have = messages.orEmpty()
+        syncing = true
+        scope.launch {
+            io { MailListing.morePage(c, folder, have) }
+                .onSuccess { all ->
+                    messages = all
+                    limit += MailClient.LIMIT
+                    io { MailListing.lines(c, folder, all.drop(have.size)) }.onSuccess { lines -> messages = messages?.let { MailListing.withLines(it, lines) } }
+                }
+                .onFailure { error = it.message ?: it.javaClass.simpleName }
+            syncing = false
+        }
     }
 
     if (account == null) {
@@ -272,9 +291,9 @@ fun MailScreen(modifier: Modifier = Modifier) {
         HorizontalPager(pager, Modifier.weight(1f), beyondViewportPageCount = 1) { page ->
             Box(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                 when (page) {
-                    0 -> InboxPage(shown { true }, ::read, messages.orEmpty().size >= limit, threads, picked, ::togglePick) { limit += MailClient.LIMIT }
-                    1 -> InboxPage(shown { it.isUnread }, ::read, messages.orEmpty().size >= limit, threads, picked, ::togglePick) { limit += MailClient.LIMIT }
-                    2 -> InboxPage(shown { it.isFlagged }, ::read, messages.orEmpty().size >= limit, threads, picked, ::togglePick) { limit += MailClient.LIMIT }
+                    0 -> InboxPage(shown { true }, ::read, messages.orEmpty().size >= limit, threads, picked, ::togglePick, ::loadMore)
+                    1 -> InboxPage(shown { it.isUnread }, ::read, messages.orEmpty().size >= limit, threads, picked, ::togglePick, ::loadMore)
+                    2 -> InboxPage(shown { it.isFlagged }, ::read, messages.orEmpty().size >= limit, threads, picked, ::togglePick, ::loadMore)
                     3 -> FoldersPage(client, current = folder) { path -> folder = path; messages = null; limit = MailClient.LIMIT; scope.launch { pager.animateScrollToPage(0) } }
                     else -> AccountsPage(
                         accounts = accounts,
@@ -286,6 +305,7 @@ fun MailScreen(modifier: Modifier = Modifier) {
                         },
                         onRemoveAccount = { id ->
                             repository.removeAccount(id)
+                            MailClients.drop(id)
                             MailSync.forget(context, id)
                             accounts = repository.loadAccounts()
                             MailSync.schedule(context)

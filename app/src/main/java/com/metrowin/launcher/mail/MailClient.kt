@@ -31,7 +31,7 @@ data class MailFolder(val path: String, val name: String)
  * The mail of an account, read and sent over IMAP and SMTP, always over TLS. Every call blocks on the network: call it off the main thread.
  * The IMAP login is kept between calls; whoever makes the client calls [close] when done with it (a dead login is made again on the next call).
  */
-class MailClient(private val account: MailAccount, private val secret: () -> String) {
+class MailClient(private val account: MailAccount, private val secret: () -> String) : MailSource {
     private fun properties(readTimeout: String = TIMEOUT): Properties = Properties().apply {
         put("mail.imaps.host", account.imapHost)
         put("mail.imaps.port", account.imapPort.toString())
@@ -66,6 +66,11 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
     }
 
     private var kept: Store? = null
+
+    /** Makes the login now (TLS and password), so the first command finds it ready. Throws when the server cannot be reached. */
+    fun connect() {
+        connected()
+    }
 
     @Synchronized
     private fun connected(): Store {
@@ -161,13 +166,13 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
         store.defaultFolder.list("*").filter { (it.type and Folder.HOLDS_MESSAGES) != 0 }.map { MailFolder(it.fullName, it.name) }
     }
 
-    /** The latest [limit] messages of the folder, newest first; with a [query], the latest that the server finds it in. The text of each is left for [body]. */
-    fun messages(path: String, limit: Int = LIMIT, query: String = ""): List<MailMessage> = folder(path, false) { uids ->
+    /** [limit] messages of the folder, newest first, after the [skip] newest; with a [query], the latest that the server finds it in. The text of each is left for [snippets] and [body]. */
+    override fun messages(path: String, limit: Int, query: String, skip: Int): List<MailMessage> = folder(path, false) { uids ->
         val folder = uids as Folder
         val all = if (query.isBlank()) {
-            val count = folder.messageCount
-            if (count == 0) return@folder emptyList()
-            folder.getMessages(maxOf(1, count - limit + 1), count)
+            val end = folder.messageCount - skip
+            if (end <= 0) return@folder emptyList()
+            folder.getMessages(maxOf(1, end - limit + 1), end)
         } else {
             folder.search(searchTerm(query.trim())).takeLast(limit).toTypedArray()
         }
@@ -189,8 +194,8 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
         }
     }
 
-    /** How many messages of [path] are unread. */
-    fun unread(path: String): Int = folder(path, false) { (it as Folder).unreadMessageCount }
+    /** How many messages of [path] are unread: one question to the server (STATUS), the folder is not opened for it. */
+    override fun unread(path: String): Int = store { it.getFolder(path).unreadMessageCount }
 
     /**
      * What the background check needs from [path]: the unread count, the highest UID in it, and the unread messages with a UID above [after]
@@ -209,13 +214,18 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
         Arrivals(folder.unreadMessageCount, last, fresh)
     }
 
-    /** The first words of the messages [uids], one line each, for the list; a message that cannot be read has none. */
-    fun snippets(path: String, uids: List<Long>): Map<String, String> = folder(path, false) { folder ->
-        uids.mapNotNull { uid ->
+    /**
+     * The first words of the messages [uids], one line each, for the list; a message that cannot be read has none. The messages are found
+     * and their structure fetched in one go each, then only the start of the first text part of each is read (see [MailParts.Collected.light]).
+     */
+    override fun snippets(path: String, uids: List<Long>): Map<String, String> = folder(path, false) { folder ->
+        val found = folder.getMessagesByUID(uids.toLongArray()).filterNotNull().toTypedArray()
+        runCatching { (folder as Folder).fetch(found, FetchProfile().apply { add(FetchProfile.Item.CONTENT_INFO) }) }
+        found.mapNotNull { m ->
             val text = runCatching {
-                folder.getMessageByUID(uid)?.let { m -> MailParts.Collected(light = true).also { MailParts.walk(m, it) }.let { f -> f.plain.toString().ifBlank { MailParts.stripTags(f.html.toString()) } } }
+                MailParts.Collected(light = true).also { MailParts.walk(m, it) }.let { f -> f.plain.toString().ifBlank { MailParts.stripTags(f.html.toString()) } }
             }.getOrNull()?.replace(Regex("\\s+"), " ")?.trim()
-            if (text.isNullOrEmpty()) null else uid.toString() to text.take(SNIPPET)
+            if (text.isNullOrEmpty()) null else folder.getUID(m).toString() to text.take(SNIPPET)
         }.toMap()
     }
 

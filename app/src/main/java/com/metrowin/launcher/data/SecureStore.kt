@@ -22,7 +22,12 @@ object SecureStore {
     private const val IV_BYTES = 12
     private const val TAG_BITS = 128
 
-    private fun key(): SecretKey {
+    /** The handle of the key, asked of the Keystore once: every read of an encrypted text asked it again (a call to another process each time). */
+    @Volatile private var cachedKey: SecretKey? = null
+
+    private fun key(): SecretKey = cachedKey ?: load().also { cachedKey = it }
+
+    private fun load(): SecretKey {
         val store = KeyStore.getInstance(PROVIDER).apply { load(null) }
         (store.getKey(ALIAS, null) as? SecretKey)?.let { return it }
         val spec = KeyGenParameterSpec.Builder(ALIAS, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
