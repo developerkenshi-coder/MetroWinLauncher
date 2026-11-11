@@ -14,10 +14,10 @@ sotto c'è il blocco vero di Android (PIN, impronta). Con una chiamata in corso 
 | Barra di stato / Action Center del launcher sopra il blocco | se la finestra non copre la tendina di Android, chi tira giù la tendina di sistema vede le sue notifiche (comandi rapidi inclusi) | solo con `disable-flag` (voce 12), che non è garantito |
 | Pulsanti di navigazione (home, recenti) | l'overlay è sotto al keyguard reale: Android mostra il suo blocco prima di qualunque app | niente da fare |
 | Il servizio di accessibilità spento dal sistema (o dall'utente) | il blocco Metro sparisce senza avviso; resta quello di Android | rilevabile (`LockAccessibilityService.instance == null`), non impedibile |
-| Finestra caricata a schermo spento, mostrata a schermo acceso | per un attimo può comparire il contenuto prima del keyguard (sfarfallio) | provare su telefono; ritardo di un frame |
+| Finestra caricata a schermo spento, mostrata a schermo acceso | per un attimo può comparire il contenuto prima del keyguard (sfarfallio) | ritardo di un frame |
 | Foto di sfondo, orologio, sveglia | nessun dato sensibile | — |
-| Scheda della chiamata nel blocco | mostra durata, silenzia e termina (`LockCall`): non sblocca nulla, ma dice che c'è una chiamata; la schermata completa si apre sopra il keyguard solo per le chiamate in arrivo | da provare su telefono |
-| Assistente vocale / comandi dal blocco | il riconoscimento vocale del launcher gira con lo schermo bloccato? Non risulta: va verificato | da provare |
+| Scheda della chiamata nel blocco | mostra durata, silenzia e termina (`LockCall`): non sblocca nulla, ma dice che c'è una chiamata; la schermata completa si apre sopra il keyguard solo per le chiamate in arrivo | — |
+| Assistente vocale / comandi dal blocco | il riconoscimento vocale del launcher gira con lo schermo bloccato? Non risulta | — |
 | Riavvio in modalità provvisoria | il servizio di accessibilità non parte: nessun blocco Metro | non impedibile |
 | `adb` con debug USB acceso e telefono sbloccato una volta | accesso al dato privato (con `run-as` solo su debug) | fuori dall'ambito |
 

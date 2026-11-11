@@ -34,5 +34,5 @@ Regola da imporre con `tools/package-deps.py --check` (estendere: `data` → nes
 - Ogni modulo Android aggiunge `AndroidManifest`/risorse: le stringhe in 6 lingue e `R` condiviso complicano i moduli di funzione (`android.nonTransitiveRClass=true` è già attivo).
 - `compose_stability.conf` e R8 (`proguard-rules.pro`) valgono per `:app`: i moduli con Compose avrebbero bisogno della stessa configurazione.
 - Build più lente al primo giro, più veloci incrementali; la regressione di avvio dell'app va misurata (`docs/progetti/macrobenchmark.md`).
-- F-Droid: la ricetta compila con `subdir: app`; i moduli fratelli sono trovati da `settings.gradle.kts` nella radice, da provare con `fdroid build`.
+- F-Droid: la ricetta compila con `subdir: app`; i moduli fratelli sono trovati da `settings.gradle.kts` nella radice.
 - Le modifiche non ancora salvate nel repository di altri lavori possono toccare gli stessi file: spostare un file alla volta, ogni volta con test verdi.

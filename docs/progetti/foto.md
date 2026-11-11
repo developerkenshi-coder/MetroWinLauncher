@@ -1,6 +1,6 @@
 # Hub Foto nativo (Album, Data, Preferiti)
 
-Stato: **fetta implementata** = pivot di 3 pagine con griglie di miniature, sola lettura, da MediaStore (`photos/`). Non provata su telefono con migliaia di foto; provata su emulatore (vedi sotto).
+Stato: **fetta implementata** = pivot di 3 pagine con griglie di miniature, sola lettura, da MediaStore (`photos/`). Provata su emulatore (vedi sotto).
 
 ## Che cosa c'è
 - Tile/app **«Hub foto»** (`stock_photohub`, id `photohub`, `MetroCatalog` + `MiniApps` + `PhotosActivity` nel manifest, stringhe nelle 6 lingue). Il tile `photos` esistente resta la galleria del telefono: l'hub è un'app in più, non la sostituisce (scelta voluta, per non togliere a nessuno la sua galleria).

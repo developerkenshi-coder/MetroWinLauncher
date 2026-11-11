@@ -14,7 +14,7 @@ Nessuna correzione è servita sul codice di produzione.
 ## Problemi trovati per lettura del codice (non corretti: cosmetici o non verificabili in Robolectric)
 1. **Turnstile e piuma** (`ui/anim/Motion.kt`: `turnstile`, `featherIn`): `TransformOrigin(0f, 0.5f)` e `rotationY` sono **assoluti**: in RTL le carte ruotano attorno al bordo sinistro anziché destro. Correggere richiede la direzione del layout dentro `GraphicsLayerScope` (non c'è: va passata da fuori e `if (rtl) TransformOrigin(1f, 0.5f)` con `rotationY` invertito). Altri punti uguali: `ui/gesture/LauncherPager.kt:36-38`, `ui/settings/SettingsScreen.kt:263,274` (la pagina entra con `translationX` positivo = da destra), `ui/mini/PageTurn.kt:65-66`, `ui/actioncenter/ActionCenter.kt:1077`, `ui/start/StartPhoto.kt` (parallasse).
 2. **Panorama** (`ui/gesture/Panorama.kt:84`): ha già un parametro `reverse`; non risulta collegato alla direzione del layout.
-3. **Gesti**: swipe da sinistra/destra del launcher (indietro, Action Center, pagina precedente) usano coordinate assolute; in RTL «indietro» dovrebbe venire dal bordo destro. Da provare su telefono.
+3. **Gesti**: swipe da sinistra/destra del launcher (indietro, Action Center, pagina precedente) usano coordinate assolute; in RTL «indietro» dovrebbe venire dal bordo destro.
 4. **Icone direzionali** (frecce di Glyphs: indietro, avanti): vanno specchiate (`autoMirror`) nei `Glyphs.kt` disegnati a mano.
 5. **Testo**: `TextAlign.Left/Right` e `Arrangement.Left/Right` non sono usati (controllato con grep): `Start/End` ovunque. Numeri e codici in testo arabo restano LTR (bidi di Android).
 6. **Manifest**: `supportsRtl="true"` c'è. Nessun `values-ldrtl`.

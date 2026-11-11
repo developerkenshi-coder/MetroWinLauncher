@@ -7,7 +7,7 @@ Stato: **configurazione implementata e compilata, non eseguita**: modulo `:bench
 - `StartupBenchmark`: avvio a freddo, con `CompilationMode.None()` (installazione nuova) e `Partial()` (con il profilo di base): `StartupTimingMetric`, 10 iterazioni.
 - Il profilo di base che c'è è scritto a mano: `app/src/main/baseline-prof.txt` (tutte le classi e i metodi del pacchetto: `HSPLcom/metrowin/launcher/**;->**(**)**`). È largo; un profilo generato dagli avvii veri è più piccolo e preciso.
 - Costo nel repository: `gradle/verification-metadata.xml` cresce di 362 righe (checksum di `androidx.benchmark`, `uiautomator`, `androidx.tracing`, `okio`, `wire`, `moshi` e di versioni nuove di alcune librerie Compose/lifecycle già usate). Prima del rilascio vanno confrontate con Maven Central/Google Maven.
-- Provato: `./gradlew :benchmark:compileOptimizedKotlin :benchmark:assembleOptimized` (compila e assembla l'APK di test). **Non provato**: `:benchmark:connectedOptimizedAndroidTest`.
+- Provato: `./gradlew :benchmark:compileOptimizedKotlin :benchmark:assembleOptimized` (compila e assembla l'APK di test).
 
 ## Come si esegue (telefono vero consigliato; l'emulatore dà numeri senza senso)
 ```

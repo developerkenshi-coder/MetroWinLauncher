@@ -1,0 +1,1 @@
+Classic Windows Phone look, panorama hubs, photo viewer, People hub, Now Playing, calendar day view, scanning codes in Wallet. Start: arrow, dots or nothing; the photo stays still and fills. Charging animations. Fixes: notification sound with the screen off, Phone opens on the keypad, People on contacts, missed-call count, no fingerprint when the PIN is due, Mail opens fast.

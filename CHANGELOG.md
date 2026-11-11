@@ -3,6 +3,32 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
+## 26.9.2S: 2026-11-11
+
+The complete list is in the notes of the release / L'elenco completo è nelle note della versione.
+
+**English:**
+- **Windows Phone look**: bordered text fields, progress dots, a thin scroll bar, drawn marks, the Metro toast, rows and dialogs that swivel, panorama hubs for Photos and News, the modern turnstile and an app splash.
+- **Apps**: a full photo viewer, a People hub, Now Playing, the day view of the Calendar, thumbnails in Mail, scanning a code with the camera in Wallet, drag to reorder in To do, highlighter in Sketches.
+- **Start**: arrow, three dots or nothing after the last tile; the photo of Start stays still between two Starts and covers the bottom; free mode with blocks; landscape with six columns.
+- **Lock screen and charging**: text that rises, a Glance screen as a screen saver, and charging animations (banner, status bar, lock screen).
+- **Fix, notifications**: text messages, mail, timers, reminders and the data limit show in the Metro banner and the Action Center, and their sound plays with the screen off.
+- **Fix, status bar**: readable over light backgrounds.
+- **Fix, Phone and People**: Phone opens on the keypad, People on the contacts; the Phone tile counts only unseen missed calls.
+- **Fix, lock screen**: no fingerprint offered when Android asks for the PIN, and it stays off the SIM PIN screen.
+- **Mail** opens fast: the list comes from the saved copy, the login stays open, previews load only for what is missing.
+
+**Italiano:**
+- **Aspetto Windows Phone**: campi con bordo, puntini di avanzamento, barra di scorrimento sottile, segni disegnati, il toast Metro, righe e dialoghi che girano, hub panorama per Foto e Notizie, il turnstile moderno e una schermata iniziale delle app.
+- **App**: un visore foto completo, un hub Persone, In riproduzione, la vista del giorno del Calendario, miniature nella Posta, scansione di un codice con la fotocamera nel Wallet, trascinamento per riordinare in Da fare, evidenziatore negli Schizzi.
+- **Start**: freccia, tre puntini o niente dopo l'ultimo riquadro; la foto di Start resta ferma tra due Start e copre il fondo; modalità libera a blocchi; orizzontale a sei colonne.
+- **Blocco schermo e ricarica**: testo che sale, una schermata Glance come salvaschermo e animazioni di ricarica (banner, barra di stato, blocco schermo).
+- **Correzione, notifiche**: messaggi, posta, timer, promemoria e limite dati compaiono nel banner Metro e nel Centro azioni, e il loro suono parte a schermo spento.
+- **Correzione, barra di stato**: leggibile sugli sfondi chiari.
+- **Correzione, Telefono e Persone**: Telefono si apre sul tastierino, Persone sui contatti; il riquadro Telefono conta solo le chiamate perse non viste.
+- **Correzione, blocco schermo**: niente impronta quando Android chiede il PIN, e resta fuori dalla schermata del PIN della SIM.
+- **La Posta** si apre in fretta: l'elenco viene dalla copia salvata, il login resta aperto, le anteprime si caricano solo per ciò che manca.
+
 ## 26.8S: 2026-11-08
 
 The complete list is in the notes of the release / L'elenco completo è nelle note della versione.

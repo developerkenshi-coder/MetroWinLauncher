@@ -38,7 +38,7 @@ Tutti i file stanno in `fastlane/metadata/android/<lingua>/`. Le lingue ora sono
 | **Icona** | `images/icon.png` | PNG, 512×512 | |
 | **Screenshot** | `images/phoneScreenshots/1.png`, `2.png`, … | PNG o JPG | si mostrano in ordine numerico; ora sono 8 per lingua, 1080×2400 |
 | **Immagine in evidenza** (facoltativa) | `images/featureGraphic.png` | PNG, 1024×500 | il banner in cima alla scheda |
-| **Changelog di una versione** | `changelogs/<versionCode>.txt` | 500 caratteri | il nome è il `versionCode`: la versione 26.8S (codice 45) usa `45.txt` |
+| **Changelog di una versione** | `changelogs/<versionCode>.txt` | 500 caratteri | il nome è il `versionCode`: la versione 26.9.2S (codice 47) usa `47.txt` |
 | **Nome sotto l'icona sul telefono** | `app/src/main/res/values/strings.xml` e `values-it/strings.xml`, voce `app_name` | | è un cambio dell'app, esce con la versione |
 | **Categorie, licenza, autore, link, tipo di aggiornamento** | la ricetta in fdroiddata | | richiede una merge request |
 

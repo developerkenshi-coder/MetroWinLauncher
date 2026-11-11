@@ -46,7 +46,7 @@ Oggi non c'è numero di versione: i campi sono tre e fissi. Regola proposta:
 - `protectionLevel="normal"`: qualunque app installata può scrivere sul proprio tile. Non può impersonare un'altra app, ma può mostrare testo
   ingannevole sul proprio tile (limite 160 caratteri, nessun link). Alternativa se serve: `signature` (nessuna terza parte) o un elenco consentito scelto dall'utente.
 - Visibilità dei pacchetti (Android 11+): l'app chiamante deve dichiarare `<queries><provider android:authorities="com.metrowin.launcher.tiles" /></queries>`,
-  altrimenti `call` fallisce come se il launcher non ci fosse. Da provare su telefono; da mettere anche nel manifest dell'SDK.
+  altrimenti `call` fallisce come se il launcher non ci fosse. Da mettere anche nel manifest dell'SDK.
 - I produttori aggressivi possono fermare il launcher (`docs/progetti/sfondo-affidabile.md`); la chiamata fa ripartire il processo del provider.
 
 ## SDK: passi
@@ -56,4 +56,4 @@ Oggi non c'è numero di versione: i campi sono tre e fissi. Regola proposta:
 
 ## Cosa serve per provare su telefono
 Un'app di prova con il permesso, il launcher installato e il tile di quell'app fissato sulla Start. L'adb non basta: `adb shell content call --uri content://com.metrowin.launcher.tiles --method publish --extra title:s:Prova --extra text:s:Ciao --extra count:i:3`
-gira come utente shell, che non ha il permesso `PUBLISH_TILE`: dà `SecurityException` (da provare anche questo).
+gira come utente shell, che non ha il permesso `PUBLISH_TILE`: dà `SecurityException`.

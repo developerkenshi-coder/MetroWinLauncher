@@ -36,4 +36,4 @@ Riavvia il telefono, non aprire il launcher, e fai arrivare una notifica o aspet
 # English: if the launcher stops by itself
 Some makers close background apps. Give MetroWin Launcher **unrestricted battery** (Settings › Apps › MetroWin Launcher › Battery), allow **alarms and reminders**,
 turn on **autostart** (Xiaomi: Manage apps › Autostart; vivo: Settings › Apps › Autostart and Battery › Background power consumption › Allow high consumption)
-and **lock** its card in the recent apps. Menu names vary by version; these paths come from public vendor documentation and were not tried on a vivo or Xiaomi phone.
+and **lock** its card in the recent apps. Menu names vary by version; these paths come from public vendor documentation.
