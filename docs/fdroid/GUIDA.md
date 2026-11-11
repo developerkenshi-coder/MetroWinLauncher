@@ -6,7 +6,7 @@ come si rilascia una versione nuova e che cosa succede quando si manda l'app in 
 ## Stato
 
 La richiesta a F-Droid è **rimandata**: la policy chiede almeno 3 mesi di sviluppo attivo e il primo commit è del 24 ottobre 2026, quindi
-si riprende **verso fine gennaio 2027**. Nel frattempo le versioni 26.1S, 26.2S, 26.3S, 26.4S, 26.5.5S, 26.6.2S, 26.6.3S, 26.7.2S e 26.8S sono pubbliche su GitHub, firmate con una chiave propria del
+si riprende **verso fine gennaio 2027**. Nel frattempo le versioni 26.1S, 26.2S, 26.3S, 26.4S, 26.5.5S, 26.6.2S, 26.6.3S, 26.7.2S, 26.8S e 26.9.2S sono pubbliche su GitHub, firmate con una chiave propria del
 progetto. Quando si riprende: porta la ricetta all'ultima versione (`versionName`, `versionCode`, `CurrentVersion*`), metti nel campo `commit`
 l'hash completo del tag, e segui la sezione «Che cosa succede quando mandi l'app in pubblicazione».
 
