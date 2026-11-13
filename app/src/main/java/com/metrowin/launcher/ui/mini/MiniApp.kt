@@ -17,6 +17,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import com.metrowin.launcher.ui.components.LocalAppTitle
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.ui.theme.LocalMetroColors
 import androidx.lifecycle.lifecycleScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -39,15 +45,29 @@ abstract class MiniActivity : ComponentActivity() {
 
     private val turn by lazy { PageTurn(intent.getBooleanExtra(PageTurn.EXTRA, false)) }
 
+    /** The settings in use; read again at each start, so a theme changed in the launcher while this app was behind it shows at once. */
+    private var settings by mutableStateOf(LauncherSettings())
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT), navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        val settings = SettingsStore.of(this).load()
+        settings = SettingsStore.of(this).load()
         setContent {
             OverlayTheme(settings, remember { IconLoader(applicationContext) }) {
+                // Light page: dark icons in the bars. The page knows if it is dark (system mode, schedule, sun), so this follows it.
+                val dark = LocalMetroColors.current.dark
+                LaunchedEffect(dark) {
+                    val bar = if (dark) SystemBarStyle.dark(Color.TRANSPARENT) else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                    enableEdgeToEdge(statusBarStyle = bar, navigationBarStyle = bar)
+                }
                 CompositionLocalProvider(LocalAppTitle provides title.toString()) { TurnPage(turn) { Box(Modifier.rotateOnTurn()) { Content() } } }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        settings = SettingsStore.of(this).load()
     }
 
     /** With the original animation the page turns away first, and the window closes without its own animation. */
@@ -57,12 +77,16 @@ abstract class MiniActivity : ComponentActivity() {
 
 }
 
-/** The page of a mini app: the background of the look in use, clear of the bars and of the camera hole. */
+/**
+ * The page of a mini app: the background of the look in use, clear of the bars and of the camera hole. [backdrop] draws the page
+ * behind it (a cover, a picture): the default is the background of the look; pass `{ this }` for none, when the content draws its own.
+ * The sides of the content: see [miniPageSide], which the screens use in place of a fixed 24 dp.
+ */
 @Composable
-fun MiniFrame(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    // shortcut: the screens of the mini apps have their own 24 dp inside, so only "wide" changes them, compact leaves them as they are; give them pageSide when they are touched next.
+fun MiniFrame(modifier: Modifier = Modifier, backdrop: @Composable Modifier.() -> Modifier = { pageBackground() }, content: @Composable ColumnScope.() -> Unit) {
+    // shortcut: this frame adds only what "wide" says, because the screens have their own 24 dp inside; they move to miniPageSide(24.dp) one by one.
     Column(
-        modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().cutoutSidesPadding().centeredContent()
+        modifier.fillMaxSize().backdrop().topBarsPadding().navigationBarsPadding().cutoutSidesPadding().centeredContent()
             .padding(horizontal = pageSide(0.dp)),
         content = content,
     )
