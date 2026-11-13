@@ -20,8 +20,9 @@ object DayLayout {
         val to = day.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
         val timed = events.filter { !it.allDay && it.start < to && it.end > from }
             .map { e ->
-                val start = ((maxOf(e.start, from) - from) / 60_000L).toInt()
-                val end = ((minOf(e.end, to) - from) / 60_000L).toInt()
+                // Minutes of the wall clock, not of elapsed time: on a day of a summer time change the labels of the hours and the blocks agree.
+                val start = CalendarLogic.wallMinutes(e.start, day, zone)
+                val end = CalendarLogic.wallMinutes(e.end, day, zone)
                 Triple(e, start, maxOf(end, start + MIN_MINUTES).coerceAtMost(MINUTES_IN_DAY).let { if (it <= start) start + 1 else it })
             }
             .sortedWith(compareBy({ it.second }, { -(it.third - it.second) }))
