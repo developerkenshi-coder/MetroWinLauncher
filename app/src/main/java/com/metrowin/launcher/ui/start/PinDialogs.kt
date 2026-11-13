@@ -1,6 +1,18 @@
 package com.metrowin.launcher.ui.start
 
 import kotlinx.coroutines.launch
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.focusable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.dismiss
+import androidx.compose.ui.semantics.paneTitle
 import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.anim.metroTween
@@ -31,6 +43,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -106,6 +119,16 @@ internal fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, ti
             currentCancel()
         }
     }
+    // Back closes the dialog (and not the page behind it); the keyboard goes with it; the focus moves into the panel, unless a field in it took it already.
+    BackHandler { cancel() }
+    val keyboard = LocalSoftwareKeyboardController.current
+    DisposableEffect(Unit) { onDispose { keyboard?.hide() } }
+    val focus = remember { FocusRequester() }
+    var focusInside by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        withFrameNanos { }
+        if (!focusInside) runCatching { focus.requestFocus() }
+    }
     Box(
         modifier
             .fillMaxSize()
@@ -126,6 +149,12 @@ internal fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, ti
                 }
                 .panel()
                 .pointerInput(Unit) { detectTapGestures { } }
+                // TalkBack announces the pane by its title and can dismiss it; Escape does the same on a keyboard.
+                .semantics { if (title != null) paneTitle = title; dismiss { cancel(); true } }
+                .onPreviewKeyEvent { if (it.key == Key.Escape && it.type == KeyEventType.KeyUp) { cancel(); true } else false }
+                .focusRequester(focus)
+                .onFocusChanged { focusInside = it.hasFocus }
+                .focusable()
                 // On a short screen or with big text the panel scrolls: its last button can always be reached.
                 .verticalScroll(rememberScrollState())
                 .padding(20.dp),
