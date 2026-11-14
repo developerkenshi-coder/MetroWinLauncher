@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the Photo hub (photos/). -->
+<resources>
+    <string name="ph_describe_favorite_album">%1$s, album %2$s, favourite</string>
+    <string name="ph_describe_favorite">%1$s, favourite</string>
+    <string name="ph_describe_album">%1$s, album %2$s</string>
+    <string name="ph_select_toggle">select</string>
+    <string name="ph_scrub">jump through the dates</string>
+    <string name="ph_loading">Reading the pictures…</string>
+    <string name="ph_confirm_yes">delete</string>
+    <string name="ph_cancel">cancel</string>
+    <string name="ph_options_title">photo options</string>
+    <string name="ph_gap">space between pictures (dp)</string>
+    <string name="ph_group">date headings by</string>
+    <string name="ph_done">done</string>
+    <string name="ph_group_day">day</string>
+    <string name="ph_group_month">month</string>
+    <string name="ph_group_year">year</string>
+    <string name="ph_opt_select">select several pictures (long press, then drag)</string>
+    <string name="ph_opt_favorite_edit">the heart marks a favourite</string>
+    <string name="ph_opt_search">search box (album, month, year, day)</string>
+    <string name="ph_opt_keep_ratio">pictures keep their shape in the grids</string>
+    <string name="ph_opt_date_scrubber">headings stay on top, handle to jump through the dates</string>
+    <string name="ph_opt_mosaic">albums show four pictures</string>
+    <string name="ph_opt_camera_first">camera album first</string>
+    <string name="ph_opt_memories">memories page (this day in earlier years)</string>
+    <string name="ph_opt_viewer_fx">viewer: fading bar, melting picture, counter, give of the zoom</string>
+    <string name="ph_opt_immersive">hide the system bars with the viewer bar</string>
+    <string name="ph_opt_swipe_close">swipe down closes the viewer</string>
+    <string name="ph_opt_filmstrip">strip of small pictures in the viewer</string>
+    <string name="ph_opt_adaptive_background">viewer takes the tone of the picture</string>
+    <string name="ph_opt_extras">slideshow and wallpaper in the info</string>
+    <string name="ph_opt_strip_metadata">share without metadata (place, camera, date)</string>
+    <string name="ph_opt_duplicates">page of identical pictures</string>
+    <string name="ph_opt_hints">hint on the gestures, the first time</string>
+    <string name="ph_opt_favorite_mark">small heart on favourite pictures</string>
+    <string name="ph_opt_neutral_placeholder">grey placeholder while a picture is read</string>
+    <string name="ph_memories">memories</string>
+    <string name="ph_duplicates">duplicates</string>
+    <string name="ph_partial">Only some pictures are shared with the hub.</string>
+    <string name="ph_partial_more">select more</string>
+    <string name="ph_more_note">Showing the last %d pictures.</string>
+    <string name="ph_more">load more</string>
+    <string name="ph_search_hint">album, month, year, day</string>
+    <string name="ph_search">search</string>
+    <string name="ph_select">select</string>
+    <string name="ph_options">options</string>
+    <string name="ph_fav_add">add to favourites</string>
+    <string name="ph_fav_remove">remove from favourites</string>
+    <string name="ph_compare">compare</string>
+    <string name="ph_today">Today</string>
+    <string name="ph_yesterday">Yesterday</string>
+    <string name="ph_dup_group">%1$d identical · %2$s each</string>
+    <string name="ph_hint">Pinch or double tap to zoom, swipe down to close.</string>
+    <string name="ph_slideshow">slideshow</string>
+    <string name="ph_wallpaper">set as wallpaper</string>
+    <string name="ph_zoom_in">zoom in</string>
+    <string name="ph_zoom_out">zoom out</string>
+    <string name="ph_strip_failed">Could not prepare the copies without metadata. Nothing was shared.</string>
+    <string name="ph_delete_failed">Could not delete</string>
+    <string name="ph_undo">undo</string>
+    <plurals name="ph_count">
+        <item quantity="one">%d photo</item>
+        <item quantity="other">%d photos</item>
+    </plurals>
+    <plurals name="ph_selected">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
+    <plurals name="ph_years_ago">
+        <item quantity="one">%d year ago</item>
+        <item quantity="other">%d years ago</item>
+    </plurals>
+    <plurals name="ph_confirm_delete">
+        <item quantity="one">Delete %d photo for good? It cannot be undone.</item>
+        <item quantity="other">Delete %d photos for good? It cannot be undone.</item>
+    </plurals>
+    <plurals name="ph_trashed">
+        <item quantity="one">%d photo moved to the trash</item>
+        <item quantity="other">%d photos moved to the trash</item>
+    </plurals>
+</resources>

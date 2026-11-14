@@ -5,6 +5,7 @@ import android.provider.MediaStore
 import com.metrowin.launcher.photos.Photo
 import com.metrowin.launcher.photos.PhotoLibrary
 import com.metrowin.launcher.photos.PhotoReader
+import com.metrowin.launcher.photos.PhotoRows
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -29,8 +30,8 @@ class PhotoLibraryTest {
     @Test
     fun albumsAreByNameWithTheNamelessOnesLastAndNewestFirstInside() {
         val albums = PhotoLibrary.albums(library)
-        assertEquals(listOf("Camera", "camera roll", "WhatsApp", ""), albums.map { it.first })
-        assertEquals(listOf(1L, 2L), albums.first().second.map { it.id })
+        assertEquals(listOf("Camera", "camera roll", "WhatsApp", ""), albums.map { it.name })
+        assertEquals(listOf(1L, 2L), albums.first().photos.map { it.id })
     }
 
     @Test
@@ -72,5 +73,110 @@ class PhotoLibraryTest {
         val photos = PhotoReader.parse(cursor(arrayOf(MediaStore.Images.Media._ID), arrayOf(1L)))
         assertEquals(1, photos.size)
         assertFalse(photos.single().favorite)
+    }
+
+    @Test
+    fun twoStoragesWithTheSameAlbumNameStayTwoAlbums() {
+        val two = listOf(Photo(1, "Camera", base, false, volume = "external_primary"), Photo(2, "Camera", base, false, volume = "1234-ABCD"))
+        val albums = PhotoLibrary.albums(two)
+        assertEquals(2, albums.size)
+        assertEquals(2, albums.map { it.key }.toSet().size)
+    }
+
+    @Test
+    fun theCameraAlbumCanLeadTheOthers() {
+        val list = listOf(Photo(1, "Alpha", base, false), Photo(2, "Camera", base, false), Photo(3, "", base, false))
+        assertEquals(listOf("Alpha", "Camera", ""), PhotoLibrary.albums(list).map { it.name })
+        assertEquals(listOf("Camera", "Alpha", ""), PhotoLibrary.albums(list, cameraFirst = true).map { it.name })
+    }
+
+    @Test
+    fun sectionsGroupByMonthAndYearWithTheLatestFirst() {
+        val list = listOf(
+            Photo(1, "", LocalDate.of(2026, 11, 8).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(), false),
+            Photo(2, "", LocalDate.of(2026, 11, 2).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(), false),
+            Photo(3, "", LocalDate.of(2026, 3, 2).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(), false),
+            Photo(4, "", LocalDate.of(2025, 3, 2).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(), false),
+        )
+        val months = PhotoLibrary.sections(list, com.metrowin.launcher.photos.Granularity.Month, ZoneOffset.UTC)
+        assertEquals(listOf(LocalDate.of(2026, 11, 1), LocalDate.of(2026, 3, 1), LocalDate.of(2025, 3, 1)), months.map { it.date })
+        assertEquals(2, months.first().photos.size)
+        val years = PhotoLibrary.sections(list, com.metrowin.launcher.photos.Granularity.Year, ZoneOffset.UTC)
+        assertEquals(listOf(3, 1), years.map { it.photos.size })
+    }
+
+    @Test
+    fun memoriesAreTheSameDayOfEarlierYears() {
+        val list = listOf(
+            Photo(1, "", LocalDate.of(2025, 11, 8).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli() + 1000, false),
+            Photo(2, "", LocalDate.of(2023, 11, 8).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli() + 1000, false),
+            Photo(3, "", LocalDate.of(2025, 11, 9).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli() + 1000, false),
+            Photo(4, "", LocalDate.of(2026, 11, 8).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli() + 1000, false),
+        )
+        val memories = PhotoLibrary.memories(list, LocalDate.of(2026, 11, 8), ZoneOffset.UTC)
+        assertEquals(listOf(1, 3), memories.map { it.first })
+        assertEquals(listOf(1L), memories.first().second.map { it.id })
+    }
+
+    @Test
+    fun searchNeedsEveryWordInTheAlbumTheMonthOrTheYear() {
+        val month = { m: Int -> if (m == 11) "november" else "other" }
+        assertEquals(listOf(1L, 2L), PhotoLibrary.search(library, "camera", month, ZoneOffset.UTC).map { it.id }.sorted().take(2))
+        assertEquals(5, PhotoLibrary.search(library, "2026", month, ZoneOffset.UTC).size)
+        assertEquals(listOf(3L), PhotoLibrary.search(library, "whatsapp november", month, ZoneOffset.UTC).map { it.id })
+        assertTrue(PhotoLibrary.search(library, "nothing here", month, ZoneOffset.UTC).isEmpty())
+        assertEquals(library, PhotoLibrary.search(library, "  ", month, ZoneOffset.UTC))
+    }
+
+    @Test
+    fun duplicatesShareSizeDimensionsAndMoment() {
+        val a = Photo(1, "A", base, false, width = 100, height = 50, bytes = 999)
+        val copy = a.copy(id = 2, album = "B")
+        val other = a.copy(id = 3, bytes = 1000)
+        val unknown = Photo(4, "", base, false)
+        val groups = PhotoLibrary.duplicates(listOf(a, copy, other, unknown, unknown.copy(id = 5)))
+        assertEquals(1, groups.size)
+        assertEquals(setOf(1L, 2L), groups.single().map { it.id }.toSet())
+    }
+
+    @Test
+    fun squareRowsHaveTheSameNumberOfPicturesAndTheLastOneIsShort() {
+        val rows = PhotoRows.layout(List(7) { 1.5f }, width = 1000f, targetHeight = 240f, gap = 10f, square = true)
+        assertEquals(listOf(4, 3), rows.map { it.fractions.size })
+        assertEquals(rows[0].height, rows[1].height, 0.01f)
+        // Four squares and three gaps fill the row exactly.
+        assertEquals(1000f, rows[0].fractions.sum() * 1000f + 30f, 0.5f)
+    }
+
+    @Test
+    fun proportionalRowsFillTheWidthExceptTheLastOne() {
+        val ratios = listOf(1.5f, 0.75f, 1f, 1.78f, 1f, 1f, 1f)
+        val rows = PhotoRows.layout(ratios, width = 1000f, targetHeight = 200f, gap = 8f, square = false)
+        rows.dropLast(1).forEach { row -> assertEquals(1000f, row.fractions.sum() * 1000f + 8f * (row.fractions.size - 1), 1f) }
+        assertEquals(ratios.size, rows.sumOf { it.fractions.size })
+        assertEquals(200f, rows.last().height, 0.01f)
+        assertTrue(PhotoRows.layout(emptyList(), 1000f, 100f, 4f, false).isEmpty())
+    }
+
+    @Test
+    fun aHugeLibraryIsGroupedAtOnce() {
+        val big = List(60_000) { Photo(it.toLong(), "A${it % 40}", base - it * 60_000L, it % 17 == 0, width = 4000, height = 3000, bytes = 1_000L + it) }
+        val started = System.nanoTime()
+        assertEquals(40, PhotoLibrary.albums(big).size)
+        assertTrue(PhotoLibrary.byDay(big).isNotEmpty())
+        assertTrue(PhotoLibrary.duplicates(big).isEmpty())
+        assertTrue("grouping 60000 pictures took ${(System.nanoTime() - started) / 1_000_000} ms", System.nanoTime() - started < 10_000_000_000L)
+    }
+
+    @Test
+    fun theColumnsOfSizeAndStorageAreRead() {
+        val c = cursor(
+            arrayOf(MediaStore.Images.Media._ID, MediaStore.Images.Media.WIDTH, MediaStore.Images.Media.HEIGHT, MediaStore.Images.Media.SIZE, MediaStore.Images.Media.MIME_TYPE, MediaStore.Images.Media.DATE_MODIFIED, MediaStore.MediaColumns.VOLUME_NAME),
+            arrayOf(5L, 4000, 3000, 2_000_000L, "image/jpeg", 77L, "external_primary"),
+        )
+        val p = PhotoReader.parse(c).single()
+        assertEquals(4000, p.width); assertEquals(3000, p.height); assertEquals(2_000_000L, p.bytes)
+        assertEquals("image/jpeg", p.mime); assertEquals(77L, p.modified); assertEquals("external_primary", p.volume)
+        assertEquals(4f / 3f, p.ratio, 0.001f)
     }
 }

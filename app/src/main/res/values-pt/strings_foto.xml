@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the Photo hub (photos/). -->
+<resources>
+    <string name="ph_describe_favorite_album">%1$s, álbum %2$s, favorita</string>
+    <string name="ph_describe_favorite">%1$s, favorita</string>
+    <string name="ph_describe_album">%1$s, álbum %2$s</string>
+    <string name="ph_select_toggle">selecionar</string>
+    <string name="ph_scrub">saltar entre datas</string>
+    <string name="ph_loading">A ler as fotos…</string>
+    <string name="ph_confirm_yes">eliminar</string>
+    <string name="ph_cancel">cancelar</string>
+    <string name="ph_options_title">opções de fotos</string>
+    <string name="ph_gap">espaço entre fotos (dp)</string>
+    <string name="ph_group">cabeçalhos de data por</string>
+    <string name="ph_done">concluído</string>
+    <string name="ph_group_day">dia</string>
+    <string name="ph_group_month">mês</string>
+    <string name="ph_group_year">ano</string>
+    <string name="ph_opt_select">selecionar várias fotos (toque longo e arrastar)</string>
+    <string name="ph_opt_favorite_edit">o coração marca um favorito</string>
+    <string name="ph_opt_search">caixa de pesquisa (álbum, mês, ano, dia)</string>
+    <string name="ph_opt_keep_ratio">as fotos mantêm a sua forma nas grelhas</string>
+    <string name="ph_opt_date_scrubber">cabeçalhos fixos no topo, pega para saltar entre datas</string>
+    <string name="ph_opt_mosaic">os álbuns mostram quatro fotos</string>
+    <string name="ph_opt_camera_first">álbum da câmara primeiro</string>
+    <string name="ph_opt_memories">página de memórias (este dia em anos anteriores)</string>
+    <string name="ph_opt_viewer_fx">visualizador: barra que esmorece, foto que se funde, contador, elasticidade do zoom</string>
+    <string name="ph_opt_immersive">ocultar as barras do sistema com a barra do visualizador</string>
+    <string name="ph_opt_swipe_close">deslizar para baixo fecha o visualizador</string>
+    <string name="ph_opt_filmstrip">tira de miniaturas no visualizador</string>
+    <string name="ph_opt_adaptive_background">o visualizador assume o tom da foto</string>
+    <string name="ph_opt_extras">apresentação e fundo de ecrã nas informações</string>
+    <string name="ph_opt_strip_metadata">partilhar sem metadados (local, câmara, data)</string>
+    <string name="ph_opt_duplicates">página de fotos idênticas</string>
+    <string name="ph_opt_hints">dica sobre os gestos, da primeira vez</string>
+    <string name="ph_opt_favorite_mark">coração pequeno nas fotos favoritas</string>
+    <string name="ph_opt_neutral_placeholder">marcador cinzento enquanto a foto é lida</string>
+    <string name="ph_memories">memórias</string>
+    <string name="ph_duplicates">duplicados</string>
+    <string name="ph_partial">Só algumas fotos são partilhadas com o hub.</string>
+    <string name="ph_partial_more">selecionar mais</string>
+    <string name="ph_more_note">A mostrar as últimas %d fotos.</string>
+    <string name="ph_more">carregar mais</string>
+    <string name="ph_search_hint">álbum, mês, ano, dia</string>
+    <string name="ph_search">pesquisar</string>
+    <string name="ph_select">selecionar</string>
+    <string name="ph_options">opções</string>
+    <string name="ph_fav_add">adicionar aos favoritos</string>
+    <string name="ph_fav_remove">remover dos favoritos</string>
+    <string name="ph_compare">comparar</string>
+    <string name="ph_today">Hoje</string>
+    <string name="ph_yesterday">Ontem</string>
+    <string name="ph_dup_group">%1$d idênticas · %2$s cada</string>
+    <string name="ph_hint">Aperte ou toque duas vezes para ampliar, deslize para baixo para fechar.</string>
+    <string name="ph_slideshow">apresentação</string>
+    <string name="ph_wallpaper">definir como fundo de ecrã</string>
+    <string name="ph_zoom_in">ampliar</string>
+    <string name="ph_zoom_out">reduzir</string>
+    <string name="ph_strip_failed">Não foi possível preparar as cópias sem metadados. Nada foi partilhado.</string>
+    <string name="ph_delete_failed">Não foi possível eliminar</string>
+    <string name="ph_undo">anular</string>
+    <plurals name="ph_count">
+        <item quantity="one">%d foto</item>
+        <item quantity="other">%d fotos</item>
+    </plurals>
+    <plurals name="ph_selected">
+        <item quantity="one">%d selecionada</item>
+        <item quantity="other">%d selecionadas</item>
+    </plurals>
+    <plurals name="ph_years_ago">
+        <item quantity="one">há %d ano</item>
+        <item quantity="other">há %d anos</item>
+    </plurals>
+    <plurals name="ph_confirm_delete">
+        <item quantity="one">Eliminar %d foto para sempre? Não pode ser anulado.</item>
+        <item quantity="other">Eliminar %d fotos para sempre? Não pode ser anulado.</item>
+    </plurals>
+    <plurals name="ph_trashed">
+        <item quantity="one">%d foto movida para o lixo</item>
+        <item quantity="other">%d fotos movidas para o lixo</item>
+    </plurals>
+</resources>
