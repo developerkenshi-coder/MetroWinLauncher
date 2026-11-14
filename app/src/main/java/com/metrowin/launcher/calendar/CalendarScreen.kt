@@ -202,7 +202,7 @@ fun CalendarScreen() {
                 val titles = pages.map { p ->
                     when (p) {
                         Page.Agenda -> stringResource(R.string.cal_pivot_agenda)
-                        Page.Month -> monthTitle(month)
+                        Page.Month -> (if (month == YearMonth.from(today)) "• " else "") + monthTitle(month)
                         Page.Week -> stringResource(R.string.cal_pivot_week)
                         Page.Day -> stringResource(R.string.cal_pivot_day)
                         Page.Year -> stringResource(R.string.cal_pivot_year)
