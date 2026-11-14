@@ -61,7 +61,7 @@ class CalendarOptions(context: Context) {
         prefs.edit().putStringSet("colors", colors.map { "${it.key}:${it.value}" }.toSet()).apply()
     }
 
-    fun setSecondZone(id: String) { secondZone = id; prefs.edit().putString("second_zone", id).apply() }
+    fun chooseSecondZone(id: String) { secondZone = id; prefs.edit().putString("second_zone", id).apply() }
 
     fun finishOnboarding() { onboarded = true; prefs.edit().putBoolean("onboarded", true).apply() }
 }

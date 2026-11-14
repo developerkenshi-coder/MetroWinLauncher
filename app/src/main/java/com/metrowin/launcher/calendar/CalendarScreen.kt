@@ -283,7 +283,7 @@ fun CalendarScreen() {
                     onFree = { dialog = "free" }, onZone = { dialog = "zone" }, onClose = { dialog = null },
                 )
                 "free" -> FreeTimeDialog(CalendarLogic.freeSlots(shown, selected, zone), selected, zone, onPick = { s, e -> dialog = null; startNew(CalEvent(0L, 0L, "", s, e, false)) }, onClose = { dialog = null })
-                "zone" -> ZoneDialog(options.secondZone, onChoose = { options.setSecondZone(it); dialog = null }, onClose = { dialog = null })
+                "zone" -> ZoneDialog(options.secondZone, onChoose = { options.chooseSecondZone(it); dialog = null }, onClose = { dialog = null })
             }
             imported?.let { found ->
                 ImportDialog(

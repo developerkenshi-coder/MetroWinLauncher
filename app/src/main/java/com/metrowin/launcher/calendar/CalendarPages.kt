@@ -45,7 +45,6 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
@@ -97,10 +96,7 @@ fun EventRow(event: CalEvent, day: LocalDate?, modifier: Modifier = Modifier, on
     Row(modifier.fillMaxWidth().testTag("cal:event").metroPress(onClick = onClick).padding(vertical = 3.dp).then(if (band) Modifier.background(fill) else Modifier).padding(vertical = 3.dp)) {
         if (!band) Box(Modifier.width(6.dp).fillMaxHeight().background(fill))
         Column(Modifier.weight(1f).padding(start = if (band) 10.dp else 12.dp)) {
-            MetroText(
-                event.title.ifBlank { stringResource(R.string.cal_untitled) }, size = 21.sp, color = if (declined) subInk else ink,
-                modifier = if (declined) Modifier.semantics { } else Modifier,
-            )
+            MetroText(event.title.ifBlank { stringResource(R.string.cal_untitled) }, size = 21.sp, color = if (declined) subInk else ink)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (event.recurring && details) { CalIconView(CalIcon.Repeat, 13.dp, subInk); Box(Modifier.width(4.dp)) }
                 MetroText(time, size = 14.sp, weight = FontWeight.Normal, color = subInk)
