@@ -5,7 +5,15 @@ import android.net.Uri
 import androidx.core.net.toUri
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
+import com.metrowin.launcher.ui.theme.onAccent
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -55,10 +63,10 @@ fun ButtonsPage(state: ShizukuState) {
         if (!state.ready) {
             MetroText(stringResource(R.string.st_how_title), size = 20.sp)
             listOf(R.string.st_how_1, R.string.st_how_2, R.string.st_how_3, R.string.st_how_4, R.string.st_how_5, R.string.st_how_6).forEachIndexed { i, step ->
-                PageNote("${i + 1}. ${stringResource(step)}")
+                Step(i + 1, stringResource(step))
             }
             when (state) {
-                ShizukuState.Missing -> MetroButton(stringResource(R.string.st_download)) { open(context, Intent(Intent.ACTION_VIEW, "https://shizuku.rikka.app/download/".toUri())) }
+                ShizukuState.Missing -> MetroButton(stringResource(R.string.st_download)) { open(context, Intent(Intent.ACTION_VIEW, DOWNLOAD_URL.toUri())) }
                 ShizukuState.Stopped -> MetroButton(stringResource(R.string.st_open_shizuku)) {
                     context.packageManager.getLaunchIntentForPackage("moe.shizuku.privileged.api")?.let { open(context, it) }
                 }
@@ -72,7 +80,7 @@ fun ButtonsPage(state: ShizukuState) {
         MetroButton(stringResource(R.string.st_test)) {
             scope.launch {
                 val result = withContext(Dispatchers.IO) { ShizukuShell.shell("id") }
-                testResult = "${com.metrowin.launcher.data.ShizukuRadio.diagnosis()}\n[${result.code}] ${result.output.take(160)}"
+                testResult = "${ShizukuRadio.diagnosis()}\n[${result.code}] ${result.output.take(160)}"
             }
         }
         if (testResult.isNotEmpty()) PageNote(testResult)
@@ -103,7 +111,21 @@ fun ButtonsPage(state: ShizukuState) {
                 PageNote(stringResource(if (action == QuickAction.Vpn) R.string.st_no_vpn else R.string.st_no_hotspot))
             }
         }
-        Column(Modifier.padding(bottom = 16.dp)) {}
+        Spacer(Modifier.height(16.dp))
+    }
+}
+
+/** Where Shizuku is downloaded from: its own page lists the stores and the releases. */
+private const val DOWNLOAD_URL = "https://shizuku.rikka.app/download/"
+
+/** One step of the guide: its number in a square of the accent, and the words. */
+@Composable
+private fun Step(number: Int, text: String) {
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+        Box(Modifier.size(28.dp).background(LocalAccent.current), contentAlignment = Alignment.Center) {
+            MetroText(number.toString(), size = 16.sp, weight = FontWeight.SemiBold, color = onAccent())
+        }
+        PageNote(text, Modifier.weight(1f).padding(top = 3.dp))
     }
 }
 
