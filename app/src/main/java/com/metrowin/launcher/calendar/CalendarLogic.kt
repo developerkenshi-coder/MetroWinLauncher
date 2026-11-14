@@ -104,6 +104,19 @@ object CalendarLogic {
         return busy
     }
 
+    /** The events of [range] grouped by the days they are on (an event of several days is under each), each day in the order of [on]. One pass over the events. */
+    fun byDay(events: List<CalEvent>, range: ClosedRange<LocalDate>, zone: ZoneId = ZoneId.systemDefault()): Map<LocalDate, List<CalEvent>> {
+        val map = HashMap<LocalDate, ArrayList<CalEvent>>()
+        for (event in events) {
+            val span = days(event, zone)
+            var day = maxOf(span.start, range.start)
+            val last = minOf(span.endInclusive, range.endInclusive)
+            while (!day.isAfter(last)) { map.getOrPut(day) { ArrayList() } += event; day = day.plusDays(1) }
+        }
+        map.values.forEach { it.sortWith(compareByDescending<CalEvent> { e -> e.allDay }.thenBy { e -> e.start }) }
+        return map
+    }
+
     /** The weeks of [month] as rows of seven days, from the [first] day of the week, padded with the days of the months around it. */
     fun weeks(month: YearMonth, first: DayOfWeek): List<List<LocalDate>> {
         var day = month.atDay(1).with(TemporalAdjusters.previousOrSame(first))

@@ -69,6 +69,18 @@ object Ics {
         out.append(if (first) "" else " ").append(rest).append("\r\n")
     }
 
+    /** The text of [input], at most [MAX_CHARS] bytes of it: a file from outside is never read whole. */
+    fun readBounded(input: java.io.InputStream): String {
+        val out = java.io.ByteArrayOutputStream()
+        val chunk = ByteArray(8_192)
+        while (out.size() < MAX_CHARS) {
+            val n = input.read(chunk, 0, minOf(chunk.size, MAX_CHARS - out.size()))
+            if (n < 0) break
+            out.write(chunk, 0, n)
+        }
+        return out.toString(Charsets.UTF_8.name())
+    }
+
     /** The events of the calendar file [text], at most [MAX_EVENTS]; whatever is not understood is left out. [zone] is where a time without a zone is. */
     fun parse(text: String, zone: ZoneId = ZoneId.systemDefault()): List<IcsEvent> {
         val lines = text.take(MAX_CHARS).replace("\r\n", "\n").replace("\r", "\n").replace(Regex("\n[ \t]"), "").split('\n')

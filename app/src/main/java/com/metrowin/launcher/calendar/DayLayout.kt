@@ -47,6 +47,12 @@ object DayLayout {
         return out
     }
 
+    /** [blocks] with one column for each calendar that has events in them (a lane for each calendar), instead of one for each overlap. */
+    fun byCalendar(blocks: List<DayBlock>): List<DayBlock> {
+        val lanes = blocks.map { it.event.calendarId }.distinct().sorted()
+        return blocks.map { it.copy(column = lanes.indexOf(it.event.calendarId), columns = lanes.size) }
+    }
+
     /** The events that last the whole day (or days), for the strip above the grid. */
     fun allDay(events: List<CalEvent>, day: LocalDate, zone: ZoneId = ZoneId.systemDefault()): List<CalEvent> =
         CalendarLogic.on(events, day, zone).filter { it.allDay }

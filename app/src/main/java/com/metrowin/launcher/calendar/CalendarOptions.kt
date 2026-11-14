@@ -18,6 +18,8 @@ enum class Option(val key: String, val default: Boolean, @param:StringRes val la
     YearView("year_view", true, R.string.cal_opt_year),
     SplitWide("split_wide", true, R.string.cal_opt_split),
     Attendees("attendees", true, R.string.cal_opt_attendees),
+    OpenDay("open_day", true, R.string.cal_opt_open_day),
+    RepeatNew("repeat_new", true, R.string.cal_opt_repeat),
     SwipeDays("swipe_days", false, R.string.cal_opt_swipe_days),
     HideDeclined("hide_declined", false, R.string.cal_opt_hide_declined),
     Birthdays("birthdays", false, R.string.cal_opt_birthdays),

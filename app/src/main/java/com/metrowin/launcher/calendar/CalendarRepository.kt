@@ -166,13 +166,13 @@ class CalendarRepository(private val context: Context) {
      * Writes [event] over the one with its id. For one time of a repeating event ([original] is the event as it was shown, [all] false) only that
      * time is changed: Android keeps it as an exception of the series. With [all] the whole series is changed, and moves by as much as that time did.
      */
-    fun update(event: CalEvent, original: CalEvent = event, all: Boolean = true): Boolean = guarded(false) {
+    fun update(event: CalEvent, original: CalEvent = event, all: Boolean = true, touchReminders: Boolean = true): Boolean = guarded(false) {
         if (original.readOnly) { failure = Failure.ReadOnly; return@guarded false }
         val body = values(event).apply { remove(CalendarContract.Events.CALENDAR_ID) }
         val seriesUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.id)
         if (original.recurring && !all) {
             body.put(CalendarContract.Events.ORIGINAL_INSTANCE_TIME, original.start)
-            val ops = listOf(ContentProviderOperation.newInsert(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI, event.id)).withValues(body).build()) + reminderOps(event.reminders, null, 0)
+            val ops = listOf(ContentProviderOperation.newInsert(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI, event.id)).withValues(body).build()) + (if (touchReminders) reminderOps(event.reminders, null, 0) else emptyList())
             return@guarded run(ops).firstOrNull()?.uri != null
         }
         if (original.recurring) {
@@ -182,11 +182,18 @@ class CalendarRepository(private val context: Context) {
             body.putNull(CalendarContract.Events.DTEND)
             body.put(CalendarContract.Events.DURATION, CalendarLogic.duration(event.allDay, event.start, event.end))
         }
-        val ops = listOf(
-            ContentProviderOperation.newUpdate(seriesUri).withValues(body).build(),
+        // The update goes first: its count says whether the event was there. The reminders are replaced in the same batch (all or none).
+        val ops = listOf(ContentProviderOperation.newUpdate(seriesUri).withValues(body).build()) + if (!touchReminders) emptyList() else listOf(
             ContentProviderOperation.newDelete(CalendarContract.Reminders.CONTENT_URI).withSelection("${CalendarContract.Reminders.EVENT_ID} = ?", arrayOf(event.id.toString())).build(),
         ) + reminderOps(event.reminders, event.id, 0)
         (run(ops).firstOrNull()?.count ?: 0) > 0
+    }
+
+    /** Moves or resizes one event that does not repeat: only its start and end are written (its reminders and the rest are left as they are). */
+    fun move(event: CalEvent, start: Long, end: Long): Boolean = guarded(false) {
+        if (event.readOnly || event.recurring || event.birthday) { failure = Failure.ReadOnly; return@guarded false }
+        val body = ContentValues().apply { put(CalendarContract.Events.DTSTART, start); put(CalendarContract.Events.DTEND, end) }
+        resolver.update(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.id), body, null, null) > 0
     }
 
     /** Takes [event] out: the one time that was opened when [all] is false and it repeats, else the event with all its times. */
