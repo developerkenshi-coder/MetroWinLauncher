@@ -25,12 +25,36 @@ import java.io.ByteArrayOutputStream
 /** The paper of a sketch: always light, so a sketch is the same in the app and in the picture that is exported. */
 val SketchPaper = Color(0xFFFAFAF5)
 
+/** The faint ink of the lines of the paper. */
+private val PaperInk = Color(0x33607080)
+
+/** The pattern of paper number [paper] (see [Note.paper]) on a page whose width is the width of the scope: squares, lines or dots, 50 units apart. */
+fun DrawScope.drawPaper(paper: Int) {
+    if (paper <= 0) return
+    val k = size.width / SketchPage.WIDTH
+    val step = 50f * k
+    val line = maxOf(1f, k * 1.5f)
+    var y = step
+    while (y < size.height) {
+        if (paper == 1 || paper == 2) drawLine(PaperInk, Offset(0f, y), Offset(size.width, y), line)
+        if (paper == 3) {
+            var x = step
+            while (x < size.width) { drawCircle(PaperInk, line * 1.3f, Offset(x, y)); x += step }
+        }
+        y += step
+    }
+    if (paper == 1) {
+        var x = step
+        while (x < size.width) { drawLine(PaperInk, Offset(x, 0f), Offset(x, size.height), line); x += step }
+    }
+}
+
 /** Draws [strokes] on a page whose width is the width of the scope ([SketchPage.WIDTH] units across). */
 fun DrawScope.drawStrokes(strokes: List<Stroke>) {
     val k = size.width / SketchPage.WIDTH
-    // The highlighter goes under everything else, as a marker goes over the words and not over the pen that wrote them.
-    strokes.filter { it.tool == Tool.Highlighter }.forEach { drawStroke(it, k) }
-    strokes.filter { it.tool != Tool.Highlighter }.forEach { drawStroke(it, k) }
+    // The highlighter goes under everything else, as a marker goes over the words and not over the pen that wrote them. Two passes, no new lists: it is drawn at every frame.
+    for (i in strokes.indices) if (strokes[i].tool == Tool.Highlighter) drawStroke(strokes[i], k)
+    for (i in strokes.indices) if (strokes[i].tool != Tool.Highlighter) drawStroke(strokes[i], k)
 }
 
 fun DrawScope.drawStroke(stroke: Stroke, k: Float) {
@@ -81,12 +105,13 @@ fun DrawScope.drawStroke(stroke: Stroke, k: Float) {
     }
 }
 
-/** The sketch as a PNG, [width] pixels across, on the paper. */
-fun sketchPng(strokes: List<Stroke>, width: Int = 1000): ByteArray {
+/** The sketch as a PNG, [width] pixels across, on the paper (number [paper], see [drawPaper]). */
+fun sketchPng(strokes: List<Stroke>, width: Int = 1000, paper: Int = 0): ByteArray {
     val height = (width * SketchPage.HEIGHT / SketchPage.WIDTH).toInt()
     val image = ImageBitmap(width, height)
     CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, Canvas(image), Size(width.toFloat(), height.toFloat())) {
         drawRect(SketchPaper)
+        drawPaper(paper)
         drawStrokes(strokes)
     }
     return ByteArrayOutputStream().also { image.asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, it) }.toByteArray()

@@ -17,7 +17,8 @@ object NoteBackup {
     private const val FILES = "files/"
     private const val MAX_JSON = 60L * 1024 * 1024
 
-    fun write(notes: List<Note>, out: OutputStream, files: (String) -> File? = { null }, png: (Note) -> ByteArray? = { null }) {
+    /** [fallback] is what a file of a note without a title is called (the word for "note" of the language of the phone). */
+    fun write(notes: List<Note>, out: OutputStream, files: (String) -> File? = { null }, fallback: String = "note", png: (Note) -> ByteArray? = { null }) {
         ZipOutputStream(out).use { zip ->
             zip.putNextEntry(ZipEntry(JSON))
             zip.write(NoteCodec.encode(notes).toByteArray())
@@ -31,7 +32,7 @@ object NoteBackup {
             }
             val used = HashSet<String>()
             notes.forEachIndexed { index, note ->
-                val name = unique(fileName(note, index), used)
+                val name = unique(fileName(note, index, fallback), used)
                 zip.putNextEntry(ZipEntry("readable/$name.txt"))
                 zip.write(plain(note).toByteArray())
                 zip.closeEntry()
@@ -58,7 +59,9 @@ object NoteBackup {
                 if (entry.name == JSON && notes == null) {
                     // readNBytes needs Android 13; this stops at the limit on every version.
                     val bytes = zip.readAtMost(MAX_JSON.toInt()) ?: return null
-                    notes = NoteCodec.decode(String(bytes)).takeIf { it.isNotEmpty() || String(bytes).contains("\"notes\"") }
+                    // Turned into text once: a backup of 60 MB was made into text twice.
+                    val json = String(bytes)
+                    notes = NoteCodec.decode(json).takeIf { it.isNotEmpty() || json.contains("\"notes\"") }
                 } else if (notes != null && entry.name.startsWith(FILES)) {
                     onFile(entry.name.removePrefix(FILES), zip)
                 }
@@ -70,10 +73,10 @@ object NoteBackup {
     /** The note as text for anyone: its title, then what it says (the markers of [NoteText] stay: they read as a list or a title). */
     fun plain(note: Note): String = (if (note.title.isBlank()) "" else note.title + "\n\n") + note.text
 
-    private fun fileName(note: Note, index: Int): String {
+    private fun fileName(note: Note, index: Int, fallback: String): String {
         val base = (note.title.ifBlank { note.text.lineSequence().firstOrNull().orEmpty() }).trim()
             .map { if (it.isLetterOrDigit() || it == ' ' || it == '-' || it == '_') it else '_' }.joinToString("").trim().take(40)
-        return "%03d-%s".format(index + 1, base.ifEmpty { "note" })
+        return "%03d-%s".format(index + 1, base.ifEmpty { fallback })
     }
 
     private fun unique(name: String, used: MutableSet<String>): String {
