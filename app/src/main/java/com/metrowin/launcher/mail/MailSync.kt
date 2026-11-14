@@ -11,11 +11,13 @@ import android.app.job.JobService
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.BroadcastReceiver
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import com.metrowin.launcher.data.Diagnostics
 import com.metrowin.launcher.R
 import kotlin.concurrent.thread
 
@@ -40,14 +42,33 @@ object MailSync {
     fun toNotify(known: Long?, fresh: List<MailMessage>): List<MailMessage> =
         if (known == null) emptyList() else fresh.filter { it.id.toLong() > known }
 
-    /** The unread messages of all the accounts, as the last look found them. */
-    fun unread(context: Context): Int = prefs(context).all.entries.filter { it.key.startsWith("unread_") }.sumOf { (it.value as? Int) ?: 0 }
+    private const val TOTAL = "unread_total"
+
+    /** The sum of the counts of the accounts, from the counts in [all]; the key of the sum itself is not one of them. */
+    internal fun sum(all: Map<String, *>): Int = all.entries.filter { it.key.startsWith("unread_") && it.key != TOTAL }.sumOf { (it.value as? Int) ?: 0 }
+
+    /** The unread messages of all the accounts, as the last look found them: one number kept apart, so the tile does not add up the file at each draw. */
+    fun unread(context: Context): Int {
+        val p = prefs(context)
+        return if (p.contains(TOTAL)) p.getInt(TOTAL, 0) else sum(p.all).also { p.edit { putInt(TOTAL, it) } }
+    }
+
+    private fun writeUnread(store: android.content.SharedPreferences, accountId: String, count: Int) {
+        store.edit {
+            putInt("unread_$accountId", count)
+            putInt(TOTAL, sum(store.all.filterKeys { it != "unread_$accountId" }) + count)
+        }
+    }
 
     /** Keeps the unread count of an account (the Mail screen also does it, so the tile follows what the user reads). */
-    fun setUnread(context: Context, accountId: String, count: Int) = prefs(context).edit { putInt("unread_$accountId", count) }
+    fun setUnread(context: Context, accountId: String, count: Int) = writeUnread(prefs(context), accountId, count)
 
     /** What is kept of an account that was removed. */
-    fun forget(context: Context, accountId: String) = prefs(context).edit { remove("unread_$accountId"); remove("uid_$accountId") }
+    fun forget(context: Context, accountId: String) {
+        val p = prefs(context)
+        p.edit { remove("unread_$accountId"); remove("uid_$accountId") }
+        p.edit { putInt(TOTAL, sum(p.all)) }
+    }
 
     /** Takes the notification of an account away: its mail is on screen. */
     fun dismiss(context: Context, accountId: String) =
@@ -85,6 +106,8 @@ object MailSync {
             try {
                 lookAt(context, account, client)
             } catch (e: Exception) {
+                // Only the kind of error: what the server says may carry an address.
+                Diagnostics.warn("mail.sync", e, withMessage = false)
                 allAnswered = false
             } finally {
                 client.close()
@@ -102,32 +125,90 @@ object MailSync {
         val known = store.getLong("uid_${account.id}", -1L).takeIf { it >= 0 }
         val found = client.arrivals(INBOX, known)
         val news = toNotify(known, found.fresh)
-        store.edit { putLong("uid_${account.id}", found.lastUid); putInt("unread_${account.id}", found.unread) }
+        store.edit { putLong("uid_${account.id}", found.lastUid) }
+        writeUnread(store, account.id, found.unread)
         if (news.isNotEmpty()) notify(context, account, news)
     }
 
-    private fun notify(context: Context, account: MailAccount, news: List<MailMessage>) {
+    private fun canNotify(context: Context): NotificationManager? {
         val allowed = Build.VERSION.SDK_INT < 33 ||
             ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
         val manager = context.getSystemService(NotificationManager::class.java)
-        if (!allowed || manager == null) return
+        if (!allowed || manager == null) return null
         manager.createNotificationChannel(NotificationChannel(CHANNEL, context.getString(R.string.channel_mail), NotificationManager.IMPORTANCE_DEFAULT))
+        return manager
+    }
+
+    /** A message that went out of the outbox for good: it is back in the draft, and the user is told why. */
+    fun tellNotSent(context: Context, why: String) {
+        val manager = canNotify(context) ?: return
+        manager.notify(
+            "outbox", NOTIFICATION_ID,
+            NotificationCompat.Builder(context, CHANNEL)
+                .setSmallIcon(R.drawable.ic_stat_metro).setContentTitle(context.getString(R.string.mail_not_sent)).setContentText(why)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(why)).setAutoCancel(true)
+                .setContentIntent(PendingIntent.getActivity(context, 1, Intent(context, MailActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
+                .build(),
+        )
+    }
+
+    private fun action(context: Context, account: MailAccount, uid: String, what: String, title: Int): NotificationCompat.Action {
+        val intent = Intent(context, MailActionReceiver::class.java).setAction(what).putExtra("account", account.id).putExtra("uid", uid)
+        return NotificationCompat.Action(0, context.getString(title), PendingIntent.getBroadcast(context, (account.id + uid + what).hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
+    }
+
+    private fun notify(context: Context, account: MailAccount, news: List<MailMessage>) {
+        val manager = canNotify(context) ?: return
         val open = PendingIntent.getActivity(
             context, account.id.hashCode(), Intent(context, MailActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val first = news.first()
-        val text = if (news.size == 1) {
-            "${first.senderName.ifBlank { first.senderAddress }}: ${first.subject}"
-        } else {
-            context.resources.getQuantityString(R.plurals.mail_new_count, news.size, news.size)
+        val count = context.resources.getQuantityString(R.plurals.mail_new_count, news.size, news.size)
+        val text = if (news.size == 1) "${first.senderName.ifBlank { first.senderAddress }}: ${first.subject}" else count
+        // On the lock screen who wrote and what about stay hidden (unless the user chose to show everything): only that mail came.
+        val publicVersion = NotificationCompat.Builder(context, CHANNEL).setSmallIcon(R.drawable.ic_stat_metro).setContentTitle(context.getString(R.string.channel_mail)).setContentText(count).build()
+        val builder = NotificationCompat.Builder(context, CHANNEL)
+            .setSmallIcon(R.drawable.ic_stat_metro).setContentTitle(account.email).setContentText(text)
+            .setCategory(NotificationCompat.CATEGORY_EMAIL).setAutoCancel(true).setContentIntent(open)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE).setPublicVersion(publicVersion).setGroup(GROUP)
+        if (news.size == 1 && MailOptions.on(context, MailOption.NotifActions)) {
+            builder.addAction(action(context, account, first.id, ACTION_READ, R.string.mail_mark_read))
+            builder.addAction(action(context, account, first.id, ACTION_DELETE, R.string.mail_delete))
         }
-        manager.notify(
-            account.id, NOTIFICATION_ID,
-            NotificationCompat.Builder(context, CHANNEL)
-                .setSmallIcon(R.drawable.ic_stat_metro).setContentTitle(account.email).setContentText(text)
-                .setCategory(NotificationCompat.CATEGORY_EMAIL).setAutoCancel(true).setContentIntent(open).build(),
-        )
+        manager.notify(account.id, NOTIFICATION_ID, builder.build())
+    }
+
+    const val GROUP = "mail_group"
+    const val ACTION_READ = "com.metrowin.launcher.mail.READ"
+    const val ACTION_DELETE = "com.metrowin.launcher.mail.DELETE"
+}
+
+/** The "mark as read" and "delete" buttons of a notification: done on the server, then the notification goes away. Delete goes to the trash, never for good. */
+class MailActionReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val accountId = intent.getStringExtra("account") ?: return
+        val uid = intent.getStringExtra("uid")?.toLongOrNull() ?: return
+        val pending = goAsync()
+        thread(name = "mail-action") {
+            try {
+                val repository = MailRepository(context)
+                val account = repository.loadAccounts().firstOrNull { it.id == accountId }
+                val client = account?.let { repository.client(it) }
+                if (account != null && client != null) {
+                    try {
+                        if (intent.action == MailSync.ACTION_DELETE) client.delete("INBOX", uid) else client.setFlag("INBOX", uid, javax.mail.Flags.Flag.SEEN, true)
+                        MailSync.dismiss(context, accountId)
+                    } catch (e: Exception) {
+                        Diagnostics.warn("mail.action", e, withMessage = false)
+                    } finally {
+                        client.close()
+                    }
+                }
+            } finally {
+                pending.finish()
+            }
+        }
     }
 }
 

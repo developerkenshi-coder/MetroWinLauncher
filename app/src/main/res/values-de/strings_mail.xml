@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mail: errors, options, folders, servers. -->
+    <string name="mail_err_login">Anmeldung fehlgeschlagen: Adresse oder Passwort stimmen nicht. Bei Bestätigung in zwei Schritten ein App-Passwort verwenden.</string>
+    <string name="mail_err_size">Die Nachricht ist für den Server zu groß. Entferne einige Dateien.</string>
+    <string name="mail_err_recipient">Der Server hat eine Adresse abgelehnt. Prüfe die Empfänger.</string>
+    <string name="mail_err_network">Keine Verbindung zum Server. Prüfe das Netz.</string>
+    <string name="mail_err_tls">Das Zertifikat des Servers ist ungültig: Verbindung zu deiner Sicherheit abgelehnt.</string>
+    <string name="mail_err_no_trash">Dieser Ordner hat keinen Papierkorb: die Nachricht wurde nicht gelöscht.</string>
+    <string name="mail_err_other">Etwas ist schiefgelaufen</string>
+    <string name="mail_yesterday">Gestern</string>
+    <string name="mail_not_sent">Nachricht nicht gesendet</string>
+    <string name="mail_mark_read">Als gelesen markieren</string>
+    <string name="mail_archive">archivieren</string>
+    <string name="mail_spam">Spam</string>
+    <string name="mail_move">verschieben</string>
+    <string name="mail_select_all">alle wählen</string>
+    <string name="mail_empty_unread">Keine ungelesenen Nachrichten</string>
+    <string name="mail_empty_flagged">Keine markierten Nachrichten</string>
+    <string name="mail_empty_search">Nichts gefunden</string>
+    <string name="mail_bcc_hint">Bcc</string>
+    <string name="mail_bcc_add">Blindkopie (Bcc) hinzufügen</string>
+    <string name="mail_servers_manual">Server von Hand einstellen</string>
+    <string name="mail_imap_host">IMAP-Server</string>
+    <string name="mail_imap_port">IMAP-Port (993 oder 143)</string>
+    <string name="mail_smtp_host">SMTP-Server</string>
+    <string name="mail_smtp_port">SMTP-Port (465 oder 587)</string>
+    <string name="mail_servers_hint">Port 993 ist von Anfang an TLS; Port 143 startet unverschlüsselt und wechselt vor dem Passwort zu TLS. Ein Server ohne TLS wird abgelehnt.</string>
+    <string name="mail_delete_forever">In diesem Ordner gibt es keinen Papierkorb: die Nachrichten (%1$d) würden endgültig gelöscht, ohne Rückweg. Löschen?</string>
+    <string name="mail_queued">Keine Verbindung: die Nachricht bleibt gespeichert und wird gesendet, sobald es eine gibt.</string>
+    <string name="mail_opt_title">Mail-Optionen</string>
+    <string name="mail_opt_signature">Signatur</string>
+    <string name="mail_opt_signature_hint">Zeilen am Ende neuer Nachrichten</string>
+    <string name="mail_opt_rows">Initiale und Punkt für ungelesen</string>
+    <string name="mail_opt_rows_hint">Ein Quadrat mit dem ersten Buchstaben des Absenders und ein Punkt bei noch nicht gelesenen Nachrichten.</string>
+    <string name="mail_opt_compact">Kompakte Liste</string>
+    <string name="mail_opt_compact_hint">Eine Betreffzeile und keine Vorschau: mehr Nachrichten auf dem Bildschirm.</string>
+    <string name="mail_opt_big_text">Große Schrift</string>
+    <string name="mail_opt_big_text_hint">Nachrichten und Liste in größerer Schrift.</string>
+    <string name="mail_opt_dark_pages">Dunkle Nachrichten</string>
+    <string name="mail_opt_dark_pages_hint">Im dunklen Thema werden auch die Seiten der Nachrichten dunkel (Bilder bleiben, wie sie sind).</string>
+    <string name="mail_opt_transitions">Seitenübergänge</string>
+    <string name="mail_opt_transitions_hint">Liste, Nachricht und Schreibseite gleiten ineinander.</string>
+    <string name="mail_opt_move">Archivieren, Spam und Verschieben</string>
+    <string name="mail_opt_move_hint">Menüpunkte, um eine Nachricht ins Archiv, in den Spam-Ordner oder in einen gewählten Ordner zu legen.</string>
+    <string name="mail_opt_two_panes">Nachricht neben der Liste</string>
+    <string name="mail_opt_two_panes_hint">Auf einem breiten Bildschirm (Tablet, aufgeklapptes Handy) stehen Liste und Nachricht nebeneinander.</string>
+    <string name="mail_opt_contacts">Kontakte vorschlagen</string>
+    <string name="mail_opt_contacts_hint">Beim Tippen eines Empfängers werden Adressen deiner Kontakte vorgeschlagen. Braucht die Kontakte-Berechtigung des Launchers.</string>
+    <string name="mail_opt_notif_actions">Tasten in Benachrichtigungen</string>
+    <string name="mail_opt_notif_actions_hint">Als gelesen markieren und löschen (in den Papierkorb) direkt aus der Benachrichtigung, auch bei gesperrtem Bildschirm.</string>
+    <string name="mail_opt_autoconfig">Server im Netz suchen</string>
+    <string name="mail_opt_autoconfig_hint">Bei einer unbekannten Domain werden die Einstellungen beim Anbieter (Autoconfig) oder in der öffentlichen Datenbank von Thunderbird erfragt: nur die Domain geht hinaus, per HTTPS.</string>
+</resources>

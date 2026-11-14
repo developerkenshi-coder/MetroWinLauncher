@@ -7,8 +7,12 @@ import javax.mail.Flags
 import javax.mail.Folder
 import javax.mail.FolderClosedException
 import javax.mail.StoreClosedException
+import javax.mail.search.AndTerm
+import javax.mail.search.BodyTerm
+import javax.mail.search.FlagTerm
 import javax.mail.search.FromStringTerm
 import javax.mail.search.OrTerm
+import javax.mail.search.RecipientStringTerm
 import javax.mail.search.SearchTerm
 import javax.mail.search.SubjectTerm
 import javax.mail.Message
@@ -24,25 +28,44 @@ import javax.mail.Transport
 /** What a look at the inbox found: how many messages are unread, the highest UID there, and the unread ones newer than the last look. */
 data class Arrivals(val unread: Int, val lastUid: Long, val fresh: List<MailMessage>)
 
-/** What the server said about a mail folder: its full [path] (what the server calls it) and the name to show. */
-data class MailFolder(val path: String, val name: String)
+/** What the server said about a mail folder: its full [path] (what the server calls it), the name to show, what it is for ([role]: "\\Trash", "\\Junk"... or null) and how many messages in it are unread (-1: not known). */
+data class MailFolder(val path: String, val name: String, val role: String? = null, val unread: Int = -1)
+
+/** Which messages of a folder a list wants. */
+enum class MailFilter { All, Unseen, Flagged }
+
+/** Taking a message out of a folder that has no trash would delete it for good: the caller must ask the user and say so ([MailClient.delete] with `permanent = true`). */
+class NoTrashException : Exception("no trash")
 
 /**
  * The mail of an account, read and sent over IMAP and SMTP, always over TLS. Every call blocks on the network: call it off the main thread.
  * The IMAP login is kept between calls; whoever makes the client calls [close] when done with it (a dead login is made again on the next call).
  */
-class MailClient(private val account: MailAccount, private val secret: () -> String) : MailSource {
+class MailClient(
+    private val account: MailAccount,
+    /** Properties that win over the ones made here: the tests use them to talk to a server without TLS. */
+    private val overrides: Properties = Properties(),
+    private val secret: () -> String,
+) : MailSource {
+    /** 993 speaks TLS from the first byte ("imaps"); any other port (143) starts in the clear and must switch to TLS before the password goes. */
+    private val protocol = if (account.imapPort == IMAPS_PORT) "imaps" else "imap"
+
     private fun properties(readTimeout: String = TIMEOUT): Properties = Properties().apply {
-        put("mail.imaps.host", account.imapHost)
-        put("mail.imaps.port", account.imapPort.toString())
-        put("mail.imaps.ssl.checkserveridentity", "true")
+        val p = "mail.$protocol"
+        put("$p.host", account.imapHost)
+        put("$p.port", account.imapPort.toString())
+        put("$p.ssl.checkserveridentity", "true")
+        if (protocol == "imap") {
+            put("$p.starttls.enable", "true")
+            put("$p.starttls.required", "true")
+        }
         // Reading a message to show a line of it must not mark it as read.
-        put("mail.imaps.peek", "true")
-        put("mail.imaps.connectiontimeout", TIMEOUT)
-        put("mail.imaps.timeout", readTimeout)
+        put("$p.peek", "true")
+        put("$p.connectiontimeout", TIMEOUT)
+        put("$p.timeout", readTimeout)
         // Folders opened together (the list and the lines of text) share logins from a pool instead of each making a new one.
-        put("mail.imaps.connectionpoolsize", "3")
-        put("mail.imaps.connectionpooltimeout", "300000")
+        put("$p.connectionpoolsize", "3")
+        put("$p.connectionpooltimeout", "300000")
         put("mail.smtp.host", account.smtpHost)
         put("mail.smtp.port", account.smtpPort.toString())
         put("mail.smtp.auth", "true")
@@ -51,8 +74,8 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
         put("mail.smtp.ssl.checkserveridentity", "true")
         // An account that signed in on the page of its provider has a token where the password would be.
         if (account.oauth != null) {
-            put("mail.imaps.auth.mechanisms", "XOAUTH2")
-            put("mail.imaps.auth.xoauth2.disable", "false")
+            put("$p.auth.mechanisms", "XOAUTH2")
+            put("$p.auth.xoauth2.disable", "false")
             put("mail.smtp.auth.mechanisms", "XOAUTH2")
             put("mail.smtp.auth.xoauth2.disable", "false")
         }
@@ -63,6 +86,7 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
             put("mail.smtp.starttls.enable", "true")
             put("mail.smtp.starttls.required", "true")
         }
+        putAll(overrides)
     }
 
     private var kept: Store? = null
@@ -76,7 +100,7 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
     private fun connected(): Store {
         kept?.takeIf { it.isConnected }?.let { return it }
         runCatching { kept?.close() }
-        val store = Session.getInstance(properties()).getStore("imaps")
+        val store = Session.getInstance(properties()).getStore(protocol)
         store.connect(account.imapHost, account.imapPort, account.email, secret())
         kept = store
         return store
@@ -91,7 +115,7 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
      */
     fun idle(path: String, renewMs: Long, onConnected: () -> Unit, onArrival: () -> Unit): Boolean {
         // The read timeout is longer than the renewal: a connection that died without a word is noticed by the next one.
-        val store = Session.getInstance(properties((renewMs + 5 * 60_000L).toString())).getStore("imaps")
+        val store = Session.getInstance(properties((renewMs + 5 * 60_000L).toString())).getStore(protocol)
         idleStore = store
         val renew = java.util.concurrent.Executors.newSingleThreadScheduledExecutor()
         try {
@@ -143,13 +167,18 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
         block(connected())
     }
 
+    /**
+     * Opens [path] and runs [block] on it, then closes it WITHOUT expunge, always: closing with `true` would remove from the server every message
+     * marked \Deleted in the folder, also the ones another mail program marked and meant to keep until it asks itself. Flags set meanwhile are
+     * already on the server (each is its own command), so nothing needs the expunge.
+     */
     private inline fun <T> folder(path: String, readWrite: Boolean, block: (UIDFolder) -> T): T = store { store ->
         val folder = store.getFolder(path)
         folder.open(if (readWrite) Folder.READ_WRITE else Folder.READ_ONLY)
         try {
             block(folder as UIDFolder)
         } finally {
-            runCatching { folder.close(readWrite) }
+            runCatching { folder.close(false) }
         }
     }
 
@@ -162,34 +191,54 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
         }
     }
 
+    /** The folders that hold messages, with what each is for and how many messages in it are unread (one STATUS each, the folder is not opened). */
     fun folders(): List<MailFolder> = store { store ->
-        store.defaultFolder.list("*").filter { (it.type and Folder.HOLDS_MESSAGES) != 0 }.map { MailFolder(it.fullName, it.name) }
+        store.defaultFolder.list("*").filter { (it.type and Folder.HOLDS_MESSAGES) != 0 }.map { f ->
+            val role = (f as? com.sun.mail.imap.IMAPFolder)?.attributes?.firstOrNull { it in ROLES } ?: guessRole(f.fullName, f.name)
+            MailFolder(f.fullName, f.name, role, runCatching { f.unreadMessageCount }.getOrDefault(-1))
+        }
     }
 
-    /** [limit] messages of the folder, newest first, after the [skip] newest; with a [query], the latest that the server finds it in. The text of each is left for [snippets] and [body]. */
-    override fun messages(path: String, limit: Int, query: String, skip: Int): List<MailMessage> = folder(path, false) { uids ->
+    /**
+     * [limit] messages of the folder, newest first, after the [skip] newest; with a [query] or a [filter], the ones that the server finds.
+     * A message marked \Deleted (by another program that has not expunged yet) is not listed. The text of each is left for [snippets] and [body].
+     */
+    override fun messages(path: String, limit: Int, query: String, skip: Int, filter: MailFilter): List<MailMessage> = folder(path, false) { uids ->
         val folder = uids as Folder
-        val all = if (query.isBlank()) {
+        val all = if (query.isBlank() && filter == MailFilter.All) {
             val end = folder.messageCount - skip
             if (end <= 0) return@folder emptyList()
             folder.getMessages(maxOf(1, end - limit + 1), end)
         } else {
-            folder.search(searchTerm(query.trim())).takeLast(limit).toTypedArray()
+            // A server that does not search the text of messages still answers for the subject, the sender and the recipients.
+            val found = runCatching { folder.search(listTerm(query, filter)) }.getOrElse { folder.search(listTerm(query, filter, body = false)) }
+            val end = found.size - skip
+            if (end <= 0) return@folder emptyList()
+            found.copyOfRange(maxOf(0, end - limit), end)
         }
         summaries(uids, all)
     }
 
     /** The envelope and flags of [found] fetched in one go, newest first. */
     private fun summaries(uids: UIDFolder, found: Array<Message>): List<MailMessage> {
-        (uids as Folder).fetch(found, FetchProfile().apply { add(FetchProfile.Item.ENVELOPE); add(FetchProfile.Item.FLAGS); add(FetchProfile.Item.CONTENT_INFO) })
-        return found.reversed().map { message ->
+        (uids as Folder).fetch(
+            found,
+            FetchProfile().apply {
+                add(FetchProfile.Item.ENVELOPE); add(FetchProfile.Item.FLAGS); add(FetchProfile.Item.CONTENT_INFO)
+                // What puts the messages of a conversation together.
+                add("Message-ID"); add("In-Reply-To"); add("References")
+            },
+        )
+        return found.reversed().filterNot { it.isSet(Flags.Flag.DELETED) }.map { message ->
             val from = (message.from?.firstOrNull() as? InternetAddress)
             MailMessage(
                 id = uids.getUID(message).toString(), accountId = account.id,
                 senderName = from?.personal?.takeIf { it.isNotBlank() } ?: from?.address.orEmpty(), senderAddress = from?.address.orEmpty(),
                 subject = message.subject.orEmpty(), snippet = "", timestamp = (message.receivedDate ?: message.sentDate)?.time ?: 0L,
                 isUnread = !message.isSet(Flags.Flag.SEEN), isFlagged = message.isSet(Flags.Flag.FLAGGED), bodyText = "",
-                hasAttachments = runCatching { message.isMimeType("multipart/mixed") }.getOrDefault(false),
+                hasAttachments = runCatching { MailParts.hasFiles(message) }.getOrDefault(false),
+                messageId = message.getHeader("Message-ID")?.firstOrNull().orEmpty().trim(),
+                refs = (message.getHeader("In-Reply-To").orEmpty().toList() + message.getHeader("References").orEmpty().toList()).joinToString(" ").trim(),
             )
         }
     }
@@ -229,26 +278,35 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
         }.toMap()
     }
 
-    /** What a message says, who it is for and what came with it; the message is marked as read. */
-    fun body(path: String, uid: Long): MailBody = folder(path, true) { uids ->
-        val message = uids.getMessageByUID(uid) ?: return@folder MailBody("", null, emptyList(), emptyList(), emptyList(), null)
-        message.setFlag(Flags.Flag.SEEN, true)
-        val found = MailParts.Collected()
-        MailParts.walk(message, found)
-        fun people(type: Message.RecipientType) = message.getRecipients(type).orEmpty().mapNotNull { it as? InternetAddress }
-            .map { MailAddress(it.personal.orEmpty(), it.address.orEmpty()) }
-        val html = found.html.toString().takeIf { it.isNotBlank() }?.let { page ->
-            // The pictures that came inside the message are put where the page asks for them (cid:), as they are.
-            found.inline.entries.fold(page) { acc, (cid, uri) -> acc.replace("cid:$cid", uri, ignoreCase = true) }
-        }
-        MailBody(
-            text = found.plain.toString().ifBlank { html?.let(MailParts::stripTags).orEmpty() }.trim(),
-            html = html,
-            attachments = found.attachments,
-            to = people(Message.RecipientType.TO),
-            cc = people(Message.RecipientType.CC),
-            replyTo = (message.replyTo?.firstOrNull() as? InternetAddress)?.address,
-        )
+    /**
+     * What a message says, who it is for and what came with it. The folder is opened read only, so reading cannot change anything else in
+     * it; with [markSeen] the message is then marked as read by a command of its own, whose failure does not lose the reading.
+     */
+    fun body(path: String, uid: Long, markSeen: Boolean = true): MailBody {
+        val opened = folder(path, false) { uids ->
+            val message = uids.getMessageByUID(uid) ?: return@folder null
+            val found = MailParts.Collected()
+            MailParts.walk(message, found)
+            fun people(type: Message.RecipientType) = message.getRecipients(type).orEmpty().mapNotNull { it as? InternetAddress }
+                .map { MailAddress(it.personal.orEmpty(), it.address.orEmpty()) }
+            val html = found.html.toString().takeIf { it.isNotBlank() }?.let { page ->
+                // The pictures that came inside the message are put where the page asks for them (cid:), as they are.
+                found.inline.entries.fold(page) { acc, (cid, uri) -> acc.replace("cid:$cid", uri, ignoreCase = true) }
+            }
+            MailBody(
+                text = found.plain.toString().ifBlank { html?.let(MailParts::stripTags).orEmpty() }.trim(),
+                html = html,
+                attachments = found.attachments,
+                to = people(Message.RecipientType.TO),
+                cc = people(Message.RecipientType.CC),
+                replyTo = (message.replyTo?.firstOrNull() as? InternetAddress)?.address,
+                messageId = message.getHeader("Message-ID")?.firstOrNull().orEmpty().trim(),
+                references = message.getHeader("References").orEmpty().joinToString(" ").trim(),
+                bcc = people(Message.RecipientType.BCC),
+            )
+        } ?: return MailBody("", null, emptyList(), emptyList(), emptyList(), null)
+        if (markSeen) runCatching { setFlag(path, uid, Flags.Flag.SEEN, true) }
+        return opened
     }
 
     /** One file of a message, as the bytes it holds: its name, its kind and the bytes. */
@@ -261,33 +319,91 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
         Triple(info.name, info.mime, part.inputStream.use { it.readBytes() })
     }
 
+    /** Sets or clears [flag] on the message. Throws when the message is not there any more or the server says no: nothing is changed then. */
     fun setFlag(path: String, uid: Long, flag: Flags.Flag, on: Boolean) = folder(path, true) { uids ->
-        uids.getMessageByUID(uid)?.setFlag(flag, on)
-        Unit
+        (uids.getMessageByUID(uid) ?: error("gone")).setFlag(flag, on)
     }
 
-    /** Takes the message out of the folder: into the trash of the account when it has one, for good when it has none (or it is the trash). */
-    fun delete(path: String, uid: Long) = store { store ->
+    /** The folder of the account for [role] ("\\Trash", "\\Archive", "\\Junk", "\\Sent"): the one the server marks, else one of the usual names. */
+    private fun roleFolder(store: Store, role: String): Folder? {
+        if (role == "\\All") return store.defaultFolder.list("*").firstOrNull { it is com.sun.mail.imap.IMAPFolder && role in it.attributes }
+        val all = store.defaultFolder.list("*")
+        return all.firstOrNull { it is com.sun.mail.imap.IMAPFolder && role in it.attributes }
+            ?: all.firstOrNull { f -> NAMES[role].orEmpty().any { it.equals(f.fullName, true) || it.equals(f.name, true) } }
+    }
+
+    /**
+     * Takes [message] out of [folder] and nothing else: it is marked \Deleted and only it is expunged (UID EXPUNGE). A server without that
+     * command gets a plain EXPUNGE only when no other message in the folder is marked \Deleted, so another program's marks are never swept.
+     * Otherwise the message stays marked: it is not listed any more, and nothing is lost.
+     */
+    private fun remove(store: Store, folder: Folder, message: Message) {
+        message.setFlag(Flags.Flag.DELETED, true)
+        val imapStore = store as com.sun.mail.imap.IMAPStore
+        if (imapStore.hasCapability("UIDPLUS")) {
+            (folder as com.sun.mail.imap.IMAPFolder).expunge(arrayOf(message))
+        } else if (folder.search(FlagTerm(Flags(Flags.Flag.DELETED), true)).size == 1) {
+            folder.expunge()
+        }
+    }
+
+    /**
+     * Takes the message out of the folder, into the trash of the account. A copy that fails stops everything: the message stays where it is.
+     * With no trash (or in the trash itself) the message would be gone for good: [NoTrashException] is thrown unless [permanent] says the user knows.
+     */
+    fun delete(path: String, uid: Long, permanent: Boolean = false) = store { store ->
         val folder = store.getFolder(path)
         folder.open(Folder.READ_WRITE)
         try {
             val message = (folder as UIDFolder).getMessageByUID(uid) ?: return@store
-            val trash = store.defaultFolder.list("*").firstOrNull { it is com.sun.mail.imap.IMAPFolder && "\\Trash" in it.attributes }
-            if (trash != null && trash.fullName != path) folder.copyMessages(arrayOf(message), trash)
-            message.setFlag(Flags.Flag.DELETED, true)
+            val trash = roleFolder(store, "\\Trash")?.takeIf { it.fullName != path }
+            if (trash == null && !permanent) throw NoTrashException()
+            trash?.let { folder.copyMessages(arrayOf(message), it) }
+            remove(store, folder, message)
         } finally {
-            runCatching { folder.close(true) }
+            runCatching { folder.close(false) }
         }
     }
 
-    /** Sends [body] to [to] (and [cc]) with the files [attachments] (name, kind, bytes) that came with it. */
-    fun send(to: String, cc: String, subject: String, body: String, attachments: List<Triple<String, String, ByteArray>> = emptyList()) {
+    /** Whether [delete] of a message of [path] goes to a trash (false: it would be for good and the user must be asked). */
+    fun hasTrash(path: String): Boolean = store { roleFolder(it, "\\Trash")?.fullName.let { t -> t != null && t != path } }
+
+    /** Moves the message to [target] (a folder path), or to the folder for [role] when [target] is null. Throws when there is no such folder or the copy fails: the message stays. */
+    fun move(path: String, uid: Long, target: String?, role: String? = null) = store { store ->
+        val to = if (target != null) store.getFolder(target) else roleFolder(store, role ?: error("no target"))
+        // Gmail has no archive folder: the message already lives in "All Mail", so archiving is only taking it out of the inbox.
+        val allMail = if (to == null && role == "\\Archive") roleFolder(store, "\\All") else null
+        if ((to == null && allMail == null) || to?.fullName == path) error("no folder")
+        val folder = store.getFolder(path)
+        folder.open(Folder.READ_WRITE)
+        try {
+            val message = (folder as UIDFolder).getMessageByUID(uid) ?: error("gone")
+            to?.let { folder.copyMessages(arrayOf(message), it) }
+            remove(store, folder, message)
+        } finally {
+            runCatching { folder.close(false) }
+        }
+    }
+
+    /**
+     * Sends [body] to [to] (and [cc], [bcc]) with the files [attachments] (name, kind, bytes) that came with it. [inReplyTo] and [references]
+     * put an answer in the conversation of the message it answers.
+     */
+    fun send(
+        to: String, cc: String, subject: String, body: String, attachments: List<Triple<String, String, ByteArray>> = emptyList(),
+        bcc: String = "", inReplyTo: String = "", references: String = "",
+    ) {
         val session = Session.getInstance(properties())
         val message = MimeMessage(session).apply {
             setFrom(InternetAddress(account.email))
             setRecipients(Message.RecipientType.TO, InternetAddress.parse(to) as Array<Address>)
             if (cc.isNotBlank()) setRecipients(Message.RecipientType.CC, InternetAddress.parse(cc) as Array<Address>)
+            if (bcc.isNotBlank()) setRecipients(Message.RecipientType.BCC, InternetAddress.parse(bcc) as Array<Address>)
             setSubject(subject, "UTF-8")
+            if (inReplyTo.isNotBlank()) {
+                setHeader("In-Reply-To", inReplyTo)
+                setHeader("References", (references.trim() + " " + inReplyTo).trim())
+            }
             if (attachments.isEmpty()) {
                 setText(body, "UTF-8")
             } else {
@@ -309,22 +425,54 @@ class MailClient(private val account: MailAccount, private val secret: () -> Str
         if (account.imapHost !in KEEPS_SENT) {
             runCatching {
                 store { store ->
-                    store.defaultFolder.list("*").firstOrNull { it is com.sun.mail.imap.IMAPFolder && "\\Sent" in it.attributes }
-                        ?.appendMessages(arrayOf(message.apply { setFlag(Flags.Flag.SEEN, true) }))
+                    roleFolder(store, "\\Sent")?.appendMessages(arrayOf(message.apply { setFlag(Flags.Flag.SEEN, true) }))
                 }
             }
         }
     }
 
     companion object {
-        /** The server looks for [query] in the subject and the sender. A non-ASCII word makes the library search on the phone instead. */
-        fun searchTerm(query: String): SearchTerm = OrTerm(SubjectTerm(query), FromStringTerm(query))
+        /** What a folder is for, from its usual names, when the server does not say ([MailFolder.role]). */
+        fun guessRole(fullName: String, name: String): String? =
+            NAMES.entries.firstOrNull { (_, names) -> names.any { it.equals(fullName, true) || it.equals(name, true) } }?.key
+
+        /**
+         * The server looks for [query] in the subject, the sender, the recipients and the text. A word with letters outside ASCII is searched
+         * with the charset UTF-8 when the server takes it; the library searches on the phone when it does not.
+         */
+        fun searchTerm(query: String, body: Boolean = true): SearchTerm = OrTerm(
+            listOfNotNull(
+                SubjectTerm(query), FromStringTerm(query), if (body) BodyTerm(query) else null,
+                RecipientStringTerm(Message.RecipientType.TO, query), RecipientStringTerm(Message.RecipientType.CC, query),
+            ).toTypedArray(),
+        )
+
+        /** What a list asks the server: [query] (if any), narrowed to the unread or the flagged, and never what another program marked \Deleted. */
+        fun listTerm(query: String, filter: MailFilter, body: Boolean = true): SearchTerm {
+            val terms = ArrayList<SearchTerm>()
+            if (query.isNotBlank()) terms += searchTerm(query.trim(), body)
+            when (filter) {
+                MailFilter.Unseen -> terms += FlagTerm(Flags(Flags.Flag.SEEN), false)
+                MailFilter.Flagged -> terms += FlagTerm(Flags(Flags.Flag.FLAGGED), true)
+                MailFilter.All -> {}
+            }
+            terms += FlagTerm(Flags(Flags.Flag.DELETED), false)
+            return AndTerm(terms.toTypedArray())
+        }
 
         /** How many messages one page of the list holds. */
         const val LIMIT = 50
         private const val TIMEOUT = "15000"
         private const val SMTPS_PORT = 465
+        private const val IMAPS_PORT = 993
         private const val SNIPPET = 140
         private val KEEPS_SENT = setOf("imap.gmail.com", "outlook.office365.com", "imap-mail.outlook.com", "imap.mail.yahoo.com", "imap.mail.me.com")
+        private val ROLES = setOf("\\Trash", "\\Junk", "\\Archive", "\\Sent", "\\Drafts", "\\All")
+        private val NAMES = mapOf(
+            "\\Trash" to listOf("Trash", "Deleted", "Deleted Items", "Deleted Messages", "INBOX.Trash", "Bin", "Cestino", "Posta eliminata"),
+            "\\Junk" to listOf("Junk", "Spam", "Junk E-mail", "INBOX.Spam", "Bulk Mail", "Posta indesiderata"),
+            "\\Archive" to listOf("Archive", "Archivio", "Archived", "INBOX.Archive"),
+            "\\Sent" to listOf("Sent", "Sent Items", "Sent Messages", "INBOX.Sent", "Posta inviata", "Inviati"),
+        )
     }
 }

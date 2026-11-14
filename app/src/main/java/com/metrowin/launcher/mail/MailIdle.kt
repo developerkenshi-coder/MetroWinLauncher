@@ -143,8 +143,9 @@ class MailIdleService : Service() {
             val client = MailRepository(applicationContext).client(account)
             try {
                 client?.let { MailSync.lookAt(applicationContext, account, it) }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
                 // The connection that waits will fail too and be made again; the job looks later anyway.
+                com.metrowin.launcher.data.Diagnostics.warn("mail.idle.look", e, withMessage = false)
             } finally {
                 client?.close()
                 if (power.isHeld) power.release()
@@ -181,8 +182,9 @@ class MailIdleService : Service() {
                         showNotification()
                         break
                     }
-                } catch (_: Exception) {
+                } catch (e: Exception) {
                     // Dropped, refused or timed out: the wait below, then another try.
+                    com.metrowin.launcher.data.Diagnostics.warn("mail.idle", e, withMessage = false)
                 } finally {
                     client = null
                     idle.close()

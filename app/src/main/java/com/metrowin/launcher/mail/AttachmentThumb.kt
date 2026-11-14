@@ -51,5 +51,7 @@ fun AttachmentThumb(file: MailAttachment, fetch: suspend (Int) -> Result<Triple<
     }
     val image = thumb
     if (image != null) Image(image, null, Modifier.size(56.dp), contentScale = ContentScale.Crop)
-    else Box(Modifier.size(if (wanted) 56.dp else 24.dp).background(if (wanted) LocalAccent.current.copy(alpha = 0.3f) else androidx.compose.ui.graphics.Color.Transparent), contentAlignment = Alignment.Center) { MetroText("📎", size = 18.sp) }
+    else Box(Modifier.size(if (wanted) 56.dp else 28.dp).background(if (wanted) LocalAccent.current.copy(alpha = 0.3f) else androidx.compose.ui.graphics.Color.Transparent), contentAlignment = Alignment.Center) {
+        FileKindIcon(file.name, file.mime, if (wanted) 32.dp else 28.dp, LocalAccent.current)
+    }
 }

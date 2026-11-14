@@ -71,12 +71,13 @@ object MicrosoftOAuth {
     fun exchange(code: String, pending: Pending): Tokens =
         post(mapOf("grant_type" to "authorization_code", "code" to code, "redirect_uri" to REDIRECT, "code_verifier" to pending.verifier, "scope" to SCOPES))
 
-    private var cached: Pair<String, Tokens>? = null
+    @Volatile private var cached: Pair<String, Tokens>? = null
 
     /**
      * Blocking. A token to read and send mail with, made from the kept [refreshToken]; one that is still good is used again. Microsoft may
      * hand out a new refresh token with it: [onNewRefresh] keeps it.
      */
+    @Synchronized
     fun accessToken(refreshToken: String, onNewRefresh: (String) -> Unit): String {
         cached?.takeIf { it.first == refreshToken && it.second.expiresAtMs > System.currentTimeMillis() + 60_000 }?.let { return it.second.access }
         val tokens = post(mapOf("grant_type" to "refresh_token", "refresh_token" to refreshToken, "scope" to SCOPES))

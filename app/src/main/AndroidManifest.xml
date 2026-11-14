@@ -505,6 +505,7 @@
             android:exported="true"
             android:label="@string/mail_app_title"
             android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <!-- Where the page of Microsoft sends the browser back after the sign in (see MicrosoftOAuth). -->
             <intent-filter>
@@ -545,6 +546,13 @@
             android:name=".mail.MailSyncJob"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" />
+        <!-- The messages that could not be sent for want of a network, tried again when there is one. -->
+        <service
+            android:name=".mail.MailOutboxJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <!-- The "mark as read" and "delete" buttons of a new mail notification. -->
+        <receiver android:name=".mail.MailActionReceiver" android:exported="false" />
         <!-- The look at the mobile data used, every hour while a limit is set. -->
         <service
             android:name=".datasense.DataLimitJob"
