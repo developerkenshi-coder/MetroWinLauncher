@@ -2808,10 +2808,8 @@ em primeiro plano %3$s · em segundo plano %4$s
     <string name="ppl_all">todos</string>
     <string name="ppl_call">Ligar</string>
     <string name="ppl_message">Mensagem</string>
-    <string name="ppl_back">Voltar</string>
     <string name="ppl_history">histórico</string>
     <string name="ppl_no_history">Ainda nada com esta pessoa.</string>
-    <string name="ppl_empty">Ainda sem contactos com número.</string>
     <string name="pv_share">Partilhar</string>
     <string name="pv_delete">Eliminar</string>
     <string name="pv_info">Informação</string>

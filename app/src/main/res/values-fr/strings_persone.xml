@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- People app strings. -->
+<resources>
+    <string name="pp_photo_of">Photo de %1$s</string>
+    <string name="pp_mail">Mail</string>
+    <string name="pp_favourite">Favori</string>
+    <string name="pp_unfavourite">Retirer des favoris</string>
+    <string name="pp_edit">Modifier</string>
+    <string name="pp_share">Partager</string>
+    <string name="pp_callback">Rappeler</string>
+    <string name="pp_numbers">numéros</string>
+    <string name="pp_emails">mail</string>
+    <string name="pp_addresses">adresses</string>
+    <string name="pp_birthday">anniversaire</string>
+    <string name="pp_add_birthday">Touchez la date pour l\'ajouter au calendrier</string>
+    <string name="pp_org">travail</string>
+    <string name="pp_groups">groupes</string>
+    <string name="pp_note">note</string>
+    <string name="pp_accounts">enregistré dans</string>
+    <string name="pp_stats">%1$s · %2$s</string>
+    <string name="pp_last">dernier : %1$s</string>
+    <string name="pp_call_in">Appel reçu</string>
+    <string name="pp_call_out">Appel émis</string>
+    <string name="pp_call_missed">Appel manqué</string>
+    <string name="pp_notification">Notification</string>
+    <string name="pp_sim_choose">Appeler avec</string>
+    <string name="pp_sim_unnamed">SIM</string>
+    <string name="pp_exported">%1$d contacts enregistrés</string>
+    <string name="pp_add">Ajouter</string>
+    <string name="pp_options">Options</string>
+    <string name="pp_import">Importer</string>
+    <string name="pp_export">Exporter</string>
+    <string name="pp_duplicates">Doublons</string>
+    <string name="pp_pick">Choisissez une personne</string>
+    <string name="pp_search">Rechercher des personnes</string>
+    <string name="pp_hint">Touchez une lettre pour passer à une autre. Maintenez une personne pour les actions rapides. Glissez la page pour les nouveautés et les favoris.</string>
+    <string name="pp_got_it">Compris</string>
+    <string name="pp_empty">Aucun contact pour l\'instant.</string>
+    <string name="pp_no_match">Personne ne correspond.</string>
+    <string name="pp_no_favourites">Aucun favori pour l\'instant. Ouvrez une personne et touchez l\'étoile.</string>
+    <string name="pp_birthdays">anniversaires</string>
+    <string name="pp_callback_list">à rappeler</string>
+    <string name="pp_quick">Actions rapides</string>
+    <string name="pp_open">Ouvrir la fiche</string>
+    <string name="pp_opt_birthdays">Anniversaires</string>
+    <string name="pp_opt_news_text">Texte des notifications dans les nouveautés</string>
+    <string name="pp_opt_history_notes">Notifications dans l\'historique de la personne</string>
+    <string name="pp_opt_groups">Groupes de contacts en pastilles</string>
+    <string name="pp_opt_dividers">Lignes entre les personnes</string>
+    <string name="pp_opt_plain_letters">Lettres simples dans la liste</string>
+    <string name="pp_opt_source_dots">Couleur du lieu de chaque contact</string>
+    <string name="pp_size_small">petites</string>
+    <string name="pp_size_medium">moyennes</string>
+    <string name="pp_size_large">grandes</string>
+    <string name="pp_opt_tile_size">Taille des favoris : %1$s</string>
+    <string name="pp_opt_move_page">Déplacer cette page vers la droite</string>
+    <string name="pp_opt_hint_again">Afficher à nouveau l\'astuce</string>
+    <string name="pp_no_duplicates">Aucun contact semblable.</string>
+    <string name="pp_duplicates_note">Ils ont le même nom ou numéro. Fusionnez-les dans l\'app Contacts : ouvrez le contact, puis modifiez.</string>
+    <plurals name="pp_calls_count">
+        <item quantity="one">%d appel</item>
+        <item quantity="other">%d appels</item>
+    </plurals>
+    <plurals name="pp_texts_count">
+        <item quantity="one">%d message</item>
+        <item quantity="other">%d messages</item>
+    </plurals>
+    <plurals name="pp_in_days">
+        <item quantity="one">dans %d jour</item>
+        <item quantity="other">dans %d jours</item>
+    </plurals>
+</resources>
