@@ -38,6 +38,7 @@ class NestedScrollDialogsTest : ScreenshotBase() {
             ActionsDialog(
                 files, File("/sdcard/other"), onExtract = {}, onToOther = {}, onProperties = {}, onInvert = {}, onSelectAll = {},
                 onCopyPath = {}, onBookmark = {}, bookmarks = emptyList(), onEdit = {}, onCancel = {},
+                opts = { it.default }, tag = 0, onTag = {}, onBulkRename = {}, onArchiveList = {},
             )
         }
         advance(500)

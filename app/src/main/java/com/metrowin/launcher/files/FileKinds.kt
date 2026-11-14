@@ -33,9 +33,22 @@ object FileKinds {
     private val VIDEOS = setOf("mp4", "m4v", "mkv", "webm", "avi", "mov", "3gp", "3g2", "wmv", "flv", "mpg", "mpeg", "ts")
     private val AUDIO = setOf("mp3", "m4a", "aac", "wav", "ogg", "oga", "opus", "flac", "amr", "wma", "mid", "midi", "mka", "awb")
 
+    /** The extensions the file manager opens in its own editor. The one table every part of the file manager reads. */
+    val TEXT = setOf("txt", "md", "json", "xml", "csv", "log", "html", "htm", "css", "js", "kt", "java", "py", "sh", "ini", "conf", "yml", "yaml", "properties", "gradle", "toml", "srt", "tex")
+
+    /** The extensions of a zip-like archive (an apk is one, and is installed rather than extracted). */
+    val ZIP = setOf("zip", "jar", "apk", "cbz")
+
+    /** The pictures the phone itself can decode into a small copy. */
+    val DECODABLE = setOf("jpg", "jpeg", "png", "webp", "gif", "bmp", "heic", "heif", "avif")
+
+    fun extensionOf(name: String): String = name.substringAfterLast('.', "").lowercase(Locale.ROOT)
+
+    fun isVideo(name: String): Boolean = extensionOf(name) in VIDEOS
+
     /** The kind of a file called [name], from its extension alone; null when the extension is none or unknown. */
     fun byName(name: String): Kind? {
-        val ext = name.substringAfterLast('.', "").lowercase(Locale.ROOT)
+        val ext = extensionOf(name)
         if (ext.isEmpty() || name.endsWith(".")) return null
         return when {
             ext == "apk" || ext == "apks" || ext == "xapk" -> Kind(Category.Apk)
@@ -117,28 +130,30 @@ object FileKinds {
     }.getOrNull()
 
     /**
-     * The files under [root] of [category] (and of [doc] when it is a document kind), at most [limit], newest first on the way out of the
-     * caller. [active] is asked now and then: when it says false the walk stops with what it has. At most [MAX_SNIFFED] files are opened
-     * to read their first bytes, so a folder of files with no extension cannot keep the scan for long.
+     * The files under [root] of [category] (and of [doc] when it is a document kind), at most [limit]. [active] is asked now and then:
+     * when it says false the walk stops with what it has. At most [MAX_SNIFFED] files are opened to read their first bytes, so a folder
+     * of files with no extension cannot keep the scan for long. With a [comparator] the whole storage is walked (up to [MAX_FOUND] hits)
+     * and the [limit] best by that order are kept, instead of the first [limit] found; [onPartial] is given the hits so far now and then.
      */
-    fun scan(root: File, category: Category, doc: DocKind?, showHidden: Boolean, limit: Int = 500, active: () -> Boolean = { true }): List<Entry> {
+    fun scan(
+        root: File, category: Category, doc: DocKind?, showHidden: Boolean, limit: Int = 500, active: () -> Boolean = { true },
+        comparator: Comparator<Entry>? = null, onPartial: ((List<Entry>) -> Unit)? = null,
+    ): List<Entry> {
         val found = ArrayList<Entry>()
-        val queue = ArrayDeque<File>().apply { add(root) }
         var sniffed = 0
-        while (queue.isNotEmpty() && found.size < limit && active()) {
-            val dir = queue.removeFirst()
-            for (child in dir.listFiles().orEmpty()) {
-                if (found.size >= limit || !active()) break
-                if (!showHidden && child.name.startsWith(".")) continue
-                if (child.isDirectory) { if (!FileOps.isLink(child)) queue.add(child); continue }
-                val byName = byName(child.name)
-                val kind = byName ?: if (sniffed < MAX_SNIFFED && child.length() > 0) { sniffed++; sniff(child)?.let(::byHeader) } else null
-                val k = kind ?: Kind(Category.Other)
-                if (k.category == category && (doc == null || k.doc == doc)) found += Entry(child, false, child.length(), child.lastModified(), child.name.startsWith("."))
+        val cap = if (comparator == null) limit else MAX_FOUND
+        FileViews.walk(root, showHidden, active, stop = { found.size >= cap }) { child ->
+            val kind = byName(child.name) ?: if (sniffed < MAX_SNIFFED && child.length() > 0) { sniffed++; sniff(child)?.let(::byHeader) } else null
+            val k = kind ?: Kind(Category.Other)
+            if (k.category == category && (doc == null || k.doc == doc)) {
+                found += Entry(child, false, child.length(), child.lastModified(), child.name.startsWith("."))
+                if (onPartial != null && found.size % PARTIAL_EVERY == 0) onPartial(ArrayList(found))
             }
         }
-        return found
+        return if (comparator == null) found else found.sortedWith(comparator).take(limit)
     }
 
+    private const val PARTIAL_EVERY = 100
+    const val MAX_FOUND = 20_000
     const val MAX_SNIFFED = 2000
 }

@@ -19,7 +19,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.data.ActionBarStyle
@@ -30,15 +29,18 @@ import com.metrowin.launcher.ui.components.LocalActionBar
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 
+/** A button of the bar of the file manager. */
+class FilesBarItem(val icon: FilesIcon, val label: String, val onClick: () -> Unit)
+
 /**
  * The bar of the file manager: up to seven buttons that share the width (the shared bar has room for five), each at least 48 dp wide and
- * 56 dp high, with its label under it and the label as its description for TalkBack. In the Retro look the shared bar is used as it is:
- * it already keeps four buttons and puts the others in its list of texts.
+ * 56 dp high, with its drawn sign, its label under it and the label as its description for TalkBack. In the Retro look the shared bar is
+ * used as it is: it already keeps four buttons and puts the others in its list of texts.
  */
 @Composable
-fun FilesBar(items: List<AppBarItem>, modifier: Modifier = Modifier) {
+fun FilesBar(items: List<FilesBarItem>, modifier: Modifier = Modifier) {
     if (LocalActionBar.current == ActionBarStyle.Retro) {
-        AppBar(items, modifier)
+        AppBar(items.map { AppBarItem(it.icon.symbol, it.label, it.onClick) }, modifier)
         return
     }
     val colors = LocalMetroColors.current
@@ -55,9 +57,9 @@ fun FilesBar(items: List<AppBarItem>, modifier: Modifier = Modifier) {
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
             ) {
                 Box(Modifier.size(34.dp).border(2.dp, colors.foreground, CircleShape).clip(CircleShape), contentAlignment = Alignment.Center) {
-                    MetroText(item.symbol, size = 18.sp, weight = FontWeight.Normal)
+                    FilesGlyph(item.icon, 18.dp)
                 }
-                MetroText(item.label, size = 11.sp, color = colors.subtle, maxLines = 1, minScale = 0.7f, modifier = Modifier.padding(top = 2.dp))
+                MetroText(item.label, size = 12.sp, color = colors.subtle, maxLines = 1, minScale = 0.75f, modifier = Modifier.padding(top = 2.dp))
             }
         }
     }
