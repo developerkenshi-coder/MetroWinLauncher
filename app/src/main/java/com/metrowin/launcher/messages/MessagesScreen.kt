@@ -612,7 +612,11 @@ private fun BubbleRow(
                 .then(if (onLongClick != null) Modifier.metroPress(onClick = { onFixed() }, onLongClick = onLongClick) else Modifier)
                 .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp + tail),
         ) {
-            sender?.let { MetroText(repository.nameOf(it) ?: it, size = 12.sp, weight = FontWeight.SemiBold, color = textColor, maxLines = 1) }
+            sender?.let {
+                // The contact is looked up off the main thread; the number shows until it is found.
+                val who by produceState(it, it) { value = withContext(Dispatchers.IO) { repository.nameOf(it) } ?: it }
+                MetroText(who, size = 12.sp, weight = FontWeight.SemiBold, color = textColor, maxLines = 1)
+            }
             sms.image?.let { Picture(it, repository, onOpenPicture, onLongClick) }
             if (sms.pending) MetroText(stringResource(R.string.messages_mms_download), size = 16.sp, weight = FontWeight.Normal, color = textColor)
             sms.attachment?.let { MetroText(stringResource(R.string.messages_attachment, it), size = 14.sp, weight = FontWeight.Normal, color = textColor) }

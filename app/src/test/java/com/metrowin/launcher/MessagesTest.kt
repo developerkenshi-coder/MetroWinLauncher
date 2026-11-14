@@ -75,7 +75,7 @@ class MessagesTest {
         assertEquals(1 to 160, MessagesLogic.parts(""))
         assertEquals(1 to 0, MessagesLogic.parts("a".repeat(160)))
         assertEquals(2 to 145, MessagesLogic.parts("a".repeat(161)))
-        assertEquals(1 to 69, MessagesLogic.parts("è€à".replace("à", "") + "☺"))
+        assertEquals(1 to 67, MessagesLogic.parts("è€☺"))
     }
 
     @Test fun runsOfBubblesGroupBySideAndTime() {
