@@ -15,6 +15,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.metrowin.launcher.data.Recordings
+import com.metrowin.launcher.recorder.AudioEdit
 import com.metrowin.launcher.recorder.AudioTools
 import com.metrowin.launcher.recorder.RecorderShare
 import org.junit.After
@@ -81,11 +82,40 @@ class RecorderImportTest {
             compose.waitUntil(8000) { compose.onAllNodesWithTagCount("rec:row") > 0 }
             shot("recorder-list")
             compose.onNodeWithTag("rec:row").performClick()
-            compose.waitUntil(8000) { compose.onAllNodesWithTagCount("rec:nocut") > 0 }
-            compose.onNodeWithTag("rec:nocut").assertIsDisplayed()
+            // The cut is in the second part of a recording; a wav is written again as AAC, and says so.
+            compose.waitUntil(8000) { compose.onAllNodesWithTagCount("rec:parts") > 0 }
+            compose.onNodeWithText("edit", ignoreCase = true).performClick()
+            compose.waitUntil(8000) { compose.onAllNodesWithTagCount("rec:reencode") > 0 }
+            compose.onNodeWithTag("rec:reencode").assertIsDisplayed()
             compose.onNodeWithTag("rec:cut").performClick()
             shot("recorder-detail")
         }
+    }
+
+    @Test fun aPieceOfAnyFormatIsWrittenAgainAsAacOfTheRightLength() {
+        val out = File(shared, "piece.m4a")
+        assertTrue(AudioEdit.render(listOf(wav("Memo.wav")), out, AudioEdit.Plan(startMs = 200, endMs = 700)))
+        assertTrue("the piece can be read and cut again", AudioTools.canCut(out))
+        assertEquals(500.0, AudioTools.durationMs(out).toDouble(), 90.0)
+    }
+
+    @Test fun loudnessFadeSilencesAndJoiningMakeNewSound() {
+        val a = wav("A.wav"); val b = wav("B.wav")
+        listOf(AudioEdit.Plan(normalise = true), AudioEdit.Plan(fadeMs = 300), AudioEdit.Plan(dropSilence = true)).forEachIndexed { i, plan ->
+            val out = File(shared, "edit$i.m4a")
+            // a second of silence is all silence: the gate keeps its first quarter second
+            assertTrue("plan $i", AudioEdit.render(listOf(a), out, plan))
+            assertTrue(AudioTools.durationMs(out) > 0)
+        }
+        val joined = File(shared, "joined.m4a")
+        assertTrue(AudioEdit.render(listOf(a, b), joined, AudioEdit.Plan()))
+        assertEquals(2000.0, AudioTools.durationMs(joined).toDouble(), 120.0)
+    }
+
+    @Test fun aWavExportHasAHeaderAndTheSound() {
+        val out = File(shared, "out.wav")
+        assertTrue(AudioEdit.toWav(wav("W.wav"), out))
+        assertEquals(16_044.0, out.length().toDouble(), 400.0)
     }
 
     private fun androidx.compose.ui.test.junit4.ComposeTestRule.onAllNodesWithTagCount(tag: String) =

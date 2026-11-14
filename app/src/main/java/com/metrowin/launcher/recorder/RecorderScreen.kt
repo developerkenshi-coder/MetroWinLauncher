@@ -1,45 +1,33 @@
 package com.metrowin.launcher.recorder
 
-import com.metrowin.launcher.ui.actioncenter.MetroToast
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import com.metrowin.launcher.ui.components.featherRow
-import com.metrowin.launcher.ui.components.scrollIndicator
 import android.Manifest
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.layout.size
-import androidx.compose.ui.graphics.graphicsLayer
-import com.metrowin.launcher.ui.theme.LocalReduceMotion
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
-import android.media.MediaPlayer
-import android.os.SystemClock
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -48,77 +36,174 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.data.Recordings
-import com.metrowin.launcher.data.TimerFormat
 import com.metrowin.launcher.data.VoiceRecorder
-import com.metrowin.launcher.notes.Note
-import com.metrowin.launcher.notes.NoteStore
-import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
-import com.metrowin.launcher.ui.components.MetroProgressBar
-import com.metrowin.launcher.ui.components.MetroButton
-import com.metrowin.launcher.ui.components.SelectableRow
-import com.metrowin.launcher.ui.theme.LocalStyle
-import com.metrowin.launcher.ui.components.MetroText
-import com.metrowin.launcher.ui.components.MetroTextField
+import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.mini.MiniFrame
-import com.metrowin.launcher.ui.pages.PageNote
-import com.metrowin.launcher.ui.start.DialogFrame
-import com.metrowin.launcher.ui.theme.LocalAccent
-import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
+
+/** Put in the intent of the activity to start a recording as soon as it opens (a shortcut or a tile of the launcher can do it). */
+const val EXTRA_RECORD_NOW = "record_now"
+
+private tailrec fun Context.activity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.activity()
+    else -> null
+}
 
 @Composable
 fun RecorderScreen() {
     val context = LocalContext.current
+    val view = LocalView.current
     val scope = rememberCoroutineScope()
     val store = remember { Recordings(context) }
+    val metas = remember { RecMetaStore(context) }
+    val opts = remember { RecorderOptions(context) }
     val recorder = remember { VoiceRecorder(context, store) }
-    DisposableEffect(recorder) { onDispose { recorder.release() } }
+    val player = remember { RecorderPlayer() }
+    val env = remember { RecEnv(store, metas, opts, player) }
+    val activity = remember { context.activity() }
+
+    // A deleted recording waits a few seconds in the trash; leaving the app makes that final.
+    var undo by remember { mutableStateOf<List<Pair<File, File>>?>(null) }
+    DisposableEffect(recorder) { onDispose { recorder.release(); player.release(); RecTrash.empty(context) } }
+    LaunchedEffect(player.playing) { while (player.playing) { player.tick(); delay(80) } }
+
+    // ---- the permissions
     var allowed by remember { mutableStateOf(LivePermissions.isGranted(context, Manifest.permission.RECORD_AUDIO)) }
-    val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { allowed = it }
+    var denied by remember { mutableStateOf(false) }
+    val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        allowed = ok
+        // Refused with no question asked again: only the settings of the phone can allow it.
+        denied = !ok && activity != null && !androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.RECORD_AUDIO)
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        allowed = LivePermissions.isGranted(context, Manifest.permission.RECORD_AUDIO)
+        if (allowed) denied = false
+    }
+
+    // ---- the recordings
+    var recs by remember { mutableStateOf(emptyList<Rec>()) }
+    var loaded by remember { mutableStateOf(false) }
     var version by remember { mutableIntStateOf(0) }
-    val files = remember(version, VoiceRecorder.active) { store.list() }
+    LaunchedEffect(version, VoiceRecorder.active) {
+        val first = !loaded
+        recs = withContext(Dispatchers.IO) { RecorderData.load(context, store, metas, first) }
+        loaded = true
+        val tree = opts.backupTree
+        if (opts.on(Opt.BACKUP) && tree != null) withContext(Dispatchers.IO) { RecorderBackup.sync(context, Uri.parse(tree), recs.map { it.file }) }
+    }
     var selected by remember { mutableStateOf<String?>(null) }
-    val pager = rememberPagerState { 2 }
-    // The recording is the process's, not the page's: it is still there when the page is back, and a stop from the notification shows here.
-    val recording = VoiceRecorder.active
-    val startedAt = VoiceRecorder.startedAt
-    var elapsed by remember { mutableLongStateOf(0L) }
-    var failed by remember { mutableStateOf(false) }
     var picked by remember { mutableStateOf(setOf<String>()) }
-    var importing by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    var label by remember { mutableStateOf("") }
+    var importing by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+    var working by remember { mutableStateOf(false) }
+    var armed by remember { mutableStateOf(false) }
+    var showOptions by remember { mutableStateOf(false) }
+    var showStats by remember { mutableStateOf(false) }
+    val pager = rememberPagerState { 2 }
+
+    // ---- the recording going on
+    val recording = VoiceRecorder.active
+    val paused = VoiceRecorder.paused
+    var elapsed by remember { mutableLongStateOf(0L) }
+    var busy by remember { mutableStateOf(false) }
+    var levels by remember { mutableStateOf(emptyList<Float>()) }
+    var level by remember { mutableFloatStateOf(0f) }
+    var peak by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(recording, paused) {
+        while (recording) {
+            elapsed = VoiceRecorder.elapsedMs()
+            delay(250L)
+        }
+    }
+    // The loudness of the last moments, one bar each, while recording.
+    LaunchedEffect(recording) {
+        levels = emptyList()
+        peak = 0f
+        while (recording) {
+            level = VoiceRecorder.level()
+            peak = maxOf(level, peak * 0.97f)
+            levels = (levels + level).takeLast(WAVE_BARS)
+            delay(WAVE_STEP_MS)
+        }
+        level = 0f
+    }
+
+    fun say(id: Int) { view.announceForAccessibility(context.getString(id)) }
+
+    fun startRecording() {
+        if (busy) return
+        scope.launch {
+            busy = true
+            val ok = withContext(Dispatchers.IO) { recorder.start() }
+            busy = false
+            if (ok) say(R.string.rec_announce_started)
+        }
+    }
+
+    fun stopRecording() {
+        if (busy) return
+        scope.launch {
+            busy = true
+            withContext(Dispatchers.IO) { recorder.stop() }
+            busy = false
+            version++
+            say(R.string.rec_announce_stopped)
+        }
+    }
+
+    // The notification of the phone is asked for once, before the first recording: without it the service still records, but unseen.
+    val askNotifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { startRecording() }
+    fun begin() {
+        val prefs = RecorderPrefs.file(context)
+        if (Build.VERSION.SDK_INT >= 33 && !LivePermissions.isGranted(context, Manifest.permission.POST_NOTIFICATIONS) && !prefs.getBoolean("asked_notifications", false)) {
+            prefs.edit().putBoolean("asked_notifications", true).apply()
+            askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else startRecording()
+    }
+    LaunchedEffect(allowed) {
+        val intent = activity?.intent
+        if (allowed && intent?.getBooleanExtra(EXTRA_RECORD_NOW, false) == true && !VoiceRecorder.active) {
+            intent.removeExtra(EXTRA_RECORD_NOW)
+            begin()
+        }
+    }
+
+    // ---- what is done to the recordings
     val importer = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         if (uris.isEmpty()) return@rememberLauncherForActivityResult
         scope.launch {
-            importing = true
-            val (made, refused) = withContext(Dispatchers.IO) { RecorderShare.import(context, store, uris) }
-            importing = false
-            version++
+            importing = 0 to uris.size
+            val (made, refused) = withContext(Dispatchers.IO) { RecorderShare.import(context, store, uris) { done, total -> importing = done to total } }
+            importing = null
+            // The new ones join the list; the rest of it is not read again.
+            val added = withContext(Dispatchers.IO) { made.map { Rec(it, RecorderData.durationOf(it), it.length(), RecMeta()) } }
+            recs = recs + added
             val text = listOfNotNull(
                 if (made.isNotEmpty()) context.resources.getQuantityString(R.plurals.rec_imported, made.size, made.size) else null,
                 if (refused > 0) context.resources.getQuantityString(R.plurals.rec_import_failed, refused, refused) else null,
@@ -126,294 +211,142 @@ fun RecorderScreen() {
             MetroToast.show(context, text)
         }
     }
-    LaunchedEffect(recording) {
-        while (recording) {
-            elapsed = SystemClock.elapsedRealtime() - startedAt
-            delay(250L)
+
+    fun forgetUndo() {
+        val pending = undo ?: return
+        undo = null
+        scope.launch(Dispatchers.IO) {
+            RecTrash.empty(context)
+            // The meta of what is gone for good goes with it.
+            pending.forEach { (_, back) -> metas.delete(RecorderFormat.stampOf(back.name)) }
         }
     }
-    // The loudness of the last moments, one bar each, while recording.
-    var levels by remember { mutableStateOf(emptyList<Float>()) }
-    LaunchedEffect(recording) {
-        levels = emptyList()
-        while (recording) {
-            levels = (levels + VoiceRecorder.level()).takeLast(WAVE_BARS)
-            delay(WAVE_STEP_MS)
+
+    fun delete(files: List<File>) {
+        forgetUndo()
+        scope.launch {
+            val moved = withContext(Dispatchers.IO) { files.mapNotNull { f -> RecTrash.put(context, f)?.let { it to f } } }
+            moved.forEach { player.drop(it.second) }
+            undo = moved
+            picked = emptySet()
+            armed = false
+            version++
         }
     }
-    val open = files.firstOrNull { it.name == selected }
-    BackHandler(enabled = open != null || picked.isNotEmpty()) { if (open != null) selected = null else picked = emptySet() }
-    if (open != null) {
-        RecordingDetail(open, store, onChanged = { version++ }, onClose = { selected = null }, onSelect = { selected = it.name; version++ })
-        return
+
+    LaunchedEffect(undo) {
+        if (undo != null) { delay(RecorderConfig.UNDO_MS); forgetUndo() }
     }
-    MiniFrame {
-        PivotHeader(listOf(stringResource(R.string.rec_pivot_record), stringResource(R.string.rec_pivot_list)), pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp))
-        HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth()) { page ->
-            if (page == 0) {
-                Column(Modifier.fillMaxSize().padding(horizontal = 24.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                    if (!allowed) {
-                        PageNote(stringResource(R.string.recorder_need_permission))
-                        MetroButton(stringResource(R.string.recorder_allow), Modifier.padding(top = 14.dp).testTag("rec:allow")) { ask.launch(Manifest.permission.RECORD_AUDIO) }
-                    } else {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (recording) RecordingDot(Modifier.padding(end = 14.dp))
-                            MetroText(TimerFormat.stopwatch(if (recording) elapsed else 0L, tenths = false), size = 80.sp, maxLines = 1, modifier = Modifier.testTag("rec:time"))
-                        }
-                        if (recording) LiveWave(levels, Modifier.fillMaxWidth().height(72.dp).padding(top = 12.dp).testTag("rec:live"))
-                        MetroButton(stringResource(if (recording) R.string.recorder_stop else R.string.recorder_start), Modifier.fillMaxWidth().padding(top = 24.dp).testTag("rec:toggle")) {
-                            if (recording) {
-                                recorder.stop()
-                                version++
-                            } else if (recorder.start()) {
-                                failed = false
-                            } else {
-                                failed = true
-                            }
-                        }
-                        if (failed) PageNote(stringResource(R.string.recorder_failed), Modifier.padding(top = 8.dp))
-                    }
-                }
-            } else {
-                Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
-                    if (importing) MetroProgressBar(Modifier.padding(vertical = 6.dp).testTag("rec:importing"))
-                    if (files.isEmpty()) PageNote(stringResource(R.string.rec_empty), Modifier.testTag("rec:empty"))
-                    val listState = rememberLazyListState()
-                    LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("rec:list"), state = listState) {
-                        itemsIndexed(files, key = { _, it -> it.name }) { index, file ->
-                            val chosen = file.name in picked
-                            fun toggle() { picked = if (chosen) picked - file.name else picked + file.name }
-                            SelectableRow(
-                                selecting = picked.isNotEmpty(), checked = chosen, onClick = { if (picked.isNotEmpty()) toggle() else if (!recording) selected = file.name },
-                                onLongClick = { toggle() }, modifier = Modifier.featherRow(index).testTag("rec:row").padding(vertical = 10.dp),
-                            ) {
-                                MetroText(
-                                    (if (chosen && !LocalStyle.current.isClassic) "✓ " else "") + Recordings.title(file.name) + (if (file.extension != "m4a") "  ·  " + file.extension.uppercase() else ""),
-                                    size = 21.sp, weight = FontWeight.Normal,
-                                )
-                            }
-                        }
-                    }
-                }
+
+    fun restore() {
+        val pending = undo ?: return
+        undo = null
+        scope.launch {
+            withContext(Dispatchers.IO) { pending.forEach { (trashed, back) -> RecTrash.restore(trashed, back) } }
+            version++
+        }
+    }
+
+    fun merge(files: List<File>) {
+        if (working || files.size < 2) return
+        working = true
+        scope.launch {
+            val made = withContext(Dispatchers.IO) {
+                val target = RecorderData.nextFile(store)
+                val ok = AudioEdit.render(files.sortedBy { it.name }, target, AudioEdit.Plan())
+                if (!ok) null else RecorderData.named(store, target, context.getString(R.string.rec_chip_merged)).also { metas.save(RecorderFormat.stampOf(it.name), RecMeta(made = "merged")) }
             }
-        }
-        // The bar of the list: bring sound in, and send the recordings that are ticked (a long press ticks one).
-        if (pager.currentPage == 1) {
-            AppBar(
-                buildList {
-                    add(AppBarItem("＋", stringResource(R.string.rec_import)) { importer.launch(RecorderShare.IMPORT_TYPES) })
-                    if (picked.isNotEmpty()) {
-                        add(AppBarItem("⇧", stringResource(R.string.recorder_share)) {
-                            RecorderShare.audio(context, files.filter { it.name in picked })?.let { runCatching { context.startActivity(it) } }
-                        })
-                        add(AppBarItem("✕", stringResource(R.string.rec_clear)) { picked = emptySet() })
-                    }
-                },
-            )
+            working = false
+            picked = emptySet()
+            if (made != null) { version++; MetroToast.show(context, R.string.rec_edit_done); selected = made.name } else MetroToast.show(context, R.string.rec_edit_failed)
         }
     }
-}
 
-private const val WAVE_BARS = 48
-private const val WAVE_STEP_MS = 80L
+    val open = recs.firstOrNull { it.name == selected }
+    val wide = opts.on(Opt.TWO_PANE) && LocalConfiguration.current.screenWidthDp >= 720
+    BackHandler(enabled = open != null || picked.isNotEmpty()) { if (open != null) selected = null else { picked = emptySet(); armed = false } }
 
-/** The red dot of a recording, on and off about once a second; steady with reduced motion. */
-@Composable
-private fun RecordingDot(modifier: Modifier = Modifier) {
-    val reduced = LocalReduceMotion.current
-    val alpha = if (reduced) 1f else rememberInfiniteTransition(label = "recDot").animateFloat(
-        1f, 0.15f, infiniteRepeatable(tween(500, easing = LinearEasing), RepeatMode.Reverse), label = "alpha",
-    ).value
-    Box(modifier.size(18.dp).graphicsLayer { this.alpha = alpha }.background(androidx.compose.ui.graphics.Color(0xFFE51400), CircleShape).testTag("rec:dot"))
-}
-
-/** The sound of the last moments as bars, the newest at the right, each at least a thin line so a silence still reads as a baseline. */
-@Composable
-private fun LiveWave(levels: List<Float>, modifier: Modifier = Modifier) {
-    val accent = LocalAccent.current
-    Canvas(modifier) {
-        val slot = size.width / WAVE_BARS
-        val offset = WAVE_BARS - levels.size
-        levels.forEachIndexed { i, level ->
-            // The microphone's swing is small most of the time: a square root makes speech fill the picture.
-            val h = (kotlin.math.sqrt(level) * size.height).coerceAtLeast(3f)
-            drawRect(accent, Offset((offset + i) * slot, (size.height - h) / 2f), Size(maxOf(slot - 2f, 1f), h))
-        }
+    val detail: @Composable (Rec, Modifier) -> Unit = { rec, modifier ->
+        RecordingDetail(rec, env, onChanged = { version++ }, onClose = { selected = null }, onSelect = { selected = it.name; version++ }, onDelete = ::delete, modifier = modifier)
     }
-}
 
-private fun seconds(ms: Long) = TimerFormat.stopwatch(ms, tenths = false)
-
-/** One recording: its sound as a picture with two handles to choose a piece, and what can be done with the piece and with the whole. */
-@Composable
-private fun RecordingDetail(file: File, store: Recordings, onChanged: () -> Unit, onClose: () -> Unit, onSelect: (File) -> Unit) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val colors = LocalMetroColors.current
-    val accent = LocalAccent.current
-    val duration by produceState(0L, file) { value = withContext(Dispatchers.IO) { AudioTools.durationMs(file) } }
-    val peaks by produceState(FloatArray(0), file) { value = withContext(Dispatchers.IO) { AudioTools.peaks(file) } }
-    var from by remember(file.name) { mutableFloatStateOf(0f) }
-    var to by remember(file.name) { mutableFloatStateOf(1f) }
-    var position by remember(file.name) { mutableLongStateOf(0L) }
-    var playing by remember { mutableStateOf(false) }
-    val player = remember(file.name) { runCatching { MediaPlayer().apply { setDataSource(file.path); prepare() } }.getOrNull() }
-    val cuttable = remember(file.name) { AudioTools.canCut(file) }
-    DisposableEffect(player) { onDispose { runCatching { player?.release() } } }
-    LaunchedEffect(playing, player) {
-        while (playing && player != null) {
-            position = player.currentPosition.toLong()
-            // Playing a piece stops at the end of it.
-            if (duration > 0 && position >= (to * duration).toLong()) { runCatching { player.pause() }; playing = false }
-            delay(80)
+    val animated = opts.on(Opt.TRANSITIONS) && !LocalReduceMotion.current
+    AnimatedContent(
+        targetState = if (wide) null else open?.name,
+        transitionSpec = {
+            if (!animated) ContentTransform(EnterTransition.None, ExitTransition.None)
+            else if (targetState != null) (slideInHorizontally { it / 4 } + fadeIn()) togetherWith (fadeOut())
+            else fadeIn() togetherWith (slideOutHorizontally { it / 4 } + fadeOut())
+        },
+        label = "recDetail",
+    ) { name ->
+        val rec = recs.firstOrNull { it.name == name }
+        if (rec != null) {
+            MiniFrame {
+                detail(rec, Modifier.weight(1f).padding(horizontal = 24.dp))
+                AppBar(listOf(AppBarItem("←", stringResource(R.string.rec_back)) { selected = null }))
+            }
+            return@AnimatedContent
         }
-    }
-    var naming by remember { mutableStateOf<String?>(null) }   // "cut" or "rename"
-    var name by remember { mutableStateOf("") }
-    var confirm by remember { mutableStateOf(false) }
-    var busy by remember { mutableStateOf(false) }
-    var transcript by remember(file.name) { mutableStateOf("") }
-    var transcribing by remember { mutableStateOf(false) }
-    var transcriptFailed by remember { mutableStateOf(false) }
-    var missing by remember { mutableStateOf(false) }
-    var unknownLanguage by remember { mutableStateOf(false) }
-    val transcriber = remember { Transcriber(context) }
-    DisposableEffect(Unit) { onDispose { transcriber.release() } }
-
-    fun toast(id: Int) = MetroToast.show(context, id)
-
-    MiniFrame {
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
-            MetroText(Recordings.title(file.name), size = 26.sp, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
-            MetroText(seconds(position) + " / " + seconds(duration), size = 20.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.testTag("rec:position"))
-            Canvas(
-                Modifier.fillMaxWidth().height(120.dp).padding(vertical = 8.dp).background(colors.surface).testTag("rec:wave")
-                    .pointerInput(duration) {
-                        detectTapGestures { tap ->
-                            // A touch on the picture moves the playing there.
-                            val ms = (tap.x / size.width * duration).toLong().coerceIn(0, duration)
-                            runCatching { player?.seekTo(ms.toInt()) }
-                            position = ms
-                        }
-                    }
-                    .pointerInput(duration) {
-                        var handle = 0
-                        detectDragGestures(
-                            onDragStart = { start -> handle = if (kotlin.math.abs(start.x / size.width - from) <= kotlin.math.abs(start.x / size.width - to)) 1 else 2 },
-                            onDrag = { change, _ ->
-                                change.consume()
-                                val f = (change.position.x / size.width).coerceIn(0f, 1f)
-                                val gap = if (duration > 0) (300f / duration).coerceAtMost(0.5f) else 0.02f
-                                if (handle == 1) from = f.coerceAtMost(to - gap).coerceAtLeast(0f) else to = f.coerceAtLeast(from + gap).coerceAtMost(1f)
-                            },
+        MiniFrame {
+            PivotHeader(listOf(stringResource(R.string.rec_pivot_record), stringResource(R.string.rec_pivot_list)), pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp))
+            androidx.compose.foundation.layout.Box(Modifier.weight(1f).fillMaxWidth()) {
+                HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
+                    if (page == 0) {
+                        RecordPage(
+                            RecordState(allowed, denied, recording, paused, elapsed, levels, level, peak, VoiceRecorder.marks.size, busy, VoiceRecorder.failure, VoiceRecorder.notice),
+                            opts,
+                            onAllow = { ask.launch(Manifest.permission.RECORD_AUDIO) },
+                            onSettings = { runCatching { context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))) } },
+                            onToggle = { if (recording) stopRecording() else begin() },
+                            onPause = { if (VoiceRecorder.paused) VoiceRecorder.resume() else VoiceRecorder.pause() },
+                            onMark = { VoiceRecorder.addMark(); say(R.string.rec_announce_marked) },
                         )
-                    },
-            ) {
-                val bar = size.width / maxOf(peaks.size, 1)
-                peaks.forEachIndexed { i, p ->
-                    val x = i * bar
-                    val inside = x / size.width in from..to
-                    val h = (p * size.height).coerceAtLeast(2f)
-                    drawRect(if (inside) accent else colors.subtle, Offset(x, (size.height - h) / 2f), Size(maxOf(bar - 1f, 1f), h))
+                    } else {
+                        val list = ListState(recs, loaded, picked, query, label, recording, elapsed, importing, undo != null, player.file?.name)
+                        val onOpenRec: (Rec) -> Unit = { selected = it.name }
+                        val onPickRec: (Rec) -> Unit = { r -> picked = if (r.name in picked) picked - r.name else picked + r.name; armed = false }
+                        val page1: @Composable (Modifier) -> Unit = { m ->
+                            RecordingsPage(
+                                list, opts, onQuery = { query = it }, onLabel = { label = it }, onSort = { opts.cycle(Opt.SORT) },
+                                onOpen = onOpenRec, onPick = onPickRec, onGoRecord = { scope.launch { pager.animateScrollToPage(0) } }, onUndo = ::restore,
+                                modifier = m,
+                            )
+                        }
+                        if (wide) Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+                            page1(Modifier.weight(0.42f))
+                            Box(Modifier.weight(0.58f).fillMaxHeight().padding(start = 20.dp)) {
+                                if (open != null) detail(open, Modifier.fillMaxSize()) else androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) { MicIllustration(Modifier.align(androidx.compose.ui.Alignment.Center)) }
+                            }
+                        } else page1(Modifier.padding(horizontal = 24.dp))
+                    }
                 }
-                listOf(from, to).forEach { f -> drawRect(colors.foreground, Offset(f * size.width - 2f, 0f), Size(4f, size.height)) }
-                if (duration > 0) drawRect(colors.foreground.copy(alpha = 0.6f), Offset(position.toFloat() / duration * size.width, 0f), Size(2f, size.height))
             }
-            MetroText(
-                stringResource(R.string.rec_selection, seconds((from * duration).toLong()), seconds((to * duration).toLong())),
-                size = 16.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.testTag("rec:selection"),
+            if (working) com.metrowin.launcher.ui.components.MetroProgressBar(Modifier.padding(horizontal = 24.dp, vertical = 4.dp))
+            if (opts.on(Opt.MINI) && pager.currentPage == 1 && player.file != null) MiniPlayer(player, opts.on(Opt.PRETTY), onOpen = { player.file?.let { f -> selected = f.name } })
+            val menu = listOf(
+                AppBarItem("⚙", stringResource(R.string.rec_options)) { showOptions = true },
+                AppBarItem("∑", stringResource(R.string.rec_stats)) { showStats = true },
             )
-            Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                MetroButton(stringResource(if (playing) R.string.rec_pause else R.string.rec_play), Modifier.weight(1f).testTag("rec:play")) {
-                    val p = player ?: return@MetroButton
-                    if (playing) { runCatching { p.pause() }; playing = false } else {
-                        val startMs = (from * duration).toLong()
-                        if (position < startMs || position >= (to * duration).toLong()) { p.seekTo(startMs.toInt()); position = startMs }
-                        runCatching { p.start() }
-                        playing = true
-                    }
-                }
-                MetroButton(stringResource(R.string.rec_cut), Modifier.weight(1f).testTag("rec:cut")) { if (cuttable) { name = ""; naming = "cut" } else toast(R.string.rec_cut_unsupported) }
-            }
-            if (player == null) PageNote(stringResource(R.string.rec_play_failed), Modifier.padding(top = 8.dp).testTag("rec:noplay"))
-            else if (!cuttable) PageNote(stringResource(R.string.rec_cut_unsupported), Modifier.padding(top = 8.dp).testTag("rec:nocut"))
-            Row(Modifier.fillMaxWidth().padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                MetroButton(stringResource(R.string.recorder_rename), Modifier.weight(1f).testTag("rec:rename")) { name = Recordings.nameOf(file.name); naming = "rename" }
-                MetroButton(stringResource(R.string.recorder_share), Modifier.weight(1f).testTag("rec:share")) {
-                    RecorderShare.audio(context, listOf(file))?.let { runCatching { context.startActivity(it) } }
-                }
-            }
-            MetroButton(
-                stringResource(if (confirm) R.string.notes_delete_confirm else R.string.recorder_delete), Modifier.fillMaxWidth().padding(top = 10.dp).testTag("rec:delete"),
-            ) {
-                if (confirm) { runCatching { player?.release() }; store.delete(file); onChanged(); onClose() } else confirm = true
-            }
-            MetroText(stringResource(R.string.rec_transcript), size = 16.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.padding(top = 22.dp, bottom = 6.dp))
-            if (!transcriber.isSupported) PageNote(stringResource(R.string.rec_transcribe_unsupported), Modifier.padding(bottom = 8.dp).testTag("rec:unsupported"))
-            else {
-                PageNote(stringResource(if (transcriber.mode == Transcriber.Mode.OnDevice) R.string.rec_transcribe_offline else R.string.rec_transcribe_online), Modifier.padding(bottom = 8.dp).testTag("rec:mode"))
-                MetroButton(stringResource(if (transcribing) R.string.rec_transcribing else R.string.rec_transcribe), Modifier.fillMaxWidth().testTag("rec:transcribe")) {
-                if (transcribing) return@MetroButton
-                transcribing = true
-                transcriptFailed = false
-                transcript = ""
-                missing = false
-                transcriber.start(file, onText = { transcript = it }, onDone = { transcribing = false }, onFailed = { transcribing = false; transcriptFailed = true; missing = it == Transcriber.ERROR_LANGUAGE_MISSING; unknownLanguage = it == Transcriber.ERROR_LANGUAGE_UNKNOWN })
-            }
-            }
-            if (missing) {
-                PageNote(stringResource(R.string.rec_lang_missing, java.util.Locale.getDefault().displayLanguage), Modifier.padding(top = 6.dp).testTag("rec:langmissing"))
-                MetroButton(stringResource(R.string.rec_lang_download), Modifier.fillMaxWidth().padding(top = 8.dp).testTag("rec:langdownload")) {
-                    toast(if (transcriber.downloadLanguage()) R.string.rec_lang_downloading else R.string.rec_transcribe_unsupported)
-                }
-            } else if (unknownLanguage) PageNote(stringResource(R.string.rec_lang_unknown, java.util.Locale.getDefault().displayLanguage), Modifier.padding(top = 6.dp).testTag("rec:langunknown"))
-            else if (transcriptFailed) PageNote(stringResource(R.string.rec_transcribe_failed), Modifier.padding(top = 6.dp).testTag("rec:failed"))
-            if (transcript.isNotEmpty()) {
-                MetroText(transcript, size = 19.sp, modifier = Modifier.padding(top = 10.dp).testTag("rec:text"))
-                MetroButton(stringResource(R.string.rec_share_text), Modifier.fillMaxWidth().padding(top = 10.dp).testTag("rec:sharetext")) {
-                    runCatching { context.startActivity(RecorderShare.text(transcript, Recordings.title(file.name))) }
-                }
-                MetroButton(stringResource(R.string.rec_to_notes), Modifier.fillMaxWidth().padding(top = 10.dp).testTag("rec:tonotes")) {
-                    val text = transcript
-                    val title = Recordings.title(file.name)
-                    scope.launch {
-                        val saved = withContext(Dispatchers.IO) {
-                            val notes = NoteStore(context)
-                            val now = System.currentTimeMillis()
-                            runCatching { notes.save(notes.load() + Note(UUID.randomUUID().toString(), title, text, created = now, updated = now)) }.getOrDefault(false)
+            if (pager.currentPage == 1) {
+                // The bar of the list: bring sound in, and act on the recordings that are ticked (a long press ticks one).
+                AppBar(
+                    buildList {
+                        add(AppBarItem("＋", stringResource(R.string.rec_import)) { importer.launch(RecorderShare.IMPORT_TYPES) })
+                        if (picked.isNotEmpty()) {
+                            val chosen = recs.filter { it.name in picked }.map { it.file }
+                            add(AppBarItem("⇧", stringResource(R.string.recorder_share)) { RecorderShare.audio(context, chosen)?.let { runCatching { context.startActivity(it) } } })
+                            add(AppBarItem("", stringResource(R.string.rec_play_all)) { player.playQueue(chosen.sortedBy { it.name }, 0); picked = emptySet() }.icon(Mark.Play))
+                            if (chosen.size >= 2 && !working) add(AppBarItem("⊕", stringResource(R.string.rec_merge)) { merge(chosen) })
+                            add(AppBarItem("⌫", stringResource(if (armed) R.string.notes_delete_confirm else R.string.recorder_delete)) { if (armed) delete(chosen) else armed = true }.marked(armed))
+                            add(AppBarItem("✕", stringResource(R.string.rec_clear)) { picked = emptySet(); armed = false })
                         }
-                        toast(if (saved) R.string.rec_sent_to_notes else R.string.notes_save_failed)
-                    }
-                }
-            }
-            if (transcribing) MetroProgressBar(Modifier.padding(top = 10.dp).testTag("rec:transcribing"))
-            if (busy) { MetroProgressBar(Modifier.padding(top = 10.dp)); PageNote(stringResource(R.string.rec_working), Modifier.padding(top = 8.dp)) }
-        }
-        AppBar(listOf(AppBarItem("←", stringResource(R.string.rec_back)) { onClose() }))
-    }
-    naming?.let { mode ->
-        DialogFrame(onCancel = { naming = null }) {
-            MetroTextField(name, { name = Recordings.cleanName(it) }, stringResource(R.string.recorder_name_hint), Modifier.testTag("rec:name"))
-            MetroButton(stringResource(R.string.recorder_rename_save), Modifier.fillMaxWidth().testTag("rec:name:ok")) {
-                if (mode == "rename") {
-                    if (store.rename(file, name) != null) { onChanged(); naming = null; onClose() } else toast(R.string.recorder_rename_failed)
-                } else {
-                    val startMs = (from * duration).toLong()
-                    val endMs = (to * duration).toLong()
-                    naming = null
-                    busy = true
-                    scope.launch {
-                        val made = withContext(Dispatchers.IO) {
-                            // A recording of its own, a moment later than the others; the one cut is left as it was.
-                            var target = store.newFile()
-                            while (target.exists()) target = store.newFile(java.time.LocalDateTime.now().plusSeconds(1))
-                            if (AudioTools.cut(file, startMs, endMs, target)) (if (name.isBlank()) target else store.rename(target, name) ?: target) else null
-                        }
-                        busy = false
-                        if (made != null) { onChanged(); toast(R.string.rec_cut_done); onSelect(made) } else toast(R.string.rec_cut_failed)
-                    }
-                }
-            }
+                    },
+                    menu = menu,
+                )
+            } else AppBar(emptyList(), menu = menu)
         }
     }
+    if (showOptions) OptionsDialog(opts) { showOptions = false }
+    if (showStats) StatsDialog(recs) { showStats = false }
 }

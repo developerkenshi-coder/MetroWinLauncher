@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The words of the voice recorder (its options, parts and notices). -->
+<resources>
+    <string name="rec_all">Toutes</string>
+    <string name="rec_announce_marked">Repère ajouté</string>
+    <string name="rec_announce_started">Enregistrement démarré</string>
+    <string name="rec_announce_stopped">Enregistrement arrêté et sauvegardé</string>
+    <string name="rec_backup_folder">Choisir un autre dossier</string>
+    <string name="rec_backup_note">Copie chaque enregistrement une fois dans le dossier choisi (sur le téléphone, une carte SD ou une appli cloud). Désactivé tant que vous ne l\'activez pas.</string>
+    <string name="rec_busy_cancel">Annuler</string>
+    <string name="rec_chip_cut">coupe</string>
+    <string name="rec_chip_edited">modifié</string>
+    <string name="rec_chip_faded">fondu</string>
+    <string name="rec_chip_loud">amplifié</string>
+    <string name="rec_chip_merged">fusionné</string>
+    <string name="rec_chip_text">texte</string>
+    <string name="rec_consent_go">Transcrire quand même</string>
+    <string name="rec_consent_text">Ce téléphone n\'a pas de reconnaissance vocale propre. Le service vocal utilisé peut envoyer cet enregistrement à un serveur par internet. Continuer ?</string>
+    <string name="rec_cut_reencode">Ce format est réécrit en AAC pour enregistrer l\'extrait (un peu de qualité peut être perdu).</string>
+    <string name="rec_deleted">Enregistrement supprimé.</string>
+    <string name="rec_denied">Le micro n\'est pas autorisé et le téléphone ne redemandera pas. Autorisez-le dans les réglages de l\'appli.</string>
+    <string name="rec_edit_done">Un nouvel enregistrement a été créé</string>
+    <string name="rec_edit_failed">L\'enregistrement n\'a pas pu être modifié</string>
+    <string name="rec_empty_guide">Aucun enregistrement. Appuyez sur Enregistrer, ou utilisez + pour importer un son d\'ailleurs.</string>
+    <string name="rec_end_minus">Fin −1 s</string>
+    <string name="rec_end_plus">Fin +1 s</string>
+    <string name="rec_start_minus">Début −1 s</string>
+    <string name="rec_start_plus">Début +1 s</string>
+    <string name="rec_export_opus">Envoyer en Opus</string>
+    <string name="rec_export_wav">Envoyer en WAV</string>
+    <string name="rec_group_edit">Édition</string>
+    <string name="rec_group_library">Collection</string>
+    <string name="rec_group_look">Apparence</string>
+    <string name="rec_group_play">Lecture</string>
+    <string name="rec_group_record">Enregistrement</string>
+    <string name="rec_group_text">Texte</string>
+    <string name="rec_hear_end">Écouter la fin</string>
+    <string name="rec_hear_start">Écouter le début</string>
+    <string name="rec_hint_cut">Faites glisser les deux barres sur l\'image pour choisir l\'extrait, ou déplacez-les d\'une seconde avec les boutons. Enregistrez ensuite l\'extrait comme nouvel enregistrement : l\'original ne change pas.</string>
+    <string name="rec_hint_ok">Compris</string>
+    <string name="rec_importing">Import %1$d sur %2$d…</string>
+    <string name="rec_in_progress">Enregistrement en cours…</string>
+    <string name="rec_label_add">Ajouter une étiquette</string>
+    <string name="rec_label_change">Étiquette : %1$s</string>
+    <string name="rec_label_hint">Étiquette (quelques lettres)</string>
+    <string name="rec_mark">Ajouter un repère</string>
+    <string name="rec_mark_here">Ajouter un repère ici</string>
+    <string name="rec_marks_hint">Touchez un repère pour y aller ; appui long pour le retirer.</string>
+    <string name="rec_merge">fusionner</string>
+    <string name="rec_next">Enregistrement suivant</string>
+    <string name="rec_no_match">Rien trouvé.</string>
+    <string name="rec_no_space">Il n\'y a pas assez de place sur le téléphone pour enregistrer. Libérez de l\'espace et réessayez.</string>
+    <string name="rec_note_updated">La note a été mise à jour</string>
+    <string name="rec_open_settings">Ouvrir les réglages</string>
+    <string name="rec_opt_backup">Copier les enregistrements dans un dossier</string>
+    <string name="rec_opt_contrast">Image à fort contraste</string>
+    <string name="rec_opt_cut_any">Couper d\'autres formats (réécrits en AAC)</string>
+    <string name="rec_opt_focus">Mettre en pause lors d\'un appel</string>
+    <string name="rec_opt_group_days">Grouper la liste par jour</string>
+    <string name="rec_opt_keep_text">Conserver le texte écrit des enregistrements</string>
+    <string name="rec_opt_labels">Étiquettes pour les enregistrements</string>
+    <string name="rec_opt_level">Indicateur de niveau avec crête</string>
+    <string name="rec_opt_marks">Repères pendant l\'enregistrement et la lecture</string>
+    <string name="rec_opt_max">Enregistrement le plus long</string>
+    <string name="rec_opt_mini">Petit lecteur sous la liste</string>
+    <string name="rec_opt_nudge">Boutons pour décaler la coupe d\'une seconde</string>
+    <string name="rec_opt_pause">Bouton pause</string>
+    <string name="rec_opt_pretty">Dates en toutes lettres plutôt qu\'en chiffres</string>
+    <string name="rec_opt_quality">Qualité</string>
+    <string name="rec_opt_rich_rows">Lignes avec durée, taille et format</string>
+    <string name="rec_opt_round">Bouton d\'enregistrement rond</string>
+    <string name="rec_opt_safe">Enregistrement à l\'épreuve des pannes (écrit par trames ; expérimental)</string>
+    <string name="rec_opt_seek">Barre de lecture et boutons ±10 s</string>
+    <string name="rec_opt_spectro">Vue spectrogramme</string>
+    <string name="rec_opt_speed">Vitesse de lecture</string>
+    <string name="rec_opt_summary">Court résumé du texte</string>
+    <string name="rec_opt_tools">Outils : amplifier, fondu, retirer les silences, envoyer en WAV ou Opus</string>
+    <string name="rec_opt_transitions">Animation entre la liste et l\'enregistrement</string>
+    <string name="rec_opt_two_pane">Liste et enregistrement côte à côte sur grand écran</string>
+    <string name="rec_opt_wave_theme">Image adaptée à l\'apparence du lanceur</string>
+    <string name="rec_options">Options du dictaphone</string>
+    <string name="rec_part_edit">éditer</string>
+    <string name="rec_part_listen">écouter</string>
+    <string name="rec_part_text">texte</string>
+    <string name="rec_pause_action">Pause</string>
+    <string name="rec_paused_note">En pause</string>
+    <string name="rec_play_all">lire</string>
+    <string name="rec_previous">Enregistrement précédent</string>
+    <string name="rec_resume">Reprendre</string>
+    <string name="rec_scrubber">Position %1$s</string>
+    <string name="rec_search">Rechercher enregistrements et texte</string>
+    <string name="rec_selection_len">Sélection : de %1$s à %2$s (%3$s)</string>
+    <string name="rec_speed">Vitesse %1$s×</string>
+    <string name="rec_state_paused">En pause</string>
+    <string name="rec_state_recording">Enregistrement</string>
+    <string name="rec_stats">Statistiques</string>
+    <string name="rec_stats_now">cette semaine</string>
+    <string name="rec_stats_old">il y a 8 semaines</string>
+    <string name="rec_stats_total">%1$s de son, %2$s</string>
+    <string name="rec_stats_weeks">Temps enregistré par semaine</string>
+    <string name="rec_stopped_limit">L\'enregistrement a atteint la durée maximale fixée et a été sauvegardé.</string>
+    <string name="rec_stopped_space">Le stockage était presque plein : l\'enregistrement a été arrêté et sauvegardé.</string>
+    <string name="rec_summary">Résumé</string>
+    <string name="rec_text_forget">Oublier le texte conservé</string>
+    <string name="rec_text_saved_on">Transcrit le %1$s</string>
+    <string name="rec_today">Aujourd\'hui</string>
+    <string name="rec_tool_fade">Fondu d\'entrée et de sortie (nouvel enregistrement)</string>
+    <string name="rec_tool_normalise">Amplifier (nouvel enregistrement)</string>
+    <string name="rec_tool_silence">Retirer les silences (nouvel enregistrement)</string>
+    <string name="rec_tools">Outils</string>
+    <string name="rec_transcribe_cancel">Arrêter la transcription</string>
+    <string name="rec_undo">Annuler</string>
+    <string name="rec_view_spectrum">spectre</string>
+    <string name="rec_view_wave">onde</string>
+    <string name="rec_wave_description">Son de l\'enregistrement. Extrait choisi de %1$s à %2$s.</string>
+    <string name="rec_yesterday">Hier</string>
+    <plurals name="rec_marks">
+        <item quantity="one">%1$d repère</item>
+        <item quantity="other">%1$d repères</item>
+    </plurals>
+    <plurals name="rec_stats_count">
+        <item quantity="one">%1$d enregistrement</item>
+        <item quantity="other">%1$d enregistrements</item>
+    </plurals>
+    <string-array name="rec_sorts">
+        <item>Récents</item>
+        <item>Anciens</item>
+        <item>Plus longs</item>
+        <item>Par nom</item>
+    </string-array>
+    <string-array name="rec_qualities">
+        <item>Standard</item>
+        <item>Basse</item>
+        <item>Haute</item>
+        <item>Stéréo</item>
+    </string-array>
+    <string-array name="rec_limits">
+        <item>Non</item>
+        <item>30 min</item>
+        <item>1 h</item>
+        <item>2 h</item>
+        <item>4 h</item>
+    </string-array>
+</resources>

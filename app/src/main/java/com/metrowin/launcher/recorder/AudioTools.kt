@@ -56,7 +56,7 @@ object AudioTools {
     fun canCutMime(mime: String?): Boolean = mime == MediaFormat.MIMETYPE_AUDIO_AAC
 
     /** Decodes [file] and gives each block of 16-bit samples (with its time in microseconds, the rate and the number of channels) to [sink]. */
-    private fun decode(file: File, sink: (samples: java.nio.ShortBuffer, timeUs: Long, rate: Int, channels: Int) -> Unit): Boolean {
+    internal fun decode(file: File, halt: () -> Boolean = { false }, sink: (samples: java.nio.ShortBuffer, timeUs: Long, rate: Int, channels: Int) -> Unit): Boolean {
         val (extractor, format) = open(file) ?: return false
         val mime = format.getString(MediaFormat.KEY_MIME) ?: return false
         val codec = runCatching { MediaCodec.createDecoderByType(mime) }.getOrNull() ?: run { extractor.release(); return false }
@@ -70,6 +70,7 @@ object AudioTools {
             var channels = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
             var idle = 0
             while (!outputDone) {
+                if (halt()) return false
                 if (!inputDone) {
                     val index = codec.dequeueInputBuffer(TIMEOUT_US)
                     if (index >= 0) {
@@ -113,7 +114,7 @@ object AudioTools {
     }
 
     /** [buckets] numbers from 0 to 1: how loud the sound is along the file, for the picture of it. Empty when it cannot be decoded. */
-    fun peaks(file: File, buckets: Int = 160): FloatArray {
+    fun peaks(file: File, buckets: Int = RecorderConfig.PEAK_BUCKETS): FloatArray {
         val total = durationMs(file) * 1000L
         if (total <= 0L) return FloatArray(0)
         val peaks = FloatArray(buckets)
@@ -182,7 +183,7 @@ object AudioTools {
      * The sound of [file] as raw 16-bit mono at 16 kHz in [target], what a speech recognizer is given as a stream. A rate is changed by
      * averaging the samples that fall in the same output sample: enough for speech. False when the file cannot be decoded.
      */
-    fun toSpeechPcm(file: File, target: File): Boolean {
+    fun toSpeechPcm(file: File, target: File, cancelled: () -> Boolean = { false }): Boolean {
         val out = runCatching { FileOutputStream(target).buffered() }.getOrNull() ?: return false
         var carry = 0.0
         var carryCount = 0
@@ -190,7 +191,7 @@ object AudioTools {
         val bytes = ByteBuffer.allocate(64 * 1024).order(ByteOrder.LITTLE_ENDIAN)
         fun flush() { out.write(bytes.array(), 0, bytes.position()); bytes.clear() }
         val ok = try {
-            decode(file) { samples, _, rate, channels ->
+            decode(file, cancelled) { samples, _, rate, channels ->
                 val step = rate / SPEECH_RATE.toDouble()
                 while (samples.remaining() >= channels) {
                     var sum = 0
@@ -213,6 +214,41 @@ object AudioTools {
         runCatching { flush(); out.close() }
         if (!ok) target.delete()
         return ok
+    }
+
+    /** The whole sound of [source] copied as it is into an MP4 file (an AAC stream of frames becomes an .m4a). */
+    fun copyAll(source: File, target: File): Boolean = cut(source, 0L, Long.MAX_VALUE / 2000L, target)
+
+    /** The sampling rate and the number of channels of the sound of [file], or null when it cannot be read. */
+    fun info(file: File): Pair<Int, Int>? {
+        val (extractor, format) = open(file) ?: return null
+        extractor.release()
+        return runCatching { format.getInteger(MediaFormat.KEY_SAMPLE_RATE) to format.getInteger(MediaFormat.KEY_CHANNEL_COUNT) }.getOrNull()
+    }
+
+    /**
+     * [peaks] kept in the cache folder, one small file per recording (its name, size and time of change say whether it is still the same
+     * sound): opening a recording again does not decode it again.
+     */
+    fun peaksCached(cacheDir: File, file: File): FloatArray {
+        val dir = File(cacheDir, "peaks")
+        val key = "${file.name}_${file.length()}_${file.lastModified()}.pk"
+        val store = File(dir, key)
+        runCatching {
+            if (store.exists()) {
+                val bytes = java.nio.ByteBuffer.wrap(store.readBytes()).order(ByteOrder.LITTLE_ENDIAN)
+                return FloatArray(bytes.remaining() / 4) { bytes.getFloat() }
+            }
+        }
+        val peaks = peaks(file)
+        if (peaks.isNotEmpty()) runCatching {
+            dir.mkdirs()
+            dir.listFiles { f -> f.name.startsWith(file.name + "_") }?.forEach { it.delete() }
+            val bytes = java.nio.ByteBuffer.allocate(peaks.size * 4).order(ByteOrder.LITTLE_ENDIAN)
+            peaks.forEach { bytes.putFloat(it) }
+            store.writeBytes(bytes.array())
+        }
+        return peaks
     }
 
     const val SPEECH_RATE = 16_000

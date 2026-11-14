@@ -30,16 +30,17 @@ object RecorderShare {
         Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text).putExtra(Intent.EXTRA_SUBJECT, subject), null)
 
     /** How many bytes of one imported file are taken at most: a file that big is not a recording to be kept in the storage of an app. */
-    const val MAX_IMPORT = 1L shl 30
+    const val MAX_IMPORT = RecorderConfig.MAX_IMPORT
 
     /**
      * Copies the sound of each of [uris] into [store]. A file that the phone cannot read as sound (no audio track, no length), is not
      * of a type that is known, or is bigger than [MAX_IMPORT] is not copied: those are the second number of the pair, the files made the first.
      */
-    fun import(context: Context, store: Recordings, uris: List<Uri>): Pair<List<File>, Int> {
+    fun import(context: Context, store: Recordings, uris: List<Uri>, progress: (done: Int, total: Int) -> Unit = { _, _ -> }): Pair<List<File>, Int> {
         val made = ArrayList<File>()
         var refused = 0
-        for (uri in uris) {
+        for ((index, uri) in uris.withIndex()) {
+            progress(index, uris.size)
             val name = displayName(context.contentResolver, uri)
             val extension = Recordings.extensionFor(name, context.contentResolver.getType(uri))
             val readable = extension != null && isSound(context, uri)
@@ -62,6 +63,15 @@ object RecorderShare {
         }
         return made to refused
     }
+
+    /** Where the sound that is converted to be sent is made (inside the folder the provider shares); [clearExports] empties it. */
+    fun exportDir(context: Context): File = File(context.filesDir, "recordings/.export").apply { mkdirs() }
+
+    fun clearExports(context: Context) { File(context.filesDir, "recordings/.export").listFiles()?.forEach { it.delete() } }
+
+    /** The chooser for a file made by an export (WAV, Opus), typed as [mime]. */
+    fun exported(context: Context, file: File, mime: String): Intent =
+        Intent.createChooser(Intent(Intent.ACTION_SEND).setType(mime).putExtra(Intent.EXTRA_STREAM, uri(context, file)).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), null)
 
     private fun displayName(resolver: ContentResolver, uri: Uri): String? =
         runCatching { resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { if (it.moveToFirst()) it.getString(0) else null } }.getOrNull()
