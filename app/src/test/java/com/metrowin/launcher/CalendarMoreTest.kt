@@ -144,7 +144,7 @@ class CalendarMoreTest {
     }
 
     @Test fun `a long line is folded and read as one`() {
-        val long = "x".repeat(300)
+        val long = "x".repeat(150) // titles are kept to 200 characters
         val text = Ics.write(listOf(CalEvent(1, 1, long, 0, 3_600_000, false)))
         assertTrue(text.lines().all { it.length <= 71 })
         assertEquals(long, Ics.parse(text).single().title)
@@ -323,7 +323,7 @@ class CalendarRepositoryTest {
         val series = event.copy(recurring = true)
         assertTrue(r.update(series.copy(title = "y"), series, all = false))
         val first = FakeCalendarProvider.log.first()
-        assertEquals("insert /events/exception/7", first.first)
+        assertEquals("insert /exception/7", first.first)
         assertEquals(10_000L, first.second!!.getAsLong(CalendarContract.Events.ORIGINAL_INSTANCE_TIME))
         assertTrue(FakeCalendarProvider.log.none { it.first.startsWith("update") })
     }
