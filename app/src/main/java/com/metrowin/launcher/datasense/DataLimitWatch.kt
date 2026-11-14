@@ -21,11 +21,17 @@ import com.metrowin.launcher.data.StorageInfo
 import com.metrowin.launcher.data.UsageAccess
 import java.time.ZonedDateTime
 import java.util.Locale
-import kotlin.concurrent.thread
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 /**
- * The look at the mobile data used in the cycle of the plan, every hour while the battery is not low, and a notification at four fifths of
- * the limit and again when it is reached. One job of Android; it exists only while a limit is set (see [schedule]).
+ * The look at the mobile data used in the cycle of the plan, every hour while the battery is not low, and a notification at the share of
+ * the limit the user chose (four fifths unless changed) and again when it is reached. One job of Android; it exists only while a limit is set (see [schedule]).
  */
 object DataLimitWatch {
     const val CHANNEL = "data_limit"
@@ -53,24 +59,42 @@ object DataLimitWatch {
         }
     }
 
+    /** Whether the launcher may show a notification: from Android 13 the user has to allow it. */
+    fun canNotify(context: Context): Boolean = Build.VERSION.SDK_INT < 33 ||
+        ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+
+    /** A new limit, billing day or share starts the alerts of the cycle again: a limit raised after it was reached has to warn again. */
+    fun resetAlerts(context: Context) = prefs(context).edit { remove("alert_cycle"); remove("alert_level") }
+
     /** Blocking, off the main thread. */
     fun run(context: Context) {
         val store = prefs(context)
+        if (DataHistory.enabled(context) && UsageAccess.granted(context)) recordHistory(context)
         val limit = store.getLong("limit_mb", 0L) * 1_000_000L
-        if (limit <= 0L || !UsageAccess.granted(context)) return
+        // Without the permission to notify there is nothing to do with the reading: it is not taken, and the next hour asks nothing more.
+        if (limit <= 0L || !UsageAccess.granted(context) || !canNotify(context)) return
         val now = ZonedDateTime.now()
         val cycle = DataPeriods.cycleStart(now, store.getInt("bill_day", 1)).toInstant().toEpochMilli()
         val announced = if (store.getLong("alert_cycle", 0L) == cycle) store.getInt("alert_level", 0) else 0
         val used = UsageReader(context).device(cycle, now.toInstant().toEpochMilli()).second ?: return
-        val level = DataPeriods.alertLevel(used, limit, announced)
+        val level = DataPeriods.alertLevel(used, limit, announced, store.getInt("alert_pct", DataPeriods.DEFAULT_WARN))
         if (level > 0 && notify(context, level, used, limit)) store.edit { putLong("alert_cycle", cycle); putInt("alert_level", level) }
     }
 
+    /** The use of today and yesterday goes to the history of the app, which keeps it longer than Android does. */
+    private fun recordHistory(context: Context) {
+        val now = ZonedDateTime.now()
+        val reader = UsageReader(context)
+        val buckets = DataPeriods.buckets(DataPeriod.Week, now).takeLast(2)
+        val fresh = buckets.zip(reader.perBucket(buckets)).associate { (b, v) ->
+            java.time.Instant.ofEpochMilli(b.from).atZone(now.zone).toLocalDate().toEpochDay() to (v.first to (v.second ?: 0L))
+        }
+        DataHistory.recordDays(context, fresh)
+    }
+
     private fun notify(context: Context, level: Int, used: Long, limit: Long): Boolean {
-        val allowed = Build.VERSION.SDK_INT < 33 ||
-            ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
         val manager = context.getSystemService(NotificationManager::class.java)
-        if (!allowed || manager == null) return false
+        if (!canNotify(context) || manager == null) return false
         manager.createNotificationChannel(NotificationChannel(CHANNEL, context.getString(R.string.channel_data), NotificationManager.IMPORTANCE_DEFAULT))
         val open = PendingIntent.getActivity(
             context, 0, Intent(context, DataSenseActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
@@ -82,7 +106,10 @@ object DataLimitWatch {
             NotificationCompat.Builder(context, CHANNEL)
                 .setSmallIcon(R.drawable.ic_stat_metro)
                 .setContentTitle(context.getString(R.string.ds_alert_title))
-                .setContentText(context.getString(if (level >= 100) R.string.ds_alert_100 else R.string.ds_alert_80, StorageInfo.format(used, locale), StorageInfo.format(limit, locale)))
+                .setContentText(
+                    if (level >= 100) context.getString(R.string.ds_alert_100, StorageInfo.format(used, locale), StorageInfo.format(limit, locale))
+                    else context.getString(R.string.dsx_alert_pct, level, StorageInfo.format(used, locale), StorageInfo.format(limit, locale)),
+                )
                 .setContentIntent(open).setAutoCancel(true).build(),
         )
         return true
@@ -91,13 +118,32 @@ object DataLimitWatch {
 
 /** Runs [DataLimitWatch.run] when Android calls it. */
 class DataLimitJob : JobService() {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val running = java.util.concurrent.ConcurrentHashMap<Int, kotlinx.coroutines.Job>()
+
     override fun onStartJob(params: JobParameters): Boolean {
-        thread(name = "data-limit") {
-            runCatching { DataLimitWatch.run(applicationContext) }
-            jobFinished(params, false)
+        running[params.jobId] = scope.launch {
+            ensureActive()
+            try {
+                DataLimitWatch.run(applicationContext)
+            } catch (e: Exception) {
+                // A failed look is tried again at the next hour.
+            }
+            running.remove(params.jobId)
+            // After onStopJob the job is Android's again: it is not told twice.
+            if (isActive) jobFinished(params, false)
         }
         return true
     }
 
-    override fun onStopJob(params: JobParameters) = true
+    /** Android stops the job (the conditions are gone): the work is cancelled, and tried again later. */
+    override fun onStopJob(params: JobParameters): Boolean {
+        running.remove(params.jobId)?.cancel()
+        return true
+    }
+
+    override fun onDestroy() {
+        scope.cancel()
+        super.onDestroy()
+    }
 }
