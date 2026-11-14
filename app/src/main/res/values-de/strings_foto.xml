@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the Photo hub (photos/). -->
+<resources>
+    <string name="ph_describe_favorite_album">%1$s, Album %2$s, Favorit</string>
+    <string name="ph_describe_favorite">%1$s, Favorit</string>
+    <string name="ph_describe_album">%1$s, Album %2$s</string>
+    <string name="ph_select_toggle">auswählen</string>
+    <string name="ph_scrub">durch die Daten springen</string>
+    <string name="ph_loading">Fotos werden gelesen…</string>
+    <string name="ph_confirm_yes">löschen</string>
+    <string name="ph_cancel">abbrechen</string>
+    <string name="ph_options_title">Foto-Optionen</string>
+    <string name="ph_gap">Abstand zwischen Fotos (dp)</string>
+    <string name="ph_group">Datumsüberschriften nach</string>
+    <string name="ph_done">fertig</string>
+    <string name="ph_group_day">Tag</string>
+    <string name="ph_group_month">Monat</string>
+    <string name="ph_group_year">Jahr</string>
+    <string name="ph_opt_select">mehrere Fotos auswählen (lange drücken, dann ziehen)</string>
+    <string name="ph_opt_favorite_edit">das Herz markiert einen Favoriten</string>
+    <string name="ph_opt_search">Suchfeld (Album, Monat, Jahr, Tag)</string>
+    <string name="ph_opt_keep_ratio">Fotos behalten ihre Form in den Rastern</string>
+    <string name="ph_opt_date_scrubber">Überschriften bleiben oben, Griff zum Springen durch die Daten</string>
+    <string name="ph_opt_mosaic">Alben zeigen vier Fotos</string>
+    <string name="ph_opt_camera_first">Kamera-Album zuerst</string>
+    <string name="ph_opt_memories">Seite Erinnerungen (dieser Tag in früheren Jahren)</string>
+    <string name="ph_opt_viewer_fx">Betrachter: ausblendende Leiste, überblendendes Foto, Zähler, Nachgeben des Zooms</string>
+    <string name="ph_opt_immersive">Systemleisten mit der Leiste des Betrachters ausblenden</string>
+    <string name="ph_opt_swipe_close">Nach unten wischen schließt den Betrachter</string>
+    <string name="ph_opt_filmstrip">Streifen kleiner Fotos im Betrachter</string>
+    <string name="ph_opt_adaptive_background">Betrachter nimmt den Farbton des Fotos an</string>
+    <string name="ph_opt_extras">Diashow und Hintergrundbild in den Infos</string>
+    <string name="ph_opt_strip_metadata">ohne Metadaten teilen (Ort, Kamera, Datum)</string>
+    <string name="ph_opt_duplicates">Seite mit identischen Fotos</string>
+    <string name="ph_opt_hints">Hinweis zu den Gesten, beim ersten Mal</string>
+    <string name="ph_opt_favorite_mark">kleines Herz auf Favoriten-Fotos</string>
+    <string name="ph_opt_neutral_placeholder">graue Platzhalter, während ein Foto gelesen wird</string>
+    <string name="ph_memories">Erinnerungen</string>
+    <string name="ph_duplicates">Duplikate</string>
+    <string name="ph_partial">Nur einige Fotos sind mit dem Hub geteilt.</string>
+    <string name="ph_partial_more">mehr auswählen</string>
+    <string name="ph_more_note">Die letzten %d Fotos werden gezeigt.</string>
+    <string name="ph_more">mehr laden</string>
+    <string name="ph_search_hint">Album, Monat, Jahr, Tag</string>
+    <string name="ph_search">suchen</string>
+    <string name="ph_select">auswählen</string>
+    <string name="ph_options">Optionen</string>
+    <string name="ph_fav_add">zu Favoriten</string>
+    <string name="ph_fav_remove">aus Favoriten entfernen</string>
+    <string name="ph_compare">vergleichen</string>
+    <string name="ph_today">Heute</string>
+    <string name="ph_yesterday">Gestern</string>
+    <string name="ph_dup_group">%1$d identische · je %2$s</string>
+    <string name="ph_hint">Zum Zoomen zusammenziehen oder doppeltippen, zum Schließen nach unten wischen.</string>
+    <string name="ph_slideshow">Diashow</string>
+    <string name="ph_wallpaper">als Hintergrundbild</string>
+    <string name="ph_zoom_in">vergrößern</string>
+    <string name="ph_zoom_out">verkleinern</string>
+    <string name="ph_strip_failed">Die Kopien ohne Metadaten konnten nicht erstellt werden. Es wurde nichts geteilt.</string>
+    <string name="ph_delete_failed">Löschen nicht möglich</string>
+    <string name="ph_undo">rückgängig</string>
+    <plurals name="ph_count">
+        <item quantity="one">%d Foto</item>
+        <item quantity="other">%d Fotos</item>
+    </plurals>
+    <plurals name="ph_selected">
+        <item quantity="one">%d ausgewählt</item>
+        <item quantity="other">%d ausgewählt</item>
+    </plurals>
+    <plurals name="ph_years_ago">
+        <item quantity="one">vor %d Jahr</item>
+        <item quantity="other">vor %d Jahren</item>
+    </plurals>
+    <plurals name="ph_confirm_delete">
+        <item quantity="one">%d Foto endgültig löschen? Das lässt sich nicht rückgängig machen.</item>
+        <item quantity="other">%d Fotos endgültig löschen? Das lässt sich nicht rückgängig machen.</item>
+    </plurals>
+    <plurals name="ph_trashed">
+        <item quantity="one">%d Foto in den Papierkorb verschoben</item>
+        <item quantity="other">%d Fotos in den Papierkorb verschoben</item>
+    </plurals>
+</resources>
