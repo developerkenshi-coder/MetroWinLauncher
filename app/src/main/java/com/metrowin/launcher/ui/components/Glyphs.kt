@@ -36,7 +36,12 @@ fun GlyphIcon(glyph: Glyph, size: Dp, modifier: Modifier = Modifier, color: Colo
     SpecIcon(remember(glyph) { specOf(glyph) }, size, modifier, color)
 
 /** Small marks the font of the launcher does not have (Selawik has no ticks or triangles, the font of the phone stands in): drawn like the glyphs. */
-enum class Mark { Check, Checked, Up, Down, Dot, Play, Arrow }
+enum class Mark {
+    Check, Checked, Up, Down, Dot, Play, Arrow,
+
+    // For `AppBarItem.icon`: the Unicode signs that apps put in the bar (＋ ✕ ✎ ⇪ ⇩ ↻ ⚙ ← ↗ 🗑 ⚑ ↩ ↪) are missing in many fonts or drawn as color emoji.
+    Add, Close, Edit, Upload, Download, Refresh, Gear, Back, Open, Trash, Flag, Undo, Redo,
+}
 
 @Composable
 fun MarkIcon(mark: Mark, size: Dp, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.foreground) =
@@ -141,6 +146,19 @@ private fun markSpec(mark: Mark): Spec = when (mark) {
     Mark.Dot -> spec(fill(circle(50f, 50f, 30f)))
     Mark.Play -> spec(fill("M26 14L86 50L26 86Z"))
     Mark.Arrow -> spec(stroke("M10 50H86", "M58 22L88 50L58 78"))
+    Mark.Add -> spec(stroke("M50 18V82", "M18 50H82"))
+    Mark.Close -> spec(stroke("M22 22L78 78", "M78 22L22 78"))
+    Mark.Edit -> spec(stroke("M66 14L86 34L34 86L12 88L14 66Z", "M56 24L76 44"))
+    Mark.Upload -> spec(stroke("M50 66V16", "M30 36L50 16L70 36", "M20 62V84H80V62"))
+    Mark.Download -> spec(stroke("M50 14V64", "M30 44L50 64L70 44", "M20 62V84H80V62"))
+    Mark.Refresh -> spec(stroke("M78 50A28 28 0 1 1 64 26", "M57 11L64 26L48 29"))
+    Mark.Gear -> spec(stroke(gear(), circle(50f, 50f, 12f)))
+    Mark.Back -> spec(stroke("M90 50H14", "M42 22L12 50L42 78"))
+    Mark.Open -> spec(stroke("M34 20H80V66", "M80 20L20 80"))
+    Mark.Trash -> spec(stroke("M16 28H84", "M38 28V14H62V28", "M24 28L31 90H69L76 28", "M42 44V74", "M58 44V74"))
+    Mark.Flag -> spec(stroke("M26 90V12", "M26 14H78L66 34L78 54H26"))
+    Mark.Undo -> spec(stroke("M32 28L14 46L32 64", "M14 46H58A22 22 0 0 1 58 90H34"))
+    Mark.Redo -> spec(stroke("M68 28L86 46L68 64", "M86 46H42A22 22 0 0 0 42 90H66"))
 }
 
 private fun document() = stroke("M26 10H62L78 26V90H26Z", "M62 10V26H78")
