@@ -318,7 +318,7 @@
         <!-- The mini apps that are only opened from the launcher (see MiniApps): not exported, nothing else may start them. -->
         <activity
             android:name=".calculator.CalculatorActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/stock_calculator"
             android:launchMode="singleTask"

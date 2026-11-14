@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.content.edit
 import org.json.JSONObject
 import java.text.NumberFormat
+import java.util.Currency
 import java.util.Locale
 import kotlin.math.abs
 
@@ -108,17 +109,23 @@ object Currencies {
         val perEuro = HashMap<String, Double>()
         table.keys().forEach { code ->
             val rate = table.optDouble(code, Double.NaN)
-            if (code in codes && rate.isFinite() && rate > 0) perEuro[code] = rate
+            // Every currency the source lists, not only the ones of [codes]: the list of the converter follows the source.
+            if (known(code) && rate.isFinite() && rate > 0) perEuro[code] = rate
         }
         if (perEuro.size < MIN_RATES) return null
         Rates(root.optString("date"), perEuro, fetchedAt)
     }.getOrNull()
 
+    /** A code the converter lists: one of [codes], or any other real currency of ISO 4217 (not "XXX", "no currency"). */
+    private fun known(code: String) = code in codes || code.length == 3 && code !in NOT_MONEY && runCatching { Currency.getInstance(code) }.isSuccess
+
+    private val NOT_MONEY = setOf("XXX", "XTS")
+
     const val RATES_URL = "https://api.frankfurter.dev/v1/latest?base=EUR"
     const val HOST = "api.frankfurter.dev"
 
     /** Rates fetched less than this long ago are used without asking again. */
-    const val MAX_AGE_MS = 6 * 60 * 60 * 1000L
+    const val MAX_AGE_MS = CalcLimits.RATES_TTL_MS
     private const val MIN_RATES = 5
 }
 
