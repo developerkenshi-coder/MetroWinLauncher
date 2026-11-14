@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="messages_opt_bubbles">Detalhes dos balões: dias, grupos, links, vistos</string>
+    <string name="messages_opt_avatars">Foto ou inicial de cada contacto</string>
+    <string name="messages_opt_live">Atualizar a lista quando as mensagens mudam</string>
+    <string name="messages_opt_panes">Dois painéis em ecrãs largos</string>
+    <string name="messages_opt_quick">Respostas rápidas sobre o campo</string>
+    <string name="messages_opt_delivery">Pedir confirmação de entrega</string>
+    <string name="messages_opt_sims">Escolher o SIM de cada mensagem</string>
+    <string name="messages_opt_otp">Botão copiar para códigos de uso único</string>
+    <string name="messages_opt_block">Bloquear números</string>
+    <string name="messages_opt_lock">Mostrar o texto no ecrã de bloqueio</string>
+    <string name="messages_tab_unknown">desconhecidos</string>
+    <string name="messages_empty_hint">Ainda sem mensagens. Toque em ＋ para escrever uma.</string>
+    <string name="messages_pick">Escolha uma conversa.</string>
+    <string name="messages_you">Você</string>
+    <string name="messages_mark_read">Marcar como lida</string>
+    <string name="messages_new_message">Nova mensagem</string>
+    <string name="messages_copy_code">Copiar %1$s</string>
+    <string name="messages_mms">Mensagem com imagem</string>
+    <string name="messages_mms_pending">Mensagem com imagem por descarregar</string>
+    <string name="messages_mms_download">Mensagem com imagem: toque para descarregar</string>
+    <string name="messages_yesterday">Ontem</string>
+    <string name="messages_delete_confirm">Eliminar %1$d conversa(s)? As mensagens não se podem recuperar.</string>
+    <string name="messages_delete_message">Eliminar mensagem</string>
+    <string name="messages_delete_message_confirm">Eliminar esta mensagem? Não se pode recuperar.</string>
+    <string name="messages_cancel">Cancelar</string>
+    <string name="messages_read">lida</string>
+    <string name="messages_block">bloquear</string>
+    <string name="messages_unblock">desbloquear</string>
+    <string name="messages_sim">SIM %1$s</string>
+    <string name="messages_attachment">Anexo: %1$s</string>
+    <string name="messages_quick_1">OK</string>
+    <string name="messages_quick_2">Ligo-te depois</string>
+    <string name="messages_quick_3">Estou a chegar</string>
+    <string name="messages_quick_4">Obrigado</string>
+    <string name="messages_image">Imagem</string>
+</resources>

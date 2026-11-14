@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="messages_opt_bubbles">Detalles de los globos: días, grupos, enlaces, marcas</string>
+    <string name="messages_opt_avatars">Foto o inicial de cada contacto</string>
+    <string name="messages_opt_live">Actualizar la lista al cambiar los mensajes</string>
+    <string name="messages_opt_panes">Dos paneles en pantallas anchas</string>
+    <string name="messages_opt_quick">Respuestas rápidas sobre el cuadro</string>
+    <string name="messages_opt_delivery">Pedir confirmación de entrega</string>
+    <string name="messages_opt_sims">Elegir la SIM de cada mensaje</string>
+    <string name="messages_opt_otp">Botón de copiar para códigos de un solo uso</string>
+    <string name="messages_opt_block">Bloquear números</string>
+    <string name="messages_opt_lock">Mostrar el texto en la pantalla de bloqueo</string>
+    <string name="messages_tab_unknown">desconocidos</string>
+    <string name="messages_empty_hint">Aún no hay mensajes. Toca ＋ para escribir uno.</string>
+    <string name="messages_pick">Elige una conversación.</string>
+    <string name="messages_you">Tú</string>
+    <string name="messages_mark_read">Marcar como leído</string>
+    <string name="messages_new_message">Mensaje nuevo</string>
+    <string name="messages_copy_code">Copiar %1$s</string>
+    <string name="messages_mms">Mensaje con imagen</string>
+    <string name="messages_mms_pending">Mensaje con imagen por descargar</string>
+    <string name="messages_mms_download">Mensaje con imagen: toca para descargar</string>
+    <string name="messages_yesterday">Ayer</string>
+    <string name="messages_delete_confirm">¿Eliminar %1$d conversaciones? Los mensajes no se pueden recuperar.</string>
+    <string name="messages_delete_message">Eliminar mensaje</string>
+    <string name="messages_delete_message_confirm">¿Eliminar este mensaje? No se puede recuperar.</string>
+    <string name="messages_cancel">Cancelar</string>
+    <string name="messages_read">leído</string>
+    <string name="messages_block">bloquear</string>
+    <string name="messages_unblock">desbloquear</string>
+    <string name="messages_sim">SIM %1$s</string>
+    <string name="messages_attachment">Adjunto: %1$s</string>
+    <string name="messages_quick_1">OK</string>
+    <string name="messages_quick_2">Te llamo luego</string>
+    <string name="messages_quick_3">Voy de camino</string>
+    <string name="messages_quick_4">Gracias</string>
+    <string name="messages_image">Imagen</string>
+</resources>

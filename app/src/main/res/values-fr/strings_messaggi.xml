@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="messages_opt_bubbles">Détails des bulles : jours, groupes, liens, coches</string>
+    <string name="messages_opt_avatars">Photo ou initiale de chaque contact</string>
+    <string name="messages_opt_live">Mettre la liste à jour quand les messages changent</string>
+    <string name="messages_opt_panes">Deux volets sur les grands écrans</string>
+    <string name="messages_opt_quick">Réponses rapides au-dessus du champ</string>
+    <string name="messages_opt_delivery">Demander les accusés de réception</string>
+    <string name="messages_opt_sims">Choisir la SIM de chaque message</string>
+    <string name="messages_opt_otp">Bouton copier pour les codes à usage unique</string>
+    <string name="messages_opt_block">Bloquer des numéros</string>
+    <string name="messages_opt_lock">Afficher le texte sur l\'écran de verrouillage</string>
+    <string name="messages_tab_unknown">inconnus</string>
+    <string name="messages_empty_hint">Aucun message. Touchez ＋ pour en écrire un.</string>
+    <string name="messages_pick">Choisissez une conversation.</string>
+    <string name="messages_you">Vous</string>
+    <string name="messages_mark_read">Marquer comme lu</string>
+    <string name="messages_new_message">Nouveau message</string>
+    <string name="messages_copy_code">Copier %1$s</string>
+    <string name="messages_mms">Message avec image</string>
+    <string name="messages_mms_pending">Message avec image à télécharger</string>
+    <string name="messages_mms_download">Message avec image : touchez pour télécharger</string>
+    <string name="messages_yesterday">Hier</string>
+    <string name="messages_delete_confirm">Supprimer %1$d conversation(s) ? Les messages sont irrécupérables.</string>
+    <string name="messages_delete_message">Supprimer le message</string>
+    <string name="messages_delete_message_confirm">Supprimer ce message ? Il est irrécupérable.</string>
+    <string name="messages_cancel">Annuler</string>
+    <string name="messages_read">lu</string>
+    <string name="messages_block">bloquer</string>
+    <string name="messages_unblock">débloquer</string>
+    <string name="messages_sim">SIM %1$s</string>
+    <string name="messages_attachment">Pièce jointe : %1$s</string>
+    <string name="messages_quick_1">OK</string>
+    <string name="messages_quick_2">Je te rappelle</string>
+    <string name="messages_quick_3">J\'arrive</string>
+    <string name="messages_quick_4">Merci</string>
+    <string name="messages_image">Image</string>
+</resources>
