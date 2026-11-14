@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -27,7 +30,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
+import com.metrowin.launcher.ui.components.MetroProgressBar
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -73,6 +86,12 @@ sealed interface FilesDialog {
     data class Properties(val file: File) : FilesDialog
     data class Editor(val file: File) : FilesDialog
     data class Zip(val file: File) : FilesDialog
+    data object Options : FilesDialog
+    data object Analyzer : FilesDialog
+    data class BulkRename(val files: List<File>) : FilesDialog
+    data class ArchiveList(val file: File) : FilesDialog
+    data class Failures(val failures: List<Failure>) : FilesDialog
+    data class Viewer(val file: File) : FilesDialog
 }
 
 private fun size(bytes: Long) = StorageInfo.format(bytes, Locale.getDefault())
@@ -100,28 +119,46 @@ fun NewDialog(onFolder: (String) -> Unit, onFile: (String) -> Unit, onCancel: ()
 @Composable
 fun PlacesDialog(storages: List<Place>, folders: List<Place>, bookmarks: List<File>, onGo: (File) -> Unit, onTrash: () -> Unit, onCancel: () -> Unit) {
     val colors = LocalMetroColors.current
+    val accent = LocalAccent.current
     DialogFrame(onCancel = onCancel) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             (storages + folders + bookmarks.map { Place(it.name.ifEmpty { it.path }, it, Place.Kind.Bookmark) }).forEach { place ->
-                Column(Modifier.fillMaxWidth().testTag("fm:place").metroPress(onClick = { onGo(place.file) }).padding(vertical = 8.dp)) {
-                    MetroText((if (place.kind == Place.Kind.Bookmark) "★ " else "") + place.name, size = 21.sp)
+                Column(Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).testTag("fm:place").metroPress(onClick = { onGo(place.file) }).padding(vertical = 8.dp)) {
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        if (place.kind == Place.Kind.Bookmark) FilesGlyph(FilesIcon.Star, 18.dp, Modifier.padding(end = 6.dp), accent)
+                        MetroText(place.name, size = 21.sp)
+                    }
                     if (place.kind == Place.Kind.Storage) {
-                        val total = runCatching { place.file.totalSpace }.getOrDefault(0L)
-                        val free = runCatching { place.file.usableSpace }.getOrDefault(0L)
-                        if (total > 0) MetroText(stringResource(R.string.ds_of_total, size(total), size(free)), size = 13.sp, weight = FontWeight.Normal, color = colors.subtle)
+                        // The room is read away from the screen: a storage can be slow to answer.
+                        val space by produceState<Pair<Long, Long>?>(null, place.file) {
+                            value = withContext(Dispatchers.IO) { runCatching { place.file.totalSpace to place.file.usableSpace }.getOrDefault(0L to 0L) }
+                        }
+                        space?.takeIf { it.first > 0 }?.let { (total, free) ->
+                            Box(Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp).background(colors.surface)) {
+                                Box(Modifier.fillMaxWidth(((total - free).toFloat() / total).coerceIn(0f, 1f)).height(6.dp).background(accent))
+                            }
+                            MetroText(stringResource(R.string.ds_of_total, size(total), size(free)), size = 13.sp, weight = FontWeight.Normal, color = colors.subtle)
+                        }
                     }
                 }
             }
-            MetroText("🗑 " + stringResource(R.string.fm_trash), size = 21.sp, modifier = Modifier.fillMaxWidth().testTag("fm:place:trash").metroPress(onClick = onTrash).padding(vertical = 8.dp))
+            Row(Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp).testTag("fm:place:trash").metroPress(onClick = onTrash).padding(vertical = 8.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                FilesGlyph(FilesIcon.Trash, 20.dp, Modifier.padding(end = 8.dp))
+                MetroText(stringResource(R.string.fm_trash), size = 21.sp)
+            }
         }
     }
 }
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-fun ViewDialog(sort: Sort, hidden: Boolean, tiles: Boolean, onSort: (Sort) -> Unit, onHidden: (Boolean) -> Unit, onTiles: (Boolean) -> Unit, onClose: () -> Unit) {
+fun ViewDialog(
+    sort: Sort, hidden: Boolean, tiles: Boolean, tileSide: Int, perFolder: Boolean,
+    onSort: (Sort) -> Unit, onHidden: (Boolean) -> Unit, onTiles: (Boolean) -> Unit, onTileSide: (Int) -> Unit, onClose: () -> Unit,
+) {
     DialogFrame(onCancel = onClose) {
         MetroText(stringResource(R.string.fm_sort), size = 16.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+        if (perFolder) PageNote(stringResource(R.string.fmx_sort_folder_note))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             SortKey.entries.forEach { key ->
                 PageChip(
@@ -136,43 +173,55 @@ fun ViewDialog(sort: Sort, hidden: Boolean, tiles: Boolean, onSort: (Sort) -> Un
             PageChip(stringResource(R.string.fm_view_list), !tiles, "fm:view:list") { onTiles(false) }
             PageChip(stringResource(R.string.fm_view_tiles), tiles, "fm:view:tiles") { onTiles(true) }
         }
+        if (tiles) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            PageChip(stringResource(R.string.fmx_tile_small), tileSide == 80, "fm:tile:80") { onTileSide(80) }
+            PageChip(stringResource(R.string.fmx_tile_medium), tileSide == 104, "fm:tile:104") { onTileSide(104) }
+            PageChip(stringResource(R.string.fmx_tile_large), tileSide == 140, "fm:tile:140") { onTileSide(140) }
+        }
         PageChip(stringResource(R.string.fm_hidden), hidden, "fm:hidden") { onHidden(!hidden) }
     }
 }
 
-/** A line of a menu: its text on a row at least 52 dp high, with a tick when [checked] is true. */
+/** A line of a menu: its text (with its drawn [icon] when it has one) on a row at least 52 dp high, with a tick when [checked] is true. */
 @Composable
-fun MenuRow(text: String, tag: String, checked: Boolean? = null, onClick: () -> Unit) {
+fun MenuRow(text: String, tag: String, checked: Boolean? = null, icon: FilesIcon? = null, onClick: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().defaultMinSize(minHeight = 52.dp).testTag(tag).metroPress(onClick = onClick),
+        Modifier.fillMaxWidth().defaultMinSize(minHeight = 52.dp).testTag(tag).metroPress(onClick = onClick)
+            .then(if (checked != null) Modifier.semantics { role = Role.Checkbox; toggleableState = if (checked) ToggleableState.On else ToggleableState.Off } else Modifier),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
     ) {
+        if (icon != null) FilesGlyph(icon, 20.dp, Modifier.padding(end = 12.dp))
         MetroText(text, size = 20.sp, weight = FontWeight.Normal, modifier = Modifier.weight(1f))
-        if (checked == true) MetroText("✓", size = 20.sp, color = LocalAccent.current)
+        if (checked == true) FilesGlyph(FilesIcon.Check, 20.dp, color = LocalAccent.current)
     }
 }
 
-/** What is left of the bar when nothing is selected: paste, the places, the search, the hidden files, the trash and the bookmark. */
+/** What is left of the bar when nothing is selected: paste, the places, the search, the hidden files, the trash, the bookmark and the options. */
 @Composable
 fun MenuDialog(
-    canPaste: Boolean, hidden: Boolean, bookmarked: Boolean, onPaste: () -> Unit, onPlaces: () -> Unit, onSearch: () -> Unit, onHidden: () -> Unit,
-    onTrash: () -> Unit, onBookmark: () -> Unit, onCancel: () -> Unit,
+    canPaste: Boolean, hidden: Boolean, bookmarked: Boolean, analyzer: Boolean, onPaste: () -> Unit, onPlaces: () -> Unit, onSearch: () -> Unit, onHidden: () -> Unit,
+    onTrash: () -> Unit, onBookmark: () -> Unit, onAnalyzer: () -> Unit, onOptions: () -> Unit, onCancel: () -> Unit,
 ) {
     DialogFrame(onCancel = onCancel) {
-        if (canPaste) MenuRow(stringResource(R.string.fm_paste), "fm:menu:paste", onClick = onPaste)
-        MenuRow(stringResource(R.string.fm_places), "fm:menu:places", onClick = onPlaces)
-        MenuRow(stringResource(R.string.fm_search_hint), "fm:menu:search", onClick = onSearch)
+        if (canPaste) MenuRow(stringResource(R.string.fm_paste), "fm:menu:paste", icon = FilesIcon.Paste, onClick = onPaste)
+        MenuRow(stringResource(R.string.fm_places), "fm:menu:places", icon = FilesIcon.Folder, onClick = onPlaces)
+        MenuRow(stringResource(R.string.fm_search_hint), "fm:menu:search", icon = FilesIcon.Search, onClick = onSearch)
         MenuRow(stringResource(R.string.fm_hidden), "fm:menu:hidden", checked = hidden, onClick = onHidden)
-        MenuRow(stringResource(if (bookmarked) R.string.fm_unbookmark else R.string.fm_bookmark), "fm:menu:bookmark", onClick = onBookmark)
-        MenuRow(stringResource(R.string.fm_trash), "fm:menu:trash", onClick = onTrash)
+        MenuRow(stringResource(if (bookmarked) R.string.fm_unbookmark else R.string.fm_bookmark), "fm:menu:bookmark", icon = FilesIcon.Star, onClick = onBookmark)
+        if (analyzer) MenuRow(stringResource(R.string.fmx_analyzer), "fm:menu:analyzer", icon = FilesIcon.Info, onClick = onAnalyzer)
+        MenuRow(stringResource(R.string.fm_trash), "fm:menu:trash", icon = FilesIcon.Trash, onClick = onTrash)
+        MenuRow(stringResource(R.string.fmx_options), "fm:menu:options", onClick = onOptions)
     }
 }
 
 /** The groups of files: tapping one lists them under the storage of the panel. */
 @Composable
-fun CategoriesDialog(onPick: (Category) -> Unit, onCancel: () -> Unit) {
+fun CategoriesDialog(recent: Boolean, duplicates: Boolean, onPick: (Category) -> Unit, onSpecial: (Special) -> Unit, onCancel: () -> Unit) {
     DialogFrame(onCancel = onCancel) {
+        if (recent) MenuRow(stringResource(R.string.fmx_recent), "fm:cat:recent") { onSpecial(Special.Recent) }
         Category.entries.forEach { c -> MenuRow(stringResource(categoryName(c)), "fm:cat:${c.name}") { onPick(c) } }
+        MenuRow(stringResource(R.string.fmx_largest), "fm:cat:large") { onSpecial(Special.Large) }
+        if (duplicates) MenuRow(stringResource(R.string.fmx_duplicates), "fm:cat:duplicates") { onSpecial(Special.Duplicates) }
     }
 }
 
@@ -206,28 +255,46 @@ fun CompressDialog(initial: String, onOk: (String, ArchiveFormat) -> Unit, onCan
 @Composable
 fun TrashDialog(trash: FileTrash, onChanged: () -> Unit, fallback: File, onClose: () -> Unit) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     var version by remember { mutableStateOf(0) }
     val items by produceState<List<Trashed>?>(null, version) { value = withContext(Dispatchers.IO) { trash.list() } }
     val colors = LocalMetroColors.current
+    val dateFormat = remember { android.text.format.DateFormat.getMediumDateFormat(context) }
+    // Deleting for good is asked twice: the first touch marks what would go ([sure] is "" for all of it), the second does it.
+    var sure by remember { mutableStateOf<String?>(null) }
     DialogFrame(onCancel = onClose) {
         MetroText(stringResource(R.string.fm_trash), size = 24.sp)
         if (items?.isEmpty() == true) PageNote(stringResource(R.string.fm_trash_empty), Modifier.testTag("fm:trash:empty"))
         Column(Modifier.height(280.dp).verticalScroll(rememberScrollState())) {
             items.orEmpty().forEach { item ->
-                Row(Modifier.fillMaxWidth().testTag("fm:trash:item").padding(vertical = 5.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                val purgeLabel = stringResource(R.string.fm_delete_forever)
+                Row(Modifier.fillMaxWidth().testTag("fm:trash:item").padding(vertical = 2.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        MetroText(item.name, size = 18.sp)
-                        MetroText(size(item.size) + "  ·  " + File(item.original).parent, size = 12.sp, weight = FontWeight.Normal, color = colors.subtle)
+                        MetroText(item.name, size = 18.sp, maxLines = 1)
+                        MetroText(
+                            size(item.size) + "  ·  " + stringResource(R.string.fmx_deleted_on, dateFormat.format(Date(item.deleted))) + "  ·  " + File(item.original).parent,
+                            size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 2, minScale = 1f,
+                        )
                     }
-                    MetroText(stringResource(R.string.fm_restore), size = 15.sp, color = LocalAccent.current, modifier = Modifier.testTag("fm:trash:restore").metroPress(onClick = {
+                    Box(Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp).testTag("fm:trash:restore").metroPress(onClick = {
                         scope.launch { withContext(Dispatchers.IO) { trash.restore(item, fallback) }; version++; onChanged() }
-                    }).padding(8.dp))
-                    MetroText("✕", size = 18.sp, color = colors.subtle, modifier = Modifier.metroPress(onClick = { scope.launch { withContext(Dispatchers.IO) { trash.purge(item) }; version++ } }).padding(8.dp))
+                    }), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                        MetroText(stringResource(R.string.fm_restore), size = 15.sp, color = LocalAccent.current, modifier = Modifier.padding(8.dp))
+                    }
+                    Box(
+                        Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp).semantics { contentDescription = purgeLabel; role = Role.Button }.metroPress(onClick = {
+                            if (sure == item.id) { sure = null; scope.launch { withContext(Dispatchers.IO) { trash.purge(item) }; version++ } } else sure = item.id
+                        }),
+                        contentAlignment = androidx.compose.ui.Alignment.Center,
+                    ) {
+                        if (sure == item.id) MetroText(stringResource(R.string.fmx_sure), size = 15.sp, color = LocalAccent.current, modifier = Modifier.padding(8.dp))
+                        else FilesGlyph(FilesIcon.Delete, 20.dp, color = colors.subtle)
+                    }
                 }
             }
         }
-        if (items?.isNotEmpty() == true) MetroButton(stringResource(R.string.fm_empty_trash), Modifier.fillMaxWidth().testTag("fm:trash:clear")) {
-            scope.launch { withContext(Dispatchers.IO) { trash.empty() }; version++ }
+        if (items?.isNotEmpty() == true) MetroButton(stringResource(if (sure == "") R.string.fmx_empty_confirm else R.string.fm_empty_trash), Modifier.fillMaxWidth().testTag("fm:trash:clear")) {
+            if (sure == "") { sure = null; scope.launch { withContext(Dispatchers.IO) { trash.empty() }; version++ } } else sure = ""
         }
     }
 }
@@ -256,6 +323,10 @@ fun DeleteDialog(count: Int, onChoose: (Boolean) -> Unit, onCancel: () -> Unit) 
 fun ActionsDialog(
     files: List<File>,
     otherPath: File,
+    bookmarks: List<File>,
+    opts: (Opt) -> Boolean,
+    tag: Int,
+    onTag: (Int) -> Unit,
     onExtract: (Boolean) -> Unit,
     onToOther: (Boolean) -> Unit,
     onProperties: () -> Unit,
@@ -263,8 +334,9 @@ fun ActionsDialog(
     onSelectAll: () -> Unit,
     onCopyPath: () -> Unit,
     onBookmark: () -> Unit,
-    bookmarks: List<File>,
     onEdit: () -> Unit,
+    onBulkRename: () -> Unit,
+    onArchiveList: () -> Unit,
     onCancel: () -> Unit,
 ) {
     val single = files.singleOrNull()
@@ -273,22 +345,41 @@ fun ActionsDialog(
         if (single != null && FileOps.isArchive(single)) {
             MenuRow(stringResource(R.string.fm_extract_here), "fm:act:extract") { onExtract(false) }
             MenuRow(stringResource(R.string.fm_extract_to), "fm:act:extractto") { onExtract(true) }
+            if (opts(Opt.ArchiveList)) MenuRow(stringResource(R.string.fmx_archive_content), "fm:act:archive", onClick = onArchiveList)
         }
-        MenuRow(stringResource(R.string.fm_copy_to_other) + " (" + (otherPath.name.ifEmpty { "/" }) + ")", "fm:act:copyother") { onToOther(false) }
-        MenuRow(stringResource(R.string.fm_move_to_other), "fm:act:moveother") { onToOther(true) }
-        if (single != null && FileOps.isText(single)) MenuRow(stringResource(R.string.fm_edit_text), "fm:act:edit", onClick = onEdit)
-        if (single != null) MenuRow(stringResource(R.string.fm_properties), "fm:act:properties", onClick = onProperties)
-        if (single != null && single.isDirectory) MenuRow(stringResource(if (single in bookmarks) R.string.fm_unbookmark else R.string.fm_bookmark), "fm:act:bookmark", onClick = onBookmark)
+        MenuRow(stringResource(R.string.fm_copy_to_other) + " (" + (otherPath.name.ifEmpty { "/" }) + ")", "fm:act:copyother", icon = FilesIcon.Copy) { onToOther(false) }
+        MenuRow(stringResource(R.string.fm_move_to_other), "fm:act:moveother", icon = FilesIcon.Cut) { onToOther(true) }
+        if (single != null && FileOps.isText(single)) MenuRow(stringResource(R.string.fm_edit_text), "fm:act:edit", icon = FilesIcon.Rename, onClick = onEdit)
+        if (opts(Opt.BulkRename) && files.size > 1) MenuRow(stringResource(R.string.fmx_bulk_rename), "fm:act:bulk", icon = FilesIcon.Rename, onClick = onBulkRename)
+        if (single != null) MenuRow(stringResource(R.string.fm_properties), "fm:act:properties", icon = FilesIcon.Info, onClick = onProperties)
+        if (single != null && single.isDirectory) MenuRow(stringResource(if (single in bookmarks) R.string.fm_unbookmark else R.string.fm_bookmark), "fm:act:bookmark", icon = FilesIcon.Star, onClick = onBookmark)
         MenuRow(stringResource(R.string.fm_copy_path), "fm:act:path", onClick = onCopyPath)
-        MenuRow(stringResource(R.string.fm_select_all), "fm:act:all", onClick = onSelectAll)
+        MenuRow(stringResource(R.string.fm_select_all), "fm:act:all", icon = FilesIcon.Select, onClick = onSelectAll)
         MenuRow(stringResource(R.string.fm_invert), "fm:act:invert", onClick = onInvert)
+        if (opts(Opt.Tags)) {
+            MetroText(stringResource(R.string.fmx_tag), size = 16.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                (0..TAG_COLORS.size).forEach { n ->
+                    val name = stringResource(if (n == 0) R.string.fmx_tag_none else R.string.fmx_tag_n, n)
+                    Box(
+                        Modifier.size(48.dp).testTag("fm:tag:$n").semantics { contentDescription = name; role = Role.Button; selected = tag == n }
+                            .metroPress(onClick = { onTag(n) }).background(if (n == 0) LocalMetroColors.current.surface else TAG_COLORS[n - 1]),
+                        contentAlignment = androidx.compose.ui.Alignment.Center,
+                    ) { if (tag == n) FilesGlyph(FilesIcon.Check, 22.dp, color = if (n == 0) LocalMetroColors.current.foreground else Color.White) else if (n == 0) FilesGlyph(FilesIcon.Delete, 18.dp, color = LocalMetroColors.current.subtle) }
+                }
+            }
+        }
     }
 }
 
+/** The five colours a file can be tagged with. */
+val TAG_COLORS = listOf(Color(0xFFE51400), Color(0xFFFA6800), Color(0xFFF0A30A), Color(0xFF60A917), Color(0xFF0050EF))
+
 @Composable
-fun ZipChoice(file: File, onHere: () -> Unit, onFolder: () -> Unit, onOpen: () -> Unit, onCancel: () -> Unit) {
+fun ZipChoice(file: File, list: Boolean, onHere: () -> Unit, onFolder: () -> Unit, onList: () -> Unit, onOpen: () -> Unit, onCancel: () -> Unit) {
     DialogFrame(onCancel = onCancel) {
         MetroText(file.name, size = 20.sp, weight = FontWeight.Normal)
+        if (list) MetroButton(stringResource(R.string.fmx_archive_content), Modifier.fillMaxWidth().testTag("fm:zip:list"), onList)
         MetroButton(stringResource(R.string.fm_extract_here), Modifier.fillMaxWidth().testTag("fm:zip:here"), onHere)
         MetroButton(stringResource(R.string.fm_extract_to), Modifier.fillMaxWidth().testTag("fm:zip:folder"), onFolder)
         MetroButton(stringResource(R.string.fm_open_with), Modifier.fillMaxWidth(), onOpen)
@@ -299,27 +390,42 @@ fun ZipChoice(file: File, onHere: () -> Unit, onFolder: () -> Unit, onOpen: () -
 fun PropertiesDialog(file: File, onClose: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val colors = LocalMetroColors.current
     val total by produceState<Pair<Long, Int>?>(null, file) { value = withContext(Dispatchers.IO) { FileOps.size(file) to FileOps.countFiles(file) } }
     val sums = remember { androidx.compose.runtime.mutableStateMapOf<String, String>() }
     var working by remember { mutableStateOf(false) }
+    // One reading of the file gives the three sums; closing the window stops it.
+    val sumProgress = remember { Progress().also { it.totalBytes = file.length() } }
+    DisposableEffect(Unit) { onDispose { sumProgress.cancel() } }
+    var percent by remember { mutableStateOf(0) }
+    LaunchedEffect(working) { while (working) { percent = if (sumProgress.totalBytes > 0) (sumProgress.doneBytes * 100 / sumProgress.totalBytes).toInt().coerceIn(0, 100) else 0; delay(200) } }
+    val details by produceState<Triple<String, String, String?>?>(null, file) {
+        value = withContext(Dispatchers.IO) {
+            val rights = (if (file.canRead()) "r" else "-") + (if (file.canWrite()) "w" else "-") + (if (file.canExecute()) "x" else "-")
+            val link = runCatching { java.nio.file.Files.readSymbolicLink(file.toPath()).toString() }.getOrNull()
+            Triple(rights, FileOps.mime(file), link)
+        }
+    }
     DialogFrame(onCancel = onClose) {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            MetroText(file.name, size = 22.sp)
+        Column(Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            MetroText(file.name, size = 22.sp, maxLines = 3)
+            FilePreview(file)
             Row2(stringResource(R.string.fm_path), file.absolutePath)
-            Row2(stringResource(R.string.fm_type), if (file.isDirectory) stringResource(R.string.stock_files) else FileOps.mime(file))
+            Row2(stringResource(R.string.fm_type), if (file.isDirectory) stringResource(R.string.stock_files) else details?.second ?: FileOps.mime(file))
             Row2(stringResource(R.string.fm_size), total?.let { size(it.first) } ?: "…")
             if (file.isDirectory) Row2(stringResource(R.string.fm_contains), total?.let { pluralStringResource(R.plurals.fm_items, it.second - 1, it.second - 1) } ?: "…")
             Row2(stringResource(R.string.fm_modified), android.text.format.DateFormat.getMediumDateFormat(context).format(Date(file.lastModified())) + " " + android.text.format.DateFormat.getTimeFormat(context).format(Date(file.lastModified())))
+            details?.let { Row2(stringResource(R.string.fmx_permissions), it.first) }
+            details?.third?.let { Row2(stringResource(R.string.fmx_link_to), it) }
             if (file.isFile) {
                 listOf("MD5", "SHA-1", "SHA-256").forEach { algorithm ->
                     sums[algorithm]?.let { Row2(algorithm, it, small = true) }
                 }
-                MetroButton(stringResource(if (working) R.string.fm_working else R.string.fm_calculate), Modifier.fillMaxWidth().testTag("fm:checksums")) {
+                MetroButton(if (working) stringResource(R.string.fm_working) + " $percent%" else stringResource(R.string.fm_calculate), Modifier.fillMaxWidth().testTag("fm:checksums")) {
                     if (working) return@MetroButton
                     working = true
                     scope.launch {
-                        listOf("MD5", "SHA-1", "SHA-256").forEach { a -> sums[a] = withContext(Dispatchers.IO) { FileOps.checksum(file, a) } ?: "?" }
+                        val result = withContext(Dispatchers.IO) { FileOps.checksums(file, progress = sumProgress) }
+                        listOf("MD5", "SHA-1", "SHA-256").forEach { a -> sums[a] = result?.get(a) ?: "?" }
                         working = false
                     }
                 }
@@ -332,60 +438,72 @@ fun PropertiesDialog(file: File, onClose: () -> Unit) {
 private fun Row2(key: String, value: String, small: Boolean = false) {
     Column {
         MetroText(key, size = 13.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
-        MetroText(value, size = if (small) 12.sp else 17.sp, weight = FontWeight.Normal, minScale = 1f)
+        MetroText(value, size = if (small) 12.sp else 17.sp, weight = FontWeight.Normal, minScale = 1f, maxLines = Int.MAX_VALUE)
     }
 }
 
+/** The time left as the clock shows it: 3:05, or 1:02:09. */
+private fun clock(seconds: Long): String = android.text.format.DateUtils.formatElapsedTime(seconds.coerceAtLeast(0L))
+
 @Composable
-fun ProgressDialog(title: String, progress: Progress) {
+fun ProgressDialog(job: FileJob, onHide: () -> Unit) {
+    val progress = job.progress
     var done by remember { mutableLongStateOf(0L) }
     var name by remember { mutableStateOf("") }
+    var elapsed by remember { mutableLongStateOf(0L) }
     LaunchedEffect(progress) {
-        while (true) { done = progress.doneBytes; name = progress.current; delay(100) }
+        while (true) { done = progress.doneBytes; name = progress.current; elapsed = System.currentTimeMillis() - job.startedAt; delay(200) }
     }
     val share = if (progress.totalBytes <= 0) 0f else (done.toFloat() / progress.totalBytes).coerceIn(0f, 1f)
     val accent = LocalAccent.current
-    DialogFrame(onCancel = {}) {
-        MetroText(title, size = 22.sp)
-        MetroText(name, size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
-        Box(Modifier.fillMaxWidth().height(10.dp).background(LocalMetroColors.current.surface).testTag("fm:progress")) {
+    val speed = if (elapsed > 1500 && !progress.byCount) done * 1000 / elapsed else 0L
+    DialogFrame(onCancel = onHide) {
+        MetroText(job.title, size = 22.sp)
+        MetroText(name, size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, maxLines = 1)
+        if (progress.totalBytes <= 0) MetroProgressBar(Modifier.padding(vertical = 3.dp))
+        else Box(Modifier.fillMaxWidth().height(10.dp).background(LocalMetroColors.current.surface).testTag("fm:progress").semantics { progressBarRangeInfo = ProgressBarRangeInfo(share, 0f..1f) }) {
             Box(Modifier.fillMaxWidth(share).height(10.dp).background(accent))
         }
-        MetroText(size(done) + " / " + size(progress.totalBytes), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+        MetroText(
+            if (progress.byCount) stringResource(R.string.fmx_count_of, done, progress.totalBytes)
+            else size(done) + " / " + size(progress.totalBytes) + if (speed > 0) "  ·  " + stringResource(R.string.fmx_speed, size(speed), clock((progress.totalBytes - done) / speed)) else "",
+            size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, maxLines = 2,
+        )
+        MetroButton(stringResource(R.string.fmx_background), Modifier.fillMaxWidth().testTag("fm:hide"), onHide)
         MetroButton(stringResource(R.string.fm_cancel), Modifier.fillMaxWidth().testTag("fm:cancel")) { progress.cancel() }
     }
 }
 
-/** A text file opened to be read and changed. Over a megabyte it is not opened (a text field would not hold it). */
+/** The line that stays above the bar while a work that was put in the background goes on; a touch brings its window back. */
 @Composable
-fun TextEditor(file: File, onClose: () -> Unit) {
-    val context = LocalContext.current
-    val colors = LocalMetroColors.current
-    val tooBig = file.length() > 1_000_000L
-    var text by remember(file) { mutableStateOf(if (tooBig) "" else runCatching { file.readText() }.getOrDefault("")) }
-    var original by remember(file) { mutableStateOf(text) }
-    androidx.activity.compose.BackHandler { onClose() }
-    MiniFrame {
-        MetroText(file.name, size = 24.sp, modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 8.dp))
-        if (tooBig) PageNote(stringResource(R.string.fm_too_big), Modifier.padding(horizontal = 24.dp))
-        else Box(Modifier.weight(1f).fillMaxWidth().imePadding().padding(horizontal = 24.dp).verticalScroll(rememberScrollState())) {
-            BasicTextField(
-                value = text, onValueChange = { text = it },
-                textStyle = fieldTextStyle(colors.foreground, 16.sp).copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace),
-                cursorBrush = SolidColor(LocalAccent.current), modifier = Modifier.fillMaxWidth().testTag("fm:editor"),
-            )
+fun ProgressStrip(job: FileJob, onShow: () -> Unit) {
+    val progress = job.progress
+    var done by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(progress) { while (true) { done = progress.doneBytes; delay(300) } }
+    val share = if (progress.totalBytes <= 0) 0f else (done.toFloat() / progress.totalBytes).coerceIn(0f, 1f)
+    val label = job.title + if (progress.totalBytes > 0) " · " + (share * 100).toInt() + "%" else ""
+    Column(Modifier.fillMaxWidth().testTag("fm:strip").semantics { contentDescription = label; role = Role.Button }.metroPress(onClick = onShow).padding(horizontal = 24.dp, vertical = 6.dp)) {
+        MetroText(label, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, maxLines = 1)
+        Box(Modifier.fillMaxWidth().padding(top = 4.dp).height(4.dp).background(LocalMetroColors.current.surface)) { Box(Modifier.fillMaxWidth(share).height(4.dp).background(LocalAccent.current)) }
+    }
+}
+
+/** What did not work, and why, one line each. */
+@Composable
+fun FailuresDialog(failures: List<Failure>, onClose: () -> Unit) {
+    DialogFrame(onCancel = onClose) {
+        MetroText(pluralStringResource(R.plurals.fm_failed, failures.size, failures.size), size = 20.sp, weight = FontWeight.Normal)
+        Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState()).testTag("fm:failures"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            failures.forEach { f ->
+                Column {
+                    MetroText(f.name, size = 17.sp, maxLines = 2)
+                    MetroText(
+                        stringResource(when (f.why) { Why.Denied -> R.string.fmx_why_denied; Why.Missing -> R.string.fmx_why_missing; Why.NoSpace -> R.string.fmx_why_space; Why.Outside -> R.string.fmx_why_outside; Why.Other -> R.string.fmx_why_other }),
+                        size = 13.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+                    )
+                }
+            }
         }
-        AppBar(
-            listOf(
-                AppBarItem("←", stringResource(R.string.fm_back)) { onClose() },
-                AppBarItem("✓", stringResource(R.string.fm_save)) {
-                    if (!tooBig) {
-                        val ok = runCatching { file.writeText(text) }.isSuccess
-                        if (ok) original = text
-                        MetroToast.show(context, if (ok) R.string.fm_saved else R.string.fm_save_failed)
-                    }
-                },
-            ),
-        )
+        MetroButton(stringResource(R.string.fmx_close), Modifier.fillMaxWidth(), onClose)
     }
 }
