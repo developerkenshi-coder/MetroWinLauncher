@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="np_previous">Previous</string>
+    <string name="np_play">Play</string>
+    <string name="np_pause">Pause</string>
+    <string name="np_next">Next</string>
+    <string name="np_cover">Album cover</string>
+    <string name="np_open_source">Open the app</string>
+    <string name="np_access_title">Notification access is off</string>
+    <string name="np_access_steps">Turn on MetroWin Launcher in the list that opens, then come back here.</string>
+    <string name="np_access_button">Open settings</string>
+    <string name="np_buffering">buffering…</string>
+    <string name="np_options">options</string>
+    <string name="np_options_title">options</string>
+    <string name="np_volume_down">Volume down</string>
+    <string name="np_volume_up">Volume up</string>
+    <string name="np_like">Like</string>
+    <string name="np_unlike">Remove like</string>
+    <string name="np_speed">Speed %1$s</string>
+    <string name="np_sleep">Sleep timer: %1$s</string>
+    <string name="np_sleep_off">Sleep timer off</string>
+    <string name="np_history_title">recently played</string>
+    <string name="np_history_clear">Forget the history</string>
+    <string name="np_queue_search">Search the queue</string>
+    <string name="np_queue_size">Queue shown: %1$d</string>
+    <string name="np_other_player">Player</string>
+    <string name="np_opt_cover_page">Cover across the page</string>
+    <string name="np_opt_blur">Blurred cover (uses more battery)</string>
+    <string name="np_opt_accent">Colours from the cover</string>
+    <string name="np_opt_disc">Spinning disc (uses more battery)</string>
+    <string name="np_opt_swipe">Swipe the cover to skip</string>
+    <string name="np_opt_volume">Volume buttons</string>
+    <string name="np_opt_queue_covers">Covers in the queue</string>
+    <string name="np_opt_car">Car mode (big buttons)</string>
+    <string name="np_opt_contrast">High contrast</string>
+    <string name="np_opt_history">Remember what I listened to</string>
+    <string name="np_position">Position</string>
+    <string name="np_remaining">Time left</string>
+    <string name="np_collapse">Show or hide the queue</string>
+    <string name="np_sleep_note">The sleep timer works while this page stays open.</string>
+</resources>

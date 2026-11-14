@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="np_previous">Zurück</string>
+    <string name="np_play">Wiedergabe</string>
+    <string name="np_pause">Pause</string>
+    <string name="np_next">Weiter</string>
+    <string name="np_cover">Albumcover</string>
+    <string name="np_open_source">App öffnen</string>
+    <string name="np_access_title">Der Zugriff auf Benachrichtigungen ist aus</string>
+    <string name="np_access_steps">Schalte MetroWin Launcher in der Liste ein, die sich öffnet, und komm dann zurück.</string>
+    <string name="np_access_button">Einstellungen öffnen</string>
+    <string name="np_buffering">lädt…</string>
+    <string name="np_options">Optionen</string>
+    <string name="np_options_title">Optionen</string>
+    <string name="np_volume_down">Leiser</string>
+    <string name="np_volume_up">Lauter</string>
+    <string name="np_like">Gefällt mir</string>
+    <string name="np_unlike">Gefällt mir entfernen</string>
+    <string name="np_speed">Tempo %1$s</string>
+    <string name="np_sleep">Einschlaftimer: %1$s</string>
+    <string name="np_sleep_off">Einschlaftimer aus</string>
+    <string name="np_history_title">zuletzt gehört</string>
+    <string name="np_history_clear">Verlauf löschen</string>
+    <string name="np_queue_search">Warteschlange durchsuchen</string>
+    <string name="np_queue_size">Warteschlange angezeigt: %1$d</string>
+    <string name="np_other_player">Player</string>
+    <string name="np_opt_cover_page">Cover über die ganze Seite</string>
+    <string name="np_opt_blur">Unscharfes Cover (braucht mehr Akku)</string>
+    <string name="np_opt_accent">Farben vom Cover</string>
+    <string name="np_opt_disc">Drehende Scheibe (braucht mehr Akku)</string>
+    <string name="np_opt_swipe">Cover wischen zum Überspringen</string>
+    <string name="np_opt_volume">Lautstärketasten</string>
+    <string name="np_opt_queue_covers">Cover in der Warteschlange</string>
+    <string name="np_opt_car">Automodus (große Tasten)</string>
+    <string name="np_opt_contrast">Hoher Kontrast</string>
+    <string name="np_opt_history">Gehörtes merken</string>
+    <string name="np_position">Position</string>
+    <string name="np_remaining">Restzeit</string>
+    <string name="np_collapse">Warteschlange ein- oder ausblenden</string>
+    <string name="np_sleep_note">Der Einschlaftimer funktioniert, solange diese Seite offen bleibt.</string>
+</resources>

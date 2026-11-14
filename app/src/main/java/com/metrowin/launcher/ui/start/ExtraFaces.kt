@@ -54,6 +54,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.Color
@@ -251,18 +255,18 @@ internal fun MusicControls(playing: Boolean, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     fun controller() = MediaSessions.best(MediaSessions.active(context))
     Row(modifier.testTag("music:controls"), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-        TransportButton(Transport.Previous, "music:prev") { controller()?.transportControls?.skipToPrevious() }
-        TransportButton(if (playing) Transport.Pause else Transport.Play, "music:toggle") {
+        TransportButton(Transport.Previous, "music:prev", label = stringResource(R.string.np_previous)) { controller()?.transportControls?.skipToPrevious() }
+        TransportButton(if (playing) Transport.Pause else Transport.Play, "music:toggle", label = stringResource(if (playing) R.string.np_pause else R.string.np_play)) {
             controller()?.let { c -> if (playing) c.transportControls.pause() else c.transportControls.play() }
         }
-        TransportButton(Transport.Next, "music:next") { controller()?.transportControls?.skipToNext() }
+        TransportButton(Transport.Next, "music:next", label = stringResource(R.string.np_next)) { controller()?.transportControls?.skipToNext() }
     }
 }
 
 @Composable
-internal fun TransportButton(kind: Transport, tag: String, ink: Color = LocalMetroColors.current.tileContent, onClick: () -> Unit) {
-    Box(Modifier.size(48.dp).testTag(tag).metroPress(onClick = onClick), contentAlignment = Alignment.Center) {
-        Canvas(Modifier.size(18.dp)) {
+internal fun TransportButton(kind: Transport, tag: String, ink: Color = LocalMetroColors.current.tileContent, label: String = "", box: Dp = 48.dp, onClick: () -> Unit) {
+    Box(Modifier.size(box).testTag(tag).semantics { if (label.isNotEmpty()) { contentDescription = label; role = Role.Button } }.metroPress(onClick = onClick), contentAlignment = Alignment.Center) {
+        Canvas(Modifier.size(box * 0.375f)) {
             val w = size.width
             val h = size.height
             fun triangle(left: Float, pointsRight: Boolean) = Path().apply {
