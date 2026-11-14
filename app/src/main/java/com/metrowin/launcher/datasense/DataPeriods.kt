@@ -5,7 +5,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 
 /** The periods the data page can look at, and how each is cut in the bars of its chart. Pure, so it is tested. */
-enum class DataPeriod { Today, Week, Month30, ThisMonth }
+enum class DataPeriod { Today, Week, Month30, ThisMonth, History }
 
 /** One bar of the chart: its label and the span of time it covers (epoch milliseconds, [to] exclusive). */
 data class DataBucket(val label: String, val from: Long, val to: Long)
@@ -19,14 +19,22 @@ object DataPeriods {
     }
 
     /**
-     * The level of the limit to tell the user about now: 100 when [used] reached [limit], 80 when it reached four fifths of it, and 0 when
-     * there is nothing new to say ([announced] is the level already told in this cycle).
+     * The level of the limit to tell the user about now: 100 when [used] reached [limit], [warnAt] (80 unless the user chose another) when it
+     * reached that share of it, and 0 when there is nothing new to say ([announced] is the level already told in this cycle).
      */
-    fun alertLevel(used: Long, limit: Long, announced: Int): Int {
+    fun alertLevel(used: Long, limit: Long, announced: Int, warnAt: Int = DEFAULT_WARN): Int {
         if (limit <= 0) return 0
-        val level = if (used >= limit) 100 else if (used * 100 >= limit * 80) 80 else 0
+        val warn = warnAt.coerceIn(MIN_WARN, MAX_WARN)
+        val level = if (used >= limit) 100 else if (used * 100 >= limit * warn) warn else 0
         return if (level > announced) level else 0
     }
+
+    const val DEFAULT_WARN = 80
+    const val MIN_WARN = 50
+    const val MAX_WARN = 99
+
+    /** The day the next cycle starts: a month after [cycleStart]. */
+    fun cycleEnd(now: ZonedDateTime, billDay: Int): ZonedDateTime = cycleStart(now, billDay).plusMonths(1)
 
     /** The moment the period starts at, counted back from [now]; "this month" starts on [billDay] of the plan. */
     fun start(period: DataPeriod, now: ZonedDateTime, billDay: Int = 1): ZonedDateTime = when (period) {
@@ -34,6 +42,7 @@ object DataPeriods {
         DataPeriod.Week -> now.toLocalDate().minusDays(6).atStartOfDay(now.zone)
         DataPeriod.Month30 -> now.toLocalDate().minusDays(29).atStartOfDay(now.zone)
         DataPeriod.ThisMonth -> cycleStart(now, billDay)
+        DataPeriod.History -> now.toLocalDate().minusDays(89).atStartOfDay(now.zone)
     }
 
     /** The bars: one for each hour of today up to now, and one for each day of the other periods (today included). */
