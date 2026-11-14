@@ -108,21 +108,63 @@ object NewsSources {
 /** The headlines of an RSS or Atom feed, read without anything that could reach out: no outside entities, no pages, no scripts. */
 object Feeds {
     const val MAX_ITEMS = 20
+
+    /** The headlines kept per source when the user asks for more than [MAX_ITEMS] (also what the list of saved ones and the kept copy may hold). */
+    const val MAX_ITEMS_MORE = 50
+    const val KEPT = 100
     const val MAX_TITLE = 160
     private const val MAX_CHARS = 600_000
 
     class Parsed(val title: String, val items: List<NewsItem>)
 
-    /** The feed in [xml], or null when it is not an RSS or Atom feed (or has a document type, which a feed has no use for). */
-    fun parse(xml: String): Parsed? {
-        if (xml.length > MAX_CHARS || xml.contains("<!DOCTYPE", ignoreCase = true) || xml.contains("<!ENTITY", ignoreCase = true)) return null
-        val document = runCatching { factory.newDocumentBuilder().parse(InputSource(StringReader(xml))) }.getOrNull() ?: return null
-        val root = document.documentElement ?: return null
+    /**
+     * The feed in [xml] (RSS, Atom or JSON Feed) with at most [max] headlines, or null when it is not one (or has a document type, which a
+     * feed has no use for).
+     */
+    fun parse(xml: String, max: Int = MAX_ITEMS): Parsed? {
+        if (xml.trimStart().startsWith("{")) return jsonFeed(xml, max)
+        val root = document(xml)?.documentElement ?: return null
         return when (root.tagName.lowercase(Locale.ROOT)) {
-            "rss", "rdf:rdf" -> rss(root)
-            "feed" -> atom(root)
+            "rss", "rdf:rdf" -> rss(root, max)
+            "feed" -> atom(root, max)
             else -> null
         }
+    }
+
+    /** The XML in [xml] read without anything that could reach out (no outside entities), or null when it is not XML or has a document type. */
+    fun document(xml: String): org.w3c.dom.Document? {
+        if (xml.length > MAX_CHARS || xml.contains("<!DOCTYPE", ignoreCase = true) || xml.contains("<!ENTITY", ignoreCase = true)) return null
+        return runCatching { factory.newDocumentBuilder().parse(InputSource(StringReader(xml))) }.getOrNull()
+    }
+
+    /** A JSON Feed (jsonfeed.org): the items with a title (or, failing that, the start of their text) and a good link. */
+    private fun jsonFeed(text: String, max: Int): Parsed? = runCatching {
+        if (text.length > MAX_CHARS) return null
+        val root = JSONObject(text)
+        if (!root.optString("version").contains("jsonfeed.org")) return null
+        val array = root.getJSONArray("items")
+        val items = (0 until array.length()).mapNotNull { i ->
+            val o = array.optJSONObject(i) ?: return@mapNotNull null
+            val link = safeLink(o.optString("url").ifEmpty { o.optString("external_url") }) ?: return@mapNotNull null
+            val title = clean(o.optString("title").ifEmpty { o.optString("content_text").ifEmpty { o.optString("summary") } }, MAX_TITLE)
+            if (title.isEmpty()) return@mapNotNull null
+            val author = o.optJSONArray("authors")?.optJSONObject(0)?.optString("name") ?: o.optJSONObject("author")?.optString("name").orEmpty()
+            NewsItem(title, clean(author, 60), link, date(o.optString("date_published")), safeImage(o.optString("image").ifEmpty { o.optString("banner_image") }).orEmpty())
+        }
+        finish(clean(root.optString("title"), 80), items, max)
+    }.getOrNull()
+
+    /** The addresses of the feeds a web page offers (`<link rel="alternate" type="application/rss+xml" ...>`), made absolute against [base]; at most five good ones. */
+    fun feedLinks(html: String, base: String): List<String> {
+        val baseUri = runCatching { java.net.URI(base) }.getOrNull() ?: return emptyList()
+        return Regex("""<link\b[^>]*>""", RegexOption.IGNORE_CASE).findAll(html.take(MAX_CHARS)).mapNotNull { tag ->
+            val t = tag.value
+            fun attr(name: String) = Regex("""\b$name\s*=\s*["']([^"']*)["']""", RegexOption.IGNORE_CASE).find(t)?.groupValues?.get(1)?.trim().orEmpty()
+            val type = attr("type").lowercase(Locale.ROOT)
+            if (!attr("rel").lowercase(Locale.ROOT).split(' ').contains("alternate") || !(type.contains("rss") || type.contains("atom") || type.contains("feed+json"))) return@mapNotNull null
+            val href = attr("href").replace("&amp;", "&")
+            runCatching { baseUri.resolve(href).toString() }.getOrNull()?.let(NewsSources::customUrl)?.takeIf { it.startsWith("https://") }
+        }.distinct().take(5).toList()
     }
 
     private val factory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance().apply {
@@ -134,7 +176,7 @@ object Feeds {
         runCatching { setFeature("http://xml.org/sax/features/external-parameter-entities", false) }
     }
 
-    private fun rss(root: Element): Parsed? {
+    private fun rss(root: Element, max: Int): Parsed? {
         val channel = root.children("channel").firstOrNull() ?: root
         val feedTitle = clean(channel.children("title").firstOrNull()?.textContent.orEmpty(), 80)
         val elements = channel.children("item").ifEmpty { root.children("item") }
@@ -149,10 +191,10 @@ object Feeds {
                 image = rssImage(item),
             )
         }
-        return finish(feedTitle, items)
+        return finish(feedTitle, items, max)
     }
 
-    private fun atom(root: Element): Parsed? {
+    private fun atom(root: Element, max: Int): Parsed? {
         val feedTitle = clean(root.children("title").firstOrNull()?.textContent.orEmpty(), 80)
         val items = root.children("entry").mapNotNull { entry ->
             val title = clean(entry.children("title").firstOrNull()?.textContent.orEmpty(), MAX_TITLE)
@@ -166,7 +208,7 @@ object Feeds {
                 image = atomImage(entry),
             )
         }
-        return finish(feedTitle, items)
+        return finish(feedTitle, items, max)
     }
 
     /** The picture of an RSS item: what the feed names for it (media:content, media:thumbnail, enclosure), or the first picture in its text. */
@@ -210,8 +252,8 @@ object Feeds {
         return link.takeIf { uri.host != null && uri.userInfo == null }
     }
 
-    private fun finish(title: String, items: List<NewsItem>): Parsed? {
-        val distinct = items.distinctBy { it.title }.take(MAX_ITEMS)
+    private fun finish(title: String, items: List<NewsItem>, max: Int): Parsed? {
+        val distinct = items.distinctBy { it.title }.take(max)
         return if (distinct.isEmpty()) null else Parsed(title, distinct)
     }
 
@@ -300,6 +342,6 @@ object NewsCodec {
                 Feeds.safeImage(item.optString("i")).orEmpty(),
             )
         }
-        NewsData(o.optString("title"), items.take(Feeds.MAX_ITEMS), o.getLong("fetchedAt"), o.optString("key"))
+        NewsData(o.optString("title"), items.take(Feeds.KEPT), o.getLong("fetchedAt"), o.optString("key"))
     }.getOrNull()
 }

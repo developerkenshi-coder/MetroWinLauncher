@@ -9,17 +9,17 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
 
-/**
- * The pictures of the news: fetched once (over https only), kept in the cache folder of the app (at most [MAX_FILES] files, about
- * [MAX_BYTES] bytes, the oldest go first) and decoded at the size they are shown at. Only the news app asks for them, and only when
- * its switch for pictures is on, because each picture is a request to the site of the article's picture.
- */
 /** Where the headlines get their pictures from: the real one fetches them, a test gives its own. */
 fun interface NewsPictures {
     /** Blocking. The picture at [url] no wider than [maxWidth] pixels, or null. */
     fun load(url: String, maxWidth: Int): Bitmap?
 }
 
+/**
+ * The pictures of the news: fetched once (over https only, from public hosts only), kept in the cache folder of the app (at most
+ * [MAX_FILES] files, about [MAX_BYTES] bytes, the oldest go first) and decoded at the size they are shown at. Only the news app asks for
+ * them, and only when its switch for pictures is on, because each picture is a request to the site of the article's picture.
+ */
 class NewsImages(context: Context) : NewsPictures {
     private val dir = File(context.cacheDir, "news-images").apply { mkdirs() }
 
@@ -28,7 +28,9 @@ class NewsImages(context: Context) : NewsPictures {
         val cacheKey = key(url) + ":" + maxWidth
         memory.get(cacheKey)?.let { return it }
         val file = File(dir, key(url))
-        if (!file.exists() && !download(url, file)) return null
+        // One download per address at a time: the hero and a thumbnail (or two pages) that ask for the same picture wait for the first.
+        val ready = synchronized(locks[(file.name.hashCode() and Int.MAX_VALUE) % locks.size]) { file.exists() || download(url, file) }
+        if (!ready) return null
         file.setLastModified(System.currentTimeMillis())
         val bitmap = decode(file, maxWidth) ?: run { file.delete(); return null }
         memory.put(cacheKey, bitmap)
@@ -38,7 +40,8 @@ class NewsImages(context: Context) : NewsPictures {
     private fun download(address: String, target: File): Boolean = runCatching {
         var url = URL(address)
         repeat(REDIRECTS + 1) {
-            require(url.protocol == "https")
+            // A picture comes from a public https address only, also after a redirect: a feed must not make the phone reach into the local network.
+            require(url.protocol == "https" && NewsHttp.isPublicHost(url.host))
             val connection = (url.openConnection() as HttpURLConnection).apply {
                 connectTimeout = TIMEOUT_MS
                 readTimeout = TIMEOUT_MS
@@ -107,6 +110,8 @@ class NewsImages(context: Context) : NewsPictures {
         private const val MAX_PICTURE = 3 * 1024 * 1024
         private const val REDIRECTS = 3
         private const val TIMEOUT_MS = 8_000
+
+        private val locks = Array(16) { Any() }
 
         private val memory = object : LruCache<String, Bitmap>(24 * 1024 * 1024) {
             override fun sizeOf(key: String, value: Bitmap) = value.byteCount
