@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -335,4 +336,22 @@ fun spectrumImage(data: FloatArray, columns: Int, bins: Int, accent: Color): Ima
     }
     bitmap.setPixels(pixels, 0, columns, 0, 0, columns, bins)
     return bitmap.asImageBitmap()
+}
+
+/** The thin scroll bar of Windows Phone for a column that scrolls (see the one of the lists): Classic only, there while it scrolls. */
+@Composable
+fun Modifier.scrollBar(state: androidx.compose.foundation.ScrollState): Modifier {
+    if (!LocalStyle.current.isClassic) return this
+    val color = LocalMetroColors.current.foreground
+    val reduced = LocalReduceMotion.current
+    val scrolling = state.isScrollInProgress
+    val alpha by animateFloatAsState(if (scrolling) 0.6f else 0f, if (reduced) tween(0) else if (scrolling) tween(80) else tween(450, delayMillis = 700), label = "scrollBar")
+    return drawWithContent {
+        drawContent()
+        if (alpha <= 0f || state.maxValue <= 0) return@drawWithContent
+        val view = size.height
+        val length = (view * view / (view + state.maxValue)).coerceAtLeast(24.dp.toPx())
+        val top = state.value.toFloat() / state.maxValue * (view - length)
+        drawRect(color.copy(alpha = alpha), Offset(size.width - 2.dp.toPx(), top), Size(2.dp.toPx(), length))
+    }
 }

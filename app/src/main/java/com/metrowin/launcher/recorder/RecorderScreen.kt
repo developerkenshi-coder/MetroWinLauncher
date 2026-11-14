@@ -322,6 +322,7 @@ fun RecorderScreen() {
                     }
                 }
             }
+            if (working) com.metrowin.launcher.ui.components.MetroProgressBar(Modifier.padding(horizontal = 24.dp, vertical = 4.dp))
             if (opts.on(Opt.MINI) && pager.currentPage == 1 && player.file != null) MiniPlayer(player, opts.on(Opt.PRETTY), onOpen = { player.file?.let { f -> selected = f.name } })
             val menu = listOf(
                 AppBarItem("⚙", stringResource(R.string.rec_options)) { showOptions = true },

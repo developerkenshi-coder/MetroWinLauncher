@@ -33,7 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
-import com.metrowin.launcher.data.Recordings
 import com.metrowin.launcher.data.TimerFormat
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroButton
@@ -121,7 +120,6 @@ internal fun RecordingsPage(
         } else if (state.loaded && shown.isEmpty()) PageNote(stringResource(R.string.rec_no_match), Modifier.padding(top = 12.dp))
         val listState = rememberLazyListState()
         val grouped = opts.on(Opt.GROUP_DAYS) && sort <= 1
-        var lastDay = ""
         LazyColumn(Modifier.weight(1f).fillMaxWidth().scrollIndicator(listState).testTag("rec:list"), state = listState) {
             itemsIndexed(shown, key = { _, r -> r.name }) { index, rec ->
                 val day = RecorderFormat.dayOf(rec.name)
@@ -225,6 +223,3 @@ internal fun MiniPlayer(player: RecorderPlayer, pretty: Boolean, onOpen: () -> U
         MetroText("✕", size = 22.sp, modifier = Modifier.metroPress(onClick = { player.release() }).padding(8.dp).semantics { contentDescription = "close" })
     }
 }
-
-/** The name a recording gets from its stamp: kept for the callers that need the plain title. */
-internal fun plainTitle(name: String) = Recordings.title(name)

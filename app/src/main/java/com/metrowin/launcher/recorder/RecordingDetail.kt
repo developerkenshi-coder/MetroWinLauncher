@@ -216,7 +216,7 @@ internal fun RecordingDetail(
             part.ordinal, { part = Part.entries[it] }, Modifier.padding(bottom = 6.dp).testTag("rec:parts"),
         )
         val scroll = rememberScrollState()
-        Column(Modifier.weight(1f).verticalScroll(scroll)) {
+        Column(Modifier.weight(1f).scrollBar(scroll).verticalScroll(scroll)) {
             // The picture is in the first two parts: what is listened to is what is cut.
             if (part != Part.Text) {
                 Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
