@@ -143,7 +143,6 @@ fun PeopleScreen() {
     var options by remember { mutableStateOf(false) }
     var dupes by remember { mutableStateOf(false) }
     val pager = rememberPagerState { 3 }
-    val reduced = LocalReduceMotion.current
 
     val vcfPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> if (uri != null) runCatching { context.startActivity(ContactImporter.createVcfImportIntent(uri)) } }
     val vcfSaver = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/x-vcard")) { uri ->
@@ -191,11 +190,7 @@ fun PeopleScreen() {
                         ),
                     )
                 }
-                if (!wide) AnimatedVisibility(
-                    target != null,
-                    enter = if (reduced) EnterTransition.None else slideInHorizontally { it / 3 } + fadeIn(),
-                    exit = if (reduced) ExitTransition.None else slideOutHorizontally { it / 3 } + fadeOut(),
-                ) { shown?.let { ContactCard(it, snapshot ?: PeopleSnapshot.Empty, prefs) } }
+                if (!wide) CardOverlay(target != null, shown, snapshot ?: PeopleSnapshot.Empty, prefs)
             }
             if (wide) Box(Modifier.weight(1f).fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding()) {
                 val t = target
@@ -207,6 +202,17 @@ fun PeopleScreen() {
         if (options) OptionsSheet(prefs, pager.currentPage.let { pages[it] }) { options = false }
         if (dupes) DuplicatesSheet(snapshot?.people.orEmpty(), onOpen = { p -> dupes = false; open(p) }) { dupes = false }
     }
+}
+
+/** The card over the list on a narrow page: it slides in from the right (it is just there with reduced motion). */
+@Composable
+private fun CardOverlay(visible: Boolean, target: Target?, snapshot: PeopleSnapshot, prefs: PeoplePrefs) {
+    val reduced = LocalReduceMotion.current
+    AnimatedVisibility(
+        visible,
+        enter = if (reduced) EnterTransition.None else slideInHorizontally { it / 3 } + fadeIn(),
+        exit = if (reduced) ExitTransition.None else slideOutHorizontally { it / 3 } + fadeOut(),
+    ) { target?.let { ContactCard(it, snapshot, prefs) } }
 }
 
 /** The page of the hub: the colour of the look in use, clear of the bars and the camera hole, and lifted by the keyboard. */
