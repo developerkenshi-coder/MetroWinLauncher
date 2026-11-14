@@ -111,7 +111,7 @@ class RecorderPlayer {
 
     fun skip(delta: Long) = seek(position + delta)
 
-    fun setSpeed(value: Float) {
+    fun changeSpeed(value: Float) {
         speed = value
         if (playing) applySpeed()
     }

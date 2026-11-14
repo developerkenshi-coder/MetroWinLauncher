@@ -259,7 +259,7 @@ internal fun RecordingDetail(
                     )
                     if (opts.on(Opt.SPEED)) MetroButton(
                         stringResource(R.string.rec_speed, speedText(player.speed)), Modifier.fillMaxWidth().padding(top = 10.dp).testTag("rec:speed"),
-                    ) { player.setSpeed(SPEEDS[(SPEEDS.indexOf(player.speed).coerceAtLeast(1) + 1) % SPEEDS.size]) }
+                    ) { player.changeSpeed(SPEEDS[(SPEEDS.indexOf(player.speed).coerceAtLeast(1) + 1) % SPEEDS.size]) }
                     if (player.failed) PageNote(stringResource(R.string.rec_play_failed), Modifier.padding(top = 8.dp).testTag("rec:noplay"))
                     if (opts.on(Opt.MARKS)) {
                         MetroButton(stringResource(R.string.rec_mark_here), Modifier.fillMaxWidth().padding(top = 10.dp).testTag("rec:addmark")) {
