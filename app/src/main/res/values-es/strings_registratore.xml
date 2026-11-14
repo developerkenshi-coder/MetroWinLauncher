@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The words of the voice recorder (its options, parts and notices). -->
+<resources>
+    <string name="rec_all">Todas</string>
+    <string name="rec_announce_marked">Marcador añadido</string>
+    <string name="rec_announce_started">Grabación iniciada</string>
+    <string name="rec_announce_stopped">Grabación detenida y guardada</string>
+    <string name="rec_backup_folder">Elegir otra carpeta</string>
+    <string name="rec_backup_note">Copia cada grabación una vez en la carpeta elegida (en el teléfono, una tarjeta SD o una app en la nube). Desactivado hasta que lo actives.</string>
+    <string name="rec_busy_cancel">Cancelar</string>
+    <string name="rec_chip_cut">corte</string>
+    <string name="rec_chip_edited">editada</string>
+    <string name="rec_chip_faded">fundido</string>
+    <string name="rec_chip_loud">amplificada</string>
+    <string name="rec_chip_merged">unida</string>
+    <string name="rec_chip_text">texto</string>
+    <string name="rec_consent_go">Transcribir igualmente</string>
+    <string name="rec_consent_text">Este teléfono no tiene reconocimiento de voz propio. El servicio de voz que usa puede enviar esta grabación a un servidor por internet. ¿Continuar?</string>
+    <string name="rec_cut_reencode">Este formato se reescribe en AAC para guardar el fragmento (puede perderse algo de calidad).</string>
+    <string name="rec_deleted">Grabación eliminada.</string>
+    <string name="rec_denied">El micrófono no está permitido y el teléfono no volverá a preguntar. Permítelo en los ajustes de la app.</string>
+    <string name="rec_edit_done">Se creó una nueva grabación</string>
+    <string name="rec_edit_failed">No se pudo modificar la grabación</string>
+    <string name="rec_empty_guide">Aún no hay grabaciones. Pulsa Grabar o usa + para traer sonido de otro lugar.</string>
+    <string name="rec_end_minus">Fin −1 s</string>
+    <string name="rec_end_plus">Fin +1 s</string>
+    <string name="rec_start_minus">Inicio −1 s</string>
+    <string name="rec_start_plus">Inicio +1 s</string>
+    <string name="rec_export_opus">Enviar como Opus</string>
+    <string name="rec_export_wav">Enviar como WAV</string>
+    <string name="rec_group_edit">Edición</string>
+    <string name="rec_group_library">Colección</string>
+    <string name="rec_group_look">Aspecto</string>
+    <string name="rec_group_play">Reproducción</string>
+    <string name="rec_group_record">Grabación</string>
+    <string name="rec_group_text">Texto</string>
+    <string name="rec_hear_end">Oír el final</string>
+    <string name="rec_hear_start">Oír el inicio</string>
+    <string name="rec_hint_cut">Arrastra las dos barras de la imagen para elegir el fragmento, o muévelas de segundo en segundo con los botones. Luego guarda el fragmento como grabación nueva: el original no cambia.</string>
+    <string name="rec_hint_ok">Entendido</string>
+    <string name="rec_importing">Importando %1$d de %2$d…</string>
+    <string name="rec_in_progress">Grabando…</string>
+    <string name="rec_label_add">Añadir etiqueta</string>
+    <string name="rec_label_change">Etiqueta: %1$s</string>
+    <string name="rec_label_hint">Etiqueta (pocas letras)</string>
+    <string name="rec_mark">Añadir marcador</string>
+    <string name="rec_mark_here">Añadir marcador aquí</string>
+    <string name="rec_marks_hint">Toca un marcador para ir; mantén pulsado para quitarlo.</string>
+    <string name="rec_merge">unir</string>
+    <string name="rec_next">Siguiente grabación</string>
+    <string name="rec_no_match">Nada encontrado.</string>
+    <string name="rec_no_space">No hay espacio suficiente en el teléfono para grabar. Libera espacio e inténtalo de nuevo.</string>
+    <string name="rec_note_updated">La nota se actualizó</string>
+    <string name="rec_open_settings">Abrir ajustes</string>
+    <string name="rec_opt_backup">Copiar grabaciones a una carpeta</string>
+    <string name="rec_opt_contrast">Imagen de alto contraste</string>
+    <string name="rec_opt_cut_any">Cortar otros formatos (los reescribe en AAC)</string>
+    <string name="rec_opt_focus">Pausar la grabación si llega una llamada</string>
+    <string name="rec_opt_group_days">Agrupar la lista por día</string>
+    <string name="rec_opt_keep_text">Conservar el texto escrito de las grabaciones</string>
+    <string name="rec_opt_labels">Etiquetas para grabaciones</string>
+    <string name="rec_opt_level">Medidor de nivel con pico</string>
+    <string name="rec_opt_marks">Marcadores al grabar y reproducir</string>
+    <string name="rec_opt_max">Grabación más larga</string>
+    <string name="rec_opt_mini">Reproductor pequeño bajo la lista</string>
+    <string name="rec_opt_nudge">Botones para mover el corte un segundo</string>
+    <string name="rec_opt_pause">Botón de pausa</string>
+    <string name="rec_opt_pretty">Fechas en palabras en vez de números</string>
+    <string name="rec_opt_quality">Calidad</string>
+    <string name="rec_opt_rich_rows">Filas con duración, tamaño y formato</string>
+    <string name="rec_opt_round">Botón de grabación redondo</string>
+    <string name="rec_opt_safe">Grabación a prueba de fallos (escribe por tramas; experimental)</string>
+    <string name="rec_opt_seek">Barra de avance y botones ±10 s</string>
+    <string name="rec_opt_spectro">Vista de espectrograma</string>
+    <string name="rec_opt_speed">Velocidad de reproducción</string>
+    <string name="rec_opt_summary">Resumen corto del texto</string>
+    <string name="rec_opt_tools">Herramientas: amplificar, fundido, quitar silencios, enviar como WAV u Opus</string>
+    <string name="rec_opt_transitions">Animación entre lista y grabación</string>
+    <string name="rec_opt_two_pane">Lista y grabación lado a lado en pantallas anchas</string>
+    <string name="rec_opt_wave_theme">Imagen adaptada al aspecto del launcher</string>
+    <string name="rec_options">Opciones de la grabadora</string>
+    <string name="rec_part_edit">editar</string>
+    <string name="rec_part_listen">escuchar</string>
+    <string name="rec_part_text">texto</string>
+    <string name="rec_pause_action">Pausa</string>
+    <string name="rec_paused_note">En pausa</string>
+    <string name="rec_play_all">reproducir</string>
+    <string name="rec_previous">Grabación anterior</string>
+    <string name="rec_resume">Reanudar</string>
+    <string name="rec_scrubber">Posición %1$s</string>
+    <string name="rec_search">Buscar grabaciones y texto</string>
+    <string name="rec_selection_len">Seleccionado: de %1$s a %2$s (%3$s)</string>
+    <string name="rec_speed">Velocidad %1$s×</string>
+    <string name="rec_state_paused">En pausa</string>
+    <string name="rec_state_recording">Grabando</string>
+    <string name="rec_stats">Estadísticas</string>
+    <string name="rec_stats_now">esta semana</string>
+    <string name="rec_stats_old">hace 8 semanas</string>
+    <string name="rec_stats_total">%1$s de sonido, %2$s</string>
+    <string name="rec_stats_weeks">Tiempo grabado por semana</string>
+    <string name="rec_stopped_limit">La grabación alcanzó la duración máxima fijada y se guardó.</string>
+    <string name="rec_stopped_space">El almacenamiento estaba casi lleno: la grabación se detuvo y se guardó.</string>
+    <string name="rec_summary">Resumen</string>
+    <string name="rec_text_forget">Olvidar el texto guardado</string>
+    <string name="rec_text_saved_on">Transcrito el %1$s</string>
+    <string name="rec_today">Hoy</string>
+    <string name="rec_tool_fade">Fundido de entrada y salida (nueva grabación)</string>
+    <string name="rec_tool_normalise">Amplificar (nueva grabación)</string>
+    <string name="rec_tool_silence">Quitar silencios (nueva grabación)</string>
+    <string name="rec_tools">Herramientas</string>
+    <string name="rec_transcribe_cancel">Detener la transcripción</string>
+    <string name="rec_undo">Deshacer</string>
+    <string name="rec_view_spectrum">espectro</string>
+    <string name="rec_view_wave">onda</string>
+    <string name="rec_wave_description">Sonido de la grabación. Fragmento elegido de %1$s a %2$s.</string>
+    <string name="rec_yesterday">Ayer</string>
+    <plurals name="rec_marks">
+        <item quantity="one">%1$d marcador</item>
+        <item quantity="other">%1$d marcadores</item>
+    </plurals>
+    <plurals name="rec_stats_count">
+        <item quantity="one">%1$d grabación</item>
+        <item quantity="other">%1$d grabaciones</item>
+    </plurals>
+    <string-array name="rec_sorts">
+        <item>Recientes</item>
+        <item>Antiguas</item>
+        <item>Más largas</item>
+        <item>Por nombre</item>
+    </string-array>
+    <string-array name="rec_qualities">
+        <item>Estándar</item>
+        <item>Baja</item>
+        <item>Alta</item>
+        <item>Estéreo</item>
+    </string-array>
+    <string-array name="rec_limits">
+        <item>No</item>
+        <item>30 min</item>
+        <item>1 h</item>
+        <item>2 h</item>
+        <item>4 h</item>
+    </string-array>
+</resources>

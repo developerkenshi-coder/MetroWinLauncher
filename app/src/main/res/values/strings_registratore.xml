@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The words of the voice recorder (its options, parts and notices). -->
+<resources>
+    <string name="rec_all">All</string>
+    <string name="rec_announce_marked">Marker added</string>
+    <string name="rec_announce_started">Recording started</string>
+    <string name="rec_announce_stopped">Recording stopped and saved</string>
+    <string name="rec_backup_folder">Choose another folder</string>
+    <string name="rec_backup_note">Copies each recording once to the folder you pick (on the phone, an SD card or a cloud app). Off until you turn it on.</string>
+    <string name="rec_busy_cancel">Cancel</string>
+    <string name="rec_chip_cut">cut</string>
+    <string name="rec_chip_edited">edited</string>
+    <string name="rec_chip_faded">faded</string>
+    <string name="rec_chip_loud">louder</string>
+    <string name="rec_chip_merged">joined</string>
+    <string name="rec_chip_text">text</string>
+    <string name="rec_consent_go">Write it down anyway</string>
+    <string name="rec_consent_text">This phone has no speech recognition of its own. The speech service it uses may send this recording to a server over the internet. Continue?</string>
+    <string name="rec_cut_reencode">This format is written again as AAC to save the piece (a little quality may be lost).</string>
+    <string name="rec_deleted">Recording deleted.</string>
+    <string name="rec_denied">The microphone is not allowed and the phone will not ask again. Allow it in the settings of the app.</string>
+    <string name="rec_edit_done">A new recording was made</string>
+    <string name="rec_edit_failed">The recording could not be changed</string>
+    <string name="rec_empty_guide">No recordings yet. Press Record, or use + to bring sound in from another place.</string>
+    <string name="rec_end_minus">End −1 s</string>
+    <string name="rec_end_plus">End +1 s</string>
+    <string name="rec_start_minus">Start −1 s</string>
+    <string name="rec_start_plus">Start +1 s</string>
+    <string name="rec_export_opus">Send as Opus</string>
+    <string name="rec_export_wav">Send as WAV</string>
+    <string name="rec_group_edit">Editing</string>
+    <string name="rec_group_library">Library</string>
+    <string name="rec_group_look">Look</string>
+    <string name="rec_group_play">Playing</string>
+    <string name="rec_group_record">Recording</string>
+    <string name="rec_group_text">Text</string>
+    <string name="rec_hear_end">Hear the end</string>
+    <string name="rec_hear_start">Hear the start</string>
+    <string name="rec_hint_cut">Drag the two bars on the picture to choose the piece to keep, or move them one second at a time with the buttons. Then save the piece as a new recording: the original stays as it is.</string>
+    <string name="rec_hint_ok">Got it</string>
+    <string name="rec_importing">Importing %1$d of %2$d…</string>
+    <string name="rec_in_progress">Recording…</string>
+    <string name="rec_label_add">Add a label</string>
+    <string name="rec_label_change">Label: %1$s</string>
+    <string name="rec_label_hint">Label (a few letters)</string>
+    <string name="rec_mark">Add a marker</string>
+    <string name="rec_mark_here">Add a marker here</string>
+    <string name="rec_marks_hint">Touch a marker to go there; press and hold to remove it.</string>
+    <string name="rec_merge">join</string>
+    <string name="rec_next">Next recording</string>
+    <string name="rec_no_match">Nothing found.</string>
+    <string name="rec_no_space">There is not enough room on the phone to record. Free some space and try again.</string>
+    <string name="rec_note_updated">The note was updated</string>
+    <string name="rec_open_settings">Open settings</string>
+    <string name="rec_opt_backup">Copy recordings to a folder</string>
+    <string name="rec_opt_contrast">High contrast picture</string>
+    <string name="rec_opt_cut_any">Cut other formats (writes them again as AAC)</string>
+    <string name="rec_opt_focus">Hold the recording when a call comes</string>
+    <string name="rec_opt_group_days">Group the list by day</string>
+    <string name="rec_opt_keep_text">Keep the written text of recordings</string>
+    <string name="rec_opt_labels">Labels for recordings</string>
+    <string name="rec_opt_level">Level meter with peak</string>
+    <string name="rec_opt_marks">Markers while recording and playing</string>
+    <string name="rec_opt_max">Longest recording</string>
+    <string name="rec_opt_mini">Small player below the list</string>
+    <string name="rec_opt_nudge">Buttons to move the cut by a second</string>
+    <string name="rec_opt_pause">Pause button</string>
+    <string name="rec_opt_pretty">Dates in words instead of numbers</string>
+    <string name="rec_opt_quality">Quality</string>
+    <string name="rec_opt_rich_rows">Rows with length, size and format</string>
+    <string name="rec_opt_round">Round record button</string>
+    <string name="rec_opt_safe">Crash-proof recording (writes in frames; experimental)</string>
+    <string name="rec_opt_seek">Scrubber and ±10 s buttons</string>
+    <string name="rec_opt_spectro">Spectrogram view</string>
+    <string name="rec_opt_speed">Playback speed</string>
+    <string name="rec_opt_summary">Short summary of the text</string>
+    <string name="rec_opt_tools">Tools: louder, fade, remove silences, send as WAV or Opus</string>
+    <string name="rec_opt_transitions">Animation between list and recording</string>
+    <string name="rec_opt_two_pane">List and recording side by side on wide screens</string>
+    <string name="rec_opt_wave_theme">Picture shaped by the look of the launcher</string>
+    <string name="rec_options">Recorder options</string>
+    <string name="rec_part_edit">edit</string>
+    <string name="rec_part_listen">listen</string>
+    <string name="rec_part_text">text</string>
+    <string name="rec_pause_action">Pause</string>
+    <string name="rec_paused_note">Paused</string>
+    <string name="rec_play_all">play</string>
+    <string name="rec_previous">Previous recording</string>
+    <string name="rec_resume">Resume</string>
+    <string name="rec_scrubber">Position %1$s</string>
+    <string name="rec_search">Search recordings and text</string>
+    <string name="rec_selection_len">Selected: %1$s to %2$s (%3$s)</string>
+    <string name="rec_speed">Speed %1$s×</string>
+    <string name="rec_state_paused">Paused</string>
+    <string name="rec_state_recording">Recording</string>
+    <string name="rec_stats">Statistics</string>
+    <string name="rec_stats_now">this week</string>
+    <string name="rec_stats_old">8 weeks ago</string>
+    <string name="rec_stats_total">%1$s of sound, %2$s</string>
+    <string name="rec_stats_weeks">Time recorded, by week</string>
+    <string name="rec_stopped_limit">The recording reached the longest time you set and was saved.</string>
+    <string name="rec_stopped_space">The storage was nearly full: the recording was stopped and saved.</string>
+    <string name="rec_summary">Summary</string>
+    <string name="rec_text_forget">Forget the kept text</string>
+    <string name="rec_text_saved_on">Written down on %1$s</string>
+    <string name="rec_today">Today</string>
+    <string name="rec_tool_fade">Fade in and out (new recording)</string>
+    <string name="rec_tool_normalise">Make louder (new recording)</string>
+    <string name="rec_tool_silence">Remove silences (new recording)</string>
+    <string name="rec_tools">Tools</string>
+    <string name="rec_transcribe_cancel">Stop writing down</string>
+    <string name="rec_undo">Undo</string>
+    <string name="rec_view_spectrum">spectrum</string>
+    <string name="rec_view_wave">wave</string>
+    <string name="rec_wave_description">Sound of the recording. Piece chosen from %1$s to %2$s.</string>
+    <string name="rec_yesterday">Yesterday</string>
+    <plurals name="rec_marks">
+        <item quantity="one">%1$d marker</item>
+        <item quantity="other">%1$d markers</item>
+    </plurals>
+    <plurals name="rec_stats_count">
+        <item quantity="one">%1$d recording</item>
+        <item quantity="other">%1$d recordings</item>
+    </plurals>
+    <string-array name="rec_sorts">
+        <item>Newest</item>
+        <item>Oldest</item>
+        <item>Longest</item>
+        <item>By name</item>
+    </string-array>
+    <string-array name="rec_qualities">
+        <item>Standard</item>
+        <item>Low</item>
+        <item>High</item>
+        <item>Stereo</item>
+    </string-array>
+    <string-array name="rec_limits">
+        <item>Off</item>
+        <item>30 min</item>
+        <item>1 h</item>
+        <item>2 h</item>
+        <item>4 h</item>
+    </string-array>
+</resources>
