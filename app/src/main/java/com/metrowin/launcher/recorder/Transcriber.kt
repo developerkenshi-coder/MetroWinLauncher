@@ -28,6 +28,8 @@ class Transcriber(private val context: Context) {
     private var recognizer: SpeechRecognizer? = null
     private var pcm: File? = null
     private var source: ParcelFileDescriptor? = null
+    /** Each run has a number; a cancel moves it on, and a run whose number is old stops and says nothing. */
+    @Volatile private var generation = 0
 
     /** Where the writing is done: on the phone, by the service of the phone (maybe online), or nowhere. */
     enum class Mode { OnDevice, Service, None }
@@ -55,12 +57,26 @@ class Transcriber(private val context: Context) {
     /** Starts. [onText] is called with what is written so far (the pieces joined); [onDone] when it is over; [onFailed] if it cannot be done. */
     fun start(file: File, onText: (String) -> Unit, onDone: () -> Unit, onFailed: (Int) -> Unit) {
         if (!isSupported) return onFailed(ERROR_UNSUPPORTED)
+        cancel()
+        val run = generation
+        // What an earlier run left (a process that died) is taken away; each run has a sound file of its own.
+        context.cacheDir.listFiles { f -> f.name.startsWith("transcribe-") && f.extension == "pcm" }?.forEach { it.delete() }
+        val raw = File(context.cacheDir, "transcribe-${System.nanoTime()}.pcm")
+        pcm = raw
         Thread {
-            val raw = File(context.cacheDir, "transcribe.pcm")
-            pcm = raw
-            val decoded = AudioTools.toSpeechPcm(file, raw)
-            main.post { if (decoded) prepare(raw, onText, onDone, onFailed) else onFailed(ERROR_DECODE) }
+            val decoded = AudioTools.toSpeechPcm(file, raw) { generation != run }
+            main.post { if (generation != run) raw.delete() else if (decoded) prepare(raw, onText, onDone, onFailed) else onFailed(ERROR_DECODE) }
         }.start()
+    }
+
+    /** Stops the writing at once: no more text comes, and nothing is called back. */
+    fun cancel() {
+        generation++
+        stopRecognizer()
+        runCatching { source?.close() }
+        source = null
+        pcm?.delete()
+        pcm = null
     }
 
     private fun recognizerIntent(descriptor: ParcelFileDescriptor): Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
@@ -168,6 +184,7 @@ class Transcriber(private val context: Context) {
     }
 
     fun release() {
+        generation++
         stopRecognizer()
         runCatching { source?.close() }
         source = null
