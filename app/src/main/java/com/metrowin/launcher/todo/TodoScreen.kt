@@ -28,7 +28,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.isImeVisible
-import androidx.compose.foundation.layout.matchParentSize
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -399,9 +399,7 @@ fun TodoScreen() {
                     }
                 }
             }
-            AnimatedVisibility(editPage, enter = fadeIn() + slideInVertically { it / 10 }, exit = ExitTransition.None) {
-                editing?.let { item -> EditPage(item, names, now, onSave = { change(it); editing = null }, onDelete = { delete(item); editing = null }) }
-            }
+            EditOverlay(if (editPage) editing else null, names, now, onSave = { change(it); editing = null }, onDelete = { delete(it); editing = null })
             if (panel == Panel.Focus) {
                 FocusPage(
                     Todos.groups(all, list, Todos.GroupBy.Section, now, options.filter).flatMap { it.items },

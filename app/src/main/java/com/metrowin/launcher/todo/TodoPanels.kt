@@ -1,5 +1,9 @@
 package com.metrowin.launcher.todo
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -150,6 +154,14 @@ fun EditPage(item: TodoItem, names: List<String>, now: Long, onSave: (TodoItem) 
         Modifier.fillMaxSize().background(LocalMetroColors.current.background).imePadding().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 16.dp).testTag("todo:edit:page"),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) { EditForm(item, names, now, onSave, onDelete) }
+}
+
+/** [item] on its page, that comes in over the list; nothing while it is null. */
+@Composable
+fun EditOverlay(item: TodoItem?, names: List<String>, now: Long, onSave: (TodoItem) -> Unit, onDelete: (TodoItem) -> Unit) {
+    AnimatedVisibility(item != null, enter = fadeIn() + slideInVertically { it / 10 }, exit = ExitTransition.None) {
+        item?.let { EditPage(it, names, now, onSave, { onDelete(it) }) }
+    }
 }
 
 /** The edit form in a dialog (the choice of those who like it better than a page). */
