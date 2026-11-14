@@ -17,8 +17,8 @@ object StorageScan {
     private const val MIN_DUPLICATE = 1_000_000L
 
     /** Photos, videos and songs that share a name and a size (at least 1 MB): the same file twice, most of the time. */
-    fun duplicatesOf(files: List<BigFile>): List<List<BigFile>> =
-        files.filter { it.size >= MIN_DUPLICATE }.groupBy { it.name to it.size }.values.filter { it.size > 1 }.sortedByDescending { it.first().size * it.size }
+    fun <T> duplicatesOf(files: List<T>, name: (T) -> String, size: (T) -> Long): List<List<T>> =
+        files.filter { size(it) >= MIN_DUPLICATE }.groupBy { name(it) to size(it) }.values.filter { it.size > 1 }.sortedByDescending { size(it.first()) * it.size }
 
     fun read(context: Context): Pair<List<BigFile>, List<List<BigFile>>> {
         val all = ArrayList<BigFile>()
@@ -36,6 +36,6 @@ object StorageScan {
                 }
             }
         }
-        return all.sortedByDescending { it.size }.take(BIG) to duplicatesOf(all).take(BIG)
+        return all.sortedByDescending { it.size }.take(BIG) to duplicatesOf(all, { it.name }, { it.size }).take(BIG)
     }
 }

@@ -1,7 +1,6 @@
 package com.metrowin.launcher
 
 import com.metrowin.launcher.datasense.AppData
-import com.metrowin.launcher.datasense.BigFile
 import com.metrowin.launcher.datasense.DataBucket
 import com.metrowin.launcher.datasense.DataMath
 import com.metrowin.launcher.datasense.DataPeriod
@@ -102,8 +101,7 @@ class DataSenseMathTest {
     }
 
     @Test fun duplicatesShareNameAndSizeAndAreBig() {
-        val uri = android.net.Uri.EMPTY
-        val files = listOf(BigFile("a.mp4", 5_000_000, uri), BigFile("a.mp4", 5_000_000, uri), BigFile("b.jpg", 10, uri), BigFile("b.jpg", 10, uri), BigFile("c.mp4", 5_000_000, uri))
-        assertEquals(1, StorageScan.duplicatesOf(files).size)
+        val files = listOf("a.mp4" to 5_000_000L, "a.mp4" to 5_000_000L, "b.jpg" to 10L, "b.jpg" to 10L, "c.mp4" to 5_000_000L)
+        assertEquals(1, StorageScan.duplicatesOf(files, { it.first }, { it.second }).size)
     }
 }
