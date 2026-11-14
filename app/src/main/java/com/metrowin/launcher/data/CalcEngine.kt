@@ -43,11 +43,12 @@ object CalcEngine {
         "asin", "acos", "atan", "sinh", "cosh", "tanh", "sqrt", "sin", "cos", "tan", "abs", "exp", "ln", "log", "∛", "√",
     )
 
-    fun evaluate(expression: String, angle: Angle = Angle.Degrees, ans: Double = 0.0): Result {
+    /** [x] is the value of the letter `x` (the graph of a function); without it the letter is not understood. */
+    fun evaluate(expression: String, angle: Angle = Angle.Degrees, ans: Double = 0.0, x: Double = Double.NaN): Result {
         val text = expression.trim()
-        if (text.isEmpty() || text.length > MAX_LENGTH) return Result.Failed(Error.Syntax)
+        if (text.isEmpty() || text.length > CalcLimits.EXPRESSION) return Result.Failed(Error.Syntax)
         return try {
-            val value = Parser(tokenize(text), angle, ans).parse()
+            val value = Parser(tokenize(text), angle, ans, x).parse()
             when {
                 value.isNaN() -> Result.Failed(Error.Domain)
                 value.isInfinite() -> Result.Failed(Error.Overflow)
@@ -142,6 +143,7 @@ object CalcEngine {
                     when {
                         lower == "pi" -> out += Token.Const("pi")
                         word == "e" -> out += Token.Const("e")
+                        lower == "x" -> out += Token.Const("x")
                         lower == "ans" -> out += Token.Const("ans")
                         lower == "mod" -> out += Token.Mod
                         lower in functions -> out += Token.Func(lower)
@@ -155,7 +157,7 @@ object CalcEngine {
         return out
     }
 
-    private class Parser(private val tokens: List<Token>, private val angle: Angle, private val ans: Double) {
+    private class Parser(private val tokens: List<Token>, private val angle: Angle, private val ans: Double, private val x: Double) {
         private var pos = 0
         private var depth = 0
 
@@ -224,7 +226,7 @@ object CalcEngine {
             val base = postfix()
             if ((peek() as? Token.Op)?.symbol == '^') {
                 pos++
-                if (++depth > MAX_DEPTH) fail(Error.Syntax)
+                if (++depth > CalcLimits.DEPTH) fail(Error.Syntax)
                 // Right to left, and the exponent may carry a sign: 2^-3, 2^3^2.
                 val exponent = signedPower()
                 depth--
@@ -274,11 +276,12 @@ object CalcEngine {
                     when (token.name) {
                         "pi" -> Math.PI
                         "e" -> Math.E
+                        "x" -> if (x.isNaN()) fail(Error.Syntax) else x
                         else -> ans
                     },
                 )
                 Token.Open -> {
-                    if (++depth > MAX_DEPTH) fail(Error.Syntax)
+                    if (++depth > CalcLimits.DEPTH) fail(Error.Syntax)
                     val value = if (peek() == null) fail(Error.Syntax) else expression().value
                     // A bracket left open is closed at the end, as the keypad shows.
                     if (peek() == Token.Close) pos++ else if (peek() != null) fail(Error.Syntax)
@@ -288,7 +291,7 @@ object CalcEngine {
                 is Token.Func -> {
                     val argument = if (peek() == Token.Open) {
                         pos++
-                        if (++depth > MAX_DEPTH) fail(Error.Syntax)
+                        if (++depth > CalcLimits.DEPTH) fail(Error.Syntax)
                         val value = if (peek() == null) fail(Error.Syntax) else expression().value
                         if (peek() == Token.Close) pos++ else if (peek() != null) fail(Error.Syntax)
                         depth--
@@ -336,8 +339,6 @@ object CalcEngine {
         }
     }
 
-    private const val MAX_LENGTH = 400
-    private const val MAX_DEPTH = 60
     private const val MAX_FACTORIAL = 170.0
     private const val SIGNIFICANT = 15
     private const val SCIENTIFIC_UP = 16

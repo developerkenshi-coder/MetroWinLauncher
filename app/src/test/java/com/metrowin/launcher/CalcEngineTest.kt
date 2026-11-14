@@ -4,6 +4,7 @@ import com.metrowin.launcher.data.CalcEngine
 import com.metrowin.launcher.data.CalcEngine.Angle
 import com.metrowin.launcher.data.CalcEngine.Error
 import com.metrowin.launcher.data.CalcEngine.Result
+import com.metrowin.launcher.data.CalcLimits
 import com.metrowin.launcher.data.CalcSession
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -275,7 +276,7 @@ class CalcEngineTest {
     fun `the history keeps the newest first and at most a hundred`() {
         val s = session()
         repeat(105) { s.clear(); s.type("$it+1=") }
-        assertEquals(CalcSession.MAX_HISTORY, s.history.size)
+        assertEquals(CalcLimits.HISTORY, s.history.size)
         assertEquals("105", s.history.first().result)
     }
 

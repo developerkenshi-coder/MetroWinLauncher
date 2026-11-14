@@ -54,6 +54,26 @@ object ConvertTable {
         Kind.Angle to listOf(Unit("°", 1.0), Unit("rad", 180.0 / Math.PI), Unit("grad", 0.9), Unit("rev", 360.0)),
     )
 
+    /** The units of a kind by their symbol: one lookup per row instead of a scan of the list. */
+    val bySymbol: Map<Kind, Map<String, Unit>> = units.mapValues { (_, list) -> list.associateBy { it.symbol } }
+
+    /** What is typed in the amount field: digits, one decimal separator (point or comma), a minus only at the start. */
+    fun cleanAmount(raw: String): String {
+        val out = StringBuilder()
+        var separator = false
+        for (c in raw) {
+            when {
+                c.isDigit() -> out.append(c)
+                (c == '.' || c == ',') && !separator -> { separator = true; out.append(c) }
+                c == '-' && out.isEmpty() -> out.append(c)
+            }
+        }
+        return out.take(CalcLimits.AMOUNT_CHARS).toString()
+    }
+
+    /** The number in [text] (a comma is a point), or null when it is empty or not a number: "-", ".", "". */
+    fun parseAmount(text: String): Double? = text.replace(',', '.').toDoubleOrNull()?.takeIf { it.isFinite() }
+
     /** [value] of [from] in [to], two units of the same kind. */
     fun convert(value: Double, from: Unit, to: Unit): Double = ((value + from.offset) * from.factor) / to.factor - to.offset
 }
