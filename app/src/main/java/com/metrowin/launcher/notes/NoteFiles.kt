@@ -51,6 +51,9 @@ class NoteFiles(private val dir: File) {
         file(name)?.delete()
     }
 
+    /** Takes away the files that no note holds ([keep]: what all of them hold): what a deleted note, a failed restore or a crash left. How many went. */
+    fun prune(keep: Set<String>): Int = dir.listFiles()?.count { it.isFile && it.name !in keep && it.delete() } ?: 0
+
     /** The picture of [name] read down to about [max] pixels wide. */
     fun picture(name: String, max: Int): Bitmap? = runCatching {
         val path = file(name)!!.path

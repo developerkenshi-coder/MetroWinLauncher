@@ -54,7 +54,46 @@ class NoteStore(private val file: File, private val crypt: NoteCrypt = KeystoreC
     companion object {
         private const val UNREADABLE = "notes.unreadable"
 
-        /** Pinned first, then the most recently changed. */
-        fun sorted(notes: List<Note>): List<Note> = notes.sortedWith(compareByDescending<Note> { it.pinned }.thenByDescending { it.updated })
+        /** Days a note stays in the bin before it is gone for good. */
+        const val BIN_DAYS = 30
+        const val SORT_UPDATED = 0
+        const val SORT_TITLE = 1
+        const val SORT_CREATED = 2
+
+        /** Pinned first, then by [by]: the most recently changed (the default), the title, or the most recently made. */
+        fun sorted(notes: List<Note>, by: Int = SORT_UPDATED): List<Note> {
+            val pinned = compareByDescending<Note> { it.pinned }
+            return notes.sortedWith(
+                when (by) {
+                    SORT_TITLE -> pinned.thenBy(String.CASE_INSENSITIVE_ORDER) { it.title.ifBlank { it.text.lineSequence().firstOrNull().orEmpty() } }
+                    SORT_CREATED -> pinned.thenByDescending { it.created }
+                    else -> pinned.thenByDescending { it.updated }
+                },
+            )
+        }
+
+        /**
+         * The notes that have every word of [query] in the title, the folder or the text (the text of a locked note is not looked into). With [ranked] the ones with the words in the title come
+         * first, then the folder, then the text; without, they stay in the order they came.
+         */
+        fun search(notes: List<Note>, query: String, ranked: Boolean = true): List<Note> {
+            val words = query.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+            if (words.isEmpty()) return notes
+            fun score(n: Note): Int {
+                var total = 0
+                for (w in words) {
+                    val one = (if (n.title.startsWith(w, true)) 4 else if (n.title.contains(w, true)) 3 else 0) +
+                        (if (n.folder.contains(w, true)) 2 else 0) + (if (!n.locked && n.text.contains(w, true)) 1 else 0)
+                    if (one == 0) return 0
+                    total += one
+                }
+                return total
+            }
+            val found = notes.map { it to score(it) }.filter { it.second > 0 }
+            return (if (ranked) found.sortedByDescending { it.second } else found).map { it.first }
+        }
+
+        /** The notes of the bin that have been there longer than [BIN_DAYS] days at [now]. */
+        fun expired(notes: List<Note>, now: Long): List<Note> = notes.filter { it.deleted > 0 && now - it.deleted > BIN_DAYS * 86_400_000L }
     }
 }

@@ -1,20 +1,23 @@
 package com.metrowin.launcher.notes
 
 /**
- * The little markup of a note, readable even as plain text: `# title`, `## subtitle`, `- item`, `☐ to do`, `☑ done` and `**bold**`.
+ * The little markup of a note, readable even as plain text: `# title`, `## subtitle`, `- item`, `1. item`, `☐ to do`, `☑ done` and `**bold**`.
  * Pure, so it is tested with words.
  */
 object NoteText {
-    enum class Kind { Title, Subtitle, Bullet, Unchecked, Checked, Plain }
+    enum class Kind { Title, Subtitle, Bullet, Numbered, Unchecked, Checked, Plain }
 
-    /** One line: its kind, what is written after the marker, and its place among the lines of the text. */
-    data class Line(val kind: Kind, val body: String, val index: Int)
+    /** One line: its kind, what is written after the marker, and its place among the lines of the text. [number] is the one of a numbered item. */
+    data class Line(val kind: Kind, val body: String, val index: Int, val number: Int = 0)
+
+    private val numbered = Regex("^(\\d{1,4})\\. ")
 
     fun parse(text: String): List<Line> = text.split('\n').mapIndexed { index, raw ->
         when {
             raw.startsWith("## ") -> Line(Kind.Subtitle, raw.drop(3), index)
             raw.startsWith("# ") -> Line(Kind.Title, raw.drop(2), index)
             raw.startsWith("- ") || raw.startsWith("• ") -> Line(Kind.Bullet, raw.drop(2), index)
+            numbered.find(raw) != null -> numbered.find(raw)!!.let { Line(Kind.Numbered, raw.substring(it.value.length), index, it.groupValues[1].toInt()) }
             raw.startsWith("☐ ") -> Line(Kind.Unchecked, raw.drop(2), index)
             raw.startsWith("☑ ") -> Line(Kind.Checked, raw.drop(2), index)
             else -> Line(Kind.Plain, raw, index)
@@ -73,5 +76,41 @@ object NoteText {
             return text.removeRange(b, b + 2).removeRange(a - 2, a) to (a - 2 until b - 2)
         }
         return text.substring(0, a) + "**" + text.substring(a, b) + "**" + text.substring(b) to (a + 2 until b + 2)
+    }
+
+    /**
+     * The text when Enter was just pressed ([new] is [old] with one new line at [cursor]) at the end of a list item: the next line starts with the same
+     * marker (a box is a clear box, a number is the next one), and Enter on an item with nothing in it ends the list. Null when it is not that.
+     */
+    fun continueList(old: String, new: String, cursor: Int): Pair<String, Int>? {
+        if (new.length != old.length + 1 || cursor < 1 || cursor > new.length || new[cursor - 1] != '\n' || new.removeRange(cursor - 1, cursor) != old) return null
+        val start = new.lastIndexOf('\n', cursor - 2) + 1
+        val line = new.substring(start, cursor - 1)
+        val marker = when {
+            line.startsWith("- ") -> "- "
+            line.startsWith("• ") -> "• "
+            line.startsWith("☐ ") || line.startsWith("☑ ") -> "☐ "
+            else -> numbered.find(line)?.let { (it.groupValues[1].toInt() + 1).toString() + ". " } ?: return null
+        }
+        val own = if (line.startsWith("☑ ")) "☐ " else if (numbered.find(line) != null) numbered.find(line)!!.value else marker
+        // An item with nothing after its marker: the marker goes and the list is over.
+        if (line.length == own.length) return new.removeRange(start, cursor) to start
+        return new.substring(0, cursor) + marker + new.substring(cursor) to cursor + marker.length
+    }
+
+    /** The places of the bold pieces of [text] as ranges of the text, `**` included: the ones [spans] would find, for a field that shows them as they are typed. */
+    fun boldRanges(text: String): List<IntRange> {
+        val out = ArrayList<IntRange>()
+        var from = 0
+        while (true) {
+            val open = text.indexOf("**", from)
+            val close = if (open >= 0) text.indexOf("**", open + 2) else -1
+            if (open < 0 || close < 0) break
+            // A `**` can not span lines: the markup is read one line at a time.
+            if (text.substring(open, close).contains('\n')) { from = open + 2; continue }
+            if (close > open + 2) out += open..close + 1
+            from = close + 2
+        }
+        return out
     }
 }

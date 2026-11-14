@@ -35,6 +35,16 @@ object SketchGeometry {
         }
     }
 
+    /** [stroke] shifted by ([dx], [dy]), less if it would leave the page: it keeps its shape and stays whole on the page. */
+    fun moved(stroke: Stroke, dx: Float, dy: Float): Stroke {
+        if (stroke.points.isEmpty()) return stroke
+        // A backup can hold points off the page: such a stroke is not held back (the range would be empty).
+        fun within(d: Float, low: Float, high: Float) = if (low > high) d else d.coerceIn(low, high)
+        val x = within(dx, -stroke.points.minOf { it.x }, SketchPage.WIDTH - stroke.points.maxOf { it.x })
+        val y = within(dy, -stroke.points.minOf { it.y }, SketchPage.HEIGHT - stroke.points.maxOf { it.y })
+        return stroke.copy(points = stroke.points.map { Pt(it.x + x, it.y + y) })
+    }
+
     /** The four sides of the rectangle with the corners [a] and [b]. */
     fun outline(a: Pt, b: Pt): List<Pair<Pt, Pt>> {
         val left = min(a.x, b.x)

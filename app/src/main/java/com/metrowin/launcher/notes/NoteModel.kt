@@ -29,6 +29,12 @@ data class Note(
     val updated: Long = 0L,
     /** Photos and sounds, by the name of their file in [NoteFiles]. */
     val files: List<String> = emptyList(),
+    /** When it was put in the bin, or 0 when it is not there (see [NoteStore.BIN_DAYS]). */
+    val deleted: Long = 0L,
+    /** The paper of its sketch: 0 plain, 1 squares, 2 lines, 3 dots. */
+    val paper: Int = 0,
+    /** Asks for the lock of the phone before it is opened. */
+    val locked: Boolean = false,
 ) {
     val isBlank: Boolean get() = title.isBlank() && text.isBlank() && strokes.isEmpty() && files.isEmpty()
 }
@@ -45,6 +51,11 @@ object NoteCodec {
     const val MAX_POINTS = 6_000
     const val MAX_TEXT = 200_000
     const val MAX_FILES = 20
+    const val MAX_TITLE = 120
+    const val MAX_FOLDER = 60
+    /** The colours the notes can have besides none: the swatches of the menu, and what a backup is allowed to hold. */
+    const val MAX_COLOR = 7
+    const val PAPERS = 4
 
     fun encode(notes: List<Note>): String = JSONObject().put("version", 1).put("notes", JSONArray().also { array -> notes.forEach { array.put(encodeNote(it)) } }).toString()
 
@@ -56,6 +67,7 @@ object NoteCodec {
     private fun encodeNote(note: Note) = JSONObject()
         .put("id", note.id).put("title", note.title).put("text", note.text).put("color", note.color).put("pinned", note.pinned)
         .put("folder", note.folder).put("created", note.created).put("updated", note.updated)
+        .put("deleted", note.deleted).put("paper", note.paper).put("locked", note.locked)
         .put("strokes", JSONArray().also { array -> note.strokes.forEach { array.put(encodeStroke(it)) } })
         .put("files", JSONArray(note.files))
 
@@ -68,14 +80,17 @@ object NoteCodec {
         val strokes = o.optJSONArray("strokes")
         return Note(
             id = o.getString("id").take(64),
-            title = o.optString("title").take(MAX_TEXT),
+            title = o.optString("title").take(MAX_TITLE),
             text = o.optString("text").take(MAX_TEXT),
             strokes = if (strokes == null) emptyList() else (0 until minOf(strokes.length(), MAX_STROKES)).mapNotNull { runCatching { decodeStroke(strokes.getJSONObject(it)) }.getOrNull() },
-            color = o.optInt("color").coerceIn(0, 15),
+            color = o.optInt("color").coerceIn(0, MAX_COLOR),
             pinned = o.optBoolean("pinned"),
-            folder = o.optString("folder").take(60),
+            folder = o.optString("folder").take(MAX_FOLDER),
             created = o.optLong("created"),
             updated = o.optLong("updated"),
+            deleted = o.optLong("deleted"),
+            paper = o.optInt("paper").coerceIn(0, PAPERS - 1),
+            locked = o.optBoolean("locked"),
             // A name from a backup is never trusted: it becomes a path.
             files = o.optJSONArray("files")?.let { a -> (0 until minOf(a.length(), MAX_FILES)).mapNotNull { a.optString(it).takeIf(NoteFiles::valid) } }.orEmpty(),
         )
