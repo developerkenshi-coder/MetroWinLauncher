@@ -17,7 +17,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
-import android.util.Log
+import com.metrowin.launcher.data.Diagnostics
 import com.metrowin.launcher.R
 import kotlin.concurrent.thread
 
@@ -43,7 +43,6 @@ object MailSync {
         if (known == null) emptyList() else fresh.filter { it.id.toLong() > known }
 
     private const val TOTAL = "unread_total"
-    private const val TAG = "MailSync"
 
     /** The sum of the counts of the accounts, from the counts in [all]; the key of the sum itself is not one of them. */
     internal fun sum(all: Map<String, *>): Int = all.entries.filter { it.key.startsWith("unread_") && it.key != TOTAL }.sumOf { (it.value as? Int) ?: 0 }
@@ -107,8 +106,8 @@ object MailSync {
             try {
                 lookAt(context, account, client)
             } catch (e: Exception) {
-                // What the server said, never the password (it is in no exception); the address of the account stays out of the log too.
-                Log.w(TAG, "look at ${account.providerName} failed: ${e.javaClass.simpleName}: ${e.message?.lineSequence()?.firstOrNull()}")
+                // Only the kind of error: what the server says may carry an address.
+                Diagnostics.warn("mail.sync", e, withMessage = false)
                 allAnswered = false
             } finally {
                 client.close()
@@ -201,7 +200,7 @@ class MailActionReceiver : BroadcastReceiver() {
                         if (intent.action == MailSync.ACTION_DELETE) client.delete("INBOX", uid) else client.setFlag("INBOX", uid, javax.mail.Flags.Flag.SEEN, true)
                         MailSync.dismiss(context, accountId)
                     } catch (e: Exception) {
-                        Log.w("MailSync", "notification action failed: ${e.javaClass.simpleName}")
+                        Diagnostics.warn("mail.action", e, withMessage = false)
                     } finally {
                         client.close()
                     }
