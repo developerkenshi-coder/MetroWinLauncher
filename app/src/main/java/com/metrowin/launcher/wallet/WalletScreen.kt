@@ -1,339 +1,259 @@
 package com.metrowin.launcher.wallet
 
-import androidx.compose.foundation.lazy.itemsIndexed
-import com.metrowin.launcher.ui.theme.LocalStyle
-import com.metrowin.launcher.ui.components.PivotHeader
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.pager.HorizontalPager
-import com.metrowin.launcher.ui.actioncenter.MetroToast
-import androidx.compose.foundation.lazy.rememberLazyListState
-import com.metrowin.launcher.ui.components.featherRow
-import com.metrowin.launcher.ui.components.scrollIndicator
 import android.app.Activity
-import android.graphics.BitmapFactory
-import androidx.activity.compose.BackHandler
+import android.app.KeyguardManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Canvas
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.readAtMost
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.anim.metroPress
-import com.metrowin.launcher.ui.components.AppBar
-import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
-import com.metrowin.launcher.ui.components.MetroTextField
-import com.metrowin.launcher.ui.mini.DateTimeDialog
-import com.metrowin.launcher.ui.mini.MiniFrame
-import com.metrowin.launcher.ui.pages.PageChip
-import com.metrowin.launcher.ui.pages.PageNote
-import com.metrowin.launcher.ui.theme.LocalAccent
+import com.metrowin.launcher.ui.components.MetroToggle
+import com.metrowin.launcher.ui.start.DialogFrame
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.MetroAccents
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicReference
 
-private sealed interface WalletPage {
-    data object List : WalletPage
-    data class View(val id: String) : WalletPage
-    data class Edit(val card: Card) : WalletPage
-}
+/** The page that is open, as a short text so it can be kept over a turn of the phone: "" the list, "v:id" a card, "e:id" an edit, "n:id" a new card. */
+private const val LIST = ""
 
-private fun cardColor(index: Int): Color? = MetroAccents.getOrNull(index - 1)
+/** For how long an opened card stays open to the next one without asking for the lock of the phone again. */
+private const val UNLOCK_MS = 60_000L
+private const val UNDO_MS = 6_000L
+
+private class ExportJob(val cards: List<Card>, val passphrase: String?)
 
 @Composable
 fun WalletScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val vault = remember { WalletVault(context) }
+    val prefs = remember { WalletPrefs(context) }
     val lock = remember { Mutex() }
+    val latest = remember { AtomicReference<List<Card>>(emptyList()) }
     var cards by remember { mutableStateOf<List<Card>?>(null) }
-    var page by remember { mutableStateOf<WalletPage>(WalletPage.List) }
-    LaunchedEffect(Unit) { cards = withContext(Dispatchers.IO) { vault.load() } }
+    var unreadable by remember { mutableStateOf(false) }
+    var pageKey by rememberSaveable { mutableStateOf(LIST) }
+    var lastUnlock by rememberSaveable { mutableLongStateOf(0L) }
+    var pendingOpen by rememberSaveable { mutableStateOf<String?>(null) }
+    var options by rememberSaveable { mutableStateOf(false) }
+    var undo by remember { mutableStateOf<Pair<Card, Int>?>(null) }
+    val today = rememberToday()
+    LaunchedEffect(Unit) {
+        val loaded = withContext(Dispatchers.IO) { vault.load() to vault.unreadable }
+        latest.set(loaded.first)
+        cards = loaded.first
+        unreadable = loaded.second
+        if (loaded.second) MetroToast.show(context, R.string.wal_unreadable)
+    }
     val all = cards.orEmpty()
+    KeepSecure(prefs.secure.on && pageKey != LIST)
 
+    /** Every change is written, in the order it was made: each write takes the newest list, so an older one never lands on top of a newer. */
     fun commit(next: List<Card>) {
         cards = next
+        latest.set(next)
         scope.launch(Dispatchers.IO) {
-            if (!lock.withLock { vault.save(next) }) withContext(Dispatchers.Main) { MetroToast.show(context, R.string.wal_save_failed) }
+            if (!lock.withLock { vault.save(latest.get()) }) withContext(Dispatchers.Main) { MetroToast.show(context, R.string.wal_save_failed) }
         }
     }
 
-    val export = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
-        uri ?: return@rememberLauncherForActivityResult
-        val text = Wallet.encode(all)
-        scope.launch(Dispatchers.IO) { runCatching { context.contentResolver.openOutputStream(uri, "wt")!!.use { it.write(text.toByteArray()) } } }
+    // --- the lock of the phone, if the user asked for it
+    val keyguard = remember { context.getSystemService(KeyguardManager::class.java) }
+    val unlockIntent = remember { runCatching { keyguard?.createConfirmDeviceCredentialIntent(context.getString(R.string.wal_unlock_title), context.getString(R.string.wal_unlock_text)) }.getOrNull() }
+    fun needsUnlock() = prefs.lock.on && unlockIntent != null && System.currentTimeMillis() - lastUnlock > UNLOCK_MS
+
+    fun openNow(id: String) {
+        if (prefs.history.on) commit(all.map { if (it.id == id) it.copy(lastUsed = System.currentTimeMillis(), uses = it.uses + 1) else it })
+        pageKey = "v:$id"
+    }
+    val unlock = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val id = pendingOpen
+        pendingOpen = null
+        if (result.resultCode == Activity.RESULT_OK) {
+            lastUnlock = System.currentTimeMillis()
+            if (id != null) openNow(id)
+        }
+    }
+    fun open(card: Card) {
+        if (needsUnlock()) { pendingOpen = card.id; unlock.launch(unlockIntent!!) } else openNow(card.id)
+    }
+    // A card restored by the system after the lock ran out is not shown without it.
+    LaunchedEffect(pageKey, prefs.lock.on) { if (pageKey.startsWith("v:") && needsUnlock() && pendingOpen == null) pageKey = LIST }
+
+    // --- backups
+    var exportJob by remember { mutableStateOf<ExportJob?>(null) }
+    var askExport by remember { mutableStateOf<List<Card>?>(null) }
+    var pendingImport by remember { mutableStateOf<ByteArray?>(null) }
+    val written: (android.net.Uri?) -> Unit = { uri ->
+        val job = exportJob
+        exportJob = null
+        if (uri != null && job != null) {
+            scope.launch {
+                val ok = withContext(Dispatchers.IO) { runCatching { context.contentResolver.openOutputStream(uri, "wt")!!.use { it.write(WalletBackup.write(job.cards, job.passphrase)) } }.isSuccess }
+                MetroToast.show(context, if (ok) R.string.wal_export_ok else R.string.wal_export_failed)
+            }
+        }
+    }
+    val exportPlain = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json"), written)
+    val exportSealed = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream"), written)
+    fun launchExport(list: List<Card>, passphrase: String?) {
+        exportJob = ExportJob(list, passphrase)
+        if (passphrase == null) exportPlain.launch("metrowin-wallet-" + LocalDate.now() + ".json") else exportSealed.launch("metrowin-wallet-" + LocalDate.now() + ".mwallet")
+    }
+    fun startExport(list: List<Card>, sealed: Boolean) { if (sealed || prefs.encryptedExport.on) askExport = list else launchExport(list, null) }
+
+    fun finishImport(bytes: ByteArray?, passphrase: String?) {
+        scope.launch {
+            val result = withContext(Dispatchers.Default) { WalletBackup.read(bytes, passphrase) }
+            when (result) {
+                is Imported.Cards -> {
+                    pendingImport = null
+                    val incoming = result.rgb?.let { rgb -> result.cards.map { it.copy(color = nearestAccent(rgb)) } } ?: result.cards
+                    val merged = Wallet.merge(all, incoming)
+                    val count = Wallet.accepted(merged, incoming)
+                    commit(merged)
+                    MetroToast.show(context, context.resources.getQuantityString(R.plurals.wal_imported, count, count))
+                }
+                Imported.NeedsPassphrase -> pendingImport = bytes
+                Imported.WrongPassphrase -> { pendingImport = bytes; MetroToast.show(context, R.string.wal_import_wrong_pass) }
+                Imported.TooBig -> MetroToast.show(context, R.string.wal_import_too_big)
+                Imported.Unreadable -> { pendingImport = null; MetroToast.show(context, R.string.wal_import_unreadable) }
+            }
+        }
     }
     val import = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri ?: return@rememberLauncherForActivityResult
         scope.launch {
-            val incoming = withContext(Dispatchers.IO) { runCatching { Wallet.decode(context.contentResolver.openInputStream(uri)!!.use { String(it.readAtMost(4_000_000)!!) }) }.getOrDefault(emptyList()) }
-            if (incoming.isEmpty()) MetroToast.show(context, R.string.wal_import_failed)
-            else { commit(Wallet.merge(all, incoming)); MetroToast.show(context, context.resources.getQuantityString(R.plurals.wal_imported, incoming.size, incoming.size)) }
+            // null from the bounded read is "too long"; a stream that cannot be opened is "unreadable".
+            val read = withContext(Dispatchers.IO) { runCatching { context.contentResolver.openInputStream(uri)!!.use { it.readAtMost(Wallet.MAX_IMPORT_BYTES) } } }
+            if (read.isFailure) MetroToast.show(context, R.string.wal_import_unreadable)
+            else if (read.getOrNull() == null) MetroToast.show(context, R.string.wal_import_too_big)
+            else finishImport(read.getOrNull(), null)
         }
     }
 
-    when (val shown = page) {
-        WalletPage.List -> CardList(
-            cards, onOpen = { page = WalletPage.View(it.id) },
-            onNew = { page = WalletPage.Edit(Card(UUID.randomUUID().toString(), "", "", created = System.currentTimeMillis())) },
-            onExport = { export.launch("metrowin-wallet-" + LocalDate.now() + ".json") },
-            onImport = { import.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
-        )
-        is WalletPage.View -> {
-            val card = all.firstOrNull { it.id == shown.id }
-            if (card == null) page = WalletPage.List
-            else CardView(card, onEdit = { page = WalletPage.Edit(card) }, onDelete = { commit(all.filter { it.id != card.id }); page = WalletPage.List }, onBack = { page = WalletPage.List })
-        }
-        is WalletPage.Edit -> CardEdit(
-            shown.card, onSave = { saved ->
-                commit(if (all.any { it.id == saved.id }) all.map { if (it.id == saved.id) saved else it } else all + saved)
-                page = WalletPage.View(saved.id)
-            },
-            onCancel = { page = if (all.any { it.id == shown.card.id }) WalletPage.View(shown.card.id) else WalletPage.List },
-        )
-    }
-}
-
-@Composable
-private fun CardList(cards: List<Card>?, onOpen: (Card) -> Unit, onNew: () -> Unit, onExport: () -> Unit, onImport: () -> Unit) {
-    val colors = LocalMetroColors.current
-    var query by remember { mutableStateOf("") }
-    val today = remember { LocalDate.now().toEpochDay() }
-    // One page of the pivot for all the cards and one for each kind.
-    val kinds = listOf<CardKind?>(null) + CardKind.entries
-    val pager = rememberPagerState { kinds.size }
-    val stacked = LocalStyle.current.isClassic
-    fun shown(kind: CardKind?) = cards.orEmpty().filter { (kind == null || it.kind == kind) && (query.isBlank() || it.name.contains(query, true)) }.sortedBy { it.name.lowercase() }
-    MiniFrame {
-        PivotHeader(kinds.map { stringResource(if (it == null) R.string.notes_all else kindName(it)) }, pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp))
-        Column(Modifier.weight(1f)) {
-            MetroTextField(query, { query = it.take(60) }, stringResource(R.string.wal_search), Modifier.padding(horizontal = 24.dp, vertical = 4.dp).testTag("wal:search"))
-            HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
-                val rows = shown(kinds[page])
-                Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
-                    if (cards != null && rows.isEmpty()) PageNote(stringResource(R.string.wal_empty), Modifier.padding(top = 10.dp).testTag("wal:empty"))
-                    // The cards are stacked: each shows the strip with its name, as if the next one lay over it; the last one is whole. Touching a strip opens that card.
-                    val listState = rememberLazyListState()
-                    LazyColumn(Modifier.fillMaxSize().padding(top = 8.dp).scrollIndicator(listState).testTag("wal:list"), state = listState, verticalArrangement = Arrangement.spacedBy(if (stacked) 0.dp else 8.dp)) {
-                        itemsIndexed(rows, key = { _, c -> c.id }) { i, card -> WalletTile(card, today, stacked, whole = i == rows.lastIndex, index = i) { onOpen(card) } }
-                    }
-                }
-            }
-        }
-        AppBar(
-            listOf(
-                AppBarItem("＋", stringResource(R.string.notes_new), onNew),
-                AppBarItem("⇪", stringResource(R.string.notes_backup), onExport),
-                AppBarItem("⇩", stringResource(R.string.notes_restore), onImport),
-            ),
-        )
-    }
-}
-
-private val CARD_HEIGHT = 120.dp
-private val CARD_STRIP = 60.dp
-
-/** A card as a square tile of its colour; stacked, only the top strip shows, except for the last card, which is whole. */
-@Composable
-private fun WalletTile(card: Card, today: Long, stacked: Boolean, whole: Boolean, index: Int, onClick: () -> Unit) {
-    val left = Wallet.daysLeft(card, today)
-    Box(
-        Modifier.fillMaxWidth().height(if (!stacked) 72.dp else if (whole) CARD_HEIGHT else CARD_STRIP).featherRow(index).testTag("wal:card").metroPress(onClick = onClick)
-            .background(cardColor(card.color) ?: LocalAccent.current).then(if (stacked) Modifier.border(1.dp, Color.Black.copy(alpha = 0.25f)) else Modifier),
-    ) {
-        Column(Modifier.fillMaxWidth().height(if (stacked) CARD_STRIP else 72.dp).padding(horizontal = 14.dp), verticalArrangement = Arrangement.Center) {
-            MetroText(card.name, size = if (stacked) 22.sp else 24.sp, color = Color.White, maxLines = 1)
-            val sub = when {
-                left == null -> stringResource(kindName(card.kind))
-                left < 0 -> stringResource(R.string.wal_expired)
-                else -> stringResource(R.string.wal_expires, LocalDate.ofEpochDay(card.expiry).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)))
-            }
-            MetroText(sub, size = 14.sp, weight = FontWeight.Normal, color = Color.White.copy(alpha = 0.85f), maxLines = 1)
-        }
-    }
-}
-
-private fun kindName(kind: CardKind) = when (kind) {
-    CardKind.Loyalty -> R.string.wal_kind_loyalty
-    CardKind.Ticket -> R.string.wal_kind_ticket
-    CardKind.Other -> R.string.wal_kind_other
-}
-
-/** [code] drawn as [format] in black on white, with the quiet space on every side that scanners want. */
-@Composable
-fun CodeImage(code: String, format: CodeFormat, modifier: Modifier = Modifier) {
-    val matrix = remember(code, format) { Wallet.matrix(code, format) }
-    val ratio = matrix?.let { if (format.twoDimensional) it.width.toFloat() / it.height else 3.4f } ?: 1f
-    Canvas(modifier.background(Color.White).aspectRatio(if (format.twoDimensional) ratio.coerceIn(0.5f, 4f) else 3.4f).testTag("wal:code")) {
-        val m = matrix ?: return@Canvas
-        if (format.twoDimensional) {
-            val quiet = 4
-            val cell = minOf(size.width / (m.width + 2 * quiet), size.height / (m.height + 2 * quiet))
-            val left = (size.width - cell * m.width) / 2f
-            val top = (size.height - cell * m.height) / 2f
-            for (y in 0 until m.height) for (x in 0 until m.width) if (m[x, y]) drawRect(Color.Black, Offset(left + x * cell, top + y * cell), Size(cell + 0.6f, cell + 0.6f))
-        } else {
-            val quiet = size.width * 0.05f
-            val unit = (size.width - 2 * quiet) / m.width
-            val top = size.height * 0.06f
-            for (x in 0 until m.width) if (m[x, 0]) drawRect(Color.Black, Offset(quiet + x * unit, top), Size(unit + 0.5f, size.height - 2 * top))
-        }
-    }
-}
-
-@Composable
-private fun CardView(card: Card, onEdit: () -> Unit, onDelete: () -> Unit, onBack: () -> Unit) {
-    val context = LocalContext.current
-    val colors = LocalMetroColors.current
-    var confirm by remember { mutableStateOf(false) }
-    // The screen is as bright as it goes while a code is shown: a scanner reads it better.
-    DisposableEffect(Unit) {
-        val window = (context as? Activity)?.window
-        val before = window?.attributes?.screenBrightness
-        window?.let { it.attributes = it.attributes.also { a -> a.screenBrightness = 1f } }
-        onDispose { window?.let { it.attributes = it.attributes.also { a -> a.screenBrightness = before ?: -1f } } }
-    }
-    BackHandler { onBack() }
-    MiniFrame {
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
-            MetroText(card.name, size = 32.sp, modifier = Modifier.padding(top = 16.dp, bottom = 12.dp).testTag("wal:name"))
-            Column(Modifier.fillMaxWidth().background(Color.White).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                CodeImage(card.code, card.format, Modifier.fillMaxWidth())
-                MetroText(card.code, size = 18.sp, weight = FontWeight.Normal, color = Color.Black, modifier = Modifier.padding(top = 8.dp))
-            }
-            if (card.expiry != 0L) {
-                MetroText(
-                    stringResource(R.string.wal_expires, LocalDate.ofEpochDay(card.expiry).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG))), size = 17.sp,
-                    weight = FontWeight.Normal, color = if (card.expiry < LocalDate.now().toEpochDay()) LocalAccent.current else colors.subtle, modifier = Modifier.padding(top = 12.dp),
-                )
-            }
-            if (card.note.isNotBlank()) MetroText(card.note, size = 17.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.padding(top = 8.dp))
-            if (confirm) MetroButton(stringResource(R.string.notes_delete_confirm), Modifier.fillMaxWidth().padding(top = 16.dp).testTag("wal:delete:confirm")) { onDelete() }
-        }
-        AppBar(
-            listOf(
-                AppBarItem("←", stringResource(R.string.rec_back), onBack),
-                AppBarItem("✎", stringResource(R.string.notes_edit), onEdit),
-                AppBarItem("✕", stringResource(R.string.todo_delete)) { confirm = true },
-            ),
-        )
-    }
-}
-
-@Composable
-private fun CardEdit(initial: Card, onSave: (Card) -> Unit, onCancel: () -> Unit) {
-    val context = LocalContext.current
-    val colors = LocalMetroColors.current
-    var name by remember(initial.id) { mutableStateOf(initial.name) }
-    var code by remember(initial.id) { mutableStateOf(initial.code) }
-    var format by remember(initial.id) { mutableStateOf(initial.format) }
-    var kind by remember(initial.id) { mutableStateOf(initial.kind) }
-    var expiry by remember(initial.id) { mutableStateOf(initial.expiry) }
-    var note by remember(initial.id) { mutableStateOf(initial.note) }
-    var color by remember(initial.id) { mutableStateOf(initial.color) }
-    var picking by remember { mutableStateOf(false) }
-    var scanning by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    val valid = name.isNotBlank() && Wallet.valid(code.trim(), format)
-    BackHandler { onCancel() }
-    val picture = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri ?: return@rememberLauncherForActivityResult
-        scope.launch {
-            val found = withContext(Dispatchers.IO) {
-                runCatching { context.contentResolver.openInputStream(uri)!!.use { BitmapFactory.decodeStream(it) }?.let { Wallet.read(it) } }.getOrNull()
-            }
-            if (found == null) MetroToast.show(context, R.string.wal_picture_failed) else { code = found.first; format = found.second }
-        }
-    }
-    MiniFrame {
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            MetroText(stringResource(if (initial.name.isEmpty() && initial.code.isEmpty()) R.string.wal_new else R.string.notes_edit), size = 34.sp, modifier = Modifier.padding(top = 14.dp))
-            MetroTextField(name, { name = it.take(60) }, stringResource(R.string.wallet_name), Modifier.testTag("wal:edit:name"))
-            MetroTextField(code, { code = it.take(Wallet.MAX_CODE) }, stringResource(R.string.wal_code), Modifier.testTag("wal:edit:code"))
-            MetroButton(stringResource(R.string.wal_from_picture), Modifier.fillMaxWidth().testTag("wal:edit:picture")) { picture.launch("image/*") }
-            MetroButton(stringResource(R.string.wal_scan), Modifier.fillMaxWidth().testTag("wal:edit:scan")) { scanning = true }
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { items(CodeFormat.entries) { f -> PageChip(f.name, format == f, "wal:edit:format:${f.name}") { format = f } } }
-            if (code.isNotBlank() && !valid && name.isNotBlank()) PageNote(stringResource(R.string.wal_format_invalid), Modifier.testTag("wal:edit:invalid"))
-            if (code.isNotBlank() && Wallet.valid(code.trim(), format)) CodeImage(code.trim(), format, Modifier.fillMaxWidth(0.8f))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { items(CardKind.entries) { k -> PageChip(stringResource(kindName(k)), kind == k, "wal:edit:kind:${k.name}") { kind = k } } }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                PageChip(
-                    if (expiry == 0L) stringResource(R.string.wal_no_expiry) else LocalDate.ofEpochDay(expiry).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)),
-                    expiry != 0L, "wal:edit:expiry",
-                ) { picking = true }
-                if (expiry != 0L) PageChip("✕", false, "wal:edit:noexpiry") { expiry = 0L }
-            }
-            MetroTextField(note, { note = it.take(500) }, stringResource(R.string.cal_notes_hint), Modifier.testTag("wal:edit:note"), singleLine = false)
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                (0..7).forEach { index ->
-                    Box(
-                        Modifier.size(34.dp).testTag("wal:edit:color:$index").metroPress(onClick = { color = index }).background(cardColor(index) ?: LocalAccent.current)
-                            .border(if (color == index) 3.dp else 0.dp, colors.foreground),
+    // --- the pages
+    val still = LocalReduceMotion.current || !prefs.motion.on
+    Box(Modifier.background(LocalMetroColors.current.background)) {
+        AnimatedContent(
+            targetState = pageKey,
+            transitionSpec = { if (still) EnterTransition.None togetherWith ExitTransition.None else fadeIn(tween(160)) togetherWith fadeOut(tween(120)) },
+            label = "wallet-page",
+        ) { key ->
+            val id = key.drop(2)
+            when {
+                key.startsWith("v:") -> {
+                    val found = all.firstOrNull { it.id == id }
+                    // The page that is leaving after a delete still has the card to draw.
+                    val kept = remember(id) { arrayOfNulls<Card>(1) }
+                    if (found != null) kept[0] = found
+                    val card = found ?: kept[0]
+                    if (card == null) LaunchedEffect(Unit) { pageKey = LIST }
+                    else CardView(
+                        card, prefs, today, onEdit = { pageKey = "e:${card.id}" },
+                        onDelete = { undo = card to all.indexOfFirst { it.id == card.id }; commit(all.filter { it.id != card.id }); pageKey = LIST },
+                        onBack = { pageKey = LIST },
+                        onFavorite = { commit(all.map { if (it.id == card.id) it.copy(favorite = !it.favorite) else it }) },
+                        onExport = { startExport(listOf(card), sealed = true) },
                     )
                 }
+                key.startsWith("e:") || key.startsWith("n:") -> {
+                    val existing = all.firstOrNull { it.id == id }
+                    val card = existing ?: remember(id) { Card(id, "", "", created = System.currentTimeMillis()) }
+                    CardEdit(
+                        card, prefs, today,
+                        onSave = { saved ->
+                            commit(if (all.any { it.id == saved.id }) all.map { if (it.id == saved.id) saved else it } else all + saved)
+                            pageKey = "v:${saved.id}"
+                        },
+                        onCancel = { pageKey = if (existing != null) "v:$id" else LIST },
+                    )
+                }
+                else -> CardList(
+                    cards, prefs, today, unreadable && all.isEmpty(), onOpen = ::open,
+                    onNew = { pageKey = "n:${UUID.randomUUID()}" },
+                    onExport = { startExport(all, sealed = false) },
+                    onImport = { import.launch(arrayOf("application/json", "text/plain", "application/octet-stream", "application/vnd.apple.pkpass")) },
+                    onOptions = { options = true },
+                )
             }
         }
-        AppBar(
-            listOf(
-                AppBarItem("✕", stringResource(R.string.rec_back), onCancel),
-                AppBarItem("✓", stringResource(R.string.todo_save)) {
-                    if (valid) onSave(initial.copy(name = name.trim(), code = code.trim(), format = format, kind = kind, expiry = expiry, note = note.trim(), color = color))
-                },
-            ),
-        )
+        // The card that was deleted can be brought back for a few seconds.
+        undo?.let { (card, index) ->
+            LaunchedEffect(card) { delay(UNDO_MS); undo = null }
+            UndoBar(Modifier.align(Alignment.BottomCenter)) {
+                commit(all.toMutableList().apply { add(index.coerceIn(0, size), card) })
+                undo = null
+            }
+        }
     }
-    if (scanning) CodeScanDialog(onUse = { text, f -> code = text.take(Wallet.MAX_CODE); format = f; scanning = false }, onCancel = { scanning = false })
-    if (picking) DateTimeDialog(
-        (if (expiry == 0L) LocalDate.now().plusMonths(6) else LocalDate.ofEpochDay(expiry)).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(), dateOnly = true,
-        onChoose = { ms -> expiry = Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault()).toLocalDate().toEpochDay(); picking = false },
-        onCancel = { picking = false },
-    )
+    askExport?.let { list -> PassphraseDialog(twice = true, onDone = { askExport = null; launchExport(list, it) }, onCancel = { askExport = null }) }
+    pendingImport?.let { bytes -> PassphraseDialog(twice = false, onDone = { finishImport(bytes, it) }, onCancel = { pendingImport = null }) }
+    if (options) OptionsDialog(prefs) { options = false }
+}
+
+@Composable
+private fun UndoBar(modifier: Modifier, onUndo: () -> Unit) {
+    val colors = LocalMetroColors.current
+    Row(
+        modifier.fillMaxWidth().navigationBarsPadding().padding(start = 16.dp, end = 16.dp, bottom = 96.dp).background(colors.containers.getOrElse(0) { colors.surface }).padding(horizontal = 16.dp, vertical = 12.dp).testTag("wal:undo"),
+        horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
+    ) {
+        MetroText(stringResource(R.string.wal_deleted), size = 18.sp)
+        MetroText(stringResource(R.string.wal_undo), size = 18.sp, weight = androidx.compose.ui.text.font.FontWeight.SemiBold, color = com.metrowin.launcher.ui.theme.LocalAccent.current, modifier = Modifier.metroPress(onClick = onUndo).padding(8.dp))
+    }
+}
+
+@Composable
+private fun OptionsDialog(prefs: WalletPrefs, onClose: () -> Unit) {
+    DialogFrame(onClose, title = stringResource(R.string.wal_opt_title)) {
+        listOf(
+            R.string.wal_opt_secure to prefs.secure, R.string.wal_opt_enc_export to prefs.encryptedExport, R.string.wal_opt_lock to prefs.lock,
+            R.string.wal_opt_history to prefs.history, R.string.wal_opt_motion to prefs.motion, R.string.wal_opt_expiry to prefs.expiry,
+            R.string.wal_opt_preview to prefs.preview, R.string.wal_opt_rich to prefs.rich, R.string.wal_opt_grid to prefs.grid,
+            R.string.wal_opt_group to prefs.group, R.string.wal_opt_scan to prefs.scanExtras,
+        ).forEach { (label, flag) -> MetroToggle(stringResource(label), flag.on, flag::set) }
+        MetroButton(stringResource(android.R.string.ok), Modifier.fillMaxWidth().testTag("wal:options:ok"), onClick = onClose)
+    }
 }
