@@ -7,7 +7,7 @@ import android.os.Looper
 /** What the list of the Mail screen asks of a mailbox: [MailClient] on the network, a fake in the tests. Every call blocks: off the main thread. */
 interface MailSource {
     /** One page of [limit] messages of the folder, newest first, after the [skip] newest ones; with a [query], the latest that the server finds it in. */
-    fun messages(path: String, limit: Int = MailClient.LIMIT, query: String = "", skip: Int = 0): List<MailMessage>
+    fun messages(path: String, limit: Int = MailClient.LIMIT, query: String = "", skip: Int = 0, filter: MailFilter = MailFilter.All): List<MailMessage>
 
     /** The first words of the messages [uids], by UID. */
     fun snippets(path: String, uids: List<Long>): Map<String, String>
@@ -25,9 +25,9 @@ object MailListing {
     const val SNIPPETS = 10
 
     /** The headers of the first page; the lines the screen already has for the same messages (from the kept list) stay on them. */
-    fun firstPage(source: MailSource, path: String, limit: Int, query: String, shown: List<MailMessage>?): List<MailMessage> {
+    fun firstPage(source: MailSource, path: String, limit: Int, query: String, shown: List<MailMessage>?, filter: MailFilter = MailFilter.All): List<MailMessage> {
         val known = shown.orEmpty().associate { it.id to it.snippet }
-        return source.messages(path, limit, query).map { it.copy(snippet = known[it.id].orEmpty()) }
+        return source.messages(path, limit, query, 0, filter).map { it.copy(snippet = known[it.id].orEmpty()) }
     }
 
     /** The UIDs that still need a line: the newest ones that have none, not more than [SNIPPETS]. */
@@ -42,8 +42,8 @@ object MailListing {
     fun withLines(list: List<MailMessage>, lines: Map<String, String>): List<MailMessage> = list.map { m -> lines[m.id]?.let { m.copy(snippet = it) } ?: m }
 
     /** The next page, after the ones [shown]: only the older headers come from the server, and none is listed twice if the mailbox moved meanwhile. */
-    fun morePage(source: MailSource, path: String, shown: List<MailMessage>): List<MailMessage> {
-        val older = source.messages(path, MailClient.LIMIT, "", skip = shown.size)
+    fun morePage(source: MailSource, path: String, shown: List<MailMessage>, filter: MailFilter = MailFilter.All): List<MailMessage> {
+        val older = source.messages(path, MailClient.LIMIT, "", skip = shown.size, filter = filter)
         val have = shown.mapTo(HashSet()) { it.id }
         return shown + older.filter { it.id !in have }
     }

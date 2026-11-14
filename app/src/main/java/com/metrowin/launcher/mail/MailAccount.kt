@@ -31,6 +31,9 @@ data class MailMessage(
     val isFlagged: Boolean = false,
     val bodyText: String,
     val hasAttachments: Boolean = false,
+    /** The Message-ID of the message and the ids it answers (In-Reply-To and References, space apart): what puts a conversation together. */
+    val messageId: String = "",
+    val refs: String = "",
 )
 
 /** A person in the header of a message: the name it was written with (may be empty) and the address. */
@@ -55,4 +58,8 @@ data class MailBody(
     val to: List<MailAddress>,
     val cc: List<MailAddress>,
     val replyTo: String?,
+    /** The headers an answer must carry so that the other mail programs put it in the same conversation. */
+    val messageId: String = "",
+    val references: String = "",
+    val bcc: List<MailAddress> = emptyList(),
 )

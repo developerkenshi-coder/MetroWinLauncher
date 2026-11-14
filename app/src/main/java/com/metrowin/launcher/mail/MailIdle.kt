@@ -143,8 +143,9 @@ class MailIdleService : Service() {
             val client = MailRepository(applicationContext).client(account)
             try {
                 client?.let { MailSync.lookAt(applicationContext, account, it) }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
                 // The connection that waits will fail too and be made again; the job looks later anyway.
+                android.util.Log.w("MailIdle", "look after an arrival failed: ${e.javaClass.simpleName}")
             } finally {
                 client?.close()
                 if (power.isHeld) power.release()
@@ -181,8 +182,9 @@ class MailIdleService : Service() {
                         showNotification()
                         break
                     }
-                } catch (_: Exception) {
+                } catch (e: Exception) {
                     // Dropped, refused or timed out: the wait below, then another try.
+                    android.util.Log.w("MailIdle", "connection ended: ${e.javaClass.simpleName}: ${e.message?.lineSequence()?.firstOrNull()}")
                 } finally {
                     client = null
                     idle.close()

@@ -19,9 +19,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -46,6 +48,7 @@ import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
+import com.metrowin.launcher.ui.components.MetroProgressBar
 import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.pages.PageNote
 import com.metrowin.launcher.ui.start.whenText
@@ -67,7 +70,28 @@ class ReaderActions(
     val onUnread: () -> Unit,
     /** The bytes of the file number [MailAttachment.index] of the open message. */
     val fetchAttachment: suspend (Int) -> Result<Triple<String, String, ByteArray>>,
+    /** Archive, junk and move: null where the account has no such folder or the user turned them off. */
+    val onArchive: (() -> Unit)? = null,
+    val onSpam: (() -> Unit)? = null,
+    val onMove: (() -> Unit)? = null,
 )
+
+/** How the reader looks by the choices of the user (see [MailOption]). */
+class MailLook(
+    val rows: Boolean = true, val compact: Boolean = false, val bigText: Boolean = false, val darkPages: Boolean = true,
+    val transitions: Boolean = true, val move: Boolean = true, val twoPanes: Boolean = true, val contacts: Boolean = false,
+) {
+    /** Text of the messages and of the list, a quarter bigger for the user who asked for large text. */
+    val scale get() = if (bigText) 1.25f else 1f
+
+    companion object {
+        fun load(context: Context) = MailLook(
+            MailOptions.on(context, MailOption.Rows), MailOptions.on(context, MailOption.Compact), MailOptions.on(context, MailOption.BigText),
+            MailOptions.on(context, MailOption.DarkPages), MailOptions.on(context, MailOption.Transitions), MailOptions.on(context, MailOption.Move),
+            MailOptions.on(context, MailOption.TwoPanes), MailOptions.on(context, MailOption.Contacts),
+        )
+    }
+}
 
 /**
  * A message, as the mail of Windows Phone shows it: the subject, who wrote it (the first letter on the accent colour), who it was written
@@ -76,16 +100,22 @@ class ReaderActions(
  * sender that the message was read.
  */
 @Composable
-fun MessageReaderView(message: MailMessage, body: MailBody?, failure: String?, actions: ReaderActions) {
+fun MessageReaderView(message: MailMessage, body: MailBody?, failure: String?, actions: ReaderActions, look: MailLook = MailLook(), modifier: Modifier = Modifier) {
     val colors = LocalMetroColors.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var images by remember(message.id) { mutableStateOf(false) }
     val html = body?.html
     val hasRemoteImages = html != null && REMOTE_IMAGE.containsMatchIn(html)
-    Column(Modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().centeredContent()) {
-        Column(Modifier.padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            MetroText(message.subject.ifBlank { "—" }, size = 24.sp, weight = FontWeight.Normal, maxLines = 3, lineHeight = 29.sp, modifier = Modifier.testTag("mail:subject"))
+    // The header (subject, who, to, files) scrolls and never takes more than two fifths of the screen: in landscape it no longer squeezes the message to nothing.
+    val headerMax = (androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp * 0.4f).dp
+    val dark = colors.dark && look.darkPages
+    Column(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().centeredContent()) {
+        Column(
+            Modifier.heightIn(max = headerMax).verticalScroll(rememberScrollState()).padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            MetroText(message.subject.ifBlank { "—" }, size = (24 * look.scale).sp, weight = FontWeight.Normal, maxLines = 3, lineHeight = (29 * look.scale).sp, modifier = Modifier.testTag("mail:subject"))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(40.dp).background(LocalAccent.current), contentAlignment = Alignment.Center) {
                     MetroText(message.senderName.firstOrNull { it.isLetterOrDigit() }?.uppercase().orEmpty(), size = 22.sp, color = Color.White)
@@ -109,11 +139,13 @@ fun MessageReaderView(message: MailMessage, body: MailBody?, failure: String?, a
             when {
                 body == null && failure == null -> MetroText(stringResource(R.string.mail_loading), size = 16.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.padding(24.dp))
                 failure != null -> PageNote(stringResource(R.string.mail_error, failure), Modifier.padding(24.dp))
-                html != null -> HtmlBody(html, images, Modifier.fillMaxSize().testTag("mail:html"))
-                else -> MetroText(
-                    body?.text.orEmpty().ifBlank { "—" }, size = 16.sp, weight = FontWeight.Normal, color = colors.foreground, maxLines = Int.MAX_VALUE, lineHeight = 22.sp,
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 8.dp).testTag("mail:text"),
-                )
+                html != null -> HtmlBody(html, images, dark, look.scale, Modifier.fillMaxSize().testTag("mail:html"))
+                else -> androidx.compose.foundation.text.selection.SelectionContainer {
+                    LinkedText(
+                        body?.text.orEmpty().ifBlank { "—" }, (16 * look.scale).sp, colors.foreground, LocalAccent.current,
+                        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 8.dp).testTag("mail:text"),
+                    )
+                }
             }
         }
         AppBar(
@@ -121,11 +153,14 @@ fun MessageReaderView(message: MailMessage, body: MailBody?, failure: String?, a
                 AppBarItem("↩", stringResource(R.string.mail_reply), actions.onReply),
                 AppBarItem("↩↩", stringResource(R.string.mail_reply_all), actions.onReplyAll),
                 AppBarItem("↪", stringResource(R.string.mail_forward), actions.onForward),
-                AppBarItem("🗑", stringResource(R.string.mail_delete), actions.onDelete),
+                AppBarItem("✕", stringResource(R.string.mail_delete), actions.onDelete),
             ),
-            menu = listOf(
+            menu = listOfNotNull(
                 AppBarItem(if (message.isFlagged) "⚐" else "⚑", stringResource(R.string.mail_flag), actions.onFlag),
                 AppBarItem("✉", stringResource(R.string.mail_mark_unread), actions.onUnread),
+                actions.onArchive?.let { AppBarItem("▤", stringResource(R.string.mail_archive), it) },
+                actions.onSpam?.let { AppBarItem("⊘", stringResource(R.string.mail_spam), it) },
+                actions.onMove?.let { AppBarItem("➜", stringResource(R.string.mail_move), it) },
                 AppBarItem("←", stringResource(R.string.mail_back), actions.onBack),
             ),
         )
@@ -176,7 +211,7 @@ private fun Attachments(
             ) {
                 AttachmentThumb(file, fetch)
                 MetroText(file.name, size = 15.sp, weight = FontWeight.Normal, color = LocalAccent.current, modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
-                MetroText(if (busy) "…" else sizeText(file.size), size = 12.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+                if (busy) MetroProgressBar(Modifier.width(48.dp)) else MetroText(sizeText(file.size), size = 12.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
             }
         }
     }
@@ -214,13 +249,15 @@ private fun saveDownload(context: Context, name: String, mime: String, bytes: By
  * given, which the browser obeys): they tell the sender that the message was read.
  */
 @Composable
-private fun HtmlBody(html: String, allowRemoteImages: Boolean, modifier: Modifier = Modifier) {
+private fun HtmlBody(html: String, allowRemoteImages: Boolean, dark: Boolean, scale: Float, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val page = remember(html, allowRemoteImages) {
+    val page = remember(html, allowRemoteImages, dark, scale) {
         val images = if (allowRemoteImages) "data: https: http:" else "data:"
+        // On a dark page the whole message is turned over (light to dark, hue kept), and the pictures are turned back so that they look as they are.
+        val darken = if (dark) "html{background:#fff;filter:invert(1) hue-rotate(180deg)}img,video{filter:invert(1) hue-rotate(180deg)}" else ""
         """<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src $images; style-src 'unsafe-inline'; font-src data:">
-<style>body{margin:12px;word-wrap:break-word;font-family:sans-serif;font-size:16px}img{max-width:100%;height:auto}table{max-width:100%}</style>
+<style>body{margin:12px;word-wrap:break-word;font-family:sans-serif;font-size:${16 * scale}px}img{max-width:100%;height:auto}table{max-width:100%}$darken</style>
 </head><body>$html</body></html>"""
     }
     AndroidView(
@@ -235,7 +272,7 @@ private fun HtmlBody(html: String, allowRemoteImages: Boolean, modifier: Modifie
                 settings.displayZoomControls = false
                 settings.useWideViewPort = true
                 settings.loadWithOverviewMode = true
-                setBackgroundColor(android.graphics.Color.WHITE)
+                setBackgroundColor(if (dark) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
                 webViewClient = object : WebViewClient() {
                     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                         val uri = request.url
@@ -254,5 +291,34 @@ private fun HtmlBody(html: String, allowRemoteImages: Boolean, modifier: Modifie
             }
         },
         onRelease = { it.destroy() },
+    )
+}
+
+private val LINK = Regex("""(?i)\b(https?://[^\s<>"]+|www\.[^\s<>"]+|[\w.+-]+@[\w-]+(\.[\w-]+)+)""")
+
+/** The text of a message as it was written, with the web addresses and the mail addresses in it touchable (they open in the browser or the mail program). */
+@Composable
+private fun LinkedText(text: String, size: androidx.compose.ui.unit.TextUnit, color: Color, link: Color, modifier: Modifier) {
+    val style = com.metrowin.launcher.ui.theme.LocalStyle.current
+    val annotated = remember(text, link) {
+        androidx.compose.ui.text.buildAnnotatedString {
+            append(text)
+            LINK.findAll(text).forEach { m ->
+                val target = m.value.trimEnd('.', ',', ')', ';', ':', '!', '?')
+                val url = when {
+                    target.contains("@") && !target.startsWith("http") -> "mailto:$target"
+                    target.startsWith("www.", true) -> "https://$target"
+                    else -> target
+                }
+                addLink(
+                    androidx.compose.ui.text.LinkAnnotation.Url(url, androidx.compose.ui.text.TextLinkStyles(androidx.compose.ui.text.SpanStyle(color = link, textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline))),
+                    m.range.first, m.range.first + target.length,
+                )
+            }
+        }
+    }
+    androidx.compose.foundation.text.BasicText(
+        annotated, modifier,
+        style = androidx.compose.ui.text.TextStyle(color = color, fontSize = size, fontWeight = style.weight(FontWeight.Normal), fontFamily = style.font, lineHeight = size * 1.4f),
     )
 }

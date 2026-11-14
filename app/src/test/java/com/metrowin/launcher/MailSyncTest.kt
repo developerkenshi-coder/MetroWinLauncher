@@ -15,4 +15,9 @@ class MailSyncTest {
     @Test fun onlyMessagesAboveTheLastLookAreTold() {
         assertEquals(listOf("9", "8"), MailSync.toNotify(7, listOf(mail(9), mail(8), mail(7))).map { it.id })
     }
+
+    @Test fun theSumOfTheCountsLeavesOutItsOwnKey() {
+        val all = mapOf("unread_a" to 2, "unread_b" to 3, "unread_total" to 5, "uid_a" to 9L)
+        assertEquals(5, MailSync.sum(all))
+    }
 }

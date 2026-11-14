@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mail: errors, options, folders, servers. -->
+    <string name="mail_err_login">Connexion impossible : l\'adresse ou le mot de passe est incorrect. Avec la validation en deux étapes, utilise un mot de passe d\'application.</string>
+    <string name="mail_err_size">Le message est trop gros pour le serveur. Retire quelques fichiers.</string>
+    <string name="mail_err_recipient">Le serveur a refusé une adresse. Vérifie les destinataires.</string>
+    <string name="mail_err_network">Pas de connexion au serveur. Vérifie le réseau.</string>
+    <string name="mail_err_tls">Le certificat du serveur n\'est pas valide : connexion refusée pour ta sécurité.</string>
+    <string name="mail_err_no_trash">Ce dossier n\'a pas de corbeille : le message n\'a pas été supprimé.</string>
+    <string name="mail_err_other">Une erreur est survenue</string>
+    <string name="mail_yesterday">Hier</string>
+    <string name="mail_not_sent">Message non envoyé</string>
+    <string name="mail_mark_read">Marquer comme lu</string>
+    <string name="mail_archive">archiver</string>
+    <string name="mail_spam">indésirable</string>
+    <string name="mail_move">déplacer</string>
+    <string name="mail_select_all">tout sélectionner</string>
+    <string name="mail_empty_unread">Aucun message non lu</string>
+    <string name="mail_empty_flagged">Aucun message suivi</string>
+    <string name="mail_empty_search">Rien trouvé</string>
+    <string name="mail_bcc_hint">cci</string>
+    <string name="mail_bcc_add">Ajouter une copie cachée (cci)</string>
+    <string name="mail_servers_manual">Régler les serveurs à la main</string>
+    <string name="mail_imap_host">Serveur IMAP</string>
+    <string name="mail_imap_port">Port IMAP (993 ou 143)</string>
+    <string name="mail_smtp_host">Serveur SMTP</string>
+    <string name="mail_smtp_port">Port SMTP (465 ou 587)</string>
+    <string name="mail_servers_hint">Le port 993 est en TLS dès le début ; le 143 démarre en clair et passe en TLS avant le mot de passe. Un serveur sans TLS est refusé.</string>
+    <string name="mail_delete_forever">Ce dossier n\'a pas de corbeille : les messages (%1$d) seraient supprimés définitivement, sans retour. Les supprimer ?</string>
+    <string name="mail_queued">Pas de connexion : le message est gardé et partira dès qu\'il y en aura une.</string>
+    <string name="mail_opt_title">Options du courrier</string>
+    <string name="mail_opt_signature">Signature</string>
+    <string name="mail_opt_signature_hint">Lignes ajoutées à la fin des nouveaux messages</string>
+    <string name="mail_opt_rows">Initiale et point non lu</string>
+    <string name="mail_opt_rows_hint">Un carré avec la première lettre de l\'expéditeur et un point sur les messages pas encore lus.</string>
+    <string name="mail_opt_compact">Liste compacte</string>
+    <string name="mail_opt_compact_hint">Une ligne d\'objet et pas d\'aperçu : plus de messages à l\'écran.</string>
+    <string name="mail_opt_big_text">Grand texte</string>
+    <string name="mail_opt_big_text_hint">Messages et liste en plus gros caractères.</string>
+    <string name="mail_opt_dark_pages">Messages sombres</string>
+    <string name="mail_opt_dark_pages_hint">Avec le thème sombre, les pages des messages deviennent sombres aussi (les images restent telles quelles).</string>
+    <string name="mail_opt_transitions">Transitions entre pages</string>
+    <string name="mail_opt_transitions_hint">La liste, le message et la page d\'écriture glissent l\'une dans l\'autre.</string>
+    <string name="mail_opt_move">Archiver, indésirable et déplacer</string>
+    <string name="mail_opt_move_hint">Éléments de menu pour mettre un message aux archives, dans les indésirables ou dans un dossier au choix.</string>
+    <string name="mail_opt_two_panes">Message à côté de la liste</string>
+    <string name="mail_opt_two_panes_hint">Sur un écran large (tablette, téléphone déplié) la liste et le message sont côte à côte.</string>
+    <string name="mail_opt_contacts">Suggérer les contacts</string>
+    <string name="mail_opt_contacts_hint">Quand tu tapes un destinataire, les adresses de tes contacts sont proposées. Demande l\'autorisation Contacts du launcher.</string>
+    <string name="mail_opt_notif_actions">Boutons dans les notifications</string>
+    <string name="mail_opt_notif_actions_hint">Marquer comme lu et supprimer (vers la corbeille) depuis la notification d\'un nouveau message, même écran verrouillé.</string>
+    <string name="mail_opt_autoconfig">Chercher les serveurs sur le réseau</string>
+    <string name="mail_opt_autoconfig_hint">Pour un domaine inconnu, les réglages sont demandés au fournisseur (autoconfig) ou à la base publique de Thunderbird : seul le domaine sort, en HTTPS.</string>
+</resources>

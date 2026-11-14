@@ -1,5 +1,6 @@
 package com.metrowin.launcher
 
+import com.metrowin.launcher.mail.MailFilter
 import com.metrowin.launcher.mail.MailListing
 import com.metrowin.launcher.mail.MailMessage
 import com.metrowin.launcher.mail.MailSource
@@ -13,7 +14,7 @@ class MailListingTest {
 
     private class Fake(val box: List<MailMessage>) : MailSource {
         val calls = ArrayList<String>()
-        override fun messages(path: String, limit: Int, query: String, skip: Int): List<MailMessage> {
+        override fun messages(path: String, limit: Int, query: String, skip: Int, filter: MailFilter): List<MailMessage> {
             calls += "messages limit=$limit skip=$skip"
             return box.sortedByDescending { it.timestamp }.drop(skip).take(limit)
         }

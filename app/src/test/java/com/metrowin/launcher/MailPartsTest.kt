@@ -75,4 +75,26 @@ class MailPartsTest {
         assertEquals("Ciao a tutti", found.plain.toString())
         assertEquals("", found.html.toString())
     }
+
+    private fun plain(multipart: MimeMultipart): MimeMessage {
+        val session = Session.getInstance(java.util.Properties())
+        val built = MimeMessage(session).apply { setContent(multipart); saveChanges() }
+        val wire = java.io.ByteArrayOutputStream().also { built.writeTo(it) }.toByteArray()
+        return MimeMessage(session, wire.inputStream())
+    }
+
+    @Test
+    fun filesAreFoundFromTheStructureAndAPageWithItsOwnPicturesIsNotOne() {
+        // A message with a file in it: yes.
+        assertTrue(MailParts.hasFiles(message()))
+        // "multipart/mixed" with only text in it (the text and a signature page) has no file.
+        val textOnly = MimeMultipart("mixed").apply { addBodyPart(MimeBodyPart().apply { setText("hello") }) }
+        assertEquals(false, MailParts.hasFiles(plain(textOnly)))
+        // A page with a picture inside (related) has none either: the picture is part of the page.
+        val related = MimeMultipart("related").apply {
+            addBodyPart(MimeBodyPart().apply { setContent("<img src=\"cid:a\">", "text/html; charset=utf-8") })
+            addBodyPart(MimeBodyPart().apply { dataHandler = javax.activation.DataHandler(ByteArrayDataSource(byteArrayOf(1), "image/png")); setContentID("<a>"); disposition = "inline" })
+        }
+        assertEquals(false, MailParts.hasFiles(plain(related)))
+    }
 }

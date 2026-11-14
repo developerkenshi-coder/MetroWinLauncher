@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mail: errors, options, folders, servers. -->
+    <string name="mail_err_login">Could not sign in: the address or the password is not right. With two-step verification use a password for apps.</string>
+    <string name="mail_err_size">The message is too big for the server. Remove some files.</string>
+    <string name="mail_err_recipient">The server refused an address. Check the recipients.</string>
+    <string name="mail_err_network">No connection to the server. Check the network.</string>
+    <string name="mail_err_tls">The certificate of the server is not valid: the connection was refused for your safety.</string>
+    <string name="mail_err_no_trash">This folder has no trash: the message was not deleted.</string>
+    <string name="mail_err_other">Something went wrong</string>
+    <string name="mail_yesterday">Yesterday</string>
+    <string name="mail_not_sent">Message not sent</string>
+    <string name="mail_mark_read">Mark as read</string>
+    <string name="mail_archive">archive</string>
+    <string name="mail_spam">junk</string>
+    <string name="mail_move">move</string>
+    <string name="mail_select_all">select all</string>
+    <string name="mail_empty_unread">No unread messages</string>
+    <string name="mail_empty_flagged">No flagged messages</string>
+    <string name="mail_empty_search">Nothing found</string>
+    <string name="mail_bcc_hint">bcc</string>
+    <string name="mail_bcc_add">Add hidden copy (bcc)</string>
+    <string name="mail_servers_manual">Set the servers by hand</string>
+    <string name="mail_imap_host">IMAP server</string>
+    <string name="mail_imap_port">IMAP port (993 or 143)</string>
+    <string name="mail_smtp_host">SMTP server</string>
+    <string name="mail_smtp_port">SMTP port (465 or 587)</string>
+    <string name="mail_servers_hint">Port 993 is TLS from the start; port 143 starts in the clear and switches to TLS before the password goes. A server that cannot do TLS is refused.</string>
+    <string name="mail_delete_forever">There is no trash in this folder: the messages (%1$d) would be deleted for good, with no way back. Delete them?</string>
+    <string name="mail_queued">No connection: the message is kept and will be sent when there is one.</string>
+    <string name="mail_opt_title">Mail options</string>
+    <string name="mail_opt_signature">Signature</string>
+    <string name="mail_opt_signature_hint">Lines added to the end of new messages</string>
+    <string name="mail_opt_rows">Initial and unread dot</string>
+    <string name="mail_opt_rows_hint">A square with the first letter of the sender and a dot on the messages not read yet.</string>
+    <string name="mail_opt_compact">Compact list</string>
+    <string name="mail_opt_compact_hint">One line of subject and no preview: more messages on the screen.</string>
+    <string name="mail_opt_big_text">Large text</string>
+    <string name="mail_opt_big_text_hint">Messages and list in a bigger type.</string>
+    <string name="mail_opt_dark_pages">Dark messages</string>
+    <string name="mail_opt_dark_pages_hint">On the dark theme the pages of messages are turned dark too (pictures stay as they are).</string>
+    <string name="mail_opt_transitions">Page transitions</string>
+    <string name="mail_opt_transitions_hint">The list, the message and the page to write slide into each other.</string>
+    <string name="mail_opt_move">Archive, junk and move</string>
+    <string name="mail_opt_move_hint">Menu items to put a message in the archive, in the junk folder or in a folder you choose.</string>
+    <string name="mail_opt_two_panes">Message beside the list</string>
+    <string name="mail_opt_two_panes_hint">On a wide screen (a tablet, an unfolded phone) the list and the message are side by side.</string>
+    <string name="mail_opt_contacts">Suggest contacts</string>
+    <string name="mail_opt_contacts_hint">While you type a recipient the addresses of your contacts are proposed. Needs the Contacts permission of the launcher.</string>
+    <string name="mail_opt_notif_actions">Buttons in notifications</string>
+    <string name="mail_opt_notif_actions_hint">Mark as read and delete (to the trash) from the notification of a new message, also with the screen locked.</string>
+    <string name="mail_opt_autoconfig">Find the servers on the net</string>
+    <string name="mail_opt_autoconfig_hint">For an address of an unknown domain the settings are asked of the provider (autoconfig) or of the public database of Thunderbird: only the domain goes out, over HTTPS.</string>
+</resources>

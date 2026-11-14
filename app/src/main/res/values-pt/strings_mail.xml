@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mail: errors, options, folders, servers. -->
+    <string name="mail_err_login">Não foi possível entrar: o endereço ou a senha não estão corretos. Com verificação em duas etapas use uma senha de app.</string>
+    <string name="mail_err_size">A mensagem é grande demais para o servidor. Tire alguns arquivos.</string>
+    <string name="mail_err_recipient">O servidor recusou um endereço. Confira os destinatários.</string>
+    <string name="mail_err_network">Sem conexão com o servidor. Confira a rede.</string>
+    <string name="mail_err_tls">O certificado do servidor não é válido: conexão recusada para sua segurança.</string>
+    <string name="mail_err_no_trash">Esta pasta não tem lixeira: a mensagem não foi excluída.</string>
+    <string name="mail_err_other">Algo deu errado</string>
+    <string name="mail_yesterday">Ontem</string>
+    <string name="mail_not_sent">Mensagem não enviada</string>
+    <string name="mail_mark_read">Marcar como lida</string>
+    <string name="mail_archive">arquivar</string>
+    <string name="mail_spam">spam</string>
+    <string name="mail_move">mover</string>
+    <string name="mail_select_all">selecionar tudo</string>
+    <string name="mail_empty_unread">Nenhuma mensagem não lida</string>
+    <string name="mail_empty_flagged">Nenhuma mensagem com estrela</string>
+    <string name="mail_empty_search">Nada encontrado</string>
+    <string name="mail_bcc_hint">cco</string>
+    <string name="mail_bcc_add">Adicionar cópia oculta (cco)</string>
+    <string name="mail_servers_manual">Definir os servidores à mão</string>
+    <string name="mail_imap_host">Servidor IMAP</string>
+    <string name="mail_imap_port">Porta IMAP (993 ou 143)</string>
+    <string name="mail_smtp_host">Servidor SMTP</string>
+    <string name="mail_smtp_port">Porta SMTP (465 ou 587)</string>
+    <string name="mail_servers_hint">A porta 993 é TLS desde o início; a 143 começa sem criptografia e passa a TLS antes da senha. Um servidor sem TLS é recusado.</string>
+    <string name="mail_delete_forever">Nesta pasta não há lixeira: as mensagens (%1$d) seriam excluídas para sempre, sem volta. Excluir?</string>
+    <string name="mail_queued">Sem conexão: a mensagem fica guardada e será enviada quando houver uma.</string>
+    <string name="mail_opt_title">Opções do e-mail</string>
+    <string name="mail_opt_signature">Assinatura</string>
+    <string name="mail_opt_signature_hint">Linhas adicionadas ao fim das novas mensagens</string>
+    <string name="mail_opt_rows">Inicial e ponto de não lida</string>
+    <string name="mail_opt_rows_hint">Um quadrado com a primeira letra do remetente e um ponto nas mensagens ainda não lidas.</string>
+    <string name="mail_opt_compact">Lista compacta</string>
+    <string name="mail_opt_compact_hint">Uma linha de assunto e sem prévia: mais mensagens na tela.</string>
+    <string name="mail_opt_big_text">Texto grande</string>
+    <string name="mail_opt_big_text_hint">Mensagens e lista com letra maior.</string>
+    <string name="mail_opt_dark_pages">Mensagens escuras</string>
+    <string name="mail_opt_dark_pages_hint">Com o tema escuro as páginas das mensagens também escurecem (as imagens ficam como são).</string>
+    <string name="mail_opt_transitions">Transições entre páginas</string>
+    <string name="mail_opt_transitions_hint">A lista, a mensagem e a página de escrita deslizam entre si.</string>
+    <string name="mail_opt_move">Arquivar, spam e mover</string>
+    <string name="mail_opt_move_hint">Itens de menu para pôr uma mensagem no arquivo, no spam ou numa pasta à escolha.</string>
+    <string name="mail_opt_two_panes">Mensagem ao lado da lista</string>
+    <string name="mail_opt_two_panes_hint">Numa tela larga (tablet, celular aberto) a lista e a mensagem ficam lado a lado.</string>
+    <string name="mail_opt_contacts">Sugerir contatos</string>
+    <string name="mail_opt_contacts_hint">Ao digitar um destinatário, os endereços dos seus contatos são sugeridos. Precisa da permissão Contatos do launcher.</string>
+    <string name="mail_opt_notif_actions">Botões nas notificações</string>
+    <string name="mail_opt_notif_actions_hint">Marcar como lida e excluir (para a lixeira) pela notificação de uma nova mensagem, mesmo com a tela bloqueada.</string>
+    <string name="mail_opt_autoconfig">Procurar os servidores na rede</string>
+    <string name="mail_opt_autoconfig_hint">Para um domínio desconhecido, as configurações são pedidas ao provedor (autoconfig) ou ao banco público do Thunderbird: só o domínio sai, por HTTPS.</string>
+</resources>

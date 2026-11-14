@@ -120,6 +120,8 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.org.json)
     testImplementation(libs.robolectric)
+    // A mail server inside the tests (IMAP and SMTP on a local port), for the mail client: no real account. It brings its own copy of JavaMail, which the app already has.
+    testImplementation("com.icegreen:greenmail-junit4:1.6.15") { exclude(group = "com.sun.mail"); exclude(group = "jakarta.mail"); exclude(group = "jakarta.activation") }
     testImplementation(libs.androidx.test.core)
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.compose.ui.test.junit4)
