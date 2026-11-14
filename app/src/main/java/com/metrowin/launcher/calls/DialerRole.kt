@@ -28,6 +28,26 @@ object DialerRole {
         context.contentResolver.insert(BlockedNumberContract.BlockedNumbers.CONTENT_URI, ContentValues().apply { put(BlockedNumberContract.BlockedNumbers.COLUMN_ORIGINAL_NUMBER, number) }) != null
     }.logged("dialer.block", withMessage = false).getOrDefault(false)
 
+    /** The numbers on the blocklist (row id, number), for the list the user can take them off. Empty for an app that cannot keep the blocklist. */
+    fun blocked(context: Context): List<Pair<Long, String>> {
+        if (!canBlock(context)) return emptyList()
+        return runCatching {
+            context.contentResolver.query(
+                BlockedNumberContract.BlockedNumbers.CONTENT_URI,
+                arrayOf(BlockedNumberContract.BlockedNumbers.COLUMN_ID, BlockedNumberContract.BlockedNumbers.COLUMN_ORIGINAL_NUMBER), null, null, null,
+            )?.use { c -> buildList { while (c.moveToNext()) add(c.getLong(0) to c.getString(1).orEmpty()) } }.orEmpty()
+        }.logged("dialer.blocked", withMessage = false).getOrDefault(emptyList())
+    }
+
+    /** Takes the blocklist row [id] away: that number rings again. */
+    fun unblock(context: Context, id: Long): Boolean = runCatching {
+        context.contentResolver.delete(android.content.ContentUris.withAppendedId(BlockedNumberContract.BlockedNumbers.CONTENT_URI, id), null, null) > 0
+    }.logged("dialer.unblock", withMessage = false).getOrDefault(false)
+
+    /** The 1-based place of the SIM of [accountId] among the SIMs that can call (1 or 2), or null with one SIM or when the log does not say. */
+    fun simIndex(context: Context, accountId: String?): Int? =
+        accountId?.let { id -> sims(context).indexOfFirst { it.id == id }.takeIf { it >= 0 }?.plus(1) }
+
     /**
      * From Android 14 the user can take away the right to open the screen of a call over the lock screen; the call then falls back to a banner
      * without a word. The note that asks for it back is for the phone app only.

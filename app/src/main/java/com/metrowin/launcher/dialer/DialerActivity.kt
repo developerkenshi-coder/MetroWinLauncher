@@ -34,7 +34,7 @@ open class DialerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT), navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
         super.onCreate(savedInstanceState)
-        number = numberIn(intent)
+        number = savedInstanceState?.getString(STATE_NUMBER) ?: numberIn(intent)
         val initialPage = intent.getIntExtra(
             "page",
             when {
@@ -51,6 +51,12 @@ open class DialerActivity : ComponentActivity() {
         }
     }
 
+    /** A turn of the screen recreates the activity: the digits typed are kept. */
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(STATE_NUMBER, number)
+    }
+
     /** With the original animation the page turns away first, and the window closes without its own animation. */
     override fun finish() {
         if (!turn.leave(lifecycleScope) { returnToLauncher(); super.finish(); overridePendingTransition(0, 0) }) { returnToLauncher(); super.finish() }
@@ -59,6 +65,10 @@ open class DialerActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         numberIn(intent).takeIf { it.isNotEmpty() }?.let { number = it }
+    }
+
+    private companion object {
+        const val STATE_NUMBER = "number"
     }
 
     private fun numberIn(intent: Intent) = PhoneCalls.numberOf(intent.dataString.orEmpty().let { android.net.Uri.decode(it) }).orEmpty()

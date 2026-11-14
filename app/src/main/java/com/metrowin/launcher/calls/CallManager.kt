@@ -29,6 +29,13 @@ data class CallLine(
     val canHold: Boolean,
     val canMerge: Boolean,
     val inConference: Boolean,
+    /** The conference this call is a part of (its id), or null; the calls of a conference are listed under it, not as calls of their own. */
+    val parentId: Int? = null,
+    val canSwap: Boolean = false,
+    /** A part of a conference that can leave it and be talked to alone. */
+    val canSplit: Boolean = false,
+    /** The 1-based place of the SIM of the call (1 or 2) when the phone has two; null otherwise. */
+    val sim: Int? = null,
 ) {
     val ringing get() = state == Call.STATE_RINGING
     val held get() = state == Call.STATE_HOLDING
@@ -37,6 +44,45 @@ data class CallLine(
     /** Hung up, but Android has not removed it yet: nothing in the notification is about it any more. */
     val ended get() = state == Call.STATE_DISCONNECTED || state == Call.STATE_DISCONNECTING
     val title get() = name ?: number.ifEmpty { "" }
+    val child get() = parentId != null
+}
+
+/** Which way the sound of the call can go. */
+enum class OutputKind { Ear, Speaker, Wired, Bluetooth }
+
+/** A place the sound of the call can go; [name] is what the device calls itself (the Bluetooth one), blank for the others. */
+@Immutable
+data class AudioOutput(val kind: OutputKind, val name: String, val active: Boolean, internal val endpoint: CallEndpoint? = null)
+
+/** What to do to join the call that is on with another one. */
+enum class MergeAction { Merge, Conference, None }
+
+/** The choices that are made on lists of calls, pure so they are tried without a phone. */
+object CallLines {
+    /** The call the screen is about: the one ringing, else one that is not on hold, else the first; the parts of a conference are never it. */
+    fun main(lines: List<CallLine>): CallLine? {
+        val own = lines.filterNot { it.child }
+        return own.firstOrNull { it.ringing } ?: own.firstOrNull { !it.held && !it.ended } ?: own.firstOrNull()
+    }
+
+    /** The call of [lines] that a ringing one would take the place of: the one that is on (not on hold, not ended, not a part of a conference). */
+    fun toEnd(lines: List<CallLine>): CallLine? = lines.firstOrNull { !it.child && !it.ringing && !it.held && !it.ended }
+
+    fun mergeAction(canMergeConference: Boolean, canHold: Boolean, hasOther: Boolean): MergeAction = when {
+        canMergeConference -> MergeAction.Merge
+        hasOther && canHold -> MergeAction.Conference
+        else -> MergeAction.None
+    }
+
+    /** The places the sound can go for a routing [mask] (the bits of [CallAudioState]) with [route] the current one; the ear is always there. */
+    @Suppress("DEPRECATION")
+    fun outputsOf(mask: Int, route: Int): List<AudioOutput> = buildList {
+        fun add(kind: OutputKind, bit: Int) { if (mask and bit != 0 || (kind == OutputKind.Ear && mask == 0)) add(AudioOutput(kind, "", route and bit != 0)) }
+        add(OutputKind.Ear, CallAudioState.ROUTE_EARPIECE)
+        add(OutputKind.Wired, CallAudioState.ROUTE_WIRED_HEADSET)
+        add(OutputKind.Bluetooth, CallAudioState.ROUTE_BLUETOOTH)
+        add(OutputKind.Speaker, CallAudioState.ROUTE_SPEAKER)
+    }
 }
 
 @Immutable
@@ -149,11 +195,18 @@ object CallManager {
                 id = ids.getValue(call), number = number, name = nameOf(context, number, details),
                 state = call.state, connectedAt = details.connectTimeMillis,
                 canHold = details.can(Call.Details.CAPABILITY_HOLD),
-                canMerge = details.can(Call.Details.CAPABILITY_MERGE_CONFERENCE) || details.can(Call.Details.CAPABILITY_SWAP_CONFERENCE),
+                canMerge = details.can(Call.Details.CAPABILITY_MERGE_CONFERENCE),
                 inConference = call.children.isNotEmpty() || details.hasProperty(Call.Details.PROPERTY_CONFERENCE),
+                parentId = call.parent?.let { ids[it] },
+                canSwap = details.can(Call.Details.CAPABILITY_SWAP_CONFERENCE),
+                canSplit = details.can(Call.Details.CAPABILITY_SEPARATE_FROM_CONFERENCE),
+                sim = context?.let { host -> details.accountHandle?.id?.let { id -> simSlots.getOrPut(id) { DialerRole.simIndex(host, id) } } },
             )
         }
     }
+
+    /** The place of each SIM, asked of Android once: it does not change while the process lives. */
+    private val simSlots = HashMap<String, Int?>()
 
     private val names = HashMap<String, String?>()
 
@@ -173,7 +226,20 @@ object CallManager {
     private fun call(id: Int) = ids.entries.firstOrNull { it.value == id }?.key
 
     fun answer(id: Int) = call(id)?.answer(VideoProfile.STATE_AUDIO_ONLY)
-    fun decline(id: Int) = call(id)?.reject(false, null)
+    /** Refuses the call; with [text] the operator also sends it as a message to the caller. */
+    fun decline(id: Int, text: String? = null) = call(id)?.reject(text != null, text)
+
+    /** Hangs up the call that is on and takes the one that rings. */
+    fun endAndAnswer(id: Int) {
+        CallLines.toEnd(_lines.value)?.let { hangUp(it.id) }
+        answer(id)
+    }
+
+    /** A part of a conference leaves it, and is a call of its own. */
+    fun split(id: Int) = call(id)?.splitFromConference()
+
+    /** Swaps the conference with the call that waits (the operator decides which is on). */
+    fun swap(id: Int) = call(id)?.swapConference()
     fun hangUp(id: Int) = call(id)?.disconnect()
 
     fun hold(id: Int, on: Boolean) {
@@ -254,12 +320,59 @@ object CallManager {
     fun merge(id: Int): Boolean {
         val call = call(id) ?: return false
         val other = calls.firstOrNull { it !== call && it.parent == null }
-        return when {
-            call.details.can(Call.Details.CAPABILITY_MERGE_CONFERENCE) -> call.mergeConference().let { true }
-            other != null && call.details.can(Call.Details.CAPABILITY_HOLD) -> call.conference(other).let { true }
-            else -> false
+        return when (CallLines.mergeAction(call.details.can(Call.Details.CAPABILITY_MERGE_CONFERENCE), call.details.can(Call.Details.CAPABILITY_HOLD), other != null)) {
+            MergeAction.Merge -> call.mergeConference().let { true }
+            MergeAction.Conference -> call.conference(other!!).let { true }
+            MergeAction.None -> false
         }
     }
+
+    /** The places the sound can go now: the endpoints of Android 14, else the routes of the old audio state. */
+    fun outputs(): List<AudioOutput> {
+        if (android.os.Build.VERSION.SDK_INT >= 34 && endpoints.isNotEmpty()) {
+            return endpoints.mapNotNull { e ->
+                val kind = when (e.endpointType) {
+                    CallEndpoint.TYPE_EARPIECE -> OutputKind.Ear
+                    CallEndpoint.TYPE_SPEAKER -> OutputKind.Speaker
+                    CallEndpoint.TYPE_WIRED_HEADSET -> OutputKind.Wired
+                    CallEndpoint.TYPE_BLUETOOTH -> OutputKind.Bluetooth
+                    else -> return@mapNotNull null
+                }
+                AudioOutput(kind, e.endpointName.toString(), endpoint?.identifier == e.identifier, e)
+            }
+        }
+        @Suppress("DEPRECATION")
+        val state = audioHost?.audioState
+        return CallLines.outputsOf(state?.supportedRouteMask ?: routes, state?.route ?: route)
+    }
+
+    /** Sends the sound to [output]. */
+    fun route(output: AudioOutput) {
+        val host = audioHost ?: return
+        val target = output.endpoint
+        if (android.os.Build.VERSION.SDK_INT >= 34 && target != null) {
+            host.requestCallEndpointChange(
+                target,
+                object : android.os.OutcomeReceiver<Void, CallEndpointException> {
+                    override fun onResult(result: Void?) = Unit
+
+                    override fun onError(error: CallEndpointException) = routeLegacy(host, output.kind)
+                },
+            )
+        } else {
+            routeLegacy(host, output.kind)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun routeLegacy(host: CallAudioHost, kind: OutputKind) = host.setAudioRoute(
+        when (kind) {
+            OutputKind.Ear -> CallAudioState.ROUTE_EARPIECE
+            OutputKind.Speaker -> CallAudioState.ROUTE_SPEAKER
+            OutputKind.Wired -> CallAudioState.ROUTE_WIRED_HEADSET
+            OutputKind.Bluetooth -> CallAudioState.ROUTE_BLUETOOTH
+        },
+    )
 
     private const val TONE_MS = 150L
 }

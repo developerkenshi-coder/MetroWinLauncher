@@ -50,7 +50,13 @@ private val KEYS = listOf(
 fun DialPad(onKey: (Char) -> Unit, modifier: Modifier = Modifier, keyHeight: androidx.compose.ui.unit.Dp = 64.dp, onVoicemail: (() -> Unit)? = null,
     onLongKey: ((Char) -> Unit)? = null,
     marked: Set<Char> = emptySet(),
+    /** Play the tone and a tick for each key (see [PhonePrefs.keyTones]). */
+    tones: Boolean = false,
+    /** Bigger digits and letters (see [PhonePrefs.bigText]). */
+    big: Boolean = false,
 ) {
+    val tone = rememberKeyTones(tones)
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
     val classic = LocalStyle.current.isClassic
@@ -63,7 +69,11 @@ fun DialPad(onKey: (Char) -> Unit, modifier: Modifier = Modifier, keyHeight: and
                         Modifier.weight(1f).height(keyHeight).testTag("dial:key:$key")
                             .then(if (classic) Modifier.watchPress { pressed = it } else Modifier)
                             .metroPress(
-                                onClick = { onKey(key) },
+                                onClick = {
+                                    if (tones) haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+                                    tone?.invoke(key)
+                                    onKey(key)
+                                },
                                 onLongClick = when {
                                     key == '0' -> ({ onKey('+') })
                                     key == '1' && onVoicemail != null -> onVoicemail
@@ -81,8 +91,8 @@ fun DialPad(onKey: (Char) -> Unit, modifier: Modifier = Modifier, keyHeight: and
                         if (key in marked) MetroText("●", size = 8.sp, color = LocalAccent.current, modifier = Modifier.align(Alignment.TopEnd).padding(6.dp))
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             // The digits are large and light, the letters small, as on Windows Phone.
-                            MetroText(key.toString(), size = if (classic) 36.sp else 30.sp, weight = if (classic) FontWeight.Light else FontWeight.Normal, color = if (classic && pressed) onAccent() else colors.foreground)
-                            if (letters.isNotEmpty()) MetroText(letters, size = 10.sp, weight = FontWeight.Normal, color = if (classic && pressed) onAccent() else colors.subtle)
+                            MetroText(key.toString(), size = (if (classic) 36 else 30).let { if (big) it + 6 else it }.sp, weight = if (classic) FontWeight.Light else FontWeight.Normal, color = if (classic && pressed) onAccent() else colors.foreground)
+                            if (letters.isNotEmpty()) MetroText(letters, size = if (big) 14.sp else 12.sp, weight = FontWeight.Normal, color = if (classic && pressed) onAccent() else colors.subtle)
                         }
                     }
                 }

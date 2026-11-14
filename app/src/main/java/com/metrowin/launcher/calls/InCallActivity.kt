@@ -18,6 +18,8 @@ import androidx.lifecycle.lifecycleScope
 import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.dialer.DialerActivity
+import com.metrowin.launcher.dialer.PhonePrefs
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.gestures.LockAccessibilityService
 import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.notifications.OverlayTheme
@@ -45,9 +47,13 @@ class InCallActivity : ComponentActivity() {
         val actions = CallActions(
             onAnswer = CallManager::answer, onDecline = CallManager::decline, onHangUp = CallManager::hangUp, onHold = CallManager::hold,
             onMute = CallManager::mute, onRoute = CallManager::toggleSpeaker, onTone = CallManager::tone,
-            onMerge = { id -> if (!CallManager.merge(id)) android.widget.Toast.makeText(this, com.metrowin.launcher.R.string.incall_merge_failed, android.widget.Toast.LENGTH_SHORT).show() },
+            onMerge = { id -> if (!CallManager.merge(id)) MetroToast.show(this, com.metrowin.launcher.R.string.incall_merge_failed) },
             onAddCall = { startActivity(Intent(this, DialerActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) },
+            onDeclineText = { id, text -> CallManager.decline(id, text) },
+            onEndAndAnswer = CallManager::endAndAnswer, onSplit = CallManager::split, onSwap = CallManager::swap,
+            outputs = CallManager::outputs, onOutput = CallManager::route,
         )
+        val prefs = PhonePrefs(this)
         val settings = SettingsStore.of(this).load()
         setContent {
             val lines by CallManager.lines.collectAsState()
@@ -60,10 +66,18 @@ class InCallActivity : ComponentActivity() {
                     finish()
                 }
             }
-            OverlayTheme(settings, remember { IconLoader(applicationContext) }) { InCallScreen(lines, audio, actions) }
+            OverlayTheme(settings, remember { IconLoader(applicationContext) }) { InCallScreen(lines, audio, actions, prefs = prefs) }
         }
         lifecycleScope.launch {
             CallManager.lines.collect { lines -> holdProximity(lines.any { !it.ringing && !it.held } && !CallManager.audio.value.speaker) }
+        }
+        // Car mode: a call that is answered goes to the speaker, once, and the user may take it off again.
+        lifecycleScope.launch {
+            val routed = HashSet<Int>()
+            CallManager.lines.collect { lines ->
+                val active = lines.firstOrNull { it.state == android.telecom.Call.STATE_ACTIVE && !it.child } ?: return@collect
+                if (prefs.carMode && routed.add(active.id) && !CallManager.audio.value.speaker) CallManager.toggleSpeaker()
+            }
         }
         lifecycleScope.launch { CallManager.audio.collect { audio -> if (audio.speaker) holdProximity(false) } }
         handle(intent)
