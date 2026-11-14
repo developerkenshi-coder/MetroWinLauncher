@@ -36,10 +36,10 @@ fun openCallScreen(context: Context) {
 @Composable
 fun CallBar(modifier: Modifier = Modifier) {
     val lines by CallManager.lines.collectAsState()
-    val main = lines.firstOrNull { !it.ended && !it.ringing } ?: return
+    val main = lines.firstOrNull { !it.ended && !it.ringing && !it.child } ?: return
     val context = LocalContext.current
     Row(
-        modifier.fillMaxWidth().height(40.dp).background(Color(0xFF339933)).testTag("callbar").metroPress(onClick = { openCallScreen(context) }).padding(horizontal = 16.dp),
+        modifier.fillMaxWidth().height(40.dp).background(com.metrowin.launcher.dialer.CallGreen).testTag("callbar").metroPress(onClick = { openCallScreen(context) }).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {

@@ -11,6 +11,7 @@ import android.telecom.CallAudioState
 import android.telecom.InCallService
 import androidx.core.app.NotificationCompat
 import com.metrowin.launcher.R
+import com.metrowin.launcher.data.logged
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -74,14 +75,15 @@ class MetroInCallService : InCallService() {
     private fun sync(all: List<CallLine>) {
         val manager = getSystemService(NotificationManager::class.java)
         // A call that was hung up lingers in Android's list for a moment: the notification goes with the hang up, not after.
-        val lines = all.filterNot { it.ended }
+        val lines = all.filterNot { it.ended || it.child }
         if (lines.isEmpty()) {
             dismiss()
             return
         }
         val main = lines.firstOrNull { it.ringing } ?: lines.first()
         val fresh = lines.filter { announced.add(it.id) }
-        if (fresh.any { !it.ringing }) runCatching { startActivity(screen().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        // Android may refuse to start a screen from the background: the notification (with its content intent) is then the way in, and the refusal is written down.
+        if (fresh.any { !it.ringing }) runCatching { startActivity(screen().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.logged("incall.start", withMessage = false)
         manager.createNotificationChannel(
             NotificationChannel(CHANNEL_INCOMING, getString(R.string.incall_channel_incoming), NotificationManager.IMPORTANCE_HIGH).apply { setSound(null, null) },
         )
@@ -99,7 +101,7 @@ class MetroInCallService : InCallService() {
                 .addAction(0, getString(R.string.incall_decline), action(InCallActivity.ACTION_DECLINE, 1))
                 .addAction(0, getString(R.string.incall_answer), action(InCallActivity.ACTION_ANSWER, 2))
             // Without the permission to post notifications nothing would show: the screen opens by itself then.
-            if (!manager.areNotificationsEnabled()) runCatching { startActivity(screen().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            if (!manager.areNotificationsEnabled()) runCatching { startActivity(screen().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.logged("incall.start", withMessage = false)
         } else if (main.connectedAt > 0) {
             builder.setUsesChronometer(true).setWhen(main.connectedAt)
         }

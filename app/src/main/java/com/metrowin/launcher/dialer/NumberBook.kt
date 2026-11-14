@@ -1,10 +1,10 @@
 package com.metrowin.launcher.dialer
 
 import android.content.Context
-import androidx.core.content.edit
 import com.metrowin.launcher.data.PhoneCalls
 import com.metrowin.launcher.data.Prefs
 import com.metrowin.launcher.data.RecentCall
+import com.metrowin.launcher.data.SecureStore
 import org.json.JSONObject
 
 /** Some calls of the log that are shown as one: [latest] is the most recent, [members] are all of them (newest first), [count] how many. */
@@ -61,11 +61,17 @@ class NumberBookStore(context: Context) {
 
     fun saveKeys(keys: Map<Char, String>) = write(KEY_KEYS, keys.mapKeys { it.key.toString() })
 
+    /** Reads what was kept; text from before the numbers were encrypted is read as it is and sealed on the spot. */
     private fun read(name: String): Map<String, String> = runCatching {
-        JSONObject(prefs.getString(name, null) ?: return emptyMap()).let { json -> json.keys().asSequence().associateWith { json.getString(it) } }
+        val raw = prefs.getString(name, null) ?: return emptyMap()
+        val plain = if (raw.startsWith("{")) raw.also { SecureStore.putSecure(prefs, name, it) } else SecureStore.decrypt(raw) ?: return emptyMap()
+        JSONObject(plain).let { json -> json.keys().asSequence().associateWith { json.getString(it) } }
     }.getOrDefault(emptyMap())
 
-    private fun write(name: String, map: Map<String, String>) = prefs.edit { putString(name, JSONObject(map).toString()) }
+    /** The numbers are phone numbers of people: they are kept encrypted. When the Keystore cannot seal them nothing is written (the old text stays). */
+    private fun write(name: String, map: Map<String, String>) {
+        SecureStore.putSecure(prefs, name, JSONObject(map).toString())
+    }
 
     private companion object {
         const val KEY_NOTES = "notes"

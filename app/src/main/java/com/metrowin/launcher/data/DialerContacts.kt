@@ -39,7 +39,13 @@ enum class ContactSource(val bit: Int, @param:StringRes val label: Int) {
 
 /** A contact with a number for the address book of the dialer. [sources] is the mask of every place the contact is kept. */
 @Immutable
-data class DialerContact(val name: String, val number: String, val lookupUri: String, val sources: Int) {
+data class DialerContact(
+    val name: String, val number: String, val lookupUri: String, val sources: Int,
+    /** Every number of the contact (type label, number), the main one first; [number] is the first. Empty when only one is known. */
+    val numbers: List<Pair<Int, String>> = emptyList(),
+    /** The small picture of the contact, if it has one. */
+    val photoUri: String? = null,
+) {
     /** Whether the contact is in one of the places of [mask]. */
     fun shownIn(mask: Int) = sources and mask != 0
 }
@@ -64,17 +70,24 @@ class DialerContactReader(private val context: Context) {
             val found = LinkedHashMap<Long, DialerContact>()
             resolver.query(
                 Phone.CONTENT_URI,
-                arrayOf(Phone.CONTACT_ID, Phone.LOOKUP_KEY, Phone.DISPLAY_NAME_PRIMARY, Phone.NUMBER),
+                arrayOf(Phone.CONTACT_ID, Phone.LOOKUP_KEY, Phone.DISPLAY_NAME_PRIMARY, Phone.NUMBER, Phone.TYPE, Phone.PHOTO_THUMBNAIL_URI),
                 null, null, "${Phone.DISPLAY_NAME_PRIMARY} COLLATE LOCALIZED ASC, ${Phone.IS_SUPER_PRIMARY} DESC",
             )?.use { c ->
                 while (c.moveToNext()) {
                     val id = c.getLong(0)
-                    // A contact with several numbers is listed once, with the one that comes first (the default one).
-                    if (id in found) continue
+                    val number = c.getString(3)?.let(PhoneCalls::clean)?.takeIf { it.isNotEmpty() } ?: continue
+                    val kept = found[id]
+                    if (kept != null) {
+                        // A contact with several numbers is listed once, with the one that comes first (the default one); the others wait in [numbers].
+                        if (kept.numbers.none { it.second == number }) found[id] = kept.copy(numbers = kept.numbers + (c.getInt(4) to number))
+                        continue
+                    }
                     val name = c.getString(2)?.takeIf { it.isNotBlank() } ?: continue
                     val key = c.getString(1) ?: continue
-                    val number = c.getString(3)?.let(PhoneCalls::clean)?.takeIf { it.isNotEmpty() } ?: continue
-                    found[id] = DialerContact(name, number, ContactsContract.Contacts.getLookupUri(id, key).toString(), sources[id] ?: ContactSource.Phone.bit)
+                    found[id] = DialerContact(
+                        name, number, ContactsContract.Contacts.getLookupUri(id, key).toString(), sources[id] ?: ContactSource.Phone.bit,
+                        listOf(c.getInt(4) to number), c.getString(5),
+                    )
                 }
             }
             found.values.toList()
