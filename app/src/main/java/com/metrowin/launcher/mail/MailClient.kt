@@ -210,7 +210,8 @@ class MailClient(
             if (end <= 0) return@folder emptyList()
             folder.getMessages(maxOf(1, end - limit + 1), end)
         } else {
-            val found = folder.search(listTerm(query, filter))
+            // A server that does not search the text of messages still answers for the subject, the sender and the recipients.
+            val found = runCatching { folder.search(listTerm(query, filter)) }.getOrElse { folder.search(listTerm(query, filter, body = false)) }
             val end = found.size - skip
             if (end <= 0) return@folder emptyList()
             found.copyOfRange(maxOf(0, end - limit), end)
@@ -439,17 +440,17 @@ class MailClient(
          * The server looks for [query] in the subject, the sender, the recipients and the text. A word with letters outside ASCII is searched
          * with the charset UTF-8 when the server takes it; the library searches on the phone when it does not.
          */
-        fun searchTerm(query: String): SearchTerm = OrTerm(
-            arrayOf(
-                SubjectTerm(query), FromStringTerm(query), BodyTerm(query),
+        fun searchTerm(query: String, body: Boolean = true): SearchTerm = OrTerm(
+            listOfNotNull(
+                SubjectTerm(query), FromStringTerm(query), if (body) BodyTerm(query) else null,
                 RecipientStringTerm(Message.RecipientType.TO, query), RecipientStringTerm(Message.RecipientType.CC, query),
-            ),
+            ).toTypedArray(),
         )
 
         /** What a list asks the server: [query] (if any), narrowed to the unread or the flagged, and never what another program marked \Deleted. */
-        fun listTerm(query: String, filter: MailFilter): SearchTerm {
+        fun listTerm(query: String, filter: MailFilter, body: Boolean = true): SearchTerm {
             val terms = ArrayList<SearchTerm>()
-            if (query.isNotBlank()) terms += searchTerm(query.trim())
+            if (query.isNotBlank()) terms += searchTerm(query.trim(), body)
             when (filter) {
                 MailFilter.Unseen -> terms += FlagTerm(Flags(Flags.Flag.SEEN), false)
                 MailFilter.Flagged -> terms += FlagTerm(Flags(Flags.Flag.FLAGGED), true)

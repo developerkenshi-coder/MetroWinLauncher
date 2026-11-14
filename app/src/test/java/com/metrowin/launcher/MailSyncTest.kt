@@ -17,7 +17,8 @@ class MailSyncTest {
     }
 
     @Test fun theSumOfTheCountsLeavesOutItsOwnKey() {
-        val all = mapOf("unread_a" to 2, "unread_b" to 3, "unread_total" to 5, "uid_a" to 9L)
+        // Typed as Any: with a Long among them the literals would all become Longs, which a preference file never holds for a count.
+        val all: Map<String, Any> = mapOf("unread_a" to Integer.valueOf(2), "unread_b" to Integer.valueOf(3), "unread_total" to Integer.valueOf(5), "uid_a" to 9L)
         assertEquals(5, MailSync.sum(all))
     }
 }
