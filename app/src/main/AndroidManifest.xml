@@ -444,6 +444,7 @@
             android:exported="true"
             android:label="@string/messages_app_name"
             android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -475,6 +476,8 @@
         </receiver>
         <receiver android:name=".messages.SmsReplyReceiver" android:exported="false" />
         <receiver android:name=".messages.SmsSentReceiver" android:exported="false" />
+        <receiver android:name=".messages.SmsDeliveredReceiver" android:exported="false" />
+        <receiver android:name=".messages.SmsActionReceiver" android:exported="false" />
         <service android:name=".mail.MailIdleService" android:exported="false" android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"

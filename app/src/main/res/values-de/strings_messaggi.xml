@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="messages_opt_bubbles">Blasendetails: Tage, Gruppen, Links, Haken</string>
+    <string name="messages_opt_avatars">Foto oder Initiale jedes Kontakts</string>
+    <string name="messages_opt_live">Liste bei Änderungen aktualisieren</string>
+    <string name="messages_opt_panes">Zwei Bereiche auf breiten Displays</string>
+    <string name="messages_opt_quick">Schnellantworten über dem Feld</string>
+    <string name="messages_opt_delivery">Zustellberichte anfordern</string>
+    <string name="messages_opt_sims">SIM für jede Nachricht wählen</string>
+    <string name="messages_opt_otp">Kopieren-Taste für Einmalcodes</string>
+    <string name="messages_opt_block">Nummern sperren</string>
+    <string name="messages_opt_lock">Text auf dem Sperrbildschirm zeigen</string>
+    <string name="messages_tab_unknown">unbekannt</string>
+    <string name="messages_empty_hint">Noch keine Nachrichten. Tippe auf ＋, um eine zu schreiben.</string>
+    <string name="messages_pick">Wähle eine Unterhaltung.</string>
+    <string name="messages_you">Du</string>
+    <string name="messages_mark_read">Als gelesen markieren</string>
+    <string name="messages_new_message">Neue Nachricht</string>
+    <string name="messages_copy_code">%1$s kopieren</string>
+    <string name="messages_mms">Bildnachricht</string>
+    <string name="messages_mms_pending">Bildnachricht zum Laden</string>
+    <string name="messages_mms_download">Bildnachricht: zum Laden tippen</string>
+    <string name="messages_yesterday">Gestern</string>
+    <string name="messages_delete_confirm">%1$d Unterhaltung(en) löschen? Die Nachrichten sind nicht wiederherstellbar.</string>
+    <string name="messages_delete_message">Nachricht löschen</string>
+    <string name="messages_delete_message_confirm">Diese Nachricht löschen? Sie ist nicht wiederherstellbar.</string>
+    <string name="messages_cancel">Abbrechen</string>
+    <string name="messages_read">gelesen</string>
+    <string name="messages_block">sperren</string>
+    <string name="messages_unblock">entsperren</string>
+    <string name="messages_sim">SIM %1$s</string>
+    <string name="messages_attachment">Anhang: %1$s</string>
+    <string name="messages_quick_1">OK</string>
+    <string name="messages_quick_2">Ich rufe dich zurück</string>
+    <string name="messages_quick_3">Bin unterwegs</string>
+    <string name="messages_quick_4">Danke</string>
+    <string name="messages_image">Bild</string>
+</resources>

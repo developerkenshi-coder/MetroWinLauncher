@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="messages_opt_bubbles">Bubble details: days, groups, links, ticks</string>
+    <string name="messages_opt_avatars">Photo or initial of each contact</string>
+    <string name="messages_opt_live">Update the list as messages change</string>
+    <string name="messages_opt_panes">Two panes on wide screens</string>
+    <string name="messages_opt_quick">Quick replies above the box</string>
+    <string name="messages_opt_delivery">Ask for delivery reports</string>
+    <string name="messages_opt_sims">Choose the SIM for each message</string>
+    <string name="messages_opt_otp">Copy button for one-time codes</string>
+    <string name="messages_opt_block">Block numbers</string>
+    <string name="messages_opt_lock">Show the text on the lock screen</string>
+    <string name="messages_tab_unknown">unknown</string>
+    <string name="messages_empty_hint">No messages yet. Tap ＋ to write one.</string>
+    <string name="messages_pick">Pick a conversation.</string>
+    <string name="messages_you">You</string>
+    <string name="messages_mark_read">Mark as read</string>
+    <string name="messages_new_message">New message</string>
+    <string name="messages_copy_code">Copy %1$s</string>
+    <string name="messages_mms">Picture message</string>
+    <string name="messages_mms_pending">Picture message to download</string>
+    <string name="messages_mms_download">Picture message: tap to download</string>
+    <string name="messages_yesterday">Yesterday</string>
+    <string name="messages_delete_confirm">Delete %1$d conversation(s)? The messages cannot be brought back.</string>
+    <string name="messages_delete_message">Delete message</string>
+    <string name="messages_delete_message_confirm">Delete this message? It cannot be brought back.</string>
+    <string name="messages_cancel">Cancel</string>
+    <string name="messages_read">read</string>
+    <string name="messages_block">block</string>
+    <string name="messages_unblock">unblock</string>
+    <string name="messages_sim">SIM %1$s</string>
+    <string name="messages_attachment">Attachment: %1$s</string>
+    <string name="messages_quick_1">OK</string>
+    <string name="messages_quick_2">I will call you back</string>
+    <string name="messages_quick_3">On my way</string>
+    <string name="messages_quick_4">Thanks</string>
+    <string name="messages_image">Picture</string>
+</resources>

@@ -31,7 +31,7 @@ class MessagesActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT), navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
         super.onCreate(savedInstanceState)
-        read(intent)
+        if (savedInstanceState == null) read(intent) else address = savedInstanceState.getString(EXTRA_ADDRESS)
         val settings = SettingsStore.of(this).load()
         setContent {
             OverlayTheme(settings, remember { IconLoader(applicationContext) }) {
@@ -43,6 +43,11 @@ class MessagesActivity : ComponentActivity() {
     /** With the original animation the page turns away first, and the window closes without its own animation. */
     override fun finish() {
         if (!turn.leave(lifecycleScope) { returnToLauncher(); super.finish(); overridePendingTransition(0, 0) }) { returnToLauncher(); super.finish() }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        address?.let { outState.putString(EXTRA_ADDRESS, it) }
     }
 
     override fun onNewIntent(intent: Intent) {
