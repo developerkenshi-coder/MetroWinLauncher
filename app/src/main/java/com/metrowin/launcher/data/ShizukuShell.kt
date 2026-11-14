@@ -11,7 +11,8 @@ import rikka.shizuku.Shizuku
  * main thread, or use [async]. A command that cannot run (Shizuku not there, not allowed, a crash) ends with [Result.code] below zero (-2 timeout, -3 stopped by the user), never with an exception.
  */
 object ShizukuShell {
-    class Result(val code: Int, val output: String) {
+    /** [output] is what the program wrote, both streams together; [stdout] and [error] are the two apart (the Terminal paints the error). */
+    class Result(val code: Int, val output: String, val stdout: String = output, val error: String = "") {
         val ok get() = code == 0
     }
 
@@ -21,13 +22,22 @@ object ShizukuShell {
     fun ready(): Boolean = ShizukuRadio.running() && ShizukuRadio.granted()
 
     /** [args] are the program and its arguments, never a line for a shell: nothing typed by a user is ever glued into one. */
-    fun run(args: Array<String>, limit: Int = LIMIT, timeoutMs: Long = TIMEOUT_MS, cancel: AtomicBoolean? = null): Result = runCatching {
+    fun run(
+        args: Array<String>, limit: Int = LIMIT, timeoutMs: Long = TIMEOUT_MS, cancel: AtomicBoolean? = null,
+        /** Called from a worker thread with everything written so far, while the program still runs. */
+        onOutput: ((String) -> Unit)? = null,
+    ): Result = runCatching {
         // shortcut: Shizuku API 13 keeps newProcess private (it wants a bound user service for anything bigger); reflection is enough for one-shot commands, upgrade if a later version drops it.
         val method = Shizuku::class.java.getDeclaredMethod("newProcess", Array<String>::class.java, Array<String>::class.java, String::class.java)
         method.isAccessible = true
         val process = method.invoke(null, args, null, null) as Process
-        val out = Drain(process.inputStream, limit).also { it.start() }
-        val err = Drain(process.errorStream, limit).also { it.start() }
+        var outDrain: Drain? = null
+        var errDrain: Drain? = null
+        val push = { onOutput?.invoke((outDrain?.text() ?: "") + (errDrain?.text() ?: "")); Unit }
+        val out = Drain(process.inputStream, limit, if (onOutput != null) push else null).also { outDrain = it }
+        val err = Drain(process.errorStream, limit, if (onOutput != null) push else null).also { errDrain = it }
+        out.start()
+        err.start()
         // Waits in short slices so that [cancel] (the Stop key of the Terminal) ends the process before the timeout does.
         val end = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMs)
         var done = false
@@ -35,18 +45,20 @@ object ShizukuShell {
         if (!done) process.destroy()
         out.join(1_000)
         err.join(1_000)
-        Result(if (done) process.exitValue() else if (cancel?.get() == true) -3 else -2, (out.text() + err.text()).trim())
+        Result(if (done) process.exitValue() else if (cancel?.get() == true) -3 else -2, (out.text() + err.text()).trim(), out.text().trim(), err.text().trim())
     }.logged("shizuku.run", withMessage = false).getOrElse { Result(-1, it.message.orEmpty()) }
 
     /** A line for the shell, for the terminal where the user types it himself and for the fixed pipelines (`dumpsys | grep`) of the battery doctor. */
-    fun shell(line: String, limit: Int = LIMIT, cancel: AtomicBoolean? = null): Result = run(arrayOf("sh", "-c", line), limit, cancel = cancel)
+    fun shell(
+        line: String, limit: Int = LIMIT, cancel: AtomicBoolean? = null, timeoutMs: Long = TIMEOUT_MS, onOutput: ((String) -> Unit)? = null,
+    ): Result = run(arrayOf("sh", "-c", line), limit, timeoutMs, cancel, onOutput)
 
     /** The commands one after the other off the main thread; [done] says whether all of them ended well. */
     fun async(commands: List<Array<String>>, done: (Boolean) -> Unit = {}) {
         Thread { done(commands.all { run(it).ok }) }.start()
     }
 
-    private class Drain(private val stream: InputStream, private val limit: Int) : Thread() {
+    private class Drain(private val stream: InputStream, private val limit: Int, private val onChange: (() -> Unit)? = null) : Thread() {
         private val buffer = ByteArrayOutputStream()
 
         override fun run() {
@@ -56,6 +68,7 @@ object ShizukuShell {
                     val count = stream.read(chunk)
                     if (count < 0) break
                     if (buffer.size() < limit) buffer.write(chunk, 0, minOf(count, limit - buffer.size()))
+                    onChange?.invoke()
                 }
             }
         }
