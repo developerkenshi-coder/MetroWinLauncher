@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="np_previous">Precedente</string>
+    <string name="np_play">Riproduci</string>
+    <string name="np_pause">Pausa</string>
+    <string name="np_next">Successivo</string>
+    <string name="np_cover">Copertina dell\'album</string>
+    <string name="np_open_source">Apri l\'app</string>
+    <string name="np_access_title">L\'accesso alle notifiche è spento</string>
+    <string name="np_access_steps">Attiva MetroWin Launcher nell\'elenco che si apre, poi torna qui.</string>
+    <string name="np_access_button">Apri impostazioni</string>
+    <string name="np_buffering">caricamento…</string>
+    <string name="np_options">opzioni</string>
+    <string name="np_options_title">opzioni</string>
+    <string name="np_volume_down">Abbassa il volume</string>
+    <string name="np_volume_up">Alza il volume</string>
+    <string name="np_like">Mi piace</string>
+    <string name="np_unlike">Togli il mi piace</string>
+    <string name="np_speed">Velocità %1$s</string>
+    <string name="np_sleep">Timer di spegnimento: %1$s</string>
+    <string name="np_sleep_off">Timer di spegnimento spento</string>
+    <string name="np_history_title">ascoltati di recente</string>
+    <string name="np_history_clear">Dimentica la cronologia</string>
+    <string name="np_queue_search">Cerca nella coda</string>
+    <string name="np_queue_size">Coda mostrata: %1$d</string>
+    <string name="np_other_player">Lettore</string>
+    <string name="np_opt_cover_page">Copertina a pagina intera</string>
+    <string name="np_opt_blur">Copertina sfocata (usa più batteria)</string>
+    <string name="np_opt_accent">Colori dalla copertina</string>
+    <string name="np_opt_disc">Disco che gira (usa più batteria)</string>
+    <string name="np_opt_swipe">Scorri la copertina per cambiare brano</string>
+    <string name="np_opt_volume">Pulsanti del volume</string>
+    <string name="np_opt_queue_covers">Copertine nella coda</string>
+    <string name="np_opt_car">Modalità auto (pulsanti grandi)</string>
+    <string name="np_opt_contrast">Alto contrasto</string>
+    <string name="np_opt_history">Ricorda cosa ho ascoltato</string>
+    <string name="np_position">Posizione</string>
+    <string name="np_remaining">Tempo rimasto</string>
+    <string name="np_collapse">Mostra o nascondi la coda</string>
+    <string name="np_sleep_note">Il timer di spegnimento funziona finché questa pagina resta aperta.</string>
+</resources>

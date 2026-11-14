@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="np_previous">Anterior</string>
+    <string name="np_play">Reproduzir</string>
+    <string name="np_pause">Pausa</string>
+    <string name="np_next">Seguinte</string>
+    <string name="np_cover">Capa do álbum</string>
+    <string name="np_open_source">Abrir a app</string>
+    <string name="np_access_title">O acesso às notificações está desligado</string>
+    <string name="np_access_steps">Ativa o MetroWin Launcher na lista que abre e volta aqui.</string>
+    <string name="np_access_button">Abrir definições</string>
+    <string name="np_buffering">a carregar…</string>
+    <string name="np_options">opções</string>
+    <string name="np_options_title">opções</string>
+    <string name="np_volume_down">Baixar volume</string>
+    <string name="np_volume_up">Subir volume</string>
+    <string name="np_like">Gosto</string>
+    <string name="np_unlike">Remover gosto</string>
+    <string name="np_speed">Velocidade %1$s</string>
+    <string name="np_sleep">Temporizador de desligar: %1$s</string>
+    <string name="np_sleep_off">Temporizador de desligar desativado</string>
+    <string name="np_history_title">ouvidas há pouco</string>
+    <string name="np_history_clear">Esquecer o histórico</string>
+    <string name="np_queue_search">Procurar na fila</string>
+    <string name="np_queue_size">Fila mostrada: %1$d</string>
+    <string name="np_other_player">Leitor</string>
+    <string name="np_opt_cover_page">Capa em toda a página</string>
+    <string name="np_opt_blur">Capa desfocada (gasta mais bateria)</string>
+    <string name="np_opt_accent">Cores da capa</string>
+    <string name="np_opt_disc">Disco a girar (gasta mais bateria)</string>
+    <string name="np_opt_swipe">Desliza a capa para mudar de música</string>
+    <string name="np_opt_volume">Botões de volume</string>
+    <string name="np_opt_queue_covers">Capas na fila</string>
+    <string name="np_opt_car">Modo carro (botões grandes)</string>
+    <string name="np_opt_contrast">Alto contraste</string>
+    <string name="np_opt_history">Lembrar o que ouvi</string>
+    <string name="np_position">Posição</string>
+    <string name="np_remaining">Tempo restante</string>
+    <string name="np_collapse">Mostrar ou esconder a fila</string>
+    <string name="np_sleep_note">O temporizador de desligar funciona enquanto esta página ficar aberta.</string>
+</resources>

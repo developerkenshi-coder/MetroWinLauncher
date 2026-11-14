@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="np_previous">Précédent</string>
+    <string name="np_play">Lecture</string>
+    <string name="np_pause">Pause</string>
+    <string name="np_next">Suivant</string>
+    <string name="np_cover">Pochette de l\'album</string>
+    <string name="np_open_source">Ouvrir l\'application</string>
+    <string name="np_access_title">L\'accès aux notifications est désactivé</string>
+    <string name="np_access_steps">Active MetroWin Launcher dans la liste qui s\'ouvre, puis reviens ici.</string>
+    <string name="np_access_button">Ouvrir les réglages</string>
+    <string name="np_buffering">chargement…</string>
+    <string name="np_options">options</string>
+    <string name="np_options_title">options</string>
+    <string name="np_volume_down">Baisser le volume</string>
+    <string name="np_volume_up">Monter le volume</string>
+    <string name="np_like">J\'aime</string>
+    <string name="np_unlike">Retirer le j\'aime</string>
+    <string name="np_speed">Vitesse %1$s</string>
+    <string name="np_sleep">Minuteur d\'arrêt : %1$s</string>
+    <string name="np_sleep_off">Minuteur d\'arrêt désactivé</string>
+    <string name="np_history_title">écoutés récemment</string>
+    <string name="np_history_clear">Effacer l\'historique</string>
+    <string name="np_queue_search">Chercher dans la file</string>
+    <string name="np_queue_size">File affichée : %1$d</string>
+    <string name="np_other_player">Lecteur</string>
+    <string name="np_opt_cover_page">Pochette sur toute la page</string>
+    <string name="np_opt_blur">Pochette floue (consomme plus de batterie)</string>
+    <string name="np_opt_accent">Couleurs de la pochette</string>
+    <string name="np_opt_disc">Disque qui tourne (consomme plus de batterie)</string>
+    <string name="np_opt_swipe">Balaye la pochette pour changer de titre</string>
+    <string name="np_opt_volume">Boutons de volume</string>
+    <string name="np_opt_queue_covers">Pochettes dans la file</string>
+    <string name="np_opt_car">Mode voiture (gros boutons)</string>
+    <string name="np_opt_contrast">Contraste élevé</string>
+    <string name="np_opt_history">Retenir ce que j\'écoute</string>
+    <string name="np_position">Position</string>
+    <string name="np_remaining">Temps restant</string>
+    <string name="np_collapse">Afficher ou masquer la file</string>
+    <string name="np_sleep_note">Le minuteur d\'arrêt fonctionne tant que cette page reste ouverte.</string>
+</resources>

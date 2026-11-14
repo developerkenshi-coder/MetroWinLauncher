@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="np_previous">Anterior</string>
+    <string name="np_play">Reproducir</string>
+    <string name="np_pause">Pausa</string>
+    <string name="np_next">Siguiente</string>
+    <string name="np_cover">Carátula del álbum</string>
+    <string name="np_open_source">Abrir la app</string>
+    <string name="np_access_title">El acceso a las notificaciones está desactivado</string>
+    <string name="np_access_steps">Activa MetroWin Launcher en la lista que se abre y vuelve aquí.</string>
+    <string name="np_access_button">Abrir ajustes</string>
+    <string name="np_buffering">cargando…</string>
+    <string name="np_options">opciones</string>
+    <string name="np_options_title">opciones</string>
+    <string name="np_volume_down">Bajar volumen</string>
+    <string name="np_volume_up">Subir volumen</string>
+    <string name="np_like">Me gusta</string>
+    <string name="np_unlike">Quitar me gusta</string>
+    <string name="np_speed">Velocidad %1$s</string>
+    <string name="np_sleep">Temporizador de apagado: %1$s</string>
+    <string name="np_sleep_off">Temporizador de apagado desactivado</string>
+    <string name="np_history_title">escuchado hace poco</string>
+    <string name="np_history_clear">Olvidar el historial</string>
+    <string name="np_queue_search">Buscar en la cola</string>
+    <string name="np_queue_size">Cola mostrada: %1$d</string>
+    <string name="np_other_player">Reproductor</string>
+    <string name="np_opt_cover_page">Carátula en toda la página</string>
+    <string name="np_opt_blur">Carátula desenfocada (gasta más batería)</string>
+    <string name="np_opt_accent">Colores de la carátula</string>
+    <string name="np_opt_disc">Disco giratorio (gasta más batería)</string>
+    <string name="np_opt_swipe">Desliza la carátula para cambiar de tema</string>
+    <string name="np_opt_volume">Botones de volumen</string>
+    <string name="np_opt_queue_covers">Carátulas en la cola</string>
+    <string name="np_opt_car">Modo coche (botones grandes)</string>
+    <string name="np_opt_contrast">Alto contraste</string>
+    <string name="np_opt_history">Recordar lo que escucho</string>
+    <string name="np_position">Posición</string>
+    <string name="np_remaining">Tiempo restante</string>
+    <string name="np_collapse">Mostrar u ocultar la cola</string>
+    <string name="np_sleep_note">El temporizador de apagado funciona mientras esta página siga abierta.</string>
+</resources>
