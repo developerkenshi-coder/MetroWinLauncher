@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- People app strings. -->
+<resources>
+    <string name="pp_photo_of">Foto di %1$s</string>
+    <string name="pp_mail">Mail</string>
+    <string name="pp_favourite">Preferito</string>
+    <string name="pp_unfavourite">Togli dai preferiti</string>
+    <string name="pp_edit">Modifica</string>
+    <string name="pp_share">Condividi</string>
+    <string name="pp_callback">Richiama</string>
+    <string name="pp_numbers">numeri</string>
+    <string name="pp_emails">mail</string>
+    <string name="pp_addresses">indirizzi</string>
+    <string name="pp_birthday">compleanno</string>
+    <string name="pp_add_birthday">Tocca la data per aggiungerla al calendario</string>
+    <string name="pp_org">lavoro</string>
+    <string name="pp_groups">gruppi</string>
+    <string name="pp_note">nota</string>
+    <string name="pp_accounts">salvato in</string>
+    <string name="pp_stats">%1$s · %2$s</string>
+    <string name="pp_last">ultimo: %1$s</string>
+    <string name="pp_call_in">Chiamata ricevuta</string>
+    <string name="pp_call_out">Chiamata effettuata</string>
+    <string name="pp_call_missed">Chiamata persa</string>
+    <string name="pp_notification">Notifica</string>
+    <string name="pp_sim_choose">Chiama con</string>
+    <string name="pp_sim_unnamed">SIM</string>
+    <string name="pp_exported">%1$d contatti salvati</string>
+    <string name="pp_add">Aggiungi</string>
+    <string name="pp_options">Opzioni</string>
+    <string name="pp_import">Importa</string>
+    <string name="pp_export">Esporta</string>
+    <string name="pp_duplicates">Doppioni</string>
+    <string name="pp_pick">Scegli una persona</string>
+    <string name="pp_search">Cerca persone</string>
+    <string name="pp_hint">Tocca una lettera per saltare a un\'altra. Tieni premuta una persona per le azioni rapide. Scorri la pagina per le novità e i preferiti.</string>
+    <string name="pp_got_it">Ho capito</string>
+    <string name="pp_empty">Ancora nessun contatto.</string>
+    <string name="pp_no_match">Nessuno corrisponde.</string>
+    <string name="pp_no_favourites">Ancora nessun preferito. Apri una persona e tocca la stella.</string>
+    <string name="pp_birthdays">compleanni</string>
+    <string name="pp_callback_list">da richiamare</string>
+    <string name="pp_quick">Azioni rapide</string>
+    <string name="pp_open">Apri la scheda</string>
+    <string name="pp_opt_birthdays">Compleanni</string>
+    <string name="pp_opt_news_text">Testo delle notifiche nelle novità</string>
+    <string name="pp_opt_history_notes">Notifiche nella cronologia della persona</string>
+    <string name="pp_opt_groups">Gruppi di contatti come etichette</string>
+    <string name="pp_opt_dividers">Linee tra le persone</string>
+    <string name="pp_opt_plain_letters">Lettere semplici nell\'elenco</string>
+    <string name="pp_opt_source_dots">Colore del luogo di ogni contatto</string>
+    <string name="pp_size_small">piccole</string>
+    <string name="pp_size_medium">medie</string>
+    <string name="pp_size_large">grandi</string>
+    <string name="pp_opt_tile_size">Dimensione preferiti: %1$s</string>
+    <string name="pp_opt_move_page">Sposta questa pagina a destra</string>
+    <string name="pp_opt_hint_again">Mostra di nuovo il suggerimento</string>
+    <string name="pp_no_duplicates">Nessun contatto simile.</string>
+    <string name="pp_duplicates_note">Hanno lo stesso nome o numero. Uniscili nell\'app Contatti: apri il contatto, poi modifica.</string>
+    <plurals name="pp_calls_count">
+        <item quantity="one">%d chiamata</item>
+        <item quantity="other">%d chiamate</item>
+    </plurals>
+    <plurals name="pp_texts_count">
+        <item quantity="one">%d messaggio</item>
+        <item quantity="other">%d messaggi</item>
+    </plurals>
+    <plurals name="pp_in_days">
+        <item quantity="one">tra %d giorno</item>
+        <item quantity="other">tra %d giorni</item>
+    </plurals>
+</resources>

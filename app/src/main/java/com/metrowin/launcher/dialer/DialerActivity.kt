@@ -64,7 +64,15 @@ open class DialerActivity : ComponentActivity() {
     private fun numberIn(intent: Intent) = PhoneCalls.numberOf(intent.dataString.orEmpty().let { android.net.Uri.decode(it) }).orEmpty()
 }
 
-/** The People app: the same screen as the dialer, opened on the contacts (the phone one opens on the keypad). */
-class PeopleActivity : DialerActivity() {
-    override val firstPage = PAGE_CONTACTS
+/**
+ * The "people" of the launcher's mini apps: it hands over to the People hub ([com.metrowin.launcher.people.PeopleActivity]), the real
+ * app of the contacts, and closes at once. (It used to open this phone screen on its contacts page, so two apps had the same name.)
+ */
+class PeopleActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        runCatching { startActivity(Intent(this, com.metrowin.launcher.people.PeopleActivity::class.java).putExtras(intent)) }
+        finish()
+        overridePendingTransition(0, 0)
+    }
 }

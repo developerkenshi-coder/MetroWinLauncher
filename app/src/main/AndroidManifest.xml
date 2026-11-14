@@ -307,7 +307,7 @@
             </intent-filter>
         </activity>
 
-        <!-- The People app: the dialer screen opened on the contacts. -->
+        <!-- The old "people" of the mini apps: it only hands over to the People hub below. -->
         <activity
             android:name=".dialer.PeopleActivity"
             android:exported="false"
@@ -414,7 +414,8 @@
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
             android:exported="false"
             android:label="@string/stock_people"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
 
         <activity
             android:name=".music.NowPlayingActivity"

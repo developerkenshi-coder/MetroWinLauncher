@@ -2774,10 +2774,8 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="ppl_all">alle</string>
     <string name="ppl_call">Anrufen</string>
     <string name="ppl_message">Nachricht</string>
-    <string name="ppl_back">Zurück</string>
     <string name="ppl_history">Verlauf</string>
     <string name="ppl_no_history">Noch nichts mit dieser Person.</string>
-    <string name="ppl_empty">Noch keine Kontakte mit Nummer.</string>
     <string name="pv_share">Teilen</string>
     <string name="pv_delete">Löschen</string>
     <string name="pv_info">Info</string>
