@@ -7,7 +7,8 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,22 +28,25 @@ import com.metrowin.launcher.data.DeviceMonitor
 import com.metrowin.launcher.data.ShizukuShell
 import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.util.Locale
 
 /** What the shell printed for this page. */
-private class MoreShell(val events: String, val props: String, val memory: String, val totals: String, val services: String)
+private class MoreShell(val events: String, val props: String, val memory: String, val totals: String, val services: String, val users: String)
 
-private fun readShell(): MoreShell {
-    fun sh(line: String) = ShizukuShell.shell(line, 512 * 1024).output
-    return MoreShell(
-        events = sh("logcat -b events -d -v time am_crash:I am_anr:I '*:S'"),
-        props = sh("getprop; echo \"[enforce]: [\$(getenforce)]\""),
-        memory = sh("dumpsys meminfo | sed -n '/Total PSS by process/,/^\$/p'"),
-        totals = sh("dumpsys meminfo | grep -E 'Total RAM|Free RAM|Used RAM|Lost RAM'"),
-        services = sh("dumpsys activity services | grep 'ServiceRecord{'"),
-    )
+/** The six readings run at the same time (each is a process of its own) and each with the room it needs, not half a megabyte. */
+private suspend fun readShell(): MoreShell = coroutineScope {
+    fun sh(line: String, limit: Int) = async(Dispatchers.IO) { ShizukuShell.shell(line, limit).output }
+    val events = sh("logcat -b events -d -v time am_crash:I am_anr:I '*:S'", 256 * 1024)
+    val props = sh("getprop; echo \"[enforce]: [\$(getenforce)]\"", 128 * 1024)
+    val memory = sh("dumpsys meminfo | sed -n '/Total PSS by process/,/^\$/p'", 128 * 1024)
+    val totals = sh("dumpsys meminfo | grep -E 'Total RAM|Free RAM|Used RAM|Lost RAM'", 8 * 1024)
+    val services = sh("dumpsys activity services | grep 'ServiceRecord{'", 256 * 1024)
+    val users = sh("pm list users", 8 * 1024)
+    MoreShell(events.await(), props.await(), memory.await(), totals.await(), services.await(), users.await())
 }
 
 private fun label(context: Context, packageName: String): String = runCatching {
@@ -54,9 +58,9 @@ private fun mb(kb: Long) = String.format(Locale.getDefault(), "%.0f MB", kb / 10
 
 /** "More information": the crashes and blocked apps, the security state of the system, the sensors with their values, what runs and what it takes. */
 @Composable
-fun MorePage(state: ShizukuState, refresh: Int) {
+internal fun MorePage(state: ShizukuState, refresh: Int, opts: TerminalOptions) {
     val context = LocalContext.current
-    val shell by produceState<MoreShell?>(null, state, refresh) { value = if (state.ready) withContext(Dispatchers.IO) { readShell() } else null }
+    val shell by produceState<MoreShell?>(null, state, refresh) { value = if (state.ready) readShell() else null }
     val needs = stringResource(R.string.bd_needs_shizuku)
     val sections by produceState(emptyList<BatterySection>(), shell, needs) { value = withContext(Dispatchers.IO) { build(context, shell, needs) } }
     val live = rememberSensors(context)
@@ -64,9 +68,9 @@ fun MorePage(state: ShizukuState, refresh: Int) {
     val title = stringResource(R.string.mi_sensors, sensorList.size)
     val sensorRows = sensorList.map { sensor -> sensor.name to "${typeName(sensor)} · ${live[key(sensor)] ?: "—"}" }
     LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        infoSections(sections, "more")
-        infoSections(listOf(BatterySection(title, sensorRows)), "sensors")
-        item { Row(Modifier.padding(bottom = 24.dp)) {} }
+        infoSections(sections, "more", opts.sticky.on)
+        infoSections(listOf(BatterySection(title, sensorRows)), "sensors", opts.sticky.on)
+        item { Spacer(Modifier.height(24.dp)) }
     }
 }
 
@@ -76,10 +80,10 @@ private fun build(context: Context, shell: MoreShell?, needs: String): List<Batt
     val byApp = faults.groupBy { it.packageName }.entries.sortedByDescending { it.value.size }.take(20).map { (pkg, list) ->
         val crashes = list.count { !it.anr }
         val anrs = list.count { it.anr }
-        label(context, pkg) to "$crashes ${s(R.string.mi_crashes)} · $anrs ANR · ${list.last().time.substringAfter(' ')}"
+        label(context, pkg) to "$crashes ${s(R.string.mi_crashes)} · $anrs ${s(R.string.tm_anr)} · ${list.last().time.substringAfter(' ')}"
     }
     val recent = faults.takeLast(10).reversed().map { f ->
-        "${f.time} · ${if (f.anr) "ANR" else s(R.string.mi_crash)}" to "${label(context, f.packageName)}${if (f.detail.isNotBlank()) " — ${f.detail.take(80)}" else ""}"
+        "${f.time} · ${if (f.anr) s(R.string.tm_anr) else s(R.string.mi_crash)}" to "${label(context, f.packageName)}${if (f.detail.isNotBlank()) " — ${f.detail.take(80)}" else ""}"
     }
     val noFaults = listOf(s(R.string.mi_faults_title) to if (shell == null) needs else s(R.string.mi_no_faults))
     val props = shell?.let { DeviceMonitor.props(it.props) }.orEmpty()
@@ -97,23 +101,28 @@ private fun build(context: Context, shell: MoreShell?, needs: String): List<Batt
         DeviceMonitor.bootState(p("ro.boot.verifiedbootstate"), p("ro.boot.flash.locked"))?.let { s(R.string.mi_boot_state) to it },
         p("ro.boot.vbmeta.device_state")?.let { s(R.string.mi_vbmeta) to it },
         p("ro.crypto.state")?.let { s(R.string.mi_encryption) to "$it${p("ro.crypto.type")?.let { t -> " ($t)" } ?: ""}" },
-        p("enforce")?.let { "SELinux" to it },
+        p("enforce")?.let { s(R.string.tm_selinux) to it },
         p("ro.debuggable")?.let { s(R.string.mi_debuggable) to if (it == "1") s(R.string.ds_yes) else s(R.string.ds_no) },
-        p("ro.boot.veritymode")?.let { "dm-verity" to it },
-        runCatching { context.packageManager.getPackageInfo("com.google.android.gms", 0).versionName }.getOrNull()?.let { "Google Play services" to it },
+        p("ro.boot.veritymode")?.let { s(R.string.tm_verity) to it },
+        runCatching { context.packageManager.getPackageInfo("com.google.android.gms", 0).versionName }.getOrNull()?.let { s(R.string.tm_gms) to it },
         if (shell == null) s(R.string.bd_more_with_shizuku) to needs else null,
     )
     val memory = shell?.let { DeviceMonitor.processMemory(it.memory).map { (pkg, kb) -> label(context, pkg) to mb(kb) } }.orEmpty()
     val totals = shell?.totals?.lines()?.map { it.trim() }?.filter { it.isNotEmpty() }?.map { it.substringBefore(':') to it.substringAfter(':').trim() }.orEmpty()
     val services = shell?.let { DeviceMonitor.servicesByApp(it.services).map { (pkg, n) -> label(context, pkg) to "$n ${s(R.string.mi_services_unit)}" } }.orEmpty()
+    val users = shell?.users?.lines()?.mapNotNull { USER.find(it) }?.map { it.groupValues[1] to it.groupValues[2].ifBlank { "-" } }.orEmpty()
     return listOf(
         BatterySection(s(R.string.mi_faults_by_app), byApp.ifEmpty { noFaults }),
         BatterySection(s(R.string.mi_faults_recent), recent),
         BatterySection(s(R.string.mi_security), security),
         BatterySection(s(R.string.mi_memory), totals + memory.ifEmpty { listOf(s(R.string.mi_memory) to needs) }),
         BatterySection(s(R.string.mi_services), services.ifEmpty { listOf(s(R.string.mi_services) to needs) }),
+        BatterySection(s(R.string.tm_users), users),
     )
 }
+
+/** A line of `pm list users`: the number and the name of a user (only read: nothing here creates or removes one). */
+private val USER = Regex("""UserInfo\{(\d+):([^:}]*):""")
 
 /** The sensors that report by themselves (the ones that fire once, or on a trigger, would only show an empty value). */
 private fun sensorsOf(context: Context): List<Sensor> =
@@ -125,6 +134,8 @@ private fun sensorsOf(context: Context): List<Sensor> =
 private fun key(sensor: Sensor) = "${sensor.type}:${sensor.name}:${if (sensor.isWakeUpSensor) 1 else 0}"
 
 private fun typeName(sensor: Sensor) = sensor.stringType.substringAfterLast('.').replace('_', ' ')
+
+private const val SENSOR_PERIOD_US = 500_000
 
 /** The latest values of every sensor, read twice a second while the page is on screen and let go when it is not. */
 @Composable
@@ -141,10 +152,11 @@ private fun rememberSensors(context: Context): Map<String, String> {
 
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
         }
-        sensorsOf(context).forEach { runCatching { manager.registerListener(listener, it, SensorManager.SENSOR_DELAY_NORMAL) } }
+        // Half a second between values is what the page shows: asking the sensors for more only wakes the processor for nothing.
+        sensorsOf(context).forEach { runCatching { manager.registerListener(listener, it, SENSOR_PERIOD_US) } }
         try {
             while (true) {
-                shown = HashMap(latest)
+                if (shown != latest) shown = HashMap(latest)
                 delay(500)
             }
         } finally {
