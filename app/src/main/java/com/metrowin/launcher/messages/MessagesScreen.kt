@@ -181,7 +181,7 @@ fun MessagesScreen(address: String?, body: String, onAddress: (String?) -> Unit,
     val menu = optionItems(options) { if (it) askPhone.launch(Manifest.permission.READ_PHONE_STATE) }
     val wide = options.on(MessagesOptions.Key.Panes) && isWide()
     BackHandler(enabled = address != null) { onAddress(null); refresh++ }
-    MiniFrame(modifier, ime = true) {
+    MiniFrame(modifier, ime = true, panes = wide) {
         when {
             !allowed -> Column(Modifier.padding(24.dp)) {
                 PageNote(stringResource(R.string.messages_need_sms))

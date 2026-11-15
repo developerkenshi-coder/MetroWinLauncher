@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.mini
 
+import com.metrowin.launcher.ui.components.PageMaxWidth
+import com.metrowin.launcher.ui.components.PageMaxWidthPanes
 import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.pageSide
 import android.app.ActivityManager
@@ -150,6 +152,8 @@ fun MiniFrame(
     backdrop: @Composable Modifier.() -> Modifier = { pageBackground() },
     /** The page is lifted by the keyboard. */
     ime: Boolean = false,
+    /** The page has two panes side by side: it goes as wide as [PageMaxWidthPanes], not the 640 dp of a single column. */
+    panes: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(),
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     content: @Composable ColumnScope.() -> Unit,
@@ -157,7 +161,7 @@ fun MiniFrame(
     // shortcut: this frame adds only what "wide" says, because the screens have their own 24 dp inside; they move to miniPageSide(24.dp) one by one.
     Column(
         modifier.fillMaxSize().backdrop().topBarsPadding().navigationBarsPadding().then(if (ime) Modifier.imePadding() else Modifier)
-            .cutoutSidesPadding().centeredContent().padding(horizontal = pageSide(0.dp)).padding(contentPadding),
+            .cutoutSidesPadding().centeredContent(if (panes) PageMaxWidthPanes else PageMaxWidth).padding(horizontal = pageSide(0.dp)).padding(contentPadding),
         verticalArrangement = verticalArrangement,
         content = content,
     )

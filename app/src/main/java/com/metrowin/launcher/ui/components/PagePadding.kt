@@ -23,9 +23,12 @@ fun pageSide(base: Dp): Dp {
 /** The widest a page's content goes: on a bigger screen it stays this wide, centred, and only the background fills the screen. */
 val PageMaxWidth = 640.dp
 
-/** Margins at both sides that keep the content under [PageMaxWidth] on a wide screen; none on a phone held upright. */
+/** The widest a page with two panes goes (a list and its detail): a tablet, a phone on its side, a folding phone opened. */
+val PageMaxWidthPanes = 1100.dp
+
+/** Margins at both sides that keep the content under [max] on a wide screen; none on a phone held upright. */
 @Composable
-fun Modifier.centeredContent(): Modifier {
+fun Modifier.centeredContent(max: Dp = PageMaxWidth): Modifier {
     val width = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp() }
-    return padding(horizontal = ((width - PageMaxWidth) / 2).coerceAtLeast(0.dp))
+    return padding(horizontal = ((width - max) / 2).coerceAtLeast(0.dp))
 }

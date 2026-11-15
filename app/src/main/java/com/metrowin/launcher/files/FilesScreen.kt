@@ -1,5 +1,6 @@
 package com.metrowin.launcher.files
 
+import com.metrowin.launcher.ui.components.isWide
 import com.metrowin.launcher.ui.components.windowClass
 import com.metrowin.launcher.ui.components.sectionStarts
 import com.metrowin.launcher.ui.components.sectionHeader
@@ -361,7 +362,7 @@ private fun Manager() {
         prefs.tags = map
     }
 
-    MiniFrame {
+    MiniFrame(panes = isWide()) {
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
             // Two panels side by side when the screen is as wide as a tablet, not whenever it is turned.
             val wide = maxWidth.windowClass.isWide

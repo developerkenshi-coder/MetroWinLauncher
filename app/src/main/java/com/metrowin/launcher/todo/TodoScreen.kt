@@ -350,7 +350,7 @@ fun TodoScreen(openId: Long = 0L) {
     val wide = isWide()
     val editPage = editing != null && options.editPage
 
-    MiniFrame {
+    MiniFrame(panes = wide) {
         Box(Modifier.weight(1f).fillMaxWidth()) {
             Column(Modifier.fillMaxSize()) {
                 val titles = listOf(stringResource(R.string.todo_pivot_open), stringResource(R.string.todo_pivot_done)).let { t ->

@@ -199,7 +199,7 @@ fun CalendarScreen() {
         LocalDensity provides if (options[Option.LargeText]) Density(density.density, density.fontScale * 1.25f) else density,
     ) {
         Box(Modifier.fillMaxSize()) {
-            MiniFrame {
+            MiniFrame(panes = wide) {
                 val titles = pages.map { p ->
                     when (p) {
                         Page.Agenda -> stringResource(R.string.cal_pivot_agenda)

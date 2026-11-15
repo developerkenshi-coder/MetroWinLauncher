@@ -290,7 +290,7 @@ fun RecorderScreen() {
             }
             return@AnimatedContent
         }
-        MiniFrame {
+        MiniFrame(panes = wide) {
             PivotHeader(listOf(stringResource(R.string.rec_pivot_record), stringResource(R.string.rec_pivot_list)), pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp))
             androidx.compose.foundation.layout.Box(Modifier.weight(1f).fillMaxWidth()) {
                 HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
