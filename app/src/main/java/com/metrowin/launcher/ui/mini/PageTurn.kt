@@ -20,6 +20,7 @@ import com.metrowin.launcher.data.LaunchPlans
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.MotionStyle
 import com.metrowin.launcher.ui.anim.metroTween
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -71,12 +72,16 @@ class PageTurn(private val on: Boolean) {
 fun TurnPage(turn: PageTurn, content: @Composable () -> Unit) {
     LaunchedEffect(turn) { turn.enter() }
     val rowMenu = remember { RowMenuState() }
+    val reduced = LocalReduceMotion.current
     CompositionLocalProvider(LocalRowMenu provides rowMenu) {
         Box(
             Modifier.graphicsLayer {
                 val a = turn.away.value
                 cameraDistance = Motion.CAMERA * density
-                if (MotionStyle.original) {
+                if (reduced) {
+                    // Reduced motion: no swing, the page only fades.
+                    alpha = 1f - a
+                } else if (MotionStyle.original) {
                     transformOrigin = TransformOrigin(-0.1f, 0.5f)
                     rotationY = -Motion.ORIGINAL_PAGE_DEGREES * a
                     alpha = if (a >= 0.999f) 0f else 1f
