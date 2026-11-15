@@ -63,6 +63,7 @@ import com.metrowin.launcher.ui.anim.LocalTapFeedback
 import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.theme.fieldTextStyle
 import com.metrowin.launcher.ui.theme.glass
+import com.metrowin.launcher.ui.theme.highContrastEdge
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -96,7 +97,7 @@ fun MetroButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit
     val surface = when (style.kind) {
         ThemeStyle.Classic -> pressable.border(2.dp, colors.foreground).background(if (pressed) colors.foreground else Color.Transparent)
         ThemeStyle.Glass -> pressable.glass(style.controlShape, veil = if (colors.dark) 0.16f else 0.55f)
-        ThemeStyle.Droid -> pressable.clip(style.controlShape).background(colors.containers.getOrElse(1) { colors.surface })
+        ThemeStyle.Droid -> pressable.clip(style.controlShape).background(colors.containers.getOrElse(1) { colors.surface }).highContrastEdge(style.controlShape)
     }
     val ink = when {
         style.isClassic && pressed -> colors.background
@@ -401,7 +402,7 @@ fun MetroTextField(
     val surface = when (style.kind) {
         ThemeStyle.Classic -> modifier.fillMaxWidth().heightIn(min = 52.dp).border(2.dp, colors.foreground).background(if (lit) Color.White else Color.Transparent)
         ThemeStyle.Glass -> modifier.fillMaxWidth().heightIn(min = 52.dp).glass(field, veil = if (colors.dark) 0.12f else 0.55f)
-        ThemeStyle.Droid -> modifier.fillMaxWidth().heightIn(min = 52.dp).clip(field).background(colors.surface)
+        ThemeStyle.Droid -> modifier.fillMaxWidth().heightIn(min = 52.dp).clip(field).background(colors.surface).highContrastEdge(field)
     }
     Row(
         surface.padding(horizontal = 14.dp, vertical = 6.dp),

@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.scale
 import com.metrowin.launcher.data.ThemeStyle
@@ -131,6 +132,8 @@ fun fieldTextStyle(color: Color, size: androidx.compose.ui.unit.TextUnit): andro
 fun Modifier.glass(shape: Shape, tint: Color? = null, tintAlpha: Float = 0.38f, veil: Float? = null): Modifier {
     val dark = LocalMetroColors.current.dark
     val veilAlpha = veil ?: if (dark) 0.10f else 0.45f
+    // High contrast: the edge is a solid line in the text color, not the pale glint that disappears on a light page.
+    val edge = if (LocalHighContrast.current) SolidColor(LocalMetroColors.current.foreground) else null
     return this.clip(shape).drawBehind {
         drawRect(Color.White.copy(alpha = veilAlpha))
         if (tint != null) drawRect(tint.copy(alpha = tintAlpha))
@@ -148,7 +151,7 @@ fun Modifier.glass(shape: Shape, tint: Color? = null, tintAlpha: Float = 0.38f, 
         )
         drawOutline(
             shape.createOutline(size, layoutDirection, this),
-            Brush.linearGradient(
+            edge ?: Brush.linearGradient(
                 listOf(Color.White.copy(alpha = 0.80f), Color.White.copy(alpha = 0.10f), Color.White.copy(alpha = 0.38f)),
                 start = Offset.Zero, end = Offset(size.width, size.height),
             ),
@@ -174,9 +177,14 @@ fun Modifier.panel(shape: Shape? = null): Modifier {
     return when (style.kind) {
         ThemeStyle.Classic -> this.background(colors.surface)
         ThemeStyle.Glass -> this.glass(cardShape, veil = if (colors.dark) 0.14f else 0.62f)
-        ThemeStyle.Droid -> this.clip(cardShape).background(colors.surface)
+        ThemeStyle.Droid -> this.clip(cardShape).background(colors.surface).highContrastEdge(cardShape)
     }
 }
+
+/** In high contrast a surface has a frame in the text color, so that its edge does not rest on a shade of grey alone. */
+@Composable
+fun Modifier.highContrastEdge(shape: Shape): Modifier =
+    if (LocalHighContrast.current) border(2.dp, LocalMetroColors.current.foreground, shape) else this
 
 /** A frame of [width] around the control, square in Classic and rounded in the other looks (or in [shape]). */
 @Composable
