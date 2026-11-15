@@ -94,6 +94,7 @@ class ThemesGalleryTest {
         view.draw(android.graphics.Canvas(bitmap))
         val dir = java.io.File("build/screenshots").apply { mkdirs() }
         java.io.FileOutputStream(java.io.File(dir, "gallery_$name.png")).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        ReferenceImage.check("gallery_$name", bitmap)
         return bitmap
     }
 
@@ -172,10 +173,12 @@ class ThemesGalleryTest {
         }
     }
 
-    @Test
-    fun appList() {
+    @Test fun appList() = appList(dark = true, name = "apps")
+    @Test fun appListInTheLight() = appList(dark = false, name = "apps_light")
+
+    private fun appList(dark: Boolean, name: String) {
         val model = AppListModel(AppSections.group(items()))
-        showLooks {
+        showLooks(dark = dark) {
             AppListScreen(
                 model = model, listState = rememberLazyListState(), replayToken = 0, exiting = false,
                 onLaunch = {}, onLongPress = { _, _, _ -> }, onHeaderClick = {},
@@ -183,20 +186,24 @@ class ThemesGalleryTest {
             )
         }
         compose.mainClock.advanceTimeBy(2_000)
-        assertLooksDiffer(capture("apps"))
+        assertLooksDiffer(capture(name))
     }
 
-    @Test
-    fun appMenu() {
+    @Test fun appMenu() = appMenu(dark = true, name = "menu")
+    @Test fun appMenuInTheLight() = appMenu(dark = false, name = "menu_light")
+
+    private fun appMenu(dark: Boolean, name: String) {
         val item = items().first { it.removable }
-        showLooks { AppContextMenu(MenuState(item, 200f, 160f), pinned = false, onPinToggle = {}, onUninstall = {}, onDismiss = {}, onHide = {}, onAddToFolder = {}) }
+        showLooks(dark = dark) { AppContextMenu(MenuState(item, 200f, 160f), pinned = false, onPinToggle = {}, onUninstall = {}, onDismiss = {}, onHide = {}, onAddToFolder = {}) }
         compose.mainClock.advanceTimeBy(500)
-        assertLooksDiffer(capture("menu"))
+        assertLooksDiffer(capture(name))
     }
 
-    @Test
-    fun actionCenter() {
-        showLooks {
+    @Test fun actionCenter() = actionCenter(dark = true, name = "actioncenter")
+    @Test fun actionCenterInTheLight() = actionCenter(dark = false, name = "actioncenter_light")
+
+    private fun actionCenter(dark: Boolean, name: String) {
+        showLooks(dark = dark) {
             ActionCenter(
                 slots = QuickAction.defaults,
                 states = mapOf(QuickAction.Wifi to true, QuickAction.Bluetooth to false),
@@ -209,12 +216,14 @@ class ThemesGalleryTest {
             )
         }
         compose.mainClock.advanceTimeBy(500)
-        assertLooksDiffer(capture("actioncenter"))
+        assertLooksDiffer(capture(name))
     }
 
-    @Test
-    fun controls() {
-        showLooks {
+    @Test fun controls() = controls(dark = true, name = "controls")
+    @Test fun controlsInTheLight() = controls(dark = false, name = "controls_light")
+
+    private fun controls(dark: Boolean, name: String) {
+        showLooks(dark = dark) {
             Column(Modifier.padding(24.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(18.dp)) {
                 MetroText("Controls", size = 34.sp)
                 MetroToggle("Wi-Fi", true, {})
@@ -225,27 +234,31 @@ class ThemesGalleryTest {
             }
         }
         compose.mainClock.advanceTimeBy(500)
-        assertLooksDiffer(capture("controls"))
+        assertLooksDiffer(capture(name))
     }
 
-    @Test
-    fun themeSettings() {
-        showLooks {
+    @Test fun themeSettings() = themeSettings(dark = true, name = "settings")
+    @Test fun themeSettingsInTheLight() = themeSettings(dark = false, name = "settings_light")
+
+    private fun themeSettings(dark: Boolean, name: String) {
+        showLooks(dark = dark) {
             SettingsScreen(
                 SettingsEnv(LauncherSettings(themeStyle = it), onChange = {}),
                 SettingsSection.StartTheme, onSectionChange = {}, sectionAway = remember { Animatable(0f) },
             )
         }
         compose.mainClock.advanceTimeBy(500)
-        assertLooksDiffer(capture("settings"))
+        assertLooksDiffer(capture(name))
     }
 
-    @Test
-    fun settingsHome() {
-        showLooks {
+    @Test fun settingsHome() = settingsHome(dark = true, name = "settings_home")
+    @Test fun settingsHomeInTheLight() = settingsHome(dark = false, name = "settings_home_light")
+
+    private fun settingsHome(dark: Boolean, name: String) {
+        showLooks(dark = dark) {
             SettingsScreen(SettingsEnv(LauncherSettings(themeStyle = it), onChange = {}), null, onSectionChange = {}, sectionAway = remember { Animatable(1f) })
         }
         compose.mainClock.advanceTimeBy(500)
-        assertLooksDiffer(capture("settings_home"))
+        assertLooksDiffer(capture(name))
     }
 }
