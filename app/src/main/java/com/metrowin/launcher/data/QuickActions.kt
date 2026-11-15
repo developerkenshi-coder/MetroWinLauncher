@@ -97,7 +97,10 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
          * Bluetooth, whose long press opens the list of networks and devices in the panel.
          */
         fun holdScreen(action: QuickAction): String? = when (action) {
-            Wifi, Bluetooth, Recorder, Notes, Calculator -> null
+            Wifi, Bluetooth -> null
+            // A long press goes to what is outside the launcher: the recorder of Android, and the list of apps to pick another notes or calculator app.
+            Recorder -> MediaStore.Audio.Media.RECORD_SOUND_ACTION
+            Notes, Calculator -> Settings.ACTION_APPLICATION_SETTINGS
             Airplane -> Settings.ACTION_WIRELESS_SETTINGS
             Hotspot -> "android.settings.TETHER_SETTINGS"
             MobileData -> "android.settings.DATA_USAGE_SETTINGS"
