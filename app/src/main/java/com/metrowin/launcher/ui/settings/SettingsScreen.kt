@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.WindowClass
 import com.metrowin.launcher.ui.components.windowClass
 import com.metrowin.launcher.ui.components.Spacing
 import com.metrowin.launcher.ui.components.MetroType
@@ -123,8 +124,8 @@ fun SettingsScreen(
             .navigationBarsPadding()
             .cutoutSidesPadding(),
     ) {
-        // A wide screen (a tablet, a phone on its side) keeps the list at the left and opens the section beside it.
-        val twoPanes = maxWidth.windowClass.isWide
+        // An expanded screen keeps the list at the left and opens the section beside it (the list is 440 dp: below 840 dp the section would have no room).
+        val twoPanes = maxWidth.windowClass == WindowClass.Expanded
         Row(Modifier.fillMaxSize()) {
         Column(if (twoPanes) Modifier.width(LIST_PANE).fillMaxHeight() else Modifier.fillMaxSize()) {
             SettingsHeader()
