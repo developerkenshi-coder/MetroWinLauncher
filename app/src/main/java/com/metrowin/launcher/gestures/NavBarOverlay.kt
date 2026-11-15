@@ -112,6 +112,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
                     params.height = height
                     runCatching { windows.updateViewLayout(view, params) }
                 }
+                coverPx = height - bleedPx()
                 return
             }
         }
@@ -130,6 +131,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
         }.overBars()
         if (runCatching { windows.addView(view, params) }.isSuccess) {
             bar = view
+            coverPx = heightPx() - bleedPx()
             attempts = 0
             view.visibility = View.VISIBLE
             if (!receiving) {
@@ -159,6 +161,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
         val height = if (visible) heightPx() else 1
         if (params.height == height) return
         params.height = height
+        coverPx = if (visible) height - bleedPx() else 0
         params.flags = if (visible && !gameHidden && !locked) params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv() else params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
         view.visibility = if (visible && !locked) View.VISIBLE else View.INVISIBLE
         runCatching { service.getSystemService(WindowManager::class.java).updateViewLayout(view, params) }
@@ -176,6 +179,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
         handler.removeCallbacksAndMessages(null)
         if (receiving) runCatching { service.unregisterReceiver(screen) }
         receiving = false
+        coverPx = 0
         val view = bar ?: return
         bar = null
         runCatching { service.getSystemService(WindowManager::class.java).removeViewImmediate(view) }
@@ -305,6 +309,12 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
     }
 
     companion object {
+        /**
+         * How many pixels of the bottom of the screen the buttons cover now (0 when they are away). The screens of the launcher's own apps
+         * keep clear of at least that much, because Android may report less than that for its hidden bar. Same process as the service.
+         */
+        @Volatile var coverPx = 0
+
         const val DEFAULT_HOLD_MS = 500
         private const val MAX_ATTEMPTS = 5
         private const val RETRY_MS = 600L

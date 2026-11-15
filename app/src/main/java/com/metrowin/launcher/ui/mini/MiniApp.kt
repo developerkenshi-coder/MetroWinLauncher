@@ -54,6 +54,7 @@ import com.metrowin.launcher.ui.anim.MetroSoundPlayer
 import com.metrowin.launcher.ui.anim.rotateOnTurn
 import com.metrowin.launcher.ui.gesture.twoFingerSwipe
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
+import com.metrowin.launcher.ui.components.navigationBarsPaddingWithButtons
 import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.theme.pageBackground
 
@@ -160,7 +161,7 @@ fun MiniFrame(
 ) {
     // shortcut: this frame adds only what "wide" says, because the screens have their own 24 dp inside; they move to miniPageSide(24.dp) one by one.
     Column(
-        modifier.fillMaxSize().backdrop().topBarsPadding().navigationBarsPadding().then(if (ime) Modifier.imePadding() else Modifier)
+        modifier.fillMaxSize().backdrop().topBarsPadding().navigationBarsPaddingWithButtons().then(if (ime) Modifier.imePadding() else Modifier)
             .cutoutSidesPadding().centeredContent(if (panes) PageMaxWidthPanes else PageMaxWidth).padding(horizontal = pageSide(0.dp)).padding(contentPadding),
         verticalArrangement = verticalArrangement,
         content = content,

@@ -6,6 +6,7 @@ import com.metrowin.launcher.data.Tips
 import com.metrowin.launcher.ui.components.asShape
 import com.metrowin.launcher.ui.components.LocalIconShape
 import com.metrowin.launcher.ui.components.LocalMetroStatusBar
+import com.metrowin.launcher.ui.components.navigationBarsPaddingWithButtons
 import com.metrowin.launcher.ui.components.MetroStatusBar
 import com.metrowin.launcher.ui.components.metroStatusBarHeight
 import com.metrowin.launcher.data.StatusItem
@@ -1811,7 +1812,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 if (!kidsMode && pages.size > 1 && !tutorialVisible) {
                     PageDots(
                         pagerState, pages.size + 1,
-                        Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 6.dp),
+                        Modifier.align(Alignment.BottomCenter).navigationBarsPaddingWithButtons().padding(bottom = 6.dp),
                         reverse = settings.appListLeft,
                     )
                 }
@@ -2111,7 +2112,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             modifier = Modifier.align(Alignment.BottomCenter).then(
                                 // The edit bar already counts the navigation bar in its height.
                                 if (selectedCell != null) Modifier.padding(bottom = with(density) { editBarHeight.toDp() } + 8.dp)
-                                else Modifier.navigationBarsPadding().padding(bottom = 16.dp),
+                                else Modifier.navigationBarsPaddingWithButtons().padding(bottom = 16.dp),
                             ),
                         )
                     }

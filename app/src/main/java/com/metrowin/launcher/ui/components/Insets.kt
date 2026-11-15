@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.ui.platform.LocalDensity
+import com.metrowin.launcher.gestures.NavBarOverlay
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
@@ -28,4 +32,16 @@ fun Modifier.topBarsPadding(): Modifier {
     // With the bar of Windows Phone drawn, the room it takes is left instead (it is as high as the bar of Android and the camera hole).
     val own = LocalMetroStatusBar.current
     return if (own > 0.dp) padding(top = own) else windowInsetsPadding(WindowInsets.statusBars.union(WindowInsets.displayCutout).only(WindowInsetsSides.Top))
+}
+
+/**
+ * `navigationBarsPadding` that also keeps clear of the three buttons of MetroWin drawn over the navigation bar: on a phone whose bar of
+ * Android is hidden (gestures) the system reports less room than the buttons take, and the bottom bar of the app went under them.
+ */
+@Composable
+fun Modifier.navigationBarsPaddingWithButtons(): Modifier {
+    val density = LocalDensity.current
+    val inset = WindowInsets.navigationBars.getBottom(density)
+    val extra = with(density) { (NavBarOverlay.coverPx - inset).coerceAtLeast(0).toDp() }
+    return navigationBarsPadding().padding(bottom = extra)
 }
