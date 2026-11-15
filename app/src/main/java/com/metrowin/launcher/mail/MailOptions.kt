@@ -1,5 +1,7 @@
 package com.metrowin.launcher.mail
 
+import androidx.compose.foundation.layout.PaddingValues
+import com.metrowin.launcher.ui.mini.MiniFrame
 import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
@@ -78,7 +80,7 @@ fun MailOptionsView(onBack: () -> Unit, onChanged: () -> Unit) {
     BackHandler(onBack = onBack)
     val values = remember { mutableStateOf(MailOption.entries.associateWith { MailOptions.on(context, it) }) }
     var signature by remember { mutableStateOf(MailOptions.signature(context)) }
-    Column(Modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().centeredContent().padding(horizontal = 24.dp)) {
+    MiniFrame(contentPadding = PaddingValues(horizontal = 24.dp)) {
         MetroText(stringResource(R.string.mail_opt_title), size = 34.sp, weight = FontWeight.Light, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             MailOption.entries.forEach { option ->

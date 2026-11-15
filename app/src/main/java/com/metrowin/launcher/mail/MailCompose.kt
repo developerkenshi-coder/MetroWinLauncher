@@ -1,5 +1,7 @@
 package com.metrowin.launcher.mail
 
+import androidx.compose.foundation.layout.PaddingValues
+import com.metrowin.launcher.ui.mini.MiniFrame
 import com.metrowin.launcher.ui.components.centeredContent
 import android.content.Context
 import android.net.Uri
@@ -100,10 +102,7 @@ fun ComposeView(
             if (!tooBig) onFiles(all)
         }
     }
-    Column(
-        Modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().imePadding().centeredContent().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
+    MiniFrame(ime = true, contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             MetroButton(stringResource(R.string.mail_back), onClick = onClose)
             MetroButton(stringResource(if (sending) R.string.mail_sending else R.string.mail_send), Modifier.testTag("mail:send")) {

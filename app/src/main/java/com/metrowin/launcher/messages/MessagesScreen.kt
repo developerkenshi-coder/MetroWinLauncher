@@ -1,5 +1,6 @@
 package com.metrowin.launcher.messages
 
+import com.metrowin.launcher.ui.mini.MiniFrame
 import com.metrowin.launcher.ui.anim.swivel
 import com.metrowin.launcher.ui.anim.rememberRowSwivel
 import com.metrowin.launcher.ui.apps.anchor
@@ -178,7 +179,7 @@ fun MessagesScreen(address: String?, body: String, onAddress: (String?) -> Unit,
     val menu = optionItems(options) { if (it) askPhone.launch(Manifest.permission.READ_PHONE_STATE) }
     val wide = options.on(MessagesOptions.Key.Panes) && LocalConfiguration.current.screenWidthDp >= WIDE_DP
     BackHandler(enabled = address != null) { onAddress(null); refresh++ }
-    Column(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().imePadding().centeredContent()) {
+    MiniFrame(modifier, ime = true) {
         when {
             !allowed -> Column(Modifier.padding(24.dp)) {
                 PageNote(stringResource(R.string.messages_need_sms))

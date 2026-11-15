@@ -1,5 +1,6 @@
 package com.metrowin.launcher.mail
 
+import com.metrowin.launcher.ui.mini.MiniFrame
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.components.centeredContent
 import android.content.ContentValues
@@ -110,7 +111,7 @@ fun MessageReaderView(message: MailMessage, body: MailBody?, failure: String?, a
     // The header (subject, who, to, files) scrolls and never takes more than two fifths of the screen: in landscape it no longer squeezes the message to nothing.
     val headerMax = (androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp * 0.4f).dp
     val dark = colors.dark && look.darkPages
-    Column(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().centeredContent()) {
+    MiniFrame(modifier) {
         Column(
             Modifier.heightIn(max = headerMax).verticalScroll(rememberScrollState()).padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),

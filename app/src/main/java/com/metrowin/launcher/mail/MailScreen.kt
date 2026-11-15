@@ -1,5 +1,7 @@
 package com.metrowin.launcher.mail
 
+import androidx.compose.foundation.layout.PaddingValues
+import com.metrowin.launcher.ui.mini.MiniFrame
 import android.util.LruCache
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -290,7 +292,7 @@ fun MailScreen(modifier: Modifier = Modifier) {
     }
 
     if (account == null) {
-        Box(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().centeredContent().padding(24.dp)) {
+        MiniFrame(modifier, contentPadding = PaddingValues(24.dp)) {
             OnboardingAccountSetup(onAccountAdded = { added, password ->
                 repository.saveAccount(added, password)
                 accounts = repository.loadAccounts()
@@ -584,7 +586,7 @@ private fun MailListScreen(
     selectedId: String?, onRead: (MailMessage) -> Unit, onPick: (MailMessage) -> Unit, onMore: () -> Unit, onFolder: (String) -> Unit,
     onSelectAccount: (String) -> Unit, onAddAccount: (MailAccount, String) -> Unit, onRemoveAccount: (String) -> Unit,
 ) {
-    Column(modifier.fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding().centeredContent()) {
+    MiniFrame(modifier) {
         Column(Modifier.padding(start = 24.dp, top = 20.dp, bottom = 4.dp)) {
             MetroText(
                 (account.email + (folderTitle?.let { " · $it" } ?: "")).uppercase(), size = 14.sp, weight = FontWeight.Bold, color = LocalAccent.current, maxLines = 1,

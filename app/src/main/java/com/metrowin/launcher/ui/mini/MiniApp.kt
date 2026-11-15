@@ -12,7 +12,10 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -105,11 +108,20 @@ abstract class MiniActivity : ComponentActivity() {
  * The sides of the content: see [miniPageSide], which the screens use in place of a fixed 24 dp.
  */
 @Composable
-fun MiniFrame(modifier: Modifier = Modifier, backdrop: @Composable Modifier.() -> Modifier = { pageBackground() }, content: @Composable ColumnScope.() -> Unit) {
+fun MiniFrame(
+    modifier: Modifier = Modifier,
+    backdrop: @Composable Modifier.() -> Modifier = { pageBackground() },
+    /** The page is lifted by the keyboard. */
+    ime: Boolean = false,
+    contentPadding: PaddingValues = PaddingValues(),
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     // shortcut: this frame adds only what "wide" says, because the screens have their own 24 dp inside; they move to miniPageSide(24.dp) one by one.
     Column(
-        modifier.fillMaxSize().backdrop().topBarsPadding().navigationBarsPadding().cutoutSidesPadding().centeredContent()
-            .padding(horizontal = pageSide(0.dp)),
+        modifier.fillMaxSize().backdrop().topBarsPadding().navigationBarsPadding().then(if (ime) Modifier.imePadding() else Modifier)
+            .cutoutSidesPadding().centeredContent().padding(horizontal = pageSide(0.dp)).padding(contentPadding),
+        verticalArrangement = verticalArrangement,
         content = content,
     )
 }
