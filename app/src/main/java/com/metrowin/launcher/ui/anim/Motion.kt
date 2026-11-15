@@ -1,5 +1,19 @@
 package com.metrowin.launcher.ui.anim
 
+import com.metrowin.launcher.ui.theme.LocalMetroColors
+import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.foundation.focusable
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.expandVertically
@@ -209,6 +223,11 @@ fun Modifier.metroPress(
     // The tilt is the Windows Phone press: the other looks only sink a little.
     val tilt = if (reduced || !LocalStyle.current.isClassic) 0f else maxTiltDegrees * LocalTiltStrength.current
 
+    // A hardware keyboard: Tab and the arrows come here (focusable), Enter or Space press it, and a ring shows where the focus is.
+    var focused by remember { mutableStateOf(false) }
+    val ring = LocalMetroColors.current.foreground
+    val ringWidth = with(androidx.compose.ui.platform.LocalDensity.current) { FOCUS_RING.toPx() }
+
     return this
         // What TalkBack and the other accessibility services see: one button that says its text and can be activated.
         .semantics(mergeDescendants = true) {
@@ -228,6 +247,11 @@ fun Modifier.metroPress(
                 disabled()
             }
         }
+        .onKeyEvent { event ->
+            if (enabled && event.type == KeyEventType.KeyUp && event.key in ACTIVATE_KEYS) { currentFeedback(); currentClick(); true } else false
+        }
+        .onFocusChanged { focused = it.isFocused }
+        .focusable(enabled)
         .graphicsLayer {
             rotationX = tiltX.value
             rotationY = tiltY.value
@@ -258,7 +282,14 @@ fun Modifier.metroPress(
                 onLongPress = if (hasLongClick) ({ currentLongClick?.invoke() }) else null,
             )
         }
+        .drawWithContent {
+            drawContent()
+            if (focused) drawRect(ring, topLeft = Offset(ringWidth / 2, ringWidth / 2), size = Size(size.width - ringWidth, size.height - ringWidth), style = Stroke(ringWidth))
+        }
 }
+
+private val FOCUS_RING = 2.dp
+private val ACTIVATE_KEYS = setOf(Key.Enter, Key.NumPadEnter, Key.Spacebar, Key.DirectionCenter)
 
 // In Compose a positive rotationY brings the left edge towards the viewer (the right edge recedes) and
 // a positive rotationX brings the bottom edge towards the viewer (the top edge recedes). The finger

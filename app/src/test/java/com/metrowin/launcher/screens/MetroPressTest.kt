@@ -6,6 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.down
@@ -55,5 +61,22 @@ class MetroPressTest : ScreenshotBase() {
         val leftHeight = heightAt(pressed, pressedLeft + 10)
         val rightHeight = heightAt(pressed, pressedRight - 10)
         assertTrue("right edge ($rightHeight) should be shorter than left edge ($leftHeight)", rightHeight < leftHeight - 4)
+    }
+
+    @OptIn(androidx.compose.ui.test.ExperimentalTestApi::class)
+    @Test
+    fun aKeyboardReachesTheTileAndEnterPressesIt() {
+        var clicks = 0
+        show {
+            Box(Modifier.padding(40.dp)) {
+                Box(Modifier.size(200.dp).testTag("tile").metroPress(onClick = { clicks++ }).background(DefaultAccent))
+            }
+        }
+        compose.onNodeWithTag("tile").performSemanticsAction(SemanticsActions.RequestFocus)
+        compose.onNodeWithTag("tile").assertIsFocused()
+        compose.onNodeWithTag("tile").performKeyInput { pressKey(Key.Enter) }
+        assertEquals(1, clicks)
+        compose.onNodeWithTag("tile").performKeyInput { pressKey(Key.Spacebar) }
+        assertEquals(2, clicks)
     }
 }
