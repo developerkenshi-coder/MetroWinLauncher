@@ -57,10 +57,11 @@ object LockText {
 
 class LockInfoSource(
     private val context: Context,
-    /** Asks the calendar for the next event after the given time; a query. */
-    private val findEvent: (Long) -> LiveEvent? = { now -> CalendarSearch(context).next(now, DAY_MILLIS) },
     /** Asks the things to do for the one that is late or due soonest; reads a file. */
     private val findTodo: (Long) -> String? = { now -> Todos.nextForLock(TodoStore(context).load(), now)?.text },
+    // Last, so that a trailing lambda is the calendar query.
+    /** Asks the calendar for the next event after the given time; a query. */
+    private val findEvent: (Long) -> LiveEvent? = { now -> CalendarSearch(context).next(now, DAY_MILLIS) },
 ) {
     private val alarms = context.getSystemService(AlarmManager::class.java)
 
