@@ -379,7 +379,7 @@ private fun Modifier.sensorSpot(y: Float, ownIcon: Boolean) = graphicsLayer(comp
 private fun LockClock(time: java.time.ZonedDateTime, is24Hour: Boolean, locale: Locale, modifier: Modifier = Modifier) {
     Row(modifier, verticalAlignment = Alignment.Bottom) {
         MetroText(
-            ClockFormat.time(time.toLocalTime(), is24Hour, locale), size = 104.sp, color = Color.White, maxLines = 1,
+            ClockFormat.time(time.toLocalTime(), is24Hour, locale), size = 104.sp, color = Color.White, maxLines = 1, tabular = true,
             modifier = Modifier.weight(1f, fill = false).testTag("lock:time"),
         )
         val meridiem = ClockFormat.meridiem(time.toLocalTime(), is24Hour, locale)
@@ -489,7 +489,7 @@ private fun QuickBadge(badge: QuickBadge, iconSize: Dp, textSize: androidx.compo
             PackageIcon(badge.packageName, iconSize, Modifier.alpha(if (badge.count > 0) 1f else 0.5f), name)
         }
         if (badge.count > 0) {
-            MetroText(counter(badge.count), size = textSize, color = Color.White, maxLines = 1, modifier = countPadding.testTag("lock:badge:${badge.packageName}:count"))
+            MetroText(counter(badge.count), size = textSize, color = Color.White, maxLines = 1, tabular = true, modifier = countPadding.testTag("lock:badge:${badge.packageName}:count"))
         }
     }
 }

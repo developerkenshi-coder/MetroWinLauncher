@@ -46,6 +46,8 @@ fun MetroText(
     minScale: Float = DEFAULT_MIN_SCALE,
     /** A word to show in the accent colour wherever the text has it (what was searched for); blank for none. */
     highlight: String = "",
+    /** Digits of one width each, so that a clock or a counter does not shift as the numbers change (a font with proportional digits would). */
+    tabular: Boolean = false,
 ) {
     val style = LocalStyle.current
     // An accent used as the color of text is made to read on the page (the yellow accent on the white of the light theme would not).
@@ -59,6 +61,7 @@ fun MetroText(
         fontFamily = style.font,
         lineHeight = lineHeight,
         textAlign = textAlign,
+        fontFeatureSettings = if (tabular) "tnum" else null,
     )
     val shaped = if (minScale < 1f) modifier.shrinkToFit(minScale, singleLine = maxLines == 1) else modifier
     if (highlight.isBlank()) {
