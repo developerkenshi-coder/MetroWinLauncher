@@ -1,5 +1,6 @@
 package com.metrowin.launcher.files
 
+import com.metrowin.launcher.ui.components.windowClass
 import com.metrowin.launcher.ui.components.sectionStarts
 import com.metrowin.launcher.ui.components.sectionHeader
 import com.metrowin.launcher.ui.apps.JumpList
@@ -363,7 +364,7 @@ private fun Manager() {
     MiniFrame {
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
             // Two panels side by side when the screen is as wide as a tablet, not whenever it is turned.
-            val wide = maxWidth >= 600.dp
+            val wide = maxWidth.windowClass.isWide
             val look = RowLook(on(Opt.CategoryColors), on(Opt.ListThumbs), on(Opt.RichThumbs), on(Opt.RecentMark), on(Opt.LargeText))
             if (wide) {
                 Row(Modifier.fillMaxSize()) {

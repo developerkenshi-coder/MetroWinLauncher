@@ -286,9 +286,3 @@ fun EmptyArt(done: Boolean, modifier: Modifier = Modifier) {
         }
     }
 }
-
-/** The width from which the page is laid out in two columns (the lists at the left): a tablet, or a folding phone opened. */
-const val WIDE_DP = 600
-
-@Composable
-fun isWide(): Boolean = LocalConfiguration.current.screenWidthDp >= WIDE_DP

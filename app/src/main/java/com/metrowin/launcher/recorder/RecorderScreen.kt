@@ -1,5 +1,6 @@
 package com.metrowin.launcher.recorder
 
+import com.metrowin.launcher.ui.components.isWide
 import androidx.compose.runtime.saveable.rememberSaveable
 import android.Manifest
 import android.app.Activity
@@ -264,7 +265,7 @@ fun RecorderScreen() {
     }
 
     val open = recs.firstOrNull { it.name == selected }
-    val wide = opts.on(Opt.TWO_PANE) && LocalConfiguration.current.screenWidthDp >= 720
+    val wide = opts.on(Opt.TWO_PANE) && isWide()
     BackHandler(enabled = open != null || picked.isNotEmpty()) { if (open != null) selected = null else { picked = emptySet(); armed = false } }
 
     val detail: @Composable (Rec, Modifier) -> Unit = { rec, modifier ->

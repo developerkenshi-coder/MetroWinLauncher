@@ -1,5 +1,6 @@
 package com.metrowin.launcher.shizukuterminal
 
+import com.metrowin.launcher.ui.components.isWide
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -106,7 +107,7 @@ internal fun HistoryBlock(refresh: Int, beat: Int, opts: TerminalOptions) {
             KeyValueRow(stringResource(R.string.bh_samples), samples.size.toString())
             val temps = samples.map { it.tenths / 10f }
             val capacity = BatteryHistory.capacityByDay(samples)
-            val wide = LocalConfiguration.current.screenWidthDp >= 600
+            val wide = isWide()
             val level = @Composable { m: Modifier ->
                 Chart(stringResource(R.string.bh_chart_level), samples.map { Point(it.time, it.level.toFloat(), it.charging) }, from, now, 0f, 100f, "%", BatteryHistory.GAP, m)
             }

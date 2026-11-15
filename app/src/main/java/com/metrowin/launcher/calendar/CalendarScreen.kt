@@ -1,5 +1,6 @@
 package com.metrowin.launcher.calendar
 
+import com.metrowin.launcher.ui.components.isWide
 import android.Manifest
 import android.content.Intent
 import android.database.ContentObserver
@@ -148,7 +149,7 @@ fun CalendarScreen() {
     val first = remember(locale) { firstDayOfWeek() }
     val env = remember(options, today, zone, first, is24, timeFormat, calendars) { CalendarEnv(options, today, zone, first, is24, timeFormat, calendars) }
 
-    val wide = LocalConfiguration.current.screenWidthDp >= 720 && options[Option.SplitWide]
+    val wide = isWide() && options[Option.SplitWide]
     val pages = remember(wide, options[Option.YearView]) { buildList { add(Page.Agenda); if (!wide) add(Page.Month); add(Page.Week); add(Page.Day); if (options[Option.YearView]) add(Page.Year) } }
     val pager = rememberPagerState { pages.size }
 

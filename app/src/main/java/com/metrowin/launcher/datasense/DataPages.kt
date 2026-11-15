@@ -1,5 +1,6 @@
 package com.metrowin.launcher.datasense
 
+import com.metrowin.launcher.ui.components.isWide
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -116,7 +117,7 @@ internal fun DataPage(reader: UsageReader, limitMb: Long, billDay: Int, alertPct
         value = dataCache[key]
         value = withContext(Dispatchers.IO) { load(context, reader, period, billDay, trends, extra) }.also { dataCache[key] = it; latestLoad = it }
     }
-    val wide = options[Opt.Wide] && LocalConfiguration.current.screenWidthDp >= 600
+    val wide = options[Opt.Wide] && isWide()
     val periods = DataPeriod.entries.filter { it != DataPeriod.History || options[Opt.History] }
     val chips: @Composable () -> Unit = {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 8.dp)) {
@@ -169,7 +170,7 @@ private fun DataSummary(load: DataLoad, limitMb: Long, alertPct: Int, billDay: I
     val options = LocalDsOptions.current
     val colors = LocalMetroColors.current
     val p = rememberPalette()
-    val wide = options[Opt.Wide] && LocalConfiguration.current.screenWidthDp >= 600
+    val wide = options[Opt.Wide] && isWide()
     val wifi = load.bars.sumOf { it.second.first }
     val mobile = load.bars.sumOf { it.second.second ?: 0L }
     val total = wifi + mobile

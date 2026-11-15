@@ -1,5 +1,6 @@
 package com.metrowin.launcher.people
 
+import com.metrowin.launcher.ui.components.windowClass
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.content.Intent
 import androidx.activity.compose.BackHandler
@@ -102,7 +103,6 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 /** How wide the page has to be for the list and the card to stand side by side (a tablet, an unfolded phone, a phone held sideways in DeX). */
-private val TWO_PANES = 720.dp
 
 private val TargetSaver = Saver<Target?, List<String>>(
     save = { t -> t?.let { listOf(it.name, it.key.orEmpty(), it.number.orEmpty(), it.photoUri.orEmpty()) } },
@@ -162,7 +162,7 @@ fun PeopleScreen() {
     val open: (Person) -> Unit = { target = Target(it.name, it.key, null, it.photoUri) }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val wide = maxWidth >= TWO_PANES
+        val wide = maxWidth.windowClass.isWide
         Row(Modifier.fillMaxSize()) {
             Box(Modifier.weight(1f).fillMaxSize()) {
                 Frame {

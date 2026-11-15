@@ -1,5 +1,6 @@
 package com.metrowin.launcher.datasense
 
+import com.metrowin.launcher.ui.components.isWide
 import android.content.Intent
 import android.net.Uri
 import android.os.storage.StorageManager
@@ -93,7 +94,7 @@ internal fun StoragePage(reader: UsageReader, allowed: Boolean, refresh: Int) {
     }
     val m = memory
     if (m == null) { Skeleton(rows = 5, chart = true); return }
-    val wide = options[Opt.Wide] && LocalConfiguration.current.screenWidthDp >= 600
+    val wide = options[Opt.Wide] && isWide()
     val state = rememberLazyListState()
     val summary: @Composable () -> Unit = { StorageSummary(m, sizes.orEmpty(), allowed, files) }
     if (wide) {

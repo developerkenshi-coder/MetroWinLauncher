@@ -1,5 +1,6 @@
 package com.metrowin.launcher.news
 
+import com.metrowin.launcher.ui.components.isWide
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -92,7 +93,7 @@ internal fun NewsList(
     onOpen: (NewsItem) -> Unit,
 ) {
     val opts = view.opts
-    val wide = LocalConfiguration.current.screenWidthDp >= WIDE_DP
+    val wide = isWide()
     val withPictures = showImages && !opts.compact && items.any { it.image.isNotEmpty() }
     // Once a page of pictures, a page of pictures: the rows keep their size when a refresh brings or loses a picture.
     val seen = remember { booleanArrayOf(false) }
@@ -115,7 +116,6 @@ internal fun NewsList(
     }
 }
 
-private const val WIDE_DP = 600
 
 @Composable
 private fun DayLine(row: NewsRow.Day, view: NewsView) {

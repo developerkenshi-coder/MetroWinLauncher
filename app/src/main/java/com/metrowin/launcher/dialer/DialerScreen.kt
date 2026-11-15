@@ -1,5 +1,7 @@
 package com.metrowin.launcher.dialer
 
+import com.metrowin.launcher.ui.components.WindowClass
+import com.metrowin.launcher.ui.components.windowClass
 import android.Manifest
 import android.content.Intent
 import android.telecom.PhoneAccountHandle
@@ -193,7 +195,7 @@ fun DialerScreen(
     // The numbers on the keys 2 to 9 (long press), set from the history and shown on the keypad.
     var keys by remember { mutableStateOf(NumberBookStore(context).keys()) }
     BoxWithConstraints(modifier.fillMaxSize().pageBackground()) {
-        val wide = maxWidth >= WIDE
+        val wide = maxWidth.windowClass == WindowClass.Expanded
         val pages = if (wide) 3 else 4
         val home = (if (wide && initialPage == PAGE_KEYPAD) PAGE_CONTACTS else initialPage).coerceIn(0, pages - 1)
         val pager = rememberPagerState(initialPage = home) { pages }
@@ -310,7 +312,7 @@ private fun KeypadPage(
     // The green bar swells a little when there is a number to call.
     LaunchedEffect(ready) { if (ready) { scale.animateTo(1.04f); scale.animateTo(1f) } }
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val landscape = maxWidth > maxHeight && maxWidth < WIDE
+        val landscape = maxWidth > maxHeight && maxWidth.windowClass != WindowClass.Expanded
         val showCard = maxHeight >= 700.dp
         val notes = (if (needsFullScreen) 90 else 0) + (if (!isDefault && roleIntent != null) (if (showCard) 190 else 90) else 0)
         // The keys give way when the room is short: what is over them (number, suggestions, notes) and the green bar under them are taken off first.
@@ -744,7 +746,6 @@ const val PAGE_FAVOURITES = 1
 const val PAGE_CONTACTS = 2
 const val PAGE_KEYPAD = 3
 
-private val WIDE: Dp = 840.dp
 private const val MAX_NUMBER = 32
 private const val HISTORY = 100
 private const val DETAILS = 20

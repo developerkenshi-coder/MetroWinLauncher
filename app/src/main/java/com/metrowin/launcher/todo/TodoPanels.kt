@@ -1,5 +1,6 @@
 package com.metrowin.launcher.todo
 
+import com.metrowin.launcher.ui.components.isWide
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.todo
 
+import com.metrowin.launcher.ui.components.isWide
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.mini.miniPageSide
 import androidx.compose.runtime.saveable.rememberSaveable

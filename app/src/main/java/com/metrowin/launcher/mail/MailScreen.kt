@@ -1,5 +1,6 @@
 package com.metrowin.launcher.mail
 
+import com.metrowin.launcher.ui.components.isWide
 import androidx.compose.foundation.layout.PaddingValues
 import com.metrowin.launcher.ui.mini.MiniFrame
 import android.util.LruCache
@@ -303,7 +304,7 @@ fun MailScreen(modifier: Modifier = Modifier) {
         return
     }
 
-    val wide = look.twoPanes && LocalConfiguration.current.screenWidthDp >= 720
+    val wide = look.twoPanes && isWide()
     val titles = listOf(R.string.mail_tab_inbox, R.string.mail_tab_unread, R.string.mail_tab_flagged, R.string.mail_tab_folders, R.string.mail_tab_accounts)
         .map { stringResource(it) }.mapIndexed { i, t -> if (i == 1 && unreadCount > 0) "$t $unreadCount" else t }
     fun folderName(path: String) = if (path == INBOX) context.getString(R.string.mail_folder_inbox) else folderList?.firstOrNull { it.path == path }?.name ?: path

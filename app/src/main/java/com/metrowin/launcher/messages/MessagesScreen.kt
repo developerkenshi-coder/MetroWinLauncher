@@ -1,5 +1,6 @@
 package com.metrowin.launcher.messages
 
+import com.metrowin.launcher.ui.components.isWide
 import com.metrowin.launcher.ui.theme.Danger
 import com.metrowin.launcher.ui.mini.MiniFrame
 import com.metrowin.launcher.ui.anim.swivel
@@ -178,7 +179,7 @@ fun MessagesScreen(address: String?, body: String, onAddress: (String?) -> Unit,
     // A message being forwarded waits here until a conversation is chosen for it.
     var forward by remember { mutableStateOf<String?>(null) }
     val menu = optionItems(options) { if (it) askPhone.launch(Manifest.permission.READ_PHONE_STATE) }
-    val wide = options.on(MessagesOptions.Key.Panes) && LocalConfiguration.current.screenWidthDp >= WIDE_DP
+    val wide = options.on(MessagesOptions.Key.Panes) && isWide()
     BackHandler(enabled = address != null) { onAddress(null); refresh++ }
     MiniFrame(modifier, ime = true) {
         when {
@@ -201,7 +202,6 @@ fun MessagesScreen(address: String?, body: String, onAddress: (String?) -> Unit,
     }
 }
 
-private const val WIDE_DP = 600
 
 /** The options of the "⋯" menu: each is a switch (marked when on); [onSims] is told when the SIM choice turns on, to ask for its permission. */
 @Composable

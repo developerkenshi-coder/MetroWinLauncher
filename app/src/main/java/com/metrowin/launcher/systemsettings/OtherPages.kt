@@ -1,5 +1,6 @@
 package com.metrowin.launcher.systemsettings
 
+import com.metrowin.launcher.ui.components.isWide
 import android.app.NotificationManager
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -153,7 +154,7 @@ internal fun SoundsPage() {
         STREAMS.map { audio.getStreamVolume(it.second) }
     }
     if (opts[Option.SoundExtras]) RingerControls(audio)
-    val wide = LocalConfiguration.current.screenWidthDp >= 600 && opts[Option.Looks]
+    val wide = isWide() && opts[Option.Looks]
     val rows: List<@Composable (Modifier) -> Unit> = STREAMS.mapIndexed { i, (label, stream) -> { modifier -> VolumeRow(audio, label, stream, volumes[i], modifier) } }
     if (wide) rows.chunked(2).forEach { pair ->
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp)) { pair.forEach { it(Modifier.weight(1f)) } }

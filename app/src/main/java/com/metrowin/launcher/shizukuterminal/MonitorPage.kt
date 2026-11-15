@@ -1,5 +1,6 @@
 package com.metrowin.launcher.shizukuterminal
 
+import com.metrowin.launcher.ui.components.isWide
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -102,7 +103,7 @@ internal fun MonitorPage(state: ShizukuState, refresh: Int, buffers: MonitorBuff
             delay(TICK_MS)
         }
     }
-    val wide = LocalConfiguration.current.screenWidthDp >= 600
+    val wide = isWide()
     val smooth = opts.smooth.on
     LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
         if (opts.cards.on) item(key = "cards") {

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.photos
 
+import com.metrowin.launcher.ui.components.windowClass
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -208,7 +209,7 @@ fun PhotoViewer(
                 }
             },
     ) {
-        val wide = maxWidth >= 600.dp
+        val wide = maxWidth.windowClass.isWide
         HorizontalPager(
             pager, Modifier.fillMaxSize(), pageSpacing = 16.dp, beyondViewportPageCount = 1,
             userScrollEnabled = !zoomed, key = { photos.getOrNull(it)?.id ?: it },

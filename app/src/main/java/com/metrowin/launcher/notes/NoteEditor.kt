@@ -1,5 +1,6 @@
 package com.metrowin.launcher.notes
 
+import com.metrowin.launcher.ui.components.windowClass
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
@@ -304,7 +305,7 @@ internal fun NoteEditor(
             )
             BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
                 // On a wide screen turned sideways the text is on one side and the sketch and the files on the other.
-                val sideBySide = maxWidth >= 600.dp && maxWidth > maxHeight
+                val sideBySide = maxWidth.windowClass.isWide && maxWidth > maxHeight
                 val text: @Composable () -> Unit = {
                     if (reading) {
                         NoteBody(body.text, onToggle = { index -> history.push(NoteHistory.State(body.text, body.selection.start)); body = TextFieldValue(NoteText.toggle(body.text, index)) })

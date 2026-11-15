@@ -1,5 +1,6 @@
 package com.metrowin.launcher.wallet
 
+import com.metrowin.launcher.ui.components.windowClass
 import com.metrowin.launcher.ui.mini.miniPageSide
 import android.app.Activity
 import androidx.activity.compose.BackHandler
@@ -135,7 +136,7 @@ internal fun CardView(
     LaunchedEffect(Unit) { opened.animateTo(1f, tween(260)) }
     MiniFrame {
         BoxWithConstraints(Modifier.weight(1f)) {
-            val wide = maxWidth >= WIDE
+            val wide = maxWidth.windowClass.isWide
             val panel: @Composable (Modifier) -> Unit = { m ->
                 Column(
                     m.widthIn(max = 420.dp).fillMaxWidth().graphicsLayer { alpha = opened.value; scaleX = 0.94f + 0.06f * opened.value; scaleY = 0.94f + 0.06f * opened.value }
@@ -198,4 +199,3 @@ internal fun CardView(
     if (full) CodeFullscreen(card, prefs.secure.on) { full = false }
 }
 
-private val WIDE = 600.dp
