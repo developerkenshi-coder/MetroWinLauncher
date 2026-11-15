@@ -84,7 +84,7 @@ private fun SuperBar(items: List<AppBarItem>, modifier: Modifier) {
         modifier.fillMaxWidth().sheet().padding(vertical = Spacing.Medium, horizontal = Spacing.Medium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        items.forEach { item ->
+        FontScaleAtMost(TextScaleCap.BAR) { items.forEach { item ->
             // Each button takes an equal share of the width, so a long label shrinks inside it instead of being cut.
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f).metroPress(onClick = item.onClick)) {
                 Box(Modifier.size(48.dp).border(2.dp, colors.foreground, CircleShape).clip(CircleShape), contentAlignment = Alignment.Center) {
@@ -92,6 +92,6 @@ private fun SuperBar(items: List<AppBarItem>, modifier: Modifier) {
                 }
                 MetroText(item.label, size = MetroType.Micro, color = colors.subtle, modifier = Modifier.padding(top = 2.dp))
             }
-        }
+        } }
     }
 }

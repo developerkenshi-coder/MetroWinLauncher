@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.components.TextScaleCap
+import com.metrowin.launcher.ui.components.FontScaleAtMost
 import com.metrowin.launcher.notifications.LiveCard
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.background
@@ -537,15 +539,18 @@ internal fun StaticFace(item: AppItem, size: TileSize, width: Dp, height: Dp, la
 @Composable
 internal fun TileLabel(label: String, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.tileContent) {
     if (!LocalTileNames.current) return
-    MetroText(
-        text = label,
-        size = 13.sp,
-        weight = FontWeight.Normal,
-        color = color,
-        // The name of an app: one line (smaller if it must be, then cut: it may be any length).
-        maxLines = 1,
-        modifier = modifier.padding(start = FACE_MARGIN, end = FACE_MARGIN, bottom = FACE_MARGIN),
-    )
+    // The tile is a box of a fixed size: the name does not grow with the text of the phone beyond what the tile holds.
+    FontScaleAtMost(TextScaleCap.TILE_LABEL) {
+        MetroText(
+            text = label,
+            size = 13.sp,
+            weight = FontWeight.Normal,
+            color = color,
+            // The name of an app: one line (smaller if it must be, then cut: it may be any length).
+            maxLines = 1,
+            modifier = modifier.padding(start = FACE_MARGIN, end = FACE_MARGIN, bottom = FACE_MARGIN),
+        )
+    }
 }
 
 

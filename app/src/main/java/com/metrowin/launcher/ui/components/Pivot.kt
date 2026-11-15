@@ -76,6 +76,8 @@ fun PivotHeader(
         val room = maxWidth
         Column {
             AppTitleLine()
+            // 44 sp at the biggest text of the phone is a title that leaves no room: the titles stop at a size that still fits.
+            FontScaleAtMost(TextScaleCap.PIVOT) {
             Row(
                 Modifier
                     .clipToBounds()
@@ -98,6 +100,7 @@ fun PivotHeader(
                             .metroPress(onClick = { scope.launch { pagerState.animateScrollToPage(index) } }),
                     )
                 }
+            }
             }
         }
     }
