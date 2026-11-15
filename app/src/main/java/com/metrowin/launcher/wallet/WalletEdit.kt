@@ -1,5 +1,6 @@
 package com.metrowin.launcher.wallet
 
+import com.metrowin.launcher.ui.mini.miniPageSide
 import android.graphics.BitmapFactory
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -111,7 +112,7 @@ internal fun CardEdit(initial: Card, prefs: WalletPrefs, today: Long, onSave: (C
     }
     val sections = prefs.preview.on
     MiniFrame {
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).miniPageSide(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             MetroText(stringResource(if (initial.name.isEmpty() && initial.code.isEmpty()) R.string.wal_new else R.string.notes_edit), size = 34.sp, modifier = Modifier.padding(top = 14.dp))
             // The card as it will look in the list, changing while it is typed.
             if (sections) {

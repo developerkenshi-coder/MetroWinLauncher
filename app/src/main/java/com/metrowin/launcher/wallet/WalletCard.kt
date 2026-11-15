@@ -1,5 +1,6 @@
 package com.metrowin.launcher.wallet
 
+import com.metrowin.launcher.ui.mini.miniPageSide
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
@@ -165,7 +166,7 @@ internal fun CardView(
                     }
                 }
             }
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp)) {
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).miniPageSide()) {
                 MetroText(card.name, size = 32.sp, modifier = Modifier.padding(top = 16.dp, bottom = 12.dp).testTag("wal:name"))
                 if (wide) {
                     Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {

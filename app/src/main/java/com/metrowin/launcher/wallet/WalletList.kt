@@ -1,5 +1,6 @@
 package com.metrowin.launcher.wallet
 
+import com.metrowin.launcher.ui.mini.miniPageSide
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
@@ -117,7 +118,7 @@ internal fun CardList(
                 // Sorted and filtered once for a change of the cards, the search or the order, not at every redraw.
                 val rows = remember(cards, query, kind, prefs.sort) { Wallet.sorted(cards.orEmpty().filter { (kind == null || it.kind == kind) && Wallet.matches(it, query) }, prefs.sort) }
                 val lines = remember(rows, grid, prefs.group.on, kind) { entries(rows, prefs.group.on && kind == null && !grid) }
-                Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+                Column(Modifier.fillMaxSize().miniPageSide()) {
                     when {
                         cards == null -> Skeleton(prefs.motion.on)
                         rows.isEmpty() -> EmptyState(query.isBlank(), onNew)

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.todo
 
+import com.metrowin.launcher.ui.mini.miniPageSide
 import androidx.compose.runtime.saveable.rememberSaveable
 import android.content.Intent
 import android.content.SharedPreferences
@@ -575,7 +576,7 @@ private fun OpenPage(
         if (text.isNotBlank() && onAdd(text, due, listName)) { text = ""; due = 0L }
     }
 
-    Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+    Column(Modifier.fillMaxSize().miniPageSide()) {
         if (day != null) DashboardCard(day)
         if (loaded && groups.isEmpty()) {
             val state = remember { MutableTransitionState(false).apply { targetState = true } }
@@ -665,7 +666,7 @@ private const val MAX_SCROLL = 22f
 
 @Composable
 private fun DonePage(rows: List<TodoItem>, env: RowEnv) {
-    Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+    Column(Modifier.fillMaxSize().miniPageSide()) {
         if (rows.isEmpty()) PageNote(stringResource(R.string.todo_nothing_done), Modifier.testTag("todo:done:empty"))
         val listState = rememberLazyListState()
         LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("todo:done"), state = listState) {
