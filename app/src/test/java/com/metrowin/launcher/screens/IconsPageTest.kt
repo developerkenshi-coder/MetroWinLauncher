@@ -10,7 +10,8 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.semantics.SemanticsActions
 import com.metrowin.launcher.data.IconPackInfo
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.ui.settings.SettingsEnv
@@ -62,10 +63,10 @@ class IconsPageTest : ScreenshotBase() {
         advance(500)
         capture("settings_icons")
         compose.onAllNodesWithTag("icons:none").assertCountEquals(0)
-        compose.onNodeWithTag("icons:pack:2").performScrollTo().performClick()
+        compose.onNodeWithTag("icons:pack:2").performSemanticsAction(SemanticsActions.OnClick)
         advance(100)
         assertEquals("com.pack.two", current.iconPack)
-        compose.onNodeWithTag("icons:pack:0").performScrollTo().performClick()
+        compose.onNodeWithTag("icons:pack:0").performSemanticsAction(SemanticsActions.OnClick)
         advance(100)
         assertEquals("", current.iconPack)
     }
