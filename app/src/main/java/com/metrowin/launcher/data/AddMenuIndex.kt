@@ -34,6 +34,7 @@ object AddMenuIndex {
         AddKind("timer", R.string.add_timer, AddCategory.Time, listOf("countdown", "minutes", "minuti", "conto")),
         AddKind("stopwatch", R.string.add_stopwatch, AddCategory.Time, listOf("chronometer", "laps", "cronometro", "giri")),
         AddKind("countdown", R.string.add_countdown, AddCategory.Time, listOf("days", "date", "event", "giorni", "data", "evento")),
+        AddKind("info", R.string.add_info, AddCategory.Time, listOf("info", "clock", "calendar", "photos", "time", "agenda", "orologio", "calendario", "foto", "informazioni", "super")),
         AddKind("worldclock", R.string.add_worldclock, AddCategory.Time, listOf("clock", "time zone", "city", "orologio", "fuso", "citta")),
         AddKind("reminders", R.string.add_reminders, AddCategory.Time, listOf("remind", "alert", "promemoria", "avviso")),
         AddKind("moon", R.string.add_moon, AddCategory.Time, listOf("phase", "night", "luna", "fase", "notte")),

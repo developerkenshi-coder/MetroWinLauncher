@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_info">InfoTile : heure, calendrier et photos</string>
+    <string name="info_default_label">InfoTile</string>
+    <string name="info_title">InfoTile</string>
+    <string name="info_time">L\'heure</string>
+    <string name="info_calendar">Les prochains événements du calendrier</string>
+    <string name="info_photos">Les dernières photos</string>
+    <string name="info_note">Avec plusieurs activés, la tuile passe de l\'un à l\'autre. Il en reste toujours un. Un appui sur la tuile rouvre ce choix.</string>
+    <string name="info_done">Terminé</string>
+</resources>

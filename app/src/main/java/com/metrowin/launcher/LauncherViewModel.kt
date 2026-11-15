@@ -1824,6 +1824,18 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     fun saveChecklist(id: String, raw: String) = updateShortcut(id) { it.copy(text = raw) }
 
+    /** Pins an info tile that shows the time, the next events and the photos in turn, and gives back its id (its choice opens at once). */
+    fun addInfo(page: Int): String {
+        val id = ShortcutDef.newId(ShortcutKind.Info, "info")
+        addShortcut(
+            ShortcutDef(id, ShortcutKind.Info, getApplication<Application>().getString(R.string.info_default_label), text = com.metrowin.launcher.model.InfoConfig().encode()),
+            page, TileSize.Wide,
+        )
+        return id
+    }
+
+    fun saveInfo(id: String, config: com.metrowin.launcher.model.InfoConfig) = updateShortcut(id) { it.copy(text = config.encode()) }
+
     /** Pins the time in [city]. */
     fun addWorldClock(city: City, page: Int) =
         addShortcut(ShortcutDef(ShortcutDef.newId(ShortcutKind.WorldClock, city.zone), ShortcutKind.WorldClock, city.name, city.zone), page, TileSize.Medium)

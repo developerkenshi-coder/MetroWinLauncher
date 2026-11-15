@@ -94,7 +94,10 @@ object LiveSources {
     /** The kinds of live tile among the apps pinned to Start (inside folders too) that need to read data from the phone. */
     fun wanted(pages: List<List<StartEntry>>, items: List<AppItem>): Set<LiveKind> {
         val pinned = StartPages.pinnedIds(pages)
-        return items.filter { it.id in pinned }.mapNotNullTo(HashSet()) { it.live?.takeIf { kind -> kind in sources } }
+        // An info tile asks for what it shows: the calendar, the photos.
+        return items.filter { it.id in pinned }.flatMapTo(HashSet()) { item ->
+            listOfNotNull(item.live?.takeIf { kind -> kind in sources }) + ((item.data as? TileData.Info)?.config?.liveKinds().orEmpty())
+        }
     }
 
     /** The ids of the photo albums that have a tile on Start. */

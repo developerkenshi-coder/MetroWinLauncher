@@ -128,6 +128,7 @@ fun TileFace(
                 item.data is TileData.Counter -> CounterFace(item, size, width, height, item.data.count, onCounterStep)
                 item.data is TileData.Checklist -> ChecklistFace(item, size, width, height, item.data.raw)
                 item.data is TileData.WorldClock -> WorldClockFace(item, size, width, height, item.data.zone)
+                item.data is TileData.Info -> InfoFace(item, size, width, height, item.data.config, live, seed)
                 item.data is TileData.Moon -> MoonFace(item, size, width, height)
                 item.data is TileData.Place -> PlaceFace(item, size, width, height, item.data.address)
                 item.data is TileData.Timer -> TimerFace(item, size, width, height, item.data.state)

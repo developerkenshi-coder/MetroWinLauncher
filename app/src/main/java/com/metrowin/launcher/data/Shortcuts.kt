@@ -46,6 +46,9 @@ enum class ShortcutKind(val code: String) {
     /** The time in another city; [ShortcutDef.uri] is the time zone. */
     WorldClock("worldclock"),
 
+    /** The info tile: the time, the next events, the photos, as the user chose; [ShortcutDef.text] is what it shows (see [com.metrowin.launcher.model.InfoConfig]). */
+    Info("info"),
+
     /** The phase of the moon. */
     Moon("moon"),
 
@@ -164,6 +167,7 @@ data class ShortcutDef(
             ShortcutKind.Setting -> Launch.Action(uri)
             ShortcutKind.Counter -> Launch.Internal(AppRepository.ROUTE_COUNTER)
             ShortcutKind.Checklist -> Launch.Internal(AppRepository.ROUTE_CHECKLIST)
+            ShortcutKind.Info -> Launch.Internal(AppRepository.ROUTE_INFO)
             ShortcutKind.WorldClock, ShortcutKind.Moon, ShortcutKind.AnalogClock -> Launch.Internal(AppRepository.ROUTE_NONE)
             ShortcutKind.Birthdays -> Launch.Link(CONTACTS_ADDRESS)
             ShortcutKind.Place -> Launch.Link(Places.navigationUri(uri))
@@ -201,6 +205,7 @@ data class ShortcutDef(
             ShortcutKind.AppShortcut -> null
             ShortcutKind.Counter -> Glyph.Calculator
             ShortcutKind.Checklist -> Glyph.Files
+            ShortcutKind.Info -> Glyph.Calendar
             ShortcutKind.WorldClock -> Glyph.Globe
             ShortcutKind.Moon -> Glyph.Moon
             ShortcutKind.Birthdays -> Glyph.Star
@@ -248,6 +253,7 @@ data class ShortcutDef(
         data = when (kind) {
             ShortcutKind.Counter -> TileData.Counter(number.toInt())
             ShortcutKind.Checklist -> TileData.Checklist(text)
+            ShortcutKind.Info -> TileData.Info(com.metrowin.launcher.model.InfoConfig.decode(text))
             ShortcutKind.WorldClock -> TileData.WorldClock(uri)
             ShortcutKind.Moon -> TileData.Moon
             ShortcutKind.Place -> TileData.Place(uri)

@@ -172,6 +172,10 @@ sealed interface TileData {
     @Immutable
     data class WorldClock(val zone: String) : TileData
 
+    /** The info tile: the time, the next events, the photos, as the user chose (see [InfoConfig]). */
+    @Immutable
+    data class Info(val config: InfoConfig) : TileData
+
     /** The phase of the moon today. */
     data object Moon : TileData
 

@@ -23,6 +23,8 @@ import com.metrowin.launcher.ui.start.AddMenu
 import com.metrowin.launcher.data.Countdown
 import com.metrowin.launcher.ui.start.CountdownDialog
 import com.metrowin.launcher.ui.start.ChecklistDialog
+import com.metrowin.launcher.ui.start.InfoTileDialog
+import com.metrowin.launcher.model.InfoConfig
 import com.metrowin.launcher.ui.start.CityPicker
 import com.metrowin.launcher.ui.start.AlbumPicker
 import com.metrowin.launcher.ui.start.GroupPicker
@@ -53,6 +55,7 @@ internal class AddTileState {
     var noteEditingId by mutableStateOf<String?>(null)
     var counterEditingId by mutableStateOf<String?>(null)
     var checklistEditingId by mutableStateOf<String?>(null)
+    var infoEditingId by mutableStateOf<String?>(null)
     var countdownNew by mutableStateOf(false)
     var countdownEditingId by mutableStateOf<String?>(null)
 
@@ -114,6 +117,10 @@ internal fun AddTileState.Dialogs(
                 onWorldClock = {
                     addMenuOpen = false
                     cityPickerOpen = true
+                },
+                onInfo = {
+                    addMenuOpen = false
+                    infoEditingId = vm.addInfo(addPage)
                 },
                 onMoon = {
                     addMenuOpen = false
@@ -346,6 +353,17 @@ internal fun AddTileState.Dialogs(
                     initialRaw = (list.data as? TileData.Checklist)?.raw.orEmpty(),
                     onChange = { raw -> vm.saveChecklist(id, raw) },
                     onClose = { checklistEditingId = null },
+                )
+            }
+        }
+
+        infoEditingId?.let { id ->
+            val info = items.firstOrNull { it.id == id }
+            if (info != null) {
+                InfoTileDialog(
+                    initial = (info.data as? TileData.Info)?.config ?: InfoConfig(),
+                    onChange = { config -> vm.saveInfo(id, config) },
+                    onClose = { infoEditingId = null },
                 )
             }
         }

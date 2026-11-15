@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_info">InfoTile: ora, calendario e foto</string>
+    <string name="info_default_label">InfoTile</string>
+    <string name="info_title">InfoTile</string>
+    <string name="info_time">L\'ora</string>
+    <string name="info_calendar">I prossimi eventi del calendario</string>
+    <string name="info_photos">Le ultime foto</string>
+    <string name="info_note">Con più di uno attivo, il tile passa dall\'uno all\'altro. Ne resta sempre almeno uno. Un tocco sul tile riapre questa scelta.</string>
+    <string name="info_done">Fatto</string>
+</resources>

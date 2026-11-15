@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_info">InfoTile: time, calendar and photos</string>
+    <string name="info_default_label">InfoTile</string>
+    <string name="info_title">InfoTile</string>
+    <string name="info_time">The time</string>
+    <string name="info_calendar">The next events of the calendar</string>
+    <string name="info_photos">The latest photos</string>
+    <string name="info_note">With more than one on, the tile turns from one to the next. One always stays on. A touch on the tile opens this choice.</string>
+    <string name="info_done">Done</string>
+</resources>

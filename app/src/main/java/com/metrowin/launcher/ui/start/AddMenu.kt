@@ -55,6 +55,7 @@ fun AddMenu(
     onCounter: (() -> Unit)? = null,
     onChecklist: (() -> Unit)? = null,
     onWorldClock: (() -> Unit)? = null,
+    onInfo: (() -> Unit)? = null,
     onMoon: (() -> Unit)? = null,
     onBirthdays: (() -> Unit)? = null,
     onPlace: (() -> Unit)? = null,
@@ -87,7 +88,7 @@ fun AddMenu(
     val currentDismiss by rememberUpdatedState(onDismiss)
     val given = mapOf(
         "contact" to onContact, "speeddial" to onSpeedDial, "site" to onSite, "setting" to onSetting, "note" to onNote,
-        "countdown" to onCountdown, "counter" to onCounter, "checklist" to onChecklist, "worldclock" to onWorldClock, "moon" to onMoon,
+        "countdown" to onCountdown, "counter" to onCounter, "checklist" to onChecklist, "worldclock" to onWorldClock, "info" to onInfo, "moon" to onMoon,
         "birthdays" to onBirthdays, "place" to onPlace, "album" to onAlbum, "group" to onGroup, "timer" to onTimer,
         "stopwatch" to onStopwatch, "reminders" to onReminders, "news" to onNews, "finance" to onFinance, "dialgrid" to onDialGrid,
         "peoplehub" to onPeopleHub, "steps" to onSteps, "recorder" to onRecorder, "camera" to onCamera, "wallet" to onWallet,

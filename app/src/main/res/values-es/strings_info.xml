@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_info">InfoTile: hora, calendario y fotos</string>
+    <string name="info_default_label">InfoTile</string>
+    <string name="info_title">InfoTile</string>
+    <string name="info_time">La hora</string>
+    <string name="info_calendar">Los próximos eventos del calendario</string>
+    <string name="info_photos">Las últimas fotos</string>
+    <string name="info_note">Con más de uno activo, el mosaico pasa de uno a otro. Siempre queda uno activo. Un toque en el mosaico abre esta elección.</string>
+    <string name="info_done">Hecho</string>
+</resources>

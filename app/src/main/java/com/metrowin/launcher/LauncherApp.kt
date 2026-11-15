@@ -615,6 +615,7 @@ fun LauncherApp(vm: LauncherViewModel) {
             adding.cityPickerOpen -> InstantBack { adding.cityPickerOpen = false }
             adding.counterEditingId != null -> InstantBack { adding.counterEditingId = null }
             adding.checklistEditingId != null -> InstantBack { adding.checklistEditingId = null }
+            adding.infoEditingId != null -> InstantBack { adding.infoEditingId = null }
             colorPickFor != null -> InstantBack { colorPickFor = null }
             adding.addMenuOpen -> InstantBack { adding.addMenuOpen = false }
             naming.renamingFolderId != null -> InstantBack { naming.renamingFolderId = null }
@@ -775,6 +776,10 @@ fun LauncherApp(vm: LauncherViewModel) {
             }
             AppRepository.ROUTE_CHECKLIST -> {
                 adding.checklistEditingId = item.id
+                return
+            }
+            AppRepository.ROUTE_INFO -> {
+                adding.infoEditingId = item.id
                 return
             }
             AppRepository.ROUTE_NONE -> return
@@ -1203,6 +1208,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 item == null -> Unit
                 item.data is TileData.Counter -> adding.counterEditingId = item.id
                 item.data is TileData.Checklist -> adding.checklistEditingId = item.id
+                item.data is TileData.Info -> adding.infoEditingId = item.id
                 item.targetDay != 0L -> adding.countdownEditingId = item.id
                 item.note != null -> adding.noteEditingId = item.id
             }

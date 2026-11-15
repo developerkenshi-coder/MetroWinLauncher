@@ -342,6 +342,9 @@ class AppRepository(private val context: Context) {
         /** A counter goes up by a touch, a checklist opens its list, and the world clock and the moon do nothing when touched. */
         const val ROUTE_COUNTER = "counter"
         const val ROUTE_CHECKLIST = "checklist"
+
+        /** An info tile opens the choice of what it shows. */
+        const val ROUTE_INFO = "info"
         const val ROUTE_NONE = "none"
 
         /** The tiles that open a page of the launcher itself: an album, a group of people, a timer, the news… */

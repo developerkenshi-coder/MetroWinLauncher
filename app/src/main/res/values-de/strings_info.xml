@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_info">InfoTile: Uhrzeit, Kalender und Fotos</string>
+    <string name="info_default_label">InfoTile</string>
+    <string name="info_title">InfoTile</string>
+    <string name="info_time">Die Uhrzeit</string>
+    <string name="info_calendar">Die nächsten Termine des Kalenders</string>
+    <string name="info_photos">Die neuesten Fotos</string>
+    <string name="info_note">Sind mehrere an, wechselt die Kachel von einem zum nächsten. Eines bleibt immer an. Ein Tippen auf die Kachel öffnet diese Auswahl.</string>
+    <string name="info_done">Fertig</string>
+</resources>
