@@ -1,5 +1,6 @@
 package com.metrowin.launcher.notes
 
+import com.metrowin.launcher.ui.actioncenter.BANNER_MS
 import android.app.Activity
 import android.app.KeyguardManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -24,6 +25,7 @@ import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.DialogFrame
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -213,7 +215,16 @@ fun NotesScreen() {
             onSketch = { page = Page.Sketch(note.id) },
             onDelete = {
                 if (prefs.on(NotePrefs.BIN)) commit(notes.orEmpty().map { if (it.id == note.id) it.copy(deleted = System.currentTimeMillis()) else it })
-                else { note.files.forEach(noteFiles::delete); commit(notes.orEmpty().filter { it.id != note.id }) }
+                else {
+                    // The note leaves the list now, and its files when the banner that offers to bring it back is gone.
+                    // shortcut: closing the app in those seconds leaves the files of the note on the phone, unseen; upgrade with a sweep of orphans.
+                    commit(notes.orEmpty().filter { it.id != note.id })
+                    MetroToast.show(context, context.getString(R.string.notes_deleted), context.getString(R.string.undo)) { commit(notes.orEmpty() + note) }
+                    scope.launch {
+                        delay(BANNER_MS + 1_000L)
+                        if (notes.orEmpty().none { it.id == note.id }) note.files.forEach(noteFiles::delete)
+                    }
+                }
                 page = Page.List
             },
             onClose = {

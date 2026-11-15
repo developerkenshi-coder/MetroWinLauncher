@@ -22,24 +22,28 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * The toast of Windows Phone: the banner of the launcher, with the icon of the app, that comes down from the top and goes by itself.
- * Where no [MetroToastHost] is on screen (a service, the call screen) it falls back to the plain Android toast, so the message is never lost.
+ * Every screen of the launcher and of the mini apps has a host, so use this and not `Toast.makeText`: the banner is the same everywhere. Where no
+ * [MetroToastHost] is on screen (a service) it falls back to the plain Android toast, so the message is never lost (and an [action] is not offered:
+ * shortcut: a window over other apps needs a permission the launcher does not ask for, and Android blocks custom toast views from the background).
+ *
+ * With an [action] the banner has a button (the "Undo" after a deletion): ask for it instead of a dialog that asks "are you sure?".
  */
 object MetroToast {
-    internal data class Message(val id: Long, val text: String, val packageName: String, val until: Long)
+    internal data class Message(val id: Long, val text: String, val packageName: String, val until: Long, val action: String? = null, val onAction: (() -> Unit)? = null)
 
     private val now = MutableStateFlow<Message?>(null)
     internal val current: StateFlow<Message?> = now
     private val hosts = AtomicInteger()
     private var last = 0L
 
-    fun show(context: Context, text: CharSequence) {
+    fun show(context: Context, text: CharSequence, action: String? = null, onAction: (() -> Unit)? = null) {
         if (hosts.get() == 0) {
             Toast.makeText(context.applicationContext, text, Toast.LENGTH_LONG).show()
             return
         }
         synchronized(this) {
             last = maxOf(last + 1, System.currentTimeMillis())
-            now.value = Message(last, text.toString(), context.packageName, System.currentTimeMillis() + BANNER_MS + FADE_MS)
+            now.value = Message(last, text.toString(), context.packageName, System.currentTimeMillis() + BANNER_MS + FADE_MS, action, onAction)
         }
     }
 
@@ -52,7 +56,7 @@ object MetroToast {
     private const val FADE_MS = 600L
 }
 
-/** Where the toasts of [MetroToast] show: once per screen (the launcher, a mini app). Give it the top centre of a Box that fills the screen. */
+/** Where the toasts of [MetroToast] show: once per screen (the launcher, a mini app). Give it the top centre of a Box that fills the screen: the banner leaves the room of the status bar and of the camera hole. */
 @Composable
 fun MetroToastHost(modifier: Modifier = Modifier) {
     // Counted only while its screen is started: a launcher stopped behind another app must not swallow a toast.
@@ -78,5 +82,8 @@ fun MetroToastHost(modifier: Modifier = Modifier) {
         NotificationEntry(key = "toast:${m.id}", packageName = m.packageName, title = "", text = m.text, postTime = m.id, contentIntent = null, autoCancel = true)
     }
     val app = remember(m.packageName) { AppItem(id = "toast:${m.packageName}", label = "", launch = Launch.Link(""), packageName = context.packageName, pinOnly = true) }
-    ToastBanner(entry = entry, app = app, hideText = false, onOpen = { MetroToast.clear(m.id) }, onDismiss = { MetroToast.clear(m.id) }, modifier = modifier)
+    ToastBanner(
+        entry = entry, app = app, hideText = false, onOpen = { MetroToast.clear(m.id) }, onDismiss = { MetroToast.clear(m.id) }, modifier = modifier,
+        action = m.action, onAction = { m.onAction?.invoke(); MetroToast.clear(m.id) },
+    )
 }

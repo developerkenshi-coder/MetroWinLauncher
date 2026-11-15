@@ -1999,6 +1999,7 @@
     <string name="notes_sketch_remove">Quitar el boceto</string>
     <string name="notes_delete">Eliminar la nota</string>
     <string name="notes_delete_confirm">Toca de nuevo para eliminar</string>
+    <string name="notes_deleted">Nota eliminada</string>
     <string name="notes_backup_failed">No se pudo guardar la copia</string>
     <string name="notes_restore_failed">Este archivo no es una copia de las notas</string>
     <string name="notes_save_failed">No se pudieron guardar las notas</string>

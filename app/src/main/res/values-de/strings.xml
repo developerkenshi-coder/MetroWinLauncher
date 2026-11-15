@@ -1982,6 +1982,7 @@
     <string name="notes_sketch_remove">Skizze entfernen</string>
     <string name="notes_delete">Notiz löschen</string>
     <string name="notes_delete_confirm">Zum Löschen erneut tippen</string>
+    <string name="notes_deleted">Notiz gelöscht</string>
     <string name="notes_backup_failed">Die Sicherung konnte nicht gespeichert werden</string>
     <string name="notes_restore_failed">Diese Datei ist keine Sicherung der Notizen</string>
     <string name="notes_save_failed">Die Notizen konnten nicht gespeichert werden</string>

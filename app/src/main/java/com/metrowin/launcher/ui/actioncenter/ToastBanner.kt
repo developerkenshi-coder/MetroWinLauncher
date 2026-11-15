@@ -33,6 +33,7 @@ import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppSquare
 import com.metrowin.launcher.ui.components.MetroText
+import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.theme.panel
@@ -56,6 +57,9 @@ fun ToastBanner(
     modifier: Modifier = Modifier,
     /** The room to leave at the top when the window is given no insets (a window over other apps); null to read them. */
     topInset: androidx.compose.ui.unit.Dp? = null,
+    /** A word on the right of the banner that does something (Undo); null for none. */
+    action: String? = null,
+    onAction: () -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val offset = remember(entry.key) { Animatable(0f) }
@@ -99,6 +103,12 @@ fun ToastBanner(
             if (!hideText && entry.text.isNotBlank()) {
                 MetroText(entry.text, size = 15.sp, weight = FontWeight.Normal, maxLines = 2, color = colors.subtle, modifier = Modifier.testTag("banner:text"))
             }
+        }
+        if (action != null) {
+            MetroText(
+                action, size = 19.sp, weight = FontWeight.SemiBold, color = LocalAccent.current,
+                modifier = Modifier.testTag("banner:action").metroPress(onClick = onAction).padding(start = 14.dp, top = 8.dp, bottom = 8.dp),
+            )
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.todo
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.mini.miniPageSide
 import androidx.compose.runtime.saveable.rememberSaveable
 import android.content.Intent
@@ -8,7 +9,6 @@ import android.content.res.Configuration
 import android.net.Uri
 import android.provider.Settings
 import android.speech.RecognizerIntent
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -122,7 +122,6 @@ private enum class Panel { Options, Lists, Stats, Data, Focus }
 /** How long a thing just ticked stays on the page, drawn done, before it leaves (the strike and the burst are seen). */
 private const val COMPLETE_MS = 350L
 
-private const val UNDO_MS = 8_000L
 
 /** "Now", renewed at the start of every minute: what is late, what is for today and the quick times follow the clock, also across midnight. */
 @Composable
@@ -148,7 +147,6 @@ fun TodoScreen() {
     var panel by remember { mutableStateOf<Panel?>(null) }
     var searching by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
-    var undo by remember { mutableStateOf<List<TodoItem>?>(null) }
     var completing by remember { mutableStateOf(emptySet<Long>()) }
     var health by remember { mutableStateOf<TodoReminders.Health?>(null) }
     var colorTick by remember { mutableIntStateOf(0) }
@@ -159,7 +157,7 @@ fun TodoScreen() {
     val syncLock = remember { Mutex() }
     val all = items.orEmpty()
 
-    fun toast(res: Int, vararg args: Any) = Toast.makeText(context, context.getString(res, *args), Toast.LENGTH_SHORT).show()
+    fun toast(res: Int, vararg args: Any) = MetroToast.show(context, context.getString(res, *args))
 
     fun setOptions(next: TodoOptions) {
         options = next
@@ -242,7 +240,17 @@ fun TodoScreen() {
         return true
     }
 
-    fun offerUndo(removed: List<TodoItem>) { undo = removed }
+    fun restore(removed: List<TodoItem>) {
+        // Their reminders went with them: the ones with a date still to come get a new one.
+        commit(Todos.restore(items.orEmpty(), removed.map { it.copy(reminderId = 0L) }))
+        removed.forEach { syncItem(it.id, null) }
+    }
+
+    /** The banner of every screen says what went and offers to bring it back, in place of a question before. */
+    fun offerUndo(removed: List<TodoItem>) {
+        val text = if (removed.size == 1) context.getString(R.string.todo_deleted) else context.getString(R.string.todo_cleared, removed.size)
+        MetroToast.show(context, text, context.getString(R.string.todo_undo)) { restore(removed) }
+    }
 
     fun delete(item: TodoItem) {
         val live = items.orEmpty().firstOrNull { it.id == item.id } ?: return
@@ -257,13 +265,6 @@ fun TodoScreen() {
         commit(Todos.clearDone(items.orEmpty()))
         scope.launch(Dispatchers.IO) { TodoReminders.releaseAll(context, done) }
         offerUndo(done)
-    }
-
-    fun restore(removed: List<TodoItem>) {
-        // Their reminders went with them: the ones with a date still to come get a new one.
-        commit(Todos.restore(items.orEmpty(), removed.map { it.copy(reminderId = 0L) }))
-        removed.forEach { syncItem(it.id, null) }
-        undo = null
     }
 
     /** What was done from the notification of a reminder is done here too. */
@@ -293,7 +294,6 @@ fun TodoScreen() {
         prefs.registerOnSharedPreferenceChangeListener(listener)
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
-    LaunchedEffect(undo) { if (undo != null) { delay(UNDO_MS); undo = null } }
 
     // --- files, share, speech
 
@@ -407,12 +407,6 @@ fun TodoScreen() {
                     Todos.groups(all, list, Todos.GroupBy.Section, now, options.filter).flatMap { it.items },
                     onDone = { toggle(it) }, onClose = { panel = null },
                 )
-            }
-        }
-        undo?.let { removed ->
-            Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 6.dp).testTag("todo:undo"), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                PageNote(if (removed.size == 1) stringResource(R.string.todo_deleted) else stringResource(R.string.todo_cleared, removed.size), Modifier.weight(1f))
-                MetroButton(stringResource(R.string.todo_undo), Modifier.testTag("todo:undo:button")) { restore(removed) }
             }
         }
         if (!editPage && panel != Panel.Focus) {

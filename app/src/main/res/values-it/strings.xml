@@ -1992,6 +1992,7 @@
     <string name="notes_sketch_remove">Rimuovi lo schizzo</string>
     <string name="notes_delete">Elimina la nota</string>
     <string name="notes_delete_confirm">Tocca di nuovo per eliminare</string>
+    <string name="notes_deleted">Nota eliminata</string>
     <string name="notes_backup_failed">Non è stato possibile salvare il backup</string>
     <string name="notes_restore_failed">Questo file non è un backup delle note</string>
     <string name="notes_save_failed">Non è stato possibile salvare le note</string>

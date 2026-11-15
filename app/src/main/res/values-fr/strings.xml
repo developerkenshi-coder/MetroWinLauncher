@@ -1999,6 +1999,7 @@
     <string name="notes_sketch_remove">Retirer le croquis</string>
     <string name="notes_delete">Supprimer la note</string>
     <string name="notes_delete_confirm">Touchez à nouveau pour supprimer</string>
+    <string name="notes_deleted">Note supprimée</string>
     <string name="notes_backup_failed">La sauvegarde n’a pas pu être enregistrée</string>
     <string name="notes_restore_failed">Ce fichier n’est pas une sauvegarde des notes</string>
     <string name="notes_save_failed">Les notes n’ont pas pu être enregistrées</string>

@@ -150,7 +150,6 @@ internal fun NoteEditor(
     var more by remember { mutableStateOf(false) }
     var present by remember { mutableStateOf(false) }
     var viewing by remember { mutableIntStateOf(-1) }
-    var confirmDelete by remember { mutableStateOf(false) }
     var folderText by remember(note.id) { mutableStateOf(note.folder) }
     val history = remember(note.id) { NoteHistory(note.text) }
     // The steps of undo and redo are not state: this changes when they do, and the two buttons are drawn again.
@@ -376,7 +375,7 @@ internal fun NoteEditor(
     }
     if (viewing in pictures.indices) PhotoViewer(pictures, viewing, noteFiles) { viewing = -1 }
     if (more) {
-        DialogFrame(onCancel = { more = false; confirmDelete = false }) {
+        DialogFrame(onCancel = { more = false }) {
             MetroText(stringResource(R.string.notes_color), size = 16.sp, weight = FontWeight.Normal, color = colors.subtle)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 (0..NoteCodec.MAX_COLOR).forEach { index ->
@@ -420,8 +419,9 @@ internal fun NoteEditor(
             if (note.strokes.isNotEmpty()) MetroButton(stringResource(R.string.notes_export_sketch), Modifier.fillMaxWidth()) { png.launch("$fileName.png") }
             if (note.strokes.isNotEmpty()) MetroButton(stringResource(R.string.notes_sketch_remove), Modifier.fillMaxWidth()) { onChange(snapshot().copy(strokes = emptyList())); more = false }
             if (body.text.isNotBlank()) MetroButton(stringResource(R.string.notes_present), Modifier.fillMaxWidth().testTag("notes:presentation")) { more = false; present = true }
-            MetroButton(stringResource(if (confirmDelete) R.string.notes_delete_confirm else if (prefs.on(NotePrefs.BIN)) R.string.notes_to_bin else R.string.notes_delete), Modifier.fillMaxWidth().testTag("notes:delete"), role = if (confirmDelete) ButtonRole.Danger else ButtonRole.Normal) {
-                if (confirmDelete) onDelete() else confirmDelete = true
+            // No question first: the banner that follows has an Undo.
+            MetroButton(stringResource(if (prefs.on(NotePrefs.BIN)) R.string.notes_to_bin else R.string.notes_delete), Modifier.fillMaxWidth().testTag("notes:delete"), role = ButtonRole.Danger) {
+                onDelete()
             }
         }
     }
