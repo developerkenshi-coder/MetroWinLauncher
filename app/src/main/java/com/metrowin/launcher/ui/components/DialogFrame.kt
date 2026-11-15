@@ -7,6 +7,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -40,8 +41,10 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.dismiss
 import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -143,6 +146,21 @@ fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, title: Stri
             }
             CompositionLocalProvider(LocalInDialog provides true) { content() }
         }
+    }
+}
+
+/**
+ * The two buttons that close a dialog that asks for something (a note, a date, a name): the answer in the accent on the left, and the way out
+ * beside it. The pickers of dates and times, and the dialogs of Start, all end with this.
+ */
+@Composable
+fun DialogButtons(
+    onOk: () -> Unit, onCancel: () -> Unit, okTag: String, cancelTag: String, modifier: Modifier = Modifier,
+    okText: String = stringResource(android.R.string.ok),
+) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
+        MetroButton(okText, Modifier.weight(1f).testTag(okTag), role = ButtonRole.Primary, onClick = onOk)
+        MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag(cancelTag), onClick = onCancel)
     }
 }
 

@@ -14,6 +14,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroDatePicker
 import com.metrowin.launcher.ui.components.MetroTimePicker
+import com.metrowin.launcher.ui.components.DialogButtons
 import com.metrowin.launcher.ui.components.DialogFrame
 import androidx.compose.foundation.layout.fillMaxWidth
 import java.time.Instant
@@ -32,8 +33,9 @@ fun DateTimeDialog(initial: Long, dateOnly: Boolean = false, onChoose: (Long) ->
     DialogFrame(onCancel = onCancel) {
         MetroDatePicker(date, { date = it }, years = (LocalDate.now().year - 5)..(LocalDate.now().year + 15), tag = "dt:date")
         if (!dateOnly) MetroTimePicker(time, DateFormat.is24HourFormat(context), { time = it }, tag = "dt:time")
-        MetroButton(stringResource(R.string.todo_save), Modifier.fillMaxWidth().testTag("dt:ok")) {
-            onChoose(LocalDateTime.of(date, if (dateOnly) java.time.LocalTime.MIDNIGHT else time).atZone(zone).toInstant().toEpochMilli())
-        }
+        DialogButtons(
+            { onChoose(LocalDateTime.of(date, if (dateOnly) java.time.LocalTime.MIDNIGHT else time).atZone(zone).toInstant().toEpochMilli()) },
+            onCancel, "dt:ok", "dt:cancel", okText = stringResource(R.string.todo_save),
+        )
     }
 }

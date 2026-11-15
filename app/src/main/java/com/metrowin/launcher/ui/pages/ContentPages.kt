@@ -12,6 +12,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.components.MetroButton
+import com.metrowin.launcher.ui.components.DialogButtons
 import com.metrowin.launcher.ui.components.MetroDatePicker
 import com.metrowin.launcher.ui.components.MetroTimePicker
 import java.time.LocalDate
@@ -238,13 +239,10 @@ fun RemindersPage(
             Column(Modifier.padding(top = Spacing.Large).testTag("reminders:wheels"), verticalArrangement = Arrangement.spacedBy(Spacing.Medium)) {
                 MetroDatePicker(chosenDate, { chosenDate = it }, years = LocalDate.now().year..LocalDate.now().year + 20, tag = "reminders:date")
                 MetroTimePicker(chosenTime, android.text.format.DateFormat.is24HourFormat(context), { chosenTime = it }, tag = "reminders:time")
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
-                    MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("reminders:wheels:ok")) {
-                        choosing = false
-                        add(millis(LocalDateTime.of(chosenDate, chosenTime)))
-                    }
-                    MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag("reminders:wheels:cancel")) { choosing = false }
-                }
+                DialogButtons(
+                    { choosing = false; add(millis(LocalDateTime.of(chosenDate, chosenTime))) },
+                    { choosing = false }, "reminders:wheels:ok", "reminders:wheels:cancel",
+                )
             }
         }
         if (!canExact) {

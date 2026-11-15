@@ -629,7 +629,8 @@ class ScreensTest : ScreenshotBase() {
     fun contextMenuOpensBelowARowAtTheTop() {
         val item = sampleItems().first { it.id == "stock:photos" }
         show { AppContextMenu(MenuState(item, top = 300f, height = 192f), pinned = false, onPinToggle = {}, onUninstall = {}, onDismiss = {}) }
-        advance(100)
+        // The menu fades in over 160 ms: wait for it to be solid.
+        advance(300)
         val screen = capture("menu_below")
         // The row spans y 300..492: the menu panel is right under it and nothing is above it.
         assertEquals(MENU_PANEL, screen.getPixel(1000, 552))
@@ -640,7 +641,8 @@ class ScreensTest : ScreenshotBase() {
     fun contextMenuOpensAboveARowAtTheBottom() {
         val item = sampleItems().first { it.id == "app:Chrome" }
         show { AppContextMenu(MenuState(item, top = 1900f, height = 192f), pinned = true, onPinToggle = {}, onUninstall = {}, onDismiss = {}) }
-        advance(100)
+        // The menu fades in over 160 ms: wait for it to be solid.
+        advance(300)
         val screen = capture("menu_above")
         // The row spans y 1900..2092: the menu panel is right above it and nothing is below it.
         assertEquals(MENU_PANEL, screen.getPixel(1000, 1840))
