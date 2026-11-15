@@ -17,6 +17,7 @@ import com.metrowin.launcher.messages.MessagesOptions
 import com.metrowin.launcher.recorder.Opt as RecorderOpt
 import com.metrowin.launcher.recorder.RecorderOptions
 import com.metrowin.launcher.recorder.RecorderPrefs
+import com.metrowin.launcher.recorder.recorderLabel
 
 /**
  * One switch of a mini app as the settings show it. It reads and writes the very preference the "options" menu of the app does, so the two
