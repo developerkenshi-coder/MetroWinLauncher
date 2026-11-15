@@ -77,7 +77,7 @@ private fun StyleChoice(style: ThemeStyle, accent: Color, dark: Boolean, isSelec
     val frame = LocalMetroColors.current.foreground
     val name = stringResource(style.label)
     // The picture is drawn in the look it shows, whatever look is in use now.
-    Row(
+    Column(
         Modifier
             .fillMaxWidth()
             .testTag("style:${style.code}")
@@ -88,19 +88,17 @@ private fun StyleChoice(style: ThemeStyle, accent: Color, dark: Boolean, isSelec
             .metroPress(onClick = onClick)
             .then(if (isSelected) Modifier.border(3.dp, frame) else Modifier.border(1.dp, frame.copy(alpha = 0.25f)))
             .padding(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
+        // Both miniatures above the name, so that the description keeps the whole width (a long German word does not break).
         MetroTheme(accent = accent, dark = dark, style = style) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Small)) {
                 StylePreview()
                 MiniPreview()
             }
         }
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            MetroText(name, size = 21.sp)
-            SettingHint(stringResource(style.description))
-        }
+        Spacer(Modifier.height(Spacing.Small))
+        MetroText(name, size = 21.sp)
+        SettingHint(stringResource(style.description))
     }
 }
 
