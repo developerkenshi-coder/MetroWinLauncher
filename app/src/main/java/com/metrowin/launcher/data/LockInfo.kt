@@ -3,6 +3,8 @@ package com.metrowin.launcher.data
 import android.app.AlarmManager
 import android.content.Context
 import androidx.compose.runtime.Immutable
+import com.metrowin.launcher.todo.TodoStore
+import com.metrowin.launcher.todo.Todos
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -19,6 +21,8 @@ data class LockInfo(
     val weather: WeatherData? = null,
     /** The next event of the calendar (the next 24 hours), or null: none, or no permission. */
     val nextEvent: LiveEvent? = null,
+    /** The text of the thing to do that is late or due soonest (next 24 hours), or null: none. */
+    val nextTodo: String? = null,
 )
 
 /** Text of the lock screen, kept pure so it can be tested in any language. */
@@ -55,6 +59,8 @@ class LockInfoSource(
     private val context: Context,
     /** Asks the calendar for the next event after the given time; a query. */
     private val findEvent: (Long) -> LiveEvent? = { now -> CalendarSearch(context).next(now, DAY_MILLIS) },
+    /** Asks the things to do for the one that is late or due soonest; reads a file. */
+    private val findTodo: (Long) -> String? = { now -> Todos.nextForLock(TodoStore(context).load(), now)?.text },
 ) {
     private val alarms = context.getSystemService(AlarmManager::class.java)
 
@@ -73,6 +79,7 @@ class LockInfoSource(
         battery = runCatching { BatteryInfo.read(context) }.getOrNull(),
         weather = runCatching { weatherRepository.cached() }.getOrNull(),
         nextEvent = if (withEvent) nextEvent(nowMillis) else null,
+        nextTodo = if (withEvent) runCatching { findTodo(nowMillis) }.getOrNull() else null,
     )
 
     /**

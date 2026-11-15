@@ -39,6 +39,7 @@ import com.metrowin.launcher.notifications.OverlayWindowOwner
 import com.metrowin.launcher.notifications.overBars
 import com.metrowin.launcher.notifications.rememberMediaInfo
 import com.metrowin.launcher.ui.lock.LockCall
+import com.metrowin.launcher.ui.lock.LockTarget
 import com.metrowin.launcher.ui.lock.MetroLockScreen
 import com.metrowin.launcher.ui.lock.hiddenOnLock
 import com.metrowin.launcher.ui.lock.lockOptions
@@ -178,6 +179,12 @@ internal class LockOverlay(private val service: AccessibilityService) {
         hide()
     }
 
+    /** A line or a card of the lock screen opens a mini app, which comes up over Android's lock once it is open (the page turn is the way in). */
+    private fun openApp(target: LockTarget) {
+        runCatching { service.startActivity(target.intent(service)) }
+        hide()
+    }
+
     private fun show() {
         if (shown != null || !quiet() || !SettingsStore.of(service).lockOverlayOn()) return
         val decision = decide()
@@ -219,6 +226,7 @@ internal class LockOverlay(private val service: AccessibilityService) {
                         onUnlocked = ::hide,
                         status = rememberLockStatus(settings),
                         media = rememberMediaInfo(settings.lockShowMusic),
+                        onOpen = ::openApp,
                         call = line?.let { LockCall(it.title, it.connectedAt, audio.muted, { CallManager.mute(!audio.muted) }, { CallManager.hangUp(it.id) }, ::openCall) },
                     )
                 }

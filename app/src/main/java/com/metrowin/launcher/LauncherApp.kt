@@ -2132,6 +2132,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                         photo = lockPhoto ?: startBackground,
                         options = settings.lockOptions(),
                         onUnlock = { lockPreviewOpen = false },
+                        onOpen = { target -> lockPreviewOpen = false; appContext.startActivity(target.intent(appContext)) },
                         status = rememberLockStatus(settings),
                         media = rememberMediaInfo(settings.lockShowMusic),
                     )

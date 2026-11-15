@@ -1095,6 +1095,7 @@
     <string name="lock_show_weather_hint">La météo que la tuile Météo a récupérée en dernier. L’écran de verrouillage ne récupère rien.</string>
     <string name="lock_show_event">afficher le prochain événement</string>
     <string name="lock_show_event_hint">Le prochain événement de votre calendrier dans les 24 heures à venir. Nécessite l’autorisation du calendrier. Toute personne qui voit l’écran peut le lire.</string>
+    <string name="lock_recording">enregistrement en cours</string>
     <string name="sec_start">écran start</string>
     <string name="sec_start_desc">Tuiles, nombre d’écrans Start, où est l’accueil, dispositions, Start secondaire</string>
     <string name="sec_search">recherche</string>

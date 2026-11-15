@@ -1088,6 +1088,7 @@
     <string name="lock_show_weather_hint">Il meteo preso per ultimo dal tile del meteo. La schermata di blocco non scarica nulla.</string>
     <string name="lock_show_event">mostra il prossimo evento</string>
     <string name="lock_show_event_hint">Il prossimo evento del calendario nelle prossime 24 ore. Serve il permesso del calendario. Chiunque veda lo schermo può leggerlo.</string>
+    <string name="lock_recording">registrazione in corso</string>
     <string name="sec_start">schermata start</string>
     <string name="sec_start_desc">Riquadri, numero di schermate Start, dove sta la home, disposizioni, Start secondario</string>
     <string name="sec_search">ricerca</string>

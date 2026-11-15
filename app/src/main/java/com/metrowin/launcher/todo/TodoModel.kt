@@ -205,6 +205,10 @@ object Todos {
     /** The list called [name] taken away: its items go to the main list, none is lost. */
     fun deleteList(items: List<TodoItem>, name: String): List<TodoItem> = items.map { if (it.list == name) it.copy(list = "") else it }
 
+    /** The open item with a date that comes first among those late or due in the next [hours]: the reminder the lock screen tells. */
+    fun nextForLock(items: List<TodoItem>, now: Long, hours: Int = 24): TodoItem? =
+        items.filter { !it.done && it.due != 0L && it.due <= now + hours * 3_600_000L }.minByOrNull { it.due }
+
     // --- how it went
 
     class Stats(val open: Int, val done: Int, val late: Int, val doneWeek: Int, val perDay: List<Int>)

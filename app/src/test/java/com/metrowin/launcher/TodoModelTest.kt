@@ -170,4 +170,20 @@ class TodoModelTest {
         assertEquals(false, Todos.intact("nope"))
         assertEquals(false, Todos.intact("""[{"id":1,"text":"ok"},{"id":2}]"""))
     }
+
+    @Test
+    fun `the lock screen tells the open item with a date that is late or due within a day, the earliest first`() {
+        val now = 1_000_000_000L
+        val hour = 3_600_000L
+        val items = listOf(
+            TodoItem(1, "no date"),
+            TodoItem(2, "done", done = true, due = now - hour),
+            TodoItem(3, "tomorrow week", due = now + 30 * hour),
+            TodoItem(4, "soon", due = now + 5 * hour),
+            TodoItem(5, "late", due = now - 2 * hour),
+        )
+        assertEquals("late", Todos.nextForLock(items, now)?.text)
+        assertEquals("soon", Todos.nextForLock(items.filter { it.id != 5L }, now)?.text)
+        assertEquals(null, Todos.nextForLock(listOf(items[0], items[1], items[2]), now))
+    }
 }

@@ -35,6 +35,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.draw.clip
+import com.metrowin.launcher.data.VoiceRecorder
+import com.metrowin.launcher.ui.theme.LocalStyle
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -202,6 +206,8 @@ fun MetroLockScreen(
     media: MediaInfo? = null,
     /** A call that is on: a card with the time, mute and end call, so the call can be handled without leaving the lock screen. */
     call: LockCall? = null,
+    /** A line or a card that opens a mini app is touched: the host lifts the screen and opens it. Null: they are not touchable (a preview). */
+    onOpen: ((LockTarget) -> Unit)? = null,
     /** A fingerprint is saved on the phone and Android takes it now: a line says that it opens it. */
     fingerprint: Boolean = false,
     /** Android asks for the PIN (the fingerprint is not taken now): the line says to swipe up and use it. */
@@ -311,7 +317,7 @@ fun MetroLockScreen(
         }
         val clock = @Composable { LockClock(time, is24Hour, locale) }
         val date = @Composable { LockDate(time, locale) }
-        val lines = @Composable { LockLines(info, options, zone, is24Hour, locale, countOnly = !hasStatus) }
+        val lines = @Composable { LockLines(info, options, zone, is24Hour, locale, countOnly = !hasStatus, onOpen) }
         if (maxWidth > maxHeight * WIDE_RATIO && (playing != null || hasStatus)) {
             // A screen that is wide and short (a phone on its dock): the time on the left, what is going on on the right.
             Row(
@@ -328,7 +334,7 @@ fun MetroLockScreen(
                 }
                 Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     if (call != null) CallCard(call)
-                    if (playing != null) MusicCard(playing)
+                    if (playing != null) MusicCard(playing, onOpen)
                     Spacer(Modifier.weight(1f))
                     if (hasStatus) Box(Modifier.shrinkToHeight(MIN_FIT)) { QuickStatus(status, options.iconsOneRow) }
                 }
@@ -337,7 +343,7 @@ fun MetroLockScreen(
             Column(Modifier.fillMaxSize().then(rise).lockTopPadding(holes).navigationBarsPadding().padding(start = 24.dp, end = 24.dp, top = if (playing != null || call != null) 64.dp else 16.dp, bottom = 40.dp + reserve)) {
                 if (call != null) CallCard(call)
                 if (call != null && playing != null) Spacer(Modifier.height(16.dp))
-                if (playing != null) MusicCard(playing)
+                if (playing != null) MusicCard(playing, onOpen)
                 Spacer(Modifier.weight(1f))
                 // Last to be given room: on a short screen what is written gets smaller instead of being pushed off the screen.
                 Column(Modifier.shrinkToHeight(MIN_FIT), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -404,7 +410,7 @@ private fun LockDate(time: java.time.ZonedDateTime, locale: Locale) {
  * there is no row of icons ([countOnly]) to tell it.
  */
 @Composable
-private fun LockLines(info: LockInfo, options: LockOptions, zone: ZoneId, is24Hour: Boolean, locale: Locale, countOnly: Boolean) {
+private fun LockLines(info: LockInfo, options: LockOptions, zone: ZoneId, is24Hour: Boolean, locale: Locale, countOnly: Boolean, onOpen: ((LockTarget) -> Unit)?) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         val weather = info.weather
         if (options.showWeather && weather != null) {
@@ -426,8 +432,12 @@ private fun LockLines(info: LockInfo, options: LockOptions, zone: ZoneId, is24Ho
                     m < 60 -> stringResource(R.string.lock_in_minutes, m)
                     else -> stringResource(R.string.lock_in_hours, m / 60)
                 }
-            })
+            }, onClick = onOpen.opening(LockTarget.Calendar))
         }
+        // The thing to do that is late or due soonest is agenda too: it follows the choice of the event.
+        val todo = info.nextTodo
+        if (options.showEvent && todo != null) LockLine(Glyph.Todo, todo, "lock:todo", 3, onClick = onOpen.opening(LockTarget.Todo))
+        if (VoiceRecorder.active) LockLine(Glyph.Mic, stringResource(R.string.lock_recording), "lock:recording", 4, onClick = onOpen.opening(LockTarget.Recorder))
         if (countOnly && options.showNotifications && info.notifications > 0) {
             LockLine(Glyph.Bell, info.notifications.toString(), "lock:notifications")
         }
@@ -512,9 +522,11 @@ private fun PackageIcon(packageName: String, size: Dp, modifier: Modifier = Modi
 
 /** The song that plays: its cover, its name and artist, and the buttons that go back, pause or play, and skip. */
 @Composable
-private fun MusicCard(media: MediaInfo, modifier: Modifier = Modifier) {
-    Row(modifier.testTag("lock:music"), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(72.dp).background(Color.White.copy(alpha = 0.12f)), contentAlignment = Alignment.Center) {
+private fun MusicCard(media: MediaInfo, onOpen: ((LockTarget) -> Unit)?, modifier: Modifier = Modifier) {
+    val open = onOpen.opening(LockTarget.NowPlaying)
+    val press = if (open != null) Modifier.metroPress(onClick = open) else Modifier
+    LockCard("lock:music", modifier) { Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(72.dp).then(press).background(Color.White.copy(alpha = 0.12f)), contentAlignment = Alignment.Center) {
             val art = media.art
             if (art != null) {
                 Image(art, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().testTag("lock:music:art"))
@@ -523,8 +535,10 @@ private fun MusicCard(media: MediaInfo, modifier: Modifier = Modifier) {
             }
         }
         Column(Modifier.weight(1f).padding(start = 14.dp)) {
-            MetroText(media.title, size = 20.sp, color = Color.White, maxLines = 2, modifier = Modifier.testTag("lock:music:title"))
-            if (media.artist.isNotBlank()) MetroText(media.artist, size = 15.sp, color = Color.White.copy(alpha = 0.85f), weight = FontWeight.Normal, maxLines = 2)
+            Column(press.testTag("lock:music:open")) {
+                MetroText(media.title, size = 20.sp, color = Color.White, maxLines = 2, modifier = Modifier.testTag("lock:music:title"))
+                if (media.artist.isNotBlank()) MetroText(media.artist, size = 15.sp, color = Color.White.copy(alpha = 0.85f), weight = FontWeight.Normal, maxLines = 2)
+            }
             Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 TransportButton(Transport.Previous, stringResource(R.string.lock_music_previous), "lock:music:previous") { media.previous() }
                 TransportButton(
@@ -535,7 +549,7 @@ private fun MusicCard(media: MediaInfo, modifier: Modifier = Modifier) {
                 TransportButton(Transport.Next, stringResource(R.string.lock_music_next), "lock:music:next") { media.next() }
             }
         }
-    }
+    } }
 }
 
 /** What the lock screen shows of a call that is on, and what it does with it. */
@@ -544,7 +558,7 @@ class LockCall(val title: String, val connectedAt: Long, val muted: Boolean, val
 /** The name and the time of the call (a touch opens the screen of the call), with the buttons to mute it and to end it. */
 @Composable
 private fun CallCard(call: LockCall, modifier: Modifier = Modifier) {
-    Column(modifier.testTag("lock:call"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    LockCard("lock:call", modifier) { Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Column(Modifier.fillMaxWidth().testTag("lock:call:open").metroPress(onClick = call.onOpen)) {
             MetroText(call.title.ifEmpty { stringResource(R.string.incall_unknown) }, size = 24.sp, color = Color.White, maxLines = 1)
             MetroText(
@@ -556,7 +570,7 @@ private fun CallCard(call: LockCall, modifier: Modifier = Modifier) {
             CallChoice(stringResource(R.string.incall_mute), if (call.muted) Color.White else Color.White.copy(alpha = 0.2f), if (call.muted) Color.Black else Color.White, "lock:call:mute", Modifier.weight(1f), call.onMute)
             CallChoice(stringResource(R.string.incall_hang_up), Danger, Color.White, "lock:call:hangup", Modifier.weight(1f), call.onHangUp)
         }
-    }
+    } }
 }
 
 @Composable
@@ -609,7 +623,7 @@ private fun TransportButton(kind: Transport, description: String, tag: String, o
 }
 
 @Composable
-private fun LockLine(glyph: Glyph, text: String, tag: String, index: Int = 0, detail: String? = null) {
+private fun LockLine(glyph: Glyph, text: String, tag: String, index: Int = 0, detail: String? = null, onClick: (() -> Unit)? = null) {
     val reduced = LocalReduceMotion.current
     var other by remember { mutableStateOf(false) }
     // A line with a detail shows it for a moment now and then, the old text sliding up and the new one coming in under it; with reduced motion it stays as it is.
@@ -623,7 +637,10 @@ private fun LockLine(glyph: Glyph, text: String, tag: String, index: Int = 0, de
             delay(5_000L)
         }
     }
-    Row(Modifier.featherIn(index, stepMs = 90).padding(top = 4.dp).testTag(tag), verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        Modifier.featherIn(index, stepMs = 90).padding(top = 4.dp).then(if (onClick != null) Modifier.heightIn(min = 48.dp).metroPress(onClick = onClick) else Modifier).testTag(tag),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         GlyphIcon(glyph, 24.dp, color = Color.White)
         Spacer(Modifier.width(12.dp))
         AnimatedContent(
@@ -635,6 +652,20 @@ private fun LockLine(glyph: Glyph, text: String, tag: String, index: Int = 0, de
 }
 
 private const val ICON_PX = 96
+
+/** The height both cards (the music and the call) have at least, so one does not jump to the size of the other. */
+private val CARD_MIN = 128.dp
+
+private fun ((LockTarget) -> Unit)?.opening(target: LockTarget): (() -> Unit)? = this?.let { open -> { open(target) } }
+
+/** The card of the lock screen: the same height at least, corners of the look, tint and margin for the music and the call. */
+@Composable
+private fun LockCard(tag: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Box(
+        modifier.fillMaxWidth().heightIn(min = CARD_MIN).clip(LocalStyle.current.innerShape).background(Color.White.copy(alpha = 0.12f)).padding(14.dp).testTag(tag),
+        contentAlignment = Alignment.CenterStart,
+    ) { content() }
+}
 
 /** The radius of the spot for the finger, as a share of the width: what the sensor of a phone with one under the screen takes. */
 internal const val SENSOR_R = 0.072f

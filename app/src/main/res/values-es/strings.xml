@@ -1095,6 +1095,7 @@
     <string name="lock_show_weather_hint">El clima que descargó por última vez el mosaico del clima. La pantalla de bloqueo no descarga nada.</string>
     <string name="lock_show_event">mostrar el próximo evento</string>
     <string name="lock_show_event_hint">El próximo evento de tu calendario en las próximas 24 horas. Necesita el permiso del calendario. Cualquiera que vea la pantalla puede leerlo.</string>
+    <string name="lock_recording">grabación en curso</string>
     <string name="sec_start">pantalla start</string>
     <string name="sec_start_desc">Mosaicos, número de pantallas Start, dónde está el inicio, disposiciones, Start secundario</string>
     <string name="sec_search">búsqueda</string>

@@ -1084,6 +1084,7 @@
     <string name="lock_show_weather_hint">The weather the weather tile fetched last. Nothing is fetched by the lock screen.</string>
     <string name="lock_show_event">show the next event</string>
     <string name="lock_show_event_hint">The next event of your calendar in the next 24 hours. Needs the calendar permission. Anyone who sees the screen can read it.</string>
+    <string name="lock_recording">recording in progress</string>
     <string name="sec_start">start screen</string>
     <string name="sec_start_desc">Tiles, number of Start screens, where home is, layouts, the second Start</string>
     <string name="sec_search">search</string>
