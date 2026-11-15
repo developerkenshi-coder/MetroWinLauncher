@@ -1085,6 +1085,9 @@
     <string name="lock_show_event">Nächsten Termin anzeigen</string>
     <string name="lock_show_event_hint">Der nächste Termin deines Kalenders in den kommenden 24 Stunden. Erfordert die Kalenderberechtigung. Jeder, der den Bildschirm sieht, kann ihn lesen.</string>
     <string name="lock_recording">Aufnahme läuft</string>
+    <string name="ac_a11y_expand">Mehr anzeigen</string>
+    <string name="ac_a11y_collapse">Weniger anzeigen</string>
+    <string name="ac_a11y_close">Panel schließen</string>
     <string name="sec_start">Start-Bildschirm</string>
     <string name="sec_start_desc">Kacheln, Anzahl der Start-Bildschirme, wo der Home liegt, Anordnungen, zweiter Start</string>
     <string name="sec_search">Suche</string>

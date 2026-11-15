@@ -73,6 +73,10 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.dismiss
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.layout.layout
@@ -708,7 +712,8 @@ private fun ExpandChevron(expanded: Boolean, onClick: () -> Unit) {
     val color = LocalMetroColors.current.foreground
     // The arrow turns over as the part it opens comes out.
     val turn by animateFloatAsState(if (expanded) 1f else 0f, metroTween(durationMillis = 240, easing = Motion.Decelerate), label = "chevron")
-    Box(Modifier.size(48.dp).metroPress(onClick = onClick), contentAlignment = Alignment.Center) {
+    val description = stringResource(if (expanded) R.string.ac_a11y_collapse else R.string.ac_a11y_expand)
+    Box(Modifier.size(48.dp).metroPress(onClick = onClick).semantics { contentDescription = description }, contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(18.dp, 10.dp)) {
             val stroke = 2.4.dp.toPx()
             val tipY = size.height * (1f - turn)
@@ -724,10 +729,12 @@ private fun ExpandChevron(expanded: Boolean, onClick: () -> Unit) {
 private fun PullUpHandle(onClose: () -> Unit) {
     val colors = LocalMetroColors.current
     val currentClose by rememberUpdatedState(onClose)
+    val description = stringResource(R.string.ac_a11y_close)
     Box(
         Modifier
             .fillMaxWidth()
-            .height(44.dp)
+            .height(48.dp)
+            .semantics { contentDescription = description; role = Role.Button; onClick(label = description) { currentClose(); true } }
             .pointerInput(Unit) { detectTapGestures { currentClose() } },
         contentAlignment = Alignment.Center,
     ) {
