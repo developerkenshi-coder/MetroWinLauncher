@@ -1525,6 +1525,8 @@
     <string name="start_large_hint">Offre la dimensione grande (quattro riquadri per quattro) nella barra di modifica e nella freccia di ridimensionamento. I riquadri già grandi restano grandi.</string>
     <string name="start_groups">Titoli dei gruppi di riquadri</string>
     <string name="start_groups_hint">Mostra i titoli scritti sopra i gruppi di riquadri e fa iniziare ogni gruppo su una riga a sé. Spento: Start è una griglia semplice; i titoli restano salvati.</string>
+    <string name="start_panels">Start e app affiancati</string>
+    <string name="start_panels_hint">Su uno schermo largo (tablet, finestra grande) Start e l\'elenco delle app si vedono affiancati invece che a un passo di scorrimento. Un telefono, anche in orizzontale, mantiene le pagine.</string>
     <string name="start_collection">Stile collage</string>
     <string name="start_collection_hint">Offre il collage (tante piccole immagini affiancate) ai riquadri che hanno foto.</string>
     <string name="start_agenda">Agenda sul riquadro Calendario</string>

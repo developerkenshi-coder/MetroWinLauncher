@@ -1515,6 +1515,8 @@
     <string name="start_large_hint">Offers the Large size (four tiles across and four down) in the edit bar and the resize arrow. Tiles already large stay large.</string>
     <string name="start_groups">Titles of groups of tiles</string>
     <string name="start_groups_hint">Shows the titles written above groups of tiles, and starts each group on a row of its own. Off: Start is one plain grid; the titles are kept.</string>
+    <string name="start_panels">Start and apps side by side</string>
+    <string name="start_panels_hint">On a wide screen (a tablet, a big window) Start and the app list are shown side by side instead of one swipe away. A phone, also on its side, keeps the pages.</string>
     <string name="start_collection">Collage style</string>
     <string name="start_collection_hint">Offers the collage (many small pictures side by side) to the tiles that have photos.</string>
     <string name="start_agenda">Agenda on the Calendar tile</string>

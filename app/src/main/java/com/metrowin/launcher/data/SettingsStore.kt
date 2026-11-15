@@ -304,6 +304,8 @@ data class LauncherSettings(
     val clockZone: String = "",
     /** The Large size is offered to the tiles, and cycled to by the resize arrow. */
     val largeTiles: Boolean = true,
+    /** On a wide screen (a tablet) Start and the app list are side by side, not one swipe away. */
+    val twoPanels: Boolean = true,
     /** The titles of groups of tiles are shown above them. */
     val groupTitles: Boolean = true,
     /** The Collection style (a collage of pictures) is offered to the tiles that have pictures. */

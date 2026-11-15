@@ -103,6 +103,7 @@ import com.metrowin.launcher.data.LaunchAnimation
 import com.metrowin.launcher.ui.anim.LaunchSplash
 import com.metrowin.launcher.data.LaunchPlans
 import androidx.compose.ui.platform.LocalView
+import com.metrowin.launcher.data.StartPanels
 import com.metrowin.launcher.data.TileGrid
 import com.metrowin.launcher.data.WidgetSizing
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -347,6 +348,9 @@ fun LauncherApp(vm: LauncherViewModel) {
     val appContext = LocalContext.current
     val screenWidthDp = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp().value }
     val screenHeightDp = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp().value }
+    // A wide screen shows Start and the app list side by side: the tiles then have half of the width.
+    val sideBySide = !settings.kidsMode && StartPanels.active(settings.twoPanels, screenWidthDp, screenHeightDp)
+    val startWidthDp = StartPanels.startWidthDp(sideBySide, screenWidthDp)
     val about = remember(appContext) { AboutInfo.of(appContext) }
     val kidsMode = settings.kidsMode
     val kidsCells = remember(settings.kidsApps, items) {
@@ -670,9 +674,9 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     fun finishWidget(id: Int, provider: WidgetProvider) {
         // The smallest tile the widget fits whole in, with the real size of the tiles of this phone and this setting.
-        val sides = TileGrid.sidesFor(settings.pagePadding, screenWidthDp)
-        val columns = TileGrid.columnsFor(screenWidthDp, settings.moreTiles, sides, settings.tileColumns, screenHeightDp)
-        val size = WidgetSizing.tileSizeFor(provider, TileGrid.unitDp(screenWidthDp, columns, sidesDp = sides), gapDp = 6f)
+        val sides = TileGrid.sidesFor(settings.pagePadding, startWidthDp)
+        val columns = TileGrid.columnsFor(startWidthDp, settings.moreTiles, sides, settings.tileColumns, screenHeightDp)
+        val size = WidgetSizing.tileSizeFor(provider, TileGrid.unitDp(startWidthDp, columns, sidesDp = sides), gapDp = 6f)
         vm.addWidget(id, provider, lastStartPage.coerceIn(0, pages.size - 1), size)
         pendingWidget = null
     }
@@ -1315,7 +1319,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     }
     LaunchedEffect(pagerState, appsPage, settings.searchToday) {
         if (!settings.searchToday) return@LaunchedEffect
-        snapshotFlow { pagerState.currentPage == appsPage }.distinctUntilChanged().filter { it }.collect { vm.refreshToday() }
+        snapshotFlow { sideBySide || pagerState.currentPage == appsPage }.distinctUntilChanged().filter { it }.collect { vm.refreshToday() }
     }
     LifecycleEventEffect(Lifecycle.Event.ON_START) { if (pagerState.currentPage == appsPage) vm.refreshToday() }
 
@@ -1344,7 +1348,7 @@ fun LauncherApp(vm: LauncherViewModel) {
             ) {
                 // The big titles of the pages behind them, moving slower (off until asked for in the settings). A Start photo would hide
                 // them, so with one they are drawn over the pages instead, faint enough to read through.
-                val panorama = settings.panoramaTitles && !kidsMode
+                val panorama = settings.panoramaTitles && !kidsMode && !sideBySide
                 val panoramaStart = stringResource(R.string.panorama_start)
                 val panoramaApps = stringResource(R.string.panorama_apps)
                 if (panorama && !settings.hasStartBackground) PanoramaTitles(pagerState, pages.size, panoramaStart, panoramaApps, reverse = settings.appListLeft)
@@ -1368,6 +1372,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                     appsAccent = settings.accentApps,
                     reverse = settings.appListLeft,
                     state = pagerState,
+                    panels = sideBySide,
                     startPages = pages.size,
                     userScrollEnabled = !launching && menu == null && !jumpOpen && !tutorialVisible && folderPick == null,
                     // Start steps back while the settings swing in, and comes forward as they leave.
@@ -1380,7 +1385,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                     },
                     behind = {
                         // One photo behind all the Starts: swiping between them moves the tiles only (see StartBackdrop).
-                        if ((startBackground != null || pageBackgrounds.isNotEmpty()) && !settings.startPhotoInside) {
+                        if ((startBackground != null || pageBackgrounds.isNotEmpty()) && !settings.startPhotoInside && !sideBySide) {
                             StartBackdrop(
                                 pagerState, pages.size, settings.appListLeft, startScrolls,
                                 { pageBackgrounds[it] ?: startBackground },
@@ -1394,7 +1399,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             live = liveNow,
                             badges = badges,
                             peeks = peeks,
-                            columns = TileGrid.columnsFor(screenWidthDp, settings.moreTiles, TileGrid.sidesFor(settings.pagePadding, screenWidthDp), settings.tileColumns, screenHeightDp),
+                            columns = TileGrid.columnsFor(startWidthDp, settings.moreTiles, TileGrid.sidesFor(settings.pagePadding, startWidthDp), settings.tileColumns, screenHeightDp),
                             background = pageBackgrounds[page] ?: startBackground,
                             enterToken = enterToken,
                             exitRequest = exitRequest,
@@ -1407,7 +1412,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             pickedKeys = folderPick,
                             framing = PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY),
                             photoFit = settings.startPhotoFit,
-                            photoInside = settings.startPhotoInside,
+                            photoInside = settings.startPhotoInside || sideBySide,
                             photoBehind = true,
                             showNames = settings.showTileNames,
                             spacing = settings.tileSpacing.factor,

@@ -1532,6 +1532,8 @@
     <string name="start_large_hint">Oferece o tamanho Grande (quatro blocos de largura e quatro de altura) na barra de edição e na seta de redimensionar. Os blocos que já são grandes continuam grandes.</string>
     <string name="start_groups">Títulos de grupos de blocos</string>
     <string name="start_groups_hint">Mostra os títulos escritos acima dos grupos de blocos e inicia cada grupo em uma linha própria. Desativado: o Start é uma grade simples; os títulos são mantidos.</string>
+    <string name="start_panels">Start e aplicativos lado a lado</string>
+    <string name="start_panels_hint">Em uma tela larga (tablet, janela grande), o Start e a lista de aplicativos aparecem lado a lado em vez de a um deslize. Um telefone, também na horizontal, mantém as páginas.</string>
     <string name="start_collection">Estilo colagem</string>
     <string name="start_collection_hint">Oferece a colagem (muitas imagens pequenas lado a lado) aos blocos que têm fotos.</string>
     <string name="start_agenda">Agenda no bloco Calendário</string>

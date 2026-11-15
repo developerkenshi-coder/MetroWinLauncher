@@ -53,6 +53,7 @@ object SettingsCodec {
         put("clockZone", s.clockZone)
         put("largeTiles", s.largeTiles)
         put("groupTitles", s.groupTitles)
+        put("twoPanels", s.twoPanels)
         put("collectionTiles", s.collectionTiles)
         put("layoutSchedule", s.layoutSchedule)
         put("calendarAgenda", s.calendarAgenda)
@@ -304,6 +305,7 @@ object SettingsCodec {
             clockWeek = o.optBoolean("clockWeek", base.clockWeek),
             largeTiles = o.optBoolean("largeTiles", base.largeTiles),
             groupTitles = o.optBoolean("groupTitles", base.groupTitles),
+            twoPanels = o.optBoolean("twoPanels", base.twoPanels),
             collectionTiles = o.optBoolean("collectionTiles", base.collectionTiles),
             layoutSchedule = o.optBoolean("layoutSchedule", base.layoutSchedule),
             calendarAgenda = o.optBoolean("calendarAgenda", base.calendarAgenda),

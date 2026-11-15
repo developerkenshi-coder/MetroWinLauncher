@@ -1532,6 +1532,8 @@
     <string name="start_large_hint">Propose la grande taille (quatre tuiles de large et quatre de haut) dans la barre d’édition et la flèche de redimensionnement. Les tuiles déjà grandes le restent.</string>
     <string name="start_groups">Titres de groupes de tuiles</string>
     <string name="start_groups_hint">Affiche les titres écrits au-dessus des groupes de tuiles, et fait commencer chaque groupe sur sa propre ligne. Désactivé : Start est une simple grille ; les titres sont conservés.</string>
+    <string name="start_panels">Start et applications côte à côte</string>
+    <string name="start_panels_hint">Sur un écran large (tablette, grande fenêtre), Start et la liste des applications s\'affichent côte à côte au lieu d\'être à un balayage. Un téléphone, même couché, garde les pages.</string>
     <string name="start_collection">Style collage</string>
     <string name="start_collection_hint">Propose le collage (beaucoup de petites images côte à côte) aux tuiles qui ont des photos.</string>
     <string name="start_agenda">Agenda sur la tuile Calendrier</string>

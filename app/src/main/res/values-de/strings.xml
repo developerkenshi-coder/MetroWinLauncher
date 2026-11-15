@@ -1515,6 +1515,8 @@
     <string name="start_large_hint">Bietet die Größe „Groß“ (vier Kacheln breit und vier hoch) in der Bearbeitungsleiste und im Größenpfeil an. Bereits große Kacheln bleiben groß.</string>
     <string name="start_groups">Titel von Kachelgruppen</string>
     <string name="start_groups_hint">Zeigt die über Kachelgruppen geschriebenen Titel an und beginnt jede Gruppe in einer eigenen Zeile. Aus: Start ist ein einfaches Raster; die Titel bleiben erhalten.</string>
+    <string name="start_panels">Start und Apps nebeneinander</string>
+    <string name="start_panels_hint">Auf einem breiten Bildschirm (Tablet, großes Fenster) werden Start und die App-Liste nebeneinander statt eine Wischgeste entfernt gezeigt. Ein Telefon, auch quer, behält die Seiten.</string>
     <string name="start_collection">Collage-Stil</string>
     <string name="start_collection_hint">Bietet die Collage (viele kleine Bilder nebeneinander) den Kacheln an, die Fotos haben.</string>
     <string name="start_agenda">Terminübersicht auf der Kalender-Kachel</string>

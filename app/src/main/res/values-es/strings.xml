@@ -1532,6 +1532,8 @@
     <string name="start_large_hint">Ofrece el tamaño grande (cuatro mosaicos de ancho y cuatro de alto) en la barra de edición y en la flecha de cambio de tamaño. Los mosaicos que ya son grandes siguen siéndolo.</string>
     <string name="start_groups">Títulos de grupos de mosaicos</string>
     <string name="start_groups_hint">Muestra los títulos escritos sobre los grupos de mosaicos y empieza cada grupo en su propia fila. Desactivado: Start es una cuadrícula lisa; los títulos se conservan.</string>
+    <string name="start_panels">Start y aplicaciones lado a lado</string>
+    <string name="start_panels_hint">En una pantalla ancha (tableta, ventana grande) Start y la lista de aplicaciones se ven lado a lado en lugar de a un deslizamiento. Un teléfono, también en horizontal, conserva las páginas.</string>
     <string name="start_collection">Estilo collage</string>
     <string name="start_collection_hint">Ofrece el collage (muchas fotos pequeñas una junto a otra) a los mosaicos que tienen fotos.</string>
     <string name="start_agenda">Agenda en el mosaico Calendario</string>

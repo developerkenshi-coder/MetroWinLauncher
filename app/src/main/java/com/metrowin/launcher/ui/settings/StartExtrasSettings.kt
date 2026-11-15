@@ -50,6 +50,11 @@ fun StartFeaturesSettings(env: SettingsEnv) {
             hint = stringResource(R.string.start_groups_hint), tag = "start:groups", id = "start.groups",
         )
         ToggleSetting(
+            label = stringResource(R.string.start_panels), checked = s.twoPanels,
+            onChange = { v -> env.onChange { it.copy(twoPanels = v) } },
+            hint = stringResource(R.string.start_panels_hint), tag = "start:panels", id = "start.panels",
+        )
+        ToggleSetting(
             label = stringResource(R.string.start_collection), checked = s.collectionTiles,
             onChange = { v -> env.onChange { it.copy(collectionTiles = v) } },
             hint = stringResource(R.string.start_collection_hint), tag = "start:collection", id = "start.collection",

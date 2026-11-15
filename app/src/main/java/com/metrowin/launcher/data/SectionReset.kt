@@ -16,7 +16,7 @@ object SectionReset {
             "systemWallpaperFollows", "themeMode", "themeStyle", "iconPack", "iconShape", "iconTileColors", "largeTileIcons", "glassIcons",
         ),
         "Start" to setOf(
-            "batteryEstimate", "calendarAgenda", "favoritePage", "collectionTiles", "groupTitles", "largeTiles", "freeLayout", "layoutSchedule", "moreTiles", "appsHint", "showTileNames", "tileColumns",
+            "batteryEstimate", "calendarAgenda", "favoritePage", "collectionTiles", "groupTitles", "twoPanels", "largeTiles", "freeLayout", "layoutSchedule", "moreTiles", "appsHint", "showTileNames", "tileColumns",
             "tileMusicControls", "tileSpacing",
         ),
         "StartBars" to setOf(

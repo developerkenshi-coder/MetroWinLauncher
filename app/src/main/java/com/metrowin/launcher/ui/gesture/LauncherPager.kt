@@ -3,6 +3,7 @@ package com.metrowin.launcher.ui.gesture
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
@@ -10,12 +11,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.Density
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.theme.AccentScope
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import kotlin.math.abs
 
 const val PAGE_START = 0
+
+/** Two pages in view: each takes half of the width. */
+private val HALF = object : PageSize {
+    override fun Density.calculateMainAxisPageSize(availableSpace: Int, pageSpacing: Int) = (availableSpace - pageSpacing) / 2
+}
 
 /** How far [page] is from the middle of the pager: 0 when it fills the screen, 1 when a whole page away. */
 fun pageDistance(page: Int, currentPage: Int, currentPageOffsetFraction: Float): Float =
@@ -64,6 +71,8 @@ fun LauncherPager(
     reverse: Boolean = false,
     /** Drawn under the pages, still while they turn (the Start photo): it shares the [modifier] with them. */
     behind: @Composable () -> Unit = {},
+    /** Start and the app list both in view, half of the width each (a wide screen): nothing to turn, so no turnstile. */
+    panels: Boolean = false,
 ) {
     val reduced = LocalReduceMotion.current
     Box(modifier.fillMaxSize()) {
@@ -74,10 +83,11 @@ fun LauncherPager(
             userScrollEnabled = userScrollEnabled,
             reverseLayout = reverse,
             beyondViewportPageCount = 1,
+            pageSize = if (panels) HALF else PageSize.Fill,
             flingBehavior = PagerDefaults.flingBehavior(state, snapPositionalThreshold = 0.3f),
             key = { it },
         ) { page ->
-            Box(Modifier.fillMaxSize().pageTurnstile(state, page, reduced)) {
+            Box(Modifier.fillMaxSize().then(if (panels) Modifier else Modifier.pageTurnstile(state, page, reduced))) {
                 if (page < startPages) AccentScope(startAccent) { start(page) } else AccentScope(appsAccent) { apps() }
             }
         }

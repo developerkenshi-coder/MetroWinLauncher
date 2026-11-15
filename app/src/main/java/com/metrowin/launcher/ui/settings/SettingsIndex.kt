@@ -119,6 +119,7 @@ object SettingsIndex {
         e("start.lock", StartBehaviour, R.string.start_lock, "lock", "layout", "fixed", "move", "blocca", "fisso", "sposta", "disposizione"),
         e("start.lower", StartBehaviour, R.string.start_lower, "one hand", "thumb", "reach", "lower", "una mano", "pollice", "raggiungere", "piu in basso"),
         e("start.large", Start, R.string.start_large, "large", "size", "4x4", "big", "grande", "dimensione", "riquadro grande"),
+        e("start.panels", Start, R.string.start_panels, "panels", "tablet", "wide", "landscape", "side by side", "pannelli", "affiancati"),
         e("start.groups", Start, R.string.start_groups, "group", "title", "heading", "gruppo", "titolo", "gruppi"),
         e("start.collection", Start, R.string.start_collection, "collage", "collection", "photos", "mosaico", "foto"),
         e("start.agenda", Start, R.string.start_agenda, "calendar", "events", "month", "agenda", "eventi", "mese", "calendario"),
