@@ -114,6 +114,7 @@ fun rememberSearch(vm: LauncherViewModel, query: String, listItems: List<AppItem
                     else appContext.getString(R.string.settings_where, appContext.getString(hit.section.category.title), appContext.getString(hit.section.title))
                     LauncherSettingMatch(
                         id = hit.setting?.id,
+                        category = hit.category != null,
                         section = hit.section.name,
                         title = appContext.getString(hit.setting?.title ?: hit.category?.title ?: hit.section.title),
                         where = when {

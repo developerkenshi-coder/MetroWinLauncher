@@ -210,7 +210,7 @@ sealed interface ListRow {
 
     /** A setting of the launcher itself (or a whole section of them): touching it opens the settings where it is. */
     data class LauncherSetting(val match: LauncherSettingMatch) : ListRow {
-        override val key = "lsetting:${match.id ?: "section:${match.section}"}"
+        override val key = "lsetting:${match.key}"
     }
 
     /** A note, a list, a countdown or a site pinned to Start. */
@@ -503,7 +503,7 @@ fun AppListScreen(
                 ) { activate(row) }
                 is ListRow.LauncherSetting -> ResultRow(
                     Glyph.Settings, row.match.title, row.match.where, index, listState, openedAt, exiting,
-                    tag = "result:lsetting:${row.match.id ?: "section:${row.match.section}"}", accent = true,
+                    tag = "result:lsetting:${row.match.key}", accent = true,
                 ) { activate(row) }
                 is ListRow.Tile -> ResultRow(
                     row.match.item.glyph ?: Glyph.Star, row.match.item.label, row.match.snippet ?: stringResource(R.string.search_tile_subtitle),

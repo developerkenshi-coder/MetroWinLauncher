@@ -20,7 +20,10 @@ data class ContactMatch(val name: String, val lookupUri: String, val number: Str
  * section that matched), [section] the name of the section it is in, and [where] the line that says so.
  */
 @Immutable
-data class LauncherSettingMatch(val id: String?, val section: String, val title: String, val where: String)
+data class LauncherSettingMatch(val id: String?, val section: String, val title: String, val where: String, val category: Boolean = false) {
+    /** One per result: a category and its first page are the same [section], so [category] tells them apart (a list needs unique keys). */
+    val key: String get() = id ?: "section:$section" + if (category) ":category" else ""
+}
 
 /** A tile of Start that matched what was typed (a note, a list, a countdown, a site): the tile and the line of it that matched. */
 @Immutable
