@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.start
 
+import androidx.compose.ui.semantics.heading
 import com.metrowin.launcher.ui.components.pageSide
 import com.metrowin.launcher.ui.components.rememberIconTileColor
 import com.metrowin.launcher.ui.anim.metroTween
@@ -652,6 +653,7 @@ private fun TileGridView(
                             .fillMaxWidth()
                             .wrapContentHeight(Alignment.Bottom)
                             .padding(start = 4.dp, bottom = 6.dp)
+                            .semantics { heading() }
                             .testTag("group:$title"),
                     )
                 }

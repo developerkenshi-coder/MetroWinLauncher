@@ -1,5 +1,8 @@
 package com.metrowin.launcher.ui.actioncenter
 
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.semantics
 import com.metrowin.launcher.ui.anim.metroTween
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -93,6 +96,8 @@ fun ToastBanner(
             )
             .panel()
             .testTag("banner")
+            // TalkBack reads a banner when it comes, without the user having to find it.
+            .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }
             .metroPress(onClick = onOpen)
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,

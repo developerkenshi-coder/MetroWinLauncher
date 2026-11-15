@@ -731,7 +731,7 @@ private fun HeaderRow(
         contentAlignment = Alignment.CenterStart,
     ) {
         Box(Modifier.size(SquareSize).litFill(true), contentAlignment = Alignment.Center) {
-            MetroText(letter.lowercase(), size = if (LocalCompactList.current) 26.sp else 32.sp, color = onAccent())
+            MetroText(letter.lowercase(), size = if (LocalCompactList.current) 26.sp else 32.sp, color = onAccent(), modifier = Modifier.semantics { heading() })
         }
     }
 }

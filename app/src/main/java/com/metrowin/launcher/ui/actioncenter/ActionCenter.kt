@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.actioncenter
 
+import androidx.compose.ui.semantics.heading
 import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.theme.frame
@@ -345,7 +346,7 @@ fun ActionCenter(
                         Modifier.fillMaxWidth().padding(start = 24.dp, end = 12.dp, top = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        MetroText(stringResource(R.string.ac_notifications), size = 26.sp, modifier = Modifier.weight(1f))
+                        MetroText(stringResource(R.string.ac_notifications), size = 26.sp, modifier = Modifier.weight(1f).semantics { heading() })
                         if (notifications.isNotEmpty()) {
                             Box(Modifier.metroPress(onClick = onClearAll).padding(8.dp)) {
                                 MetroText(stringResource(R.string.ac_clear_all), size = 17.sp, weight = FontWeight.Normal, color = LocalAccent.current)
