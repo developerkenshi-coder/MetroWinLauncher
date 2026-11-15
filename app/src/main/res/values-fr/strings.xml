@@ -639,7 +639,7 @@
     <string name="tut_welcome_title">bienvenue</string>
     <string name="tut_welcome_intro">MetroWin Launcher transforme votre téléphone en écran Start Windows Phone. Cette courte visite montre comment l’utiliser et demande quelques autorisations une par une, seulement quand une fonction en a besoin. Chacune est facultative.</string>
     <string name="tut_welcome_tip1">Balayez vers la gauche, ou utilisez les boutons ci-dessous, pour continuer.</string>
-    <string name="tut_welcome_tip2">Quittez à tout moment avec « passer ». Vous pouvez revoir la visite dans Paramètres du launcher → outils → à propos.</string>
+    <string name="tut_welcome_tip2">Quittez à tout moment avec « passer ». Vous pouvez revoir la visite dans réglages → à propos → afficher de nouveau le tutoriel.</string>
     <string name="tut_home_label">APPLICATION D’ACCUEIL</string>
     <string name="tut_home_title">faites-en votre accueil</string>
     <string name="tut_home_intro">Android ouvre son application d’accueil chaque fois que vous appuyez sur Accueil. Pour que MetroWin soit ce que vous voyez, il doit être cette application.</string>
@@ -661,7 +661,7 @@
     <string name="tut_weather_label">MÉTÉO</string>
     <string name="tut_weather_title">météo</string>
     <string name="tut_weather_intro">La tuile Météo affiche les prévisions d’une ville. Elle interroge Open-Meteo, un service ouvert, via internet. Rien d’autre ne quitte votre téléphone.</string>
-    <string name="tut_weather_tip1">Choisissez la ville dans Paramètres du launcher → tuiles dynamiques : par son nom, ou avec votre position.</string>
+    <string name="tut_weather_tip1">Choisissez la ville dans réglages → start et tuiles → tuiles dynamiques : par son nom ou avec votre position.</string>
     <string name="tut_weather_tip2">Touchez la tuile pour voir les prévisions des jours suivants.</string>
     <string name="tut_apps_label">LISTE DES APPLICATIONS</string>
     <string name="tut_apps_title">toutes vos applications</string>
@@ -678,7 +678,7 @@
     <string name="tut_action_tip3">Faites remonter le panneau, ou appuyez sur Retour, pour le fermer.</string>
     <string name="tut_gestures_label">GESTES</string>
     <string name="tut_gestures_title">gestes</string>
-    <string name="tut_gestures_intro">Tout suit votre doigt. Quelques gestes peuvent faire ce que vous choisissez dans Paramètres du launcher → gestes.</string>
+    <string name="tut_gestures_intro">Tout suit votre doigt. Quelques gestes font ce que vous choisissez dans réglages → gestes et raccourcis.</string>
     <string name="tut_gestures_tip1">Sur Start, balayez depuis le bord droit pour passer à la liste des applications, et depuis le bord gauche pour revenir.</string>
     <string name="tut_gestures_tip2">Touchez deux fois l’arrière-plan de Start, ou balayez vers le bas ou vers le haut à deux doigts, pour verrouiller l’écran, allumer la lampe torche, parler, rechercher…</string>
     <string name="tut_gestures_tip3">Retour revient d’un niveau à la fois, et le geste système déplace l’écran avec votre doigt.</string>
@@ -689,12 +689,12 @@
     <string name="tut_alive_tip2">Certains téléphones (Xiaomi, Huawei, Oppo, Samsung…) ont aussi leur propre liste « démarrage automatique » ou « applications protégées » dans leurs paramètres : ajoutez-y aussi MetroWin Launcher.</string>
     <string name="tut_settings_label">PARAMÈTRES</string>
     <string name="tut_settings_title">à votre image</string>
-    <string name="tut_settings_intro">Ouvrez Paramètres du launcher dans la liste des applications, ou touchez le bouton Launcher de l’Action Center. Chaque section est une page, répartie en quatre groupes : apparence, comportement, applications et outils. La zone de recherche en haut trouve n’importe quel paramètre et vous y amène.</string>
-    <string name="tut_settings_tip1">apparence : start+thème (thème, clair ou sombre, noir OLED, couleurs d’accentuation, photo de Start), écran start (tuiles, horloge, nombre d’écrans Start), icônes et thèmes, accessibilité (taille du texte, texte en gras, moins d’animations, plus de contraste, TalkBack) et écran de verrouillage.</string>
-    <string name="tut_settings_tip2">comportement : écran+langue (rotation, ouverture des applications, 120 Hz, langue), gestes (chaque balayage, appui et tirage depuis les bords, y compris les applications récentes), notifications+actions (l’Action Center), voix et batterie.</string>
-    <string name="tut_settings_tip3">applications : la liste des applications (les groupes en haut, applications masquées, renommées et verrouillées), recherche (où la zone cherche, ce qu’elle répond, le moteur web), tuiles dynamiques (la ville de la météo, WhatsApp, Telegram, Instagram…) et profils (professionnel, espace privé).</string>
-    <string name="tut_settings_tip4">outils : sauvegarde+sync (un fichier ou un dossier, et une synchronisation chiffrée entre vos téléphones), espace enfants (Start avec seulement les applications choisies) et à propos (la version, et cette visite quand vous voulez la revoir).</string>
-    <string name="tut_settings_tip5">Perdu ? La zone en haut des paramètres trouve n’importe quel paramètre par son nom ou par son rôle, et vous y amène. La recherche de la liste des applications les trouve aussi.</string>
+    <string name="tut_settings_intro">Ouvrez les réglages du launcher dans la liste des applications, ou touchez le bouton Launcher de l’Action Center. L’accueil liste treize catégories, chacune avec une icône et une ligne sur son contenu ; une catégorie s’ouvre comme un pivot de ses pages. Rien n’est plus profond que cela.</string>
+    <string name="tut_settings_tip1">Touchez le « i » à côté d’une catégorie ou d’un réglage : une boîte dit ce qu’il fait, quand il compte et ce qu’il coûte en batterie, confidentialité ou autorisations.</string>
+    <string name="tut_settings_tip2">La zone du haut trouve n’importe quel réglage par son nom ou son usage, et vous dit où il est (catégorie › page) avant de vous y emmener. La recherche de la liste des applications les trouve aussi.</string>
+    <string name="tut_settings_tip3">Balayez une catégorie sur le côté, ou touchez les titres en haut, pour passer d’une page à l’autre. Retour ramène toujours d’où vous venez.</string>
+    <string name="tut_settings_tip4">Les réglages dont peu de gens ont besoin attendent sous « avancé », fermés jusqu’à ce que vous les touchiez. En bas d’une page, « rétablir cette page » ne remet que les réglages de cette page.</string>
+    <string name="tut_settings_tip5">Perdu ? Chaque page de cette visite a un bouton qui ouvre directement son réglage : vous pouvez revenir à la visite depuis réglages → à propos.</string>
     <string name="qa_launcher_settings">MetroWin</string>
     <string name="qa_recents">Applications récentes</string>
     <string name="app_launcher_settings">Paramètres du launcher</string>
@@ -750,7 +750,7 @@
     <string name="accent_use_preset">retour aux 20 couleurs</string>
     <string name="tut_look_label">APPARENCE</string>
     <string name="tut_look_title">à votre image</string>
-    <string name="tut_look_intro">Trois thèmes et toutes les couleurs. Ouvrez Paramètres du launcher → start+thème pour choisir.</string>
+    <string name="tut_look_intro">Trois thèmes et toutes les couleurs. Ouvrez réglages → apparence et thèmes pour choisir.</string>
     <string name="tut_look_tip1">Classique est l’apparence plate de Windows Phone. Modern Glass est du verre dépoli sur un arrière-plan lumineux. Modern Droid suit Material You.</string>
     <string name="tut_look_tip2">Choisissez l’une des 20 couleurs d’accentuation, ou créez la vôtre avec les trois curseurs. Sombre, clair ou selon l’heure, dans chaque thème.</string>
 
@@ -778,7 +778,7 @@
     <string name="tut_alive_tip3">Cela ne consomme presque pas de batterie : hors écran, ou avec une autre application au premier plan, le launcher ne lit rien et n’exécute aucun minuteur.</string>
     <string name="theme_oled">noir OLED</string>
     <string name="theme_oled_hint">Pour les écrans OLED : dans le thème sombre, les arrière-plans sont d’un noir pur, ces pixels sont donc éteints. Plus de contraste et moins de consommation. Sans effet dans le thème clair.</string>
-    <string name="tut_look_tip3">Un écran OLED ? Activez « noir OLED » dans start+thème pour un fond noir pur.</string>
+    <string name="tut_look_tip3">Vous avez un écran OLED ? Activez « Noir OLED » dans thème et couleurs pour un fond noir pur.</string>
 
     <!-- tuiles dynamiques des autres applications -->
     <string name="live_heading">tuiles dynamiques des autres applications</string>

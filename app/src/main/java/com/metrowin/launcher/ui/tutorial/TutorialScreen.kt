@@ -34,7 +34,9 @@ import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.Need
 import com.metrowin.launcher.data.Tutorial
+import com.metrowin.launcher.data.TutorialLink
 import com.metrowin.launcher.data.TutorialStep
+import com.metrowin.launcher.ui.settings.SettingsSection
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroButton
@@ -56,7 +58,8 @@ import kotlinx.coroutines.launch
  * a button, and says "allowed" once it is granted; nothing is asked for in advance and nothing is required.
  *
  * [met] are the needs that are met now, [denied] the ones Android will not ask about again (the button then
- * takes the user to the settings). [onRequest] asks for one need; [onFinish] leaves the tour.
+ * takes the user to the settings). [onRequest] asks for one need; [onFinish] leaves the tour. A page that has a setting
+ * says where it is and a button opens it ([onOpenLink]); the tour waits where it is and comes back when the settings close.
  */
 @Composable
 fun TutorialScreen(
@@ -67,6 +70,7 @@ fun TutorialScreen(
     modifier: Modifier = Modifier,
     denied: Set<Need> = emptySet(),
     steps: List<TutorialStep> = Tutorial.steps,
+    onOpenLink: (TutorialLink) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val reduced = LocalReduceMotion.current
@@ -82,12 +86,13 @@ fun TutorialScreen(
         Column(Modifier.fillMaxSize().topBarsPadding().navigationBarsPadding().cutoutSidesPadding()) {
             HorizontalPager(pager, Modifier.weight(1f).testTag("tutorial:pager"), key = { steps[it].id }) { page ->
                 Box(Modifier.fillMaxSize().pageTurnstile(pager, page, reduced)) {
-                    StepPage(steps[page], met, denied, onRequest)
+                    StepPage(steps[page], met, denied, onRequest, onOpenLink)
                 }
             }
             BoxWithConstraints(Modifier.fillMaxWidth()) {
                 // On a wide screen (landscape) everything sits in one line to leave the page as much height as possible;
                 // on a narrow one the dots have a line of their own, as ten of them and two buttons would not fit across.
+                // A long tour does not get a dot for each page (they would not fit): it says "3 of 25".
                 val wide = maxWidth >= WIDE_BAR
                 val skip = @Composable {
                     if (!onLast) {
@@ -101,15 +106,25 @@ fun TutorialScreen(
                         if (onLast) onFinish() else scope.launch { pager.animateScrollToPage(pager.currentPage + 1) }
                     }
                 }
+                val progress = @Composable {
+                    if (steps.size > MAX_DOTS) {
+                        MetroText(
+                            stringResource(R.string.tut_progress, pager.currentPage + 1, steps.size), size = MetroType.Body, weight = FontWeight.Normal,
+                            color = LocalMetroColors.current.subtle, modifier = Modifier.testTag("tutorial:progress"),
+                        )
+                    } else {
+                        PageDots(pager, steps.size)
+                    }
+                }
                 if (wide) {
                     Row(Modifier.fillMaxWidth().padding(horizontal = Spacing.Page, vertical = Spacing.Medium), verticalAlignment = Alignment.CenterVertically) {
                         Box(Modifier.weight(1f)) { skip() }
-                        PageDots(pager, steps.size)
+                        progress()
                         Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) { next() }
                     }
                 } else {
                     Column(Modifier.fillMaxWidth()) {
-                        Box(Modifier.fillMaxWidth().padding(top = 6.dp), contentAlignment = Alignment.Center) { PageDots(pager, steps.size) }
+                        Box(Modifier.fillMaxWidth().padding(top = 6.dp), contentAlignment = Alignment.Center) { progress() }
                         Row(Modifier.fillMaxWidth().padding(horizontal = Spacing.Page, vertical = Spacing.Large), verticalAlignment = Alignment.CenterVertically) {
                             Box(Modifier.weight(1f)) { skip() }
                             next()
@@ -122,7 +137,7 @@ fun TutorialScreen(
 }
 
 @Composable
-private fun StepPage(step: TutorialStep, met: Set<Need>, denied: Set<Need>, onRequest: (Need) -> Unit) {
+private fun StepPage(step: TutorialStep, met: Set<Need>, denied: Set<Need>, onRequest: (Need) -> Unit, onOpenLink: (TutorialLink) -> Unit) {
     val colors = LocalMetroColors.current
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page).testTag("tutorial:step:${step.id}"),
@@ -142,6 +157,7 @@ private fun StepPage(step: TutorialStep, met: Set<Need>, denied: Set<Need>, onRe
         MetroText(stringResource(step.intro), size = 17.sp, color = colors.subtle, maxLines = Int.MAX_VALUE, lineHeight = 24.sp)
         Spacer(Modifier.height(18.dp))
         step.tips.forEach { tip -> Tip(stringResource(tip)) }
+        step.link?.let { link -> LinkRow(link, onOpenLink) }
         if (step.needs.isNotEmpty()) {
             Spacer(Modifier.height(10.dp))
             step.needs.forEach { need -> NeedRow(need, need in met, need in denied, onRequest) }
@@ -158,6 +174,18 @@ private fun Tip(text: String) {
         Spacer(Modifier.width(14.dp))
         MetroText(text, size = 17.sp, weight = FontWeight.Normal, maxLines = Int.MAX_VALUE, lineHeight = 24.sp, modifier = Modifier.weight(1f))
     }
+}
+
+/** The setting of a page: where it is in the settings (category › page), and a button that takes you there. */
+@Composable
+private fun LinkRow(link: TutorialLink, onOpen: (TutorialLink) -> Unit) {
+    val label = link.section?.let { name ->
+        val section = SettingsSection.valueOf(name)
+        val where = if (section.category.pages.size == 1) stringResource(section.category.title)
+        else stringResource(R.string.settings_where, stringResource(section.category.title), stringResource(section.title))
+        stringResource(R.string.tut_link, where)
+    } ?: stringResource(R.string.tut_link_home)
+    MetroButton(label, Modifier.fillMaxWidth().padding(top = 4.dp, bottom = Spacing.Large).testTag("tutorial:link")) { onOpen(link) }
 }
 
 @Composable
@@ -177,6 +205,9 @@ private fun NeedRow(need: Need, met: Boolean, denied: Boolean, onRequest: (Need)
         }
     }
 }
+
+/** More pages than this get a counter ("3 of 25") instead of a dot each. */
+private const val MAX_DOTS = 12
 
 /** Width from which the dots, "skip" and "next" fit on one line. */
 private val WIDE_BAR = 520.dp

@@ -636,7 +636,7 @@
     <string name="tut_welcome_title">Willkommen</string>
     <string name="tut_welcome_intro">MetroWin Launcher verwandelt dein Handy in einen Windows-Phone-Start-Bildschirm. Dieser kurze Rundgang zeigt dir die Bedienung und bittet nacheinander um einige Berechtigungen, jeweils nur dann, wenn eine Funktion sie braucht. Jede davon ist optional.</string>
     <string name="tut_welcome_tip1">Wische nach links oder nutze die Tasten unten, um fortzufahren.</string>
-    <string name="tut_welcome_tip2">Beende den Rundgang jederzeit mit „Überspringen“. Du findest ihn wieder unter Launcher-Einstellungen → Werkzeuge → Info.</string>
+    <string name="tut_welcome_tip2">Verlasse die Tour jederzeit mit „Überspringen“. Du kannst sie unter Einstellungen → Info → „Tutorial erneut zeigen“ wieder ansehen.</string>
     <string name="tut_home_label">HOME-APP</string>
     <string name="tut_home_title">Zu deinem Zuhause machen</string>
     <string name="tut_home_intro">Android öffnet bei jedem Druck auf Home seine Home-App. Damit MetroWin das ist, was du siehst, muss es diese App sein.</string>
@@ -658,7 +658,7 @@
     <string name="tut_weather_label">WETTER</string>
     <string name="tut_weather_title">Wetter</string>
     <string name="tut_weather_intro">Die Wetter-Kachel zeigt die Vorhersage für eine Stadt. Sie fragt Open-Meteo, einen offenen Dienst, über das Internet ab. Nichts anderes verlässt dein Handy.</string>
-    <string name="tut_weather_tip1">Wähle die Stadt unter Launcher-Einstellungen → Live-Kacheln: per Name oder mit deinem Standort.</string>
+    <string name="tut_weather_tip1">Wähle die Stadt in Einstellungen → Start und Kacheln → Live-Kacheln: nach Namen oder mit deinem Standort.</string>
     <string name="tut_weather_tip2">Tippe auf die Kachel für die Vorhersage der nächsten Tage.</string>
     <string name="tut_apps_label">APP-LISTE</string>
     <string name="tut_apps_title">Alle deine Apps</string>
@@ -675,7 +675,7 @@
     <string name="tut_action_tip3">Ziehe das Panel wieder nach oben oder drücke Zurück, um es zu schließen.</string>
     <string name="tut_gestures_label">GESTEN</string>
     <string name="tut_gestures_title">Gesten</string>
-    <string name="tut_gestures_intro">Alles folgt deinem Finger. Einige Gesten können das, was du unter Launcher-Einstellungen → Gesten festlegst.</string>
+    <string name="tut_gestures_intro">Alles folgt deinem Finger. Einige Gesten tun, was du in Einstellungen → Gesten und Kurzbefehle wählst.</string>
     <string name="tut_gestures_tip1">Wische auf Start vom rechten Rand, um zur App-Liste zu gelangen, und vom linken Rand, um zurückzugehen.</string>
     <string name="tut_gestures_tip2">Tippe doppelt auf den Hintergrund von Start oder wische mit zwei Fingern nach unten oder oben, um den Bildschirm zu sperren, die Taschenlampe einzuschalten, zu sprechen, zu suchen …</string>
     <string name="tut_gestures_tip3">Zurück geht jeweils eine Ebene zurück, und die Systemgeste bewegt den Bildschirm mit deinem Finger.</string>
@@ -686,12 +686,12 @@
     <string name="tut_alive_tip2">Manche Handys (Xiaomi, Huawei, Oppo, Samsung …) haben in ihren Einstellungen außerdem eine eigene Liste für „Autostart“ oder „Geschützte Apps“: Füge MetroWin Launcher auch dort hinzu.</string>
     <string name="tut_settings_label">EINSTELLUNGEN</string>
     <string name="tut_settings_title">Passe es an</string>
-    <string name="tut_settings_intro">Öffne die Launcher-Einstellungen in der App-Liste oder tippe auf die Launcher-Taste des Action Centers. Jeder Bereich ist eine Seite, in vier Gruppen: Aussehen, Verhalten, Apps und Werkzeuge. Das Suchfeld oben findet jede Einstellung und führt dich dorthin.</string>
-    <string name="tut_settings_tip1">Aussehen: Start+Design (Design, hell oder dunkel, OLED-Schwarz, Akzentfarben, Start-Foto), Start-Bildschirm (Kacheln, Uhr, Anzahl der Start-Bildschirme), Symbole &amp; Designs, Bedienungshilfen (Textgröße, Fettschrift, weniger Bewegung, mehr Kontrast, TalkBack) und Sperrbildschirm.</string>
-    <string name="tut_settings_tip2">Verhalten: Bildschirm+Sprache (Drehung, Öffnen von Apps, 120 Hz, Sprache), Gesten (jedes Wischen, Tippen und Ziehen vom Rand, auch die zuletzt verwendeten Apps), Benachrichtigungen+Aktionen (das Action Center), Sprachsteuerung und Akku.</string>
-    <string name="tut_settings_tip3">Apps: App-Liste (die Gruppen oben, ausgeblendete, umbenannte und gesperrte Apps), Suche (wo das Feld sucht, was es beantwortet, die Suchmaschine fürs Web), Live-Kacheln (die Wetterstadt, WhatsApp, Telegram, Instagram …) und Profile (Arbeit, privater Bereich).</string>
-    <string name="tut_settings_tip4">Werkzeuge: Backup+Sync (eine Datei oder ein Ordner und ein verschlüsselter Sync zwischen deinen Handys), Kinderecke (Start mit nur den Apps deiner Wahl) und Info (die Version und dieser Rundgang, wann immer du ihn wieder möchtest).</string>
-    <string name="tut_settings_tip5">Verloren? Das Feld oben in den Einstellungen findet jede Einstellung über ihren Namen oder ihren Zweck und führt dich dorthin. Auch die Suche der App-Liste findet sie.</string>
+    <string name="tut_settings_intro">Öffne die Launcher-Einstellungen in der App-Liste oder tippe auf die Launcher-Taste des Action Centers. Die Startseite listet dreizehn Kategorien, jede mit Symbol und einer Zeile dazu, was darin ist; eine Kategorie öffnet sich als Pivot ihrer Seiten. Tiefer geht nichts.</string>
+    <string name="tut_settings_tip1">Tippe auf das „i“ neben einer Kategorie oder Einstellung: ein Feld sagt, was sie tut, wann sie wichtig ist und was sie an Akku, Datenschutz oder Berechtigungen kostet.</string>
+    <string name="tut_settings_tip2">Das Feld oben findet jede Einstellung nach Namen oder Zweck und sagt dir, wo sie ist (Kategorie › Seite), bevor es dich hinbringt. Auch die Suche der App-Liste findet sie.</string>
+    <string name="tut_settings_tip3">Wische eine Kategorie seitlich oder tippe auf die Titel oben, um von Seite zu Seite zu gehen. Zurück bringt dich immer dorthin, woher du kamst.</string>
+    <string name="tut_settings_tip4">Einstellungen, die wenige brauchen, warten unter „Erweitert“, geschlossen, bis du darauf tippst. Unten auf einer Seite stellt „Diese Seite zurücksetzen“ nur die Einstellungen dieser Seite wieder her.</string>
+    <string name="tut_settings_tip5">Verloren? Jede Seite dieser Tour hat eine Taste, die ihre Einstellung direkt öffnet: zur Tour kommst du zurück unter Einstellungen → Info.</string>
     <string name="qa_launcher_settings">MetroWin</string>
     <string name="qa_recents">Letzte Apps</string>
     <string name="app_launcher_settings">Launcher-Einstellungen</string>
@@ -745,7 +745,7 @@
     <string name="accent_use_preset">Zurück zu den 20 Farben</string>
     <string name="tut_look_label">AUSSEHEN</string>
     <string name="tut_look_title">Passe es an</string>
-    <string name="tut_look_intro">Drei Designs und jede Farbe. Öffne zum Auswählen Launcher-Einstellungen → Start+Design.</string>
+    <string name="tut_look_intro">Drei Designs und jede Farbe. Öffne Einstellungen → Aussehen und Designs zum Auswählen.</string>
     <string name="tut_look_tip1">Klassisch ist der flache Windows-Phone-Look. Modern Glass ist mattiertes Glas vor leuchtendem Hintergrund. Modern Droid folgt Material You.</string>
     <string name="tut_look_tip2">Wähle eine der 20 Akzentfarben oder mische mit den drei Reglern deine eigene. Dunkel, hell oder nach Uhrzeit, in jedem Design.</string>
 
@@ -773,7 +773,7 @@
     <string name="tut_alive_tip3">Es kostet fast keinen Akku: Außerhalb des Bildschirms oder mit einer anderen App im Vordergrund liest der Launcher nichts und startet keine Timer.</string>
     <string name="theme_oled">OLED-Schwarz</string>
     <string name="theme_oled_hint">Für OLED-Bildschirme: Im dunklen Design sind die Hintergründe reines Schwarz, diese Pixel sind also aus. Mehr Kontrast und weniger Akkuverbrauch. Im hellen Design bewirkt es nichts.</string>
-    <string name="tut_look_tip3">Hast du einen OLED-Bildschirm? Aktiviere „OLED-Schwarz“ unter Start+Design für einen rein schwarzen Hintergrund.</string>
+    <string name="tut_look_tip3">Hast du einen OLED-Bildschirm? Schalte „OLED-Schwarz“ unter Design und Farben für einen rein schwarzen Hintergrund ein.</string>
 
     <!-- live tiles of other apps -->
     <string name="live_heading">Live-Kacheln anderer Apps</string>

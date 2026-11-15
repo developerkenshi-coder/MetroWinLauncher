@@ -267,7 +267,9 @@ fun LauncherApp(vm: LauncherViewModel) {
     val tutorialDone by vm.tutorialDone.collectAsStateWithLifecycle()
     // The tour shows on the first run, and again whenever it is asked for in the settings.
     var tutorialReplay by remember { mutableStateOf(false) }
-    val tutorialVisible = !tutorialDone || tutorialReplay
+    // The tour steps aside while the settings it opened are up, and comes back on the same page when they close.
+    var tutorialAside by rememberSaveable { mutableStateOf(false) }
+    val tutorialVisible = (!tutorialDone || tutorialReplay) && !tutorialAside
     val tutorialPager = rememberPagerState { Tutorial.steps.size }
     val homePress by vm.homePresses.collectAsStateWithLifecycle()
     val notifications by vm.notifications.collectAsStateWithLifecycle()
@@ -571,7 +573,13 @@ fun LauncherApp(vm: LauncherViewModel) {
     }
 
     // A section left open when the settings close must not be half open the next time.
-    LaunchedEffect(settingsOpen) { if (!settingsOpen) sectionAway.snapTo(1f) }
+    LaunchedEffect(settingsOpen) {
+        if (!settingsOpen) {
+            sectionAway.snapTo(1f)
+            // The settings the tour opened are closed: the tour comes back, on the page it was.
+            tutorialAside = false
+        }
+    }
 
     // Leaving the app list puts its keyboard away; so does going to another app, so the keyboard is not still there when the launcher comes back.
     val focus = LocalFocusManager.current
@@ -2186,6 +2194,12 @@ fun LauncherApp(vm: LauncherViewModel) {
                         },
                         onOpenNotificationAccess = vm::openNotificationAccessSettings,
                         onOpenAccessibility = vm::openAccessibilitySettings,
+                        onOpenSettings = { link ->
+                            settingsTarget = link.target
+                            settingsSection = link.section?.let(SettingsSection::valueOf)
+                            tutorialAside = true
+                            settingsOpen = true
+                        },
                     )
                 }
             }

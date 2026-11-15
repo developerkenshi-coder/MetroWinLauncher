@@ -11,6 +11,8 @@ import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.data.Need
 import com.metrowin.launcher.data.NeedChecker
 import com.metrowin.launcher.data.Tutorial
+import com.metrowin.launcher.ui.settings.SettingsIndex
+import com.metrowin.launcher.ui.settings.SettingsSection
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -41,6 +43,35 @@ class TutorialTest {
     }
 
     @Test
+    fun theTourCoversTheFeaturesOfTheLauncherInOrderOfTheme() {
+        val ids = Tutorial.steps.map { it.id }
+        // The parts of the launcher that had no page: each is here now.
+        listOf("folders", "layouts", "infotile", "search", "icons", "voice", "minis", "phone", "notifications", "bars", "lock", "access", "privacy", "backup").forEach {
+            assertTrue("$it has a page", it in ids)
+        }
+        // Start comes before the apps, the apps before the controls, the look before what keeps it safe, and the settings are last.
+        assertTrue(ids.indexOf("start") < ids.indexOf("apps") && ids.indexOf("apps") < ids.indexOf("action") && ids.indexOf("look") < ids.indexOf("privacy"))
+        assertEquals("settings", ids.last())
+        // Short pages: a few lines each.
+        Tutorial.steps.forEach { assertTrue("${it.id} is short", it.tips.size in 1..5) }
+    }
+
+    @Test
+    fun everyLinkOpensARealPageAndARealSettingOfIt() {
+        Tutorial.steps.mapNotNull { it.link }.forEach { link ->
+            if (link.section == null) {
+                assertEquals("the home of the settings has no setting", null, link.target)
+                return@forEach
+            }
+            val section = SettingsSection.valueOf(link.section)
+            link.target?.let { assertEquals("$it is on ${link.section}", section, SettingsIndex.get(it)?.section) }
+        }
+        // Every page that is about a part with a setting has the link; the info tile and the phone are changed inside their own app.
+        val without = Tutorial.steps.filter { it.link == null }.map { it.id }.toSet()
+        assertEquals(setOf("welcome", "home", "infotile", "phone"), without)
+    }
+
+    @Test
     fun theTourStartsAndEndsWithoutAskingForAnything() {
         assertTrue("welcome asks for nothing", Tutorial.steps.first().needs.isEmpty())
         assertTrue("the last page, about the settings, asks for nothing", Tutorial.steps.last().needs.isEmpty())
@@ -58,7 +89,7 @@ class TutorialTest {
         assertEquals("live", stepOf(Need.Contacts))
         assertEquals("live", stepOf(Need.CallLog))
         assertEquals("weather", stepOf(Need.Location))
-        assertEquals("apps", stepOf(Need.Microphone))
+        assertEquals("voice", stepOf(Need.Microphone))
         assertEquals("action", stepOf(Need.NotificationAccess))
         assertEquals("gestures", stepOf(Need.LockService))
         assertEquals("alive", stepOf(Need.Battery))
@@ -178,10 +209,11 @@ class TutorialTest {
 
     // --- the words
 
-    private fun strings(dir: String): Map<String, String> {
-        val text = File("src/main/res/$dir/strings.xml").readText()
-        return Regex("<string name=\"([^\"]+)\"[^>]*>(.*?)</string>", RegexOption.DOT_MATCHES_ALL).findAll(text).associate { it.groupValues[1] to it.groupValues[2] }
-    }
+    /** Every string of the folder, from all its files (the tour is in strings.xml and in strings_settings_info.xml). */
+    private fun strings(dir: String): Map<String, String> =
+        File("src/main/res/$dir").listFiles { f -> f.name.startsWith("strings") && f.name.endsWith(".xml") }!!.sortedBy { it.name }.flatMap { file ->
+            Regex("<string name=\"([^\"]+)\"[^>]*>(.*?)</string>", RegexOption.DOT_MATCHES_ALL).findAll(file.readText()).map { it.groupValues[1] to it.groupValues[2] }.toList()
+        }.toMap()
 
     private fun placeholders(text: String): List<String> =
         Pattern.compile("%(\\d\\$)?[sd]").matcher(text).let { m -> buildList { while (m.find()) add(m.group().replace(Regex("^%\\d\\$"), "%")) } }.sorted()
@@ -201,6 +233,35 @@ class TutorialTest {
         // The long sentences of the tour are translated, not copied.
         english.filterKeys { it.startsWith("tut_") && english.getValue(it).length > 40 }.forEach { (name, text) ->
             assertTrue("$name is translated", italian.getValue(name) != text)
+        }
+    }
+
+    @Test
+    fun theTourIsInAllSixLanguagesWithTheSamePlaceholders() {
+        val english = strings("values").filterKeys { it.startsWith("tut_") || it.startsWith("need_") }
+        assertTrue("many pages of the tour", english.size > 150)
+        listOf("values-it", "values-de", "values-es", "values-fr", "values-pt").forEach { dir ->
+            val other = strings(dir)
+            assertEquals("$dir has every string of the tour", emptySet<String>(), english.keys - other.keys)
+            english.forEach { (name, text) -> assertEquals("$dir placeholders of $name", placeholders(text), placeholders(other.getValue(name))) }
+            // The long sentences are translated, not copied.
+            english.filterKeys { english.getValue(it).length > 50 }.forEach { (name, text) -> assertTrue("$dir $name is translated", other.getValue(name) != text) }
+        }
+    }
+
+    @Test
+    fun everyStringOfAStepIsWrittenAndNoPageNamesAnOldMenu() {
+        val english = strings("values")
+        val res = context.resources
+        val used = Tutorial.steps.flatMap { listOf(it.label, it.title, it.intro) + it.tips }
+        used.forEach { id -> assertTrue(res.getResourceEntryName(id) in english) }
+        // The paths of the old menus (before the categories) are gone from the tour, in every language.
+        listOf("values", "values-it", "values-de", "values-es", "values-fr", "values-pt").forEach { dir ->
+            strings(dir).filterKeys { it.startsWith("tut_") }.forEach { (name, text) ->
+                listOf("start+theme", "start+tema", "tools → about", "strumenti → informazioni", "Launcher settings →", "Impostazioni Launcher →").forEach { old ->
+                    assertTrue("$dir $name still says \"$old\"", old !in text)
+                }
+            }
         }
     }
 }

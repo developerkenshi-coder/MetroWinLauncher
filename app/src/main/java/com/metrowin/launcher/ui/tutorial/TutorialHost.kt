@@ -22,6 +22,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import com.metrowin.launcher.data.HomeApp
 import com.metrowin.launcher.data.Need
 import com.metrowin.launcher.data.NeedChecker
+import com.metrowin.launcher.data.TutorialLink
 
 /**
  * The tour with the real requests behind its buttons: a permission dialog, the dialog of Android for the Home app, or the
@@ -35,6 +36,7 @@ fun TutorialHost(
     onOpenNotificationAccess: () -> Unit,
     onOpenAccessibility: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenSettings: (TutorialLink) -> Unit = {},
 ) {
     val context = LocalContext.current
     val checker = remember(context) { NeedChecker(context) }
@@ -71,7 +73,7 @@ fun TutorialHost(
         }
     }
 
-    TutorialScreen(pager, met, ::request, onFinish, modifier, denied)
+    TutorialScreen(pager, met, ::request, onFinish, modifier, denied, onOpenLink = onOpenSettings)
 }
 
 private fun openAppSettings(context: Context) {

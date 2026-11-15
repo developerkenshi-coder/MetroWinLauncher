@@ -632,7 +632,7 @@
     <string name="tut_welcome_title">benvenuto</string>
     <string name="tut_welcome_intro">MetroWin Launcher trasforma il telefono in una schermata Start di Windows Phone. Questo breve giro mostra come usarlo e chiede qualche permesso alla volta, solo quando una funzione ne ha bisogno. Ognuno è facoltativo.</string>
     <string name="tut_welcome_tip1">Scorri verso sinistra, o usa i pulsanti qui sotto, per andare avanti.</string>
-    <string name="tut_welcome_tip2">Esci quando vuoi con “salta”. Puoi rivedere il giro da Impostazioni Launcher → strumenti → informazioni.</string>
+    <string name="tut_welcome_tip2">Esci quando vuoi con “salta”. Puoi rivedere il giro in impostazioni → informazioni → mostra di nuovo il tutorial.</string>
     <string name="tut_home_label">APP HOME</string>
     <string name="tut_home_title">rendilo la tua home</string>
     <string name="tut_home_intro">Android apre la sua app Home ogni volta che premi Home. Perché tu veda MetroWin, deve essere quell\'app.</string>
@@ -654,7 +654,7 @@
     <string name="tut_weather_label">METEO</string>
     <string name="tut_weather_title">meteo</string>
     <string name="tut_weather_intro">Il tile Meteo mostra le previsioni di una città. Le chiede a Open-Meteo, un servizio aperto, via internet. Nient\'altro esce dal telefono.</string>
-    <string name="tut_weather_tip1">Scegli la città in Impostazioni Launcher → live tile: per nome, o con la tua posizione.</string>
+    <string name="tut_weather_tip1">Scegli la città in impostazioni → start e tile → live tile: per nome, o con la tua posizione.</string>
     <string name="tut_weather_tip2">Tocca il tile per le previsioni dei prossimi giorni.</string>
     <string name="tut_apps_label">LISTA APP</string>
     <string name="tut_apps_title">tutte le tue app</string>
@@ -671,7 +671,7 @@
     <string name="tut_action_tip3">Trascina il pannello di nuovo in su, o premi Indietro, per chiuderlo.</string>
     <string name="tut_gestures_label">GESTI</string>
     <string name="tut_gestures_title">gesti</string>
-    <string name="tut_gestures_intro">Tutto segue il dito. Alcuni gesti fanno quello che scegli in Impostazioni Launcher → gesti.</string>
+    <string name="tut_gestures_intro">Tutto segue il dito. Alcuni gesti fanno quello che scegli in impostazioni → gesti e scorciatoie.</string>
     <string name="tut_gestures_tip1">Su Start, scorri dal bordo destro per andare alla lista app e dal bordo sinistro per tornare indietro.</string>
     <string name="tut_gestures_tip2">Tocca due volte lo sfondo di Start, o scorri in giù o in su con due dita, per bloccare lo schermo, accendere la torcia, parlare, cercare…</string>
     <string name="tut_gestures_tip3">Indietro torna indietro di un livello alla volta, e il gesto di sistema muove lo schermo con il dito.</string>
@@ -682,12 +682,12 @@
     <string name="tut_alive_tip2">Alcuni telefoni (Xiaomi, Huawei, Oppo, Samsung…) hanno anche un proprio elenco “avvio automatico” o “app protette” nelle impostazioni: aggiungi lì anche MetroWin Launcher.</string>
     <string name="tut_settings_label">IMPOSTAZIONI</string>
     <string name="tut_settings_title">rendilo tuo</string>
-    <string name="tut_settings_intro">Apri Impostazioni Launcher nella lista app, o tocca il pulsante Launcher dell\'Action Center. Ogni sezione è una pagina, in quattro gruppi: aspetto, uso, app e strumenti. La casella di ricerca in alto trova ogni impostazione e ti ci porta.</string>
-    <string name="tut_settings_tip1">aspetto: start+tema (tema, chiaro o scuro, nero OLED, colori d\'accento, foto di Start), schermata start (riquadri, orologio, numero di schermate Start), icone e temi, accessibilità (dimensione del testo, testo marcato, meno movimento, più contrasto, TalkBack) e blocco schermo.</string>
-    <string name="tut_settings_tip2">uso: schermo+lingua (rotazione, come si aprono le app, 120 Hz, lingua), gesti (ogni swipe, tocco e tirata dal bordo, anche le app recenti), notifiche+azioni (l\'Action Center), voce e batteria.</string>
-    <string name="tut_settings_tip3">app: la lista app (i gruppi in alto, app nascoste, rinominate e bloccate), la ricerca (dove cerca la casella, cosa risponde, il motore web), i live tile (la città del meteo, WhatsApp, Telegram, Instagram…) e i profili (lavoro, spazio privato).</string>
-    <string name="tut_settings_tip4">strumenti: backup+sync (un file o una cartella, e una sincronizzazione cifrata tra i tuoi telefoni), angolo bambini (Start con solo le app che scegli) e informazioni (la versione, e questo giro ogni volta che vuoi rivederlo).</string>
-    <string name="tut_settings_tip5">Ti sei perso? La casella in cima alle impostazioni trova ogni impostazione per nome o per ciò a cui serve, e ti ci porta. La ricerca della lista app le trova anch\'essa.</string>
+    <string name="tut_settings_intro">Apri Impostazioni Launcher nella lista app, o tocca il pulsante Launcher dell’Action Center. La home elenca tredici categorie, ognuna con un’icona e una riga su cosa contiene; una categoria si apre come un pivot delle sue pagine. Niente sta più in profondità di così.</string>
+    <string name="tut_settings_tip1">Tocca la “i” accanto a una categoria o a un’impostazione: un riquadro dice cosa fa, quando serve e quanto costa in batteria, privacy o permessi.</string>
+    <string name="tut_settings_tip2">La casella in alto trova qualsiasi impostazione dal nome o da ciò a cui serve, e ti dice dov’è (categoria › pagina) prima di portarti lì. La ricerca della lista app le trova anch’essa.</string>
+    <string name="tut_settings_tip3">Scorri una categoria di lato, o tocca i titoli in alto, per passare da una pagina all’altra. Indietro torna sempre da dove vieni.</string>
+    <string name="tut_settings_tip4">Le impostazioni che servono a pochi stanno sotto “avanzate”, chiuse finché non le tocchi. In fondo a una pagina, “ripristina questa pagina” rimette solo le impostazioni di quella pagina.</string>
+    <string name="tut_settings_tip5">Perso? Ogni pagina di questo giro ha un pulsante che apre direttamente la sua impostazione: puoi tornare al giro da impostazioni → informazioni.</string>
     <string name="qa_launcher_settings">MetroWin</string>
     <string name="qa_recents">App recenti</string>
     <string name="app_launcher_settings">Impostazioni Launcher</string>
@@ -743,7 +743,7 @@
     <string name="accent_use_preset">torna ai 20 colori</string>
     <string name="tut_look_label">ASPETTO</string>
     <string name="tut_look_title">il tuo aspetto</string>
-    <string name="tut_look_intro">Tre temi e qualsiasi colore. Apri Impostazioni Launcher → start+tema per sceglierli.</string>
+    <string name="tut_look_intro">Tre temi e qualsiasi colore. Apri impostazioni → aspetto e temi per sceglierli.</string>
     <string name="tut_look_tip1">Classic è l\'aspetto piatto di Windows Phone. Modern Glass è vetro smerigliato su uno sfondo luminoso. Modern Droid segue Material You.</string>
     <string name="tut_look_tip2">Scegli uno dei 20 colori d\'accento, o creane uno tuo con i tre cursori. Scuro, chiaro o a orario, in ogni tema.</string>
 
@@ -771,7 +771,7 @@
     <string name="tut_alive_tip3">Costa quasi nulla di batteria: a schermo spento, o con un\'altra app davanti, il launcher non legge niente e non ha timer.</string>
     <string name="theme_oled">Nero OLED</string>
     <string name="theme_oled_hint">Per gli schermi OLED: nel tema scuro gli sfondi sono neri veri, quindi quei pixel sono spenti. Più contrasto e meno batteria. Nel tema chiaro non fa nulla.</string>
-    <string name="tut_look_tip3">Hai uno schermo OLED? Attiva «Nero OLED» in start+tema per uno sfondo nero vero.</string>
+    <string name="tut_look_tip3">Hai uno schermo OLED? Attiva «Nero OLED» in tema e colori per uno sfondo nero vero.</string>
 
     <!-- live tiles of other apps -->
     <string name="live_heading">live tile delle altre app</string>

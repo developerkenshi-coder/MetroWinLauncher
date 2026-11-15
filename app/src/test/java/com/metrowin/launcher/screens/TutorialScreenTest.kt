@@ -19,6 +19,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
 import com.metrowin.launcher.data.Need
 import com.metrowin.launcher.data.Tutorial
+import com.metrowin.launcher.data.TutorialLink
 import com.metrowin.launcher.ui.settings.SettingsEnv
 import com.metrowin.launcher.ui.settings.SettingsScreen
 import com.metrowin.launcher.ui.settings.SettingsSection
@@ -40,8 +41,10 @@ class TutorialScreenTest : ScreenshotBase() {
     @Composable
     private fun Tour(met: Set<Need> = emptySet(), denied: Set<Need> = emptySet()) {
         pager = rememberPagerState { Tutorial.steps.size }
-        TutorialScreen(pager, met, onRequest = { requested += it }, onFinish = { finished++ }, denied = denied)
+        TutorialScreen(pager, met, onRequest = { requested += it }, onFinish = { finished++ }, denied = denied, onOpenLink = { links += it })
     }
+
+    private val links = mutableListOf<TutorialLink>()
 
     private fun open(met: Set<Need> = emptySet(), denied: Set<Need> = emptySet()) {
         show { Tour(met, denied) }
@@ -132,9 +135,9 @@ class TutorialScreenTest : ScreenshotBase() {
     @Test
     fun aPermissionAndroidWillNotAskAgainOffersTheSettingsInstead() {
         open(denied = setOf(Need.Microphone))
-        goTo("apps")
+        goTo("voice")
         compose.onNodeWithTag("tutorial:allow:Microphone").assertTextEquals("open settings")
-        compose.onNodeWithTag("tutorial:allow:Microphone").performClick()
+        tapScrolled("tutorial:allow:Microphone")
         assertEquals(listOf(Need.Microphone), requested)
     }
 
@@ -177,6 +180,50 @@ class TutorialScreenTest : ScreenshotBase() {
             assertTrue("page ${step.id}", pager.currentPage == index)
             if (index < Tutorial.steps.lastIndex) next()
         }
+    }
+
+    // --- the way to the setting
+
+    @Test
+    fun aPageWithASettingSaysWhereItIsAndOpensItWithAButton() {
+        open()
+        goTo("look")
+        capture("tutorial_look_link")
+        compose.onNodeWithTag("tutorial:link").assertExists()
+        compose.onNodeWithTag("tutorial:link").assertTextEquals("show it in the settings: look and themes › theme and colors")
+        tapScrolled("tutorial:link")
+        assertEquals(listOf(TutorialLink("StartTheme", "theme.style")), links)
+    }
+
+    @Test
+    fun aCategoryWithOnePageIsNamedOnce() {
+        open()
+        goTo("lock")
+        compose.onNodeWithTag("tutorial:link").assertTextEquals("show it in the settings: lock screen")
+    }
+
+    @Test
+    fun theLastPageOpensTheHomeOfTheSettings() {
+        open()
+        goTo("settings")
+        compose.onNodeWithTag("tutorial:link").assertTextEquals("open the settings")
+        tapScrolled("tutorial:link")
+        assertEquals(listOf(TutorialLink()), links)
+    }
+
+    @Test
+    fun aPageWithNothingToChangeHasNoLink() {
+        open()
+        goTo("phone")
+        compose.onAllNodesWithTag("tutorial:link").assertCountEquals(0)
+    }
+
+    @Test
+    fun aLongTourSaysWhereYouAreWithACounterInsteadOfDots() {
+        open()
+        compose.onNodeWithTag("tutorial:progress").assertTextEquals("1 of ${Tutorial.steps.size}")
+        next()
+        compose.onNodeWithTag("tutorial:progress").assertTextEquals("2 of ${Tutorial.steps.size}")
     }
 
     // --- replaying it

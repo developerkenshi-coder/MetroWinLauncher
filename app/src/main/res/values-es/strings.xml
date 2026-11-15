@@ -639,7 +639,7 @@
     <string name="tut_welcome_title">bienvenido</string>
     <string name="tut_welcome_intro">MetroWin Launcher convierte tu teléfono en una pantalla Start de Windows Phone. Este breve recorrido muestra cómo usarlo y pide algunos permisos de uno en uno, solo cuando una función los necesita. Todos son opcionales.</string>
     <string name="tut_welcome_tip1">Desliza a la izquierda, o usa los botones de abajo, para continuar.</string>
-    <string name="tut_welcome_tip2">Sal en cualquier momento con “omitir”. Puedes volver a ver el recorrido desde Ajustes del launcher → herramientas → acerca de.</string>
+    <string name="tut_welcome_tip2">Sal cuando quieras con «omitir». Puedes volver a ver el recorrido en ajustes → acerca de → mostrar el tutorial otra vez.</string>
     <string name="tut_home_label">APP DE INICIO</string>
     <string name="tut_home_title">conviértelo en tu inicio</string>
     <string name="tut_home_intro">Android abre su app de inicio cada vez que pulsas Inicio. Para que MetroWin sea lo que ves, tiene que ser esa app.</string>
@@ -661,7 +661,7 @@
     <string name="tut_weather_label">CLIMA</string>
     <string name="tut_weather_title">clima</string>
     <string name="tut_weather_intro">El mosaico Clima muestra el pronóstico de una ciudad. Lo consulta a Open-Meteo, un servicio abierto, por internet. No sale nada más de tu teléfono.</string>
-    <string name="tut_weather_tip1">Elige la ciudad en Ajustes del launcher → mosaicos dinámicos: por nombre o con tu ubicación.</string>
+    <string name="tut_weather_tip1">Elige la ciudad en ajustes → start y mosaicos → mosaicos dinámicos: por nombre o con tu ubicación.</string>
     <string name="tut_weather_tip2">Toca el mosaico para ver el pronóstico de los próximos días.</string>
     <string name="tut_apps_label">LISTA DE APPS</string>
     <string name="tut_apps_title">todas tus apps</string>
@@ -678,7 +678,7 @@
     <string name="tut_action_tip3">Arrastra el panel hacia arriba, o pulsa Atrás, para cerrarlo.</string>
     <string name="tut_gestures_label">GESTOS</string>
     <string name="tut_gestures_title">gestos</string>
-    <string name="tut_gestures_intro">Todo sigue a tu dedo. Algunos gestos pueden hacer lo que elijas en Ajustes del launcher → gestos.</string>
+    <string name="tut_gestures_intro">Todo sigue tu dedo. Algunos gestos hacen lo que elijas en ajustes → gestos y atajos.</string>
     <string name="tut_gestures_tip1">En Start, desliza desde el borde derecho para pasar a la lista de apps y desde el borde izquierdo para volver.</string>
     <string name="tut_gestures_tip2">Toca dos veces el fondo de Start, o desliza hacia abajo o hacia arriba con dos dedos, para bloquear la pantalla, encender la linterna, hablar, buscar…</string>
     <string name="tut_gestures_tip3">Atrás retrocede una capa cada vez, y el gesto del sistema mueve la pantalla con tu dedo.</string>
@@ -689,12 +689,12 @@
     <string name="tut_alive_tip2">Algunos teléfonos (Xiaomi, Huawei, Oppo, Samsung…) tienen además su propia lista de “inicio automático” o “apps protegidas” en sus ajustes: añade MetroWin Launcher también allí.</string>
     <string name="tut_settings_label">AJUSTES</string>
     <string name="tut_settings_title">hazlo tuyo</string>
-    <string name="tut_settings_intro">Abre Ajustes del launcher en la lista de apps, o toca el botón Launcher del Action Center. Cada sección es una página, en cuatro grupos: aspecto, comportamiento, apps y herramientas. El cuadro de búsqueda de arriba encuentra cualquier ajuste y te lleva a él.</string>
-    <string name="tut_settings_tip1">aspecto: start+tema (tema, claro u oscuro, negro OLED, colores de acento, foto de Start), pantalla start (mosaicos, reloj, número de pantallas Start), iconos &amp; temas, accesibilidad (tamaño del texto, texto en negrita, menos movimiento, más contraste, TalkBack) y la pantalla de bloqueo.</string>
-    <string name="tut_settings_tip2">comportamiento: pantalla+idioma (rotación, cómo se abren las apps, 120 Hz, idioma), gestos (cada deslizamiento, toque y gesto desde el borde, también las apps recientes), notificaciones+acciones (el Action Center), voz y batería.</string>
-    <string name="tut_settings_tip3">apps: la lista de apps (los grupos de arriba, apps ocultas, renombradas y bloqueadas), búsqueda (dónde busca el cuadro, qué responde, el buscador web), mosaicos dinámicos (la ciudad del clima, WhatsApp, Telegram, Instagram…) y perfiles (trabajo, espacio privado).</string>
-    <string name="tut_settings_tip4">herramientas: copia+sincronización (un archivo o una carpeta, y una sincronización cifrada entre tus teléfonos), rincón infantil (Start con solo las apps que elijas) y acerca de (la versión, y este recorrido cuando quieras volver a verlo).</string>
-    <string name="tut_settings_tip5">¿Te has perdido? El cuadro de arriba de los ajustes encuentra cualquier ajuste por su nombre o por su utilidad y te lleva a él. La búsqueda de la lista de apps también los encuentra.</string>
+    <string name="tut_settings_intro">Abre los ajustes del launcher en la lista de apps, o toca el botón Launcher del Action Center. La portada lista trece categorías, cada una con un icono y una línea sobre lo que contiene; una categoría se abre como un pivot de sus páginas. Nada está más profundo que eso.</string>
+    <string name="tut_settings_tip1">Toca la «i» junto a una categoría o un ajuste: un cuadro dice qué hace, cuándo importa y cuánto cuesta en batería, privacidad o permisos.</string>
+    <string name="tut_settings_tip2">El cuadro de arriba encuentra cualquier ajuste por nombre o por para qué sirve, y te dice dónde está (categoría › página) antes de llevarte. La búsqueda de la lista de apps también los encuentra.</string>
+    <string name="tut_settings_tip3">Desliza una categoría de lado, o toca los títulos de arriba, para ir de página en página. Atrás vuelve siempre de donde vienes.</string>
+    <string name="tut_settings_tip4">Los ajustes que pocos necesitan esperan bajo «avanzado», cerrados hasta que los toques. Al final de una página, «restaurar esta página» recupera solo los ajustes de esa página.</string>
+    <string name="tut_settings_tip5">¿Perdido? Cada página de este recorrido tiene un botón que abre directamente su ajuste: puedes volver al recorrido desde ajustes → acerca de.</string>
     <string name="qa_launcher_settings">MetroWin</string>
     <string name="qa_recents">Apps recientes</string>
     <string name="app_launcher_settings">Ajustes del launcher</string>
@@ -750,7 +750,7 @@
     <string name="accent_use_preset">volver a los 20 colores</string>
     <string name="tut_look_label">ASPECTO</string>
     <string name="tut_look_title">hazlo tuyo</string>
-    <string name="tut_look_intro">Tres temas y cualquier color. Abre Ajustes del launcher → start+tema para elegir.</string>
+    <string name="tut_look_intro">Tres temas y cualquier color. Abre ajustes → aspecto y temas para elegir.</string>
     <string name="tut_look_tip1">Clásico es el aspecto plano de Windows Phone. Cristal moderno es cristal esmerilado sobre un fondo resplandeciente. Droid moderno sigue Material You.</string>
     <string name="tut_look_tip2">Elige uno de los 20 colores de acento o crea el tuyo con los tres controles deslizantes. Oscuro, claro o por horas, en todos los temas.</string>
 
@@ -778,7 +778,7 @@
     <string name="tut_alive_tip3">Casi no gasta batería: sin pantalla, o con otra app delante, el launcher no lee nada ni ejecuta temporizadores.</string>
     <string name="theme_oled">negro OLED</string>
     <string name="theme_oled_hint">Para pantallas OLED: en el tema oscuro los fondos son de negro puro, así que esos píxeles están apagados. Más contraste y menos batería. No hace nada en el tema claro.</string>
-    <string name="tut_look_tip3">¿Tienes una pantalla OLED? Activa “negro OLED” en start+tema para un fondo negro puro.</string>
+    <string name="tut_look_tip3">¿Tienes una pantalla OLED? Activa «Negro OLED» en tema y colores para un fondo negro puro.</string>
 
     <!-- mosaicos dinámicos de otras apps -->
     <string name="live_heading">mosaicos dinámicos de otras apps</string>
