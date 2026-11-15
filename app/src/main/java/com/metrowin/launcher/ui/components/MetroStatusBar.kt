@@ -107,6 +107,9 @@ fun metroStatusBarHeight(): Dp {
 
 private val MIN_BAR = 24.dp
 
+/** The background of a bar that covers the bar of Android (over other apps): the background of the theme in the dark, its surface in the light. */
+fun com.metrowin.launcher.ui.theme.MetroColors.statusBarSolid(): Color = if (dark) background else surface
+
 /** A soft veil behind a bar with no background of its own, of the opposite shade to the text: a light photo or page never swallows it. */
 private fun scrim(text: Color): androidx.compose.ui.graphics.Brush {
     val veil = if (text.luminance() > 0.5f) Color.Black else Color.White
@@ -151,7 +154,7 @@ private val RADIO_ACTIONS = arrayOf(
 fun MetroStatusBar(
     battery: BatteryInfo?,
     modifier: Modifier = Modifier,
-    color: Color = if (com.metrowin.launcher.ui.theme.LocalMetroColors.current.dark) Color.White else Color(0xFF202020),
+    color: Color = com.metrowin.launcher.ui.theme.LocalMetroColors.current.foreground,
     /** Where the bar is the window of a service, over other apps, the launcher's insets say nothing: it is told how high it is, and it has a background to cover the bar of Android. */
     height: Dp = metroStatusBarHeight(),
     background: Color = Color.Transparent,

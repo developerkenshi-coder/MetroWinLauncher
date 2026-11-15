@@ -32,6 +32,7 @@ import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.notifications.OverlayWindowOwner
 import com.metrowin.launcher.notifications.overBars
 import com.metrowin.launcher.ui.components.MetroStatusBar
+import com.metrowin.launcher.ui.components.statusBarSolid
 import com.metrowin.launcher.ui.components.rememberBroadcast
 import com.metrowin.launcher.ui.theme.MetroAccents
 import com.metrowin.launcher.ui.theme.MetroTheme
@@ -129,9 +130,10 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
                     // The percentage follows Android's own: the phone says every change, and the first answer comes at once (the broadcast is sticky).
                     val batteryIntent = rememberBroadcast(Intent.ACTION_BATTERY_CHANGED)
                     val battery = remember(batteryIntent) { batteryIntent?.let { BatteryInfo.from(it, service) } ?: BatteryInfo.read(service) }
-                    val solid = if (dark) Color.Black else Color(0xFFE6E6E6)
+                    val colors = com.metrowin.launcher.ui.theme.LocalMetroColors.current
+                    val solid = colors.statusBarSolid()
                     MetroStatusBar(
-                        battery, Modifier, if (dark) Color.White else Color(0xFF202020), barHeight,
+                        battery, Modifier, colors.foreground, barHeight,
                         if (inLauncher && launcherBar) Color.Transparent else solid, hidden,
                         chargeAnimation = chargeAnimation,
                     )
