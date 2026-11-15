@@ -42,7 +42,6 @@
 
     <!-- start+theme (the launcher's own settings) -->
     <string name="settings_start_theme">start+tema</string>
-    <string name="settings_header">CONFIGURAÇÕES</string>
     <string name="theme_dark">escuro</string>
     <string name="theme_light">claro</string>
     <string name="theme_accent">cor de destaque</string>

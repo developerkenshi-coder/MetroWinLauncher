@@ -60,6 +60,8 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
+import com.metrowin.launcher.ui.components.AppTitleLine
+import com.metrowin.launcher.ui.components.LocalAppTitle
 import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.components.TurnstileHost
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -131,12 +133,10 @@ fun SettingsScreen(
                 modifier = Modifier.padding(start = Spacing.Page, end = Spacing.Page, top = 10.dp, bottom = 6.dp).testTag("settings:search"),
             )
             if (query.isBlank()) {
-                androidx.compose.runtime.CompositionLocalProvider(com.metrowin.launcher.ui.components.LocalAppTitle provides stringResource(R.string.stock_settings)) {
-                    PivotHeader(
-                        groups.map { stringResource(it.title) }, pagerState,
-                        Modifier.padding(start = Spacing.Page, top = 2.dp, bottom = Spacing.Medium),
-                    )
-                }
+                PivotHeader(
+                    groups.map { stringResource(it.title) }, pagerState,
+                    Modifier.padding(start = Spacing.Page, top = 2.dp, bottom = Spacing.Medium),
+                )
                 HorizontalPager(pagerState, Modifier.weight(1f)) { page ->
                     SectionList(SettingsSection.entries.filter { it.group == groups[page] }) { opened, top ->
                         tappedTop = top
@@ -208,12 +208,10 @@ private fun SearchResults(query: String, hits: List<SettingHit>, modifier: Modif
 
 @Composable
 private fun SettingsHeader(modifier: Modifier = Modifier) {
-    MetroText(
-        stringResource(R.string.settings_header),
-        size = MetroType.Note,
-        weight = FontWeight.SemiBold,
-        modifier = modifier.padding(start = Spacing.Page, top = 28.dp),
-    )
+    // The same app-name line as the mini apps (LocalAppTitle), so the name is in one place and one look.
+    CompositionLocalProvider(LocalAppTitle provides stringResource(R.string.stock_settings)) {
+        Box(modifier.padding(start = Spacing.Page, top = 28.dp)) { AppTitleLine() }
+    }
 }
 
 @Composable
