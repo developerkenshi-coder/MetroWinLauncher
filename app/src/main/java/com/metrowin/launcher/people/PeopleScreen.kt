@@ -1,5 +1,6 @@
 package com.metrowin.launcher.people
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -149,7 +150,7 @@ fun PeopleScreen() {
         if (uri != null) scope.launch {
             val keys = snapshot?.people.orEmpty().mapNotNull { PeopleBook.lookupKey(it.key) }
             val n = withContext(Dispatchers.IO) { runCatching { context.contentResolver.openOutputStream(uri)?.use { PeopleActions.exportVcf(context, keys, it) } ?: 0 }.getOrDefault(0) }
-            android.widget.Toast.makeText(context, context.getString(R.string.pp_exported, n), android.widget.Toast.LENGTH_SHORT).show()
+            MetroToast.show(context, context.getString(R.string.pp_exported, n))
         }
     }
 

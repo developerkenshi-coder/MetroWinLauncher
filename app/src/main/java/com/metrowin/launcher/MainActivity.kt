@@ -1,5 +1,6 @@
 package com.metrowin.launcher
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
@@ -70,7 +71,7 @@ class MainActivity : ComponentActivity() {
             val link = Regex("https?://\\S+").find(shared)?.value
             val title = intent.getStringExtra(Intent.EXTRA_SUBJECT).orEmpty()
             val pinned = link != null && viewModel.pinSite(title, link, 0)
-            android.widget.Toast.makeText(this, if (pinned) R.string.share_pinned else R.string.share_not_a_link, android.widget.Toast.LENGTH_SHORT).show()
+            MetroToast.show(this, if (pinned) R.string.share_pinned else R.string.share_not_a_link)
         }
     }
 

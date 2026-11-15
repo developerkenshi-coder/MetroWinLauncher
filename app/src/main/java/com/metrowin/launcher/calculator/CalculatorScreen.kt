@@ -1,9 +1,9 @@
 package com.metrowin.launcher.calculator
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.text.format.DateUtils
-import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -164,7 +164,7 @@ private fun ColumnScope.CalculatorBody(session: CalcSession, options: CalcOption
             add(AppBarItem("⧉", stringResource(R.string.calc_menu_copy)) { copyText(context, currentValueText(view), copied) })
             add(AppBarItem("⎘", stringResource(R.string.calc_menu_paste)) {
                 val text = readClipboard(context)
-                if (CalcSession.pasteable(text) == null) Toast.makeText(context, nothing, Toast.LENGTH_SHORT).show() else act { paste(text) }
+                if (CalcSession.pasteable(text) == null) MetroToast.show(context, nothing) else act { paste(text) }
             })
         }
     }
@@ -208,7 +208,7 @@ private fun currentValueText(view: CalcSession.View): String =
 private fun copyText(context: android.content.Context, text: String, message: String) {
     if (text.isEmpty()) return
     context.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText("calculator", text))
-    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    MetroToast.show(context, message)
 }
 
 private fun readClipboard(context: android.content.Context): String =

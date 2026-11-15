@@ -1,8 +1,8 @@
 package com.metrowin.launcher.systemsettings
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.content.Intent
 import android.provider.Settings
-import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -57,7 +57,7 @@ class SystemSettingsActivity : MiniActivity() {
                 return@LaunchedEffect
             }
             // The screen goes away at once, so the plain Android toast carries the reason over to the settings of Android.
-            Toast.makeText(applicationContext, state.reason(), Toast.LENGTH_LONG).show()
+            MetroToast.show(applicationContext, state.reason())
             runCatching { startActivity(Intent(Settings.ACTION_SETTINGS)) }
             // shortcut: finishAndRemoveTask (not finish) on purpose: finish() would bring the launcher in front of the settings of Android; upgrade if a hand-over without that exists.
             finishAndRemoveTask()

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.photos
 
+import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.Manifest
 import android.app.Activity
 import android.content.ComponentCallbacks2
@@ -12,7 +13,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -160,7 +160,7 @@ class PhotosActivity : MiniActivity() {
         suspend fun share(context: Context, list: List<Photo>, strip: Boolean) {
             val streams: List<Uri> = if (strip) {
                 withContext(Dispatchers.IO) { runCatching { strippedCopies(context, list) }.getOrNull() }
-                    ?: return Toast.makeText(context, R.string.ph_strip_failed, Toast.LENGTH_LONG).show()
+                    ?: return MetroToast.show(context, R.string.ph_strip_failed)
             } else uris(list)
             val send = (if (streams.size == 1) Intent(Intent.ACTION_SEND).putExtra(Intent.EXTRA_STREAM, streams.first())
             else Intent(Intent.ACTION_SEND_MULTIPLE).putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(streams)))
@@ -181,7 +181,7 @@ class PhotosActivity : MiniActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val uris = uris(list)
                 runCatching { ask(MediaStore.createTrashRequest(context.contentResolver, uris, true).intentSender); remember(uris) }
-                    .onFailure { Toast.makeText(context, R.string.ph_delete_failed, Toast.LENGTH_LONG).show() }
+                    .onFailure { MetroToast.show(context, R.string.ph_delete_failed) }
             } else confirm()
         }
 
@@ -197,7 +197,7 @@ class PhotosActivity : MiniActivity() {
                     failed = true
                 }
             }
-            if (failed) Toast.makeText(context, R.string.ph_delete_failed, Toast.LENGTH_LONG).show()
+            if (failed) MetroToast.show(context, R.string.ph_delete_failed)
             done()
         }
 
