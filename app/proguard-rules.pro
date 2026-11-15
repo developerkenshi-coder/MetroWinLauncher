@@ -18,3 +18,4 @@
 -dontwarn javax.security.sasl.**
 -dontwarn javax.naming.**
 -dontwarn org.apache.harmony.**
+-dontwarn com.github.luben.zstd.**
