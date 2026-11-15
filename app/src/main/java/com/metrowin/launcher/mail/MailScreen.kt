@@ -31,6 +31,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -71,6 +72,8 @@ import com.metrowin.launcher.ui.components.SelectableRow
 import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.featherRow
 import com.metrowin.launcher.ui.components.scrollIndicator
+import com.metrowin.launcher.ui.components.LocalBottomBarsPadded
+import com.metrowin.launcher.ui.components.navigationBottomPaddingWithButtons
 import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.pages.PageNote
 import com.metrowin.launcher.ui.theme.LocalAccent
@@ -492,18 +495,19 @@ fun MailScreen(modifier: Modifier = Modifier) {
             )
             3 -> MailOptionsView(onBack = { showOptions = false }, onChanged = { optionsVersion++ })
             else -> if (wide && selected != null) {
-                Column(modifier.fillMaxSize()) {
+                CompositionLocalProvider(LocalBottomBarsPadded provides true) { Column(modifier.fillMaxSize().navigationBottomPaddingWithButtons()) {
                     Row(Modifier.weight(1f).fillMaxWidth()) {
                         listPane(Modifier.weight(0.4f))
                         (selected ?: lastOpen)?.let { open -> MessageReaderView(open, body, bodyFailure, readerActions(open, hasArchive, hasSpam), look, Modifier.weight(0.6f)) }
                     }
                     listBar()
-                }
+                } }
             } else {
-                Column(modifier.fillMaxSize()) {
+                // The bar sits below the page, outside its frame: the room for the navigation bar is left here, once, not by the page.
+                CompositionLocalProvider(LocalBottomBarsPadded provides true) { Column(modifier.fillMaxSize().navigationBottomPaddingWithButtons()) {
                     listPane(Modifier.weight(1f))
                     listBar()
-                }
+                } }
             }
         }
     }

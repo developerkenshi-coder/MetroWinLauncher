@@ -7,11 +7,11 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.platform.LocalDensity
 import com.metrowin.launcher.gestures.NavBarOverlay
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -34,14 +34,25 @@ fun Modifier.topBarsPadding(): Modifier {
     return if (own > 0.dp) padding(top = own) else windowInsetsPadding(WindowInsets.statusBars.union(WindowInsets.displayCutout).only(WindowInsetsSides.Top))
 }
 
+/** The room at the bottom for the navigation bar is already left by whoever holds the page together with its bar below it (Mail's list and its app bar). */
+val LocalBottomBarsPadded = compositionLocalOf { false }
+
+/** The sides of the navigation bar (in landscape, a bar at the side of the screen). */
+@Composable
+fun Modifier.navigationSidesPadding(): Modifier = windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal))
+
 /**
- * `navigationBarsPadding` that also keeps clear of the three buttons of MetroWin drawn over the navigation bar: on a phone whose bar of
- * Android is hidden (gestures) the system reports less room than the buttons take, and the bottom bar of the app went under them.
+ * The bottom of the navigation bar, and also the three buttons of MetroWin drawn over it: on a phone whose bar of Android is hidden
+ * (gestures) the system reports less room than the buttons take, and the bottom bar of the app went under them.
  */
 @Composable
-fun Modifier.navigationBarsPaddingWithButtons(): Modifier {
+fun Modifier.navigationBottomPaddingWithButtons(): Modifier {
     val density = LocalDensity.current
     val inset = WindowInsets.navigationBars.getBottom(density)
     val extra = with(density) { (NavBarOverlay.coverPx - inset).coerceAtLeast(0).toDp() }
-    return navigationBarsPadding().padding(bottom = extra)
+    return windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)).padding(bottom = extra)
 }
+
+/** [navigationSidesPadding] and [navigationBottomPaddingWithButtons]: `navigationBarsPadding` that also keeps clear of the buttons of MetroWin. */
+@Composable
+fun Modifier.navigationBarsPaddingWithButtons(): Modifier = navigationSidesPadding().navigationBottomPaddingWithButtons()
