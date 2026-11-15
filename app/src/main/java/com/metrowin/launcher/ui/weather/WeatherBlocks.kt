@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.weather
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -98,7 +100,7 @@ internal fun TemperatureChart(hours: List<HourForecast>, modifier: Modifier = Mo
     val high = hours.maxOf { it.temperature }
     val description = stringResource(R.string.weather_chart_description, low, high)
     val clock = java.time.format.DateTimeFormatter.ofLocalizedTime(java.time.format.FormatStyle.SHORT)
-    Column(modifier.fillMaxWidth().testTag("weather:chart"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(modifier.fillMaxWidth().testTag("weather:chart"), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
         Canvas(Modifier.fillMaxWidth().height(110.dp).semantics { contentDescription = description }) {
             val padTop = 10.dp.toPx()
             val padBottom = 10.dp.toPx()
@@ -136,14 +138,14 @@ internal fun TemperatureChart(hours: List<HourForecast>, modifier: Modifier = Mo
                     }
                     if (label != null) {
                         MetroText(
-                            label, size = 11.sp, weight = if (i == 0) FontWeight.Bold else FontWeight.Normal, color = if (i == 0) accent else colors.subtle,
+                            label, size = MetroType.Micro, weight = if (i == 0) FontWeight.Bold else FontWeight.Normal, color = if (i == 0) accent else colors.subtle,
                             maxLines = 1, minScale = 1f, modifier = Modifier.wrapContentWidth(unbounded = true),
                         )
                     }
                 }
             }
         }
-        MetroText("$low° – $high°", size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1, modifier = Modifier.align(androidx.compose.ui.Alignment.CenterHorizontally))
+        MetroText("$low° – $high°", size = MetroType.Caption, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1, modifier = Modifier.align(androidx.compose.ui.Alignment.CenterHorizontally))
     }
 }
 
@@ -155,30 +157,30 @@ internal fun AirBlock(air: AirQuality, showAir: Boolean, showPollen: Boolean) {
     val pollenNames = stringArrayResource(R.array.pollen_names)
     val pollenLevels = stringArrayResource(R.array.pollen_levels)
     if (showAir && air.aqi != null) {
-        MetroText(stringResource(R.string.weather_air_title), size = 18.sp, color = colors.subtle, modifier = Modifier.padding(top = 20.dp, bottom = 6.dp))
+        MetroText(stringResource(R.string.weather_air_title), size = MetroType.Lead, color = colors.subtle, modifier = Modifier.padding(top = 20.dp, bottom = 6.dp))
         Column(Modifier.testTag("weather:air"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = androidx.compose.ui.Alignment.Bottom) {
                 MetroText("${air.aqi}", size = 40.sp)
-                MetroText(levels[OpenMeteo.aqiLevel(air.aqi)], size = 20.sp, weight = FontWeight.Normal, modifier = Modifier.padding(start = 12.dp, bottom = 6.dp))
+                MetroText(levels[OpenMeteo.aqiLevel(air.aqi)], size = MetroType.Subtitle, weight = FontWeight.Normal, modifier = Modifier.padding(start = Spacing.Large, bottom = 6.dp))
             }
             val parts = listOfNotNull(
                 air.pm25?.let { "PM2.5 $it" }, air.pm10?.let { "PM10 $it" }, air.ozone?.let { "O₃ $it" }, air.no2?.let { "NO₂ $it" },
             )
             if (parts.isNotEmpty()) {
                 MetroText(
-                    parts.joinToString("   ") + "  µg/m³", size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 2,
+                    parts.joinToString("   ") + "  µg/m³", size = MetroType.Note, weight = FontWeight.Normal, color = colors.subtle, maxLines = 2,
                 )
             }
         }
     }
     if (showPollen && air.pollen.isNotEmpty()) {
-        MetroText(stringResource(R.string.weather_pollen_title), size = 18.sp, color = colors.subtle, modifier = Modifier.padding(top = 20.dp, bottom = 6.dp))
-        Column(Modifier.testTag("weather:pollen"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        MetroText(stringResource(R.string.weather_pollen_title), size = MetroType.Lead, color = colors.subtle, modifier = Modifier.padding(top = 20.dp, bottom = 6.dp))
+        Column(Modifier.testTag("weather:pollen"), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
             air.pollen.forEach { (plant, grains) ->
                 val name = pollenNames[OpenMeteo.POLLEN.indexOf(plant).coerceAtLeast(0)]
                 Row(Modifier.fillMaxWidth()) {
-                    MetroText(name, size = 18.sp, modifier = Modifier.weight(1f))
-                    MetroText("${pollenLevels[OpenMeteo.pollenLevel(grains)]} · $grains", size = 16.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
+                    MetroText(name, size = MetroType.Lead, modifier = Modifier.weight(1f))
+                    MetroText("${pollenLevels[OpenMeteo.pollenLevel(grains)]} · $grains", size = MetroType.Body, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
                 }
             }
         }

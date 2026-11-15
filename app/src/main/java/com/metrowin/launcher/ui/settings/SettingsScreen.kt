@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.theme.LocalAccent
 import kotlinx.coroutines.delay
@@ -126,13 +128,13 @@ fun SettingsScreen(
             MetroTextField(
                 value = query, onValueChange = { query = it },
                 placeholder = stringResource(R.string.settings_search_hint),
-                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 10.dp, bottom = 6.dp).testTag("settings:search"),
+                modifier = Modifier.padding(start = Spacing.Page, end = Spacing.Page, top = 10.dp, bottom = 6.dp).testTag("settings:search"),
             )
             if (query.isBlank()) {
                 androidx.compose.runtime.CompositionLocalProvider(com.metrowin.launcher.ui.components.LocalAppTitle provides stringResource(R.string.stock_settings)) {
                     PivotHeader(
                         groups.map { stringResource(it.title) }, pagerState,
-                        Modifier.padding(start = 24.dp, top = 2.dp, bottom = 8.dp),
+                        Modifier.padding(start = Spacing.Page, top = 2.dp, bottom = Spacing.Medium),
                     )
                 }
                 HorizontalPager(pagerState, Modifier.weight(1f)) { page ->
@@ -180,8 +182,8 @@ private fun SearchResults(query: String, hits: List<SettingHit>, modifier: Modif
     if (hits.isEmpty()) {
         MetroText(
             stringResource(R.string.settings_search_none, query.trim()),
-            size = 16.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE, lineHeight = 22.sp,
-            modifier = modifier.padding(horizontal = 24.dp, vertical = 14.dp).testTag("settings:search:none"),
+            size = MetroType.Body, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE, lineHeight = 22.sp,
+            modifier = modifier.padding(horizontal = Spacing.Page, vertical = 14.dp).testTag("settings:search:none"),
         )
         return
     }
@@ -195,10 +197,10 @@ private fun SearchResults(query: String, hits: List<SettingHit>, modifier: Modif
                     .testTag("settings:result:${hit.setting?.id ?: hit.section.name}")
                     .onGloballyPositioned { top = it.positionInRoot().y }
                     .metroPress(onClick = { onOpen(hit, top) })
-                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                    .padding(horizontal = Spacing.Page, vertical = Spacing.Medium),
             ) {
-                MetroText(stringResource(hit.setting?.title ?: hit.section.title), size = 24.sp)
-                MetroText(where, size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, lineHeight = 19.sp)
+                MetroText(stringResource(hit.setting?.title ?: hit.section.title), size = MetroType.Heading)
+                MetroText(where, size = MetroType.Note, weight = FontWeight.Normal, color = colors.subtle, lineHeight = 19.sp)
             }
         }
     }
@@ -208,9 +210,9 @@ private fun SearchResults(query: String, hits: List<SettingHit>, modifier: Modif
 private fun SettingsHeader(modifier: Modifier = Modifier) {
     MetroText(
         stringResource(R.string.settings_header),
-        size = 14.sp,
+        size = MetroType.Note,
         weight = FontWeight.SemiBold,
-        modifier = modifier.padding(start = 24.dp, top = 28.dp),
+        modifier = modifier.padding(start = Spacing.Page, top = 28.dp),
     )
 }
 
@@ -227,12 +229,12 @@ private fun SectionList(sections: List<SettingsSection>, onOpen: (SettingsSectio
                     .testTag("settings:section:${section.name}")
                     .onGloballyPositioned { top = it.positionInRoot().y }
                     .metroPress(onClick = { onOpen(section, top) })
-                    .padding(horizontal = 24.dp, vertical = 10.dp),
+                    .padding(horizontal = Spacing.Page, vertical = 10.dp),
             ) {
                 MetroText(stringResource(section.title), size = 28.sp)
                 MetroText(
                     stringResource(section.description),
-                    size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, lineHeight = 19.sp,
+                    size = MetroType.Note, weight = FontWeight.Normal, color = colors.subtle, lineHeight = 19.sp,
                 )
             }
         }
@@ -256,7 +258,7 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, fromTop: Flo
             stringResource(section.title),
             size = 40.sp,
             modifier = Modifier
-                .padding(start = 24.dp, end = 24.dp, top = 2.dp, bottom = 8.dp)
+                .padding(start = Spacing.Page, end = Spacing.Page, top = 2.dp, bottom = Spacing.Medium)
                 .onGloballyPositioned { titleTop = it.positionInRoot().y }
                 .graphicsLayer {
                     val away = 1f - settled.value

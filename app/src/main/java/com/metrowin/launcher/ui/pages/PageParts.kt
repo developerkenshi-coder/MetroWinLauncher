@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.pages
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.pageSide
 import com.metrowin.launcher.ui.components.topBarsPadding
@@ -46,8 +48,8 @@ fun PageFrame(header: String, title: String, modifier: Modifier = Modifier, cont
             .verticalScroll(rememberScrollState())
             .padding(horizontal = pageSide(24.dp)),
     ) {
-        MetroText(header, size = 14.sp, weight = FontWeight.SemiBold, modifier = Modifier.padding(top = 28.dp))
-        MetroText(title, size = 34.sp, maxLines = 2, lineHeight = 40.sp, modifier = Modifier.padding(top = 2.dp, bottom = 12.dp).testTag("page:title"))
+        MetroText(header, size = MetroType.Note, weight = FontWeight.SemiBold, modifier = Modifier.padding(top = 28.dp))
+        MetroText(title, size = MetroType.Title, maxLines = 2, lineHeight = 40.sp, modifier = Modifier.padding(top = 2.dp, bottom = Spacing.Large).testTag("page:title"))
         content()
     }
 }
@@ -56,15 +58,15 @@ fun PageFrame(header: String, title: String, modifier: Modifier = Modifier, cont
 @Composable
 fun PageChip(text: String, selected: Boolean, tag: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
-        modifier.testTag(tag).metroPress(onClick = onClick).litFill(selected).padding(horizontal = 14.dp, vertical = 8.dp),
+        modifier.testTag(tag).metroPress(onClick = onClick).litFill(selected).padding(horizontal = 14.dp, vertical = Spacing.Medium),
         contentAlignment = Alignment.Center,
     ) {
-        MetroText(text, size = 16.sp, weight = FontWeight.Normal, color = if (selected) onAccent() else LocalMetroColors.current.foreground)
+        MetroText(text, size = MetroType.Body, weight = FontWeight.Normal, color = if (selected) onAccent() else LocalMetroColors.current.foreground)
     }
 }
 
 /** A line of small subdued text under something. */
 @Composable
 fun PageNote(text: String, modifier: Modifier = Modifier) {
-    MetroText(text, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, maxLines = Int.MAX_VALUE, lineHeight = 19.sp, modifier = modifier)
+    MetroText(text, size = MetroType.Note, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, maxLines = Int.MAX_VALUE, lineHeight = 19.sp, modifier = modifier)
 }

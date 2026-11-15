@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -47,14 +49,14 @@ fun RestoreDialog(onDone: (Set<RestorePart>) -> Unit, onCancel: () -> Unit, modi
         Column(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = Spacing.Page)
                 .panel()
                 .pointerInput(Unit) { detectTapGestures { } }
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             MetroText(stringResource(R.string.restore_title), size = 22.sp)
-            MetroText(stringResource(R.string.restore_hint), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE)
+            MetroText(stringResource(R.string.restore_hint), size = MetroType.Note, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE)
             RestorePart.entries.forEach { part ->
                 MetroToggle(
                     stringResource(
@@ -70,7 +72,7 @@ fun RestoreDialog(onDone: (Set<RestorePart>) -> Unit, onCancel: () -> Unit, modi
                     modifier = Modifier.testTag("restore:${part.name}"),
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
                 MetroButton(stringResource(R.string.restore_go), Modifier.weight(1f).testTag("restore:go")) { if (parts.isNotEmpty()) onDone(parts) }
                 MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag("restore:cancel"), onClick = onCancel)
             }

@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.focusable
@@ -140,7 +142,7 @@ internal fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, ti
         Column(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = Spacing.Page)
                 .graphicsLayer {
                     transformOrigin = TransformOrigin(0.5f, 0f)
                     rotationX = -SWIVEL_DEGREES * away.value
@@ -162,7 +164,7 @@ internal fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, ti
         ) {
             // The MessageBox of Windows Phone has its title in small capitals above the text; the other looks keep the quiet caption.
             if (title != null) {
-                if (LocalStyle.current.isClassic) MetroText(title.uppercase(Locale.getDefault()), size = 14.sp, weight = FontWeight.SemiBold)
+                if (LocalStyle.current.isClassic) MetroText(title.uppercase(Locale.getDefault()), size = MetroType.Note, weight = FontWeight.SemiBold)
                 else MetroText(title, size = 15.sp, weight = FontWeight.Normal, color = colors.subtle)
             }
             CompositionLocalProvider(LocalInDialog provides true) { content() }
@@ -192,7 +194,7 @@ fun NoteDialog(initial: String, onDone: (String) -> Unit, onCancel: () -> Unit, 
             maxLines = 8,
             modifier = Modifier.fillMaxWidth().heightIn(min = 96.dp).focusRequester(focus).testTag("note:field").hideKeyboardWhenGone(),
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("note:ok")) { onDone(text) }
             MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag("note:cancel"), onClick = onCancel)
         }
@@ -222,7 +224,7 @@ fun CountdownDialog(
         )
         // The date is chosen on three wheels, as on Windows Phone.
         MetroDatePicker(date, { date = it }, tag = "countdown")
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("countdown:ok")) { onDone(title, date.toEpochDay()) }
             MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag("countdown:cancel"), onClick = onCancel)
         }
@@ -247,7 +249,7 @@ fun CounterDialog(
         )
         MetroText(if (reset) "0" else count.toString(), size = 40.sp, modifier = Modifier.testTag("counter:value"))
         MetroButton(stringResource(R.string.counter_reset), Modifier.fillMaxWidth().testTag("counter:reset")) { reset = true }
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("counter:ok")) { onDone(name, reset) }
             MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag("counter:cancel"), onClick = onCancel)
         }
@@ -273,7 +275,7 @@ fun ChecklistDialog(initialRaw: String, onChange: (String) -> Unit, onClose: () 
         Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState()).testTag("checklist:items")) {
             if (items.isEmpty()) MetroText(stringResource(R.string.checklist_empty), size = 17.sp, weight = FontWeight.Normal, color = colors.subtle)
             items.forEachIndexed { index, item ->
-                Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().padding(vertical = Spacing.Small), verticalAlignment = Alignment.CenterVertically) {
                     Row(
                         Modifier.weight(1f).testTag("checklist:item:$index").metroPress(onClick = { change(Checklist.toggle(items, index)) }),
                         verticalAlignment = Alignment.CenterVertically,
@@ -285,7 +287,7 @@ fun ChecklistDialog(initialRaw: String, onChange: (String) -> Unit, onClose: () 
                     val description = stringResource(R.string.checklist_remove)
                     Box(
                         Modifier.testTag("checklist:remove:$index").semantics { contentDescription = description }.metroPress(onClick = { change(Checklist.remove(items, index)) }).padding(10.dp),
-                    ) { MetroText("×", size = 24.sp, weight = FontWeight.Normal, color = colors.subtle) }
+                    ) { MetroText("×", size = MetroType.Heading, weight = FontWeight.Normal, color = colors.subtle) }
                 }
             }
         }
@@ -296,11 +298,11 @@ fun ChecklistDialog(initialRaw: String, onChange: (String) -> Unit, onClose: () 
                     placeholder = stringResource(R.string.checklist_add_hint), modifier = Modifier.testTag("checklist:draft"), onSearch = ::addDraft,
                 )
             }
-            Box(Modifier.testTag("checklist:add").metroPress(onClick = ::addDraft).padding(start = 12.dp, top = 12.dp, bottom = 12.dp)) {
-                MetroText(stringResource(R.string.checklist_add), size = 18.sp, weight = FontWeight.Normal, color = LocalAccent.current)
+            Box(Modifier.testTag("checklist:add").metroPress(onClick = ::addDraft).padding(start = Spacing.Large, top = Spacing.Large, bottom = Spacing.Large)) {
+                MetroText(stringResource(R.string.checklist_add), size = MetroType.Lead, weight = FontWeight.Normal, color = LocalAccent.current)
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             if (items.any { it.done }) {
                 MetroButton(stringResource(R.string.checklist_clear_done), Modifier.weight(1f).testTag("checklist:cleardone")) { change(Checklist.clearDone(items)) }
             }
@@ -330,8 +332,8 @@ fun CityPicker(onPick: (City) -> Unit, onDismiss: () -> Unit, modifier: Modifier
                 .sheet()
                 .pointerInput(Unit) { detectTapGestures { } }
                 .navigationBarsPadding()
-                .padding(top = 12.dp, start = 16.dp, end = 16.dp, bottom = 76.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(top = Spacing.Large, start = 16.dp, end = 16.dp, bottom = 76.dp),
+            verticalArrangement = Arrangement.spacedBy(Spacing.Medium),
         ) {
             MetroText(stringResource(R.string.worldclock_title), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle)
             MetroTextField(value = query, onValueChange = { query = it }, placeholder = stringResource(R.string.worldclock_search), modifier = Modifier.testTag("city:query"))
@@ -370,16 +372,16 @@ fun SettingPicker(
                 .sheet()
                 .pointerInput(Unit) { detectTapGestures { } }
                 .navigationBarsPadding()
-                .padding(top = 12.dp),
+                .padding(top = Spacing.Large),
         ) {
             MetroText(
                 stringResource(R.string.add_setting_title), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle,
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+                modifier = Modifier.padding(horizontal = Spacing.Page, vertical = Spacing.Small),
             )
             Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()).padding(bottom = 76.dp)) {
                 settings.forEach { (def, label) ->
                     Row(
-                        Modifier.fillMaxWidth().testTag("setting:${def.id}").metroPress(onClick = { onPick(def) }).padding(horizontal = 24.dp, vertical = 12.dp),
+                        Modifier.fillMaxWidth().testTag("setting:${def.id}").metroPress(onClick = { onPick(def) }).padding(horizontal = Spacing.Page, vertical = Spacing.Large),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         GlyphIcon(def.glyph, 28.dp)
@@ -435,11 +437,11 @@ fun TileColorSheet(current: Int, onPick: (Int) -> Unit, onDismiss: () -> Unit, m
                 }
             }
             Box(
-                Modifier.fillMaxWidth().testTag("color:default").metroPress(onClick = { onPick(0) }).padding(vertical = 12.dp),
+                Modifier.fillMaxWidth().testTag("color:default").metroPress(onClick = { onPick(0) }).padding(vertical = Spacing.Large),
                 contentAlignment = Alignment.CenterStart,
             ) {
                 MetroText(
-                    stringResource(R.string.tile_color_default), size = 20.sp,
+                    stringResource(R.string.tile_color_default), size = MetroType.Subtitle,
                     color = if (current == 0) LocalAccent.current else colors.foreground,
                 )
             }
@@ -453,15 +455,15 @@ fun UndoBar(message: String, onUndo: () -> Unit, modifier: Modifier = Modifier) 
     Row(
         modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = Spacing.Large)
             .panel()
             .padding(start = 18.dp, end = 6.dp)
             .testTag("undo:bar"),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MetroText(message, size = 18.sp, weight = FontWeight.Normal, modifier = Modifier.weight(1f).padding(vertical = 14.dp))
+        MetroText(message, size = MetroType.Lead, weight = FontWeight.Normal, modifier = Modifier.weight(1f).padding(vertical = 14.dp))
         Box(Modifier.testTag("undo:button").metroPress(onClick = onUndo).padding(horizontal = 14.dp, vertical = 14.dp)) {
-            MetroText(stringResource(R.string.undo), size = 18.sp, weight = FontWeight.SemiBold, color = LocalAccent.current)
+            MetroText(stringResource(R.string.undo), size = MetroType.Lead, weight = FontWeight.SemiBold, color = LocalAccent.current)
         }
     }
 }

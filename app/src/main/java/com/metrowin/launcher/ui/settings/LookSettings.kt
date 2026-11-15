@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
 import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -104,9 +105,9 @@ private fun StylePreview() {
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
     Box(Modifier.size(84.dp, 84.dp).clip(style.squareShape).pageBackground().padding(6.dp)) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
             Box(Modifier.fillMaxWidth().height(30.dp).tileSurface(colors.tileColor(0, accent), style.smallTileShape))
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Small)) {
                 Box(Modifier.weight(1f).height(30.dp).tileSurface(colors.tileColor(1, accent), style.smallTileShape))
                 Box(Modifier.weight(1f).height(30.dp).tileSurface(colors.tileColor(2, accent), style.smallTileShape))
             }
@@ -158,7 +159,7 @@ private fun CustomColor(argb: Int, active: Boolean, onChange: (Int) -> Unit, onU
     fun publish() = onChange(ColorMath.hsvToArgb(hue, saturation, brightness))
     val current = Color(ColorMath.hsvToArgb(hue, saturation, brightness))
     val hues = remember { Brush.horizontalGradient((0..6).map { Color(ColorMath.hsvToArgb(it * 60f, 1f, 1f)) }) }
-    Column(Modifier.testTag("accent:sliders"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(Modifier.testTag("accent:sliders"), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
         SettingHint(stringResource(R.string.accent_custom_hint))
         Box(
             Modifier
@@ -168,7 +169,7 @@ private fun CustomColor(argb: Int, active: Boolean, onChange: (Int) -> Unit, onU
                 .background(current)
                 .semantics { contentDescription = "#%06X".format(current.toArgbInt() and 0xFFFFFF) },
         )
-        SettingLabel(stringResource(R.string.accent_hue), Modifier.padding(top = 8.dp, bottom = 0.dp))
+        SettingLabel(stringResource(R.string.accent_hue), Modifier.padding(top = Spacing.Medium, bottom = 0.dp))
         MetroSlider(hue / 360f, { hue = it * 360f; publish() }, stringResource(R.string.accent_hue), Modifier.testTag("accent:hue"), hues)
         SettingLabel(stringResource(R.string.accent_saturation), Modifier.padding(bottom = 0.dp))
         MetroSlider(

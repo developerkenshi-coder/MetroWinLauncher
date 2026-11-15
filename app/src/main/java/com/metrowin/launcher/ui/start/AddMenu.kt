@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -124,7 +126,7 @@ fun AddMenu(
                 val shown = available.filter { AddMenuIndex.matches(it, names.getValue(it.id), query) }
                 var place = 0
                 if (shown.isEmpty()) {
-                    MetroText(stringResource(R.string.add_nothing), size = 18.sp, color = colors.subtle, modifier = Modifier.padding(horizontal = 24.dp, vertical = 14.dp))
+                    MetroText(stringResource(R.string.add_nothing), size = MetroType.Lead, color = colors.subtle, modifier = Modifier.padding(horizontal = Spacing.Page, vertical = 14.dp))
                 }
                 // A search shows what it found in one list; without it the entries are filed by what they are for.
                 val groups = if (query.isBlank()) AddCategory.entries.map { it to shown.filter { kind -> kind.category == it } } else listOf(null to shown)
@@ -144,14 +146,14 @@ fun AddMenu(
 @Composable
 private fun Heading(text: String, modifier: Modifier = Modifier) {
     MetroText(
-        text, size = 14.sp, weight = FontWeight.SemiBold, color = LocalMetroColors.current.subtle,
-        modifier = modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 2.dp),
+        text, size = MetroType.Note, weight = FontWeight.SemiBold, color = LocalMetroColors.current.subtle,
+        modifier = modifier.padding(start = Spacing.Page, end = Spacing.Page, top = Spacing.Large, bottom = 2.dp),
     )
 }
 
 @Composable
 private fun Entry(text: String, tag: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Box(modifier.fillMaxWidth().testTag(tag).metroPress(onClick = onClick).padding(horizontal = 24.dp, vertical = 12.dp)) {
+    Box(modifier.fillMaxWidth().testTag(tag).metroPress(onClick = onClick).padding(horizontal = Spacing.Page, vertical = Spacing.Large)) {
         MetroText(text, size = 22.sp)
     }
 }

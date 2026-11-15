@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.components.MetroText
 import androidx.compose.ui.unit.sp
@@ -40,7 +42,7 @@ fun AboutPage(env: SettingsEnv) {
             stringResource(R.string.tut_replay), onClick = env.onShowTutorial,
             hint = stringResource(R.string.tut_replay_hint), tag = "about:tutorial", id = "about.tutorial",
         )
-        Column(Modifier.settingAnchor("about.credits"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.settingAnchor("about.credits"), verticalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             SettingHeading(stringResource(R.string.about_credits))
             SettingHint(stringResource(R.string.about_inspired))
             SettingHint(stringResource(R.string.about_font))
@@ -115,7 +117,7 @@ private fun PhoneInfoBlock() {
 @Composable
 private fun StackedInfo(label: String, value: String) {
     Column {
-        MetroText(label, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
-        MetroText(value, size = 20.sp, weight = FontWeight.Normal, maxLines = Int.MAX_VALUE)
+        MetroText(label, size = MetroType.Note, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+        MetroText(value, size = MetroType.Subtitle, weight = FontWeight.Normal, maxLines = Int.MAX_VALUE)
     }
 }

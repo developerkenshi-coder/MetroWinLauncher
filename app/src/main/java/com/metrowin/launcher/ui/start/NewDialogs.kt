@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -54,7 +56,7 @@ fun PlaceDialog(onDone: (name: String, address: String) -> Boolean, onCancel: ()
         MetroTextField(
             name, { name = it.take(Places.MAX_NAME) }, stringResource(R.string.place_name_hint), Modifier.testTag("place:name"),
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Medium)) {
             PageChip(home, name == home, "place:home") { name = home }
             PageChip(work, name == work, "place:work") { name = work }
         }
@@ -62,10 +64,10 @@ fun PlaceDialog(onDone: (name: String, address: String) -> Boolean, onCancel: ()
             address, { address = it.take(Places.MAX_ADDRESS).also { wrong = false } }, stringResource(R.string.place_address_hint), Modifier.testTag("place:address"),
         )
         MetroText(
-            stringResource(R.string.place_note), size = 14.sp, weight = FontWeight.Normal, color = if (wrong) com.metrowin.launcher.ui.theme.LocalAccent.current else colors.subtle,
+            stringResource(R.string.place_note), size = MetroType.Note, weight = FontWeight.Normal, color = if (wrong) com.metrowin.launcher.ui.theme.LocalAccent.current else colors.subtle,
             maxLines = Int.MAX_VALUE, lineHeight = 19.sp,
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("place:ok")) { wrong = !onDone(name, address) }
             MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag("place:cancel"), onClick = onCancel)
         }
@@ -90,9 +92,9 @@ private fun PickerSheet(title: String, onDismiss: () -> Unit, modifier: Modifier
                 .sheet()
                 .pointerInput(Unit) { detectTapGestures { } }
                 .navigationBarsPadding()
-                .padding(top = 12.dp),
+                .padding(top = Spacing.Large),
         ) {
-            MetroText(title, size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp))
+            MetroText(title, size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.padding(horizontal = Spacing.Page, vertical = Spacing.Small))
             Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()).padding(bottom = 76.dp)) { content() }
         }
     }
@@ -144,22 +146,22 @@ fun GroupPicker(
 
 @Composable
 private fun PickerRow(title: String, detail: String, tag: String, onClick: () -> Unit) {
-    Column(Modifier.fillMaxWidth().testTag(tag).metroPress(onClick = onClick).padding(horizontal = 24.dp, vertical = 10.dp)) {
+    Column(Modifier.fillMaxWidth().testTag(tag).metroPress(onClick = onClick).padding(horizontal = Spacing.Page, vertical = 10.dp)) {
         MetroText(title, size = 21.sp, maxLines = 1)
-        MetroText(detail, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+        MetroText(detail, size = MetroType.Note, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
     }
 }
 
 @Composable
 private fun PickerNote(text: Int) {
     MetroText(
-        stringResource(text), size = 16.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
-        maxLines = Int.MAX_VALUE, lineHeight = 22.sp, modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+        stringResource(text), size = MetroType.Body, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+        maxLines = Int.MAX_VALUE, lineHeight = 22.sp, modifier = Modifier.padding(horizontal = Spacing.Page, vertical = Spacing.Large),
     )
 }
 
 @Composable
 private fun NeedsPermission(text: Int, tag: String, onAllow: () -> Unit) {
     PickerNote(text)
-    MetroButton(stringResource(R.string.page_allow), Modifier.padding(horizontal = 24.dp, vertical = 4.dp).fillMaxWidth().testTag(tag), onClick = onAllow)
+    MetroButton(stringResource(R.string.page_allow), Modifier.padding(horizontal = Spacing.Page, vertical = Spacing.Small).fillMaxWidth().testTag(tag), onClick = onAllow)
 }

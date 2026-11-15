@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,7 +55,7 @@ fun AppsPage(env: SettingsEnv) {
                 hint = stringResource(R.string.apps_categories_hint), tag = "apps:categories", id = "apps.categories",
             )
         }
-        Column(Modifier.settingAnchor("apps.hidden"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(Modifier.settingAnchor("apps.hidden"), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
             SettingHeading(stringResource(R.string.apps_hidden))
             if (hidden.isEmpty()) {
                 SettingHint(stringResource(R.string.apps_hidden_none), Modifier.testTag("apps:hidden:none"))
@@ -69,7 +71,7 @@ fun AppsPage(env: SettingsEnv) {
                     ) {
                         AppSquare(app, 44.dp)
                         Spacer(Modifier.width(14.dp))
-                        MetroText(app.label, size = 20.sp, modifier = Modifier.weight(1f))
+                        MetroText(app.label, size = MetroType.Subtitle, modifier = Modifier.weight(1f))
                     }
                 }
                 SettingHint(stringResource(R.string.apps_hidden_hint), Modifier.padding(top = 6.dp))
@@ -95,7 +97,7 @@ private fun AppsToUndo(
     apps: List<AppItem>,
     onUndo: (AppItem) -> Unit,
 ) {
-    Column(Modifier.settingAnchor(id), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(Modifier.settingAnchor(id), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
         SettingHeading(stringResource(title))
         if (apps.isEmpty()) {
             SettingHint(stringResource(none), Modifier.testTag("$tag:none"))
@@ -111,7 +113,7 @@ private fun AppsToUndo(
                 ) {
                     AppSquare(app, 44.dp)
                     Spacer(Modifier.width(14.dp))
-                    MetroText(app.label, size = 20.sp, modifier = Modifier.weight(1f))
+                    MetroText(app.label, size = MetroType.Subtitle, modifier = Modifier.weight(1f))
                 }
             }
             SettingHint(stringResource(hint), Modifier.padding(top = 6.dp))

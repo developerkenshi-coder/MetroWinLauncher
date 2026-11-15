@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.pages
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.components.MarkIcon
 import com.metrowin.launcher.ui.components.Mark
 import androidx.compose.foundation.layout.width
@@ -85,11 +87,11 @@ fun StepsPage(
                 }
                 PageNote(pluralStringResource(R.plurals.steps_goal, goal, goal), Modifier.padding(top = 10.dp))
                 Steps.streak(days, goal, day).takeIf { it > 0 }?.let {
-                    PageNote(pluralStringResource(R.plurals.steps_streak, it, it), Modifier.padding(top = 4.dp).testTag("steps:streak"))
+                    PageNote(pluralStringResource(R.plurals.steps_streak, it, it), Modifier.padding(top = Spacing.Small).testTag("steps:streak"))
                 }
             }
             StepsWeek(days, goal, today)
-            PageNote(stringResource(R.string.steps_since_note), Modifier.padding(top = 18.dp, bottom = 24.dp))
+            PageNote(stringResource(R.string.steps_since_note), Modifier.padding(top = 18.dp, bottom = Spacing.Page))
         }
     }
 }
@@ -138,19 +140,19 @@ fun RecorderPage(label: String, allowed: Boolean, onAllow: () -> Unit, modifier:
                     failed = true
                 }
             }
-            if (failed) PageNote(stringResource(R.string.recorder_failed), Modifier.padding(top = 8.dp))
+            if (failed) PageNote(stringResource(R.string.recorder_failed), Modifier.padding(top = Spacing.Medium))
         }
         MetroText(
-            pluralStringResource(R.plurals.recordings_count, files.size, files.size), size = 18.sp, color = LocalMetroColors.current.subtle,
+            pluralStringResource(R.plurals.recordings_count, files.size, files.size), size = MetroType.Lead, color = LocalMetroColors.current.subtle,
             modifier = Modifier.padding(top = 22.dp, bottom = 6.dp),
         )
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(bottom = 24.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(bottom = Spacing.Page)) {
             files.forEachIndexed { index, file ->
                 if (renaming == file.name) {
                     Column(Modifier.fillMaxWidth().testTag("recorder:renamebox"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         MetroTextField(newName, { newName = Recordings.cleanName(it); renameFailed = false }, stringResource(R.string.recorder_name_hint), Modifier.testTag("recorder:name"))
                         if (renameFailed) PageNote(stringResource(R.string.recorder_rename_failed))
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
                             MetroButton(stringResource(R.string.recorder_rename_save), Modifier.weight(1f).testTag("recorder:renamesave")) {
                                 if (store.rename(file, newName) != null) {
                                     renaming = null
@@ -197,23 +199,23 @@ fun RecorderPage(label: String, allowed: Boolean, onAllow: () -> Unit, modifier:
 @Composable
 private fun RecordingRow(file: File, playing: Boolean, modifier: Modifier, onPlay: () -> Unit, onRename: () -> Unit, onShare: () -> Unit, onDelete: () -> Unit) {
     Row(modifier.fillMaxWidth().testTag("recorder:row"), verticalAlignment = Alignment.CenterVertically) {
-        Row(Modifier.weight(1f).metroPress(onClick = onPlay).padding(vertical = 8.dp).testTag("recorder:play"), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.weight(1f).metroPress(onClick = onPlay).padding(vertical = Spacing.Medium).testTag("recorder:play"), verticalAlignment = Alignment.CenterVertically) {
             if (playing) {
                 MarkIcon(Mark.Play, 16.dp)
                 Spacer(Modifier.width(8.dp))
             }
-            MetroText(Recordings.title(file.name), size = 20.sp, weight = FontWeight.Normal)
+            MetroText(Recordings.title(file.name), size = MetroType.Subtitle, weight = FontWeight.Normal)
         }
         MetroText(
-            stringResource(R.string.recorder_rename), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+            stringResource(R.string.recorder_rename), size = MetroType.Note, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
             modifier = Modifier.metroPress(onClick = onRename).padding(6.dp).testTag("recorder:rename"),
         )
         MetroText(
-            stringResource(R.string.recorder_share), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+            stringResource(R.string.recorder_share), size = MetroType.Note, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
             modifier = Modifier.metroPress(onClick = onShare).padding(6.dp).testTag("recorder:share"),
         )
         MetroText(
-            stringResource(R.string.recorder_delete), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+            stringResource(R.string.recorder_delete), size = MetroType.Note, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
             modifier = Modifier.metroPress(onClick = onDelete).padding(6.dp).testTag("recorder:delete"),
         )
     }
@@ -242,9 +244,9 @@ fun WalletPage(label: String, cards: List<WalletCard>, onAdd: (String, String) -
             Column(Modifier.fillMaxWidth().background(Color.White).padding(16.dp).testTag("wallet:card"), horizontalAlignment = Alignment.CenterHorizontally) {
                 MetroText(open.name, size = 22.sp, color = Color.Black, maxLines = 2)
                 Barcode(open.code, Modifier.fillMaxWidth().height(120.dp).padding(vertical = 10.dp))
-                MetroText(open.code, size = 18.sp, weight = FontWeight.Normal, color = Color.Black, maxLines = 1)
+                MetroText(open.code, size = MetroType.Lead, weight = FontWeight.Normal, color = Color.Black, maxLines = 1)
             }
-            Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
                 MetroButton(stringResource(R.string.wallet_back), Modifier.weight(1f).testTag("wallet:back")) { shown = null }
                 MetroButton(stringResource(R.string.wallet_remove), Modifier.weight(1f).testTag("wallet:remove")) {
                     onRemove(open.id)
@@ -255,18 +257,18 @@ fun WalletPage(label: String, cards: List<WalletCard>, onAdd: (String, String) -
             if (cards.isEmpty()) PageNote(stringResource(R.string.wallet_empty))
             cards.forEachIndexed { index, card ->
                 MetroText(
-                    card.name, size = 24.sp, weight = FontWeight.Normal, maxLines = 1,
-                    modifier = Modifier.fillMaxWidth().featherIn(index, cards.size).metroPress(onClick = { shown = card.id }).padding(vertical = 8.dp).testTag("wallet:row"),
+                    card.name, size = MetroType.Heading, weight = FontWeight.Normal, maxLines = 1,
+                    modifier = Modifier.fillMaxWidth().featherIn(index, cards.size).metroPress(onClick = { shown = card.id }).padding(vertical = Spacing.Medium).testTag("wallet:row"),
                 )
             }
             if (cards.size < WalletStore.MAX_CARDS) {
-                MetroText(stringResource(R.string.wallet_add), size = 18.sp, color = LocalMetroColors.current.subtle, modifier = Modifier.padding(top = 22.dp, bottom = 8.dp))
+                MetroText(stringResource(R.string.wallet_add), size = MetroType.Lead, color = LocalMetroColors.current.subtle, modifier = Modifier.padding(top = 22.dp, bottom = Spacing.Medium))
                 MetroTextField(name, { name = it.take(40) }, stringResource(R.string.wallet_name), Modifier.testTag("wallet:name"))
-                Box(Modifier.padding(top = 8.dp)) {
+                Box(Modifier.padding(top = Spacing.Medium)) {
                     MetroTextField(code, { code = it.take(WalletStore.MAX_CODE); refused = false }, stringResource(R.string.wallet_code), Modifier.testTag("wallet:code"))
                 }
                 if (refused) PageNote(stringResource(R.string.wallet_refused), Modifier.padding(top = 6.dp))
-                MetroButton(stringResource(R.string.wallet_save), Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 24.dp).testTag("wallet:save")) {
+                MetroButton(stringResource(R.string.wallet_save), Modifier.fillMaxWidth().padding(top = 10.dp, bottom = Spacing.Page).testTag("wallet:save")) {
                     if (onAdd(name, code)) {
                         name = ""
                         code = ""
@@ -331,15 +333,15 @@ fun WhereAmIPage(
         val here = where
         if (here != null) {
             MetroText(here.address ?: stringResource(R.string.where_no_address), size = 28.sp, maxLines = 4, lineHeight = 34.sp, modifier = Modifier.testTag("where:address"))
-            PageNote("%.5f, %.5f · ±%d m".format(here.latitude, here.longitude, here.accuracy.toInt()), Modifier.padding(top = 8.dp).testTag("where:numbers"))
-            Row(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            PageNote("%.5f, %.5f · ±%d m".format(here.latitude, here.longitude, here.accuracy.toInt()), Modifier.padding(top = Spacing.Medium).testTag("where:numbers"))
+            Row(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
                 MetroButton(stringResource(R.string.where_map), Modifier.weight(1f).testTag("where:map")) { onOpenMap(here) }
                 MetroButton(stringResource(R.string.where_share), Modifier.weight(1f).testTag("where:share")) { onShare(here) }
             }
         }
-        if (busy) PageNote(stringResource(R.string.where_searching), Modifier.padding(top = 12.dp))
-        if (missed) PageNote(stringResource(R.string.where_missed), Modifier.padding(top = 12.dp))
-        MetroButton(stringResource(R.string.where_again), Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 24.dp).testTag("where:again")) { find() }
+        if (busy) PageNote(stringResource(R.string.where_searching), Modifier.padding(top = Spacing.Large))
+        if (missed) PageNote(stringResource(R.string.where_missed), Modifier.padding(top = Spacing.Large))
+        MetroButton(stringResource(R.string.where_again), Modifier.fillMaxWidth().padding(top = 16.dp, bottom = Spacing.Page).testTag("where:again")) { find() }
     }
 }
 
@@ -350,7 +352,7 @@ private fun StepsWeek(days: Map<Long, Int>, goal: Int, today: java.time.LocalDat
     val accent = LocalAccent.current
     val week = (6 downTo 0).map { back -> today.minusDays(back.toLong()).let { it to (days[it.toEpochDay()] ?: 0) } }
     val top = maxOf(goal, week.maxOf { it.second }, 1)
-    MetroText(stringResource(R.string.steps_week), size = 18.sp, color = colors.subtle, modifier = Modifier.padding(top = 22.dp, bottom = 8.dp))
+    MetroText(stringResource(R.string.steps_week), size = MetroType.Lead, color = colors.subtle, modifier = Modifier.padding(top = 22.dp, bottom = Spacing.Medium))
     androidx.compose.foundation.Canvas(Modifier.fillMaxWidth().height(110.dp).testTag("steps:week")) {
         val slot = size.width / week.size
         week.forEachIndexed { i, (_, n) ->
@@ -365,7 +367,7 @@ private fun StepsWeek(days: Map<Long, Int>, goal: Int, today: java.time.LocalDat
     androidx.compose.foundation.layout.Row(Modifier.fillMaxWidth()) {
         week.forEach { (date, _) ->
             MetroText(
-                date.dayOfWeek.getDisplayName(java.time.format.TextStyle.NARROW, java.util.Locale.getDefault()), size = 12.sp, weight = FontWeight.Normal,
+                date.dayOfWeek.getDisplayName(java.time.format.TextStyle.NARROW, java.util.Locale.getDefault()), size = MetroType.Caption, weight = FontWeight.Normal,
                 color = colors.subtle, maxLines = 1, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
         }
@@ -404,20 +406,20 @@ fun ParkingPage(
             MetroText(car.address ?: stringResource(R.string.where_no_address), size = 28.sp, maxLines = 4, lineHeight = 34.sp, modifier = Modifier.testTag("parking:address"))
             PageNote(
                 android.text.format.DateUtils.getRelativeTimeSpanString(car.savedAt, System.currentTimeMillis(), android.text.format.DateUtils.MINUTE_IN_MILLIS).toString(),
-                Modifier.padding(top = 8.dp).testTag("parking:ago"),
+                Modifier.padding(top = Spacing.Medium).testTag("parking:ago"),
             )
-            Row(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
                 MetroButton(stringResource(R.string.parking_walk), Modifier.weight(1f).testTag("parking:walk")) { onWalk(car) }
                 MetroButton(stringResource(R.string.parking_forget), Modifier.weight(1f).testTag("parking:forget"), onClick = onForget)
             }
         } else {
             PageNote(stringResource(R.string.parking_none), Modifier.testTag("parking:none"))
         }
-        if (busy) PageNote(stringResource(R.string.where_searching), Modifier.padding(top = 12.dp))
-        if (missed) PageNote(stringResource(R.string.where_missed), Modifier.padding(top = 12.dp))
+        if (busy) PageNote(stringResource(R.string.where_searching), Modifier.padding(top = Spacing.Large))
+        if (missed) PageNote(stringResource(R.string.where_missed), Modifier.padding(top = Spacing.Large))
         MetroButton(
             stringResource(if (car == null) R.string.parking_here else R.string.parking_here_again),
-            Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 24.dp).testTag("parking:here"),
+            Modifier.fillMaxWidth().padding(top = 16.dp, bottom = Spacing.Page).testTag("parking:here"),
         ) {
             if (!busy) {
                 busy = true

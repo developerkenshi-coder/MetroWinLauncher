@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.components.MarkIcon
 import com.metrowin.launcher.ui.components.Mark
 import androidx.compose.foundation.layout.width
@@ -96,7 +98,7 @@ fun LayoutsSettings(env: SettingsEnv) {
                 // Wraps to a second line when the buttons do not fit side by side (long words, bigger text).
                 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
                 androidx.compose.foundation.layout.FlowRow(
-                    Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
+                    Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.Medium), verticalArrangement = Arrangement.spacedBy(Spacing.Medium),
                 ) {
                     MetroButton(stringResource(R.string.layouts_apply), Modifier.testTag("layouts:apply:${layout.id}")) { env.onApplyLayout(layout.id) }
                     MetroButton(stringResource(R.string.layouts_update), Modifier.testTag("layouts:update:${layout.id}")) { env.onResaveLayout(layout.id) }
@@ -136,10 +138,10 @@ fun PageBackgroundsSettings(env: SettingsEnv) {
         if (s.pageBackgrounds) {
             repeat(s.startPages) { page ->
                 val has = page in env.pageBackgrounds
-                Row(Modifier.fillMaxWidth().testTag("pagephoto:row:$page"), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().testTag("pagephoto:row:$page"), horizontalArrangement = Arrangement.spacedBy(Spacing.Medium), verticalAlignment = Alignment.CenterVertically) {
                     MetroText(
                         stringResource(R.string.page_photo_label, page + 1) + if (has) "" else " · " + stringResource(R.string.page_photo_shared),
-                        size = 18.sp, weight = FontWeight.Normal, modifier = Modifier.weight(1f),
+                        size = MetroType.Lead, weight = FontWeight.Normal, modifier = Modifier.weight(1f),
                     )
                     MetroButton(stringResource(R.string.theme_choose_photo), Modifier.testTag("pagephoto:choose:$page")) {
                         picking = page

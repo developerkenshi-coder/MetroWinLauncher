@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -64,10 +65,10 @@ fun NotificationExtrasSettings(env: SettingsEnv) {
 private fun FilterWords(env: SettingsEnv) {
     var word by remember { mutableStateOf("") }
     val words = env.settings.notifFilterWords
-    Column(Modifier.settingAnchor("ac.filterwords"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.settingAnchor("ac.filterwords"), verticalArrangement = Arrangement.spacedBy(Spacing.Medium)) {
         SettingLabel(stringResource(R.string.ac_filter_words))
         if (words.isNotEmpty()) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.Medium), verticalArrangement = Arrangement.spacedBy(Spacing.Medium)) {
                 words.forEach { w ->
                     PageChip("$w  ×", false, "filter:word:$w") { env.onChange { s -> s.copy(notifFilterWords = s.notifFilterWords - w) } }
                 }

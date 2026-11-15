@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.MetroType
 import kotlin.math.roundToInt
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.ui.input.pointer.pointerInput
@@ -99,7 +100,7 @@ fun ActionsPage(env: SettingsEnv) {
                 }
                 MetroText(
                     stringResource(R.string.settings_pick_action),
-                    size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE,
+                    size = MetroType.Note, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE,
                     modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
                 )
                 QuickAction.entries.chunked(QuickAction.SLOTS).forEach { row ->

@@ -75,16 +75,16 @@ fun AppBar(items: List<AppBarItem>, modifier: Modifier = Modifier, menu: List<Ap
 private fun SuperBar(items: List<AppBarItem>, modifier: Modifier) {
     val colors = LocalMetroColors.current
     Row(
-        modifier.fillMaxWidth().background(colors.containers.getOrElse(0) { colors.surface }).padding(vertical = 8.dp, horizontal = 16.dp),
+        modifier.fillMaxWidth().background(colors.containers.getOrElse(0) { colors.surface }).padding(vertical = Spacing.Medium, horizontal = 16.dp),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         items.forEach { item ->
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.metroPress(onClick = item.onClick).padding(horizontal = 12.dp)) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.metroPress(onClick = item.onClick).padding(horizontal = Spacing.Large)) {
                 Box(Modifier.size(40.dp).border(2.dp, colors.foreground, CircleShape).clip(CircleShape), contentAlignment = Alignment.Center) {
-                    item.icon?.let { MarkIcon(it, 20.dp) } ?: MetroText(item.symbol, size = 20.sp, weight = FontWeight.Normal)
+                    item.icon?.let { MarkIcon(it, 20.dp) } ?: MetroText(item.symbol, size = MetroType.Subtitle, weight = FontWeight.Normal)
                 }
-                MetroText(item.label, size = 11.sp, color = colors.subtle, modifier = Modifier.padding(top = 2.dp))
+                MetroText(item.label, size = MetroType.Micro, color = colors.subtle, modifier = Modifier.padding(top = 2.dp))
             }
         }
     }

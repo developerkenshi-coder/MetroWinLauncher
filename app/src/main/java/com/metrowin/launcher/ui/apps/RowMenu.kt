@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.apps
 
+import com.metrowin.launcher.ui.components.Spacing
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -103,7 +104,7 @@ fun RowMenuHost(state: RowMenuState, modifier: Modifier = Modifier) {
             val menu = @Composable {
                 Column(Modifier.testTag("rowmenu:panel").fillMaxWidth().panel().heightIn(max = 440.dp).verticalScroll(rememberScrollState()).padding(vertical = 6.dp)) {
                     open.actions.forEachIndexed { i, action ->
-                        Box(Modifier.fillMaxWidth().testTag("rowmenu:$i").metroPress(onClick = { state.dismiss(); action.onClick() }).padding(horizontal = 24.dp, vertical = 12.dp)) {
+                        Box(Modifier.fillMaxWidth().testTag("rowmenu:$i").metroPress(onClick = { state.dismiss(); action.onClick() }).padding(horizontal = Spacing.Page, vertical = Spacing.Large)) {
                             MetroText(action.label, size = 21.sp)
                         }
                     }

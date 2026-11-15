@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -30,18 +32,18 @@ fun BatteryPage(env: SettingsEnv) {
             )
             MetroText(
                 stringResource(if (env.powerSaving) R.string.saving_now_on else R.string.saving_now_off),
-                size = 18.sp,
+                size = MetroType.Lead,
                 color = if (env.powerSaving) LocalAccent.current else com.metrowin.launcher.ui.theme.LocalMetroColors.current.subtle,
                 modifier = Modifier.padding(top = 10.dp).testTag("battery:now"),
             )
         }
-        Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Spacing.Medium)) {
             SettingHeading(stringResource(R.string.saving_while_title))
             SettingHint(stringResource(R.string.saving_while_1))
             SettingHint(stringResource(R.string.saving_while_2))
             SettingHint(stringResource(R.string.saving_while_3))
         }
-        Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Spacing.Medium)) {
             SettingHeading(stringResource(R.string.battery_rest_title))
             SettingHint(stringResource(R.string.battery_rest_1))
             SettingHint(stringResource(R.string.battery_rest_2))

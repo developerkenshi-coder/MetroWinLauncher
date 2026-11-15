@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.ui.components.MetroText
@@ -180,7 +182,7 @@ fun StartThemePage(env: SettingsEnv) {
             )
         }
         if (settings.hasStartBackground && settings.startPhotoFit == PhotoFit.Fill) {
-            Column(Modifier.settingAnchor("theme.framing"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(Modifier.settingAnchor("theme.framing"), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
                 SettingLabel(stringResource(R.string.photo_framing))
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     BackgroundPreview(env.startBackground, PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY), settings.startPhotoFit)
@@ -202,7 +204,7 @@ fun StartThemePage(env: SettingsEnv) {
                 SettingHint(stringResource(R.string.photo_framing_hint))
             }
         }
-        Column(Modifier.settingAnchor("theme.accentuse"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(Modifier.settingAnchor("theme.accentuse"), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
             SettingLabel(stringResource(R.string.accent_use))
             ToggleSetting(
                 label = stringResource(R.string.accent_use_start), checked = settings.accentStart,
@@ -293,7 +295,7 @@ private fun BackgroundPreview(image: ImageBitmap?, framing: PhotoFrame = PhotoFr
 private fun FramingSlider(@StringRes label: Int, value: Float, tag: String, onChange: (Float) -> Unit) {
     val name = stringResource(label)
     Column(Modifier.testTag(tag)) {
-        MetroText(name, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+        MetroText(name, size = MetroType.Note, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
         MetroSlider(value, onChange, name)
     }
 }

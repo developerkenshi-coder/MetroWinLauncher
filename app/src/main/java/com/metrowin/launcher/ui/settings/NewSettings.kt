@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -79,7 +81,7 @@ fun FinanceItemsSetting(env: SettingsEnv) {
     val chosen = FinanceItems.normalize(settings.financeItems, base)
     Column(Modifier.settingAnchor("live.financeitems")) {
         SettingLabel(stringResource(R.string.finance_items_title))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.Medium), verticalArrangement = Arrangement.spacedBy(Spacing.Medium)) {
             FinanceItems.available(base).forEach { item ->
                 val on = item in chosen
                 PageChip(FinanceItems.symbol(item), on, "live:finance:$item") {
@@ -91,7 +93,7 @@ fun FinanceItemsSetting(env: SettingsEnv) {
                 }
             }
         }
-        SettingHint(stringResource(R.string.finance_items_hint), Modifier.padding(top = 8.dp))
+        SettingHint(stringResource(R.string.finance_items_hint), Modifier.padding(top = Spacing.Medium))
     }
 }
 
@@ -111,7 +113,7 @@ fun LockQuickSettings(env: SettingsEnv) {
             hint = stringResource(R.string.lock_quick_hint), tag = "lock:quick", id = "lock.quick",
         )
         if (settings.lockQuickStatus) {
-            Column(Modifier.settingAnchor("lock.quickapps"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.settingAnchor("lock.quickapps"), verticalArrangement = Arrangement.spacedBy(Spacing.Large)) {
                 SettingLabel(stringResource(R.string.lock_quick_apps))
                 slots.forEachIndexed { index, pkg ->
                     AppPickerSetting(
@@ -233,10 +235,10 @@ private fun NotificationAppRow(
                     MetroText(stringResource(R.string.ac_notif_off_in, off.joinToString(", ")), size = 13.sp, weight = FontWeight.Normal, color = colors.subtle)
                 }
             }
-            MetroText(if (expanded) "−" else "+", size = 24.sp, weight = FontWeight.Normal, color = colors.subtle)
+            MetroText(if (expanded) "−" else "+", size = MetroType.Heading, weight = FontWeight.Normal, color = colors.subtle)
         }
         if (expanded) {
-            Column(Modifier.padding(start = 50.dp, bottom = 8.dp)) {
+            Column(Modifier.padding(start = 50.dp, bottom = Spacing.Medium)) {
                 ToggleSetting(stringResource(R.string.ac_notif_center), center, onCenter, tag = "actions:notifapp:$pkg:center")
                 ToggleSetting(stringResource(R.string.ac_notif_lock), lock, onLock, tag = "actions:notifapp:$pkg:lock")
                 ToggleSetting(stringResource(R.string.ac_notif_banner), banner, onBanner, tag = "actions:notifapp:$pkg:banner")

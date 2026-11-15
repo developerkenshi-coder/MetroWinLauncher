@@ -209,7 +209,7 @@ fun MetroStatusBar(
                 GlyphIcon(Glyph.Bell, 14.dp, color = color)
                 Spacer(Modifier.width(3.dp))
                 val said = pluralStringResource(R.plurals.a11y_sb_notifications, notifications.size, notifications.size)
-                MetroText(notifications.size.toString(), size = 12.sp, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:notifications").semantics { contentDescription = said })
+                MetroText(notifications.size.toString(), size = MetroType.Caption, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:notifications").semantics { contentDescription = said })
             }
         }
     }
@@ -228,7 +228,7 @@ fun MetroStatusBar(
     val radiosPart: @Composable () -> Unit = {
         if (on(StatusItem.Signal) && !reading.airplane && cell.level >= 0) Said(R.string.a11y_sb_signal, cell.level) { Bars(cell.level, 4, color) }
         if (on(StatusItem.Network) && !reading.airplane && cell.level >= 0) cell.label?.let {
-            MetroText(it, size = 12.sp, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:network"))
+            MetroText(it, size = MetroType.Caption, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:network"))
         }
         if (on(StatusItem.Wifi)) reading.wifi?.let { Said(R.string.a11y_sb_wifi) { WifiFan(it, color) } }
     }
@@ -236,7 +236,7 @@ fun MetroStatusBar(
         if (on(StatusItem.Saver) && reading.saver) Said(R.string.a11y_sb_saver) { SaverPlus(color) }
         if (on(StatusItem.BatteryPercent)) battery?.let {
             val said = stringResource(R.string.a11y_sb_battery, it.percent)
-            MetroText("${it.percent}%", size = 12.sp, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:battery").semantics { contentDescription = said })
+            MetroText("${it.percent}%", size = MetroType.Caption, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:battery").semantics { contentDescription = said })
         }
         if (on(StatusItem.Battery)) battery?.let {
             val charging = it.state == BatteryState.Charging

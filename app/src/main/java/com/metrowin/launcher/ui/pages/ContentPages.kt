@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.pages
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.start.TrendText
 import com.metrowin.launcher.ui.anim.metroTween
 import androidx.compose.animation.AnimatedVisibility
@@ -93,7 +95,7 @@ fun NewsPage(
                     Column(Modifier.fillMaxWidth().testTag("news:item:$index").metroPress(onClick = { onOpen(item.link) })) {
                         MetroText(item.title, size = 21.sp, lineHeight = 26.sp)
                         val line = listOfNotNull(item.source.takeIf { it.isNotBlank() }, ageText(item.publishedAt)).joinToString(" · ")
-                        if (line.isNotEmpty()) MetroText(line, size = 14.sp, weight = FontWeight.Normal, color = colors.subtle)
+                        if (line.isNotEmpty()) MetroText(line, size = MetroType.Note, weight = FontWeight.Normal, color = colors.subtle)
                     }
                 }
             }
@@ -102,15 +104,15 @@ fun NewsPage(
                     R.string.news_updated,
                     DateUtils.getRelativeTimeSpanString(news.fetchedAt, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE).toString(),
                 ),
-                Modifier.padding(top = 20.dp, bottom = 12.dp),
+                Modifier.padding(top = 20.dp, bottom = Spacing.Large),
             )
         }
-        Row(Modifier.padding(bottom = 24.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.padding(bottom = Spacing.Page), horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             MetroButton(stringResource(R.string.weather_refresh), Modifier.weight(1f).testTag("news:refresh"), onClick = onRefresh)
             MetroButton(stringResource(R.string.news_choose_source), Modifier.weight(1f).testTag("news:source"), onClick = onChooseSource)
         }
         if (googleSource) {
-            MetroButton(stringResource(R.string.news_open_google), Modifier.fillMaxWidth().padding(bottom = 24.dp).testTag("news:google")) { onOpen("https://news.google.com/") }
+            MetroButton(stringResource(R.string.news_open_google), Modifier.fillMaxWidth().padding(bottom = Spacing.Page).testTag("news:google")) { onOpen("https://news.google.com/") }
         }
     }
 }
@@ -138,10 +140,10 @@ fun FinancePage(
                     ) {
                         Column(Modifier.weight(1f)) {
                             MetroText(FinanceItems.symbol(quote.item), size = 26.sp)
-                            MetroText(nameOf(quote.item), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle)
+                            MetroText(nameOf(quote.item), size = MetroType.Note, weight = FontWeight.Normal, color = colors.subtle)
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            MetroText("${Finance.format(quote.value, locale)} ${finance.base}", size = 24.sp, maxLines = 1)
+                            MetroText("${Finance.format(quote.value, locale)} ${finance.base}", size = MetroType.Heading, maxLines = 1)
                             val change = Finance.formatChange(quote.changePercent, locale)
                             if (change != null) {
                                 TrendText(Finance.trend(quote.changePercent), change, 16.sp, colors.subtle)
@@ -158,8 +160,8 @@ fun FinancePage(
                 Modifier.padding(top = 20.dp),
             )
         }
-        PageNote(stringResource(R.string.finance_sources), Modifier.padding(top = 4.dp, bottom = 12.dp))
-        Row(Modifier.padding(bottom = 24.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        PageNote(stringResource(R.string.finance_sources), Modifier.padding(top = Spacing.Small, bottom = Spacing.Large))
+        Row(Modifier.padding(bottom = Spacing.Page), horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             MetroButton(stringResource(R.string.weather_refresh), Modifier.weight(1f).testTag("finance:refresh"), onClick = onRefresh)
             MetroButton(stringResource(R.string.finance_choose), Modifier.weight(1f).testTag("finance:choose"), onClick = onChoose)
         }
@@ -216,7 +218,7 @@ fun RemindersPage(
             text, { text = it.take(Reminders.MAX_TEXT) }, stringResource(R.string.reminders_hint), Modifier.testTag("reminders:field"),
             onSearch = { if (Reminders.clean(text) != null) add(millis(Reminders.quickTime(Reminders.QuickTime.InOneHour, LocalDateTime.now()))) },
         )
-        FlowRow(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(Spacing.Medium), verticalArrangement = Arrangement.spacedBy(Spacing.Medium)) {
             listOf(
                 Reminders.QuickTime.InOneHour to R.string.reminders_in_hour,
                 Reminders.QuickTime.ThisEvening to R.string.reminders_this_evening,
@@ -233,10 +235,10 @@ fun RemindersPage(
             enter = expandVertically(metroTween(durationMillis = 300, easing = Motion.Decelerate)) + fadeIn(metroTween(200)),
             exit = shrinkVertically(metroTween(durationMillis = 200, easing = Motion.Accelerate)) + fadeOut(metroTween(140)),
         ) {
-            Column(Modifier.padding(top = 12.dp).testTag("reminders:wheels"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.padding(top = Spacing.Large).testTag("reminders:wheels"), verticalArrangement = Arrangement.spacedBy(Spacing.Medium)) {
                 MetroDatePicker(chosenDate, { chosenDate = it }, years = LocalDate.now().year..LocalDate.now().year + 20, tag = "reminders:date")
                 MetroTimePicker(chosenTime, android.text.format.DateFormat.is24HourFormat(context), { chosenTime = it }, tag = "reminders:time")
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
                     MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("reminders:wheels:ok")) {
                         choosing = false
                         add(millis(LocalDateTime.of(chosenDate, chosenTime)))
@@ -247,7 +249,7 @@ fun RemindersPage(
         }
         if (!canExact) {
             PageNote(stringResource(R.string.reminders_inexact), Modifier.padding(top = 14.dp))
-            MetroButton(stringResource(R.string.reminders_allow_exact), Modifier.fillMaxWidth().padding(top = 8.dp).testTag("reminders:exact"), onClick = onAllowExact)
+            MetroButton(stringResource(R.string.reminders_allow_exact), Modifier.fillMaxWidth().padding(top = Spacing.Medium).testTag("reminders:exact"), onClick = onAllowExact)
         }
         val upcoming = Reminders.upcoming(reminders, now)
         val missed = Reminders.missed(reminders, now)
@@ -257,14 +259,14 @@ fun RemindersPage(
         ReminderSection(R.string.reminders_upcoming, upcoming, now, onDone, onRemove)
         if (done.isNotEmpty()) {
             Row(Modifier.fillMaxWidth().padding(top = 22.dp), verticalAlignment = Alignment.CenterVertically) {
-                MetroText(stringResource(R.string.reminders_done), size = 18.sp, color = colors.subtle, modifier = Modifier.weight(1f))
+                MetroText(stringResource(R.string.reminders_done), size = MetroType.Lead, color = colors.subtle, modifier = Modifier.weight(1f))
                 MetroText(
-                    stringResource(R.string.reminders_clear), size = 16.sp, weight = FontWeight.Normal, color = LocalAccent.current,
-                    modifier = Modifier.testTag("reminders:clear").metroPress(onClick = onClearDone).padding(8.dp),
+                    stringResource(R.string.reminders_clear), size = MetroType.Body, weight = FontWeight.Normal, color = LocalAccent.current,
+                    modifier = Modifier.testTag("reminders:clear").metroPress(onClick = onClearDone).padding(Spacing.Medium),
                 )
             }
             done.forEach { reminder ->
-                Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().padding(vertical = Spacing.Small), verticalAlignment = Alignment.CenterVertically) {
                     MetroText(reminder.text, size = 19.sp, color = colors.subtle, modifier = Modifier.weight(1f))
                     RoundButton("×", stringResource(R.string.reminders_remove), "reminders:remove:${reminder.id}") { onRemove(reminder.id) }
                 }
@@ -277,12 +279,12 @@ fun RemindersPage(
 @Composable
 private fun ReminderSection(title: Int, list: List<Reminder>, now: Long, onDone: (Long) -> Unit, onRemove: (Long) -> Unit) {
     if (list.isEmpty()) return
-    MetroText(stringResource(title), size = 18.sp, color = LocalMetroColors.current.subtle, modifier = Modifier.padding(top = 22.dp, bottom = 6.dp))
+    MetroText(stringResource(title), size = MetroType.Lead, color = LocalMetroColors.current.subtle, modifier = Modifier.padding(top = 22.dp, bottom = 6.dp))
     list.forEach { reminder ->
         Row(Modifier.fillMaxWidth().padding(vertical = 5.dp).testTag("reminders:item:${reminder.id}"), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 MetroText(reminder.text, size = 21.sp, lineHeight = 26.sp)
-                MetroText(whenText(reminder.at, now), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+                MetroText(whenText(reminder.at, now), size = MetroType.Note, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
             }
             RoundButton("✓", stringResource(R.string.reminder_done), "reminders:done:${reminder.id}") { onDone(reminder.id) }
             RoundButton("×", stringResource(R.string.reminders_remove), "reminders:remove:${reminder.id}") { onRemove(reminder.id) }
@@ -293,7 +295,7 @@ private fun ReminderSection(title: Int, list: List<Reminder>, now: Long, onDone:
 @Composable
 private fun RoundButton(glyph: String, description: String, tag: String, onClick: () -> Unit) {
     Box(
-        Modifier.testTag(tag).semantics { contentDescription = description }.metroPress(onClick = onClick).padding(horizontal = 12.dp, vertical = 8.dp),
+        Modifier.testTag(tag).semantics { contentDescription = description }.metroPress(onClick = onClick).padding(horizontal = Spacing.Large, vertical = Spacing.Medium),
         contentAlignment = Alignment.Center,
     ) {
         MetroText(glyph, size = 26.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.foreground)
@@ -303,7 +305,7 @@ private fun RoundButton(glyph: String, description: String, tag: String, onClick
 /** What to say when the people cannot be read: the permission they need, and a button to give it. */
 @Composable
 private fun PermissionNote(text: String, tag: String, onRequest: () -> Unit) {
-    PageNote(text, Modifier.padding(bottom = 8.dp))
+    PageNote(text, Modifier.padding(bottom = Spacing.Medium))
     MetroButton(stringResource(R.string.page_allow), Modifier.fillMaxWidth().padding(bottom = 16.dp).testTag(tag), onClick = onRequest)
 }
 
@@ -321,9 +323,9 @@ fun DialGridPage(
             !hasPermission -> PermissionNote(stringResource(R.string.page_needs_contacts), "dialgrid:allow", onRequestPermission)
             favourites == null -> Unit
             favourites.isEmpty() -> PageNote(stringResource(R.string.dialgrid_empty), Modifier.testTag("dialgrid:empty"))
-            else -> Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 24.dp)) {
+            else -> Column(verticalArrangement = Arrangement.spacedBy(Spacing.Medium), modifier = Modifier.padding(bottom = Spacing.Page)) {
                 favourites.chunked(3).forEachIndexed { row, group ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.Medium)) {
                         group.forEachIndexed { column, person ->
                             Box(Modifier.weight(1f)) { FavouriteSquare(person, "dialgrid:${row * 3 + column}", onCall) }
                         }
@@ -344,10 +346,10 @@ internal fun FavouriteSquare(person: Favourite, tag: String, onCall: (String) ->
         if (person.photo != null) {
             Image(person.photo, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         } else {
-            MetroText(person.name.take(1).uppercase(), size = 44.sp, color = Color.White, modifier = Modifier.align(Alignment.Center))
+            MetroText(person.name.take(1).uppercase(), size = MetroType.Pivot, color = Color.White, modifier = Modifier.align(Alignment.Center))
         }
         Box(
-            Modifier.align(Alignment.BottomStart).fillMaxWidth().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f)))).padding(start = 8.dp, end = 8.dp, top = 14.dp, bottom = 6.dp),
+            Modifier.align(Alignment.BottomStart).fillMaxWidth().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f)))).padding(start = Spacing.Medium, end = Spacing.Medium, top = 14.dp, bottom = 6.dp),
         ) {
             MetroText(person.name, size = 13.sp, weight = FontWeight.Normal, maxLines = 1, color = Color.White)
         }
@@ -374,49 +376,49 @@ fun PeopleHubPage(
 ) {
     val colors = LocalMetroColors.current
     PageFrame(stringResource(R.string.peoplehub_page_header), stringResource(R.string.peoplehub_default_label), modifier) {
-        MetroText(stringResource(R.string.peoplehub_favourites), size = 18.sp, color = colors.subtle, modifier = Modifier.padding(bottom = 8.dp))
+        MetroText(stringResource(R.string.peoplehub_favourites), size = MetroType.Lead, color = colors.subtle, modifier = Modifier.padding(bottom = Spacing.Medium))
         when {
             !hasContacts -> PermissionNote(stringResource(R.string.page_needs_contacts), "peoplehub:allow:contacts", onRequestContacts)
             favourites == null -> Unit
-            favourites.isEmpty() -> PageNote(stringResource(R.string.dialgrid_empty), Modifier.padding(bottom = 8.dp))
-            else -> LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 8.dp).testTag("peoplehub:favourites")) {
+            favourites.isEmpty() -> PageNote(stringResource(R.string.dialgrid_empty), Modifier.padding(bottom = Spacing.Medium))
+            else -> LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.Medium), modifier = Modifier.padding(bottom = Spacing.Medium).testTag("peoplehub:favourites")) {
                 items(favourites, key = { it.lookupUri }) { person -> Box(Modifier.width(96.dp)) { FavouriteSquare(person, "peoplehub:fav:${person.lookupUri}", onCall) } }
             }
         }
-        MetroText(stringResource(R.string.peoplehub_recent), size = 18.sp, color = colors.subtle, modifier = Modifier.padding(top = 18.dp, bottom = 6.dp))
+        MetroText(stringResource(R.string.peoplehub_recent), size = MetroType.Lead, color = colors.subtle, modifier = Modifier.padding(top = 18.dp, bottom = 6.dp))
         when {
             !hasCallLog -> PermissionNote(stringResource(R.string.page_needs_calls), "peoplehub:allow:calls", onRequestCallLog)
             calls == null -> Unit
             calls.isEmpty() -> PageNote(stringResource(R.string.peoplehub_no_calls))
             else -> Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 calls.take(8).forEachIndexed { index, call ->
-                    Row(Modifier.fillMaxWidth().testTag("peoplehub:call:$index").metroPress(onClick = { onCall(call.number) }).padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxWidth().testTag("peoplehub:call:$index").metroPress(onClick = { onCall(call.number) }).padding(vertical = Spacing.Small), verticalAlignment = Alignment.CenterVertically) {
                         MetroText(
                             when {
                                 call.missed -> "✕"
                                 call.outgoing -> "↗"
                                 else -> "↙"
                             },
-                            size = 20.sp, weight = FontWeight.Normal, color = if (call.missed) LocalAccent.current else colors.subtle, modifier = Modifier.width(30.dp),
+                            size = MetroType.Subtitle, weight = FontWeight.Normal, color = if (call.missed) LocalAccent.current else colors.subtle, modifier = Modifier.width(30.dp),
                         )
                         Column(Modifier.weight(1f)) {
-                            MetroText(call.name, size = 20.sp)
+                            MetroText(call.name, size = MetroType.Subtitle)
                             MetroText(whenText(call.date), size = 13.sp, weight = FontWeight.Normal, color = colors.subtle)
                         }
                     }
                 }
             }
         }
-        MetroText(stringResource(R.string.peoplehub_whats_new), size = 18.sp, color = colors.subtle, modifier = Modifier.padding(top = 18.dp, bottom = 6.dp))
+        MetroText(stringResource(R.string.peoplehub_whats_new), size = MetroType.Lead, color = colors.subtle, modifier = Modifier.padding(top = 18.dp, bottom = 6.dp))
         if (news.isEmpty()) {
-            PageNote(stringResource(R.string.peoplehub_nothing_new), Modifier.padding(bottom = 24.dp))
+            PageNote(stringResource(R.string.peoplehub_nothing_new), Modifier.padding(bottom = Spacing.Page))
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(bottom = 24.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(bottom = Spacing.Page)) {
                 news.take(8).forEachIndexed { index, entry ->
                     Column(Modifier.fillMaxWidth().testTag("peoplehub:news:$index").metroPress(onClick = { onOpenNotification(entry) })) {
                         MetroText(entry.title.ifBlank { labelOf(entry.packageName) }, size = 19.sp)
                         if (entry.text.isNotBlank()) MetroText(entry.text, size = 15.sp, weight = FontWeight.Normal, color = colors.subtle)
-                        MetroText(labelOf(entry.packageName) + " · " + (ageText(entry.postTime) ?: ""), size = 12.sp, weight = FontWeight.Normal, color = colors.subtle)
+                        MetroText(labelOf(entry.packageName) + " · " + (ageText(entry.postTime) ?: ""), size = MetroType.Caption, weight = FontWeight.Normal, color = colors.subtle)
                     }
                 }
             }

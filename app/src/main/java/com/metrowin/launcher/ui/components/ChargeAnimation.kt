@@ -106,7 +106,7 @@ fun ChargeBanner(
     Column(
         modifier
             .then(if (topInset != null) Modifier.padding(top = topInset) else Modifier.topBarsPadding())
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .padding(horizontal = Spacing.Large, vertical = Spacing.Medium)
             .fillMaxWidth()
             .onSizeChanged { height = it.height.coerceAtLeast(1) }
             .graphicsLayer {
@@ -120,7 +120,7 @@ fun ChargeBanner(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Bolt(accent, Modifier.size(width = 18.dp, height = 28.dp))
             Spacer(Modifier.width(14.dp))
-            MetroText("${battery.percent}%", size = 34.sp, maxLines = 1, modifier = Modifier.testTag("charge:percent"))
+            MetroText("${battery.percent}%", size = MetroType.Title, maxLines = 1, modifier = Modifier.testTag("charge:percent"))
             Spacer(Modifier.width(14.dp))
             val left = battery.minutesToFull?.let { stringResource(R.string.battery_until_full, BatteryInfo.duration(it)) }
             val state = stringResource(R.string.battery_charging)

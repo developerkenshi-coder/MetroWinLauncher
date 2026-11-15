@@ -47,14 +47,14 @@ fun PivotHeader(
     titles: List<String>,
     pagerState: PagerState,
     modifier: Modifier = Modifier,
-    size: androidx.compose.ui.unit.TextUnit = 44.sp,
+    size: androidx.compose.ui.unit.TextUnit = MetroType.Pivot,
     /** A colour for the titles (the current one in full, the others fainter) instead of the foreground; null keeps the usual look. */
     color: androidx.compose.ui.graphics.Color? = null,
 ) {
     val colors = LocalMetroColors.current
     val scope = rememberCoroutineScope()
     val widths = remember(titles) { mutableStateListOf<Int>().apply { repeat(titles.size) { add(0) } } }
-    val spacing = with(LocalDensity.current) { 24.dp.roundToPx() }
+    val spacing = with(LocalDensity.current) { Spacing.Page.roundToPx() }
     val position = pagerState.currentPage + pagerState.currentPageOffsetFraction
 
     fun leftOf(index: Int): Float {
@@ -70,14 +70,14 @@ fun PivotHeader(
 
     Column(modifier) {
         LocalAppTitle.current?.let { appTitle ->
-            MetroText(appTitle.uppercase(), size = 14.sp, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(bottom = 2.dp))
+            MetroText(appTitle.uppercase(), size = MetroType.Note, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(bottom = 2.dp))
         }
         Row(
             Modifier
                 .clipToBounds()
                 .wrapContentWidth(Alignment.Start, unbounded = true)
                 .offset { IntOffset(-shift.roundToInt(), 0) },
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.Page),
         ) {
             titles.forEachIndexed { index, title ->
                 MetroText(

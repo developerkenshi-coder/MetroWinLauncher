@@ -56,8 +56,8 @@ fun ColumnScope.HubPager(
     val accent = LocalAccent.current
     val side = 24.dp
     if (!style.isClassic) {
-        MetroText(title.lowercase(), size = 62.sp, modifier = Modifier.padding(start = side, top = 4.dp).testTag(titleTag))
-        PivotHeader(titles, pager, Modifier.padding(start = side, top = 2.dp, bottom = 8.dp), size = 27.sp, color = accent)
+        MetroText(title.lowercase(), size = 62.sp, modifier = Modifier.padding(start = side, top = Spacing.Small).testTag(titleTag))
+        PivotHeader(titles, pager, Modifier.padding(start = side, top = 2.dp, bottom = Spacing.Medium), size = 27.sp, color = accent)
         HorizontalPager(pager, modifier.weight(1f).fillMaxWidth().clipToBounds().testTag(pagerTag), beyondViewportPageCount = 0, userScrollEnabled = userScrollEnabled) { content(it) }
         return
     }
@@ -101,7 +101,7 @@ fun ColumnScope.HubPager(
                 beyondViewportPageCount = 0, userScrollEnabled = userScrollEnabled,
             ) { page ->
                 Column(Modifier.fillMaxSize()) {
-                    MetroText(titles.getOrElse(page) { "" }, size = 27.sp, color = accent, maxLines = 1, modifier = Modifier.padding(start = side, bottom = 8.dp))
+                    MetroText(titles.getOrElse(page) { "" }, size = 27.sp, color = accent, maxLines = 1, modifier = Modifier.padding(start = side, bottom = Spacing.Medium))
                     Box(Modifier.weight(1f).fillMaxWidth()) { content(page) }
                 }
             }

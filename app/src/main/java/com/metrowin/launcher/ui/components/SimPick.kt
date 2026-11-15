@@ -49,15 +49,15 @@ fun SimPickDialog(use: SimUse, sims: List<SimInfo>, canRemember: Boolean, onPick
 @Composable
 fun SimSelector(title: String, sims: List<SimInfo>, selected: Int?, onSelect: (Int?) -> Unit, tag: String, modifier: Modifier = Modifier) {
     Column(modifier.testTag(tag)) {
-        MetroText(title, size = 16.sp, weight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp))
+        MetroText(title, size = MetroType.Body, weight = FontWeight.SemiBold, modifier = Modifier.padding(top = Spacing.Medium))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
             val options = listOf<Pair<Int?, String>>(null to stringResource(R.string.sim_ask)) + sims.map { it.slot to it.label }
             options.forEach { (slot, label) ->
                 val on = slot == selected
                 MetroText(
-                    label, size = 18.sp, weight = if (on) FontWeight.SemiBold else FontWeight.Normal,
+                    label, size = MetroType.Lead, weight = if (on) FontWeight.SemiBold else FontWeight.Normal,
                     color = if (on) LocalAccent.current else LocalMetroColors.current.foreground,
-                    modifier = Modifier.heightIn(min = 48.dp).testTag("$tag:${slot ?: "ask"}").metroPress(onClick = { onSelect(slot) }).padding(vertical = 12.dp),
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("$tag:${slot ?: "ask"}").metroPress(onClick = { onSelect(slot) }).padding(vertical = Spacing.Large),
                 )
             }
         }

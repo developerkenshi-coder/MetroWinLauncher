@@ -37,7 +37,7 @@ import kotlin.math.roundToInt
 fun MetroText(
     text: String,
     modifier: Modifier = Modifier,
-    size: TextUnit = 20.sp,
+    size: TextUnit = MetroType.Subtitle,
     weight: FontWeight = FontWeight.Light,
     color: Color = LocalMetroColors.current.foreground,
     maxLines: Int = Int.MAX_VALUE,

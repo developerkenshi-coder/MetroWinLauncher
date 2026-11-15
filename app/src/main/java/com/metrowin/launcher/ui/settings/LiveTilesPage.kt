@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.data.WeatherBlock
 import android.Manifest
 import android.content.pm.PackageManager
@@ -64,7 +66,7 @@ fun LiveTilesPage(env: SettingsEnv) {
     }
 
     SettingsPage {
-        Column(Modifier.settingAnchor("live.city"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.settingAnchor("live.city"), verticalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             SettingHeading(stringResource(R.string.weather_city))
             InfoSetting(
                 label = stringResource(R.string.weather_city),
@@ -96,7 +98,7 @@ fun LiveTilesPage(env: SettingsEnv) {
                     MetroText(place.name, size = 22.sp)
                     val detail = listOf(place.region, place.country).filter { it.isNotBlank() }.joinToString(", ")
                     if (detail.isNotEmpty()) {
-                        MetroText(detail, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+                        MetroText(detail, size = MetroType.Note, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
                     }
                 }
                 if (settings.weatherCities.size < SavedCities.MAX) {
@@ -114,10 +116,10 @@ fun LiveTilesPage(env: SettingsEnv) {
                 SettingLabel(stringResource(R.string.weather_followed))
                 settings.weatherCities.forEachIndexed { index, city ->
                     Row(Modifier.fillMaxWidth().testTag("weather:city:$index"), verticalAlignment = Alignment.CenterVertically) {
-                        MetroText(city.name, size = 18.sp, weight = FontWeight.Normal, modifier = Modifier.weight(1f))
+                        MetroText(city.name, size = MetroType.Lead, weight = FontWeight.Normal, modifier = Modifier.weight(1f))
                         MetroText(
                             stringResource(R.string.weather_unfollow), size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
-                            modifier = Modifier.testTag("weather:unfollow:$index").metroPress(onClick = { env.onUnfollowCity(city) }).padding(8.dp),
+                            modifier = Modifier.testTag("weather:unfollow:$index").metroPress(onClick = { env.onUnfollowCity(city) }).padding(Spacing.Medium),
                         )
                     }
                 }
@@ -224,9 +226,9 @@ fun LiveTilesPage(env: SettingsEnv) {
             } else {
                 env.liveReport.forEach { line ->
                     Column(Modifier.fillMaxWidth().testTag("live:report:${line.packageName}")) {
-                        MetroText(labels[line.packageName] ?: line.packageName, size = 20.sp)
+                        MetroText(labels[line.packageName] ?: line.packageName, size = MetroType.Subtitle)
                         MetroText(
-                            reportText(line), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+                            reportText(line), size = MetroType.Note, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
                             lineHeight = 19.sp,
                         )
                     }
@@ -250,13 +252,13 @@ fun LiveTilesPage(env: SettingsEnv) {
                     val label = env.apps.firstOrNull { it.packageName == tile.packageName }?.label ?: tile.packageName
                     Row(Modifier.fillMaxWidth().testTag("tiles:published:${tile.packageName}"), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            MetroText(label, size = 20.sp)
+                            MetroText(label, size = MetroType.Subtitle)
                             MetroText(
                                 listOf(tile.title, tile.text, if (tile.count > 0) "(${tile.count})" else "").filter { it.isNotBlank() }.joinToString(" "),
-                                size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
+                                size = MetroType.Note, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
                             )
                         }
-                        Box(Modifier.metroPress(onClick = { env.onClearPublishedTile(tile.packageName) }).padding(8.dp).testTag("tiles:clear:${tile.packageName}")) {
+                        Box(Modifier.metroPress(onClick = { env.onClearPublishedTile(tile.packageName) }).padding(Spacing.Medium).testTag("tiles:clear:${tile.packageName}")) {
                             MetroText(stringResource(R.string.tp_clear), size = 17.sp, weight = FontWeight.Normal, color = LocalAccent.current)
                         }
                     }

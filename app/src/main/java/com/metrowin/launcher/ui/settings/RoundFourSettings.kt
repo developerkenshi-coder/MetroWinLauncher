@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.MetroType
 import androidx.compose.foundation.layout.padding
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.data.SectionReset
@@ -199,7 +200,7 @@ fun PageResetLine() {
         }
     }
     MetroText(
-        stringResource(if (armed) R.string.reset_page_confirm else R.string.reset_page), size = 16.sp, weight = FontWeight.Normal,
+        stringResource(if (armed) R.string.reset_page_confirm else R.string.reset_page), size = MetroType.Body, weight = FontWeight.Normal,
         color = com.metrowin.launcher.ui.theme.LocalAccent.current,
         modifier = Modifier
             .testTag("settings:resetpage")

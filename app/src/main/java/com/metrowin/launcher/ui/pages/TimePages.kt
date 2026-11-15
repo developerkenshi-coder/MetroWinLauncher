@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.pages
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import android.os.SystemClock
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -77,7 +79,7 @@ fun TimerPage(
             },
             Modifier.testTag("timer:page:status"),
         )
-        Row(Modifier.fillMaxWidth().padding(top = 18.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth().padding(top = 18.dp), horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             if (status == TimerStatus.Running) {
                 MetroButton(stringResource(R.string.timer_pause), Modifier.weight(1f).testTag("timer:page:pause"), onClick = onPause)
             } else {
@@ -89,15 +91,15 @@ fun TimerPage(
             MetroButton(stringResource(R.string.timer_reset), Modifier.weight(1f).testTag("timer:page:reset"), onClick = onReset)
         }
         if (status != TimerStatus.Finished) {
-            FlowRow(Modifier.padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(Modifier.padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(Spacing.Medium), verticalArrangement = Arrangement.spacedBy(Spacing.Medium)) {
                 TimerFormat.ADDITIONS_MS.forEach { ms ->
                     PageChip(stringResource(R.string.timer_add, (ms / 60_000L).toInt()), false, "timer:page:add:${ms / 60_000L}") { onAdd(ms) }
                 }
             }
         }
         if (status != TimerStatus.Running) {
-            MetroText(stringResource(R.string.timer_length), size = 18.sp, color = colors.subtle, modifier = Modifier.padding(top = 22.dp, bottom = 8.dp))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            MetroText(stringResource(R.string.timer_length), size = MetroType.Lead, color = colors.subtle, modifier = Modifier.padding(top = 22.dp, bottom = Spacing.Medium))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.Medium), verticalArrangement = Arrangement.spacedBy(Spacing.Medium)) {
                 TimerState.PRESET_MINUTES.forEach { minutes ->
                     val ms = minutes * 60_000L
                     PageChip(
@@ -108,7 +110,7 @@ fun TimerPage(
             }
             CustomLength(onLength)
         }
-        PageNote(stringResource(R.string.timer_page_battery), Modifier.padding(top = 24.dp, bottom = 24.dp))
+        PageNote(stringResource(R.string.timer_page_battery), Modifier.padding(top = Spacing.Page, bottom = Spacing.Page))
     }
 }
 
@@ -119,7 +121,7 @@ private fun CustomLength(onLength: (Long) -> Unit) {
     var minutes by remember { mutableStateOf("") }
     var seconds by remember { mutableStateOf("") }
     val parsed = TimerFormat.parseLength(hours, minutes, seconds)
-    Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(Spacing.Medium), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             MetroTextField(hours, { hours = it.filter(Char::isDigit).take(3) }, stringResource(R.string.timer_hours), Modifier.testTag("timer:page:hours"), keyboardType = KeyboardType.Number)
         }
@@ -168,7 +170,7 @@ fun StopwatchPage(
     val colors = LocalMetroColors.current
     PageFrame(stringResource(R.string.stopwatch_page_header), label, modifier) {
         MetroText(TimerFormat.stopwatch(elapsed, tenths = true), size = 72.sp, maxLines = 1, modifier = Modifier.testTag("stopwatch:page:time"))
-        Row(Modifier.fillMaxWidth().padding(top = 18.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth().padding(top = 18.dp), horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             if (state.running) {
                 MetroButton(stringResource(R.string.stopwatch_stop), Modifier.weight(1f).testTag("stopwatch:page:stop"), onClick = onStop)
                 MetroButton(stringResource(R.string.stopwatch_lap), Modifier.weight(1f).testTag("stopwatch:page:lap"), onClick = onLap)
@@ -182,16 +184,16 @@ fun StopwatchPage(
         }
         if (state.laps.isNotEmpty()) {
             MetroText(
-                pluralStringResource(R.plurals.stopwatch_laps, state.laps.size, state.laps.size), size = 18.sp, color = colors.subtle,
+                pluralStringResource(R.plurals.stopwatch_laps, state.laps.size, state.laps.size), size = MetroType.Lead, color = colors.subtle,
                 modifier = Modifier.padding(top = 22.dp, bottom = 6.dp),
             )
             val lengths = state.lapLengths()
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 24.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.Medium), modifier = Modifier.padding(bottom = Spacing.Page)) {
                 state.laps.indices.reversed().forEach { i ->
                     Row(Modifier.fillMaxWidth().testTag("stopwatch:page:lap:$i"), verticalAlignment = Alignment.CenterVertically) {
-                        MetroText("${i + 1}", size = 20.sp, color = colors.subtle, modifier = Modifier.padding(end = 16.dp))
+                        MetroText("${i + 1}", size = MetroType.Subtitle, color = colors.subtle, modifier = Modifier.padding(end = 16.dp))
                         MetroText(TimerFormat.stopwatch(lengths[i], tenths = true), size = 22.sp, modifier = Modifier.weight(1f))
-                        MetroText(TimerFormat.stopwatch(state.laps[i], tenths = true), size = 18.sp, weight = FontWeight.Normal, color = colors.subtle)
+                        MetroText(TimerFormat.stopwatch(state.laps[i], tenths = true), size = MetroType.Lead, weight = FontWeight.Normal, color = colors.subtle)
                     }
                 }
             }

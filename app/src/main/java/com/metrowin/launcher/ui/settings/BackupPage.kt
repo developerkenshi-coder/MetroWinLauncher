@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.data.BackupCopies
 import com.metrowin.launcher.data.SyncConflicts
 import androidx.compose.runtime.remember
@@ -53,7 +55,7 @@ fun BackupPage(env: SettingsEnv) {
         stringResource(R.string.backup_every_week), stringResource(R.string.backup_every_month),
     )
     SettingsPage {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             SettingHeading(stringResource(R.string.backup_folder))
             InfoSetting(
                 stringResource(R.string.backup_folder),
@@ -92,15 +94,15 @@ fun BackupPage(env: SettingsEnv) {
                     val format = remember { java.time.format.DateTimeFormatter.ofLocalizedDateTime(java.time.format.FormatStyle.MEDIUM, java.time.format.FormatStyle.SHORT) }
                     env.backupCopies.forEach { name ->
                         MetroText(
-                            BackupCopies.parse(name)?.format(format) ?: name, size = 20.sp, weight = FontWeight.Normal,
-                            modifier = Modifier.fillMaxWidth().testTag("backup:copy:$name").metroPress(onClick = { env.onRestoreCopy(name) }).padding(vertical = 8.dp),
+                            BackupCopies.parse(name)?.format(format) ?: name, size = MetroType.Subtitle, weight = FontWeight.Normal,
+                            modifier = Modifier.fillMaxWidth().testTag("backup:copy:$name").metroPress(onClick = { env.onRestoreCopy(name) }).padding(vertical = Spacing.Medium),
                         )
                     }
                 }
                 ActionSetting(stringResource(R.string.backup_forget_folder), onClick = env.onClearBackupFolder, tag = "backup:forget", id = "backup.forget")
             }
         }
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             SettingHeading(stringResource(R.string.sync_heading))
             if (!hasFolder) {
                 SettingHint(stringResource(R.string.sync_needs_folder), Modifier.testTag("sync:needs_folder"))
@@ -133,8 +135,8 @@ fun BackupPage(env: SettingsEnv) {
                         env.syncOthers.forEach { name ->
                             MetroText(
                                 SyncConflicts.stamp(name)?.let { java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).format(format) } ?: name,
-                                size = 20.sp, weight = FontWeight.Normal,
-                                modifier = Modifier.fillMaxWidth().testTag("sync:other:$name").metroPress(onClick = { env.onRecoverSyncOther(name) }).padding(vertical = 8.dp),
+                                size = MetroType.Subtitle, weight = FontWeight.Normal,
+                                modifier = Modifier.fillMaxWidth().testTag("sync:other:$name").metroPress(onClick = { env.onRecoverSyncOther(name) }).padding(vertical = Spacing.Medium),
                             )
                         }
                         ActionSetting(stringResource(R.string.sync_others_clear), onClick = env.onClearSyncOthers, tag = "sync:others:clear")
@@ -177,8 +179,8 @@ fun BackupPage(env: SettingsEnv) {
             SettingLabel(stringResource(R.string.apps_backup_missing, env.missingApps.size))
             env.missingApps.forEach { app ->
                 MetroText(
-                    app.label, size = 20.sp, weight = FontWeight.Normal,
-                    modifier = Modifier.fillMaxWidth().testTag("backup:apps:missing:${app.packageName}").metroPress(onClick = { env.onOpenStore(app.packageName) }).padding(vertical = 8.dp),
+                    app.label, size = MetroType.Subtitle, weight = FontWeight.Normal,
+                    modifier = Modifier.fillMaxWidth().testTag("backup:apps:missing:${app.packageName}").metroPress(onClick = { env.onOpenStore(app.packageName) }).padding(vertical = Spacing.Medium),
                 )
             }
         }

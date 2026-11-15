@@ -119,7 +119,7 @@ fun MetroButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit
 fun SettingLabel(text: String, modifier: Modifier = Modifier) {
     MetroText(
         text, size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle,
-        modifier = modifier.padding(bottom = 8.dp),
+        modifier = modifier.padding(bottom = Spacing.Medium),
     )
 }
 
@@ -129,7 +129,7 @@ fun ChoiceRow(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
     val style = LocalStyle.current
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
-    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.Medium)) {
         options.forEachIndexed { index, label ->
             val isSelected = index == selected
             val press = Modifier.weight(1f).metroPress(onClick = { onSelect(index) })
@@ -216,7 +216,7 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
             .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MetroText(label, size = 20.sp, modifier = Modifier.weight(1f))
+        MetroText(label, size = MetroType.Subtitle, modifier = Modifier.weight(1f))
         when (style.kind) {
             ThemeStyle.Classic -> {
                 val thumbX by animateDpAsState(
@@ -225,7 +225,7 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
                 // The word beside the switch only repeats what the switch shows: at the biggest text it must not take the room of the label.
                 // Both words take their room whatever the state, so the label does not wrap differently when the switch flips.
                 FontScaleAtMost(1f) {
-                    Box(Modifier.padding(end = 12.dp), contentAlignment = Alignment.CenterEnd) {
+                    Box(Modifier.padding(end = Spacing.Large), contentAlignment = Alignment.CenterEnd) {
                         ToggleWord(R.string.toggle_on, visible = checked)
                         ToggleWord(R.string.toggle_off, visible = !checked)
                     }
@@ -408,7 +408,7 @@ fun MetroTextField(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.weight(1f)) {
-            if (value.isEmpty()) MetroText(placeholder, size = 20.sp, color = if (lit) LightColors.subtle else colors.subtle)
+            if (value.isEmpty()) MetroText(placeholder, size = MetroType.Subtitle, color = if (lit) LightColors.subtle else colors.subtle)
             BasicTextField(
                 value = value,
                 onValueChange = onValueChange,
@@ -429,8 +429,8 @@ fun MetroTextField(
             val description = stringResource(R.string.search_clear)
             // A cross drawn, not typed: it does not depend on the font. It sits on the white box, so it is black.
             Canvas(
-                Modifier.padding(start = 8.dp).size(36.dp).semantics { contentDescription = description }
-                    .pointerInput(Unit) { detectTapGestures { onValueChange("") } }.padding(12.dp),
+                Modifier.padding(start = Spacing.Medium).size(36.dp).semantics { contentDescription = description }
+                    .pointerInput(Unit) { detectTapGestures { onValueChange("") } }.padding(Spacing.Large),
             ) {
                 val stroke = 2.dp.toPx()
                 drawLine(Color.Black, Offset(0f, 0f), Offset(size.width, size.height), stroke)

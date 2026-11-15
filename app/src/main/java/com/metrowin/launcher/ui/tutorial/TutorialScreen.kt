@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.tutorial
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.components.topBarsPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -89,8 +91,8 @@ fun TutorialScreen(
                 val wide = maxWidth >= WIDE_BAR
                 val skip = @Composable {
                     if (!onLast) {
-                        Box(Modifier.metroPress(onClick = onFinish).padding(vertical = 10.dp, horizontal = 4.dp).testTag("tutorial:skip")) {
-                            MetroText(stringResource(R.string.tut_skip), size = 18.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+                        Box(Modifier.metroPress(onClick = onFinish).padding(vertical = 10.dp, horizontal = Spacing.Small).testTag("tutorial:skip")) {
+                            MetroText(stringResource(R.string.tut_skip), size = MetroType.Lead, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
                         }
                     }
                 }
@@ -100,7 +102,7 @@ fun TutorialScreen(
                     }
                 }
                 if (wide) {
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxWidth().padding(horizontal = Spacing.Page, vertical = Spacing.Medium), verticalAlignment = Alignment.CenterVertically) {
                         Box(Modifier.weight(1f)) { skip() }
                         PageDots(pager, steps.size)
                         Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) { next() }
@@ -108,7 +110,7 @@ fun TutorialScreen(
                 } else {
                     Column(Modifier.fillMaxWidth()) {
                         Box(Modifier.fillMaxWidth().padding(top = 6.dp), contentAlignment = Alignment.Center) { PageDots(pager, steps.size) }
-                        Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().padding(horizontal = Spacing.Page, vertical = Spacing.Large), verticalAlignment = Alignment.CenterVertically) {
                             Box(Modifier.weight(1f)) { skip() }
                             next()
                         }
@@ -123,10 +125,10 @@ fun TutorialScreen(
 private fun StepPage(step: TutorialStep, met: Set<Need>, denied: Set<Need>, onRequest: (Need) -> Unit) {
     val colors = LocalMetroColors.current
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp).testTag("tutorial:step:${step.id}"),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page).testTag("tutorial:step:${step.id}"),
     ) {
         Spacer(Modifier.height(28.dp))
-        MetroText(stringResource(step.label), size = 14.sp, weight = FontWeight.SemiBold)
+        MetroText(stringResource(step.label), size = MetroType.Note, weight = FontWeight.SemiBold)
         Row(Modifier.padding(top = 10.dp, bottom = 14.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(64.dp).litFill(true), contentAlignment = Alignment.Center) {
                 GlyphIcon(step.glyph, 40.dp, color = onAccent())
@@ -151,7 +153,7 @@ private fun StepPage(step: TutorialStep, met: Set<Need>, denied: Set<Need>, onRe
 /** A line of advice, with a small square of the accent colour in front, like the bullets of Windows Phone. */
 @Composable
 private fun Tip(text: String) {
-    Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalAlignment = Alignment.Top) {
+    Row(Modifier.fillMaxWidth().padding(bottom = Spacing.Large), verticalAlignment = Alignment.Top) {
         Box(Modifier.padding(top = 9.dp).size(8.dp).background(LocalAccent.current))
         Spacer(Modifier.width(14.dp))
         MetroText(text, size = 17.sp, weight = FontWeight.Normal, maxLines = Int.MAX_VALUE, lineHeight = 24.sp, modifier = Modifier.weight(1f))
@@ -162,12 +164,12 @@ private fun Tip(text: String) {
 private fun NeedRow(need: Need, met: Boolean, denied: Boolean, onRequest: (Need) -> Unit) {
     val colors = LocalMetroColors.current
     // The words have the whole width; the button, or "allowed", is under them.
-    Column(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 12.dp).testTag("tutorial:need:${need.name}")) {
+    Column(Modifier.fillMaxWidth().padding(top = Spacing.Medium, bottom = Spacing.Large).testTag("tutorial:need:${need.name}")) {
         MetroText(stringResource(need.title), size = 22.sp)
         MetroText(stringResource(need.why), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, lineHeight = 21.sp)
         Spacer(Modifier.height(10.dp))
         if (met) {
-            MetroText(stringResource(R.string.need_allowed), size = 18.sp, color = LocalAccent.current, modifier = Modifier.testTag("tutorial:allowed:${need.name}"))
+            MetroText(stringResource(R.string.need_allowed), size = MetroType.Lead, color = LocalAccent.current, modifier = Modifier.testTag("tutorial:allowed:${need.name}"))
         } else {
             // A permission Android will not ask about again can only be given in the settings of the app.
             val label = if (denied) R.string.need_action_settings else need.action

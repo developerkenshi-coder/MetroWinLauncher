@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.MetroType
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -45,7 +46,7 @@ fun KidsPage(env: SettingsEnv) {
         item {
             MetroText(
                 stringResource(R.string.kids_intro),
-                size = 16.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE, lineHeight = 22.sp,
+                size = MetroType.Body, weight = FontWeight.Normal, color = colors.subtle, maxLines = Int.MAX_VALUE, lineHeight = 22.sp,
             )
             Spacer(Modifier.height(18.dp))
             MetroButton(
@@ -74,7 +75,7 @@ fun KidsPage(env: SettingsEnv) {
             ) {
                 AppSquare(app, 44.dp)
                 Spacer(Modifier.width(14.dp))
-                MetroText(app.label, size = 20.sp, modifier = Modifier.weight(1f))
+                MetroText(app.label, size = MetroType.Subtitle, modifier = Modifier.weight(1f))
                 CheckSquare(checked)
             }
         }

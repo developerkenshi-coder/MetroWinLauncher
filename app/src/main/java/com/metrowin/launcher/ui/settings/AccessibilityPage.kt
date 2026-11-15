@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.MetroType
 import androidx.compose.foundation.layout.Arrangement
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -95,7 +96,7 @@ private fun FontChoice(env: SettingsEnv) {
         onSelect = { i -> env.onChange { it.copy(appFont = when { i == 0 -> ""; i <= fonts.size -> fonts[i - 1].code; else -> AppFonts.CUSTOM }) } },
         tag = "access:font", id = "access.font",
     )
-    MetroText(stringResource(R.string.access_font_sample), size = 20.sp)
+    MetroText(stringResource(R.string.access_font_sample), size = MetroType.Subtitle)
     MetroButton(stringResource(R.string.access_font_pick), Modifier.fillMaxWidth()) { picker.launch(arrayOf("*/*")) }
     SettingHint(stringResource(R.string.access_font_hint))
 }

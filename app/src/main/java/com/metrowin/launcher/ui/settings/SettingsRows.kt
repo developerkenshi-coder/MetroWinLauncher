@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.components.pageSide
 import com.metrowin.launcher.ui.components.DEFAULT_MIN_SCALE
 import androidx.compose.ui.unit.TextUnit
@@ -147,10 +149,10 @@ fun OptionList(
             ) {
                 CheckSquare(index == selected)
                 Spacer(Modifier.width(14.dp))
-                MetroText(text, size = 20.sp, modifier = Modifier.weight(1f))
+                MetroText(text, size = MetroType.Subtitle, modifier = Modifier.weight(1f))
             }
         }
-        if (hint != null) SettingHint(hint, Modifier.padding(top = 4.dp))
+        if (hint != null) SettingHint(hint, Modifier.padding(top = Spacing.Small))
     }
 }
 
@@ -182,7 +184,7 @@ fun DropdownSetting(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             MetroText(options.getOrElse(selected) { "" }, size = 19.sp, weight = FontWeight.Normal, modifier = Modifier.weight(1f))
-            MetroText(if (open) "−" else "+", size = 24.sp, weight = FontWeight.Normal, color = colors.subtle)
+            MetroText(if (open) "−" else "+", size = MetroType.Heading, weight = FontWeight.Normal, color = colors.subtle)
         }
         if (open) {
             Column(Modifier.padding(top = 6.dp)) {
@@ -200,7 +202,7 @@ fun DropdownSetting(
                     ) {
                         CheckSquare(index == selected)
                         Spacer(Modifier.width(14.dp))
-                        MetroText(text, size = 18.sp, modifier = Modifier.weight(1f))
+                        MetroText(text, size = MetroType.Lead, modifier = Modifier.weight(1f))
                     }
                 }
             }
@@ -224,7 +226,7 @@ fun StepperSetting(
 ) {
     Column(modifier.settingAnchor(id).then(if (tag != null) Modifier.testTag(tag) else Modifier)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            MetroText(label, size = 20.sp, modifier = Modifier.weight(1f))
+            MetroText(label, size = MetroType.Subtitle, modifier = Modifier.weight(1f))
             StepButton("−", stringResource(R.string.stepper_minus), canDecrement, onDecrement, tag?.let { "$it:minus" })
             // "100%" and "1.5 s" fit, and a longer value pushes the label's room, not the number.
             MetroText(value, size = 22.sp, maxLines = 1, modifier = Modifier.widthIn(min = 64.dp).padding(horizontal = 6.dp))
@@ -246,7 +248,7 @@ private fun StepButton(symbol: String, description: String, enabled: Boolean, on
             .frame(2.dp, LocalMetroColors.current.foreground),
         contentAlignment = Alignment.Center,
     ) {
-        MetroText(symbol, size = 24.sp, weight = FontWeight.Normal)
+        MetroText(symbol, size = MetroType.Heading, weight = FontWeight.Normal)
     }
 }
 
@@ -271,7 +273,7 @@ fun ActionSetting(
                 .semantics { if (!enabled) disabled() }
                 .then(if (tag != null) Modifier.testTag(tag) else Modifier),
         ) { if (enabled) onClick() }
-        if (hint != null) SettingHint(hint, Modifier.padding(top = 8.dp))
+        if (hint != null) SettingHint(hint, Modifier.padding(top = Spacing.Medium))
     }
 }
 
@@ -279,8 +281,8 @@ fun ActionSetting(
 @Composable
 fun InfoSetting(label: String, value: String, modifier: Modifier = Modifier) {
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        MetroText(label, size = 18.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, modifier = Modifier.weight(1f))
-        MetroText(value, size = 18.sp, weight = FontWeight.Normal)
+        MetroText(label, size = MetroType.Lead, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, modifier = Modifier.weight(1f))
+        MetroText(value, size = MetroType.Lead, weight = FontWeight.Normal)
     }
 }
 
@@ -317,16 +319,16 @@ fun AppPickerSetting(
                 chosen?.label ?: stringResource(R.string.gest_app_choose), size = 19.sp, weight = FontWeight.Normal,
                 color = if (chosen == null) colors.subtle else colors.foreground, modifier = Modifier.weight(1f),
             )
-            MetroText(if (open) "−" else "+", size = 24.sp, weight = FontWeight.Normal, color = colors.subtle)
+            MetroText(if (open) "−" else "+", size = MetroType.Heading, weight = FontWeight.Normal, color = colors.subtle)
         }
         if (onClear != null && chosen != null) {
             MetroText(
-                stringResource(R.string.settings_clear_choice), size = 16.sp, weight = FontWeight.Normal, color = com.metrowin.launcher.ui.theme.LocalAccent.current,
-                modifier = Modifier.testTag("$tag:clear").metroPress(onClick = onClear).padding(vertical = 8.dp),
+                stringResource(R.string.settings_clear_choice), size = MetroType.Body, weight = FontWeight.Normal, color = com.metrowin.launcher.ui.theme.LocalAccent.current,
+                modifier = Modifier.testTag("$tag:clear").metroPress(onClick = onClear).padding(vertical = Spacing.Medium),
             )
         }
         if (open) {
-            Column(Modifier.padding(top = 8.dp)) {
+            Column(Modifier.padding(top = Spacing.Medium)) {
                 com.metrowin.launcher.ui.components.MetroTextField(
                     value = query, onValueChange = { query = it }, placeholder = stringResource(R.string.search_apps),
                     modifier = Modifier.testTag("$tag:query"),

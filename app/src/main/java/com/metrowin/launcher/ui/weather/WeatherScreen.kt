@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.weather
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.data.WeatherBlock
@@ -84,18 +86,18 @@ fun WeatherScreen(
             .cutoutSidesPadding()
             .centeredContent()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = Spacing.Page),
     ) {
         MetroText(
-            stringResource(R.string.weather_page_header), size = 14.sp, weight = FontWeight.SemiBold,
+            stringResource(R.string.weather_page_header), size = MetroType.Note, weight = FontWeight.SemiBold,
             modifier = Modifier.padding(top = 28.dp),
         )
         MetroText(
-            place.ifBlank { stringResource(R.string.weather_title) }, size = 34.sp, maxLines = 2, lineHeight = 40.sp,
-            modifier = Modifier.padding(top = 2.dp, bottom = 12.dp).testTag("weather:place"),
+            place.ifBlank { stringResource(R.string.weather_title) }, size = MetroType.Title, maxLines = 2, lineHeight = 40.sp,
+            modifier = Modifier.padding(top = 2.dp, bottom = Spacing.Large).testTag("weather:place"),
         )
         // A city is chosen but the forecast has not come yet.
-        if (weather == null && place.isNotBlank()) MetroProgressBar(Modifier.padding(bottom = 12.dp).testTag("weather:loading"))
+        if (weather == null && place.isNotBlank()) MetroProgressBar(Modifier.padding(bottom = Spacing.Large).testTag("weather:loading"))
         if (weather == null) {
             MetroText(
                 stringResource(R.string.weather_not_set), size = 17.sp, weight = FontWeight.Normal, color = colors.subtle,
@@ -119,15 +121,15 @@ fun WeatherScreen(
                         Row(verticalAlignment = Alignment.Bottom) {
                             MetroText("${weather.temperature}°", size = 96.sp, modifier = Modifier.testTag("weather:temperature"))
                             MetroText(
-                                stringResource(weather.condition.label), size = 24.sp, weight = FontWeight.Normal,
+                                stringResource(weather.condition.label), size = MetroType.Heading, weight = FontWeight.Normal,
                                 modifier = Modifier.padding(start = 16.dp, bottom = 18.dp),
                             )
                         }
                         if (WeatherBlock.Rain.code in blocks) {
                             OpenMeteo.rainOutlook(weather.condition, weather.hours)?.let { outlook ->
                                 MetroText(
-                                    rainOutlookText(outlook), size = 18.sp, weight = FontWeight.Normal, maxLines = 2,
-                                    modifier = Modifier.padding(top = 4.dp).testTag("weather:rain"),
+                                    rainOutlookText(outlook), size = MetroType.Lead, weight = FontWeight.Normal, maxLines = 2,
+                                    modifier = Modifier.padding(top = Spacing.Small).testTag("weather:rain"),
                                 )
                             }
                         }
@@ -138,13 +140,13 @@ fun WeatherScreen(
                     } else {
                         Row(verticalAlignment = Alignment.Bottom) {
                             MetroText("${day.high}°", size = 96.sp, modifier = Modifier.testTag("weather:day:selected"))
-                            MetroText("${day.low}°", size = 40.sp, color = colors.subtle, modifier = Modifier.padding(start = 12.dp, bottom = 14.dp))
+                            MetroText("${day.low}°", size = 40.sp, color = colors.subtle, modifier = Modifier.padding(start = Spacing.Large, bottom = 14.dp))
                         }
                         MetroText(
                             day.date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault()) + " · " + stringResource(day.condition.label),
-                            size = 24.sp, weight = FontWeight.Normal, maxLines = 2,
+                            size = MetroType.Heading, weight = FontWeight.Normal, maxLines = 2,
                         )
-                        MetroText(dayDetails(day, withExtras, speed), size = 18.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 3, modifier = Modifier.padding(top = 4.dp))
+                        MetroText(dayDetails(day, withExtras, speed), size = MetroType.Lead, weight = FontWeight.Normal, color = colors.subtle, maxLines = 3, modifier = Modifier.padding(top = Spacing.Small))
                     }
                 }
             }
@@ -177,7 +179,7 @@ fun WeatherScreen(
             )
         }
         if (others.isNotEmpty()) {
-            MetroText(stringResource(R.string.weather_other_cities), size = 18.sp, color = colors.subtle, modifier = Modifier.padding(top = 8.dp, bottom = 6.dp))
+            MetroText(stringResource(R.string.weather_other_cities), size = MetroType.Lead, color = colors.subtle, modifier = Modifier.padding(top = Spacing.Medium, bottom = 6.dp))
             Column(Modifier.padding(bottom = 20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 others.forEachIndexed { index, (city, forecast) ->
                     Row(Modifier.fillMaxWidth().featherIn(index, others.size).testTag("weather:other:$index"), verticalAlignment = Alignment.CenterVertically) {
@@ -188,12 +190,12 @@ fun WeatherScreen(
                                 size = 15.sp, weight = FontWeight.Normal, color = colors.subtle,
                             )
                         }
-                        if (forecast != null) MetroText("${forecast.temperature}°", size = 34.sp)
+                        if (forecast != null) MetroText("${forecast.temperature}°", size = MetroType.Title)
                     }
                 }
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(bottom = 24.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Large), modifier = Modifier.padding(bottom = Spacing.Page)) {
             if (weather != null) {
                 MetroButton(stringResource(R.string.weather_refresh), Modifier.weight(1f).testTag("weather:refresh"), onClick = onRefresh)
             }
@@ -217,15 +219,15 @@ private fun HourlyRow(weather: WeatherData) {
     if (weather.hours.isEmpty()) return
     val colors = LocalMetroColors.current
     val clock = java.time.format.DateTimeFormatter.ofLocalizedTime(java.time.format.FormatStyle.SHORT)
-    MetroText(stringResource(R.string.weather_hourly), size = 18.sp, color = colors.subtle, modifier = Modifier.padding(top = 20.dp, bottom = 6.dp))
+    MetroText(stringResource(R.string.weather_hourly), size = MetroType.Lead, color = colors.subtle, modifier = Modifier.padding(top = 20.dp, bottom = 6.dp))
     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).testTag("weather:hourly"), horizontalArrangement = Arrangement.spacedBy(18.dp)) {
         weather.hours.forEachIndexed { index, hour ->
             Column(Modifier.featherIn(index, weather), horizontalAlignment = Alignment.CenterHorizontally) {
-                MetroText(hour.time.format(clock), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
-                MetroText("${hour.temperature}°", size = 24.sp)
+                MetroText(hour.time.format(clock), size = MetroType.Note, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1)
+                MetroText("${hour.temperature}°", size = MetroType.Heading)
                 MetroText(
                     hour.rainChance?.takeIf { it > 0 }?.let { stringResource(R.string.weather_rain_short, it) } ?: stringResource(hour.condition.label),
-                    size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1,
+                    size = MetroType.Caption, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1,
                 )
             }
         }
@@ -255,7 +257,7 @@ private fun WeatherDetailsBlock(weather: WeatherData, blocks: Set<String>) {
             Row(Modifier.fillMaxWidth()) {
                 pair.forEach { (label, value) ->
                     Column(Modifier.weight(1f)) {
-                        MetroText(label, size = 14.sp, weight = FontWeight.Normal, color = colors.subtle)
+                        MetroText(label, size = MetroType.Note, weight = FontWeight.Normal, color = colors.subtle)
                         MetroText(value, size = 22.sp)
                     }
                 }

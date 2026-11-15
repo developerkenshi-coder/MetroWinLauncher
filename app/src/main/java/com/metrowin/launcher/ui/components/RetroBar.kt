@@ -72,27 +72,27 @@ internal fun RetroBar(buttons: List<AppBarItem>, items: List<AppBarItem>, modifi
             Column(Modifier.heightIn(max = MENU_ITEM * 5).verticalScroll(rememberScrollState()).testTag("retro:menu")) {
                 items.forEachIndexed { index, item ->
                     MetroText(
-                        item.label.lowercase(Locale.getDefault()), size = 20.sp, weight = FontWeight.Normal,
+                        item.label.lowercase(Locale.getDefault()), size = MetroType.Subtitle, weight = FontWeight.Normal,
                         color = if (item.marked) LocalAccent.current else colors.foreground,
                         modifier = Modifier.fillMaxWidth().testTag("retro:item:$index")
                             .metroPress(onClick = { open = false; item.onClick() })
-                            .padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 12.dp),
+                            .padding(start = Spacing.Page, end = Spacing.Page, top = Spacing.Large, bottom = Spacing.Large),
                     )
                 }
             }
         }
-        Row(Modifier.fillMaxWidth().padding(start = 8.dp), verticalAlignment = Alignment.Top) {
+        Row(Modifier.fillMaxWidth().padding(start = Spacing.Medium), verticalAlignment = Alignment.Top) {
             Row(Modifier.weight(1f), horizontalArrangement = Arrangement.SpaceEvenly) {
                 buttons.forEachIndexed { index, item ->
                     Column(
-                        Modifier.testTag("retro:button:$index").metroPress(onClick = item.onClick).padding(horizontal = 8.dp).semantics { contentDescription = item.label },
+                        Modifier.testTag("retro:button:$index").metroPress(onClick = item.onClick).padding(horizontal = Spacing.Medium).semantics { contentDescription = item.label },
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Box(
                             Modifier.padding(top = (BAR_HEIGHT - BUTTON) / 2).size(BUTTON).border(2.dp, colors.foreground, CircleShape).clip(CircleShape),
                             contentAlignment = Alignment.Center,
                         ) {
-                            item.icon?.let { MarkIcon(it, 18.dp) } ?: MetroText(item.symbol, size = 18.sp, weight = FontWeight.Normal)
+                            item.icon?.let { MarkIcon(it, 18.dp) } ?: MetroText(item.symbol, size = MetroType.Lead, weight = FontWeight.Normal)
                         }
                         // The names are under the buttons only while the bar is open.
                         // They slide down from under the buttons as the bar rises.
@@ -100,7 +100,7 @@ internal fun RetroBar(buttons: List<AppBarItem>, items: List<AppBarItem>, modifi
                             open,
                             enter = if (reduced) EnterTransition.None else slideInVertically(metroTween(260)) { -it } + expandVertically(metroTween(260)) + fadeIn(metroTween(260)),
                             exit = if (reduced) ExitTransition.None else slideOutVertically(metroTween(180, easing = Motion.Accelerate)) { -it } + shrinkVertically(metroTween(180, easing = Motion.Accelerate)) + fadeOut(metroTween(180)),
-                        ) { MetroText(item.label, size = 12.sp, weight = FontWeight.Normal, maxLines = 1, color = colors.foreground, modifier = Modifier.padding(top = 2.dp, bottom = 6.dp)) }
+                        ) { MetroText(item.label, size = MetroType.Caption, weight = FontWeight.Normal, maxLines = 1, color = colors.foreground, modifier = Modifier.padding(top = 2.dp, bottom = 6.dp)) }
                         Box(Modifier.padding(bottom = if (open) 0.dp else (BAR_HEIGHT - BUTTON) / 2))
                     }
                 }

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -19,7 +20,7 @@ import com.metrowin.launcher.ui.components.MetroTextField
 fun BugReportPage(env: SettingsEnv) {
     var description by rememberSaveable { mutableStateOf("") }
     SettingsPage {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.Medium)) {
             SettingHeading(stringResource(R.string.bug_invite_title))
             SettingHint(stringResource(R.string.bug_invite_what))
             SettingHint(stringResource(R.string.bug_invite_how))

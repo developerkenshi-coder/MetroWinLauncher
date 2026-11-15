@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
+import com.metrowin.launcher.ui.components.MetroType
 import android.content.Intent
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -93,9 +95,9 @@ fun OtherProjectsPage() {
 private fun ProjectCard(project: Project, thisApp: Boolean = false, onPicture: (Pair<List<Int>, Int>) -> Unit) {
     val context = LocalContext.current
     Column(Modifier.testTag("projects:${project.name}"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        MetroText(project.name, size = 24.sp, color = LocalAccent.current)
+        MetroText(project.name, size = MetroType.Heading, color = LocalAccent.current)
         if (thisApp) SettingHint(stringResource(R.string.prj_this_app))
-        SettingHint(stringResource(project.about), size = 16.sp, lineHeight = 22.sp, minScale = 1f)
+        SettingHint(stringResource(project.about), size = MetroType.Body, lineHeight = 22.sp, minScale = 1f)
         project.note?.let { SettingHint(stringResource(it)) }
         project.links.forEach { (label, url) ->
             ActionSetting(
@@ -103,7 +105,7 @@ private fun ProjectCard(project: Project, thisApp: Boolean = false, onPicture: (
                 tag = "projects:${project.name}:link",
             )
         }
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.Medium)) {
             itemsIndexed(project.pictures) { index, picture ->
                 Image(
                     painterResource(picture), contentDescription = project.name, contentScale = ContentScale.Fit,
@@ -145,7 +147,7 @@ private fun PictureViewer(pictures: List<Int>, start: Int, onClose: () -> Unit) 
                 )
             }
             MetroText(
-                "${pager.currentPage + 1} / ${pictures.size}", size = 16.sp, color = Color.White,
+                "${pager.currentPage + 1} / ${pictures.size}", size = MetroType.Body, color = Color.White,
                 modifier = Modifier.align(Alignment.TopCenter).padding(top = 28.dp),
             )
         }

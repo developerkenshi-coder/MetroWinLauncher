@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.apps
 
+import com.metrowin.launcher.ui.components.Spacing
 import androidx.compose.runtime.LaunchedEffect
 import com.metrowin.launcher.ui.anim.LocalTapFeedback
 import com.metrowin.launcher.ui.theme.panel
@@ -166,7 +167,7 @@ private fun Menu(item: AppItem, e: MenuEntries, modifier: Modifier) {
                             .testTag("menu:shortcutpin:${shortcut.id}")
                             .semantics { contentDescription = description }
                             .metroPress(onClick = { e.onPinShortcut.invoke(shortcut) })
-                            .padding(horizontal = 24.dp, vertical = 12.dp),
+                            .padding(horizontal = Spacing.Page, vertical = Spacing.Large),
                     ) { MetroText("+", size = 21.sp, color = LocalAccent.current) }
                 }
             }
@@ -190,7 +191,7 @@ private fun Menu(item: AppItem, e: MenuEntries, modifier: Modifier) {
 
 @Composable
 private fun MenuEntry(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, color: Color? = null) {
-    Box(modifier.fillMaxWidth().metroPress(onClick = onClick).padding(horizontal = 24.dp, vertical = 12.dp)) {
+    Box(modifier.fillMaxWidth().metroPress(onClick = onClick).padding(horizontal = Spacing.Page, vertical = Spacing.Large)) {
         MetroText(text, size = 21.sp, color = color ?: LocalMetroColors.current.foreground)
     }
 }

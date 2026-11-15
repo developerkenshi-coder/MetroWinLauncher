@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.components.Spacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -52,13 +53,13 @@ fun ChoiceSheet(title: String, choices: List<Choice>, onPick: (Choice) -> Unit, 
                 .sheet()
                 .pointerInput(Unit) { detectTapGestures { } }
                 .navigationBarsPadding()
-                .padding(top = 12.dp),
+                .padding(top = Spacing.Large),
         ) {
-            MetroText(title, size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp))
+            MetroText(title, size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.padding(horizontal = Spacing.Page, vertical = Spacing.Small))
             Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()).padding(bottom = 76.dp)) {
                 choices.forEach { choice ->
                     Row(
-                        Modifier.fillMaxWidth().testTag("$tagPrefix:${choice.id}").metroPress(onClick = { onPick(choice) }).padding(horizontal = 24.dp, vertical = 12.dp),
+                        Modifier.fillMaxWidth().testTag("$tagPrefix:${choice.id}").metroPress(onClick = { onPick(choice) }).padding(horizontal = Spacing.Page, vertical = Spacing.Large),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         if (choice.glyph != null) {

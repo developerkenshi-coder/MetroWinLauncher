@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.settings
 
+import com.metrowin.launcher.ui.components.Spacing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -26,7 +27,7 @@ fun ProfilesPage(env: SettingsEnv) {
 @Composable
 private fun ProfileSection(profile: ProfileInfo, env: SettingsEnv) {
     val settings = env.settings
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.Large)) {
         SettingHeading(stringResource(profile.type.label))
         InfoSetting(
             stringResource(profile.type.label),
