@@ -71,12 +71,10 @@ internal fun RetroBar(buttons: List<AppBarItem>, items: List<AppBarItem>, modifi
             // Five items fit without scrolling, as the guidelines ask; more of them scroll inside this height.
             Column(Modifier.heightIn(max = MENU_ITEM * 5).verticalScroll(rememberScrollState()).testTag("retro:menu")) {
                 items.forEachIndexed { index, item ->
-                    MetroText(
-                        item.label.lowercase(Locale.getDefault()), size = MetroType.Subtitle, weight = FontWeight.Normal,
-                        color = if (item.marked) LocalAccent.current else colors.foreground,
-                        modifier = Modifier.fillMaxWidth().testTag("retro:item:$index")
-                            .metroPress(onClick = { open = false; item.onClick() })
-                            .padding(start = Spacing.Page, end = Spacing.Page, top = Spacing.Large, bottom = Spacing.Large),
+                    // The entry of the common menu panel, lowercase as the bar of Windows Phone has it.
+                    MenuItem(
+                        item.label.lowercase(Locale.getDefault()), { open = false; item.onClick() }, Modifier.testTag("retro:item:$index"),
+                        color = if (item.marked) LocalAccent.current else null,
                     )
                 }
             }

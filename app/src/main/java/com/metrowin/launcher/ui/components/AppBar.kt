@@ -1,9 +1,5 @@
 package com.metrowin.launcher.ui.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
-import com.metrowin.launcher.ui.anim.metroCollapse
-import com.metrowin.launcher.ui.anim.metroExpand
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.sheet
 
 /** Which action bar the launcher draws (see [ActionBarStyle]); set once at the root, next to the theme. */
 val LocalActionBar = staticCompositionLocalOf { ActionBarStyle.Super }
@@ -67,21 +65,29 @@ fun AppBar(items: List<AppBarItem>, modifier: Modifier = Modifier, menu: List<Ap
         return
     }
     var more by remember { mutableStateOf(false) }
-    SuperBar(items + AppBarItem("…", stringResource(R.string.mail_more)) { more = !more }, modifier)
-    AnimatedVisibility(more, enter = metroExpand, exit = metroCollapse) { SuperBar(menu, modifier) }
+    // The "…" opens the common menu panel of the launcher above the bar, not a second bar.
+    Column(modifier) {
+        if (more) {
+            MenuPanel(Modifier.padding(horizontal = Spacing.Medium), tag = "appbar:menu") {
+                menu.forEachIndexed { i, item -> MenuItem(item.label, { more = false; item.onClick() }, Modifier.testTag("appbar:menu:$i")) }
+            }
+        }
+        SuperBar(items + AppBarItem("…", stringResource(R.string.mail_more)) { more = !more }, Modifier)
+    }
 }
 
 @Composable
 private fun SuperBar(items: List<AppBarItem>, modifier: Modifier) {
     val colors = LocalMetroColors.current
     Row(
-        modifier.fillMaxWidth().background(colors.containers.getOrElse(0) { colors.surface }).padding(vertical = Spacing.Medium, horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
+        // The surface of the look, as the edit bar of Start has it: flat in Classic, glass in Glass, a rounded sheet in Droid.
+        modifier.fillMaxWidth().sheet().padding(vertical = Spacing.Medium, horizontal = Spacing.Medium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         items.forEach { item ->
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.metroPress(onClick = item.onClick).padding(horizontal = Spacing.Large)) {
-                Box(Modifier.size(40.dp).border(2.dp, colors.foreground, CircleShape).clip(CircleShape), contentAlignment = Alignment.Center) {
+            // Each button takes an equal share of the width, so a long label shrinks inside it instead of being cut.
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f).metroPress(onClick = item.onClick)) {
+                Box(Modifier.size(48.dp).border(2.dp, colors.foreground, CircleShape).clip(CircleShape), contentAlignment = Alignment.Center) {
                     item.icon?.let { MarkIcon(it, 20.dp) } ?: MetroText(item.symbol, size = MetroType.Subtitle, weight = FontWeight.Normal)
                 }
                 MetroText(item.label, size = MetroType.Micro, color = colors.subtle, modifier = Modifier.padding(top = 2.dp))
