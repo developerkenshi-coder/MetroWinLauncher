@@ -176,7 +176,6 @@ fun MetroTheme(
     actionBar: ActionBarStyle = ActionBarStyle.Super,
     content: @Composable () -> Unit,
 ) {
-    SystemBarIcons(dark)
     SideEffect { MotionSpeed.factor = speed.coerceIn(0.25f, 4f) }
     val adjustment = if (Build.VERSION.SDK_INT >= 31) LocalConfiguration.current.fontWeightAdjustment else 0
     // "Undefined" is a very large number, not a bold setting.
@@ -186,9 +185,11 @@ fun MetroTheme(
     val chosen = remember(appFont, fontRevision) { if (systemFont) null else AppFonts.family(context, appFont, fontRevision) }
     val typed = remember(resolved.style, boldText, systemBold, systemFont, chosen) { resolved.style.withType(boldText || systemBold, systemFont, chosen) }
     val density = LocalDensity.current
+    val colors = if (highContrast) resolved.colors.highContrast() else resolved.colors
+    SystemBarIcons(light = pageIsLight(resolved.style.kind, colors, resolved.accent, oled && dark))
     CompositionLocalProvider(
         LocalAccent provides resolved.accent,
-        LocalMetroColors provides if (highContrast) resolved.colors.highContrast() else resolved.colors,
+        LocalMetroColors provides colors,
         LocalStyle provides typed,
         LocalOled provides (oled && dark),
         LocalReduceMotion provides reduceMotion,
@@ -201,16 +202,16 @@ fun MetroTheme(
     )
 }
 
-/** Dark icons in the status and navigation bars on the light theme, light icons on the dark one. */
+/** Dark icons in the status and navigation bars on a light page (see [pageIsLight]), light icons on a dark one. */
 @Composable
-private fun SystemBarIcons(dark: Boolean) {
+private fun SystemBarIcons(light: Boolean) {
     val view = LocalView.current
     if (view.isInEditMode) return
     SideEffect {
         val window = view.context.findActivity()?.window ?: return@SideEffect
         WindowCompat.getInsetsController(window, view).apply {
-            isAppearanceLightStatusBars = !dark
-            isAppearanceLightNavigationBars = !dark
+            isAppearanceLightStatusBars = light
+            isAppearanceLightNavigationBars = light
         }
     }
 }

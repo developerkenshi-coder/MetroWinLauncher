@@ -2,6 +2,9 @@ package com.metrowin.launcher.ui.mini
 
 import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.pageSide
+import android.app.ActivityManager
+import android.content.SharedPreferences
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -22,7 +25,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import com.metrowin.launcher.data.LauncherSettings
+import androidx.compose.ui.graphics.toArgb
+import com.metrowin.launcher.data.Prefs
+import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.LocalOled
+import com.metrowin.launcher.ui.theme.LocalStyle
+import com.metrowin.launcher.ui.theme.pageIsLight
 import androidx.lifecycle.lifecycleScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -45,8 +54,9 @@ abstract class MiniActivity : ComponentActivity() {
 
     private val turn by lazy { PageTurn(intent.getBooleanExtra(PageTurn.EXTRA, false)) }
 
-    /** The settings in use; read again at each start, so a theme changed in the launcher while this app was behind it shows at once. */
+    /** The settings in use; read again at each start, and whenever they are saved while this app is on screen (the launcher is in this process). */
     private var settings by mutableStateOf(LauncherSettings())
+    private val settingsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> settings = SettingsStore.of(this).load() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -54,11 +64,17 @@ abstract class MiniActivity : ComponentActivity() {
         settings = SettingsStore.of(this).load()
         setContent {
             OverlayTheme(settings, remember { IconLoader(applicationContext) }) {
-                // Light page: dark icons in the bars. The page knows if it is dark (system mode, schedule, sun), so this follows it.
-                val dark = LocalMetroColors.current.dark
-                LaunchedEffect(dark) {
-                    val bar = if (dark) SystemBarStyle.dark(Color.TRANSPARENT) else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                // Light page: dark icons in the bars. The page knows its real color up there (look, accent, wallpaper), so this follows it.
+                val light = pageIsLight(LocalStyle.current.kind, LocalMetroColors.current, LocalAccent.current, LocalOled.current)
+                val accent = LocalAccent.current.toArgb() or 0xFF000000.toInt()
+                LaunchedEffect(light) {
+                    val bar = if (light) SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT) else SystemBarStyle.dark(Color.TRANSPARENT)
                     enableEdgeToEdge(statusBarStyle = bar, navigationBarStyle = bar)
+                }
+                // The Recents of Android show the name of the app and the accent of the theme.
+                LaunchedEffect(accent) {
+                    @Suppress("DEPRECATION")
+                    setTaskDescription(ActivityManager.TaskDescription(title.toString(), null as Bitmap?, accent))
                 }
                 CompositionLocalProvider(LocalAppTitle provides title.toString()) { TurnPage(turn) { Box(Modifier.rotateOnTurn()) { Content() } } }
             }
@@ -68,6 +84,12 @@ abstract class MiniActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         settings = SettingsStore.of(this).load()
+        Prefs.main(this).registerOnSharedPreferenceChangeListener(settingsListener)
+    }
+
+    override fun onStop() {
+        Prefs.main(this).unregisterOnSharedPreferenceChangeListener(settingsListener)
+        super.onStop()
     }
 
     /** With the original animation the page turns away first, and the window closes without its own animation. */

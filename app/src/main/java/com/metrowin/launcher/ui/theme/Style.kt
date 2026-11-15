@@ -233,6 +233,24 @@ fun Modifier.pageBackground(): Modifier {
     }
 }
 
+private fun auroraBase(dark: Boolean, oled: Boolean) = if (oled) Color.Black else if (dark) Color(0xFF0B1022) else Color(0xFFEEF2FF)
+
+/**
+ * Whether the page behind the status bar is light, so the icons of the bars must be dark: judged on the color the page really has up there,
+ * not on the dark flag. Modern Glass puts the pool of the accent under the clock (a yellow one turns a dark page pale), and Modern Droid
+ * takes its background from the wallpaper. shortcut: only the first pool of light of the aurora is counted, the others are far from the bar.
+ */
+fun pageIsLight(kind: ThemeStyle, colors: MetroColors, accent: Color, oled: Boolean): Boolean {
+    val top = if (kind == ThemeStyle.Glass) {
+        val base = auroraBase(colors.dark, oled && colors.dark)
+        val alpha = (if (colors.dark) 0.55f else 0.45f) * (if (oled && colors.dark) 0.22f else 1f)
+        lerp(base, accent, alpha)
+    } else {
+        colors.background
+    }
+    return ColorMath.inkOn(top) == Color.Black
+}
+
 /**
  * The backdrop of Modern Glass: a deep (or pale) base with soft pools of light, the accent color and two turns of its
  * hue. It is drawn the same way on every page, so a page laid over another looks like the same backdrop.
@@ -242,7 +260,7 @@ fun DrawScope.drawAurora(accent: Color, dark: Boolean, oled: Boolean = false) {
     val h = size.height
     val reach = max(w, h)
     // On an OLED screen the base is black and the light is a faint glow, so most of the pixels stay off.
-    drawRect(if (oled) Color.Black else if (dark) Color(0xFF0B1022) else Color(0xFFEEF2FF))
+    drawRect(auroraBase(dark, oled))
     val glow = if (oled) 0.22f else 1f
     fun pool(x: Float, y: Float, radius: Float, color: Color, alpha: Float) {
         val center = Offset(w * x, h * y)
