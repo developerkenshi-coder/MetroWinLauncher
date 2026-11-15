@@ -7,7 +7,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.res.Configuration
 import android.graphics.PixelFormat
 import android.os.Build
 import android.view.Gravity
@@ -29,13 +28,12 @@ import com.metrowin.launcher.data.BatteryInfo
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.data.StatusItem
 import com.metrowin.launcher.notifications.NotificationHub
+import com.metrowin.launcher.notifications.OverlayTheme
 import com.metrowin.launcher.notifications.OverlayWindowOwner
 import com.metrowin.launcher.notifications.overBars
 import com.metrowin.launcher.ui.components.MetroStatusBar
 import com.metrowin.launcher.ui.components.statusBarSolid
 import com.metrowin.launcher.ui.components.rememberBroadcast
-import com.metrowin.launcher.ui.theme.MetroAccents
-import com.metrowin.launcher.ui.theme.MetroTheme
 
 /**
  * The status bar of Windows Phone drawn over the one of Android in the apps outside the launcher. It takes no touch, so a swipe from the
@@ -51,6 +49,9 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
     private var barHeight by mutableStateOf(0.dp)
     private var hidden by mutableStateOf(emptySet<String>())
     private var chargeAnimation by mutableStateOf(true)
+
+    /** The settings the look is made from: the bar over other apps is the one of Start, in the same style, light or dark and accent. */
+    private var look by mutableStateOf(com.metrowin.launcher.data.LauncherSettings())
 
     // Drawn by the launcher over its own page (its own bar is this one, see LauncherApp): then it has no background of its own, because
     // the launcher already took away the bar of Android there.
@@ -106,7 +107,7 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
     fun show() {
         val height = heightPx()
         barHeight = (height / service.resources.displayMetrics.density).dp
-        SettingsStore.of(service).load().let { hidden = StatusItem.hiddenIds(it.statusBarHidden); launcherBar = it.metroStatusBar; chargeAnimation = it.chargeAnimation }
+        SettingsStore.of(service).load().let { look = it; hidden = StatusItem.hiddenIds(it.statusBarHidden); launcherBar = it.metroStatusBar; chargeAnimation = it.chargeAnimation }
         shown?.let {
             if (it.params.height != height) {
                 it.params.height = height
@@ -115,10 +116,11 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
             return
         }
         val settings = SettingsStore.of(service).load()
+        look = settings
         hidden = StatusItem.hiddenIds(settings.statusBarHidden)
         launcherBar = settings.metroStatusBar
         chargeAnimation = settings.chargeAnimation
-        val dark = service.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+        val icons = com.metrowin.launcher.data.IconLoader(service.applicationContext)
         val owner = OverlayWindowOwner()
         val host = Host(service) { visible -> systemBar(visible) }
         // Compose looks for these on the root view of the window, which here is the host and not the ComposeView.
@@ -126,7 +128,7 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
         host.setViewTreeSavedStateRegistryOwner(owner)
         host.addView(ComposeView(service).apply {
             setContent {
-                MetroTheme(accent = MetroAccents[settings.accentIndex], dark = dark) {
+                OverlayTheme(look, icons) {
                     // The percentage follows Android's own: the phone says every change, and the first answer comes at once (the broadcast is sticky).
                     val batteryIntent = rememberBroadcast(Intent.ACTION_BATTERY_CHANGED)
                     val battery = remember(batteryIntent) { batteryIntent?.let { BatteryInfo.from(it, service) } ?: BatteryInfo.read(service) }
