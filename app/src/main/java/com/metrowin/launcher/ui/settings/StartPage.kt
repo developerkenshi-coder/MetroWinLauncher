@@ -150,7 +150,7 @@ fun StartPage(env: SettingsEnv) {
     }
 }
 
-/** The strip at the top of the screen: the clock and date above the tiles, the status bar (Android's, hidden, or the one of Windows Phone) and the app bar. */
+/** The clock and date above the tiles, and the bars of Start: the app bar and the action bar. (The status bar is on its own page.) */
 @Composable
 fun StartBarsPage(env: SettingsEnv) {
     val settings = env.settings
@@ -208,14 +208,6 @@ fun StartBarsPage(env: SettingsEnv) {
                 id = "start.clocktaps",
             )
         }
-        ToggleSetting(
-            label = stringResource(R.string.theme_hide_status_bar),
-            checked = settings.hideStatusBar,
-            onChange = { value -> env.onChange { it.copy(hideStatusBar = value) } },
-            hint = stringResource(R.string.theme_hide_status_bar_hint),
-            tag = "start:hidestatus",
-            id = "start.hidestatus",
-        )
         ToggleSetting(
             label = stringResource(R.string.theme_app_bar),
             checked = settings.appBar,

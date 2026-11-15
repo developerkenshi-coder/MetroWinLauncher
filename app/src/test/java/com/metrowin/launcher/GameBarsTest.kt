@@ -41,7 +41,7 @@ class GameBarsTest {
     fun theListsSurviveTheBackupAndAreClearedWithTheirPage() {
         val lists = LauncherSettings(gameAdd = setOf("com.x.game"), gameSkip = setOf("com.y.app"))
         assertEquals(lists, SettingsCodec.decode(SettingsCodec.encode(lists), LauncherSettings()))
-        val reset = com.metrowin.launcher.data.SectionReset.reset(lists, "Gestures")
+        val reset = com.metrowin.launcher.data.SectionReset.reset(lists, "NavBar")
         assertTrue(reset.gameAdd.isEmpty() && reset.gameSkip.isEmpty())
     }
 

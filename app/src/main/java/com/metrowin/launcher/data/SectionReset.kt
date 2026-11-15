@@ -3,7 +3,7 @@ package com.metrowin.launcher.data
 import org.json.JSONObject
 
 /**
- * Putting the settings of one page back to what they were at the start, and nothing else. A page is listed by the names its
+ * Putting the settings of one page (a pivot page of a category, see [SettingsSection]) back to what they were at the start, and nothing else. A page is listed by the names its
  * settings have in the saved file (see [SettingsCodec]); what the user keeps on it as data of their own (the hidden and locked apps,
  * the volume presets, the number of Start screens) is left alone. Pure, so it is tested.
  */
@@ -13,16 +13,17 @@ object SectionReset {
         "StartTheme" to setOf(
             "accentApps", "accentIndex", "accentNightIndex", "accentPanel", "accentStart", "autoAccent", "customAccent", "miniAccents", "darkFromHour", "darkToHour",
             "dynamicColor", "oledMode", "pageBackgrounds", "panoramaTitles", "parallax", "tileOpacity", "startPhotoFit", "startPhotoInside", "startPhotoX", "startPhotoY", "startPhotoZoom",
-            "systemWallpaperFollows", "themeMode", "themeStyle", "iconPack", "iconPicks", "iconShape", "iconTileColors", "largeTileIcons", "glassIcons",
+            "systemWallpaperFollows", "themeMode", "themeStyle",
         ),
+        "Icons" to setOf("iconPack", "iconPicks", "iconShape", "iconTileColors", "largeTileIcons", "glassIcons"),
         "Start" to setOf(
             "batteryEstimate", "calendarAgenda", "favoritePage", "collectionTiles", "groupTitles", "twoPanels", "largeTiles", "freeLayout", "layoutSchedule", "moreTiles", "appsHint", "showTileNames", "tileColumns",
             "tileMusicControls", "tileSpacing",
         ),
         "StartBars" to setOf(
-            "appBar", "actionBar", "clockAlarm", "clockHours", "clockTaps", "clockWeek", "clockZone", "hideStatusBar", "showClock",
+            "appBar", "actionBar", "clockAlarm", "clockHours", "clockTaps", "clockWeek", "clockZone", "showClock",
         ),
-        "StatusBar" to setOf("metroStatusBar", "metroStatusBarOverApps", "statusBarHidden", "chargeAnimation"),
+        "StatusBar" to setOf("metroStatusBar", "metroStatusBarOverApps", "statusBarHidden", "chargeAnimation", "hideStatusBar"),
         "StartBehaviour" to setOf("antiBurnIn", "lockStart", "startLowerPercent", "startTopAfterMin", "stepGoal", "undoSteps"),
         "Search" to setOf(
             "rememberSearches", "searchAnswers", "searchAssistant", "searchCalendar", "searchCommands", "searchContacts", "searchCurrency", "searchEngine",
@@ -30,27 +31,30 @@ object SectionReset {
             "searchToday", "searchWeb", "tipOfDay", "todayAlarm", "todayDate", "todayNear", "todayWeather",
         ),
         "Gestures" to setOf(
-            "animationSpeed", "doubleTapAction", "doubleTapApp", "edgeBackPan", "edgePull", "miniHomeSwipe", "homeDoubleAction", "homeDoubleApp", "metroNavBar", "hideBarsInGames", "gameAdd", "gameSkip", "lockOverlay", "bankSafe", "bankSafeAdd", "bankSafeSkip", "antiBurnIn", "navHoldMs", "navSpacing", "tapHaptics", "tapSound",
-            "tiltStrength", "twoFingerDownAction", "twoFingerDownApp", "twoFingerUpAction", "twoFingerUpApp", "vibrationStrength",
+            "doubleTapAction", "doubleTapApp", "edgeBackPan", "edgePull", "miniHomeSwipe", "homeDoubleAction", "homeDoubleApp",
+            "twoFingerDownAction", "twoFingerDownApp", "twoFingerUpAction", "twoFingerUpApp",
         ),
+        "Feel" to setOf("animationSpeed", "tapHaptics", "tapSound", "tiltStrength", "vibrationStrength"),
+        "NavBar" to setOf("metroNavBar", "hideBarsInGames", "gameAdd", "gameSkip", "navHoldMs", "navSpacing"),
+        "Privacy" to setOf("bankSafe", "bankSafeAdd", "bankSafeSkip"),
         "Actions" to setOf(
-            "actionSliders", "quickActions", "torchAutoOffMin", "torchStrength", "volumePanel",
+            "actionCenterEnabled", "edgeActionCenter", "actionSliders", "quickActions", "torchAutoOffMin", "torchStrength", "volumePanel",
             "volumeProfilesShow", "vpnApp", "useShizuku",
         ),
         "Notifications" to setOf(
-            "actionCenterEnabled", "edgeActionCenter", "metroSounds", "panelSounds",
+            "metroSounds", "panelSounds",
             "clearOnOpen", "dndMinutes", "groupConversations", "hideSystemNotifications", "inlineReply", "muteFromPanel", "notifFilterOn", "notifFilterWords",
             "notifPriority", "notificationPeek", "overlayBanner", "toastBanner",
         ),
         "LiveTiles" to setOf(
-            "liveHideText", "liveMessages", "liveNowPlaying", "liveOffApps", "livePictures", "liveProgress", "notificationPeek", "thirdPartyTiles",
+            "liveHideText", "liveMessages", "liveNowPlaying", "liveOffApps", "livePictures", "liveProgress", "thirdPartyTiles",
             "galleryAlbums", "galleryApp", "gallerySource", "galleryPhotos", "weatherBlocks", "weatherFahrenheit",
         ),
         "Apps" to setOf("appLabels", "compactList", "showCategories", "showFrequentApps", "showNewApps"),
         "Screen" to setOf("highRefreshRate", "launchAnimation", "orientation", "pagePadding"),
         "Battery" to setOf("batterySaving"),
         "Accessibility" to setOf("appFont", "boldText", "fontRevision", "highContrast", "reduceMotion", "systemFont", "textScale"),
-        "Lock" to setOf("lockShowAlarm", "lockShowBattery", "lockShowEvent", "lockShowNotifications", "lockIconsOneRow", "lockShowWeather", "lockSensorUnderScreen", "lockSensorY", "lockSensorOwnIcon"),
+        "Lock" to setOf("lockShowAlarm", "lockShowBattery", "lockOverlay", "lockShowEvent", "lockShowNotifications", "lockIconsOneRow", "lockShowWeather", "lockSensorUnderScreen", "lockSensorY", "lockSensorOwnIcon"),
         "Voice" to setOf("assistantIcon", "voiceButton", "voiceCallDirect", "voiceOffline"),
     )
 

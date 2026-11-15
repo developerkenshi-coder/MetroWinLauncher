@@ -79,8 +79,12 @@ abstract class ScreenshotBase {
             val semantics = compose.onNodeWithTag(tag).fetchSemanticsNode()
             val top = semantics.positionInRoot.y
             val bottom = top + semantics.size.height
-            // [topMargin] keeps it clear of a header that stays in place while the page scrolls under it.
-            if (top >= topMargin * screenHeight && bottom <= screenHeight) return
+            // [topMargin] keeps it clear of a header that stays in place while the page scrolls under it; and it has to be inside the
+            // scrolling box, not only on the screen (a page under a title and a pivot is shorter than the screen).
+            val box = compose.onAllNodes(hasScrollAction()).fetchSemanticsNodes().lastOrNull()
+            val minTop = maxOf(topMargin * screenHeight, box?.positionInRoot?.y ?: 0f)
+            val maxBottom = minOf(screenHeight.toFloat(), box?.let { it.positionInRoot.y + it.size.height } ?: screenHeight.toFloat())
+            if (top >= minTop && bottom <= maxBottom) return
             // Bring the control towards the middle of the screen; a fling can carry it past, so look again afterwards.
             val toMiddle = ((top + bottom) / 2f - screenHeight / 2f).coerceIn(-0.6f * screenHeight, 0.6f * screenHeight)
             compose.onAllNodes(hasScrollAction()).onLast().performTouchInput {

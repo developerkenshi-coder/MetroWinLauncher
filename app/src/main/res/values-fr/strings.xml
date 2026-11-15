@@ -113,7 +113,6 @@
     <string name="perm_allow">autoriser</string>
 
     <!-- paramètres : structure -->
-    <string name="settings_group_tools">outils</string>
     <string name="sec_kids_desc">Partager le téléphone avec un enfant, avec seulement les applications choisies</string>
     <string name="theme_mode">clair ou sombre</string>
     <string name="theme_auto_system">comme Android</string>
@@ -144,7 +143,7 @@
 
     <!-- section gestes -->
     <string name="sec_gestures">gestes</string>
-    <string name="sec_gestures_desc">Tirages depuis les bords, balayages, appuis, double appui et actions à deux doigts</string>
+    <string name="sec_gestures_desc">Double appui, balayages à deux doigts, tirages depuis les bords, applications récentes et service de verrouillage</string>
     <string name="gest_edge_pull">tirer vers le bas depuis le bord supérieur</string>
     <string name="gest_edge_pull_hint">Ouvre l’Action Center depuis n’importe quelle page, pas seulement depuis le haut de Start.</string>
     <string name="gest_mini_home">deux doigts dans une mini app : retour à Start</string>
@@ -157,7 +156,7 @@
 
     <!-- section applications -->
     <string name="sec_apps">liste des applications</string>
-    <string name="sec_apps_desc">Ce que la liste affiche en haut, applications masquées, renommées et verrouillées</string>
+    <string name="sec_apps_desc">Ce que la liste affiche en haut, applications masquées et renommées</string>
     <string name="menu_hide">masquer de la liste</string>
     <string name="apps_hidden">applications masquées</string>
     <string name="apps_hidden_none">Aucune application masquée. Appuyez longuement sur une application de la liste et choisissez « masquer de la liste ».</string>
@@ -1103,9 +1102,6 @@
     <string name="sec_start_desc">Tuiles, nombre d’écrans Start, où est l’accueil, dispositions, Start secondaire</string>
     <string name="sec_search">recherche</string>
     <string name="sec_search_desc">Ce que la zone de recherche explore, répond et mémorise</string>
-    <string name="settings_group_look">apparence</string>
-    <string name="settings_group_behavior">comportement</string>
-    <string name="settings_group_apps">applications</string>
     <string name="start_tiles_title">tuiles</string>
     <string name="start_clock_title">horloge et date</string>
     <string name="access_text_title">texte</string>
@@ -1923,7 +1919,7 @@
     <string name="theme_metro_status_bar_apps">Barre d’état Windows Phone dans les autres applications</string>
     <string name="theme_metro_status_bar_apps_hint">Dessine la barre par-dessus celle d’Android dans les applications hors du launcher. Elle recouvre le haut de l’application et n’intercepte aucun toucher. Nécessite le service de verrouillage de l’écran dans les paramètres d’accessibilité.</string>
     <string name="sec_statusbar">Barre d’état</string>
-    <string name="sec_statusbar_desc">La barre Windows Phone : dans le launcher et dans les autres applications, et les icônes affichées</string>
+    <string name="sec_statusbar_desc">La barre de Windows Phone : dans le launcher et dans les autres applications, masquée sur Start, et quelles icônes elle affiche</string>
     <string name="statusbar_items">ce qu’elle affiche</string>
     <string name="statusbar_items_hint">Désactivez les icônes dont vous ne voulez pas. Une icône n’apparaît que lorsqu’elle a quelque chose à dire : l’avion quand le mode avion est actif, et ainsi de suite.</string>
     <string name="charge_animation">Animation de charge</string>
@@ -1945,14 +1941,14 @@
     <string name="statusbar_battery">batterie</string>
     <string name="statusbar_time">heure</string>
     <string name="statusbar_network_hint">Android ne donne le type de réseau qu’aux applications autorisées à lire l’état du téléphone : il vous le demande maintenant.</string>
-    <string name="sec_bars">barres et horloge</string>
-    <string name="sec_bars_desc">Horloge et date, barre d’état d’Android ou de Windows Phone, barre d’application</string>
+    <string name="sec_bars">horloge et barres</string>
+    <string name="sec_bars_desc">Horloge et date sur Start, barre d’application et barre d’actions</string>
     <string name="sec_start_behaviour">comportement de start</string>
     <string name="sec_start_behaviour_desc">Retour en haut, verrouillage, annuler, objectif de pas, protection de l’écran</string>
     <string name="sec_action_center">action center</string>
-    <string name="sec_action_center_desc">Boutons rapides, curseurs, sons, lampe, panneau de volume</string>
+    <string name="sec_action_center_desc">Activé ou non, par-dessus les autres applications, boutons rapides, curseurs, lampe, panneau de volume</string>
     <string name="sec_notifications">notifications</string>
-    <string name="sec_notifications_desc">Accès aux notifications, bannières, réponses, groupes, filtres, application par application</string>
+    <string name="sec_notifications_desc">Accès aux notifications, bannières, réponses, groupes, filtres, sons, application par application</string>
 
     <!-- Calculator -->
     <string name="calc_pivot_calc">calculatrice</string>
@@ -2320,9 +2316,8 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="a11y_sb_saver">Économiseur de batterie</string>
     <string name="a11y_alpha_scroller">Défiler par lettre, actuellement %1$s</string>
     <string name="kw_look">couleurs, thème, sombre, clair, fond, accent, fond d’écran, icônes, forme, pack d’icônes, fichier de thème</string>
-    <string name="sec_look">apparence</string>
-    <string name="sec_look_desc">Thème, clair ou sombre, couleur d’accent, la photo derrière Start, packs d’icônes et fichiers de thème</string>
-    <string name="look_icons_heading">icônes et fichiers de thème</string>
+    <string name="sec_look">thème et couleurs</string>
+    <string name="sec_look_desc">Thème, clair ou sombre, couleur d’accent, la photo derrière Start et fichiers de thème</string>
     <string name="kw_start">tuiles, colonnes, pages, disposition</string>
     <string name="kw_start_bars">horloge, date, barre, boutons</string>
     <string name="kw_status_bar">barre d’état, signal, batterie, wifi, heure</string>

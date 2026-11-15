@@ -160,11 +160,11 @@ class AppListGroupsUiTest : ScreenshotBase() {
     private var current = LauncherSettings()
 
     @Composable
-    private fun AppsPage(apps: List<AppItem>) {
+    private fun AppsPage(apps: List<AppItem>, page: SettingsSection = SettingsSection.Apps) {
         var settings by remember { mutableStateOf(current) }
         SettingsScreen(
             env = SettingsEnv(settings = settings, onChange = { change -> settings = change(settings); current = settings }, apps = apps),
-            section = SettingsSection.Apps, onSectionChange = {}, sectionAway = remember { Animatable(0f) },
+            section = page, onSectionChange = {}, sectionAway = remember { Animatable(0f) },
         )
     }
 
@@ -192,7 +192,7 @@ class AppListGroupsUiTest : ScreenshotBase() {
     }
 
     @Test
-    fun renamedAndLockedAppsAreListedAndATouchUndoesThem() {
+    fun renamedAppsAreListedAndATouchUndoesThem() {
         current = LauncherSettings(appLabels = mapOf("app:alpha" to "Alfa"), lockedApps = setOf("app:bravo"))
         show { AppsPage(all) }
         advance(500)
@@ -200,6 +200,15 @@ class AppListGroupsUiTest : ScreenshotBase() {
         capture("settings_apps_renamed")
         tap("apps:renamed:app:alpha")
         assertTrue(current.appLabels.isEmpty())
+        // The locked apps are not on this page any more: they are with the protection.
+        compose.onAllNodesWithTag("apps:locked:none").assertCountEquals(0)
+    }
+
+    @Test
+    fun lockedAppsAreListedOnTheProtectionPageAndATouchUndoesIt() {
+        current = LauncherSettings(lockedApps = setOf("app:bravo"))
+        show { AppsPage(all, SettingsSection.Privacy) }
+        advance(500)
         tap("apps:locked:app:bravo")
         assertTrue(current.lockedApps.isEmpty())
         compose.onNodeWithTag("apps:locked:none").assertExists()

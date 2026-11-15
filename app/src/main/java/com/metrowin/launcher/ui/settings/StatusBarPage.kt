@@ -35,6 +35,14 @@ fun StatusBarPage(env: SettingsEnv) {
                 id = "statusbar.apps",
             )
             ToggleSetting(
+                label = stringResource(R.string.theme_hide_status_bar),
+                checked = settings.hideStatusBar,
+                onChange = { value -> env.onChange { it.copy(hideStatusBar = value) } },
+                hint = stringResource(R.string.theme_hide_status_bar_hint),
+                tag = "statusbar:hide",
+                id = "statusbar.hide",
+            )
+            ToggleSetting(
                 label = stringResource(R.string.charge_animation),
                 checked = settings.chargeAnimation,
                 onChange = { value -> env.onChange { it.copy(chargeAnimation = value) } },
@@ -42,7 +50,7 @@ fun StatusBarPage(env: SettingsEnv) {
                 tag = "statusbar:charge",
                 id = "statusbar.charge",
             )
-            SettingHeading(stringResource(R.string.statusbar_items))
+            AdvancedGroup(StatusItem.entries.map { "statusbar.${it.id}" }, title = stringResource(R.string.statusbar_items)) {
             SettingHint(stringResource(R.string.statusbar_items_hint))
             StatusItem.entries.forEach { item ->
                 ToggleSetting(
@@ -57,6 +65,7 @@ fun StatusBarPage(env: SettingsEnv) {
                     tag = "statusbar:${item.id}",
                     id = "statusbar.${item.id}",
                 )
+            }
             }
         }
     }

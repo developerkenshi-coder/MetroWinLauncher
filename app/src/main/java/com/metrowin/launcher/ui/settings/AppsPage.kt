@@ -25,12 +25,11 @@ import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppSquare
 import com.metrowin.launcher.ui.components.MetroText
 
-/** The app list: what it shows at the top, and the apps hidden, renamed or locked, each with a way to undo it. */
+/** The app list: what it shows at the top, and the apps hidden or renamed, each with a way to undo it. The locked apps are on the Privacy page. */
 @Composable
 fun AppsPage(env: SettingsEnv) {
     val hidden = remember(env.apps, env.settings.hiddenApps) { AppFilter.hidden(env.apps, env.settings) }
     val renamed = remember(env.apps, env.settings.appLabels) { env.apps.filter { it.id in env.settings.appLabels && !it.pinOnly } }
-    val locked = remember(env.apps, env.settings.lockedApps) { env.apps.filter { it.id in env.settings.lockedApps && !it.pinOnly } }
     SettingsPage {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SettingHeading(stringResource(R.string.apps_list_title))
@@ -80,15 +79,12 @@ fun AppsPage(env: SettingsEnv) {
         AppsToUndo(
             R.string.apps_renamed, R.string.apps_renamed_none, R.string.apps_renamed_hint, "apps:renamed", "apps.renamed", renamed,
         ) { app -> env.onChange { it.copy(appLabels = it.appLabels - app.id) } }
-        AppsToUndo(
-            R.string.apps_locked, R.string.apps_locked_none, R.string.apps_locked_hint, "apps:locked", "apps.locked", locked,
-        ) { app -> env.onChange { it.copy(lockedApps = it.lockedApps - app.id) } }
     }
 }
 
 /** A heading, the apps that have something done to them, and a touch on one undoes it. */
 @Composable
-private fun AppsToUndo(
+internal fun AppsToUndo(
     @StringRes title: Int,
     @StringRes none: Int,
     @StringRes hint: Int,

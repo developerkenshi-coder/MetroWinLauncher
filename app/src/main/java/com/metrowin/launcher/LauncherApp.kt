@@ -448,7 +448,8 @@ fun LauncherApp(vm: LauncherViewModel) {
         vm.vpnChoiceMet()
     }
     var query by remember { mutableStateOf("") }
-    var settingsSection by remember { mutableStateOf<SettingsSection?>(null) }
+    // Saved with the state of the screen: after a turn of the phone the settings are on the same page of the same category.
+    var settingsSection by rememberSaveable { mutableStateOf<SettingsSection?>(null) }
     // Asked from outside (the Action Center over other apps): the settings of the launcher.
     val settingsRequest by vm.settingsRequests.collectAsStateWithLifecycle()
     LaunchedEffect(settingsRequest) {
@@ -459,7 +460,7 @@ fun LauncherApp(vm: LauncherViewModel) {
         vm.settingsRequestMet()
     }
     // The setting the open section was opened for, when the search took the user there.
-    var settingsTarget by remember { mutableStateOf<String?>(null) }
+    var settingsTarget by rememberSaveable { mutableStateOf<String?>(null) }
     val search = rememberSearch(vm, query, listItems, items, usage, settings)
 
     // The Action Center. The panel is one state that follows the finger, whatever starts the pull.

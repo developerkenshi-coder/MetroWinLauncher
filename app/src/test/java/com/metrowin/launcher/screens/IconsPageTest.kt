@@ -41,20 +41,20 @@ class IconsPageTest : ScreenshotBase() {
                 },
                 iconPacks = packs,
             ),
-            section = SettingsSection.StartTheme,
+            section = SettingsSection.Icons,
             onSectionChange = {},
             sectionAway = away,
         )
     }
 
     @Test
-    fun withoutPacksThePageSaysSoAndStillOffersThemeFiles() {
+    fun withoutPacksThePageSaysSo() {
         show { Page(emptyList()) }
         advance(500)
         capture("settings_icons_none")
         compose.onNodeWithTag("icons:none").assertExists()
-        compose.onNodeWithTag("theme:export").assertExists()
-        compose.onNodeWithTag("theme:import").assertExists()
+        // The theme files are on the Look page, not with the icons.
+        compose.onAllNodesWithTag("theme:export").assertCountEquals(0)
     }
 
     @Test

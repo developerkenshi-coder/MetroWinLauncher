@@ -42,6 +42,7 @@ fun NotificationExtrasSettings(env: SettingsEnv) {
             onChange = { v -> env.onChange { it.copy(notifPriority = v) } },
             hint = stringResource(R.string.ac_priority_hint), enabled = env.notificationAccess, tag = "notifications:priority", id = "ac.priority",
         )
+        AdvancedGroup(listOf("ac.filter", "ac.filterwords", "ac.dndminutes")) {
         ToggleSetting(
             label = stringResource(R.string.ac_filter), checked = s.notifFilterOn,
             onChange = { v -> env.onChange { it.copy(notifFilterOn = v) } },
@@ -56,6 +57,7 @@ fun NotificationExtrasSettings(env: SettingsEnv) {
             onSelect = { i -> env.onChange { it.copy(dndMinutes = lengths[i]) } },
             tag = "notifications:dnd", id = "ac.dndminutes",
         )
+        }
     }
 }
 

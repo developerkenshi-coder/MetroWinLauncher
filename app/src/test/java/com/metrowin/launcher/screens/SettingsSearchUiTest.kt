@@ -69,11 +69,11 @@ class SettingsSearchUiTest : ScreenshotBase() {
         target = null
         show { Settings() }
         advance(600)
-        compose.onNodeWithTag("settings:section:StartTheme").assertExists()
+        compose.onNodeWithTag("settings:category:Look").assertExists()
         type("oled")
         capture("settings_search_results")
         compose.onNodeWithTag("settings:result:theme.oled").assertExists()
-        compose.onAllNodesWithTag("settings:section:StartTheme").assertCountEquals(0)
+        compose.onAllNodesWithTag("settings:category:Look").assertCountEquals(0)
     }
 
     @Test
@@ -114,7 +114,7 @@ class SettingsSearchUiTest : ScreenshotBase() {
         advance(600)
         type("zzzzzz")
         compose.onNodeWithTag("settings:search:none").assertExists()
-        compose.onAllNodesWithTag("settings:section:StartTheme").assertCountEquals(0)
+        compose.onAllNodesWithTag("settings:category:Look").assertCountEquals(0)
     }
 
     // --- being taken to the setting

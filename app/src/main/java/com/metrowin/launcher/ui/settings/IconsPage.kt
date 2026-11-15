@@ -11,15 +11,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import com.metrowin.launcher.R
 
-/** Icon packs, and the theme file: how the launcher looks, to share (the second part of the Look page). */
+/** The icons: their shape and colour, the icon packs, the icon of one app. The theme files are on the Look page. */
+@Composable
+fun IconsPage(env: SettingsEnv) {
+    SettingsPage { IconsSettings(env) }
+}
+
 @Composable
 fun ColumnScope.IconsSettings(env: SettingsEnv) {
-    val export = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
-        if (uri != null) env.onExportTheme(uri)
-    }
-    val import = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) env.onImportTheme(uri)
-    }
     val packs = env.iconPacks
     val context = LocalContext.current
     IconLookSettings(env)
@@ -52,17 +51,28 @@ fun ColumnScope.IconsSettings(env: SettingsEnv) {
         hint = stringResource(R.string.icons_pack_find_hint),
         tag = "icons:find", id = "icons.find",
     )
+}
+
+/** The theme file: how the launcher looks, saved to a file to keep or share, or loaded from one (the end of the Look page). */
+@Composable
+fun ColumnScope.ThemeFilesSettings(env: SettingsEnv) {
+    val export = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri != null) env.onExportTheme(uri)
+    }
+    val import = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) env.onImportTheme(uri)
+    }
     SettingHeading(stringResource(R.string.theme_heading))
     ActionSetting(
         text = stringResource(R.string.theme_export),
         onClick = { export.launch("metrowin-theme.json") },
         hint = stringResource(R.string.theme_export_hint),
-        tag = "theme:export", id = "icons.export",
+        tag = "theme:export", id = "theme.export",
     )
     ActionSetting(
         text = stringResource(R.string.theme_import),
         onClick = { import.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
         hint = stringResource(R.string.theme_import_hint),
-        tag = "theme:import", id = "icons.import",
+        tag = "theme:import", id = "theme.import",
     )
 }

@@ -103,6 +103,14 @@ class SettingsPagesTest : ScreenshotBase() {
     }
 
     @Test
+    fun theLookPageOffersTheThemeFilesAtTheEnd() {
+        open(SettingsSection.StartTheme)
+        scrollIntoView("theme:import", topMargin = 0.2f)
+        compose.onNodeWithTag("theme:export").assertExists()
+        compose.onNodeWithTag("theme:import").assertExists()
+    }
+
+    @Test
     fun theHoursOfTheScheduleAppearOnlyWhenTheThemeFollowsTheHour() {
         open(SettingsSection.StartTheme)
         compose.onAllNodesWithTag("theme:from").assertCountEquals(0)
@@ -194,6 +202,12 @@ class SettingsPagesTest : ScreenshotBase() {
         assertFalse(current.edgePull)
         tap("gestures:edgepan")
         assertFalse(current.edgeBackPan)
+    }
+
+    @Test
+    fun theFeelPageHasTheTapSoundAndVibration() {
+        open(SettingsSection.Feel)
+        capture("settings_feel")
         tap("gestures:sound")
         assertTrue(current.tapSound)
         tap("gestures:haptics")

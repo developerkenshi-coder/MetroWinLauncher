@@ -109,12 +109,18 @@ fun rememberSearch(vm: LauncherViewModel, query: String, listItems: List<AppItem
             },
             launcherSettings = if (settings.searchLauncherSettings && scoped.allows(SearchOperators.Scope.Settings)) {
                 launcherSettingsIndex.search(query).take(MAX_SETTING_RESULTS).map { hit ->
-                    val place = appContext.getString(hit.section.title)
+                    // "category › page" (the category alone when it has one page): where the setting is, as the settings say it.
+                    val place = if (hit.section.category.pages.size == 1) appContext.getString(hit.section.category.title)
+                    else appContext.getString(R.string.settings_where, appContext.getString(hit.section.category.title), appContext.getString(hit.section.title))
                     LauncherSettingMatch(
                         id = hit.setting?.id,
                         section = hit.section.name,
-                        title = appContext.getString(hit.setting?.title ?: hit.section.title),
-                        where = if (hit.setting == null) appContext.getString(hit.section.description) else appContext.getString(R.string.search_launcher_setting_where, place),
+                        title = appContext.getString(hit.setting?.title ?: hit.category?.title ?: hit.section.title),
+                        where = when {
+                            hit.category != null -> appContext.getString(hit.category.description)
+                            hit.setting == null -> appContext.getString(hit.section.description)
+                            else -> appContext.getString(R.string.search_launcher_setting_where, place)
+                        },
                     )
                 }
             } else {

@@ -148,7 +148,7 @@ class IconPickUiTest : ScreenshotBase() {
         val away = remember { Animatable(0f) }
         SettingsScreen(
             env = SettingsEnv(settings = current, onChange = {}, iconPacks = packs, apps = apps, onPickIcons = onPick),
-            section = SettingsSection.StartTheme,
+            section = SettingsSection.Icons,
             onSectionChange = {},
             sectionAway = away,
         )
@@ -179,7 +179,7 @@ class IconPickUiTest : ScreenshotBase() {
     @Test
     fun withoutAPackTheListOfAppsIsNotThere() {
         val away = Animatable(0f)
-        show { SettingsScreen(env = SettingsEnv(settings = LauncherSettings(), onChange = {}, apps = apps), section = SettingsSection.StartTheme, onSectionChange = {}, sectionAway = away) }
+        show { SettingsScreen(env = SettingsEnv(settings = LauncherSettings(), onChange = {}, apps = apps), section = SettingsSection.Icons, onSectionChange = {}, sectionAway = away) }
         advance(500)
         compose.onAllNodesWithTag("iconperapp:app:a").assertCountEquals(0)
     }

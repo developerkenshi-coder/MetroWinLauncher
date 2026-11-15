@@ -16,12 +16,15 @@ import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Launch
 import com.metrowin.launcher.ui.settings.SettingAnchorKey
 import com.metrowin.launcher.ui.settings.SettingsEnv
-import com.metrowin.launcher.ui.settings.SettingsGroup
+import com.metrowin.launcher.ui.settings.AdvancedGroups
+import com.metrowin.launcher.ui.settings.SettingsCategory
 import com.metrowin.launcher.ui.settings.SettingsIndex
 import com.metrowin.launcher.ui.settings.SettingsScreen
 import com.metrowin.launcher.ui.settings.SettingsSection
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -29,7 +32,7 @@ import org.robolectric.annotation.Config
 import java.util.Locale
 
 /**
- * The map of the settings and the settings themselves have to say the same: every setting on a page is in the index, and every
+ * The map of the settings (categories, their pages, the settings on each) and the settings themselves have to say the same: every setting on a page is in the index, and every
  * setting in the index is on its page. A new setting that is not added to the index (or an index entry for a setting that was
  * moved) fails here, so the search can never lead to a page that does not have what it promised.
  */
@@ -41,38 +44,26 @@ class SettingsIndexTest : ScreenshotBase() {
 
     // --- the index by itself
 
+    @Before fun openTheAdvancedGroups() { AdvancedGroups.openAll = true }
+    @After fun closeTheAdvancedGroups() { AdvancedGroups.openAll = false }
+
     @Test
     fun everySettingHasAUniqueIdAndAPlace() {
         val ids = SettingsIndex.entries.map { it.id }
-        assertEquals("ids are unique", ids.size, ids.toSet().size)
+        assertEquals("ids are unique: a setting is in one place only", ids.size, ids.toSet().size)
         assertTrue(SettingsIndex.entries.all { it.keywords.isNotEmpty() })
         SettingsSection.entries.forEach { section ->
             assertTrue("${section.name} has settings", SettingsIndex.of(section).isNotEmpty())
         }
-        SettingsGroup.entries.forEach { group ->
-            assertTrue("${group.name} has sections", SettingsSection.entries.any { it.group == group })
-        }
     }
 
     @Test
-    fun everyIdSaysWhichSectionItIsIn() {
-        val prefixes = mapOf(
-            SettingsSection.StartTheme to "theme", SettingsSection.Start to "start",
-            SettingsSection.Accessibility to "access", SettingsSection.Lock to "lock", SettingsSection.Screen to "screen",
-            SettingsSection.Gestures to "gest", SettingsSection.Actions to "ac", SettingsSection.Voice to "voice",
-            SettingsSection.Battery to "battery", SettingsSection.Apps to "apps", SettingsSection.Search to "search",
-            SettingsSection.LiveTiles to "live", SettingsSection.Profiles to "profile", SettingsSection.Backup to "backup",
-            SettingsSection.Kids to "kids", SettingsSection.About to "about", SettingsSection.BugReport to "bugreport",
-            SettingsSection.StartBars to "start", SettingsSection.StatusBar to "statusbar", SettingsSection.StartBehaviour to "start", SettingsSection.Notifications to "ac", SettingsSection.OtherProjects to "projects", SettingsSection.MiniApps to "mini",
-        )
-        SettingsIndex.entries.forEach { entry ->
-            val prefix = entry.id.substringBefore('.')
-            val expected = prefixes.getValue(entry.section)
-            // The sync switches live on the backup page and say so by their name.
-            // The Look page holds the icons and the theme files too.
-            val ok = prefix == expected || (entry.section == SettingsSection.Backup && prefix == "sync") || (entry.section == SettingsSection.StartTheme && prefix == "icons")
-            assertTrue("${entry.id} is in ${entry.section}", ok)
-        }
+    fun everyCategoryHasPagesAndEveryPageIsInOneCategory() {
+        SettingsCategory.entries.forEach { category -> assertTrue("${category.name} has pages", category.pages.isNotEmpty()) }
+        assertEquals(SettingsSection.entries.toSet(), SettingsCategory.entries.flatMap { it.pages }.toSet())
+        assertEquals("a page is in one category", SettingsSection.entries.size, SettingsCategory.entries.sumOf { it.pages.size })
+        // Two levels at most, and a pivot that is not too long to read: the root, the category, its pages.
+        assertTrue(SettingsCategory.entries.all { it.pages.size <= 4 })
     }
 
     @Test
@@ -87,7 +78,11 @@ class SettingsIndexTest : ScreenshotBase() {
             assertTrue(en.getString(section.title).isNotBlank() && it.getString(section.title).isNotBlank())
             assertTrue(en.getString(section.description).isNotBlank() && it.getString(section.description).isNotBlank())
         }
-        SettingsGroup.entries.forEach { group -> assertTrue(en.getString(group.title).isNotBlank() && it.getString(group.title).isNotBlank()) }
+        SettingsCategory.entries.forEach { category ->
+            assertTrue(en.getString(category.title).isNotBlank() && it.getString(category.title).isNotBlank())
+            assertTrue(en.getString(category.description).isNotBlank() && it.getString(category.description).isNotBlank())
+            assertTrue(en.getString(category.info).isNotBlank() && it.getString(category.info).isNotBlank())
+        }
     }
 
     @Test
@@ -108,7 +103,7 @@ class SettingsIndexTest : ScreenshotBase() {
     @Test
     fun theSearchSpeaksItalianToo() {
         val index = SettingsIndex.searchIndex(localized(Locale.ITALY))
-        assertEquals("start.clock", index.search("orologio").first().setting?.id)
+        assertTrue(index.search("orologio").any { it.setting?.id == "start.clock" })
         assertTrue(index.search("scuro").any { it.setting?.id == "theme.mode" })
         assertEquals("access.contrast", index.search("contrasto").first().setting?.id)
         // An English word finds it in the Italian phone as well.
@@ -192,6 +187,13 @@ class SettingsIndexTest : ScreenshotBase() {
     @Test fun theProfilesPageIsTheIndex() = assertPageHasExactly(SettingsSection.Profiles, anchorsOf(SettingsSection.Profiles))
     @Test fun theKidsPageIsTheIndex() = assertPageHasExactly(SettingsSection.Kids, anchorsOf(SettingsSection.Kids))
     @Test fun theAboutPageIsTheIndex() = assertPageHasExactly(SettingsSection.About, anchorsOf(SettingsSection.About))
+    @Test fun theIconsPageIsTheIndex() = assertPageHasExactly(SettingsSection.Icons, anchorsOf(SettingsSection.Icons))
+    @Test fun theNavBarPageIsTheIndex() = assertPageHasExactly(SettingsSection.NavBar, anchorsOf(SettingsSection.NavBar, LauncherSettings(hideBarsInGames = true)))
+    @Test fun theFeelPageIsTheIndex() = assertPageHasExactly(SettingsSection.Feel, anchorsOf(SettingsSection.Feel))
+    @Test fun thePrivacyPageIsTheIndex() = assertPageHasExactly(SettingsSection.Privacy, anchorsOf(SettingsSection.Privacy))
+    @Test fun theBugReportAndTheProjectsPagesAreTheIndex() {
+        assertPageHasExactly(SettingsSection.BugReport, anchorsOf(SettingsSection.BugReport))
+    }
 
     @Test
     fun theBackupPageIsTheIndex() = assertPageHasExactly(

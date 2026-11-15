@@ -113,7 +113,6 @@
     <string name="perm_allow">Erlauben</string>
 
     <!-- settings: structure -->
-    <string name="settings_group_tools">Werkzeuge</string>
     <string name="sec_kids_desc">Das Handy mit einem Kind teilen, nur mit den Apps deiner Wahl</string>
     <string name="theme_mode">Hell oder dunkel</string>
     <string name="theme_auto_system">Wie Android</string>
@@ -144,7 +143,7 @@
 
     <!-- gestures section -->
     <string name="sec_gestures">Gesten</string>
-    <string name="sec_gestures_desc">Ziehen vom Rand, Wischen, Tippen, Doppeltippen und Zwei-Finger-Aktionen</string>
+    <string name="sec_gestures_desc">Doppeltippen, Zwei-Finger-Wischen, Ziehen vom Rand, letzte Apps und der Sperrdienst</string>
     <string name="gest_edge_pull">Vom oberen Rand nach unten ziehen</string>
     <string name="gest_edge_pull_hint">Öffnet das Action Center von jeder Seite aus, nicht nur oben auf Start.</string>
     <string name="gest_mini_home">zwei Finger in einer Mini-App: zurück zu Start</string>
@@ -157,7 +156,7 @@
 
     <!-- apps section -->
     <string name="sec_apps">App-Liste</string>
-    <string name="sec_apps_desc">Was die Liste oben zeigt, ausgeblendete, umbenannte und gesperrte Apps</string>
+    <string name="sec_apps_desc">Was die Liste oben zeigt, ausgeblendete und umbenannte Apps</string>
     <string name="menu_hide">Aus Liste ausblenden</string>
     <string name="apps_hidden">Ausgeblendete Apps</string>
     <string name="apps_hidden_none">Keine ausgeblendeten Apps. Halte eine App in der Liste gedrückt und wähle „Aus Liste ausblenden“.</string>
@@ -1092,9 +1091,6 @@
     <string name="sec_start_desc">Kacheln, Anzahl der Start-Bildschirme, wo der Home liegt, Anordnungen, zweiter Start</string>
     <string name="sec_search">Suche</string>
     <string name="sec_search_desc">Wo das Suchfeld sucht, was es beantwortet und sich merkt</string>
-    <string name="settings_group_look">Aussehen</string>
-    <string name="settings_group_behavior">Verhalten</string>
-    <string name="settings_group_apps">Apps</string>
     <string name="start_tiles_title">Kacheln</string>
     <string name="start_clock_title">Uhr und Datum</string>
     <string name="access_text_title">Text</string>
@@ -1906,7 +1902,7 @@
     <string name="theme_metro_status_bar_apps">Windows-Phone-Statusleiste in anderen Apps</string>
     <string name="theme_metro_status_bar_apps_hint">Zeichnet die Leiste über die von Android in Apps außerhalb des Launchers. Sie deckt den oberen Rand der App ab und nimmt keine Berührungen an. Braucht den Bildschirmsperre-Dienst in den Bedienungshilfen.</string>
     <string name="sec_statusbar">Statusleiste</string>
-    <string name="sec_statusbar_desc">Die Windows-Phone-Leiste: im Launcher und in anderen Apps, und welche Symbole sie zeigt</string>
+    <string name="sec_statusbar_desc">Die Windows-Phone-Leiste: im Launcher und in anderen Apps, auf Start ausgeblendet, und welche Symbole sie zeigt</string>
     <string name="statusbar_items">was sie zeigt</string>
     <string name="statusbar_items_hint">Schalte die Symbole aus, die du nicht willst. Ein Symbol erscheint nur, wenn es etwas zu sagen hat: das Flugzeug bei Flugmodus, und so weiter.</string>
     <string name="charge_animation">Ladeanimation</string>
@@ -1928,14 +1924,14 @@
     <string name="statusbar_battery">Akku</string>
     <string name="statusbar_time">Uhrzeit</string>
     <string name="statusbar_network_hint">Android nennt die Netzart nur Apps, die den Telefonstatus lesen dürfen: die Berechtigung wird jetzt angefragt.</string>
-    <string name="sec_bars">Leisten und Uhr</string>
-    <string name="sec_bars_desc">Uhr und Datum, Statusleiste von Android oder Windows Phone, App-Leiste</string>
+    <string name="sec_bars">Uhr und Leisten</string>
+    <string name="sec_bars_desc">Uhr und Datum auf Start, App-Leiste und Aktionsleiste</string>
     <string name="sec_start_behaviour">Start-Verhalten</string>
     <string name="sec_start_behaviour_desc">Zurück nach oben, Sperre, Rückgängig, Schrittziel, Bildschirmschutz</string>
     <string name="sec_action_center">Action Center</string>
-    <string name="sec_action_center_desc">Schnelltasten, Regler, Töne, Taschenlampe, Lautstärkefeld</string>
+    <string name="sec_action_center_desc">An oder aus, über anderen Apps, Schnelltasten, Regler, Taschenlampe, Lautstärkefeld</string>
     <string name="sec_notifications">Benachrichtigungen</string>
-    <string name="sec_notifications_desc">Benachrichtigungszugriff, Banner, Antworten, Gruppen, Filter, App für App</string>
+    <string name="sec_notifications_desc">Benachrichtigungszugriff, Banner, Antworten, Gruppen, Filter, Töne, pro App</string>
 
     <!-- Calculator -->
     <string name="calc_pivot_calc">rechner</string>
@@ -2303,9 +2299,8 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="a11y_sb_saver">Energiesparmodus</string>
     <string name="a11y_alpha_scroller">Nach Buchstaben scrollen, jetzt bei %1$s</string>
     <string name="kw_look">Farben, Design, dunkel, hell, Hintergrund, Akzent, Hintergrundbild, Symbole, Form, Symbolpaket, Designdatei</string>
-    <string name="sec_look">aussehen</string>
-    <string name="sec_look_desc">Design, hell oder dunkel, Akzentfarbe, das Foto hinter Start, Icon-Pakete und Design-Dateien</string>
-    <string name="look_icons_heading">Icons und Design-Dateien</string>
+    <string name="sec_look">Design und Farben</string>
+    <string name="sec_look_desc">Design, hell oder dunkel, Akzentfarbe, das Foto hinter Start und Design-Dateien</string>
     <string name="kw_start">Kacheln, Spalten, Seiten, Anordnung</string>
     <string name="kw_start_bars">Uhr, Datum, Leiste, Tasten</string>
     <string name="kw_status_bar">Statusleiste, Signal, Akku, WLAN, Uhrzeit</string>

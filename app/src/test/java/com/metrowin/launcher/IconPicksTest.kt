@@ -153,7 +153,7 @@ class IconPicksTest {
     @Test
     fun resettingTheLookPutsTheChoicesBack() {
         val changed = LauncherSettings(iconPicks = mapOf("app:a" to "com.p"))
-        assertTrue(SectionReset.changed(changed, "StartTheme"))
-        assertTrue(SectionReset.reset(changed, "StartTheme").iconPicks.isEmpty())
+        assertTrue(SectionReset.changed(changed, "Icons"))
+        assertTrue(SectionReset.reset(changed, "Icons").iconPicks.isEmpty())
     }
 }

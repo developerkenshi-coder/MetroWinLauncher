@@ -113,11 +113,18 @@ class AppearanceUiTest : ScreenshotBase() {
         assertTrue(current.clockAlarm)
         tap("start:clockweek")
         assertTrue(current.clockWeek)
-        tap("start:hidestatus")
-        assertTrue(current.hideStatusBar)
         tap("start:hours:header")
         tap("start:hours:${ClockHours.entries.indexOf(ClockHours.H12)}")
         assertEquals(ClockHours.H12, current.clockHours)
+    }
+
+    @Test
+    fun theStatusBarCanBeHiddenOnItsOwnPage() {
+        current = LauncherSettings()
+        show { Page(SettingsSection.StatusBar) }
+        advance(500)
+        tap("statusbar:hide")
+        assertTrue(current.hideStatusBar)
     }
 
     @Test

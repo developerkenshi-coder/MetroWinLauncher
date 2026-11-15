@@ -58,7 +58,7 @@ class SafeModeTest {
         assertEquals(setOf("a.b"), back.bankSafeAdd)
         assertEquals(setOf("c.d"), back.bankSafeSkip)
         assertTrue(LauncherSettings().bankSafe)
-        assertTrue("the section that holds the accessibility switches resets it", SectionReset.canReset("Gestures"))
+        assertTrue("the section that holds the accessibility switches resets it", SectionReset.canReset("Privacy"))
     }
 
     private fun windowOf(service: LockAccessibilityService, pkg: String, className: String? = null) =

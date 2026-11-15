@@ -15,60 +15,104 @@ import com.metrowin.launcher.data.ThirdPartyTile
 import com.metrowin.launcher.data.ProfileInfo
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.model.AppItem
+import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.notifications.LiveReportLine
 
 /**
- * The pivot pages of the settings home, in the order of what you reach for: how the launcher looks, how it behaves and reacts to
- * you, what it does with your apps, and the tools around it.
+ * The categories of the settings home, in the order of what you reach for: how the launcher looks, Start, the lock screen, the bars,
+ * how it answers to your touch, your apps, the mini apps, notifications, privacy, battery, accessibility, backups, and the app itself.
+ * A category is a list on the home and a pivot of [SettingsSection] pages once opened: two levels, never more.
  */
-enum class SettingsGroup(@param:StringRes val title: Int) {
-    Look(R.string.settings_group_look),
-    Behavior(R.string.settings_group_behavior),
-    Apps(R.string.settings_group_apps),
-    Tools(R.string.settings_group_tools),
+enum class SettingsCategory(
+    @param:StringRes val title: Int,
+    @param:StringRes val description: Int,
+    val glyph: Glyph,
+    /** Words, in the language of the phone, that find the category (see [SettingsIndex.searchIndex]). */
+    @param:StringRes val words: Int,
+    /** What the category is for, in a few lines (the "i" of its row). */
+    @param:StringRes val info: Int,
+) {
+    Look(R.string.cat_look, R.string.cat_look_desc, Glyph.Theme, R.string.cat_look_kw, R.string.info_cat_look),
+    Start(R.string.cat_start, R.string.cat_start_desc, Glyph.Widget, R.string.cat_start_kw, R.string.info_cat_start),
+    Lock(R.string.cat_lock, R.string.cat_lock_desc, Glyph.Lock, R.string.cat_lock_kw, R.string.info_cat_lock),
+    Bars(R.string.cat_bars, R.string.cat_bars_desc, Glyph.Wifi, R.string.cat_bars_kw, R.string.info_cat_bars),
+    Gestures(R.string.cat_gestures, R.string.cat_gestures_desc, Glyph.Gesture, R.string.cat_gestures_kw, R.string.info_cat_gestures),
+    Apps(R.string.cat_apps, R.string.cat_apps_desc, Glyph.Store, R.string.cat_apps_kw, R.string.info_cat_apps),
+    Mini(R.string.cat_mini, R.string.cat_mini_desc, Glyph.Office, R.string.cat_mini_kw, R.string.info_cat_mini),
+    Notifications(R.string.cat_notifications, R.string.cat_notifications_desc, Glyph.Bell, R.string.cat_notifications_kw, R.string.info_cat_notifications),
+    Privacy(R.string.cat_privacy, R.string.cat_privacy_desc, Glyph.Vpn, R.string.cat_privacy_kw, R.string.info_cat_privacy),
+    Battery(R.string.cat_battery, R.string.cat_battery_desc, Glyph.Battery, R.string.cat_battery_kw, R.string.info_cat_battery),
+    Access(R.string.cat_access, R.string.cat_access_desc, Glyph.Brightness, R.string.cat_access_kw, R.string.info_cat_access),
+    Backup(R.string.cat_backup, R.string.cat_backup_desc, Glyph.Storage, R.string.cat_backup_kw, R.string.info_cat_backup),
+    About(R.string.cat_about, R.string.cat_about_desc, Glyph.Launcher, R.string.cat_about_kw, R.string.info_cat_about);
+
+    /** The pages of the category, in order: the pivot it opens as. */
+    val pages: List<SettingsSection> get() = SettingsSection.entries.filter { it.category == this }
 }
 
 /**
- * The sections of the settings. Each is a page of its own, listed on the home of the settings under its
- * [group] with its title and a line saying what is in it. What is on each page is listed in the [SettingsIndex].
+ * The pages of the settings. Each is a pivot page of one [category] (a setting lives on exactly one of them: what another page
+ * needs of it is a link, never a copy). What is on each page is listed in the [SettingsIndex].
  */
 enum class SettingsSection(
-    val group: SettingsGroup,
+    val category: SettingsCategory,
     @param:StringRes val title: Int,
     @param:StringRes val description: Int,
-    /** Words, in the language of the phone, that find the section and its settings (see [SettingsIndex.searchIndex]). */
+    /** Words, in the language of the phone, that find the page and its settings (see [SettingsIndex.searchIndex]). */
     @param:StringRes val words: Int,
 ) {
-    // look: what you see
-    StartTheme(SettingsGroup.Look, R.string.sec_look, R.string.sec_look_desc, R.string.kw_look),
-    Start(SettingsGroup.Look, R.string.sec_start, R.string.sec_start_desc, R.string.kw_start),
-    StartBars(SettingsGroup.Look, R.string.sec_bars, R.string.sec_bars_desc, R.string.kw_start_bars),
-    StatusBar(SettingsGroup.Look, R.string.sec_statusbar, R.string.sec_statusbar_desc, R.string.kw_status_bar),
-    Accessibility(SettingsGroup.Look, R.string.sec_access, R.string.sec_access_desc, R.string.kw_access),
-    Lock(SettingsGroup.Look, R.string.sec_lock, R.string.sec_lock_desc, R.string.kw_lock),
+    // look and themes
+    StartTheme(SettingsCategory.Look, R.string.sec_look, R.string.sec_look_desc, R.string.kw_look),
+    Screen(SettingsCategory.Look, R.string.sec_screen, R.string.sec_screen_desc, R.string.kw_screen),
 
-    // behavior: how it moves and answers
-    Screen(SettingsGroup.Behavior, R.string.sec_screen, R.string.sec_screen_desc, R.string.kw_screen),
-    Gestures(SettingsGroup.Behavior, R.string.sec_gestures, R.string.sec_gestures_desc, R.string.kw_gestures),
-    StartBehaviour(SettingsGroup.Behavior, R.string.sec_start_behaviour, R.string.sec_start_behaviour_desc, R.string.kw_start_behaviour),
-    Actions(SettingsGroup.Behavior, R.string.sec_action_center, R.string.sec_action_center_desc, R.string.kw_actions),
-    Notifications(SettingsGroup.Behavior, R.string.sec_notifications, R.string.sec_notifications_desc, R.string.kw_notifications),
-    Voice(SettingsGroup.Behavior, R.string.sec_voice, R.string.sec_voice_desc, R.string.kw_voice),
-    Battery(SettingsGroup.Behavior, R.string.sec_battery, R.string.sec_battery_desc, R.string.kw_battery),
+    // start and tiles
+    Start(SettingsCategory.Start, R.string.sec_start, R.string.sec_start_desc, R.string.kw_start),
+    StartBars(SettingsCategory.Start, R.string.sec_bars, R.string.sec_bars_desc, R.string.kw_start_bars),
+    StartBehaviour(SettingsCategory.Start, R.string.sec_start_behaviour, R.string.sec_start_behaviour_desc, R.string.kw_start_behaviour),
+    LiveTiles(SettingsCategory.Start, R.string.sec_live_tiles, R.string.sec_live_tiles_desc, R.string.kw_live_tiles),
 
-    // apps: the list, the search, the live content and the profiles they come from
-    Apps(SettingsGroup.Apps, R.string.sec_apps, R.string.sec_apps_desc, R.string.kw_apps),
-    Search(SettingsGroup.Apps, R.string.sec_search, R.string.sec_search_desc, R.string.kw_search),
-    MiniApps(SettingsGroup.Apps, R.string.sec_mini_apps, R.string.sec_mini_apps_desc, R.string.kw_mini_apps),
-    LiveTiles(SettingsGroup.Apps, R.string.sec_live_tiles, R.string.sec_live_tiles_desc, R.string.kw_live_tiles),
-    Profiles(SettingsGroup.Apps, R.string.sec_profiles, R.string.sec_profiles_desc, R.string.kw_profiles),
+    // lock screen
+    Lock(SettingsCategory.Lock, R.string.sec_lock, R.string.sec_lock_desc, R.string.kw_lock),
 
-    // tools
-    Backup(SettingsGroup.Tools, R.string.sec_backup, R.string.sec_backup_desc, R.string.kw_backup),
-    Kids(SettingsGroup.Tools, R.string.kids_title, R.string.sec_kids_desc, R.string.kw_kids),
-    BugReport(SettingsGroup.Tools, R.string.sec_bug, R.string.sec_bug_desc, R.string.kw_bug),
-    OtherProjects(SettingsGroup.Tools, R.string.sec_projects, R.string.sec_projects_desc, R.string.kw_projects),
-    About(SettingsGroup.Tools, R.string.sec_about, R.string.sec_about_desc, R.string.kw_about),
+    // bars and action center
+    StatusBar(SettingsCategory.Bars, R.string.sec_statusbar, R.string.sec_statusbar_desc, R.string.kw_status_bar),
+    Actions(SettingsCategory.Bars, R.string.sec_action_center, R.string.sec_action_center_desc, R.string.kw_actions),
+    NavBar(SettingsCategory.Bars, R.string.sec_navbar, R.string.sec_navbar_desc, R.string.kw_navbar),
+
+    // gestures and shortcuts
+    Gestures(SettingsCategory.Gestures, R.string.sec_gestures, R.string.sec_gestures_desc, R.string.kw_gestures),
+    Feel(SettingsCategory.Gestures, R.string.sec_feel, R.string.sec_feel_desc, R.string.kw_feel),
+    Voice(SettingsCategory.Gestures, R.string.sec_voice, R.string.sec_voice_desc, R.string.kw_voice),
+
+    // apps and icons
+    Apps(SettingsCategory.Apps, R.string.sec_apps, R.string.sec_apps_desc, R.string.kw_apps),
+    Icons(SettingsCategory.Apps, R.string.sec_icons, R.string.sec_icons_desc, R.string.kw_icons),
+    Search(SettingsCategory.Apps, R.string.sec_search, R.string.sec_search_desc, R.string.kw_search),
+
+    // mini apps
+    MiniApps(SettingsCategory.Mini, R.string.sec_mini_apps, R.string.sec_mini_apps_desc, R.string.kw_mini_apps),
+
+    // notifications
+    Notifications(SettingsCategory.Notifications, R.string.sec_notifications, R.string.sec_notifications_desc, R.string.kw_notifications),
+
+    // privacy and security
+    Privacy(SettingsCategory.Privacy, R.string.sec_privacy, R.string.sec_privacy_desc, R.string.kw_privacy),
+    Kids(SettingsCategory.Privacy, R.string.kids_title, R.string.sec_kids_desc, R.string.kw_kids),
+
+    // battery
+    Battery(SettingsCategory.Battery, R.string.sec_battery, R.string.sec_battery_desc, R.string.kw_battery),
+
+    // accessibility
+    Accessibility(SettingsCategory.Access, R.string.sec_access, R.string.sec_access_desc, R.string.kw_access),
+
+    // backup and profiles
+    Backup(SettingsCategory.Backup, R.string.sec_backup, R.string.sec_backup_desc, R.string.kw_backup),
+    Profiles(SettingsCategory.Backup, R.string.sec_profiles, R.string.sec_profiles_desc, R.string.kw_profiles),
+
+    // about
+    About(SettingsCategory.About, R.string.sec_about, R.string.sec_about_desc, R.string.kw_about),
+    BugReport(SettingsCategory.About, R.string.sec_bug, R.string.sec_bug_desc, R.string.kw_bug),
+    OtherProjects(SettingsCategory.About, R.string.sec_projects, R.string.sec_projects_desc, R.string.kw_projects),
 }
 
 /**

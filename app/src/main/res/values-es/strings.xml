@@ -113,7 +113,6 @@
     <string name="perm_allow">permitir</string>
 
     <!-- ajustes: estructura -->
-    <string name="settings_group_tools">herramientas</string>
     <string name="sec_kids_desc">Comparte el teléfono con un niño, solo con las apps que elijas</string>
     <string name="theme_mode">claro u oscuro</string>
     <string name="theme_auto_system">como Android</string>
@@ -144,7 +143,7 @@
 
     <!-- sección de gestos -->
     <string name="sec_gestures">gestos</string>
-    <string name="sec_gestures_desc">Arrastres desde el borde, deslizamientos, toques, doble toque y acciones con dos dedos</string>
+    <string name="sec_gestures_desc">Doble toque, deslizamientos con dos dedos, arrastres desde el borde, apps recientes y servicio de bloqueo</string>
     <string name="gest_edge_pull">deslizar hacia abajo desde el borde superior</string>
     <string name="gest_edge_pull_hint">Abre el Action Center desde cualquier página, no solo desde la parte superior de Start.</string>
     <string name="gest_mini_home">dos dedos en una mini app: volver a Start</string>
@@ -157,7 +156,7 @@
 
     <!-- sección de apps -->
     <string name="sec_apps">lista de apps</string>
-    <string name="sec_apps_desc">Qué muestra la lista arriba, apps ocultas, renombradas y bloqueadas</string>
+    <string name="sec_apps_desc">Qué muestra la lista arriba, apps ocultas y renombradas</string>
     <string name="menu_hide">ocultar de la lista</string>
     <string name="apps_hidden">apps ocultas</string>
     <string name="apps_hidden_none">No hay apps ocultas. Mantén pulsada una app de la lista y elige “ocultar de la lista”.</string>
@@ -1103,9 +1102,6 @@
     <string name="sec_start_desc">Mosaicos, número de pantallas Start, dónde está el inicio, disposiciones, Start secundario</string>
     <string name="sec_search">búsqueda</string>
     <string name="sec_search_desc">Dónde busca el cuadro de búsqueda, qué responde y qué recuerda</string>
-    <string name="settings_group_look">aspecto</string>
-    <string name="settings_group_behavior">comportamiento</string>
-    <string name="settings_group_apps">apps</string>
     <string name="start_tiles_title">mosaicos</string>
     <string name="start_clock_title">reloj y fecha</string>
     <string name="access_text_title">texto</string>
@@ -1923,7 +1919,7 @@
     <string name="theme_metro_status_bar_apps">Barra de estado de Windows Phone en otras aplicaciones</string>
     <string name="theme_metro_status_bar_apps_hint">Dibuja la barra sobre la de Android en las aplicaciones fuera del launcher. Cubre la parte superior de la aplicación y no recibe toques. Necesita el servicio de bloqueo de pantalla en los ajustes de accesibilidad.</string>
     <string name="sec_statusbar">Barra de estado</string>
-    <string name="sec_statusbar_desc">La barra de Windows Phone: en el launcher y en otras aplicaciones, y qué iconos muestra</string>
+    <string name="sec_statusbar_desc">La barra de Windows Phone: en el launcher y en otras apps, oculta en Start, y qué iconos muestra</string>
     <string name="statusbar_items">qué muestra</string>
     <string name="statusbar_items_hint">Desactiva los iconos que no quieras. Un icono solo aparece cuando tiene algo que decir: el avión cuando el modo avión está activo, y así con los demás.</string>
     <string name="charge_animation">Animación de carga</string>
@@ -1945,14 +1941,14 @@
     <string name="statusbar_battery">batería</string>
     <string name="statusbar_time">hora</string>
     <string name="statusbar_network_hint">Android solo dice el tipo de red a las aplicaciones que pueden leer el estado del teléfono: ahora te pide el permiso.</string>
-    <string name="sec_bars">barras y reloj</string>
-    <string name="sec_bars_desc">Reloj y fecha, barra de estado de Android o de Windows Phone, barra de la app</string>
+    <string name="sec_bars">reloj y barras</string>
+    <string name="sec_bars_desc">Reloj y fecha en Start, barra de la app y barra de acciones</string>
     <string name="sec_start_behaviour">comportamiento de start</string>
     <string name="sec_start_behaviour_desc">Volver arriba, bloqueo, deshacer, objetivo de pasos, cuidado de la pantalla</string>
     <string name="sec_action_center">action center</string>
-    <string name="sec_action_center_desc">Botones rápidos, controles deslizantes, sonidos, linterna, panel de volumen</string>
+    <string name="sec_action_center_desc">Activado o no, sobre otras apps, botones rápidos, controles deslizantes, linterna, panel de volumen</string>
     <string name="sec_notifications">notificaciones</string>
-    <string name="sec_notifications_desc">Acceso a notificaciones, avisos, respuestas, grupos, filtros, app por app</string>
+    <string name="sec_notifications_desc">Acceso a las notificaciones, banners, respuestas, grupos, filtros, sonidos, app por app</string>
 
     <!-- Calculator -->
     <string name="calc_pivot_calc">calculadora</string>
@@ -2320,9 +2316,8 @@ en primer plano %3$s · en segundo plano %4$s
     <string name="a11y_sb_saver">Ahorro de batería</string>
     <string name="a11y_alpha_scroller">Desplazar por letra, ahora en %1$s</string>
     <string name="kw_look">colores, tema, oscuro, claro, fondo, acento, fondo de pantalla, iconos, forma, paquete de iconos, archivo de tema</string>
-    <string name="sec_look">aspecto</string>
-    <string name="sec_look_desc">Tema, claro u oscuro, color de acento, la foto detrás de Start, paquetes de iconos y archivos de tema</string>
-    <string name="look_icons_heading">iconos y archivos de tema</string>
+    <string name="sec_look">tema y colores</string>
+    <string name="sec_look_desc">Tema, claro u oscuro, color de acento, la foto detrás de Start y archivos de tema</string>
     <string name="kw_start">mosaicos, columnas, páginas, disposición</string>
     <string name="kw_start_bars">reloj, fecha, barra, botones</string>
     <string name="kw_status_bar">barra de estado, señal, batería, wifi, hora</string>

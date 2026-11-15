@@ -10,7 +10,7 @@ import com.metrowin.launcher.data.GestureAction
 import androidx.compose.ui.res.stringResource
 import com.metrowin.launcher.R
 
-/** The gestures of the launcher: what a pull or a swipe from the edge does, and the feedback of a tap. */
+/** The gestures of the launcher: what a tap, a swipe or a pull from the edge does. How a touch feels is on its own page (see FeelPage). */
 @Composable
 fun GesturesPage(env: SettingsEnv) {
     val settings = env.settings
@@ -82,42 +82,6 @@ fun GesturesPage(env: SettingsEnv) {
                 hint = stringResource(R.string.gest_lock_service_hint), tag = "gestures:lockservice", id = "gest.lockservice",
             )
         }
-        BankSafeSetting(env)
-        val context = androidx.compose.ui.platform.LocalContext.current
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            ToggleSetting(
-                label = stringResource(R.string.gest_navbar),
-                checked = settings.metroNavBar && env.lockServiceEnabled,
-                onChange = { value -> env.onChange { it.copy(metroNavBar = value) }; if (value && !env.lockServiceEnabled) env.onOpenAccessibilitySettings() },
-                hint = stringResource(R.string.gest_navbar_hint), tag = "gestures:navbar", id = "gest.navbar",
-            )
-            if (!com.metrowin.launcher.gestures.NavBarOverlay.threeButtons(context)) SettingHint(stringResource(R.string.gest_navbar_needs_buttons))
-            ToggleSetting(
-                label = stringResource(R.string.gest_game_bars),
-                checked = settings.hideBarsInGames,
-                onChange = { value -> env.onChange { it.copy(hideBarsInGames = value) } },
-                hint = stringResource(R.string.gest_game_bars_hint), tag = "gestures:gamebars", id = "gest.gamebars",
-            )
-            if (settings.hideBarsInGames) GameAppsSetting(env)
-            StepperSetting(
-                label = stringResource(R.string.gest_navbar_spacing),
-                value = "${settings.navSpacing}%",
-                onDecrement = { env.onChange { it.copy(navSpacing = (it.navSpacing - com.metrowin.launcher.data.LauncherSettings.NAV_SPACING_STEP).coerceAtLeast(com.metrowin.launcher.data.LauncherSettings.NAV_SPACING_MIN)) } },
-                onIncrement = { env.onChange { it.copy(navSpacing = (it.navSpacing + com.metrowin.launcher.data.LauncherSettings.NAV_SPACING_STEP).coerceAtMost(com.metrowin.launcher.data.LauncherSettings.NAV_SPACING_MAX)) } },
-                canDecrement = settings.navSpacing > com.metrowin.launcher.data.LauncherSettings.NAV_SPACING_MIN,
-                canIncrement = settings.navSpacing < com.metrowin.launcher.data.LauncherSettings.NAV_SPACING_MAX,
-                hint = stringResource(R.string.gest_navbar_spacing_hint), tag = "gestures:navbarspacing", id = "gest.navspacing",
-            )
-            StepperSetting(
-                label = stringResource(R.string.gest_navbar_hold),
-                value = "%.1f s".format(settings.navHoldMs / 1000f),
-                onDecrement = { env.onChange { it.copy(navHoldMs = (it.navHoldMs - NAV_HOLD_STEP).coerceAtLeast(com.metrowin.launcher.data.LauncherSettings.NAV_HOLD_MIN_MS)) } },
-                onIncrement = { env.onChange { it.copy(navHoldMs = (it.navHoldMs + NAV_HOLD_STEP).coerceAtMost(com.metrowin.launcher.data.LauncherSettings.NAV_HOLD_MAX_MS)) } },
-                canDecrement = settings.navHoldMs > com.metrowin.launcher.data.LauncherSettings.NAV_HOLD_MIN_MS,
-                canIncrement = settings.navHoldMs < com.metrowin.launcher.data.LauncherSettings.NAV_HOLD_MAX_MS,
-                hint = stringResource(R.string.gest_navbar_hold_hint), tag = "gestures:navbarhold", id = "gest.navbarhold",
-            )
-        }
         ToggleSetting(
             label = stringResource(R.string.gest_edge_pull),
             checked = settings.edgePull,
@@ -139,22 +103,5 @@ fun GesturesPage(env: SettingsEnv) {
             hint = stringResource(R.string.gest_edge_back_pan_hint),
             tag = "gestures:edgepan", id = "gest.edgeback",
         )
-        ToggleSetting(
-            label = stringResource(R.string.gest_tap_sound),
-            checked = settings.tapSound,
-            onChange = { value -> env.onChange { it.copy(tapSound = value) } },
-            tag = "gestures:sound", id = "gest.tapsound",
-        )
-        ToggleSetting(
-            label = stringResource(R.string.gest_tap_haptics),
-            checked = settings.tapHaptics,
-            onChange = { value -> env.onChange { it.copy(tapHaptics = value) } },
-            hint = stringResource(R.string.gest_tap_hint),
-            tag = "gestures:haptics", id = "gest.taphaptics",
-        )
-        FeelSettings(env)
     }
 }
-
-/** One step of the time the logo is held, in milliseconds. */
-private const val NAV_HOLD_STEP = 100

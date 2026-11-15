@@ -130,7 +130,7 @@ class NewSettingsUiTest : ScreenshotBase() {
 
     @Test
     fun theActionCenterIsOnUntilSwitchedOffAndItsDependentsFollow() {
-        open(SettingsSection.Notifications)
+        open(SettingsSection.Actions)
         assertTrue(current.actionCenterEnabled)
         tap("notifications:enabled")
         assertFalse(current.actionCenterEnabled)
@@ -284,7 +284,7 @@ class NewSettingsUiTest : ScreenshotBase() {
     @Test
     fun aGameThePhoneDoesNotKnowIsAddedByHandAndAWrongOneTakenOut() {
         val known = AppItem("app:known", "Known Game", Launch.Action("x"), packageName = "com.example.known", category = com.metrowin.launcher.model.AppCategory.Game)
-        open(SettingsSection.Gestures, apps = listOf(chat, known))
+        open(SettingsSection.NavBar, apps = listOf(chat, known))
         // The game the phone knows is listed and on; the chat is not listed until it is searched.
         compose.onNodeWithTag("gestures:gameapps:com.example.known").assertExists()
         compose.onAllNodesWithTag("gestures:gameapps:com.example.chat").assertCountEquals(0)
@@ -302,7 +302,7 @@ class NewSettingsUiTest : ScreenshotBase() {
     @Test
     fun theBanksAreListedAndAnAppCanBeTakenOutOrAdded() {
         val bank = AppItem("app:bank", "My Bank", Launch.Action("x"), packageName = "es.bbva.contigo")
-        open(SettingsSection.Gestures, apps = listOf(chat, bank))
+        open(SettingsSection.Privacy, apps = listOf(chat, bank))
         compose.onNodeWithTag("gestures:banksafe").assertExists()
         // The bank is found by its name and is on; the chat is not listed until it is searched.
         compose.onNodeWithTag("gestures:banksafe:es.bbva.contigo").assertExists()

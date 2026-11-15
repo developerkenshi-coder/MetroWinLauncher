@@ -113,7 +113,6 @@
     <string name="perm_allow">allow</string>
 
     <!-- settings: structure -->
-    <string name="settings_group_tools">tools</string>
     <string name="sec_kids_desc">Share the phone with a child, with only the apps you choose</string>
     <string name="theme_mode">light or dark</string>
     <string name="theme_auto_system">as Android</string>
@@ -144,7 +143,7 @@
 
     <!-- gestures section -->
     <string name="sec_gestures">gestures</string>
-    <string name="sec_gestures_desc">Edge pulls, swipes, taps, double tap and two-finger actions</string>
+    <string name="sec_gestures_desc">Double tap, two-finger swipes, edge pulls, recent apps and the lock service</string>
     <string name="gest_edge_pull">pull down from the top edge</string>
     <string name="gest_edge_pull_hint">Opens the Action Center from any page, not only from the top of Start.</string>
     <string name="gest_mini_home">two fingers in a mini app: back to Start</string>
@@ -157,7 +156,7 @@
 
     <!-- apps section -->
     <string name="sec_apps">app list</string>
-    <string name="sec_apps_desc">What the list shows at the top, hidden, renamed and locked apps</string>
+    <string name="sec_apps_desc">What the list shows at the top, hidden and renamed apps</string>
     <string name="menu_hide">hide from list</string>
     <string name="apps_hidden">hidden apps</string>
     <string name="apps_hidden_none">No hidden apps. Press and hold an app in the list and choose \"hide from list\".</string>
@@ -1092,9 +1091,6 @@
     <string name="sec_start_desc">Tiles, number of Start screens, where home is, layouts, the second Start</string>
     <string name="sec_search">search</string>
     <string name="sec_search_desc">What the search box looks in, answers and remembers</string>
-    <string name="settings_group_look">look</string>
-    <string name="settings_group_behavior">behavior</string>
-    <string name="settings_group_apps">apps</string>
     <string name="start_tiles_title">tiles</string>
     <string name="start_clock_title">clock and date</string>
     <string name="access_text_title">text</string>
@@ -1906,7 +1902,7 @@
     <string name="theme_metro_status_bar_apps">Windows Phone status bar in other apps</string>
     <string name="theme_metro_status_bar_apps_hint">Draws the bar over the status bar of Android in the apps outside the launcher. It covers the top of the app and takes no touch. Needs the screen lock service in the accessibility settings.</string>
     <string name="sec_statusbar">Status bar</string>
-    <string name="sec_statusbar_desc">Windows Phone bar: in the launcher and in other apps, and which icons it shows</string>
+    <string name="sec_statusbar_desc">The Windows Phone bar: in the launcher and in other apps, hidden on Start, and which icons it shows</string>
     <string name="statusbar_items">what it shows</string>
     <string name="statusbar_items_hint">Turn off the icons you do not want. An icon only shows while it has something to say: the airplane while airplane mode is on, and so on.</string>
     <string name="charge_animation">Charging animation</string>
@@ -1928,14 +1924,14 @@
     <string name="statusbar_battery">battery</string>
     <string name="statusbar_time">time</string>
     <string name="statusbar_network_hint">Android tells the kind of network only to apps that may read the phone state: it asks for that now.</string>
-    <string name="sec_bars">bars and clock</string>
-    <string name="sec_bars_desc">Clock and date, status bar of Android or of Windows Phone, app bar</string>
+    <string name="sec_bars">clock and bars</string>
+    <string name="sec_bars_desc">Clock and date on Start, app bar and action bar</string>
     <string name="sec_start_behaviour">start behaviour</string>
     <string name="sec_start_behaviour_desc">Back to the top, lock, undo, step goal, screen burn-in care</string>
     <string name="sec_action_center">action center</string>
-    <string name="sec_action_center_desc">Quick buttons, sliders, sounds, flashlight, volume panel</string>
+    <string name="sec_action_center_desc">On or off, over other apps, quick buttons, sliders, flashlight, volume panel</string>
     <string name="sec_notifications">notifications</string>
-    <string name="sec_notifications_desc">Notification access, banners, replies, groups, filters, per app</string>
+    <string name="sec_notifications_desc">Notification access, banners, replies, groups, filters, sounds, per app</string>
 
     <!-- Calculator -->
     <string name="calc_pivot_calc">calculator</string>
@@ -2303,9 +2299,8 @@ in front %3$s · in the background %4$s
     <string name="a11y_sb_saver">Battery saver</string>
     <string name="a11y_alpha_scroller">Scroll by letter, now at %1$s</string>
     <string name="kw_look">colors, theme, dark, light, background, accent, wallpaper, icons, shape, icon pack, theme file</string>
-    <string name="sec_look">look</string>
-    <string name="sec_look_desc">Theme, light or dark, accent colour, the photo behind Start, icon packs and theme files</string>
-    <string name="look_icons_heading">icons and theme files</string>
+    <string name="sec_look">theme and colors</string>
+    <string name="sec_look_desc">Theme, light or dark, accent color, the photo behind Start and theme files</string>
     <string name="kw_start">tiles, columns, pages, layout</string>
     <string name="kw_start_bars">clock, date, bar, buttons</string>
     <string name="kw_status_bar">status bar, signal, battery, wifi, clock</string>

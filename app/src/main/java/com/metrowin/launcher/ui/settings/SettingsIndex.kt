@@ -28,6 +28,10 @@ import com.metrowin.launcher.ui.settings.SettingsSection.Start
 import com.metrowin.launcher.ui.settings.SettingsSection.StartTheme
 import com.metrowin.launcher.ui.settings.SettingsSection.Voice
 import com.metrowin.launcher.ui.settings.SettingsSection.About
+import com.metrowin.launcher.ui.settings.SettingsSection.Feel
+import com.metrowin.launcher.ui.settings.SettingsSection.Icons
+import com.metrowin.launcher.ui.settings.SettingsSection.NavBar
+import com.metrowin.launcher.ui.settings.SettingsSection.Privacy
 import com.metrowin.launcher.ui.settings.SettingsSection.BugReport
 
 /**
@@ -42,11 +46,14 @@ class SettingEntry(
     val keywords: List<String> = emptyList(),
 )
 
-/** What a search of the settings finds: a whole [section] (when [setting] is null) or one setting in it. */
-class SettingHit(val section: SettingsSection, val setting: SettingEntry?)
+/**
+ * What a search of the settings finds: a whole category (when [category] is not null, [section] is its first page), a whole page of one
+ * (when [setting] is null) or one setting in it.
+ */
+class SettingHit(val section: SettingsSection, val setting: SettingEntry?, val category: SettingsCategory? = null)
 
 /**
- * Every setting of the launcher, in one place: where it is and what finds it. The pages are laid out by topic, and this list is the
+ * Every setting of the launcher, in one place: where it is (category, then page) and what finds it. The pages are laid out by what you want to do, and this list is the
  * map of them (a test checks that each page has exactly the settings listed here, so a new setting cannot be left out).
  */
 object SettingsIndex {
@@ -89,7 +96,7 @@ object SettingsIndex {
         e("start.appsleft", Start, R.string.theme_apps_left, "left", "apps", "list", "side", "sinistra", "elenco", "app", "lato"),
         e("start.appsarrow", Start, R.string.theme_apps_arrow, "arrow", "next", "button", "circle", "freccia", "pulsante", "cerchio", "avanti", "nascondi", "dots", "puntini", "punti"),
         e("start.antiburnin", StartBehaviour, R.string.theme_anti_burn_in, "burn", "burn-in", "oled", "amoled", "screen", "pixel", "schermo", "bruciare", "ritenzione", "immagine fantasma"),
-        e("start.hidestatus", StartBars, R.string.theme_hide_status_bar, "fullscreen", "full screen", "status bar", "notch", "schermo intero", "barra"),
+        e("statusbar.hide", StatusBar, R.string.theme_hide_status_bar, "fullscreen", "full screen", "status bar", "notch", "schermo intero", "barra"),
         e("statusbar.metro", StatusBar, R.string.theme_metro_status_bar, "windows phone", "status bar", "signal", "wifi", "battery", "percentage", "clock", "barra di stato", "segnale", "batteria", "percentuale", "orario"),
         e("statusbar.charge", StatusBar, R.string.charge_animation, "charging", "charge", "battery", "animation", "ricarica", "animazione", "batteria"),
         e("statusbar.apps", StatusBar, R.string.theme_metro_status_bar_apps, "windows phone", "status bar", "other apps", "over apps", "barra di stato", "altre app", "sopra le app"),
@@ -132,20 +139,20 @@ object SettingsIndex {
         e("start.appbar", StartBars, R.string.theme_app_bar, "bar", "ellipsis", "dots", "labels", "buttons", "edit", "barra", "puntini", "etichette", "pulsanti", "modifica"),
         e("start.actionbar", StartBars, R.string.action_bar_title, "retro", "super", "app bar", "application bar", "buttons", "ellipsis", "barra", "barra delle azioni", "azioni", "pulsanti"),
 
-        // --- icons & themes
-        e("icons.shape", StartTheme, R.string.icons_shape, "shape", "round", "circle", "square", "squircle", "forma", "rotonde", "cerchio", "quadrate"),
-        e("icons.tilecolors", StartTheme, R.string.icons_tile_colors, "colour", "color", "tile", "icon", "colore", "riquadro", "icona", "dominante"),
-        e("gest.gameapps", Gestures, R.string.gest_game_apps, "game", "games", "add", "list", "not recognised", "gioco", "giochi", "aggiungi", "elenco", "non riconosciuto"),
-        e("gest.gamebars", Gestures, R.string.gest_game_bars, "game", "games", "bars", "hide", "status bar", "navigation", "gioco", "giochi", "barre", "nascondi", "barra di stato", "navigazione"),
-        e("gest.navspacing", Gestures, R.string.gest_navbar_spacing, "navigation", "bar", "spacing", "distance", "buttons", "barra", "distanza", "tasti", "spaziatura"),
-        e("gest.navbarhold", Gestures, R.string.gest_navbar_hold, "navigation", "bar", "hold", "recent", "long", "barra", "tieni", "recenti", "lunga"),
-        e("icons.glass", StartTheme, R.string.icons_glass, "glass", "transparent", "see-through", "icon", "tile", "vetro", "trasparente", "icona", "riquadro"),
-        e("icons.largetiles", StartTheme, R.string.icons_large_tiles, "large", "big", "tile", "icon", "full", "grandi", "grande", "riquadro", "icona", "riempie"),
-        e("icons.find", StartTheme, R.string.icons_pack_find, "play store", "download", "icon pack", "install", "scarica", "cerca", "icone"),
-        e("icons.perapp", StartTheme, R.string.iconpick_heading, "icons", "icon pack", "per app", "single app", "change icon", "icone", "cambia icona", "singola app"),
-        e("icons.pack", StartTheme, R.string.icons_pack, "icons", "icon pack", "nova", "adw", "apex", "go launcher", "icone"),
-        e("icons.export", StartTheme, R.string.theme_export, "theme file", "share", "save", "file tema", "condividi", "salva"),
-        e("icons.import", StartTheme, R.string.theme_import, "theme file", "load", "open", "file tema", "carica", "apri"),
+        // --- icons (their own page) and theme files (end of the look page)
+        e("icons.shape", Icons, R.string.icons_shape, "shape", "round", "circle", "square", "squircle", "forma", "rotonde", "cerchio", "quadrate"),
+        e("icons.tilecolors", Icons, R.string.icons_tile_colors, "colour", "color", "tile", "icon", "colore", "riquadro", "icona", "dominante"),
+        e("gest.gameapps", NavBar, R.string.gest_game_apps, "game", "games", "add", "list", "not recognised", "gioco", "giochi", "aggiungi", "elenco", "non riconosciuto"),
+        e("gest.gamebars", NavBar, R.string.gest_game_bars, "game", "games", "bars", "hide", "status bar", "navigation", "gioco", "giochi", "barre", "nascondi", "barra di stato", "navigazione"),
+        e("gest.navspacing", NavBar, R.string.gest_navbar_spacing, "navigation", "bar", "spacing", "distance", "buttons", "barra", "distanza", "tasti", "spaziatura"),
+        e("gest.navbarhold", NavBar, R.string.gest_navbar_hold, "navigation", "bar", "hold", "recent", "long", "barra", "tieni", "recenti", "lunga"),
+        e("icons.glass", Icons, R.string.icons_glass, "glass", "transparent", "see-through", "icon", "tile", "vetro", "trasparente", "icona", "riquadro"),
+        e("icons.largetiles", Icons, R.string.icons_large_tiles, "large", "big", "tile", "icon", "full", "grandi", "grande", "riquadro", "icona", "riempie"),
+        e("icons.find", Icons, R.string.icons_pack_find, "play store", "download", "icon pack", "install", "scarica", "cerca", "icone"),
+        e("icons.perapp", Icons, R.string.iconpick_heading, "icons", "icon pack", "per app", "single app", "change icon", "icone", "cambia icona", "singola app"),
+        e("icons.pack", Icons, R.string.icons_pack, "icons", "icon pack", "nova", "adw", "apex", "go launcher", "icone"),
+        e("theme.export", StartTheme, R.string.theme_export, "theme file", "share", "save", "file tema", "condividi", "salva"),
+        e("theme.import", StartTheme, R.string.theme_import, "theme file", "load", "open", "file tema", "carica", "apri"),
 
         // --- accessibility: how it reads and moves
         e("access.textsize", Accessibility, R.string.text_size, "font size", "bigger", "larger", "smaller", "text", "dimensione", "testo", "grande", "piccolo", "scala"),
@@ -188,17 +195,17 @@ object SettingsIndex {
         e("gest.twodown", Gestures, R.string.gest_two_down, "two finger", "swipe", "due dita", "scorri"),
         e("gest.twoup", Gestures, R.string.gest_two_up, "two finger", "swipe", "due dita", "scorri"),
         e("gest.recents", Gestures, R.string.gest_recents_title, "recent apps", "overview", "quick settings tile", "app recenti", "impostazioni rapide"),
-        e("gest.banksafe", Gestures, R.string.bank_safe, "bank", "banking", "security", "overlay", "accessibility", "blocked", "banca", "banco", "sicurezza", "bloccata", "accessibilita"),
+        e("gest.banksafe", Privacy, R.string.bank_safe, "bank", "banking", "security", "overlay", "accessibility", "blocked", "banca", "banco", "sicurezza", "bloccata", "accessibilita"),
         e("gest.lockservice", Gestures, R.string.gest_lock_service, "accessibility service", "lock screen", "servizio di accessibilita", "blocca lo schermo"),
-        e("gest.navbar", Gestures, R.string.gest_navbar, "navigation bar", "buttons", "back", "home", "three buttons", "windows", "barra di navigazione", "pulsanti", "indietro", "tre tasti"),
+        e("gest.navbar", NavBar, R.string.gest_navbar, "navigation bar", "buttons", "back", "home", "three buttons", "windows", "barra di navigazione", "pulsanti", "indietro", "tre tasti"),
         e("gest.edgepull", Gestures, R.string.gest_edge_pull, "action center", "notifications", "pull", "top", "tirata", "bordo", "notifiche"),
         e("gest.minihome", Gestures, R.string.gest_mini_home, "mini app", "two fingers", "home", "start", "back", "swipe", "due dita", "indietro", "torna"),
         e("gest.edgeback", Gestures, R.string.gest_edge_back_pan, "back", "swipe", "indietro", "bordo", "pagine"),
-        e("gest.tapsound", Gestures, R.string.gest_tap_sound, "click", "sound", "audio", "suono", "tocco"),
-        e("gest.animspeed", Gestures, R.string.feel_speed, "animation", "speed", "fast", "slow", "animazioni", "velocita", "veloce", "lento"),
-        e("gest.tilt", Gestures, R.string.feel_tilt, "tilt", "press", "lean", "inclinazione", "pressione"),
-        e("gest.vibration", Gestures, R.string.feel_vibration, "vibration", "haptic", "strength", "vibrazione", "forza", "intensita"),
-        e("gest.taphaptics", Gestures, R.string.gest_tap_haptics, "vibration", "haptic", "buzz", "vibrazione", "tocco"),
+        e("gest.tapsound", Feel, R.string.gest_tap_sound, "click", "sound", "audio", "suono", "tocco"),
+        e("gest.animspeed", Feel, R.string.feel_speed, "animation", "speed", "fast", "slow", "animazioni", "velocita", "veloce", "lento"),
+        e("gest.tilt", Feel, R.string.feel_tilt, "tilt", "press", "lean", "inclinazione", "pressione"),
+        e("gest.vibration", Feel, R.string.feel_vibration, "vibration", "haptic", "strength", "vibrazione", "forza", "intensita"),
+        e("gest.taphaptics", Feel, R.string.gest_tap_haptics, "vibration", "haptic", "buzz", "vibrazione", "tocco"),
 
         // --- notifications + actions
         e("ac.buttons", Actions, R.string.settings_quick_actions, "toggles", "buttons", "wifi", "bluetooth", "flashlight", "pulsanti", "interruttori", "scorciatoie"),
@@ -210,7 +217,7 @@ object SettingsIndex {
         e("ac.reply", Notifications, R.string.notif_inline_reply, "reply", "answer", "message", "rispondi", "risposta", "messaggio"),
         e("ac.group", Notifications, R.string.notif_group, "group", "stack", "raggruppa", "raggruppamento"),
         e("ac.access", Notifications, R.string.settings_notification_access, "permission", "listener", "permesso", "accesso", "notifiche"),
-        e("ac.enabled", Notifications, R.string.ac_enabled, "action center", "off", "disable", "stock", "android notifications", "default", "disattiva", "spegni", "notifiche di android", "pannello", "centro notifiche"),
+        e("ac.enabled", Actions, R.string.ac_enabled, "action center", "off", "disable", "stock", "android notifications", "default", "disattiva", "spegni", "notifiche di android", "pannello", "centro notifiche"),
         e("ac.banner", Notifications, R.string.ac_banner, "toast", "heads up", "popup", "notifications", "avviso", "notifiche", "banner"),
         e("ac.overlay", Notifications, R.string.ac_overlay, "overlay", "over other apps", "display over", "draw over", "sopra altre app", "fuori dal launcher", "notifiche", "banner"),
         e("ac.mute", Notifications, R.string.ac_mute, "mute", "silence", "app", "hour", "silenzia", "zittisci", "ora", "notifiche"),
@@ -222,7 +229,7 @@ object SettingsIndex {
         e("ac.panelsounds", Notifications, R.string.ac_panel_sounds, "sound", "glide", "pull", "panel", "suono", "scorrimento", "pannello", "abbassa", "alza"),
         e("ac.sounds", Notifications, R.string.ac_sounds, "sound", "chime", "tone", "audio", "suono", "suoni", "notifica", "melodia"),
         e("ac.hide", Notifications, R.string.ac_hide_system, "hide", "double", "duplicate", "android notification", "system notification", "nascondi", "doppie", "notifica di android", "banner"),
-        e("ac.edge", Notifications, R.string.ac_edge, "action center", "edge", "swipe", "pull down", "over other apps", "bordo", "sopra altre app", "centro notifiche", "striscia"),
+        e("ac.edge", Actions, R.string.ac_edge, "action center", "edge", "swipe", "pull down", "over other apps", "bordo", "sopra altre app", "centro notifiche", "striscia"),
         e("ac.volume", Actions, R.string.ac_volume_panel, "volume keys", "panel", "hud", "sound", "tasti del volume", "pannello", "suono"),
         e("ac.notifcontrol", Notifications, R.string.ac_notifcontrol, "per app", "app by app", "mute", "silence", "block", "app per app", "silenzia", "blocca"),
         e("ac.notifapps", Notifications, R.string.ac_notifapps_title, "apps", "action center", "lock screen", "banner", "sound", "centro azioni", "blocco", "suono"),
@@ -244,7 +251,7 @@ object SettingsIndex {
         e("apps.categories", Apps, R.string.apps_categories, "chips", "filter", "games", "social", "filtro", "categorie", "giochi"),
         e("apps.hidden", Apps, R.string.apps_hidden, "hide", "show", "nascoste", "nascondi", "mostra"),
         e("apps.renamed", Apps, R.string.apps_renamed, "rename", "name", "rinomina", "nome", "rinominate"),
-        e("apps.locked", Apps, R.string.apps_locked, "lock", "pin", "fingerprint", "blocco", "bloccate", "impronta", "protette"),
+        e("apps.locked", Privacy, R.string.apps_locked, "lock", "pin", "fingerprint", "blocco", "bloccate", "impronta", "protette"),
 
         // --- search
         e("search.contacts", Search, R.string.apps_search_contacts, "people", "phone book", "persone", "rubrica", "contatti"),
@@ -349,11 +356,17 @@ object SettingsIndex {
      */
     fun searchIndex(context: Context): SearchIndex<SettingHit> {
         val rows = buildList {
+            SettingsCategory.entries.forEach { category ->
+                add(SearchEntry(SettingHit(category.pages.first(), null, category), context.getString(category.title), listOf(context.getString(category.description)) + context.getString(category.words).split(',').map { it.trim() }.filter { it.isNotEmpty() }))
+            }
             SettingsSection.entries.forEach { section ->
-                add(SearchEntry(SettingHit(section, null), context.getString(section.title), listOf(context.getString(section.description), context.getString(section.group.title)) + words(context, section)))
+                // A page of a category with one page is the category itself: it is found once.
+                if (section.category.pages.size > 1) {
+                    add(SearchEntry(SettingHit(section, null), context.getString(section.title), listOf(context.getString(section.description), context.getString(section.category.title)) + words(context, section)))
+                }
             }
             entries.forEach { entry ->
-                val place = context.getString(entry.section.title)
+                val place = context.getString(entry.section.title) + " " + context.getString(entry.section.category.title)
                 // A switch of a mini app is also found by the name of the app ("messages", "calendar").
                 val app = MiniOptions.byId[entry.id]?.let { listOf(context.getString(MiniOptions.appLabel(it.app))) }.orEmpty()
                 add(SearchEntry(SettingHit(entry.section, entry), context.getString(entry.title), entry.keywords + place + app + words(context, entry.section), boost = 0))

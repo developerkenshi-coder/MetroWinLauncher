@@ -37,7 +37,6 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.onRoot
@@ -454,46 +453,42 @@ class ScreensTest : ScreenshotBase() {
     }
 
     @Test
-    fun theSettingsListTheSectionsUnderFourPivotPagesAndOpenTheOneYouTouch() {
+    fun theSettingsHomeListsTheCategoriesAndOpensTheOneYouTouch() {
         show { Settings(SettingsEnv(LauncherSettings(), onChange = {})) }
-        advance(500)
+        advance(1_500)
         capture("settings_home")
-        // How it looks is the first page, with the search box over the pivot.
         compose.onNodeWithTag("settings:search").assertExists()
-        compose.onNodeWithTag("settings:section:StartTheme").assertExists()
-        compose.onNodeWithTag("settings:section:Start").assertExists()
-        compose.onNodeWithTag("settings:section:Actions").assertDoesNotExist()
+        // One big row for each category, in the order you reach for them, with the "i" that says more.
+        com.metrowin.launcher.ui.settings.SettingsCategory.entries.forEach { category ->
+            compose.onNodeWithTag("settings:category:${category.name}").assertExists()
+            compose.onNodeWithTag("info:cat:${category.name}").assertExists()
+        }
+        // The pages are not on the home: they are inside their category.
         compose.onNodeWithTag("settings:section:Kids").assertDoesNotExist()
-        // How it behaves is the second, the apps the third, the tools the last.
-        compose.onRoot().performTouchInput { swipeLeft() }
-        advance(800)
-        compose.onNodeWithTag("settings:section:Actions").assertExists()
-        compose.onNodeWithTag("settings:section:Gestures").assertExists()
-        compose.onRoot().performTouchInput { swipeLeft() }
-        advance(800)
-        compose.onNodeWithTag("settings:section:Search").assertExists()
-        compose.onNodeWithTag("settings:section:Apps").assertExists()
-        compose.onRoot().performTouchInput { swipeLeft() }
-        advance(800)
-        compose.onNodeWithTag("settings:section:Kids").performClick()
-        advance(800)
+        tapScrolled("settings:category:Privacy")
+        advance(1_000)
+        // A category opens as a pivot of its pages, the first one open.
+        compose.onNodeWithTag("settings:title").assertExists()
+        compose.onNodeWithTag("gestures:banksafe").assertExists()
+        compose.onNodeWithText("kid\'s corner").performClick()
+        advance(900)
         capture("settings_kids_opened")
         compose.onNodeWithTag("kids:start").assertExists()
     }
 
     @Test
     fun aPivotTitleTouchedSwingsToItsPage() {
-        show { Settings(SettingsEnv(LauncherSettings(), onChange = {})) }
+        show { Settings(SettingsEnv(LauncherSettings(), onChange = {}), SettingsSection.Gestures) }
         advance(500)
-        // The pivot titles are touched too, as in the settings of Windows Phone: the title of "behavior"
-        // opens that page, and so does one further away.
-        compose.onNodeWithText("behavior").performClick()
+        // The pivot titles are touched too, as in the settings of Windows Phone.
+        compose.onNodeWithTag("gestures:edgepull").assertExists()
+        compose.onNodeWithText("touch and feel").performClick()
         advance(900)
-        compose.onNodeWithTag("settings:section:Actions").assertExists()
-        compose.onNodeWithTag("settings:section:StartTheme").assertDoesNotExist()
-        compose.onNodeWithText("apps").performClick()
+        compose.onNodeWithTag("gestures:sound").assertExists()
+        compose.onNodeWithTag("gestures:edgepull").assertDoesNotExist()
+        compose.onNodeWithText("voice").performClick()
         advance(900)
-        compose.onNodeWithTag("settings:section:Search").assertExists()
+        compose.onNodeWithTag("voice:icon").assertExists()
     }
 
     @Test

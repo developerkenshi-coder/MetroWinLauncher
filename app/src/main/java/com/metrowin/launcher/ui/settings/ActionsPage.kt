@@ -44,7 +44,7 @@ import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.theme.frame
 
-/** The Action Center: which four buttons sit on top of it, its sliders, sounds and the volume panel. */
+/** The Action Center: whether it is on, which four buttons sit on top of it, its sliders and the volume panel. */
 @Composable
 fun ActionsPage(env: SettingsEnv) {
     val colors = LocalMetroColors.current
@@ -58,6 +58,14 @@ fun ActionsPage(env: SettingsEnv) {
     SettingsPage {
         Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
             SettingHeading(stringResource(R.string.actions_center_title))
+            ToggleSetting(
+                label = stringResource(R.string.ac_enabled),
+                checked = env.settings.actionCenterEnabled,
+                onChange = { value -> env.onChange { it.copy(actionCenterEnabled = value) } },
+                hint = stringResource(R.string.ac_enabled_hint),
+                tag = "notifications:enabled", id = "ac.enabled",
+            )
+            EdgeSetting(env)
             Column(Modifier.settingAnchor("ac.buttons")) {
                 SettingLabel(stringResource(R.string.settings_quick_actions))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.onSizeChanged { slotWidth = it.width / slots.size.toFloat() }) {
@@ -118,7 +126,7 @@ fun ActionsPage(env: SettingsEnv) {
                 }
             }
             SettingHint(stringResource(R.string.ac_reorder_hint))
-            ShizukuSetting()
+            AdvancedGroup(listOf("ac.shizuku")) { ShizukuSetting() }
             ToggleSetting(
                 label = stringResource(R.string.ac_sliders),
                 checked = env.settings.actionSliders,
@@ -150,7 +158,7 @@ private fun ShizukuSetting() {
     )
 }
 
-/** What is done with the notifications that arrive: who reads them, which show, which are held, and for which apps. */
+/** What is done with the notifications that arrive: who reads them, which show, which are held, and for which apps. (The Action Center itself is on the Bars page.) */
 @Composable
 fun NotificationsPage(env: SettingsEnv) {
     SettingsPage {
@@ -169,13 +177,6 @@ fun NotificationsPage(env: SettingsEnv) {
                     )
                 }
             }
-            ToggleSetting(
-                label = stringResource(R.string.ac_enabled),
-                checked = env.settings.actionCenterEnabled,
-                onChange = { value -> env.onChange { it.copy(actionCenterEnabled = value) } },
-                hint = stringResource(R.string.ac_enabled_hint),
-                tag = "notifications:enabled", id = "ac.enabled",
-            )
             ToggleSetting(
                 label = stringResource(R.string.notif_peek),
                 checked = env.settings.notificationPeek,
@@ -238,7 +239,7 @@ fun NotificationsPage(env: SettingsEnv) {
     }
 }
 
-/** The two switches that draw over other apps: each is on only when Android also lets the launcher do it, and turning one on without that opens the screen that gives it. */
+/** The banner over other apps: on only when Android also lets the launcher draw there, and turning it on without that opens the screen that gives it. */
 @Composable
 private fun OverlaySettings(env: SettingsEnv) {
     val context = LocalContext.current
@@ -250,7 +251,11 @@ private fun OverlaySettings(env: SettingsEnv) {
         enabled = env.notificationAccess && env.settings.actionCenterEnabled && env.settings.toastBanner, tag = "notifications:overlay", id = "ac.overlay",
         onChange = { value -> env.onChange { it.copy(overlayBanner = value) }; if (value && !allowed) askToDrawOverApps(context) },
     )
-    // The Action Center over other apps draws with the accessibility service (the one that locks the screen), not with this permission.
+}
+
+/** The Action Center pulled down over other apps: it draws with the accessibility service (the one that locks the screen), not with the permission of the banner. */
+@Composable
+internal fun EdgeSetting(env: SettingsEnv) {
     OverlayToggle(
         label = R.string.ac_edge, hint = R.string.ac_edge_hint, on = env.settings.edgeActionCenter, allowed = env.lockServiceEnabled,
         needs = R.string.gest_lock_needs_service,

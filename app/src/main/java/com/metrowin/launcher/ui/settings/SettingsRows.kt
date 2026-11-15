@@ -29,6 +29,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,6 +80,34 @@ fun SettingsPage(modifier: Modifier = Modifier, content: @Composable ColumnScope
     }
 }
 
+/**
+ * A control with the "i" of its setting after it, when the setting has a text that says what it is for (see [SettingsInfo]); without an [id], or without
+ * a text, the control stands alone as before.
+ */
+@Composable
+internal fun WithInfo(id: String?, title: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    val info = id?.let { SettingsInfo.of(it) }
+    if (info == null) {
+        Box(modifier) { content() }
+        return
+    }
+    // With big text the words need the whole width: the "i" goes under the control, at its end, instead of beside it.
+    if (LocalDensity.current.fontScale >= BIG_TEXT) {
+        Column(modifier) {
+            content()
+            InfoMark(info, title, Modifier.align(Alignment.End), tag = "info:$id")
+        }
+        return
+    }
+    Row(modifier, verticalAlignment = Alignment.Top) {
+        Box(Modifier.weight(1f)) { content() }
+        InfoMark(info, title, Modifier.padding(start = 2.dp), tag = "info:$id")
+    }
+}
+
+/** From this text scale the "i" of a setting sits under it. */
+private const val BIG_TEXT = 1.1f
+
 /** A line under a setting that says what it does. */
 @Composable
 fun SettingHint(
@@ -97,8 +126,8 @@ fun SettingHint(
 
 /** A heading that groups settings inside a page. */
 @Composable
-fun SettingHeading(text: String, modifier: Modifier = Modifier) {
-    MetroText(text, size = 26.sp, modifier = modifier.semantics { heading() })
+fun SettingHeading(text: String, modifier: Modifier = Modifier, infoId: String? = null) {
+    WithInfo(infoId, text, modifier) { MetroText(text, size = 26.sp, modifier = Modifier.semantics { heading() }) }
 }
 
 /** The Windows Phone toggle with, optionally, a line under it that says what it does. */
@@ -114,14 +143,48 @@ fun ToggleSetting(
     /** The id of this setting in the [SettingsIndex], when it has one. */
     id: String? = null,
 ) {
-    Column(modifier.settingAnchor(id).alpha(if (enabled) 1f else 0.4f).semantics { if (!enabled) disabled() }) {
-        MetroToggle(
-            label, checked,
-            onChange = { if (enabled) onChange(it) },
-            modifier = if (tag != null) Modifier.testTag(tag) else Modifier,
-        )
-        if (hint != null) SettingHint(hint, Modifier.padding(top = 2.dp))
+    WithInfo(id, label, modifier.settingAnchor(id).alpha(if (enabled) 1f else 0.4f).semantics { if (!enabled) disabled() }) {
+        Column {
+            MetroToggle(
+                label, checked,
+                onChange = { if (enabled) onChange(it) },
+                modifier = if (tag != null) Modifier.testTag(tag) else Modifier,
+            )
+            if (hint != null) SettingHint(hint, Modifier.padding(top = 2.dp))
+        }
     }
+}
+
+/**
+ * Settings few people need, under a heading that is closed until it is touched (the page keeps it open or closed). It opens by itself
+ * when the page was opened for one of its settings ([ids], ids of the [SettingsIndex]), so a search never lands on a hidden control.
+ */
+@Composable
+fun AdvancedGroup(ids: List<String>, modifier: Modifier = Modifier, title: String? = null, content: @Composable ColumnScope.() -> Unit) {
+    val target = LocalSettingsTarget.current
+    var open by rememberSaveable(ids.firstOrNull()) { mutableStateOf(AdvancedGroups.openAll) }
+    val shown = open || target in ids
+    val colors = LocalMetroColors.current
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .testTag("advanced:${ids.firstOrNull()}")
+                .metroPress(onClick = { open = !shown })
+                .semantics { heading() }
+                .padding(vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            MetroText(title ?: stringResource(R.string.settings_advanced), size = 26.sp, modifier = Modifier.weight(1f))
+            MetroText(if (shown) "−" else "+", size = MetroType.Heading, weight = FontWeight.Normal, color = colors.subtle)
+        }
+        if (shown) content()
+    }
+}
+
+/** Open from the start: for the tests, which look for every setting of a page. */
+internal object AdvancedGroups {
+    @Volatile var openAll = false
 }
 
 /** Mutually exclusive options one under the other, for choices that are too long to sit side by side. */
@@ -136,7 +199,7 @@ fun OptionList(
     tag: String? = null,
     id: String? = null,
 ) {
-    Column(modifier.settingAnchor(id).then(if (tag != null) Modifier.testTag(tag) else Modifier)) {
+    WithInfo(id, label, modifier.settingAnchor(id).then(if (tag != null) Modifier.testTag(tag) else Modifier)) { Column {
         SettingLabel(label)
         options.forEachIndexed { index, text ->
             Row(
@@ -153,7 +216,7 @@ fun OptionList(
             }
         }
         if (hint != null) SettingHint(hint, Modifier.padding(top = Spacing.Small))
-    }
+    } }
 }
 
 /**
@@ -172,7 +235,7 @@ fun DropdownSetting(
 ) {
     var open by remember { mutableStateOf(false) }
     val colors = LocalMetroColors.current
-    Column(modifier.settingAnchor(id)) {
+    WithInfo(id, label, modifier.settingAnchor(id)) { Column {
         SettingLabel(label)
         Row(
             Modifier
@@ -207,7 +270,7 @@ fun DropdownSetting(
                 }
             }
         }
-    }
+    } }
 }
 
 /** A number with a button each side to make it smaller or bigger. */
@@ -224,7 +287,7 @@ fun StepperSetting(
     tag: String? = null,
     id: String? = null,
 ) {
-    Column(modifier.settingAnchor(id).then(if (tag != null) Modifier.testTag(tag) else Modifier)) {
+    WithInfo(id, label, modifier.settingAnchor(id).then(if (tag != null) Modifier.testTag(tag) else Modifier)) { Column {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             MetroText(label, size = MetroType.Subtitle, modifier = Modifier.weight(1f))
             StepButton("−", stringResource(R.string.stepper_minus), canDecrement, onDecrement, tag?.let { "$it:minus" })
@@ -233,7 +296,7 @@ fun StepperSetting(
             StepButton("+", stringResource(R.string.stepper_plus), canIncrement, onIncrement, tag?.let { "$it:plus" })
         }
         if (hint != null) SettingHint(hint, Modifier.padding(top = 2.dp))
-    }
+    } }
 }
 
 @Composable
@@ -263,7 +326,7 @@ fun ActionSetting(
     tag: String? = null,
     id: String? = null,
 ) {
-    Column(modifier.settingAnchor(id)) {
+    WithInfo(id, text, modifier.settingAnchor(id)) { Column {
         MetroButton(
             text,
             Modifier
@@ -274,7 +337,7 @@ fun ActionSetting(
                 .then(if (tag != null) Modifier.testTag(tag) else Modifier),
         ) { if (enabled) onClick() }
         if (hint != null) SettingHint(hint, Modifier.padding(top = Spacing.Medium))
-    }
+    } }
 }
 
 /** A fact the user cannot change: a label and its value. */
