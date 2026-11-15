@@ -62,7 +62,12 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
     AutoBrightness("autobrightness", R.string.qa_auto_brightness, Glyph.AutoBrightness),
 
     /** The settings of Android itself, as against [LauncherSettings] (the settings of this launcher): another picture and another name. */
-    DeviceSettings("device", R.string.qa_device_settings, Glyph.DeviceSettings);
+    DeviceSettings("device", R.string.qa_device_settings, Glyph.DeviceSettings),
+
+    /** The voice recorder, the notes and the calculator of the launcher, opened with the page turn (see [miniApp]). */
+    Recorder("recorder", R.string.qa_recorder, Glyph.Mic),
+    Notes("notes", R.string.qa_notes, Glyph.Notes),
+    Calculator("calculator", R.string.qa_calculator, Glyph.Calculator);
 
     companion object {
         /** The four buttons on top until the user chooses others. */
@@ -77,6 +82,14 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
         /** The saved buttons, with the first version's untouched default moved on to the current one. */
         fun migrate(saved: List<String>): List<String> = if (saved == previousDefaults) defaults.map { it.id } else saved
 
+        /** The id in [MiniApps.activities] of the mini app a button opens, or null for the buttons that are not one. */
+        fun miniApp(action: QuickAction): String? = when (action) {
+            Recorder -> "voicerecorder"
+            Notes -> "notes"
+            Calculator -> "calculator"
+            else -> null
+        }
+
         fun fromId(id: String): QuickAction? = entries.firstOrNull { it.id == id }
 
         /**
@@ -84,7 +97,7 @@ enum class QuickAction(val id: String, @param:StringRes val label: Int, val glyp
          * Bluetooth, whose long press opens the list of networks and devices in the panel.
          */
         fun holdScreen(action: QuickAction): String? = when (action) {
-            Wifi, Bluetooth -> null
+            Wifi, Bluetooth, Recorder, Notes, Calculator -> null
             Airplane -> Settings.ACTION_WIRELESS_SETTINGS
             Hotspot -> "android.settings.TETHER_SETTINGS"
             MobileData -> "android.settings.DATA_USAGE_SETTINGS"
@@ -272,6 +285,14 @@ class QuickActionsController(private val context: Context) {
                 return true
             }
         }
+        QuickAction.miniApp(action)?.let { id ->
+            // A mini app of the launcher: it opens with the page turn, as from a tile.
+            val activity = MiniApps.activities[id] ?: return false
+            runCatching {
+                context.startActivity(Intent(context, activity).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra(com.metrowin.launcher.ui.mini.PageTurn.EXTRA, true))
+            }
+            return false
+        }
         if (action == QuickAction.Vpn) {
             // Android cannot connect another app's VPN: the app that does is opened (most connect by themselves), or the choice of it.
             val apps = VpnApps.installed(context)
@@ -365,6 +386,7 @@ class QuickActionsController(private val context: Context) {
             QuickAction.LauncherSettings, QuickAction.Recents, QuickAction.Screenshot -> return false
             QuickAction.DeviceSettings -> Settings.ACTION_SETTINGS
             QuickAction.ScreenTimeout, QuickAction.AutoBrightness, QuickAction.Rotation -> return false
+            QuickAction.Recorder, QuickAction.Notes, QuickAction.Calculator -> return false
         }
         if (!start(intentAction)) start(Settings.ACTION_SETTINGS)
         return false

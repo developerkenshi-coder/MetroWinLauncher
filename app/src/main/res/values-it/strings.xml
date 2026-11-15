@@ -1089,6 +1089,9 @@
     <string name="lock_show_event">mostra il prossimo evento</string>
     <string name="lock_show_event_hint">Il prossimo evento del calendario nelle prossime 24 ore. Serve il permesso del calendario. Chiunque veda lo schermo può leggerlo.</string>
     <string name="lock_recording">registrazione in corso</string>
+    <string name="qa_recorder">Registratore</string>
+    <string name="qa_notes">Note</string>
+    <string name="qa_calculator">Calcolatrice</string>
     <string name="ac_a11y_expand">mostra di più</string>
     <string name="ac_a11y_collapse">mostra meno</string>
     <string name="ac_a11y_close">chiudi il pannello</string>
