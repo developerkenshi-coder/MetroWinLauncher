@@ -1,41 +1,29 @@
 package com.metrowin.launcher.dialer
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.lifecycle.lifecycleScope
-import com.metrowin.launcher.ui.mini.PageTurn
-import com.metrowin.launcher.ui.mini.returnToLauncher
-import com.metrowin.launcher.ui.mini.TurnPage
 import androidx.compose.runtime.setValue
-import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.data.PhoneCalls
-import com.metrowin.launcher.data.SettingsStore
-import com.metrowin.launcher.notifications.OverlayTheme
+import com.metrowin.launcher.ui.mini.MiniActivity
 
 /**
  * The phone app of the launcher. Android opens it for a `tel:` link or for "dial" from any app, once the launcher is the phone app of the
  * phone (or the user picks it), and the launcher opens it from the Phone tile. A number in the link is written in the keypad, not called.
  */
-open class DialerActivity : ComponentActivity() {
+open class DialerActivity : MiniActivity() {
     /** The page that opens first: the keypad, to type a number. [PeopleActivity] opens the contacts. */
     protected open val firstPage = PAGE_KEYPAD
 
-    private val turn by lazy { PageTurn(intent.getBooleanExtra(PageTurn.EXTRA, false)) }
     private var number by mutableStateOf("")
+    private var initialPage = PAGE_KEYPAD
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT), navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
-        super.onCreate(savedInstanceState)
         number = savedInstanceState?.getString(STATE_NUMBER) ?: numberIn(intent)
-        val initialPage = intent.getIntExtra(
+        initialPage = intent.getIntExtra(
             "page",
             when {
                 intent.action == "com.metrowin.launcher.ACTION_CONTACTS" -> PAGE_CONTACTS
@@ -43,23 +31,16 @@ open class DialerActivity : ComponentActivity() {
                 else -> firstPage
             },
         )
-        val settings = SettingsStore.of(this).load()
-        setContent {
-            OverlayTheme(settings, remember { IconLoader(applicationContext) }) {
-                TurnPage(turn) { DialerScreen(number, { number = it }, onPlaced = { finish() }, initialPage = initialPage) }
-            }
-        }
+        super.onCreate(savedInstanceState)
     }
+
+    @Composable
+    override fun Content() = DialerScreen(number, { number = it }, onPlaced = { finish() }, initialPage = initialPage)
 
     /** A turn of the screen recreates the activity: the digits typed are kept. */
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(STATE_NUMBER, number)
-    }
-
-    /** With the original animation the page turns away first, and the window closes without its own animation. */
-    override fun finish() {
-        if (!turn.leave(lifecycleScope) { returnToLauncher(); super.finish(); overridePendingTransition(0, 0) }) { returnToLauncher(); super.finish() }
     }
 
     override fun onNewIntent(intent: Intent) {
