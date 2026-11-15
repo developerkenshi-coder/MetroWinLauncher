@@ -85,7 +85,7 @@ object PowerPolicy {
 object LiveSources {
     private val sources = setOf(
         LiveKind.Calendar, LiveKind.Photos, LiveKind.People, LiveKind.Phone, LiveKind.Mail, LiveKind.Storage, LiveKind.Alarm, LiveKind.Birthdays,
-        LiveKind.Album, LiveKind.Group,
+        LiveKind.Album, LiveKind.Group, LiveKind.Memories,
     )
 
     /** The tiles that read from the Internet: nothing is asked for while none of them is on Start. */
@@ -103,7 +103,8 @@ object LiveSources {
     /** The ids of the photo albums that have a tile on Start. */
     fun albumIds(pages: List<List<StartEntry>>, items: List<AppItem>): Set<String> {
         val pinned = StartPages.pinnedIds(pages)
-        return items.filter { it.id in pinned }.mapNotNullTo(HashSet()) { (it.data as? TileData.Album)?.bucket }
+        // The albums of the info tiles count too.
+        return items.filter { it.id in pinned }.mapNotNullTo(HashSet()) { (it.data as? TileData.Album)?.bucket ?: (it.data as? TileData.Info)?.config?.album?.takeIf { id -> id.isNotEmpty() } }
     }
 
     /** The ids of the groups of contacts that have a tile on Start. */

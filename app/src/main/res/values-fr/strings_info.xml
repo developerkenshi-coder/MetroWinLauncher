@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="add_info">InfoTile : heure, calendrier et photos</string>
+    <string name="add_info">InfoTile : heure, calendrier, photos et plus</string>
     <string name="info_default_label">InfoTile</string>
     <string name="info_title">InfoTile</string>
     <string name="info_time">L\'heure</string>
     <string name="info_calendar">Les prochains événements du calendrier</string>
+    <string name="info_alarm">Le prochain réveil</string>
+    <string name="info_weather">La météo</string>
+    <string name="info_battery">La batterie</string>
     <string name="info_photos">Les dernières photos</string>
-    <string name="info_note">Avec plusieurs activés, la tuile passe de l\'un à l\'autre. Il en reste toujours un. Un appui sur la tuile rouvre ce choix.</string>
+    <string name="info_memories">Les photos de ce jour des années passées</string>
+    <string name="info_smart_title">Intelligent</string>
+    <string name="info_smart">D\'abord ce qui compte maintenant : un événement ou un réveil dans l\'heure reste seul, la nuit seulement l\'heure</string>
+    <string name="info_saver">Seulement l\'heure en économie d\'énergie</string>
+    <string name="info_pace">Vitesse de rotation</string>
+    <string name="info_pace_slow">Lente</string>
+    <string name="info_pace_normal">Normale</string>
+    <string name="info_pace_fast">Rapide</string>
+    <string name="info_zone">Fuseau horaire : %1$s</string>
+    <string name="info_zone_phone">du téléphone</string>
+    <string name="info_zone_reset">Utiliser le fuseau du téléphone</string>
+    <string name="info_album">Photos de : %1$s</string>
+    <string name="info_album_latest">les dernières du téléphone</string>
+    <string name="info_album_reset">Utiliser les dernières photos du téléphone</string>
+    <string name="info_note">Avec plusieurs faces actives, la tuile passe de l\'une à l\'autre ; il en reste toujours une. Un appui ouvre ce dont parle la face affichée. Ce choix se rouvre depuis le mode édition de la tuile.</string>
     <string name="info_done">Terminé</string>
 </resources>

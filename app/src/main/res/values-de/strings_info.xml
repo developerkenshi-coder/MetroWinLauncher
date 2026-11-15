@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="add_info">InfoTile: Uhrzeit, Kalender und Fotos</string>
+    <string name="add_info">InfoTile: Uhrzeit, Kalender, Fotos und mehr</string>
     <string name="info_default_label">InfoTile</string>
     <string name="info_title">InfoTile</string>
     <string name="info_time">Die Uhrzeit</string>
     <string name="info_calendar">Die nächsten Termine des Kalenders</string>
+    <string name="info_alarm">Der nächste Wecker</string>
+    <string name="info_weather">Das Wetter</string>
+    <string name="info_battery">Der Akku</string>
     <string name="info_photos">Die neuesten Fotos</string>
-    <string name="info_note">Sind mehrere an, wechselt die Kachel von einem zum nächsten. Eines bleibt immer an. Ein Tippen auf die Kachel öffnet diese Auswahl.</string>
+    <string name="info_memories">Die Fotos dieses Tages aus früheren Jahren</string>
+    <string name="info_smart_title">Intelligent</string>
+    <string name="info_smart">Zuerst, was jetzt zählt: ein Termin oder Wecker innerhalb einer Stunde bleibt allein, nachts nur die Uhrzeit</string>
+    <string name="info_saver">Nur die Uhrzeit im Energiesparmodus</string>
+    <string name="info_pace">Wie schnell es wechselt</string>
+    <string name="info_pace_slow">Langsam</string>
+    <string name="info_pace_normal">Normal</string>
+    <string name="info_pace_fast">Schnell</string>
+    <string name="info_zone">Zeitzone: %1$s</string>
+    <string name="info_zone_phone">des Telefons</string>
+    <string name="info_zone_reset">Zeitzone des Telefons verwenden</string>
+    <string name="info_album">Fotos aus: %1$s</string>
+    <string name="info_album_latest">die neuesten des Telefons</string>
+    <string name="info_album_reset">Neueste Fotos des Telefons verwenden</string>
+    <string name="info_note">Sind mehrere Seiten an, wechselt die Kachel von einer zur nächsten; eine bleibt immer an. Ein Tippen öffnet, worum es auf der gezeigten Seite geht. Diese Auswahl öffnet sich wieder im Bearbeitungsmodus der Kachel.</string>
     <string name="info_done">Fertig</string>
 </resources>

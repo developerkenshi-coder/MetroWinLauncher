@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="add_info">InfoTile: hora, calendário e fotos</string>
+    <string name="add_info">InfoTile: hora, calendário, fotos e mais</string>
     <string name="info_default_label">InfoTile</string>
     <string name="info_title">InfoTile</string>
     <string name="info_time">A hora</string>
     <string name="info_calendar">Os próximos eventos do calendário</string>
+    <string name="info_alarm">O próximo alarme</string>
+    <string name="info_weather">O tempo</string>
+    <string name="info_battery">A bateria</string>
     <string name="info_photos">As últimas fotos</string>
-    <string name="info_note">Com mais de um ativo, o mosaico passa de um para o outro. Um fica sempre ativo. Um toque no mosaico abre esta escolha.</string>
+    <string name="info_memories">As fotos deste dia em anos anteriores</string>
+    <string name="info_smart_title">Inteligente</string>
+    <string name="info_smart">Primeiro o que importa agora: um evento ou alarme na próxima hora fica sozinho, à noite só a hora</string>
+    <string name="info_saver">Só a hora quando o telefone poupa bateria</string>
+    <string name="info_pace">Velocidade de rotação</string>
+    <string name="info_pace_slow">Lenta</string>
+    <string name="info_pace_normal">Normal</string>
+    <string name="info_pace_fast">Rápida</string>
+    <string name="info_zone">Fuso horário: %1$s</string>
+    <string name="info_zone_phone">do telefone</string>
+    <string name="info_zone_reset">Usar o fuso do telefone</string>
+    <string name="info_album">Fotos de: %1$s</string>
+    <string name="info_album_latest">as últimas do telefone</string>
+    <string name="info_album_reset">Usar as últimas fotos do telefone</string>
+    <string name="info_note">Com mais de uma face ativa, o mosaico passa de uma para a outra; uma fica sempre ativa. Um toque abre aquilo de que trata a face mostrada. Esta escolha reabre-se a partir do modo de edição do mosaico.</string>
     <string name="info_done">Concluído</string>
 </resources>

@@ -56,6 +56,9 @@ internal class AddTileState {
     var counterEditingId by mutableStateOf<String?>(null)
     var checklistEditingId by mutableStateOf<String?>(null)
     var infoEditingId by mutableStateOf<String?>(null)
+
+    /** The picker open over the choice of an info tile: "zone" or "album". */
+    var infoPick by mutableStateOf<String?>(null)
     var countdownNew by mutableStateOf(false)
     var countdownEditingId by mutableStateOf<String?>(null)
 
@@ -360,11 +363,32 @@ internal fun AddTileState.Dialogs(
         infoEditingId?.let { id ->
             val info = items.firstOrNull { it.id == id }
             if (info != null) {
+                val config = (info.data as? TileData.Info)?.config ?: InfoConfig()
                 InfoTileDialog(
-                    initial = (info.data as? TileData.Info)?.config ?: InfoConfig(),
-                    onChange = { config -> vm.saveInfo(id, config) },
+                    initial = config,
+                    onChange = { next -> vm.saveInfo(id, next) },
+                    onZone = { infoPick = "zone" },
+                    onAlbum = { infoPick = "album" },
                     onClose = { infoEditingId = null },
                 )
+                when (infoPick) {
+                    "zone" -> CityPicker(
+                        onPick = { city -> infoPick = null; vm.saveInfo(id, config.copy(zone = city.zone)) },
+                        onDismiss = { infoPick = null },
+                    )
+                    "album" -> {
+                        var granted by remember { mutableStateOf(LivePermissions.canReadPhotos(appContext)) }
+                        val photosPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+                            granted = LivePermissions.canReadPhotos(appContext)
+                        }
+                        val albums by produceState<List<AlbumInfo>?>(null, granted) { value = if (granted) vm.albums() else emptyList() }
+                        AlbumPicker(
+                            albums = albums, permissionMissing = !granted, onAllow = { photosPermission.launch(LivePermissions.photos) },
+                            onPick = { album -> infoPick = null; vm.saveInfo(id, config.copy(album = album.id, albumName = album.name)) },
+                            onDismiss = { infoPick = null },
+                        )
+                    }
+                }
             }
         }
 
