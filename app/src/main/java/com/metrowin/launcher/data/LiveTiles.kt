@@ -58,6 +58,10 @@ data class LivePerson(val name: String, val photo: ImageBitmap)
 @Immutable
 data class LiveEvent(val title: String, val startMillis: Long, val allDay: Boolean)
 
+/** The open things to do, for the Todo tile: how many there are and the first ones as the mini app lists them. */
+@Immutable
+data class LiveTodo(val open: Int, val first: List<String>)
+
 /** What the live tiles show right now. Empty values mean "no permission" or "nothing to show". */
 @Immutable
 data class LiveTileData(
@@ -69,6 +73,8 @@ data class LiveTileData(
     val missedCalls: Int = 0,
     /** The unread messages of the mail accounts, for the Mail tile (kept by [com.metrowin.launcher.mail.MailSync]). */
     val unreadMail: Int = 0,
+    /** The open things to do, for the Todo tile. */
+    val todo: LiveTodo? = null,
     /** The flashlight is on, for the torch tile. Not read from the phone with the rest: it comes from the torch callback. */
     val torchOn: Boolean = false,
     val battery: BatteryInfo? = null,
@@ -105,6 +111,7 @@ fun LiveTileData.keeping(kinds: Set<LiveKind>, albumIds: Set<String> = emptySet(
     events = if (LiveKind.Calendar in kinds) events else emptyList(),
     missedCalls = if (LiveKind.Phone in kinds) missedCalls else 0,
     unreadMail = if (LiveKind.Mail in kinds) unreadMail else 0,
+    todo = if (LiveKind.Todo in kinds) todo else null,
     storage = if (LiveKind.Storage in kinds) storage else null,
     nextAlarm = if (LiveKind.Alarm in kinds) nextAlarm else 0L,
     birthdays = if (LiveKind.Birthdays in kinds) birthdays else emptyList(),
@@ -122,6 +129,7 @@ fun LiveTileData.updatedWith(fresh: LiveTileData, kinds: Set<LiveKind>) = copy(
     events = if (LiveKind.Calendar in kinds) fresh.events else events,
     missedCalls = if (LiveKind.Phone in kinds) fresh.missedCalls else missedCalls,
     unreadMail = if (LiveKind.Mail in kinds) fresh.unreadMail else unreadMail,
+    todo = if (LiveKind.Todo in kinds) fresh.todo else todo,
     storage = if (LiveKind.Storage in kinds) fresh.storage else storage,
     nextAlarm = if (LiveKind.Alarm in kinds) fresh.nextAlarm else nextAlarm,
     birthdays = if (LiveKind.Birthdays in kinds) fresh.birthdays else birthdays,
@@ -153,12 +161,20 @@ class LiveTileRepository(private val context: Context) {
         events = events,
         missedCalls = if (LiveKind.Phone in wanted) missedCalls() else 0,
         unreadMail = if (LiveKind.Mail in wanted) com.metrowin.launcher.mail.MailSync.unread(context) else 0,
+        todo = if (LiveKind.Todo in wanted) todo() else null,
         storage = if (LiveKind.Storage in wanted) StorageInfo.read() else null,
         nextAlarm = if (LiveKind.Alarm in wanted) NextAlarm.read(context) else 0L,
         birthdays = if (LiveKind.Birthdays in wanted) birthdays() else emptyList(),
         albums = if (LiveKind.Album in wanted) albumIds.associateWith { album(it) } else emptyMap(),
         groups = if (LiveKind.Group in wanted) groupIds.associateWith { group(it) } else emptyMap(),
         )
+    }
+
+    /** The first open things to do, in the order the mini app shows them (late first, then today, later, with no date). */
+    private fun todo(): LiveTodo {
+        val items = com.metrowin.launcher.todo.TodoStore(context).load()
+        val open = com.metrowin.launcher.todo.Todos.open(items, null, System.currentTimeMillis()).values.flatten()
+        return LiveTodo(open.size, open.take(TODO_SHOWN).map { it.text })
     }
 
     private fun granted(permission: String) = LivePermissions.isGranted(context, permission)
@@ -352,6 +368,7 @@ class LiveTileRepository(private val context: Context) {
         const val MAX_BIRTHDAYS = 2_000
         const val MAX_FACES = 16
         const val MAX_PHOTOS = 8
+        const val TODO_SHOWN = 8
         const val MAX_GROUP_ROWS = 2_000
         const val WEEK_MILLIS = 7L * 24 * 60 * 60 * 1000
     }

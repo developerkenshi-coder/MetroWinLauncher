@@ -40,7 +40,7 @@ object StartEntries {
     /** [onlyMediumOrWide]: the cycle skips the small and the large size (the full weather tile has no face for them). */
     fun resize(entries: List<StartEntry>, id: String, allowLarge: Boolean = true, onlyMediumOrWide: Boolean = false): List<StartEntry> =
         entries.map { entry ->
-            fun next(size: TileSize) = if (onlyMediumOrWide) (if (size == TileSize.Medium) TileSize.Wide else TileSize.Medium) else size.next(allowLarge)
+            fun next(size: TileSize) = size.next(allowLarge, onlyMediumOrWide)
             when {
                 entry.id != id -> entry
                 entry is Tile -> entry.copy(size = next(entry.size))

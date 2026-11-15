@@ -83,7 +83,7 @@ object MetroCatalog {
             live = LiveKind.Photos,
         ),
         // The hub of the launcher itself (a mini app): the pictures by album, date and favourites. "photos" above stays the gallery the phone has.
-        StockApp("photohub", R.string.stock_photohub, Glyph.Photos),
+        StockApp("photohub", R.string.stock_photohub, Glyph.Photos, live = LiveKind.Photos),
         // The song that plays in any app, across the page (a mini app); "music" above stays the player the phone has.
         StockApp("nowplaying", R.string.stock_nowplaying, Glyph.Music),
         StockApp(
@@ -145,7 +145,7 @@ object MetroCatalog {
         ),
         // The mini apps of the launcher with no Android app behind them (see MiniApps).
         StockApp("notes", R.string.stock_notes, Glyph.Notes),
-        StockApp("todo", R.string.stock_todo, Glyph.Todo),
+        StockApp("todo", R.string.stock_todo, Glyph.Todo, live = LiveKind.Todo),
         StockApp("shizukuterminal", R.string.stock_shizukuterminal, Glyph.Terminal),
         StockApp("podcasts", R.string.stock_podcasts, Glyph.Podcasts, pkg("com.google.android.apps.podcasts")),
         StockApp("games", R.string.stock_games, Glyph.Games, pkg("com.google.android.play.games")),

@@ -606,6 +606,7 @@
         <item quantity="many">%1$d notificações</item>
         <item quantity="other">%1$d notificações</item>
     </plurals>
+    <string name="a11y_tile_next">Próximo: %1$s</string>
     <plurals name="a11y_tile_notifications">
         <item quantity="one">%1$s, %2$d notificação</item>
         <item quantity="many">%1$s, %2$d notificações</item>

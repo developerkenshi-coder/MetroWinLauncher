@@ -605,6 +605,7 @@
         <item quantity="one">%1$d Benachrichtigung</item>
         <item quantity="other">%1$d Benachrichtigungen</item>
     </plurals>
+    <string name="a11y_tile_next">Als Nächstes: %1$s</string>
     <plurals name="a11y_tile_notifications">
         <item quantity="one">%1$s, %2$d Benachrichtigung</item>
         <item quantity="other">%1$s, %2$d Benachrichtigungen</item>

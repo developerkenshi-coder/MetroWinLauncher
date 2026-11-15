@@ -313,6 +313,33 @@ class ExtraTilesUiTest : ScreenshotBase() {
         compose.onNodeWithTag("calendar:agenda").assertExists()
     }
 
+    private fun showTodo(size: TileSize, side: Int, live: LiveTileData) {
+        val todo = AppItem("t", "To-do", Launch.Internal("x"), Glyph.Todo, live = com.metrowin.launcher.model.LiveKind.Todo, pinOnly = true)
+        show { Box(Modifier.size(side.dp, side.dp).background(DefaultAccent)) { TileFace(todo, size, side.dp, side.dp, live, seed = 0, notifications = 0) } }
+        advance(300)
+    }
+
+    private val somethingToDo = LiveTileData(todo = com.metrowin.launcher.data.LiveTodo(5, listOf("Buy milk", "Call Anna", "Pay rent", "Book flight", "Water plants")))
+
+    @Test
+    fun theSmallTodoTileShowsHowManyThingsAreOpen() {
+        showTodo(TileSize.Small, 100, somethingToDo)
+        compose.onNodeWithTag("todo:open").assertExists()
+        compose.onAllNodesWithTag("todo:row").assertCountEquals(0)
+    }
+
+    @Test
+    fun theBiggerTodoTilesShowTheFirstThingsToDo() {
+        showTodo(TileSize.Medium, 200, somethingToDo)
+        compose.onAllNodesWithTag("todo:row").assertCountEquals(3)
+    }
+
+    @Test
+    fun theTodoTileIsPlainWhenThereIsNothingToDo() {
+        showTodo(TileSize.Medium, 200, LiveTileData())
+        compose.onAllNodesWithTag("todo:row").assertCountEquals(0)
+    }
+
     @Test
     fun theRestoreDialogPutsBackOnlyWhatWasChosen() {
         var chosen: Set<com.metrowin.launcher.data.RestorePart>? = null

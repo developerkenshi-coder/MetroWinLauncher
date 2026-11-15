@@ -1381,7 +1381,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             StartBackdrop(
                                 pagerState, pages.size, settings.appListLeft, startScrolls,
                                 { pageBackgrounds[it] ?: startBackground },
-                                settings.parallax, PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY), settings.startPhotoFit,
+                                settings.parallax && !reduceMotion, PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY), settings.startPhotoFit,
                             )
                         }
                     },
@@ -1400,7 +1400,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             actions = startActions,
                             bottomRoom = if (selectedCell != null) with(density) { editBarHeight.toDp() } else 0.dp,
                             pullConnection = pullConnections[page],
-                            parallax = settings.parallax,
+                            parallax = settings.parallax && !reduceMotion,
                             pickedKeys = folderPick,
                             framing = PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY),
                             photoFit = settings.startPhotoFit,
@@ -1777,11 +1777,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onLabels = if (settings.appBar) ({ editLabels = !editLabels }) else null,
                             labels = editLabels,
                             style = (cell as? AppCell)?.tile?.style,
-                            sizes = when {
-                                (cell as? AppCell)?.item?.data is TileData.WeatherPlus -> listOf(TileSize.Medium, TileSize.Wide)
-                                settings.largeTiles -> TileSize.entries
-                                else -> TileSize.entries - TileSize.Large
-                            },
+                            sizes = TileSize.allowed(settings.largeTiles, (cell as? AppCell)?.item?.data is TileData.WeatherPlus),
                             onGroup = if (settings.groupTitles) ({ naming.groupEditingId = cell.entryId }) else null,
                             onStyle = {
                                 val tile = cell as? AppCell ?: return@EditBar

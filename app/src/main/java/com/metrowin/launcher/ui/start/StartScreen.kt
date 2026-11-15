@@ -45,6 +45,7 @@ import androidx.compose.foundation.layout.size
 import com.metrowin.launcher.ui.components.topBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import com.metrowin.launcher.model.LiveKind
 import com.metrowin.launcher.model.TileData
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -672,6 +673,7 @@ private fun TileGridView(
                         origin = folderIndex.takeIf { it >= 0 }?.let { slotOf(layout.placements[it]) },
                         childOrder = if (folderIndex >= 0) index - folderIndex else 0,
                         onChildGone = { ghost -> if (cell is AppCell) ghosts = ghosts + ghost.copy(folderId = cell.folderId.orEmpty()) },
+                        topRow = { (scrollState.value / (unitPx + gapPx)).toInt() },
                     )
                 }
             }
@@ -801,6 +803,8 @@ private fun PositionedTile(
     childOrder: Int = 0,
     /** Called when an app of a folder goes away (the folder was closed), to fold it back into the folder. */
     onChildGone: (FolderGhost) -> Unit = {},
+    /** The first row in view, so that coming back to a scrolled Start the tiles turn in from the top of the screen, not from the top of the page. */
+    topRow: () -> Int = { 0 },
 ) {
     val density = LocalDensity.current
     val reduced = LocalReduceMotion.current
@@ -856,7 +860,8 @@ private fun PositionedTile(
         if (origin != null) return@LaunchedEffect
         // Reduced motion: every tile fades in at once, quickly.
         val original = MotionStyle.original
-        if (!reduced) delay(if (original) LaunchPlans.inDelay(placement.row / 2) else entryDelay(placement, index))
+        val inView = placement.copy(row = (placement.row - topRow()).coerceAtLeast(0))
+        if (!reduced) delay(if (original) LaunchPlans.inDelay(inView.row / 2) else entryDelay(inView, index))
         // An app was touched while this tile still waited for its turn to come in: the entrance must not start now and take the tile back from the exit.
         if (leaving) return@LaunchedEffect
         if (original) {
@@ -922,7 +927,7 @@ private fun PositionedTile(
             .size(width, height)
             // After the offset: the semantics (and so TalkBack and the tests) must be where the tile really is.
             .testTag("tile:${cell.key}")
-            .tileSemantics(cell, badges, actions, previousId, nextId, readOnly, if (picking) picked else null)
+            .tileSemantics(cell, badges, live, actions, previousId, nextId, readOnly, if (picking) picked else null)
             .onGloballyPositioned { coordinates = it }
             .graphicsLayer {
                 turnstile(away.value, reduced)
@@ -1080,6 +1085,7 @@ private val HIGH_CONTRAST_FRAME = 2.dp
 private fun Modifier.tileSemantics(
     cell: StartCell,
     badges: Map<String, Int>,
+    live: LiveTileData,
     actions: StartActions,
     previousId: String?,
     nextId: String?,
@@ -1089,13 +1095,23 @@ private fun Modifier.tileSemantics(
 ): Modifier {
     val currentActions by rememberUpdatedState(actions)
     val currentCell by rememberUpdatedState(cell)
-    val notifications = (cell as? AppCell)?.let { NotificationHub.badgeOf(badges, it.item.packageName, it.item.id) } ?: 0
+    val app = (cell as? AppCell)?.item
+    val notifications = app?.let { tileCount(it, live, NotificationHub.badgeOf(badges, it.packageName, it.id)) } ?: 0
+    // What the tile says beside the number: the next event, the first thing to do.
+    val next = when (app?.live) {
+        LiveKind.Calendar -> live.nextEvent?.title
+        LiveKind.Todo -> live.todo?.first?.firstOrNull()
+        else -> null
+    }
+    val nextState = next?.let { stringResource(R.string.a11y_tile_next, it) }
     val selectedState = picked?.let { stringResource(if (it) R.string.a11y_selected else R.string.a11y_not_selected) }
     val state = when {
         selectedState != null -> selectedState
         cell is FolderCell -> pluralStringResource(R.plurals.a11y_folder, cell.items.size, cell.folder.name, cell.items.size)
-        notifications > 0 -> pluralStringResource(R.plurals.a11y_tile_notifications, notifications, (cell as AppCell).item.label, notifications)
-        else -> null
+        else -> listOfNotNull(
+            if (notifications > 0) pluralStringResource(R.plurals.a11y_tile_notifications, notifications, (cell as AppCell).item.label, notifications) else null,
+            nextState,
+        ).joinToString(". ").ifEmpty { null }
     }
     val unpin = stringResource(if (cell is FolderCell) R.string.a11y_release else R.string.a11y_unpin)
     val resize = stringResource(R.string.a11y_resize)

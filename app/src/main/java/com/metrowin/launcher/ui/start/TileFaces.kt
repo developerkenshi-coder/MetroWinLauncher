@@ -49,6 +49,7 @@ import com.metrowin.launcher.model.TileData
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.metrowin.launcher.data.LiveTileData
+import com.metrowin.launcher.data.LiveTodo
 import com.metrowin.launcher.data.LocalWidgetHost
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Folder
@@ -59,6 +60,8 @@ import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.model.TileStyle
 import com.metrowin.launcher.notifications.TilePeek
 import com.metrowin.launcher.ui.anim.LocalTapFeedback
+import com.metrowin.launcher.ui.anim.metroTween
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.components.AppArt
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -68,6 +71,13 @@ import android.view.View
 
 /** Whether the tiles show the name of their app (the "names on the tiles" setting). */
 val LocalTileNames = androidx.compose.runtime.staticCompositionLocalOf { true }
+
+/** The number in the corner of a tile (and the one TalkBack reads): missed calls on Phone, unread mail on Mail, else the notifications of the app. */
+fun tileCount(item: AppItem, live: LiveTileData, notifications: Int): Int = when (item.live) {
+    LiveKind.Phone -> maxOf(live.missedCalls, notifications)
+    LiveKind.Mail -> maxOf(live.unreadMail, notifications)
+    else -> notifications
+}
 
 /**
  * What a tile looks like. Static for most apps, a flipping live tile for the ones in [LiveKind].
@@ -96,11 +106,7 @@ fun TileFace(
     /** The "one less" button of a counter: called with -1. */
     onCounterStep: (Int) -> Unit = {},
 ) {
-    val count = when (item.live) {
-        LiveKind.Phone -> maxOf(live.missedCalls, notifications)
-        LiveKind.Mail -> maxOf(live.unreadMail, notifications)
-        else -> notifications
-    }
+    val count = tileCount(item, live, notifications)
     // The Iconic template shows the counter big, in the middle; a small tile has no room for that.
     val iconic = style == TileStyle.Iconic && size != TileSize.Small && item.live != LiveKind.Torch
     // The photos a Cycle tile fades through: the latest of the phone, or those of the album the tile stands for.
@@ -183,6 +189,7 @@ fun TileFace(
                     LiveKind.Group -> GroupFace(item, size, width, height, (item.data as? TileData.Group)?.let { live.groups[it.groupId] }.orEmpty(), seed)
                     LiveKind.News -> NewsFace(item, size, width, height, live.news, seed)
                     LiveKind.Finance -> FinanceFace(item, size, width, height, live.finance)
+                    LiveKind.Todo -> TodoFace(item, size, width, height, live.todo)
                     LiveKind.Phone, LiveKind.Messages, LiveKind.Mail, null ->
                         if (item.photoPath != null) PhotoShortcutFace(item, size, width, height)
                         else if (faces.isNotEmpty()) CardsFace(item, size, width, height, faces, seed)
@@ -216,6 +223,29 @@ private fun NoteFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
 }
 
 
+
+/** The things still to do: the count on a small tile, the first ones (as many as fit) on the others; nothing to do, the plain tile. */
+@Composable
+private fun TodoFace(item: AppItem, size: TileSize, width: Dp, height: Dp, todo: LiveTodo?) {
+    if (todo == null || todo.open == 0) {
+        StaticFace(item, size, width, height)
+        return
+    }
+    Box(Modifier.fillMaxSize()) {
+        if (size == TileSize.Small) {
+            val digits = with(LocalDensity.current) { (height * 0.34f).toSp() }
+            MetroText(todo.open.toString(), size = digits, modifier = Modifier.align(Alignment.Center).testTag("todo:open"))
+        } else {
+            val rows = when (size) { TileSize.Medium -> 3; TileSize.Wide -> 3; else -> 8 }
+            Column(Modifier.padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = 30.dp)) {
+                todo.first.take(rows).forEach {
+                    MetroText("· $it", size = if (size == TileSize.Large) 18.sp else 16.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("todo:row"))
+                }
+            }
+            TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+        }
+    }
+}
 
 /** A counter: the number in large type, and a small button for one less. A touch on the tile (not here) adds one. */
 @Composable
@@ -279,16 +309,26 @@ private fun ChecklistFace(item: AppItem, size: TileSize, width: Dp, height: Dp, 
 
 
 
-/** The number in the top right corner of a tile. */
+/** The number in the top right corner of a tile. When it goes to zero (the app was opened and its notifications cleared) it fades out instead of vanishing. */
 @Composable
 fun CountBadge(count: Int, size: TileSize, modifier: Modifier = Modifier) {
-    if (count <= 0) return
+    // The last number above zero stays on while it fades.
+    var shown by remember { androidx.compose.runtime.mutableIntStateOf(count) }
+    if (count > 0) shown = count
+    val alpha by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (count > 0) 1f else 0f,
+        animationSpec = if (LocalReduceMotion.current) androidx.compose.animation.core.snap() else metroTween(durationMillis = BADGE_FADE_MS),
+        label = "badge",
+    )
+    if (shown <= 0 || (count <= 0 && alpha == 0f)) return
     MetroText(
-        text = if (count > 99) "99+" else count.toString(),
+        text = if (shown > 99) "99+" else shown.toString(),
         size = if (size == TileSize.Small) 16.sp else 30.sp,
-        modifier = modifier.padding(horizontal = FACE_MARGIN, vertical = 4.dp),
+        modifier = modifier.padding(horizontal = FACE_MARGIN, vertical = 4.dp).graphicsLayer { this.alpha = alpha },
     )
 }
+
+private const val BADGE_FADE_MS = 260
 
 /**
  * A folder: the first apps it holds as small squares, its name in the corner. An open folder has a

@@ -85,7 +85,7 @@ object PowerPolicy {
 object LiveSources {
     private val sources = setOf(
         LiveKind.Calendar, LiveKind.Photos, LiveKind.People, LiveKind.Phone, LiveKind.Mail, LiveKind.Storage, LiveKind.Alarm, LiveKind.Birthdays,
-        LiveKind.Album, LiveKind.Group,
+        LiveKind.Album, LiveKind.Group, LiveKind.Todo,
     )
 
     /** The tiles that read from the Internet: nothing is asked for while none of them is on Start. */

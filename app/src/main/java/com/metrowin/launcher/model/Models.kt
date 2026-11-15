@@ -15,11 +15,9 @@ enum class TileSize(val cols: Int, val rows: Int, val code: String) {
     /** Four small tiles across and four down: the Large tile of Windows 10 Mobile. */
     Large(4, 4, "l");
 
-    /** The resize arrow of the Start screen edit mode cycles through the sizes; the Large one only when [allowLarge]. */
-    fun next(allowLarge: Boolean = true): TileSize {
-        val next = entries[(ordinal + 1) % entries.size]
-        return if (next == Large && !allowLarge) entries.first() else next
-    }
+    /** The resize arrow of the Start screen edit mode cycles through the [allowed] sizes; a size that is not one of them goes to the first. */
+    fun next(allowLarge: Boolean = true, mediumOrWideOnly: Boolean = false): TileSize =
+        allowed(allowLarge, mediumOrWideOnly).let { it[(it.indexOf(this) + 1) % it.size] }
 
     /** The nearest of the two sizes some tiles have: small becomes medium, large becomes wide. */
     fun mediumOrWide(): TileSize = when (this) {
@@ -29,6 +27,13 @@ enum class TileSize(val cols: Int, val rows: Int, val code: String) {
     }
 
     companion object {
+        /**
+         * The one rule of the sizes of a tile, for the edit bar and for the resize arrow: all of them, less the large one when the settings
+         * leave it out; medium and wide only for a tile that has no face for the others (the full weather tile).
+         */
+        fun allowed(allowLarge: Boolean = true, mediumOrWideOnly: Boolean = false): List<TileSize> =
+            if (mediumOrWideOnly) listOf(Medium, Wide) else if (allowLarge) entries else entries - Large
+
         fun fromCode(code: String?): TileSize = entries.firstOrNull { it.code == code } ?: Medium
     }
 }
@@ -122,7 +127,7 @@ sealed interface Launch {
 }
 
 /** Which kind of live content a tile can show on its face. */
-enum class LiveKind { Calendar, Photos, People, Phone, Weather, Battery, Messages, Mail, Torch, Music, Storage, Alarm, Birthdays, Album, Group, News, Finance }
+enum class LiveKind { Calendar, Photos, People, Phone, Weather, Battery, Messages, Mail, Torch, Music, Storage, Alarm, Birthdays, Album, Group, News, Finance, Todo }
 
 /**
  * One entry of the app list: either a Windows Phone stock app mapped onto the Android app that

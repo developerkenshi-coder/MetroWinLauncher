@@ -46,6 +46,10 @@ class FifthRoundTest {
     fun theResizeArrowSkipsLargeWhenItIsOff() {
         assertEquals(TileSize.Large, TileSize.Wide.next(allowLarge = true))
         assertEquals(TileSize.Small, TileSize.Wide.next(allowLarge = false))
+        // The edit bar and the resize arrow share one rule.
+        assertEquals(TileSize.entries - TileSize.Large, TileSize.allowed(allowLarge = false))
+        assertEquals(listOf(TileSize.Medium, TileSize.Wide), TileSize.allowed(mediumOrWideOnly = true))
+        assertEquals(TileSize.Medium, TileSize.Large.next(mediumOrWideOnly = true))
         assertEquals(TileSize.Small, TileSize.Large.next())
         assertEquals(listOf(TileSize.Medium), StartEntries.resize(listOf(Tile("a", TileSize.Small)), "a").map { it.size })
         assertEquals(TileSize.Small, StartEntries.resize(listOf(Tile("a", TileSize.Wide)), "a", allowLarge = false).single().size)
