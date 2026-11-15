@@ -122,8 +122,7 @@ fun DayPage(
         options.secondZone.takeIf { it.isNotBlank() }?.let { id -> runCatching { ZoneId.of(id) }.getOrNull() }?.let { z -> z to DateTimeFormatter.ofPattern(if (env.is24) "HH:mm" else "h a").withZone(z) }
     }
     val density = LocalDensity.current
-    val classic = LocalStyle.current.isClassic
-    val shape = if (classic) androidx.compose.ui.graphics.RectangleShape else androidx.compose.foundation.shape.RoundedCornerShape(6.dp)
+    val shape = LocalStyle.current.squareShape
     val pulse by rememberInfiniteTransition(label = "now").animateFloat(0.45f, 1f, infiniteRepeatable(tween(1_100), RepeatMode.Reverse), label = "now")
     val dotAlpha = if (LocalReduceMotion.current || !options[Option.NowLabel]) 1f else pulse
     val swipe = if (options[Option.SwipeDays]) Modifier.pointerInput(day) {

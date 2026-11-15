@@ -154,7 +154,7 @@ fun GlyphButton(glyph: Glyph, description: String, modifier: Modifier = Modifier
 fun Chip(text: String, modifier: Modifier = Modifier, filled: Boolean = false) {
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
-    val shape = if (LocalStyle.current.isClassic) androidx.compose.ui.graphics.RectangleShape else androidx.compose.foundation.shape.RoundedCornerShape(50)
+    val shape = LocalStyle.current.controlShape
     Box(
         modifier.then(if (filled) Modifier.background(accent, shape) else Modifier.border(1.dp, colors.subtle, shape)).padding(horizontal = 7.dp, vertical = 1.dp),
         contentAlignment = Alignment.Center,

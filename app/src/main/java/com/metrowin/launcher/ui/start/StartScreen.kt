@@ -13,6 +13,7 @@ import com.metrowin.launcher.ui.theme.onTile
 import com.metrowin.launcher.ui.theme.tileSurface
 import com.metrowin.launcher.ui.theme.tileInk
 import com.metrowin.launcher.ui.theme.tileColor
+import com.metrowin.launcher.data.ThemeStyle
 import com.metrowin.launcher.ui.theme.LocalStyle
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -970,7 +971,8 @@ private fun PositionedTile(
         CompositionLocalProvider(
             LocalMetroColors provides colors.onTile(
                 when {
-                    ownColor != 0 || iconColor != null -> TileWhite
+                    // Modern Droid is a solid tile that can be pale (a color of the user, an icon color): its ink follows it.
+                    ownColor != 0 || iconColor != null -> if (LocalStyle.current.kind == ThemeStyle.Droid) ColorMath.inkOn(tileColor.copy(alpha = 1f)) else TileWhite
                     transparent -> colors.tileContent
                     else -> colors.tileInk(index)
                 },

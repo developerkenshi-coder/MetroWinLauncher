@@ -46,7 +46,7 @@ fun KidsHeader(onExit: () -> Unit, modifier: Modifier = Modifier) {
 fun CheckSquare(checked: Boolean, modifier: Modifier = Modifier) {
     val accent = LocalAccent.current
     val style = LocalStyle.current
-    val shape = if (style.isClassic) RectangleShape else RoundedCornerShape(8.dp)
+    val shape = style.squareShape
     val tick = onAccent()
     Box(
         modifier

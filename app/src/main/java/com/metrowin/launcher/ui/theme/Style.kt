@@ -10,6 +10,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntSize
+import android.os.PowerManager
+import kotlin.math.roundToInt
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -46,12 +55,16 @@ class MetroStyle(
     val controlShape: Shape,
     /** Menus, dialogs and bars. */
     val cardShape: Shape,
+    /** A card or a field inside a page (the search box, the card of the day, a text field): rounder than a square, smaller than a dialog. */
+    val innerShape: Shape,
     /** The square behind an icon in the app list, and the small squares of the edit bars. */
     val squareShape: Shape,
     /** Bars and menus that rise from the bottom edge. */
     val sheetShape: Shape,
     val font: FontFamily,
     private val weights: Map<FontWeight, FontWeight>,
+    /** How far a card of a page rises above it (a shadow): only Modern Droid has depth. See [elevated]. */
+    val elevation: Dp = 0.dp,
     /** Every weight three steps heavier (the way the bold text of Android works). */
     private val bold: Boolean = false,
 ) {
@@ -67,8 +80,8 @@ class MetroStyle(
     fun withType(bold: Boolean, systemFont: Boolean, chosen: FontFamily? = null): MetroStyle =
         if (!bold && !systemFont && chosen == null) this
         else MetroStyle(
-            kind, tileShape, smallTileShape, tileGap, controlShape, cardShape, squareShape, sheetShape,
-            font = if (systemFont) FontFamily.Default else chosen ?: font, weights = weights, bold = bold || this.bold,
+            kind, tileShape, smallTileShape, tileGap, controlShape, cardShape, innerShape, squareShape, sheetShape,
+            font = if (systemFont) FontFamily.Default else chosen ?: font, weights = weights, elevation = elevation, bold = bold || this.bold,
         )
 
     fun tileShapeFor(size: TileSize): Shape = if (size == TileSize.Small) smallTileShape else tileShape
@@ -80,14 +93,14 @@ private const val MAX_WEIGHT = 900
 val ClassicStyle = MetroStyle(
     kind = ThemeStyle.Classic,
     tileShape = RectangleShape, smallTileShape = RectangleShape, tileGap = 6.dp,
-    controlShape = RectangleShape, cardShape = RectangleShape, squareShape = RectangleShape, sheetShape = RectangleShape,
+    controlShape = RectangleShape, cardShape = RectangleShape, innerShape = RectangleShape, squareShape = RectangleShape, sheetShape = RectangleShape,
     font = MetroFont, weights = emptyMap(),
 )
 
 val GlassStyle = MetroStyle(
     kind = ThemeStyle.Glass,
     tileShape = RoundedCornerShape(26.dp), smallTileShape = RoundedCornerShape(14.dp), tileGap = 9.dp,
-    controlShape = RoundedCornerShape(50), cardShape = RoundedCornerShape(26.dp), squareShape = RoundedCornerShape(13.dp),
+    controlShape = RoundedCornerShape(50), cardShape = RoundedCornerShape(26.dp), innerShape = RoundedCornerShape(16.dp), squareShape = RoundedCornerShape(13.dp),
     sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
     font = FontFamily.SansSerif,
     weights = mapOf(FontWeight.Light to FontWeight.Normal, FontWeight.Normal to FontWeight.Medium),
@@ -96,10 +109,11 @@ val GlassStyle = MetroStyle(
 val DroidStyle = MetroStyle(
     kind = ThemeStyle.Droid,
     tileShape = RoundedCornerShape(28.dp), smallTileShape = RoundedCornerShape(18.dp), tileGap = 8.dp,
-    controlShape = RoundedCornerShape(50), cardShape = RoundedCornerShape(28.dp), squareShape = RoundedCornerShape(14.dp),
+    controlShape = RoundedCornerShape(50), cardShape = RoundedCornerShape(28.dp), innerShape = RoundedCornerShape(16.dp), squareShape = RoundedCornerShape(14.dp),
     sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
     font = FontFamily.SansSerif,
     weights = mapOf(FontWeight.Light to FontWeight.Normal, FontWeight.SemiBold to FontWeight.Medium),
+    elevation = 4.dp,
 )
 
 fun styleOf(kind: ThemeStyle): MetroStyle = when (kind) {
@@ -186,6 +200,10 @@ fun Modifier.panel(shape: Shape? = null): Modifier {
 fun Modifier.highContrastEdge(shape: Shape): Modifier =
     if (LocalHighContrast.current) border(2.dp, LocalMetroColors.current.foreground, shape) else this
 
+/** The shadow of the look under a card of a page (Modern Droid only); the other looks are flat or lit from within. */
+@Composable
+fun Modifier.elevated(shape: Shape): Modifier = LocalStyle.current.elevation.let { if (it > 0.dp) shadow(it, shape) else this }
+
 /** A frame of [width] around the control, square in Classic and rounded in the other looks (or in [shape]). */
 @Composable
 fun Modifier.frame(width: Dp, color: Color, shape: Shape? = null): Modifier {
@@ -219,8 +237,8 @@ fun onAccent(): Color {
     // The pure contrast of the setting for contrast: the accents of Windows Phone are not all dark enough for white.
     if (LocalHighContrast.current) return ColorMath.inkOn(LocalAccent.current)
     if (LocalStyle.current.isClassic) return TileWhite
-    // The other looks have pale accents too (the light tones of Modern Droid), so the ink follows the brightness.
-    return if (ColorMath.luminance(LocalAccent.current.toArgbInt()) > 0.55f) Color(0xFF111111) else Color.White
+    // The other looks have pale accents too (the light tones of Modern Droid): the ink is the one with the better contrast, not a guess on the brightness.
+    return ColorMath.inkOn(LocalAccent.current)
 }
 
 /** The square (or rounded square) behind an icon, clipped to the shape of the look. */
@@ -236,10 +254,33 @@ fun Modifier.pageBackground(): Modifier {
     val oled = LocalOled.current
     return when (style.kind) {
         // The pools of light reach past the page that draws them, so the page clips them to itself.
-        ThemeStyle.Glass -> this.clipToBounds().drawBehind { drawAurora(accent, colors.dark, oled && colors.dark) }
+        ThemeStyle.Glass -> {
+            val context = LocalContext.current
+            this.clipToBounds().auroraBackdrop(accent, colors.dark, oled && colors.dark) {
+                runCatching { context.getSystemService(PowerManager::class.java)?.isPowerSaveMode }.getOrNull() == true
+            }
+        }
         else -> this.background(colors.background)
     }
 }
+
+/**
+ * The aurora drawn once into a small bitmap and stretched over the page: the pools are soft, so a quarter of the size loses nothing,
+ * and a long list scrolling over it no longer repaints four radial gradients at every frame. The bitmap is made again when the size,
+ * the accent or the theme change. In power saving only the first pool is kept (the one [pageIsLight] counts).
+ * shortcut: the power saver is read when the bitmap is made, not watched; it changes with the next size, accent or theme change.
+ */
+private fun Modifier.auroraBackdrop(accent: Color, dark: Boolean, oled: Boolean, powerSaving: () -> Boolean): Modifier = drawWithCache {
+    val w = (size.width / AURORA_SCALE).roundToInt().coerceAtLeast(1)
+    val h = (size.height / AURORA_SCALE).roundToInt().coerceAtLeast(1)
+    val small = ImageBitmap(w, h)
+    val target = Size(w.toFloat(), h.toFloat())
+    CanvasDrawScope().draw(this, layoutDirection, Canvas(small), target) { drawAurora(accent, dark, oled, simple = powerSaving()) }
+    val page = IntSize(size.width.roundToInt(), size.height.roundToInt())
+    onDrawBehind { drawImage(small, dstSize = page) }
+}
+
+private const val AURORA_SCALE = 4f
 
 private fun auroraBase(dark: Boolean, oled: Boolean) = if (oled) Color.Black else if (dark) Color(0xFF0B1022) else Color(0xFFEEF2FF)
 
@@ -263,7 +304,7 @@ fun pageIsLight(kind: ThemeStyle, colors: MetroColors, accent: Color, oled: Bool
  * The backdrop of Modern Glass: a deep (or pale) base with soft pools of light, the accent color and two turns of its
  * hue. It is drawn the same way on every page, so a page laid over another looks like the same backdrop.
  */
-fun DrawScope.drawAurora(accent: Color, dark: Boolean, oled: Boolean = false) {
+fun DrawScope.drawAurora(accent: Color, dark: Boolean, oled: Boolean = false, simple: Boolean = false) {
     val w = size.width
     val h = size.height
     val reach = max(w, h)
@@ -275,6 +316,7 @@ fun DrawScope.drawAurora(accent: Color, dark: Boolean, oled: Boolean = false) {
         drawCircle(Brush.radialGradient(listOf(color.copy(alpha = alpha * glow), Color.Transparent), center = center, radius = radius), radius, center)
     }
     pool(0.15f, 0.12f, reach * 0.75f, accent, if (dark) 0.55f else 0.45f)
+    if (simple) return
     pool(0.95f, 0.35f, reach * 0.65f, ColorMath.rotateHue(accent, 70f), if (dark) 0.40f else 0.40f)
     pool(0.25f, 0.85f, reach * 0.70f, ColorMath.rotateHue(accent, -70f), if (dark) 0.40f else 0.35f)
     pool(0.90f, 0.95f, reach * 0.55f, ColorMath.rotateHue(accent, 150f), if (dark) 0.30f else 0.30f)

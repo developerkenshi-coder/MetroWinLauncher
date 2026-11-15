@@ -617,7 +617,7 @@ private fun SearchRow(
             .fillMaxWidth()
             .padding(horizontal = pageSide(12.dp), vertical = 4.dp)
             .height(52.dp)
-            .panel(RoundedCornerShape(16.dp).takeUnless { LocalStyle.current.isClassic } ?: RectangleShape)
+            .panel(LocalStyle.current.innerShape)
             .padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

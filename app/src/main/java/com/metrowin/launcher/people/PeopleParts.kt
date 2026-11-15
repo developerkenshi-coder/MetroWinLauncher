@@ -94,7 +94,7 @@ fun rememberPhoto(uri: String?): ImageBitmap? {
 
 /** The tile of the look in use: a square in Classic, softly rounded in Glass and Droid. */
 @Composable
-fun tileShape(): Shape = if (LocalStyle.current.kind == ThemeStyle.Classic) androidx.compose.ui.graphics.RectangleShape else RoundedCornerShape(12.dp)
+fun tileShape(): Shape = LocalStyle.current.squareShape
 
 /** A contact as a tile: its photo, or its first letter on the accent colour, and the name over the foot of it when [label]. */
 @Composable

@@ -60,6 +60,16 @@ class ContrastTest {
     }
 
     @Test
+    fun theInkOnTheModernDroidAccentAndOnItsPaleTonesReads() {
+        for (seed in MetroAccents) for (dark in listOf(true, false)) {
+            val palette = Palettes.fromSeed(seed)
+            // The accent of the look (what a lit button, a chosen tile color or an icon color is painted with) and every tone a tile can take.
+            val boxes = listOf(Palettes.accent(palette, dark)) + listOf(palette.accent1, palette.accent2, palette.accent3).flatMap { listOf(10, 30, 80, 90, 95).map(it::tone) }
+            for (box in boxes) assertText("ink on droid ${seed.value} dark=$dark $box", ColorMath.inkOn(box), box)
+        }
+    }
+
+    @Test
     fun anAccentUsedAsTextReadsOnThePageOfEveryTheme() {
         for (accent in MetroAccents) for (colors in listOf(DarkColors, LightColors)) {
             assertText("accent ${accent.value} text on ${colors.background}", ColorMath.readableOn(accent, colors.background), colors.background, 3f)

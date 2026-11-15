@@ -69,7 +69,7 @@ internal fun TodayCard(
     val is24 = android.text.format.DateFormat.is24HourFormat(context)
     val today = Instant.ofEpochMilli(info.nowMillis).atZone(zone).toLocalDate()
     val date = remember(today, locale) { ClockFormat.date(today, locale) }
-    val shape = if (LocalStyle.current.isClassic) RectangleShape else RoundedCornerShape(16.dp)
+    val shape = LocalStyle.current.innerShape
 
     Column(
         Modifier

@@ -411,7 +411,7 @@ fun MetroTextField(
 ) {
     val colors = LocalMetroColors.current
     val style = LocalStyle.current
-    val field = RoundedCornerShape(16.dp)
+    val field = style.innerShape
     // The TextBox of Windows Phone: an outline on the page, and while it is typed in a white box with black text.
     var focused by remember { mutableStateOf(false) }
     val lit = style.isClassic && focused

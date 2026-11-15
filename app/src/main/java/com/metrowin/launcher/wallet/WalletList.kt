@@ -37,7 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import com.metrowin.launcher.ui.theme.elevated
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -50,7 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.metrowin.launcher.R
-import com.metrowin.launcher.data.ThemeStyle
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
@@ -192,7 +191,7 @@ internal fun WalletTile(
     val shape = if (rich && !stacked) style.smallTileShape else RectangleShape
     var pressed by remember { mutableStateOf(false) }
     val lift by animateDpAsState(if (pressed && rich && prefs.motion.on && !LocalReduceMotion.current) (-10).dp else 0.dp, label = "lift")
-    val depth = if (rich && style.kind == ThemeStyle.Droid && !stacked) Modifier.shadow(4.dp, shape) else Modifier
+    val depth = if (rich && !stacked) Modifier.elevated(shape) else Modifier
     val sheen = if (rich) Modifier.background(Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.16f), Color.Transparent)), shape) else Modifier
     val frame = when {
         LocalHighContrast.current -> Modifier.border(2.dp, ink, shape)
