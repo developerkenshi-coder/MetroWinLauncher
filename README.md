@@ -117,6 +117,11 @@ Every one is optional and reads data only while it is pinned to Start.
 - **Backup** of the layout to a file or a folder (any folder Android can open), by hand or every 1, 7 or 30 days, and **encrypted sync between phones** through that folder (AES-256-GCM, key from your passphrase with PBKDF2-SHA256).
 - **Work profile** and **private space** (Android 15), **Kids Corner**, and accessibility: TalkBack for every tile and row, text size, reduced motion, stronger contrast.
 
+### Settings and tutorial
+- **Thirteen categories** (look and themes, start and tiles, lock screen, bars and Action Center, gestures and shortcuts, apps and icons, mini apps, notifications, privacy and security, battery, accessibility, backup and profiles, about), each a pivot of its pages: two levels, never more. Every setting is in one place only, and the search tells you where.
+- An **"i" next to every category and setting** explains what it does, when it matters and what it costs in battery, privacy or permissions, in six languages (English, Italian, German, Spanish, French, Portuguese).
+- A **tutorial of 25 short pages**, in order of theme, with a button on each page that opens its setting. The map of every setting, old page and new, is in [docs/impostazioni-mappa.md](docs/impostazioni-mappa.md).
+
 ### For app developers: your own tile on Start
 
 If you develop an app, it can show a title, a short text and a counter on its own Start tile, like the live tiles of
@@ -155,7 +160,7 @@ The complete documentation, in Italian, covers every feature, every setting, the
 ## Contributing
 
 Bug reports and ideas are welcome in the [issue tracker](https://github.com/developerkenshi-coder/MetroWinLauncher/issues), in English or Italian.
-For a bug, tell us the phone, the Android version and the launcher version (*settings → tools → about*). Pull requests are welcome; please open an issue first for anything big.
+For a bug, tell us the phone, the Android version and the launcher version (*settings → about*). Pull requests are welcome; please open an issue first for anything big.
 
 ## License and credits
 

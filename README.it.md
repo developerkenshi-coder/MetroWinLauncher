@@ -118,6 +118,11 @@ Ognuno è facoltativo e legge i dati solo finché è fissato su Start.
 - **Backup** del layout in un file o in una cartella (qualsiasi cartella che Android sa aprire), a mano o ogni 1, 7 o 30 giorni, e **sincronizzazione cifrata tra telefoni** attraverso quella cartella (AES-256-GCM, chiave dalla tua passphrase con PBKDF2-SHA256).
 - **Profilo di lavoro** e **spazio privato** (Android 15), **Angolo bambini**, e accessibilità: TalkBack su ogni riquadro e riga, dimensione del testo, meno movimento, contrasto più forte.
 
+### Impostazioni e tutorial
+- **Tredici categorie** (aspetto e temi, start e tile, schermata di blocco, barre e action center, gesti e scorciatoie, app e icone, mini app, notifiche, privacy e sicurezza, batteria, accessibilità, backup e profili, informazioni), ciascuna un pivot delle sue pagine: due livelli, mai di più. Ogni impostazione sta in un solo posto, e la ricerca dice dov'è.
+- Una **"i" accanto a ogni categoria e impostazione** spiega cosa fa, quando serve e quanto costa in batteria, privacy o permessi, in sei lingue (inglese, italiano, tedesco, spagnolo, francese, portoghese).
+- Un **tutorial di 25 pagine brevi**, in ordine di tema, con un pulsante in ogni pagina che apre la sua impostazione. La mappa di ogni impostazione, pagina vecchia e nuova, è in [docs/impostazioni-mappa.md](docs/impostazioni-mappa.md).
+
 ### Per chi sviluppa un'app: un riquadro tuo su Start
 
 Se sviluppi un'app, puoi mostrare sul suo riquadro di Start un titolo, un breve testo e un contatore, come i live tile di
@@ -157,7 +162,7 @@ La documentazione completa, in italiano, descrive ogni funzione, ogni impostazio
 ## Contribuire
 
 Segnalazioni e idee sono benvenute nel [tracker delle segnalazioni](https://github.com/developerkenshi-coder/MetroWinLauncher/issues), in italiano o in inglese.
-Per un errore, indica il telefono, la versione di Android e la versione del launcher (*impostazioni → strumenti → informazioni*). Le pull request sono benvenute; per le cose grandi apri prima una segnalazione.
+Per un errore, indica il telefono, la versione di Android e la versione del launcher (*impostazioni → informazioni*). Le pull request sono benvenute; per le cose grandi apri prima una segnalazione.
 
 ## Licenza e crediti
 
