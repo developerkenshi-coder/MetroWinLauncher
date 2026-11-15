@@ -1,12 +1,47 @@
 package com.metrowin.launcher.ui.theme
 
+import android.app.WallpaperManager
 import android.content.Context
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import kotlin.math.abs
 import kotlin.math.pow
+
+/**
+ * The palette of Modern Droid: the one Android makes from the wallpaper when [dynamic] (and the phone has it), else one made from [accent].
+ * It is made again when the wallpaper colors or the configuration change, so the launcher and the mini apps that are open follow
+ * a new wallpaper without a restart. shortcut: the system may publish its new color resources a moment after the wallpaper
+ * callback; the configuration key picks them up then, otherwise the next start does.
+ */
+@Composable
+fun rememberDroidPalette(dynamic: Boolean, accent: Color): DroidPalette {
+    val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    var revision by remember { mutableIntStateOf(0) }
+    if (dynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        DisposableEffect(context) {
+            val manager = WallpaperManager.getInstance(context)
+            val listener = WallpaperManager.OnColorsChangedListener { _, _ -> revision++ }
+            manager.addOnColorsChangedListener(listener, Handler(Looper.getMainLooper()))
+            onDispose { manager.removeOnColorsChangedListener(listener) }
+        }
+    }
+    return remember(dynamic, accent, context, configuration, revision) {
+        (if (dynamic) Palettes.fromSystem(context) else null) ?: Palettes.fromSeed(accent)
+    }
+}
 
 /** A ramp of one color from nearly black (tone 0) to nearly white (tone 100), the way Material builds its palettes. */
 interface Tonal {

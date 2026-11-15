@@ -40,7 +40,7 @@ import com.metrowin.launcher.ui.theme.AccentScope
 import com.metrowin.launcher.ui.theme.AccessibilityPolicy
 import com.metrowin.launcher.ui.theme.MetroAccents
 import com.metrowin.launcher.ui.theme.MetroTheme
-import com.metrowin.launcher.ui.theme.Palettes
+import com.metrowin.launcher.ui.theme.rememberDroidPalette
 import com.metrowin.launcher.ui.theme.rememberIsDark
 
 /**
@@ -151,11 +151,7 @@ internal fun overlayTopInset(app: Context, windows: WindowManager): Dp {
 internal fun OverlayTheme(settings: LauncherSettings, icons: IconLoader, accentOverride: Color? = null, content: @Composable () -> Unit) {
     val context = LocalContext.current
     val accent = accentOverride ?: if (settings.customAccent != 0) Color(settings.customAccent) else MetroAccents[settings.accentIndex.coerceIn(MetroAccents.indices)]
-    val droid = if (settings.themeStyle == ThemeStyle.Droid) {
-        remember(settings.dynamicColor, accent) { (if (settings.dynamicColor) Palettes.fromSystem(context) else null) ?: Palettes.fromSeed(accent) }
-    } else {
-        null
-    }
+    val droid = if (settings.themeStyle == ThemeStyle.Droid) rememberDroidPalette(settings.dynamicColor, accent) else null
     MetroTheme(
         accent = accent, dark = rememberIsDark(settings),
         reduceMotion = AccessibilityPolicy.reduceMotion(settings.reduceMotion, AccessibilityPolicy.systemAnimatorScale(context)),

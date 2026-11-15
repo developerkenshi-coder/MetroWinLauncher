@@ -210,7 +210,7 @@ import com.metrowin.launcher.ui.theme.AccessibilityPolicy
 import com.metrowin.launcher.ui.theme.AccentScope
 import com.metrowin.launcher.ui.theme.MetroTheme
 import com.metrowin.launcher.ui.theme.pageBackground
-import com.metrowin.launcher.ui.theme.Palettes
+import com.metrowin.launcher.ui.theme.rememberDroidPalette
 import com.metrowin.launcher.data.ThemeStyle
 import androidx.compose.ui.graphics.Color
 import com.metrowin.launcher.ui.theme.rememberIsDark
@@ -1289,13 +1289,7 @@ fun LauncherApp(vm: LauncherViewModel) {
         MetroAccents[accentIndex.coerceIn(MetroAccents.indices)]
     }
     // Modern Droid takes the colors of the wallpaper (Android 12 and later), or builds its palette from the chosen color.
-    val droid = if (settings.themeStyle == ThemeStyle.Droid) {
-        remember(settings.dynamicColor, accent, context) {
-            (if (settings.dynamicColor) Palettes.fromSystem(context) else null) ?: Palettes.fromSeed(accent)
-        }
-    } else {
-        null
-    }
+    val droid = if (settings.themeStyle == ThemeStyle.Droid) rememberDroidPalette(settings.dynamicColor, accent) else null
 
     val powerSaving by vm.powerSaving.collectAsStateWithLifecycle()
 
