@@ -247,6 +247,7 @@ object SettingsIndex {
         e("search.contacts", Search, R.string.apps_search_contacts, "people", "phone book", "persone", "rubrica", "contatti"),
         e("search.settings", Search, R.string.apps_search_settings, "system", "wifi", "sistema", "impostazioni"),
         e("search.launcher", Search, R.string.apps_search_launcher, "these settings", "this app", "queste impostazioni", "launcher"),
+        e("search.mini", Search, R.string.search_mini_apps, "notes", "todo", "tasks", "note", "appunti", "cose da fare", "attività"),
         e("search.tiles", Search, R.string.apps_search_tiles, "notes", "lists", "countdown", "note", "liste", "riquadri", "start"),
         e("search.web", Search, R.string.apps_search_web, "internet", "browser", "google", "ricerca web"),
         e("search.engine", Search, R.string.apps_engine, "duckduckgo", "google", "bing", "brave", "ecosia", "startpage", "qwant", "motore", "browser"),
