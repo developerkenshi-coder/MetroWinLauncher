@@ -426,8 +426,8 @@ fun AppListScreen(
     // Rows composed within this window after the page opens animate in; rows that scroll into view later do not.
     val openedAt = remember(replayToken) { System.nanoTime() }
 
-    // The word searched for is in the accent colour in the results, and the results come in one after the other (classic look).
-    CompositionLocalProvider(LocalCompactList provides compact, LocalSearchQuery provides if (LocalStyle.current.isClassic) query else "") {
+    // The word searched for is in the accent colour in the results of every style; only the classic look has them come in one after the other.
+    CompositionLocalProvider(LocalCompactList provides compact, LocalSearchQuery provides query, LocalSearchFeather provides (LocalStyle.current.isClassic && query.isNotBlank())) {
     Box(modifier.fillMaxSize()) {
     LazyColumn(
         state = listState,
@@ -734,7 +734,7 @@ private fun AppRow(
         item,
         Modifier
             .testTag(if (group.isEmpty()) "app:${item.id}" else "app:$group:${item.id}")
-            .then(if (LocalSearchQuery.current.isNotBlank()) Modifier.featherIn(index) else Modifier)
+            .then(if (LocalSearchFeather.current) Modifier.featherIn(index) else Modifier)
             .onGloballyPositioned { coordinates = it }
             .graphicsLayer { turnstile(away.value, reduced) }
             .drawBehind { if (picked) drawRect(accent.copy(alpha = PICKED_ALPHA)) else if (glow.value > 0f) drawRect(accent.copy(alpha = glow.value)) }
@@ -778,6 +778,7 @@ private fun Chip(text: String, selected: Boolean, tag: String, onLongClick: (() 
 
 /** What was searched for, while the list shows its results in the classic look: the rows draw it in the accent colour. */
 private val LocalSearchQuery = androidx.compose.runtime.compositionLocalOf { "" }
+private val LocalSearchFeather = androidx.compose.runtime.compositionLocalOf { false }
 
 /** The heading of the results that are not apps (contacts, settings, web). */
 @Composable
@@ -898,7 +899,7 @@ private fun ResultRow(
             // A result that says more than a line grows taller instead of being cut.
             .heightIn(min = RowHeight)
             .testTag(tag)
-            .then(if (LocalSearchQuery.current.isNotBlank()) Modifier.featherIn(index) else Modifier)
+            .then(if (LocalSearchFeather.current) Modifier.featherIn(index) else Modifier)
             .graphicsLayer { turnstile(away.value, reduced) }
             .metroPress(onClick = onClick, enabled = !exiting)
             .padding(horizontal = pageSide(12.dp), vertical = 4.dp),
