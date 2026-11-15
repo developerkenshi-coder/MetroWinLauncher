@@ -149,6 +149,8 @@
     <string name="sec_gestures_desc">Arrastres desde el borde, deslizamientos, toques, doble toque y acciones con dos dedos</string>
     <string name="gest_edge_pull">deslizar hacia abajo desde el borde superior</string>
     <string name="gest_edge_pull_hint">Abre el Action Center desde cualquier página, no solo desde la parte superior de Start.</string>
+    <string name="gest_mini_home">dos dedos en una mini app: volver a Start</string>
+    <string name="gest_mini_home_hint">Dos dedos que se deslizan juntos hacia arriba o abajo cierran la mini app y vuelven a Start. Desactivado al inicio: un pellizco sobre una foto puede acabar en él.</string>
     <string name="gest_edge_back_pan">pasar páginas desde el borde de la pantalla</string>
     <string name="gest_edge_back_pan_hint">En Start, el deslizamiento desde el borde que Android usa para Atrás pasa a la página siguiente o a la anterior.</string>
     <string name="gest_tap_sound">sonido al tocar</string>

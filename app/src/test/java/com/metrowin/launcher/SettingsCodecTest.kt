@@ -19,7 +19,7 @@ class SettingsCodecTest {
         themeMode = ThemeMode.Schedule, darkFromHour = 20, darkToHour = 6, accentIndex = 11, autoAccent = true,
         moreTiles = true, tileColumns = 6, freeLayout = true, navSpacing = 70, backgroundRevision = 3, parallax = false, startPages = 3, showClock = true,
         orientation = OrientationMode.Auto, highRefreshRate = false, launchAnimation = LaunchAnimation.Expand,
-        edgePull = false, doubleTapAction = GestureAction.LockScreen, twoFingerDownAction = GestureAction.OpenSettings,
+        edgePull = false, miniHomeSwipe = true, doubleTapAction = GestureAction.LockScreen, twoFingerDownAction = GestureAction.OpenSettings,
         twoFingerUpAction = GestureAction.Recents,
         tapSound = true, quickActions = listOf("wifi", "camera", "vpn", "quiet"), notificationPeek = false,
         weatherCity = "Torino", weatherLatitude = 45.07, weatherLongitude = 7.69, weatherFahrenheit = true,

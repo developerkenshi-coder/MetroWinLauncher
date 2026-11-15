@@ -96,6 +96,7 @@ object SettingsCodec {
         put("actionBar", s.actionBar.code)
 
         put("edgePull", s.edgePull)
+        put("miniHomeSwipe", s.miniHomeSwipe)
         put("actionCenterEnabled", s.actionCenterEnabled)
         put("edgeBackPan", s.edgeBackPan)
         put("doubleTapAction", s.doubleTapAction.code)
@@ -354,6 +355,7 @@ object SettingsCodec {
             actionBar = if (o.has("actionBar")) ActionBarStyle.fromCode(o.optString("actionBar")) else base.actionBar,
 
             edgePull = o.optBoolean("edgePull", base.edgePull),
+            miniHomeSwipe = o.optBoolean("miniHomeSwipe", base.miniHomeSwipe),
             actionCenterEnabled = o.optBoolean("actionCenterEnabled", base.actionCenterEnabled),
             edgeBackPan = o.optBoolean("edgeBackPan", base.edgeBackPan),
             doubleTapAction = GestureAction.fromCode(o.optString("doubleTapAction").ifEmpty { null }, base.doubleTapAction),

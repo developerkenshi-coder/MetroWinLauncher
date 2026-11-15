@@ -191,6 +191,7 @@ object SettingsIndex {
         e("gest.lockservice", Gestures, R.string.gest_lock_service, "accessibility service", "lock screen", "servizio di accessibilita", "blocca lo schermo"),
         e("gest.navbar", Gestures, R.string.gest_navbar, "navigation bar", "buttons", "back", "home", "three buttons", "windows", "barra di navigazione", "pulsanti", "indietro", "tre tasti"),
         e("gest.edgepull", Gestures, R.string.gest_edge_pull, "action center", "notifications", "pull", "top", "tirata", "bordo", "notifiche"),
+        e("gest.minihome", Gestures, R.string.gest_mini_home, "mini app", "two fingers", "home", "start", "back", "swipe", "due dita", "indietro", "torna"),
         e("gest.edgeback", Gestures, R.string.gest_edge_back_pan, "back", "swipe", "indietro", "bordo", "pagine"),
         e("gest.tapsound", Gestures, R.string.gest_tap_sound, "click", "sound", "audio", "suono", "tocco"),
         e("gest.animspeed", Gestures, R.string.feel_speed, "animation", "speed", "fast", "slow", "animazioni", "velocita", "veloce", "lento"),

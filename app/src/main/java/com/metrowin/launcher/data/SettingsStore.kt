@@ -399,6 +399,9 @@ data class LauncherSettings(
     /** Pulling down from the top edge opens the Action Center from any page. */
     val edgePull: Boolean = true,
 
+    /** Two fingers swiping up or down together in a mini app close it and go back to Start, as the two-finger gestures of Start do. Off: a pinch on a photo can drift into it. */
+    val miniHomeSwipe: Boolean = false,
+
     /** The Action Center of the launcher (the panel that comes down with the notifications and the quick buttons) is there. Off, Android shows its own notifications and nothing here takes them away. */
     val actionCenterEnabled: Boolean = true,
     /** The back swipe from the right edge on Start goes on to the next page. */

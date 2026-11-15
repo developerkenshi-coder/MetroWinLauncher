@@ -126,6 +126,13 @@ fun GesturesPage(env: SettingsEnv) {
             tag = "gestures:edgepull", id = "gest.edgepull",
         )
         ToggleSetting(
+            label = stringResource(R.string.gest_mini_home),
+            checked = settings.miniHomeSwipe,
+            onChange = { value -> env.onChange { it.copy(miniHomeSwipe = value) } },
+            hint = stringResource(R.string.gest_mini_home_hint),
+            tag = "gestures:minihome", id = "gest.minihome",
+        )
+        ToggleSetting(
             label = stringResource(R.string.gest_edge_back_pan),
             checked = settings.edgeBackPan,
             onChange = { value -> env.onChange { it.copy(edgeBackPan = value) } },
