@@ -92,7 +92,9 @@ import com.metrowin.launcher.data.ConnectionPanel
 import com.metrowin.launcher.data.QuickAction
 import com.metrowin.launcher.data.UsageAccess
 import com.metrowin.launcher.data.VpnApp
+import com.metrowin.launcher.data.InfoTileState
 import com.metrowin.launcher.model.Glyph
+import com.metrowin.launcher.ui.start.openInfoPart
 import com.metrowin.launcher.data.GestureAction
 import com.metrowin.launcher.ui.start.FolderChoice
 import com.metrowin.launcher.ui.start.FolderChooser
@@ -784,8 +786,9 @@ fun LauncherApp(vm: LauncherViewModel) {
                 adding.checklistEditingId = item.id
                 return
             }
+            // An info tile opens what its face on show is about; the weather has no page of its own, so its touch opens the choice of the tile.
             AppRepository.ROUTE_INFO -> {
-                adding.infoEditingId = item.id
+                if (!openInfoPart(context, InfoTileState.current(item.id))) adding.infoEditingId = item.id
                 return
             }
             AppRepository.ROUTE_NONE -> return

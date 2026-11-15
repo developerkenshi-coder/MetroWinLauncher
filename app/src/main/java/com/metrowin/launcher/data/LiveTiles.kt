@@ -89,6 +89,8 @@ data class LiveTileData(
     val birthdays: List<Birthday> = emptyList(),
     /** The latest photos of each album pinned to Start, by the id of the album. */
     val albums: Map<String, List<ImageBitmap>> = emptyMap(),
+    /** The photos taken on this day in the years before (for the info tile). */
+    val memories: List<ImageBitmap> = emptyList(),
     /** The faces of the people of each group of contacts pinned to Start, by the id of the group. */
     val groups: Map<Long, List<LivePerson>> = emptyMap(),
     /** The headlines for the News tile and the quotes for the Finance tile: they come from the Internet and are set apart from the rest. */
@@ -117,6 +119,7 @@ fun LiveTileData.keeping(kinds: Set<LiveKind>, albumIds: Set<String> = emptySet(
     birthdays = if (LiveKind.Birthdays in kinds) birthdays else emptyList(),
     albums = if (LiveKind.Album in kinds) albums.filterKeys { it in albumIds } else emptyMap(),
     groups = if (LiveKind.Group in kinds) groups.filterKeys { it in groupIds } else emptyMap(),
+    memories = if (LiveKind.Memories in kinds) memories else emptyList(),
     news = if (LiveKind.News in kinds) news else null,
     finance = if (LiveKind.Finance in kinds) finance else null,
 )
@@ -135,6 +138,7 @@ fun LiveTileData.updatedWith(fresh: LiveTileData, kinds: Set<LiveKind>) = copy(
     birthdays = if (LiveKind.Birthdays in kinds) fresh.birthdays else birthdays,
     albums = if (LiveKind.Album in kinds) fresh.albums else albums,
     groups = if (LiveKind.Group in kinds) fresh.groups else groups,
+    memories = if (LiveKind.Memories in kinds) fresh.memories else memories,
 )
 
 class LiveTileRepository(private val context: Context) {
@@ -167,6 +171,7 @@ class LiveTileRepository(private val context: Context) {
         birthdays = if (LiveKind.Birthdays in wanted) birthdays() else emptyList(),
         albums = if (LiveKind.Album in wanted) albumIds.associateWith { album(it) } else emptyMap(),
         groups = if (LiveKind.Group in wanted) groupIds.associateWith { group(it) } else emptyMap(),
+        memories = if (LiveKind.Memories in wanted) memoryPhotos() else emptyList(),
         )
     }
 
@@ -221,6 +226,28 @@ class LiveTileRepository(private val context: Context) {
                 while (cursor.moveToNext()) uris += ContentUris.withAppendedId(collection, cursor.getLong(0))
             }
             uris.mapNotNull { uri -> photoCache[uri] ?: thumbnail(uri, PHOTO_PX)?.asImageBitmap()?.also { photoCache[uri] = it } }
+        }.getOrDefault(emptyList())
+    }
+
+    /** The photos taken on this day in the years before, as thumbnails (the date taken of the newest few thousand photos is read; see [PhotoMemories]). */
+    @Synchronized
+    private fun memoryPhotos(limit: Int = 6): List<ImageBitmap> {
+        if (!LivePermissions.canReadPhotos(context)) return emptyList()
+        return runCatching {
+            val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            val args = Bundle().apply {
+                putInt(ContentResolver.QUERY_ARG_LIMIT, MEMORY_SCAN)
+                putStringArray(ContentResolver.QUERY_ARG_SORT_COLUMNS, arrayOf(MediaStore.Images.Media.DATE_TAKEN))
+                putInt(ContentResolver.QUERY_ARG_SORT_DIRECTION, ContentResolver.QUERY_SORT_DIRECTION_DESCENDING)
+            }
+            val now = System.currentTimeMillis()
+            val uris = ArrayList<Uri>()
+            resolver.query(collection, arrayOf(MediaStore.Images.Media._ID, MediaStore.Images.Media.DATE_TAKEN), args, null)?.use { cursor ->
+                while (cursor.moveToNext()) {
+                    if (PhotoMemories.isMemory(cursor.getLong(1), now)) uris += ContentUris.withAppendedId(collection, cursor.getLong(0))
+                }
+            }
+            uris.shuffled().take(limit).mapNotNull { uri -> photoCache[uri] ?: thumbnail(uri, PHOTO_PX)?.asImageBitmap()?.also { photoCache[uri] = it } }
         }.getOrDefault(emptyList())
     }
 
@@ -369,6 +396,8 @@ class LiveTileRepository(private val context: Context) {
         const val MAX_FACES = 16
         const val MAX_PHOTOS = 8
         const val TODO_SHOWN = 8
+        /** How many of the newest photos are looked at for the ones taken on this day. */
+        const val MEMORY_SCAN = 3000
         const val MAX_GROUP_ROWS = 2_000
         const val WEEK_MILLIS = 7L * 24 * 60 * 60 * 1000
     }

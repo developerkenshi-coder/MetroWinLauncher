@@ -192,6 +192,8 @@ fun TileFace(
                     LiveKind.News -> NewsFace(item, size, width, height, live.news, seed)
                     LiveKind.Finance -> FinanceFace(item, size, width, height, live.finance)
                     LiveKind.Todo -> TodoFace(item, size, width, height, live.todo)
+                    // Only the info tile reads the photos of this day, and it shows them itself.
+                    LiveKind.Memories -> StaticFace(item, size, width, height)
                     LiveKind.Phone, LiveKind.Messages, LiveKind.Mail, null ->
                         if (item.photoPath != null) PhotoShortcutFace(item, size, width, height)
                         else if (faces.isNotEmpty()) CardsFace(item, size, width, height, faces, seed)

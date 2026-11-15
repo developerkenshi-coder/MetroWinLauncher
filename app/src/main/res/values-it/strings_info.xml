@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="add_info">InfoTile: ora, calendario e foto</string>
+    <string name="add_info">InfoTile: ora, calendario, foto e altro</string>
     <string name="info_default_label">InfoTile</string>
     <string name="info_title">InfoTile</string>
     <string name="info_time">L\'ora</string>
     <string name="info_calendar">I prossimi eventi del calendario</string>
+    <string name="info_alarm">La prossima sveglia</string>
+    <string name="info_weather">Il meteo</string>
+    <string name="info_battery">La batteria</string>
     <string name="info_photos">Le ultime foto</string>
-    <string name="info_note">Con più di uno attivo, il tile passa dall\'uno all\'altro. Ne resta sempre almeno uno. Un tocco sul tile riapre questa scelta.</string>
+    <string name="info_memories">Le foto di questo giorno negli anni passati</string>
+    <string name="info_smart_title">Intelligente</string>
+    <string name="info_smart">Metti prima ciò che conta ora: un evento o una sveglia entro un\'ora resta da solo, di notte solo l\'ora</string>
+    <string name="info_saver">Solo l\'ora quando il telefono risparmia batteria</string>
+    <string name="info_pace">Velocità di rotazione</string>
+    <string name="info_pace_slow">Lenta</string>
+    <string name="info_pace_normal">Normale</string>
+    <string name="info_pace_fast">Veloce</string>
+    <string name="info_zone">Fuso orario: %1$s</string>
+    <string name="info_zone_phone">del telefono</string>
+    <string name="info_zone_reset">Usa il fuso del telefono</string>
+    <string name="info_album">Foto da: %1$s</string>
+    <string name="info_album_latest">le ultime del telefono</string>
+    <string name="info_album_reset">Usa le ultime foto del telefono</string>
+    <string name="info_note">Con più di una faccia attiva, il tile passa dall\'una all\'altra; ne resta sempre una. Un tocco apre ciò che la faccia mostrata riguarda. Questa scelta si riapre dalla modalità modifica del tile.</string>
     <string name="info_done">Fatto</string>
 </resources>

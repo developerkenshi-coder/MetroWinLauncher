@@ -127,7 +127,7 @@ sealed interface Launch {
 }
 
 /** Which kind of live content a tile can show on its face. */
-enum class LiveKind { Calendar, Photos, People, Phone, Weather, Battery, Messages, Mail, Torch, Music, Storage, Alarm, Birthdays, Album, Group, News, Finance, Todo }
+enum class LiveKind { Calendar, Photos, People, Phone, Weather, Battery, Messages, Mail, Torch, Music, Storage, Alarm, Birthdays, Album, Group, News, Finance, Todo, Memories }
 
 /**
  * One entry of the app list: either a Windows Phone stock app mapped onto the Android app that

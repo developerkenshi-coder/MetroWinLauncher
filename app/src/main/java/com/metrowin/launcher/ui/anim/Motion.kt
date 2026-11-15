@@ -319,6 +319,8 @@ fun FlipContainer(
     resetKey: Any? = null,
     /** How this kind of tile moves on the phone, which the "mixed" setting follows: lists of text (headlines, the agenda) slide, the rest turn over. */
     slides: Boolean = false,
+    /** How long each face stays: 1 as usual, more for slower, less for faster (the info tile lets the user choose). */
+    pace: Float = 1f,
     content: @Composable (face: Int) -> Unit,
 ) {
     var index by remember(resetKey) { mutableIntStateOf(startFace) }
@@ -334,13 +336,13 @@ fun FlipContainer(
 
     val reduced = LocalReduceMotion.current
     val saving = LocalPowerSaving.current
-    LaunchedWhileStarted(listOf(faces, reduced || saving, slide, resetKey)) {
+    LaunchedWhileStarted(listOf(faces, reduced || saving, slide, resetKey, pace)) {
         // With reduced motion, or while saving battery, the tile keeps its face: nothing flips by itself.
         if (faces <= 1 || reduced || saving) return@LaunchedWhileStarted
         // Coming back after being off screen in the middle of a slide: settle on the face that was coming in. (A tile that turns over changes its face at the edge-on moment, so any other angle already shows the right one.)
         if (slide && angle.value >= 90f) index = (index + 1) % faces
         angle.snapTo(0f)
-        delay(1_500L + (seed.mod(6)) * 800L)
+        delay(((1_500L + (seed.mod(6)) * 800L) * pace).toLong())
         while (true) {
             if (slide) {
                 angle.animateTo(180f, metroTween(durationMillis = Motion.SLIDE_MS, easing = Motion.Decelerate))
@@ -354,7 +356,7 @@ fun FlipContainer(
                 angle.snapTo(-90f)
                 angle.animateTo(0f, metroTween(durationMillis = Motion.FLIP_HALF_MS, easing = Motion.FlipIn))
             }
-            delay(5_000L + (seed.mod(4)) * 900L)
+            delay(((5_000L + (seed.mod(4)) * 900L) * pace).toLong())
         }
     }
 

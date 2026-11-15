@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="add_info">InfoTile: time, calendar and photos</string>
+    <string name="add_info">InfoTile: time, calendar, photos and more</string>
     <string name="info_default_label">InfoTile</string>
     <string name="info_title">InfoTile</string>
     <string name="info_time">The time</string>
     <string name="info_calendar">The next events of the calendar</string>
+    <string name="info_alarm">The next alarm</string>
+    <string name="info_weather">The weather</string>
+    <string name="info_battery">The battery</string>
     <string name="info_photos">The latest photos</string>
-    <string name="info_note">With more than one on, the tile turns from one to the next. One always stays on. A touch on the tile opens this choice.</string>
+    <string name="info_memories">The photos of this day in past years</string>
+    <string name="info_smart_title">Smart</string>
+    <string name="info_smart">Put first what matters now: an event or an alarm within the hour stays alone, at night only the time</string>
+    <string name="info_saver">Only the time while the phone saves battery</string>
+    <string name="info_pace">How fast it turns</string>
+    <string name="info_pace_slow">Slow</string>
+    <string name="info_pace_normal">Normal</string>
+    <string name="info_pace_fast">Fast</string>
+    <string name="info_zone">Time zone: %1$s</string>
+    <string name="info_zone_phone">the phone\'s</string>
+    <string name="info_zone_reset">Use the time zone of the phone</string>
+    <string name="info_album">Photos from: %1$s</string>
+    <string name="info_album_latest">the latest of the phone</string>
+    <string name="info_album_reset">Use the latest photos of the phone</string>
+    <string name="info_note">With more than one face on, the tile turns from one to the next; one always stays on. A touch opens what the face on show is about. This choice opens again from the edit mode of the tile.</string>
     <string name="info_done">Done</string>
 </resources>
