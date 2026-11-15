@@ -318,8 +318,8 @@ fun MetroLockScreen(
         val clock = @Composable { LockClock(time, is24Hour, locale) }
         val date = @Composable { LockDate(time, locale) }
         val lines = @Composable { LockLines(info, options, zone, is24Hour, locale, countOnly = !hasStatus, onOpen) }
-        if (maxWidth > maxHeight * WIDE_RATIO && (playing != null || hasStatus)) {
-            // A screen that is wide and short (a phone on its dock): the time on the left, what is going on on the right.
+        if (lockTwoColumns(maxWidth.value, maxHeight.value)) {
+            // A screen that is wide and short (a phone on its side or on its dock, a tablet): the time on the left, what is going on on the right.
             Row(
                 Modifier.fillMaxSize().then(rise).lockTopPadding(holes).navigationBarsPadding().padding(start = 24.dp, end = 24.dp, top = 56.dp, bottom = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(24.dp),
@@ -678,6 +678,9 @@ private val HOP = 40.dp
 
 /** A screen at least this much wider than it is tall puts the music and the status beside the time. */
 private const val WIDE_RATIO = 1.2f
+
+/** Two columns, the time at the left, on every screen on its side (with or without music or news: the column at the right is then empty and the time stays at the left). */
+internal fun lockTwoColumns(width: Float, height: Float): Boolean = width > height * WIDE_RATIO
 
 /** How small the lines of the lock screen may be drawn when they do not fit: more than that and they would not be read. */
 private const val MIN_FIT = 0.6f
