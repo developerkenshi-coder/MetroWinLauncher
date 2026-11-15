@@ -55,6 +55,9 @@ import com.metrowin.launcher.ui.theme.pageBackground
 import com.metrowin.launcher.ui.theme.squareClip
 import com.metrowin.launcher.ui.theme.tileColor
 import com.metrowin.launcher.ui.theme.tileInk
+import com.metrowin.launcher.ui.theme.litFill
+import com.metrowin.launcher.ui.theme.panel
+import com.metrowin.launcher.ui.theme.sheet
 import com.metrowin.launcher.ui.theme.tileSurface
 import com.metrowin.launcher.ui.theme.toArgbInt
 
@@ -88,7 +91,10 @@ private fun StyleChoice(style: ThemeStyle, accent: Color, dark: Boolean, isSelec
         verticalAlignment = Alignment.CenterVertically,
     ) {
         MetroTheme(accent = accent, dark = dark, style = style) {
-            StylePreview()
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Small)) {
+                StylePreview()
+                MiniPreview()
+            }
         }
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
@@ -104,16 +110,36 @@ private fun StylePreview() {
     val style = LocalStyle.current
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
-    Box(Modifier.size(84.dp, 84.dp).clip(style.squareShape).pageBackground().padding(6.dp)) {
+    Box(Modifier.size(PREVIEW).clip(style.squareShape).pageBackground().padding(5.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
-            Box(Modifier.fillMaxWidth().height(30.dp).tileSurface(colors.tileColor(0, accent), style.smallTileShape))
+            Box(Modifier.fillMaxWidth().height(22.dp).tileSurface(colors.tileColor(0, accent), style.smallTileShape))
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Small)) {
-                Box(Modifier.weight(1f).height(30.dp).tileSurface(colors.tileColor(1, accent), style.smallTileShape))
-                Box(Modifier.weight(1f).height(30.dp).tileSurface(colors.tileColor(2, accent), style.smallTileShape))
+                Box(Modifier.weight(1f).height(22.dp).tileSurface(colors.tileColor(1, accent), style.smallTileShape))
+                Box(Modifier.weight(1f).height(22.dp).tileSurface(colors.tileColor(2, accent), style.smallTileShape))
             }
         }
     }
 }
+
+/**
+ * A miniature mini app next to the Start: the page of the look with the title line in the accent, two rows of a list on the surface
+ * of the look, and the bar at the foot with a lit button. Built from the same surfaces the mini apps use, so it shows what they will be.
+ */
+@Composable
+private fun MiniPreview() {
+    val style = LocalStyle.current
+    val accent = LocalAccent.current
+    Column(Modifier.size(PREVIEW).clip(style.squareShape).pageBackground().padding(5.dp), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
+        Box(Modifier.width(34.dp).height(6.dp).background(accent))
+        repeat(2) { Box(Modifier.fillMaxWidth().height(12.dp).panel(style.squareShape)) }
+        Spacer(Modifier.weight(1f))
+        Box(Modifier.fillMaxWidth().height(14.dp).sheet(), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(8.dp).litFill(true, style.controlShape))
+        }
+    }
+}
+
+private val PREVIEW = 64.dp
 
 /**
  * The colors: the 20 of Windows Phone and a color of your own made with three sliders. [dynamicHint] says that the
