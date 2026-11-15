@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -57,8 +58,9 @@ import java.util.Locale
 /**
  * A dimmed page with [content] in a panel in the middle; touching outside it calls [onCancel]. The panel scrolls by itself when its content is
  * long: never put a vertically scrolling list or column in [content] without a fixed height (it would be measured with no limit and crash).
- * In the classic look the panel swivels in from its top edge and, when closed by a touch outside, swivels out again before [onCancel] runs;
- * a dialog the content itself closes (its own button) just goes, as it is taken off the screen at once.
+ * In the classic look the panel swivels in from its top edge, in the others it fades in and grows a little; when closed by a touch outside it
+ * goes the same way back before [onCancel] runs (with reduced motion it just appears and goes); a dialog the content itself closes (its own
+ * button) just goes, as it is taken off the screen at once. The panel is at most 480 dp wide, in the middle of the page.
  *
  * This is the one dialog of the launcher and of every mini app: do not open a system `AlertDialog` or a bare `Dialog` for a question, a choice
  * or a form. (The only windows of their own are those that need a window: the camera scanner and the card in the Wallet.)
@@ -68,7 +70,8 @@ fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, title: Stri
     val colors = LocalMetroColors.current
     val currentCancel by rememberUpdatedState(onCancel)
     val scope = rememberCoroutineScope()
-    val animated = !LocalReduceMotion.current && LocalStyle.current.isClassic
+    val classic = LocalStyle.current.isClassic
+    val animated = !LocalReduceMotion.current
     // 1 while the panel is turned away, 0 when it faces the screen.
     val away = remember { Animatable(if (animated) 1f else 0f) }
     LaunchedEffect(Unit) { if (animated) away.animateTo(0f, metroTween(durationMillis = TURN_MS, easing = Motion.Decelerate)) }
@@ -102,13 +105,23 @@ fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, title: Stri
     ) {
         Column(
             Modifier
+                // On a tablet or in landscape the panel does not stretch over the screen: it keeps the width of a phone, in the middle.
+                .widthIn(max = MAX_WIDTH + Spacing.Page * 2)
                 .fillMaxWidth()
                 .padding(horizontal = Spacing.Page)
                 .graphicsLayer {
-                    transformOrigin = TransformOrigin(0.5f, 0f)
-                    rotationX = -SWIVEL_DEGREES * away.value
-                    cameraDistance = Motion.CAMERA * density
-                    alpha = 1f - away.value * away.value
+                    if (classic) {
+                        transformOrigin = TransformOrigin(0.5f, 0f)
+                        rotationX = -SWIVEL_DEGREES * away.value
+                        cameraDistance = Motion.CAMERA * density
+                        alpha = 1f - away.value * away.value
+                    } else {
+                        // Glass and Droid: the panel fades in and grows a little from the middle.
+                        val grow = 1f - POP_FROM * away.value
+                        scaleX = grow
+                        scaleY = grow
+                        alpha = 1f - away.value
+                    }
                 }
                 .panel()
                 .pointerInput(Unit) { detectTapGestures { } }
@@ -136,3 +149,5 @@ fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, title: Stri
 private const val TURN_MS = 250
 private const val TURN_OUT_MS = 180
 private const val SWIVEL_DEGREES = 85f
+private const val POP_FROM = 0.08f
+private val MAX_WIDTH = 480.dp
