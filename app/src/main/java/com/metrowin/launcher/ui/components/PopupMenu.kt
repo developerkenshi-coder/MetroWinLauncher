@@ -1,0 +1,67 @@
+package com.metrowin.launcher.ui.components
+
+import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
+import com.metrowin.launcher.ui.anim.Motion
+import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.ui.anim.metroTween
+import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
+import com.metrowin.launcher.ui.theme.panel
+
+/**
+ * The panel of every pop-up menu of the launcher (the menu of an app, the menu of a row in a mini app, and the next ones): the surface and
+ * the frame of the look in use, a fade and a small growth when it opens, and a scroll when the entries do not fit. Fill it with [MenuItem].
+ */
+@Composable
+fun MenuPanel(modifier: Modifier = Modifier, tag: String? = null, content: @Composable ColumnScope.() -> Unit) {
+    val reduce = LocalReduceMotion.current
+    val shown = remember { Animatable(if (reduce) 1f else 0f) }
+    LaunchedEffect(Unit) { if (!reduce) shown.animateTo(1f, metroTween(durationMillis = 160, easing = Motion.Decelerate)) }
+    Column(
+        modifier
+            .then(if (tag != null) Modifier.testTag(tag) else Modifier)
+            .fillMaxWidth()
+            .graphicsLayer {
+                val grow = POP_FROM + (1f - POP_FROM) * shown.value
+                scaleX = grow
+                scaleY = grow
+                alpha = shown.value
+            }
+            .panel()
+            .heightIn(max = MENU_MAX_HEIGHT)
+            .verticalScroll(rememberScrollState())
+            .padding(vertical = Spacing.Medium),
+        content = content,
+    )
+}
+
+/** An entry of a [MenuPanel]: at least 48 dp high, so that a finger finds it, and growing with the text when this is made bigger. */
+@Composable
+fun MenuItem(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, color: Color? = null) {
+    Box(
+        modifier.fillMaxWidth().heightIn(min = 48.dp).metroPress(onClick = onClick).padding(horizontal = Spacing.Page, vertical = Spacing.Large),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        MetroText(text, size = MetroType.Subtitle, color = color ?: LocalMetroColors.current.foreground)
+    }
+}
+
+private const val POP_FROM = 0.94f
+private val MENU_MAX_HEIGHT = 440.dp

@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.ui.components.MenuItem
+import com.metrowin.launcher.ui.components.MenuPanel
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 
@@ -154,12 +156,10 @@ private class MenuEntries(
 @Composable
 private fun Menu(item: AppItem, e: MenuEntries, modifier: Modifier) {
     // Long menus scroll: ten entries and the pressed row do not always fit on a small screen.
-    Column(
-        modifier.testTag("menu:panel").fillMaxWidth().panel().heightIn(max = MENU_MAX_HEIGHT).verticalScroll(rememberScrollState()).padding(vertical = 6.dp),
-    ) {
+    MenuPanel(modifier, tag = "menu:panel") {
         e.shortcuts.forEach { shortcut ->
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                MenuEntry(shortcut.label, { e.onShortcut(shortcut) }, Modifier.weight(1f).testTag("menu:shortcut:${shortcut.id}"), color = LocalAccent.current)
+                MenuItem(shortcut.label, { e.onShortcut(shortcut) }, Modifier.weight(1f).testTag("menu:shortcut:${shortcut.id}"), color = LocalAccent.current)
                 if (e.onPinShortcut != null) {
                     val description = stringResource(R.string.menu_pin_shortcut)
                     Box(
@@ -172,31 +172,22 @@ private fun Menu(item: AppItem, e: MenuEntries, modifier: Modifier) {
                 }
             }
         }
-        MenuEntry(stringResource(if (e.pinned) R.string.menu_unpin else R.string.menu_pin), e.onPinToggle)
-        if (e.onSelect != null) MenuEntry(stringResource(R.string.menu_select), e.onSelect, Modifier.testTag("menu:select"))
-        if (e.onAddToFolder != null) MenuEntry(stringResource(R.string.menu_add_to_folder), e.onAddToFolder, Modifier.testTag("menu:folder"))
-        if (e.onAddToList != null) MenuEntry(stringResource(R.string.menu_add_to_list), e.onAddToList, Modifier.testTag("menu:list"))
-        if (e.onRename != null) MenuEntry(stringResource(R.string.menu_rename), e.onRename, Modifier.testTag("menu:rename"))
-        if (e.onResetName != null) MenuEntry(stringResource(R.string.menu_reset_name), e.onResetName, Modifier.testTag("menu:resetname"))
+        MenuItem(stringResource(if (e.pinned) R.string.menu_unpin else R.string.menu_pin), e.onPinToggle)
+        if (e.onSelect != null) MenuItem(stringResource(R.string.menu_select), e.onSelect, Modifier.testTag("menu:select"))
+        if (e.onAddToFolder != null) MenuItem(stringResource(R.string.menu_add_to_folder), e.onAddToFolder, Modifier.testTag("menu:folder"))
+        if (e.onAddToList != null) MenuItem(stringResource(R.string.menu_add_to_list), e.onAddToList, Modifier.testTag("menu:list"))
+        if (e.onRename != null) MenuItem(stringResource(R.string.menu_rename), e.onRename, Modifier.testTag("menu:rename"))
+        if (e.onResetName != null) MenuItem(stringResource(R.string.menu_reset_name), e.onResetName, Modifier.testTag("menu:resetname"))
         if (e.locked != null) {
-            MenuEntry(stringResource(if (e.locked) R.string.menu_unlock else R.string.menu_lock), e.onToggleLock, Modifier.testTag("menu:lock"))
+            MenuItem(stringResource(if (e.locked) R.string.menu_unlock else R.string.menu_lock), e.onToggleLock, Modifier.testTag("menu:lock"))
         }
-        if (e.onInfo != null) MenuEntry(stringResource(R.string.menu_info), e.onInfo, Modifier.testTag("menu:info"))
-        if (e.onStore != null) MenuEntry(stringResource(R.string.menu_store), e.onStore, Modifier.testTag("menu:store"))
-        if (e.onShare != null) MenuEntry(stringResource(R.string.menu_share), e.onShare, Modifier.testTag("menu:share"))
-        if (e.onHide != null) MenuEntry(stringResource(R.string.menu_hide), e.onHide, Modifier.testTag("menu:hide"))
-        if (item.removable) MenuEntry(stringResource(R.string.menu_uninstall), e.onUninstall)
-    }
-}
-
-@Composable
-private fun MenuEntry(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, color: Color? = null) {
-    Box(modifier.fillMaxWidth().metroPress(onClick = onClick).padding(horizontal = Spacing.Page, vertical = Spacing.Large)) {
-        MetroText(text, size = 21.sp, color = color ?: LocalMetroColors.current.foreground)
+        if (e.onInfo != null) MenuItem(stringResource(R.string.menu_info), e.onInfo, Modifier.testTag("menu:info"))
+        if (e.onStore != null) MenuItem(stringResource(R.string.menu_store), e.onStore, Modifier.testTag("menu:store"))
+        if (e.onShare != null) MenuItem(stringResource(R.string.menu_share), e.onShare, Modifier.testTag("menu:share"))
+        if (e.onHide != null) MenuItem(stringResource(R.string.menu_hide), e.onHide, Modifier.testTag("menu:hide"))
+        if (item.removable) MenuItem(stringResource(R.string.menu_uninstall), e.onUninstall)
     }
 }
 
 /** A row whose bottom edge is below this fraction of the screen gets its menu above it. */
 private const val OPEN_UP_BELOW = 0.6f
-
-private val MENU_MAX_HEIGHT = 440.dp

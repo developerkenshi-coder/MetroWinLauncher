@@ -35,7 +35,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.ui.anim.metroPress
-import com.metrowin.launcher.ui.components.MetroText
+import com.metrowin.launcher.ui.components.MenuItem
+import com.metrowin.launcher.ui.components.MenuPanel
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.panel
 import kotlin.math.roundToInt
@@ -102,11 +103,9 @@ fun RowMenuHost(state: RowMenuState, modifier: Modifier = Modifier) {
                 },
         ) {
             val menu = @Composable {
-                Column(Modifier.testTag("rowmenu:panel").fillMaxWidth().panel().heightIn(max = 440.dp).verticalScroll(rememberScrollState()).padding(vertical = 6.dp)) {
+                MenuPanel(tag = "rowmenu:panel") {
                     open.actions.forEachIndexed { i, action ->
-                        Box(Modifier.fillMaxWidth().testTag("rowmenu:$i").metroPress(onClick = { state.dismiss(); action.onClick() }).padding(horizontal = Spacing.Page, vertical = Spacing.Large)) {
-                            MetroText(action.label, size = 21.sp)
-                        }
+                        MenuItem(action.label, { state.dismiss(); action.onClick() }, Modifier.testTag("rowmenu:$i"))
                     }
                 }
             }
