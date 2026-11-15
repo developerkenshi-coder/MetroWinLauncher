@@ -205,8 +205,10 @@ internal class BackupController(
     fun applyRestore(parts: Set<RestorePart>) {
         val backup = _pendingRestore.value ?: return
         _pendingRestore.value = null
+        val before = snapshot(false)
         restoreParts(backup, parts)
-        tell(R.string.backup_imported)
+        // The restore can be taken back from the banner: the same parts are put back from what the phone had a moment ago.
+        MetroToast.show(app, app.getString(R.string.backup_imported), app.getString(R.string.restore_undo)) { restoreParts(before, parts) }
     }
 
     /** Sends the layout (see [LayoutBackupCodec]) to another app or person as a file, through the share sheet. */

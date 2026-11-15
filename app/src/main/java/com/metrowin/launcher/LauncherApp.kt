@@ -2120,8 +2120,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                 }
 
 
-                if (pendingRestore != null) {
-                    RestoreDialog(onDone = vm::applyRestore, onCancel = vm::cancelRestore)
+                pendingRestore?.let { backup ->
+                    RestoreDialog(backup, settings, pages.sumOf { it.size }, onDone = vm::applyRestore, onCancel = vm::cancelRestore)
                 }
 
                 naming.Dialogs(vm = vm, pages = pages, items = items, settings = settings, onListCreated = { selectedList = it })

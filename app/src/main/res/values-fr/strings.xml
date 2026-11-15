@@ -1609,6 +1609,12 @@
     <string name="restore_theme">L’apparence du launcher</string>
     <string name="restore_data">Les tâches, les rappels, les dispositions nommées et l’emplacement de la voiture</string>
     <string name="restore_go">Remettre</string>
+    <string name="restore_preview_tiles">Tuiles sur Start : %1$d dans la sauvegarde, %2$d maintenant</string>
+    <string name="restore_preview_look_same">L’aspect est le même qu’en ce moment</string>
+    <string name="restore_preview_look_differs">L’aspect est différent de celui d’en ce moment</string>
+    <string name="restore_preview_data">À faire : %1$d, rappels : %2$d, dispositions nommées : %3$d</string>
+    <string name="restore_preview_data_none">Le fichier n’en contient aucun</string>
+    <string name="restore_undo">Annuler</string>
 
     <!-- Météo : ce que la page des prévisions et la tuile peuvent afficher -->
     <string name="wx_heading">Ce que montrent les prévisions</string>

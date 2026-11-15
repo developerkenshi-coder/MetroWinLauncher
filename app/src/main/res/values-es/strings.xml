@@ -1609,6 +1609,12 @@
     <string name="restore_theme">El aspecto del launcher</string>
     <string name="restore_data">Las tareas, los recordatorios, los diseños con nombre y el sitio del coche</string>
     <string name="restore_go">Restaurar</string>
+    <string name="restore_preview_tiles">Mosaicos en Start: %1$d en la copia, %2$d ahora</string>
+    <string name="restore_preview_look_same">El aspecto es el mismo que ahora</string>
+    <string name="restore_preview_look_differs">El aspecto es distinto del de ahora</string>
+    <string name="restore_preview_data">Tareas: %1$d, recordatorios: %2$d, diseños con nombre: %3$d</string>
+    <string name="restore_preview_data_none">El archivo no tiene ninguno</string>
+    <string name="restore_undo">Deshacer</string>
 
     <!-- Clima: lo que pueden mostrar la página del pronóstico y el mosaico -->
     <string name="wx_heading">Qué muestra el pronóstico</string>

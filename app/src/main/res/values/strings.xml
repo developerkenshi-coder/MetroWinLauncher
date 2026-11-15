@@ -1592,6 +1592,12 @@
     <string name="restore_theme">How the launcher looks</string>
     <string name="restore_data">Things to do, reminders, named layouts and the place of the car</string>
     <string name="restore_go">Put back</string>
+    <string name="restore_preview_tiles">Tiles on Start: %1$d in the backup, %2$d now</string>
+    <string name="restore_preview_look_same">The look is the same as now</string>
+    <string name="restore_preview_look_differs">The look is different from now</string>
+    <string name="restore_preview_data">To do: %1$d, reminders: %2$d, named layouts: %3$d</string>
+    <string name="restore_preview_data_none">The file has none of these</string>
+    <string name="restore_undo">Undo</string>
 
     <!-- Weather: what the forecast page and the tile can show -->
     <string name="wx_heading">What the forecast shows</string>

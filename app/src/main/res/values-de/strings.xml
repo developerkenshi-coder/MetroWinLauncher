@@ -1592,6 +1592,12 @@
     <string name="restore_theme">Das Aussehen des Launchers</string>
     <string name="restore_data">Aufgaben, Erinnerungen, benannte Layouts und der Parkplatz des Autos</string>
     <string name="restore_go">Wiederherstellen</string>
+    <string name="restore_preview_tiles">Kacheln auf Start: %1$d in der Sicherung, %2$d jetzt</string>
+    <string name="restore_preview_look_same">Das Aussehen ist wie jetzt</string>
+    <string name="restore_preview_look_differs">Das Aussehen ist anders als jetzt</string>
+    <string name="restore_preview_data">Aufgaben: %1$d, Erinnerungen: %2$d, benannte Layouts: %3$d</string>
+    <string name="restore_preview_data_none">Die Datei enthält nichts davon</string>
+    <string name="restore_undo">Rückgängig</string>
 
     <!-- Weather: what the forecast page and the tile can show -->
     <string name="wx_heading">Was die Vorhersage zeigt</string>

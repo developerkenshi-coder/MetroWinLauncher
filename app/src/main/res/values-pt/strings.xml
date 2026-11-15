@@ -1609,6 +1609,12 @@
     <string name="restore_theme">A aparência do launcher</string>
     <string name="restore_data">As tarefas, os lembretes, os layouts com nome e o lugar do carro</string>
     <string name="restore_go">Restaurar</string>
+    <string name="restore_preview_tiles">Blocos no Start: %1$d na cópia, %2$d agora</string>
+    <string name="restore_preview_look_same">O aspeto é o mesmo de agora</string>
+    <string name="restore_preview_look_differs">O aspeto é diferente do de agora</string>
+    <string name="restore_preview_data">Tarefas: %1$d, lembretes: %2$d, disposições com nome: %3$d</string>
+    <string name="restore_preview_data_none">O ficheiro não tem nenhum</string>
+    <string name="restore_undo">Desfazer</string>
 
     <!-- Weather: what the forecast page and the tile can show -->
     <string name="wx_heading">O que a previsão mostra</string>

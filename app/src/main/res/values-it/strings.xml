@@ -1602,6 +1602,12 @@
     <string name="restore_theme">L\'aspetto del launcher</string>
     <string name="restore_data">Le cose da fare, i promemoria, i layout con nome e il posto dell\'auto</string>
     <string name="restore_go">Rimetti</string>
+    <string name="restore_preview_tiles">Riquadri su Start: %1$d nel backup, %2$d ora</string>
+    <string name="restore_preview_look_same">L\'aspetto è uguale a quello di ora</string>
+    <string name="restore_preview_look_differs">L\'aspetto è diverso da quello di ora</string>
+    <string name="restore_preview_data">Da fare: %1$d, promemoria: %2$d, schemi con nome: %3$d</string>
+    <string name="restore_preview_data_none">Il file non ne contiene</string>
+    <string name="restore_undo">Annulla</string>
 
     <!-- Meteo: cosa mostrano la pagina delle previsioni e il riquadro -->
     <string name="wx_heading">Cosa mostrano le previsioni</string>
