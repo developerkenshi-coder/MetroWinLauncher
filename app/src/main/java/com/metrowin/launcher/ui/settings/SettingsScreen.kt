@@ -286,6 +286,7 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, fromTop: Flo
                 SettingsSection.Search -> SearchPage(env)
                 SettingsSection.Gestures -> GesturesPage(env)
                 SettingsSection.Actions -> ActionsPage(env)
+                SettingsSection.MiniApps -> MiniAppsPage()
                 SettingsSection.LiveTiles -> LiveTilesPage(env)
                 SettingsSection.Apps -> AppsPage(env)
                 SettingsSection.Screen -> ScreenPage(env)

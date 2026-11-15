@@ -60,6 +60,7 @@ enum class SettingsSection(
     // apps: the list, the search, the live content and the profiles they come from
     Apps(SettingsGroup.Apps, R.string.sec_apps, R.string.sec_apps_desc, R.string.kw_apps),
     Search(SettingsGroup.Apps, R.string.sec_search, R.string.sec_search_desc, R.string.kw_search),
+    MiniApps(SettingsGroup.Apps, R.string.sec_mini_apps, R.string.sec_mini_apps_desc, R.string.kw_mini_apps),
     LiveTiles(SettingsGroup.Apps, R.string.sec_live_tiles, R.string.sec_live_tiles_desc, R.string.kw_live_tiles),
     Profiles(SettingsGroup.Apps, R.string.sec_profiles, R.string.sec_profiles_desc, R.string.kw_profiles),
 

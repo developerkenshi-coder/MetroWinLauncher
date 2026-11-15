@@ -2834,6 +2834,9 @@ em primeiro plano %3$s · em segundo plano %4$s
     <string name="sec_projects">outros projetos</string>
     <string name="sec_projects_desc">Apps livres e não livres do mesmo autor</string>
     <string name="kw_projects">projetos, apps, teclado, spesatracker, github, play store, foss, software livre</string>
+    <string name="sec_mini_apps">mini apps</string>
+    <string name="sec_mini_apps_desc">As opções de Mensagens, E-mail, Calendário e das outras mini apps num só lugar</string>
+    <string name="kw_mini_apps">mini apps, apps, mensagens, e-mail, calendário, calculadora, data sense, gravador, opções, interruptores</string>
     <string name="prj_foss">Software livre (FOSS)</string>
     <string name="prj_foss_hint">Código aberto, sem anúncios nem rastreadores. Toca numa imagem para a ampliar.</string>
     <string name="prj_nonfoss">Software não livre</string>

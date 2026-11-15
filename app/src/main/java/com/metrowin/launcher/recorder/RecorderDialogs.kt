@@ -38,7 +38,7 @@ import com.metrowin.launcher.ui.theme.LocalMetroColors
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-private fun label(opt: Opt): Int = when (opt) {
+internal fun recorderLabel(opt: Opt): Int = when (opt) {
     Opt.PAUSE -> R.string.rec_opt_pause
     Opt.MARKS -> R.string.rec_opt_marks
     Opt.FOCUS -> R.string.rec_opt_focus
@@ -104,7 +104,7 @@ internal fun OptionsDialog(opts: RecorderOptions, onClose: () -> Unit) {
 
 @Composable
 private fun Toggles(opts: RecorderOptions, vararg list: Opt) {
-    list.forEach { o -> MetroToggle(stringResource(label(o)), opts.on(o), { opts.toggle(o) }, Modifier.testTag("rec:opt:" + o.key)) }
+    list.forEach { o -> MetroToggle(stringResource(recorderLabel(o)), opts.on(o), { opts.toggle(o) }, Modifier.testTag("rec:opt:" + o.key)) }
 }
 
 @Composable

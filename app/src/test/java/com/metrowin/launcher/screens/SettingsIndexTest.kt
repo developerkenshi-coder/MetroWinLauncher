@@ -63,7 +63,7 @@ class SettingsIndexTest : ScreenshotBase() {
             SettingsSection.Battery to "battery", SettingsSection.Apps to "apps", SettingsSection.Search to "search",
             SettingsSection.LiveTiles to "live", SettingsSection.Profiles to "profile", SettingsSection.Backup to "backup",
             SettingsSection.Kids to "kids", SettingsSection.About to "about", SettingsSection.BugReport to "bugreport",
-            SettingsSection.StartBars to "start", SettingsSection.StatusBar to "statusbar", SettingsSection.StartBehaviour to "start", SettingsSection.Notifications to "ac", SettingsSection.OtherProjects to "projects",
+            SettingsSection.StartBars to "start", SettingsSection.StatusBar to "statusbar", SettingsSection.StartBehaviour to "start", SettingsSection.Notifications to "ac", SettingsSection.OtherProjects to "projects", SettingsSection.MiniApps to "mini",
         )
         SettingsIndex.entries.forEach { entry ->
             val prefix = entry.id.substringBefore('.')
@@ -188,6 +188,7 @@ class SettingsIndexTest : ScreenshotBase() {
     @Test fun theLiveTilesPageIsTheIndex() = assertPageHasExactly(
         SettingsSection.LiveTiles, anchorsOf(SettingsSection.LiveTiles, notificationAccess = false),
     )
+    @Test fun theMiniAppsPageIsTheIndex() = assertPageHasExactly(SettingsSection.MiniApps, anchorsOf(SettingsSection.MiniApps))
     @Test fun theProfilesPageIsTheIndex() = assertPageHasExactly(SettingsSection.Profiles, anchorsOf(SettingsSection.Profiles))
     @Test fun theKidsPageIsTheIndex() = assertPageHasExactly(SettingsSection.Kids, anchorsOf(SettingsSection.Kids))
     @Test fun theAboutPageIsTheIndex() = assertPageHasExactly(SettingsSection.About, anchorsOf(SettingsSection.About))

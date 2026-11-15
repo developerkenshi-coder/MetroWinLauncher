@@ -20,6 +20,7 @@ import com.metrowin.launcher.ui.settings.SettingsSection.StartBehaviour
 import com.metrowin.launcher.ui.settings.SettingsSection.Icons
 import com.metrowin.launcher.ui.settings.SettingsSection.Kids
 import com.metrowin.launcher.ui.settings.SettingsSection.LiveTiles
+import com.metrowin.launcher.ui.settings.SettingsSection.MiniApps
 import com.metrowin.launcher.ui.settings.SettingsSection.Lock
 import com.metrowin.launcher.ui.settings.SettingsSection.Profiles
 import com.metrowin.launcher.ui.settings.SettingsSection.Screen
@@ -328,7 +329,7 @@ object SettingsIndex {
         e("projects.foss", OtherProjects, R.string.prj_foss, "foss", "open source", "keyboard", "tastiera", "launcher", "github", "software libero"),
         e("projects.nonfoss", OtherProjects, R.string.prj_nonfoss, "spesatracker", "play store", "google play", "spese", "budget", "non foss"),
         e("about.credits", About, R.string.about_credits, "licenses", "thanks", "open source", "licenze", "ringraziamenti"),
-    )
+    ) + MiniOptions.all.map { SettingEntry(it.id, MiniApps, it.label, listOf(it.app, "mini app", "app")) }
 
     private val byId: Map<String, SettingEntry> = entries.associateBy { it.id }
 
@@ -351,7 +352,9 @@ object SettingsIndex {
             }
             entries.forEach { entry ->
                 val place = context.getString(entry.section.title)
-                add(SearchEntry(SettingHit(entry.section, entry), context.getString(entry.title), entry.keywords + place + words(context, entry.section), boost = 0))
+                // A switch of a mini app is also found by the name of the app ("messages", "calendar").
+                val app = MiniOptions.byId[entry.id]?.let { listOf(context.getString(MiniOptions.appLabel(it.app))) }.orEmpty()
+                add(SearchEntry(SettingHit(entry.section, entry), context.getString(entry.title), entry.keywords + place + app + words(context, entry.section), boost = 0))
             }
         }
         return SearchIndex(rows, keywordPrefixFrom = 3)
