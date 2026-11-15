@@ -10,6 +10,8 @@ import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.content.ContextWrapper
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -192,7 +194,7 @@ fun MetroTheme(
     SystemBarIcons(light = pageIsLight(resolved.style.kind, colors, resolved.accent, oled && dark))
     CompositionLocalProvider(
         LocalAccent provides resolved.accent,
-        LocalMetroColors provides colors,
+        LocalMetroColors provides colors.eased(reduceMotion),
         LocalStyle provides typed,
         LocalOled provides (oled && dark),
         LocalReduceMotion provides reduceMotion,
@@ -204,6 +206,26 @@ fun MetroTheme(
         content = content,
     )
 }
+
+/**
+ * The colours of the page easing to the new ones when the theme changes (dark to light by the clock, another look), not all jumping at once.
+ * The colours the Droid tiles take in turn change at once. Nothing eases with reduced motion; the first composition never animates.
+ */
+@Composable
+private fun MetroColors.eased(reduceMotion: Boolean): MetroColors {
+    if (reduceMotion) return this
+    val fade = tween<Color>(THEME_FADE_MS)
+    return copy(
+        background = animateColorAsState(background, fade, label = "background").value,
+        foreground = animateColorAsState(foreground, fade, label = "foreground").value,
+        subtle = animateColorAsState(subtle, fade, label = "subtle").value,
+        surface = animateColorAsState(surface, fade, label = "surface").value,
+        inactive = animateColorAsState(inactive, fade, label = "inactive").value,
+        tileContent = animateColorAsState(tileContent, fade, label = "tileContent").value,
+    )
+}
+
+private const val THEME_FADE_MS = 400
 
 /** Dark icons in the status and navigation bars on a light page (see [pageIsLight]), light icons on a dark one. */
 @Composable
