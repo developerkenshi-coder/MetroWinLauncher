@@ -25,7 +25,7 @@ fun MiniAccentSetting(env: SettingsEnv) {
     val app = apps[picked]
     Column(Modifier.settingAnchor("theme.miniaccent"), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
         DropdownSetting(stringResource(R.string.accent_mini), apps.map { stringResource(it.label) }, picked, { picked = it }, tag = "theme:miniapp")
-        AccentGrid(selected = env.settings.miniAccents[app.id] ?: -1) { index -> env.onChange { it.copy(miniAccents = it.miniAccents + (app.id to index)) } }
+        AccentGrid(selected = env.settings.miniAccents[app.id] ?: -1, tag = "miniaccent") { index -> env.onChange { it.copy(miniAccents = it.miniAccents + (app.id to index)) } }
         MetroButton(stringResource(R.string.accent_mini_theme), Modifier.fillMaxWidth().testTag("theme:miniaccent:reset")) {
             env.onChange { it.copy(miniAccents = it.miniAccents - app.id) }
         }

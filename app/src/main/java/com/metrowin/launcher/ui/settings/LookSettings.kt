@@ -194,9 +194,9 @@ val dynamicColorAvailable: Boolean get() = Build.VERSION.SDK_INT >= Build.VERSIO
 fun usesWallpaperColors(settings: LauncherSettings): Boolean =
     settings.themeStyle == ThemeStyle.Droid && settings.dynamicColor && dynamicColorAvailable
 
-/** The 20 accent colours in a grid of five columns. The chosen one has a frame. */
+/** The 20 accent colours in a grid of five columns. The chosen one has a frame. [tag] prefixes the test tags: one per grid on the page. */
 @Composable
-internal fun AccentGrid(selected: Int, modifier: Modifier = Modifier, onSelect: (Int) -> Unit) {
+internal fun AccentGrid(selected: Int, modifier: Modifier = Modifier, tag: String = "accent", onSelect: (Int) -> Unit) {
     val frame = LocalMetroColors.current.foreground
     Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         MetroAccents.chunked(ACCENT_COLUMNS).forEachIndexed { row, colors ->
@@ -210,7 +210,7 @@ internal fun AccentGrid(selected: Int, modifier: Modifier = Modifier, onSelect: 
                             .metroPress(onClick = { onSelect(index) })
                             .squareClip()
                             .background(color)
-                            .testTag("accent:$index")
+                            .testTag("$tag:$index")
                             .then(if (index == selected) Modifier.border(3.dp, frame, LocalStyle.current.squareShape) else Modifier),
                     )
                 }

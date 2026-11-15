@@ -126,7 +126,7 @@ fun NightAccentSettings(env: SettingsEnv) {
             hint = stringResource(R.string.theme_night_accent_hint), tag = "theme:nightaccent", id = "theme.nightaccent",
         )
         if (s.accentNightIndex >= 0) {
-            AccentGrid(selected = s.accentNightIndex, onSelect = { index -> env.onChange { it.copy(accentNightIndex = index) } })
+            AccentGrid(selected = s.accentNightIndex, tag = "nightaccent", onSelect = { index -> env.onChange { it.copy(accentNightIndex = index) } })
         }
     }
 }
