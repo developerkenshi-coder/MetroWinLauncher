@@ -1,5 +1,6 @@
 package com.metrowin.launcher.dialer
 
+import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.ui.components.WindowClass
 import com.metrowin.launcher.ui.components.windowClass
 import android.Manifest
@@ -207,7 +208,7 @@ fun DialerScreen(
         }
         // Back from another page goes to the one the phone opened on; only from there it leaves.
         BackHandler(enabled = pager.currentPage != home) { scope.launch { pager.animateScrollToPage(home) } }
-        Column(Modifier.fillMaxSize().topBarsPadding().navigationBarsPadding().then(if (wide) Modifier else Modifier.centeredContent())) {
+        Column(Modifier.fillMaxSize().topBarsPadding().navigationBarsPadding().cutoutSidesPadding().then(if (wide) Modifier else Modifier.centeredContent())) {
             PivotHeader(titles.take(pages), pager, Modifier.padding(start = 24.dp, top = 20.dp, bottom = 8.dp))
             Row(Modifier.weight(1f).fillMaxWidth()) {
                 if (wide) Box(Modifier.weight(0.8f).fillMaxHeight().padding(horizontal = 24.dp)) { KeypadPage(number, onNumberChange, hasContacts, canCall, keys, prefs, ::call, ::voicemail, fresh) }

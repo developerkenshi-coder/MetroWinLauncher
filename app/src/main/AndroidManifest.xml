@@ -290,6 +290,7 @@
         <!-- The dialer: opened for "dial" and tel: links, and listed as an app of its own. Android needs both tel: filters to offer the launcher as the phone app. -->
         <activity
             android:name=".dialer.DialerActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="true"
             android:label="@string/dialer_app_name"
             android:launchMode="singleTask"
@@ -520,6 +521,7 @@
         <!-- The screen of the calls, shown by the in-call service below. -->
         <activity
             android:name=".calls.InCallActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:launchMode="singleTask"
             android:showWhenLocked="true"

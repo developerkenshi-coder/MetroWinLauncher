@@ -1,5 +1,6 @@
 package com.metrowin.launcher.power
 
+import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
@@ -74,7 +75,7 @@ fun PowerScreen(finish: () -> Unit) {
             MetroText(stringResource(if (going) R.string.pw_going else R.string.pw_swipe), size = 28.sp, color = androidx.compose.ui.graphics.Color.White, modifier = Modifier.padding(24.dp))
         }
         if (!going) {
-            MetroButton(stringResource(R.string.pw_restart), Modifier.align(Alignment.BottomStart).navigationBarsPadding().padding(24.dp)) {
+            MetroButton(stringResource(R.string.pw_restart), Modifier.align(Alignment.BottomStart).navigationBarsPadding().cutoutSidesPadding().padding(24.dp)) {
                 ShizukuShell.async(listOf(arrayOf("svc", "power", "reboot")))
                 finish()
             }
