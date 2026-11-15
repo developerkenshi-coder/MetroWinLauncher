@@ -77,6 +77,15 @@ class LaunchPlanTest {
     }
 
     @Test
+    fun ownPageTurnsOnlyInTheTurnstilesAndNeverWhileGrowing() {
+        assertTrue(LaunchPlans.turnsOwnPage(original = false, window = LaunchAnimation.Turnstile, growing = false))
+        assertTrue(LaunchPlans.turnsOwnPage(original = true, window = LaunchAnimation.Fade, growing = false))
+        assertFalse(LaunchPlans.turnsOwnPage(original = false, window = LaunchAnimation.Fade, growing = false))
+        // The expand style grows the window from the tile: the page must not turn on top of it.
+        for (original in listOf(true, false)) assertFalse(LaunchPlans.turnsOwnPage(original, LaunchAnimation.Turnstile, growing = true))
+    }
+
+    @Test
     fun codesRoundTrip() {
         LaunchAnimation.entries.forEach { assertEquals(it, LaunchAnimation.fromCode(it.code)) }
         assertEquals(LaunchAnimation.Original, LaunchAnimation.fromCode("spin"))

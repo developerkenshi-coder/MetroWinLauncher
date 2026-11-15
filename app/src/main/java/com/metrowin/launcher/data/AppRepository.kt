@@ -168,7 +168,9 @@ class AppRepository(private val context: Context) {
      * without it the app opens with the fade of the launcher.
      */
     fun launch(item: AppItem, sourceBounds: Rect?, growFrom: Rect? = null, anchor: View? = null, original: Boolean = false, window: LaunchAnimation = LaunchAnimation.Turnstile): Boolean {
-        val ownPage = (original || window == LaunchAnimation.Turnstile) && (item.launch as? Launch.Activity)?.component?.packageName == context.packageName
+        // The page turns itself only when the app does not also grow out of the tile: the two together overlap.
+        val ownPage = LaunchPlans.turnsOwnPage(original, window, growing = growFrom != null && anchor != null) &&
+            (item.launch as? Launch.Activity)?.component?.packageName == context.packageName
         val options = when {
             growFrom != null && anchor != null ->
                 ActivityOptions.makeScaleUpAnimation(anchor, growFrom.left, growFrom.top, growFrom.width(), growFrom.height()).toBundle()

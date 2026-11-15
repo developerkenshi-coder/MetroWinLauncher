@@ -36,6 +36,10 @@ object LaunchPlans {
     /** How long a tile waits to turn back in, after coming back to Start: the top rows first. */
     fun inDelay(row: Int): Long = (row.coerceAtLeast(0) * IN_STEP_MS).coerceAtMost(IN_MAX_MS)
 
+    /** Whether a mini app of the launcher turns its own page in (see PageTurn): the turnstile styles do, and never while the window grows out of the tile. */
+    fun turnsOwnPage(original: Boolean, window: LaunchAnimation, growing: Boolean): Boolean =
+        !growing && (original || window == LaunchAnimation.Turnstile)
+
     /** [fromStart] is true when the tap was on a tile of Start, false when it was on the app list or elsewhere. */
     fun decide(animation: LaunchAnimation, reduceMotion: Boolean, fromStart: Boolean): LaunchPlan = when {
         reduceMotion -> LaunchPlan(tilesTurnAway = false, expand = false, waitMs = 0L)
