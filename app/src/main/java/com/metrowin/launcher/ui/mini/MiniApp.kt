@@ -44,6 +44,8 @@ import androidx.compose.foundation.layout.padding
 import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.notifications.OverlayTheme
+import com.metrowin.launcher.data.MetroSound
+import com.metrowin.launcher.ui.anim.MetroSoundPlayer
 import com.metrowin.launcher.ui.anim.rotateOnTurn
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.ui.components.topBarsPadding
@@ -63,10 +65,21 @@ abstract class MiniActivity : ComponentActivity() {
     private var settings by mutableStateOf(LauncherSettings())
     private val settingsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> settings = SettingsStore.of(this).load() }
 
+    /** The sounds of Start (the same setting): a glide up when the app opens and down when it closes. Made only when the setting is on. */
+    private var sounds: MetroSoundPlayer? = null
+    private var closeSounded = false
+
+    private fun sound(which: MetroSound) {
+        if (!settings.metroSounds) return
+        (sounds ?: MetroSoundPlayer(this).also { sounds = it; Thread { it.prepare() }.start() }).play(which)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         settings = SettingsStore.of(this).load()
+        // Not again when the screen only turns or the font changes and the app is made anew.
+        if (savedInstanceState == null) sound(MetroSound.Open)
         setContent {
             // An app the user gave its own accent (Settings, Theme) opens in it; the others follow the theme.
             val own = MiniApps.activities.entries.firstOrNull { it.value == javaClass }?.key?.let { settings.miniAccents[it] }?.let { MetroAccents[it] }
@@ -94,6 +107,12 @@ abstract class MiniActivity : ComponentActivity() {
         Prefs.main(this).registerOnSharedPreferenceChangeListener(settingsListener)
     }
 
+    override fun onDestroy() {
+        // The close sound is short but is played as the window goes: give it the time before the pool is let go.
+        sounds?.let { player -> android.os.Handler(mainLooper).postDelayed({ player.release() }, SOUND_TAIL_MS) }
+        super.onDestroy()
+    }
+
     override fun onStop() {
         Prefs.main(this).unregisterOnSharedPreferenceChangeListener(settingsListener)
         super.onStop()
@@ -101,6 +120,7 @@ abstract class MiniActivity : ComponentActivity() {
 
     /** With the original animation the page turns away first, and the window closes without its own animation. */
     override fun finish() {
+        if (!closeSounded) { closeSounded = true; sound(MetroSound.Close) }
         if (!turn.leave(lifecycleScope) { returnToLauncher(); super.finish(); overridePendingTransition(0, 0) }) { returnToLauncher(); super.finish() }
     }
 
@@ -129,3 +149,5 @@ fun MiniFrame(
         content = content,
     )
 }
+
+private const val SOUND_TAIL_MS = 600L
