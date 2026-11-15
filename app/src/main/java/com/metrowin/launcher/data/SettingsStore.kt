@@ -446,6 +446,8 @@ data class LauncherSettings(
     val accentStart: Boolean = true,
     val accentPanel: Boolean = true,
     val accentApps: Boolean = true,
+    /** The accent a mini app has of its own, as the index in [MetroAccents] by the id of the stock app; an app that is not here follows the theme. */
+    val miniAccents: Map<String, Int> = emptyMap(),
     /** The little Metro sounds: a chime for a new notification, a glide when the Action Center comes down or goes. Off until asked for. */
     val metroSounds: Boolean = false,
     /** Android's own notification is taken away when the Metro banner shows for it, and kept in the Action Center. Off until asked for. */

@@ -1228,6 +1228,9 @@
     <string name="accent_use_panel">Action Center und Banner</string>
     <string name="accent_use_apps">App-Liste und Einstellungen</string>
     <string name="accent_use_hint">Wo ein Bereich aus ist, ist die Farbe ein zum Design passendes Grau.</string>
+    <string name="accent_mini">Akzentfarbe einer Mini-App</string>
+    <string name="accent_mini_theme">Wie das Design</string>
+    <string name="accent_mini_hint">Wähle eine App und dann ihre Farbe. Die App öffnet sich damit; bei „Wie das Design“ folgt sie dem Akzent oben.</string>
     <string name="photo_fit">Wie das Foto den Bildschirm füllt</string>
     <string name="photo_fit_fill">Füllen</string>
     <string name="photo_fit_fit">Einpassen</string>

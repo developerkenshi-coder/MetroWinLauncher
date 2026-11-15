@@ -148,9 +148,9 @@ internal fun overlayTopInset(app: Context, windows: WindowManager): Dp {
 
 /** The look of the launcher, as LauncherApp builds it (without the accent from the photo, which needs the picture), for a window of the service. */
 @Composable
-internal fun OverlayTheme(settings: LauncherSettings, icons: IconLoader, content: @Composable () -> Unit) {
+internal fun OverlayTheme(settings: LauncherSettings, icons: IconLoader, accentOverride: Color? = null, content: @Composable () -> Unit) {
     val context = LocalContext.current
-    val accent = if (settings.customAccent != 0) Color(settings.customAccent) else MetroAccents[settings.accentIndex.coerceIn(MetroAccents.indices)]
+    val accent = accentOverride ?: if (settings.customAccent != 0) Color(settings.customAccent) else MetroAccents[settings.accentIndex.coerceIn(MetroAccents.indices)]
     val droid = if (settings.themeStyle == ThemeStyle.Droid) {
         remember(settings.dynamicColor, accent) { (if (settings.dynamicColor) Palettes.fromSystem(context) else null) ?: Palettes.fromSeed(accent) }
     } else {

@@ -220,6 +220,7 @@ fun StartThemePage(env: SettingsEnv) {
             )
             SettingHint(stringResource(R.string.accent_use_hint))
         }
+        MiniAccentSetting(env)
         ToggleSetting(
             label = stringResource(R.string.theme_photo_inside),
             checked = settings.startPhotoInside,

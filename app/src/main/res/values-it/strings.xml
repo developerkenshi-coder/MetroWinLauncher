@@ -1233,6 +1233,9 @@
     <string name="accent_use_panel">Action Center e banner</string>
     <string name="accent_use_apps">Lista app e impostazioni</string>
     <string name="accent_use_hint">Dove una parte è spenta, il colore è un grigio adatto al tema.</string>
+    <string name="accent_mini">Colore d\'accento di una mini app</string>
+    <string name="accent_mini_theme">Come il tema</string>
+    <string name="accent_mini_hint">Scegli un\'app e poi il suo colore. L\'app si apre con quello; con «Come il tema» segue l\'accento qui sopra.</string>
     <string name="photo_fit">Come la foto riempie lo schermo</string>
     <string name="photo_fit_fill">riempi</string>
     <string name="photo_fit_fit">adatta</string>

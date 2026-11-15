@@ -28,6 +28,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.data.MiniApps
+import com.metrowin.launcher.ui.theme.MetroAccents
 import androidx.compose.ui.graphics.toArgb
 import com.metrowin.launcher.data.Prefs
 import com.metrowin.launcher.ui.theme.LocalAccent
@@ -66,7 +68,9 @@ abstract class MiniActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         settings = SettingsStore.of(this).load()
         setContent {
-            OverlayTheme(settings, remember { IconLoader(applicationContext) }) {
+            // An app the user gave its own accent (Settings, Theme) opens in it; the others follow the theme.
+            val own = MiniApps.activities.entries.firstOrNull { it.value == javaClass }?.key?.let { settings.miniAccents[it] }?.let { MetroAccents[it] }
+            OverlayTheme(settings, remember { IconLoader(applicationContext) }, own) {
                 // Light page: dark icons in the bars. The page knows its real color up there (look, accent, wallpaper), so this follows it.
                 val light = pageIsLight(LocalStyle.current.kind, LocalMetroColors.current, LocalAccent.current, LocalOled.current)
                 val accent = LocalAccent.current.toArgb() or 0xFF000000.toInt()

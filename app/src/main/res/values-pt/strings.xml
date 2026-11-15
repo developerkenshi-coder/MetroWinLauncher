@@ -1240,6 +1240,9 @@
     <string name="accent_use_panel">Action Center e banners</string>
     <string name="accent_use_apps">Lista de apps e configurações</string>
     <string name="accent_use_hint">Onde uma parte está desativada, a cor é um cinza que combina com o tema.</string>
+    <string name="accent_mini">Cor de destaque de uma mini app</string>
+    <string name="accent_mini_theme">Como o tema</string>
+    <string name="accent_mini_hint">Escolha uma app e depois a sua cor. A app abre com ela; com «Como o tema» segue o destaque acima.</string>
     <string name="photo_fit">Como a foto preenche a tela</string>
     <string name="photo_fit_fill">preencher</string>
     <string name="photo_fit_fit">ajustar</string>

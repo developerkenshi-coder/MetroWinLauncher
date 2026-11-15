@@ -1228,6 +1228,9 @@
     <string name="accent_use_panel">Action Center and banners</string>
     <string name="accent_use_apps">App list and settings</string>
     <string name="accent_use_hint">Where a part is off, the colour is a grey that suits the theme.</string>
+    <string name="accent_mini">Accent of a mini app</string>
+    <string name="accent_mini_theme">Like the theme</string>
+    <string name="accent_mini_hint">Pick an app, then its colour. The app opens in it; with \"Like the theme\" it follows the accent above.</string>
     <string name="photo_fit">How the photo fills the screen</string>
     <string name="photo_fit_fill">fill</string>
     <string name="photo_fit_fit">fit</string>

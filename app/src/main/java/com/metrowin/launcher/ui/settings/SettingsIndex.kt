@@ -69,6 +69,7 @@ object SettingsIndex {
         e("theme.pagebackgrounds", StartTheme, R.string.page_photos, "photo", "page", "background", "wallpaper", "pagina", "sfondo", "foto"),
         e("theme.photofit", StartTheme, R.string.photo_fit, "fill", "fit", "stretch", "tile", "center", "wallpaper", "riempi", "adatta", "allunga", "affianca", "centra", "sfondo"),
         e("theme.accentuse", StartTheme, R.string.accent_use, "accent", "colour", "color", "where", "grey", "colore", "dove", "grigio", "tinta"),
+        e("theme.miniaccent", StartTheme, R.string.accent_mini, "accent", "colour", "color", "app", "mini", "colore", "tinta"),
         e("theme.framing", StartTheme, R.string.photo_framing, "zoom", "crop", "position", "inquadratura", "ritaglio", "posizione"),
         e("theme.tileopacity", StartTheme, R.string.theme_tile_opacity, "transparent", "translucent", "see through", "photo", "tiles", "trasparenza", "trasparente", "riquadri", "foto", "sfondo"),
         e("theme.photoinside", StartTheme, R.string.theme_photo_inside, "photo", "background", "inside", "tiles", "window", "foto", "sfondo", "dentro", "riquadri", "finestra"),

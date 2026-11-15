@@ -126,6 +126,7 @@ object SettingsCodec {
         put("accentStart", s.accentStart)
         put("accentPanel", s.accentPanel)
         put("accentApps", s.accentApps)
+        put("miniAccents", JSONObject(s.miniAccents))
         put("metroSounds", s.metroSounds)
         put("hideSystemNotifications", s.hideSystemNotifications)
         put("edgeActionCenter", s.edgeActionCenter)
@@ -382,6 +383,7 @@ object SettingsCodec {
             accentStart = o.optBoolean("accentStart", base.accentStart),
             accentPanel = o.optBoolean("accentPanel", base.accentPanel),
             accentApps = o.optBoolean("accentApps", base.accentApps),
+            miniAccents = o.optJSONObject("miniAccents")?.let { j -> j.keys().asSequence().mapNotNull { k -> j.optInt(k, -1).takeIf { it in 0 until ACCENT_COUNT }?.let { k to it } }.toMap() } ?: base.miniAccents,
             metroSounds = o.optBoolean("metroSounds", base.metroSounds),
             hideSystemNotifications = o.optBoolean("hideSystemNotifications", base.hideSystemNotifications),
             edgeActionCenter = o.optBoolean("edgeActionCenter", base.edgeActionCenter),

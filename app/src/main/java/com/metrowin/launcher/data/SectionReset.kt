@@ -11,7 +11,7 @@ object SectionReset {
     /** The pages that can be reset, by the name of the section, and the settings of each. */
     val keys: Map<String, Set<String>> = mapOf(
         "StartTheme" to setOf(
-            "accentApps", "accentIndex", "accentNightIndex", "accentPanel", "accentStart", "autoAccent", "customAccent", "darkFromHour", "darkToHour",
+            "accentApps", "accentIndex", "accentNightIndex", "accentPanel", "accentStart", "autoAccent", "customAccent", "miniAccents", "darkFromHour", "darkToHour",
             "dynamicColor", "oledMode", "pageBackgrounds", "panoramaTitles", "parallax", "tileOpacity", "startPhotoFit", "startPhotoInside", "startPhotoX", "startPhotoY", "startPhotoZoom",
             "systemWallpaperFollows", "themeMode", "themeStyle",
         ),
