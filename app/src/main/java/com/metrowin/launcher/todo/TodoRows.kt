@@ -68,6 +68,7 @@ import com.metrowin.launcher.ui.kids.CheckSquare
 import com.metrowin.launcher.ui.start.whenText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.MetroAccents
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.theme.litFill
@@ -81,9 +82,8 @@ import kotlin.math.sin
 
 /** The colours a list can be given (the tile colours of Windows Phone); a list with none takes one from its name. */
 private val ListPalette = listOf(
-    Color(0xFF1BA1E2), Color(0xFF60A917), Color(0xFFF0A30A), Color(0xFFE51400),
-    Color(0xFFAA00FF), Color(0xFFFA6800), Color(0xFF00ABA9), Color(0xFFD80073),
-)
+    4, 1, 13, 11, 7, 12, 3, 9, // cyan, green, amber, red, violet, orange, teal, magenta: the order is stored with each list
+).map { MetroAccents[it] }
 
 /** The colour of a list: [stored] (1 to [TodoOptionStore.COLORS]) or, while it has none, the one its name stands for; the main list has none. */
 fun listTint(name: String, stored: Int): Color? {

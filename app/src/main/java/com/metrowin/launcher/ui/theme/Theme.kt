@@ -42,6 +42,9 @@ import java.time.LocalTime
 /** Text and glyphs on a tile are white in every theme, as on Windows Phone. */
 val TileWhite = Color(0xFFFFFFFF)
 
+/** The red of what is wrong or about to run out: a low battery, a failed message, hanging up, recording. Same in every theme, like the accent palette's red. */
+val Danger = Color(0xFFE51400)
+
 /** The cyan of the Windows Phone 8 accent palette, used as the default accent colour. */
 val DefaultAccent = Color(0xFF1BA1E2)
 

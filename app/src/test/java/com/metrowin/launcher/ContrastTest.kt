@@ -1,12 +1,15 @@
 package com.metrowin.launcher
 
 import androidx.compose.ui.graphics.Color
+import com.metrowin.launcher.data.ThemeStyle
 import com.metrowin.launcher.ui.theme.ColorMath
+import com.metrowin.launcher.ui.theme.Danger
 import com.metrowin.launcher.ui.theme.DarkColors
 import com.metrowin.launcher.ui.theme.LightColors
 import com.metrowin.launcher.ui.theme.MetroAccents
 import com.metrowin.launcher.ui.theme.MetroColors
 import com.metrowin.launcher.ui.theme.Palettes
+import com.metrowin.launcher.ui.theme.Themes
 import com.metrowin.launcher.ui.theme.highContrast
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -63,5 +66,20 @@ class ContrastTest {
         }
         // One that already reads is left alone.
         assertEquals(Color(0xFF0050EF), ColorMath.readableOn(Color(0xFF0050EF), Color.White))
+    }
+
+    @Test
+    fun everyStyleInBothThemesOnOledAndInHighContrastReadsWithEveryAccent() {
+        for (kind in ThemeStyle.values()) for (dark in listOf(true, false)) for (oled in listOf(false, true)) for (accent in MetroAccents) {
+            val resolved = Themes.resolve(kind, dark, accent, null, oled)
+            val name = "$kind dark=$dark oled=$oled accent=${accent.value}"
+            for ((label, colors) in listOf("" to resolved.colors, " high" to resolved.colors.highContrast())) {
+                readable(name + label, colors)
+                // The accent as a heading (large text) and the danger red as a big glyph or a bar.
+                assertText("$name$label accent", ColorMath.readableOn(resolved.accent, colors.background), colors.background, 3f)
+                assertText("$name$label danger", ColorMath.readableOn(Danger, colors.background), colors.background, 3f)
+            }
+            assertText("$name high subtle", resolved.colors.highContrast().subtle, resolved.colors.highContrast().background, 7f)
+        }
     }
 }

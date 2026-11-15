@@ -55,6 +55,7 @@ import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.mini.MiniFrame
 import com.metrowin.launcher.ui.theme.LocalAccent
+import com.metrowin.launcher.ui.theme.LightColors
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import java.time.Instant
@@ -104,7 +105,7 @@ private fun CodeFullscreen(card: Card, secure: Boolean, onClose: () -> Unit) {
             Column(Modifier.safeDrawingPadding().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 CodeImage(card.code, card.format, Modifier.fillMaxWidth())
                 MetroText(card.code, size = 22.sp, weight = FontWeight.Normal, color = Color.Black)
-                MetroText(stringResource(R.string.wal_fullscreen_hint), size = 14.sp, weight = FontWeight.Normal, color = Color(0xFF666666))
+                MetroText(stringResource(R.string.wal_fullscreen_hint), size = 14.sp, weight = FontWeight.Normal, color = LightColors.subtle)
             }
         }
     }

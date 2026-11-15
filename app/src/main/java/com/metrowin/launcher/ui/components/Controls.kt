@@ -78,6 +78,7 @@ import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.theme.LocalAccent
+import com.metrowin.launcher.ui.theme.LightColors
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.TileWhite
 
@@ -407,7 +408,7 @@ fun MetroTextField(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.weight(1f)) {
-            if (value.isEmpty()) MetroText(placeholder, size = 20.sp, color = if (lit) Color(0xFF666666) else colors.subtle)
+            if (value.isEmpty()) MetroText(placeholder, size = 20.sp, color = if (lit) LightColors.subtle else colors.subtle)
             BasicTextField(
                 value = value,
                 onValueChange = onValueChange,

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.components
 
+import com.metrowin.launcher.ui.theme.Danger
 import androidx.compose.ui.res.pluralStringResource
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
@@ -406,7 +407,7 @@ internal fun BatteryCell(
         val fill = inner * battery.percent / 100f
         val low = battery.percent <= 15 && battery.state == BatteryState.Discharging
         drawRect(
-            if (low) Color(0xFFE51400) else color,
+            if (low) Danger else color,
             topLeft = Offset(stroke * 2, stroke * 2), size = Size(fill, size.height - stroke * 4),
         )
         val s = sweep()

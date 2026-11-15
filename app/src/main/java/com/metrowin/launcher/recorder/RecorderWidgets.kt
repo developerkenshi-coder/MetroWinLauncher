@@ -1,5 +1,6 @@
 package com.metrowin.launcher.recorder
 
+import com.metrowin.launcher.ui.theme.Danger
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -65,7 +66,7 @@ import kotlin.math.abs
 import kotlin.math.sqrt
 
 /** The red of a recording: a dot, a button, the live wave. The one place it is named. */
-val RecordRed = Color(0xFFE51400)
+val RecordRed = Danger
 
 const val WAVE_BARS = 48
 const val WAVE_STEP_MS = 80L

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.lock
 
+import com.metrowin.launcher.ui.theme.Danger
 import com.metrowin.launcher.ui.components.lockTopPadding
 import com.metrowin.launcher.ui.components.rememberTopCutouts
 import com.metrowin.launcher.ui.anim.metroTween
@@ -551,7 +552,7 @@ private fun CallCard(call: LockCall, modifier: Modifier = Modifier) {
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             CallChoice(stringResource(R.string.incall_mute), if (call.muted) Color.White else Color.White.copy(alpha = 0.2f), if (call.muted) Color.Black else Color.White, "lock:call:mute", Modifier.weight(1f), call.onMute)
-            CallChoice(stringResource(R.string.incall_hang_up), Color(0xFFE51400), Color.White, "lock:call:hangup", Modifier.weight(1f), call.onHangUp)
+            CallChoice(stringResource(R.string.incall_hang_up), Danger, Color.White, "lock:call:hangup", Modifier.weight(1f), call.onHangUp)
         }
     }
 }

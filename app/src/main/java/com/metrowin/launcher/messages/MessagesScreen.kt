@@ -1,5 +1,6 @@
 package com.metrowin.launcher.messages
 
+import com.metrowin.launcher.ui.theme.Danger
 import com.metrowin.launcher.ui.mini.MiniFrame
 import com.metrowin.launcher.ui.anim.swivel
 import com.metrowin.launcher.ui.anim.rememberRowSwivel
@@ -139,7 +140,7 @@ private val permissions = buildList {
     if (Build.VERSION.SDK_INT >= 33) add(Manifest.permission.POST_NOTIFICATIONS)
 }
 
-private val FAILED_RED = Color(0xFFE51400)
+private val FAILED_RED = Danger
 
 /** The messages of Windows Phone: the conversations, a conversation with its bubbles, and the box to write in. [address] is the open conversation. */
 @Composable
