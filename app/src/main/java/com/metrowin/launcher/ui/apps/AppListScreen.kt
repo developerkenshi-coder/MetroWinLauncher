@@ -77,6 +77,9 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import java.util.Locale
 import com.metrowin.launcher.data.EventMatch
+import com.metrowin.launcher.data.MiniLink
+import com.metrowin.launcher.data.NoteMatch
+import com.metrowin.launcher.data.TodoMatch
 import com.metrowin.launcher.data.ClockFormat
 import com.metrowin.launcher.data.CalendarSearch
 import com.metrowin.launcher.data.FileMatch
@@ -191,6 +194,14 @@ sealed interface ListRow {
 
     data class File(val match: FileMatch) : ListRow {
         override val key = "file:${match.uri}"
+    }
+
+    data class NoteResult(val match: NoteMatch) : ListRow {
+        override val key = "note:${match.id}"
+    }
+
+    data class TodoResult(val match: TodoMatch) : ListRow {
+        override val key = "todo:${match.id}"
     }
 
     data class Event(val match: EventMatch) : ListRow {
@@ -374,6 +385,14 @@ fun AppListScreen(
                     add(ListRow.Section(R.string.search_section_events))
                     global.events.forEach { add(ListRow.Event(it)) }
                 }
+                if (global.notes.isNotEmpty()) {
+                    add(ListRow.Section(R.string.search_section_notes))
+                    global.notes.forEach { add(ListRow.NoteResult(it)) }
+                }
+                if (global.todos.isNotEmpty()) {
+                    add(ListRow.Section(R.string.search_section_todos))
+                    global.todos.forEach { add(ListRow.TodoResult(it)) }
+                }
                 if (global.notifications.isNotEmpty()) {
                     add(ListRow.Section(R.string.search_section_notifications))
                     global.notifications.forEach { add(ListRow.Notification(it)) }
@@ -418,6 +437,8 @@ fun AppListScreen(
             is ListRow.Tile -> onLaunch(row.match.item)
             is ListRow.Notification -> onOpenNotification(row.entry)
             is ListRow.File -> onLaunch(AppItem("search:file", row.match.name, Launch.Link(row.match.uri)))
+            is ListRow.NoteResult -> onLaunch(AppItem("search:note", row.match.title, Launch.Link(MiniLink.note(row.match.id))))
+            is ListRow.TodoResult -> onLaunch(AppItem("search:todo", row.match.text, Launch.Link(MiniLink.todo(row.match.id))))
             is ListRow.Event -> onLaunch(AppItem("search:event", row.match.title, Launch.Link(CalendarSearch.uri(row.match.eventId))))
             ListRow.Search, ListRow.Today, ListRow.Categories, is ListRow.Header, is ListRow.Section -> Unit
         }
@@ -495,11 +516,20 @@ fun AppListScreen(
                 is ListRow.File -> ResultRow(
                     row.match.type.glyph, row.match.name,
                     stringResource(row.match.type.label) + " · " + FileSearch.sizeText(row.match.size),
-                    index, listState, openedAt, exiting, tag = "result:file:${row.match.uri}",
+                    index, listState, openedAt, exiting, tag = "result:file:${row.match.uri}", accent = true,
                 ) { activate(row) }
                 is ListRow.Event -> ResultRow(
                     Glyph.Calendar, row.match.title, eventWhen(row.match), index, listState, openedAt, exiting,
-                    tag = "result:event:${row.match.eventId}",
+                    tag = "result:event:${row.match.eventId}", accent = true,
+                ) { activate(row) }
+                // The square of a mini app's result is the one of the app: its glyph, in the accent colour.
+                is ListRow.NoteResult -> ResultRow(
+                    Glyph.Notes, row.match.title, row.match.snippet.takeIf { it.isNotBlank() }, index, listState, openedAt, exiting,
+                    tag = "result:note:${row.match.id}", accent = true,
+                ) { activate(row) }
+                is ListRow.TodoResult -> ResultRow(
+                    Glyph.Todo, row.match.text, row.match.list.takeIf { it.isNotBlank() }, index, listState, openedAt, exiting,
+                    tag = "result:todo:${row.match.id}", accent = true,
                 ) { activate(row) }
             }
             }
@@ -533,7 +563,7 @@ fun AppListScreen(
  */
 private fun ListRow.isActionable(): Boolean = when (this) {
     is ListRow.App, is ListRow.Answer, is ListRow.Contact, is ListRow.Setting, is ListRow.Web,
-    is ListRow.LauncherSetting, is ListRow.Tile, is ListRow.Notification, is ListRow.File, is ListRow.Event -> true
+    is ListRow.LauncherSetting, is ListRow.Tile, is ListRow.Notification, is ListRow.File, is ListRow.Event, is ListRow.NoteResult, is ListRow.TodoResult -> true
     ListRow.Search, ListRow.Today, ListRow.Categories, is ListRow.Header, is ListRow.Section, is ListRow.Recent -> false
 }
 

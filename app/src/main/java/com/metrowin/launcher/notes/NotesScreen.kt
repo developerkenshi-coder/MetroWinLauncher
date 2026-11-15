@@ -49,7 +49,7 @@ private sealed interface Ask {
 }
 
 @Composable
-fun NotesScreen() {
+fun NotesScreen(openId: String? = null) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val store = remember { NoteStore(context) }
@@ -179,6 +179,10 @@ fun NotesScreen() {
         if (intent == null) { toast(R.string.notes_lock_none); return }
         waiting = note.id
         credential.launch(intent)
+    }
+    // A result of the search opens its note as soon as the notes are read (a locked one asks for the lock first, as in the list).
+    LaunchedEffect(openId, notes != null) {
+        if (openId != null) notes?.firstOrNull { it.id == openId && it.deleted == 0L }?.let(::open)
     }
 
     val current = (page as? Page.Edit)?.id ?: (page as? Page.Sketch)?.id

@@ -9,7 +9,7 @@ import com.metrowin.launcher.R
  * alarm, read together when the app list comes up ([readAt] is when).
  */
 @Immutable
-data class TodayExtras(val readAt: Long = 0L, val event: LiveEvent? = null, val alarmMillis: Long? = null)
+data class TodayExtras(val readAt: Long = 0L, val event: LiveEvent? = null, val alarmMillis: Long? = null, val note: NoteMatch? = null)
 
 /** What the Today card writes at [nowMillis]. */
 @Immutable
@@ -27,9 +27,11 @@ data class TodayInfo(
     /** The date and the places near me are lines of their own that the user may switch off (the weather and the alarm are simply left out). */
     val showDate: Boolean = true,
     val showNear: Boolean = true,
+    /** The note changed last, a line that opens it. */
+    val note: NoteMatch? = null,
 ) {
     /** Nothing but the date: no event, no alarm, no weather and no reminder. */
-    val isQuiet: Boolean get() = event == null && alarmMillis == null && weather == null && reminders.isEmpty() && missed == 0
+    val isQuiet: Boolean get() = event == null && alarmMillis == null && weather == null && reminders.isEmpty() && missed == 0 && note == null
 }
 
 /** What a touch on the Today card does. The caller opens the page, the app or the map. */
@@ -38,6 +40,9 @@ sealed interface TodayAction {
     data object Weather : TodayAction
     data object Reminders : TodayAction
     data object Clock : TodayAction
+
+    /** The note of the line "last note": it opens in the notes. */
+    data class Note(val id: String) : TodayAction
 
     /** A search "near me" for the words in [what]. */
     data class Near(val what: String) : TodayAction
@@ -72,5 +77,6 @@ object Today {
         weather = weather,
         reminders = Reminders.upcoming(reminders, nowMillis).take(MAX_REMINDERS),
         missed = Reminders.missed(reminders, nowMillis).size,
+        note = extras.note,
     )
 }

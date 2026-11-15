@@ -84,6 +84,7 @@ import com.metrowin.launcher.data.NewApps
 import com.metrowin.launcher.data.AppSections
 import com.metrowin.launcher.data.AppRepository
 import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.data.MiniLink
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.data.CONNECTION_DEVICES_EVERY
 import com.metrowin.launcher.data.ConnectionAccess
@@ -1509,6 +1510,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                                     TodayAction.Weather -> weatherOpen = true
                                     TodayAction.Reminders -> panels.open(Panel.Reminders())
                                     TodayAction.Clock -> vm.openClock()
+                                    is TodayAction.Note -> open(AppItem("search:note", "", Launch.Link(MiniLink.note(action.id))), null)
                                     is TodayAction.Near -> vm.perform(QuickAnswer.NearMe(action.what))
                                     is TodayAction.Hide -> vm.hideTodayPart(action.part)
                                 }

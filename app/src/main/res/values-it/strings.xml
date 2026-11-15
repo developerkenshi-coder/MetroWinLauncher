@@ -1024,6 +1024,10 @@
     <string name="apps_calendar">cerca nel calendario</string>
     <string name="apps_calendar_hint">Gli eventi dei prossimi sei mesi il cui titolo corrisponde. Serve il permesso del calendario; viene letto sul telefono e non esce nulla.</string>
     <string name="search_section_events">calendario</string>
+    <string name="search_section_notes">note</string>
+    <string name="search_section_todos">da fare</string>
+    <string name="search_mini_apps">Cerca nelle note e nelle cose da fare</string>
+    <string name="search_mini_apps_hint">Cerca anche nelle note e nelle cose da fare del launcher. Le note bloccate e il cestino restano fuori.</string>
     <string name="apps_compact">elenco compatto</string>
     <string name="apps_compact_hint">Riquadri più piccoli e righe più strette: più app sullo schermo.</string>
     <string name="menu_store">apri nello store</string>
@@ -1397,6 +1401,7 @@
     <string name="volume_slider">Volume %1$s</string>
     <!-- Today card, app bar, panorama -->
     <string name="today_title">Oggi</string>
+    <string name="today_note_untitled">Nota senza titolo</string>
     <string name="today_alarm">Sveglia %1$s</string>
     <string name="today_near">Vicino a me</string>
     <string name="near_pharmacy">Farmacia</string>

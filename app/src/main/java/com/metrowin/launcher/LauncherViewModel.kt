@@ -100,6 +100,11 @@ import com.metrowin.launcher.data.CalendarSearch
 import com.metrowin.launcher.data.CurrencyRepository
 import com.metrowin.launcher.data.Currencies
 import com.metrowin.launcher.data.EventMatch
+import com.metrowin.launcher.data.MiniSearch
+import com.metrowin.launcher.data.NoteMatch
+import com.metrowin.launcher.data.TodoMatch
+import com.metrowin.launcher.notes.NoteStore
+import com.metrowin.launcher.todo.TodoStore
 import com.metrowin.launcher.data.AppLanguages
 import com.metrowin.launcher.data.HomePresses
 import com.metrowin.launcher.data.LevelChange
@@ -1260,7 +1265,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             val now = System.currentTimeMillis()
             val read = withContext(Dispatchers.IO) {
-                TodayExtras(now, CalendarSearch(app).next(now, TODAY_WINDOW_MS), NextAlarm.read(app).takeIf { it > 0L })
+                val note = if (_settings.value.searchMiniApps) MiniSearch.recentNote(NoteStore(app).load(), now) else null
+                TodayExtras(now, CalendarSearch(app).next(now, TODAY_WINDOW_MS), NextAlarm.read(app).takeIf { it > 0L }, note)
             }
             if (read != _today.value) _today.value = read
         }
@@ -1310,6 +1316,13 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             words.all { it in text }
         }.take(NOTIFICATION_RESULTS)
     }
+
+    /** The notes and the things to do of the launcher that match [query]; read from their files off the main thread. */
+    suspend fun searchNotes(query: String): List<NoteMatch> =
+        withContext(Dispatchers.IO) { MiniSearch.notes(NoteStore(getApplication<Application>()).load(), query) }
+
+    suspend fun searchTodos(query: String): List<TodoMatch> =
+        withContext(Dispatchers.IO) { MiniSearch.todos(TodoStore(getApplication<Application>()).load(), query) }
 
     suspend fun searchEvents(query: String): List<EventMatch> =
         withContext(Dispatchers.IO) { CalendarSearch(getApplication()).search(query) }

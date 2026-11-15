@@ -1023,6 +1023,10 @@
     <string name="apps_calendar">search the calendar</string>
     <string name="apps_calendar_hint">Events of the next six months whose title matches. Needs the calendar permission; it is read on the phone and nothing leaves it.</string>
     <string name="search_section_events">calendar</string>
+    <string name="search_section_notes">notes</string>
+    <string name="search_section_todos">to do</string>
+    <string name="search_mini_apps">Search the notes and things to do</string>
+    <string name="search_mini_apps_hint">Also looks in the notes and the things to do of the launcher. Locked notes and the bin are left out.</string>
     <string name="apps_compact">compact list</string>
     <string name="apps_compact_hint">Smaller squares and tighter rows: more apps on the screen.</string>
     <string name="menu_store">open in the store</string>
@@ -1390,6 +1394,7 @@
     <string name="volume_slider">Volume %1$s</string>
     <!-- Today card, app bar, panorama -->
     <string name="today_title">Today</string>
+    <string name="today_note_untitled">Untitled note</string>
     <string name="today_alarm">Alarm %1$s</string>
     <string name="today_near">Near me</string>
     <string name="near_pharmacy">Pharmacy</string>

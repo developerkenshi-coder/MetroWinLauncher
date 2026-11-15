@@ -93,7 +93,7 @@ fun rememberSearch(vm: LauncherViewModel, query: String, listItems: List<AppItem
     var globalResults by remember { mutableStateOf(GlobalResults.Empty) }
     LaunchedEffect(
         scoped, settings.searchContacts, settings.searchSettings, settings.searchWeb, settings.searchCalendar,
-        settings.searchLauncherSettings, settings.searchTiles, tileIndex, settings.searchFileTypes, settings.searchNotifications,
+        settings.searchLauncherSettings, settings.searchTiles, settings.searchMiniApps, tileIndex, settings.searchFileTypes, settings.searchNotifications,
     ) {
         // What is looked for, without the operator in front of it.
         val query = scoped.text
@@ -142,6 +142,15 @@ fun rememberSearch(vm: LauncherViewModel, query: String, listItems: List<AppItem
         if (files) {
             if (!contacts && !events) delay(CONTACT_SEARCH_DELAY_MS)
             globalResults = globalResults.copy(files = vm.searchFiles(query))
+        }
+        val notes = settings.searchMiniApps && scoped.allows(SearchOperators.Scope.Notes)
+        val todos = settings.searchMiniApps && scoped.allows(SearchOperators.Scope.Todos)
+        if (notes || todos) {
+            if (!contacts && !events && !files) delay(CONTACT_SEARCH_DELAY_MS)
+            globalResults = globalResults.copy(
+                notes = if (notes) vm.searchNotes(query) else emptyList(),
+                todos = if (todos) vm.searchTodos(query) else emptyList(),
+            )
         }
     }
     return SearchState(searchResults, answers, globalResults, recentSearches, roll = { rollSeed++ })

@@ -43,6 +43,11 @@ fun SearchPage(env: SettingsEnv) {
                 hint = stringResource(R.string.apps_search_tiles_hint), tag = "search:tiles", id = "search.tiles",
             )
             ToggleSetting(
+                stringResource(R.string.search_mini_apps), env.settings.searchMiniApps,
+                onChange = { value -> env.onChange { it.copy(searchMiniApps = value) } },
+                hint = stringResource(R.string.search_mini_apps_hint), tag = "search:mini", id = "search.mini",
+            )
+            ToggleSetting(
                 stringResource(R.string.apps_calendar), env.settings.searchCalendar,
                 onChange = { value ->
                     env.onChange { it.copy(searchCalendar = value) }

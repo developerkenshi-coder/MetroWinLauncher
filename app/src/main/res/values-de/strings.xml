@@ -1023,6 +1023,10 @@
     <string name="apps_calendar">Kalender durchsuchen</string>
     <string name="apps_calendar_hint">Termine der nächsten sechs Monate, deren Titel passt. Erfordert die Kalenderberechtigung; sie werden auf dem Handy gelesen, nichts verlässt es.</string>
     <string name="search_section_events">Kalender</string>
+    <string name="search_section_notes">Notizen</string>
+    <string name="search_section_todos">Aufgaben</string>
+    <string name="search_mini_apps">In Notizen und Aufgaben suchen</string>
+    <string name="search_mini_apps_hint">Sucht auch in den Notizen und Aufgaben des Launchers. Gesperrte Notizen und der Papierkorb bleiben außen vor.</string>
     <string name="apps_compact">Kompakte Liste</string>
     <string name="apps_compact_hint">Kleinere Quadrate und engere Zeilen: mehr Apps auf dem Bildschirm.</string>
     <string name="menu_store">Im Store öffnen</string>
@@ -1390,6 +1394,7 @@
     <string name="volume_slider">Lautstärke %1$s</string>
     <!-- Today card, app bar, panorama -->
     <string name="today_title">Heute</string>
+    <string name="today_note_untitled">Notiz ohne Titel</string>
     <string name="today_alarm">Wecker %1$s</string>
     <string name="today_near">In meiner Nähe</string>
     <string name="near_pharmacy">Apotheke</string>

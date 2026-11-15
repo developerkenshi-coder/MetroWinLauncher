@@ -26,7 +26,7 @@ object SectionReset {
         "StartBehaviour" to setOf("antiBurnIn", "lockStart", "startLowerPercent", "startTopAfterMin", "stepGoal", "undoSteps"),
         "Search" to setOf(
             "rememberSearches", "searchAnswers", "searchAssistant", "searchCalendar", "searchCommands", "searchContacts", "searchCurrency", "searchEngine",
-            "searchFileTypes", "searchLauncherSettings", "searchNotifications", "searchOperators", "searchSettings", "searchSmartDial", "searchTiles",
+            "searchFileTypes", "searchLauncherSettings", "searchMiniApps", "searchNotifications", "searchOperators", "searchSettings", "searchSmartDial", "searchTiles",
             "searchToday", "searchWeb", "tipOfDay", "todayAlarm", "todayDate", "todayNear", "todayWeather",
         ),
         "Gestures" to setOf(

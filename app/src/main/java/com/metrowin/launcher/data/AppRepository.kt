@@ -25,6 +25,8 @@ import com.metrowin.launcher.calls.DialerRole
 import com.metrowin.launcher.dialer.DialerActivity
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.model.Launch
+import com.metrowin.launcher.notes.NotesActivity
+import com.metrowin.launcher.todo.TodoActivity
 import com.metrowin.launcher.model.LiveKind
 
 /**
@@ -169,8 +171,10 @@ class AppRepository(private val context: Context) {
      */
     fun launch(item: AppItem, sourceBounds: Rect?, growFrom: Rect? = null, anchor: View? = null, original: Boolean = false, window: LaunchAnimation = LaunchAnimation.Turnstile): Boolean {
         // The page turns itself only when the app does not also grow out of the tile: the two together overlap.
+        // A result of the search inside a mini app is one of the launcher's own activities too, and opens with the same transition.
+        val inside = (item.launch as? Launch.Link)?.uri?.let(MiniLink::parse)
         val ownPage = LaunchPlans.turnsOwnPage(original, window, growing = growFrom != null && anchor != null) &&
-            (item.launch as? Launch.Activity)?.component?.packageName == context.packageName
+            ((item.launch as? Launch.Activity)?.component?.packageName == context.packageName || inside != null)
         val options = when {
             growFrom != null && anchor != null ->
                 ActivityOptions.makeScaleUpAnimation(anchor, growFrom.left, growFrom.top, growFrom.width(), growFrom.height()).toBundle()
@@ -190,7 +194,14 @@ class AppRepository(private val context: Context) {
                 is Launch.Link -> {
                     val shortcut = ShortcutDef.appShortcutParts(target.uri)
                     val number = PhoneCalls.numberOf(target.uri)
-                    if (shortcut != null) {
+                    if (inside != null) {
+                        val (kind, id) = inside
+                        val intent = Intent(context, if (kind == MiniLink.NOTE) NotesActivity::class.java else TodoActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            .putExtra(com.metrowin.launcher.ui.mini.PageTurn.EXTRA, ownPage)
+                        if (kind == MiniLink.NOTE) intent.putExtra(NotesActivity.EXTRA_NOTE, id) else intent.putExtra(TodoActivity.EXTRA_TODO, id.toLong())
+                        context.startActivity(intent, options)
+                    } else if (shortcut != null) {
                         // A shortcut of an app, pinned to Start: the system starts it (only for the app that is the phone's Home).
                         val (pkg, serial, id) = shortcut
                         launcherApps.startShortcut(pkg, id, null, options, userManager.getUserForSerialNumber(serial) ?: owner)

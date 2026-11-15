@@ -182,6 +182,7 @@ object SettingsCodec {
         put("searchAnswers", s.searchAnswers)
         put("searchCurrency", s.searchCurrency)
         put("searchCalendar", s.searchCalendar)
+        put("searchMiniApps", s.searchMiniApps)
         put("searchFileTypes", JSONArray(s.searchFileTypes.sorted()))
         put("compactList", s.compactList)
         put("rememberSearches", s.rememberSearches)
@@ -441,6 +442,7 @@ object SettingsCodec {
             searchAnswers = o.optBoolean("searchAnswers", base.searchAnswers),
             searchCurrency = o.optBoolean("searchCurrency", base.searchCurrency),
             searchCalendar = o.optBoolean("searchCalendar", base.searchCalendar),
+            searchMiniApps = o.optBoolean("searchMiniApps", base.searchMiniApps),
             searchFileTypes = strings("searchFileTypes", base.searchFileTypes).filter { FileType.fromCode(it) != null }.toSet(),
             compactList = o.optBoolean("compactList", base.compactList),
             rememberSearches = o.optBoolean("rememberSearches", base.rememberSearches),

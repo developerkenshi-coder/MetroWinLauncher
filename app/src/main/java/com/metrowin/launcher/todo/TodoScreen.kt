@@ -135,7 +135,7 @@ private fun rememberMinute(): State<Long> = produceState(System.currentTimeMilli
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TodoScreen() {
+fun TodoScreen(openId: Long = 0L) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val store = remember { TodoStore(context) }
@@ -280,6 +280,8 @@ fun TodoScreen() {
     LaunchedEffect(Unit) {
         val loaded = withContext(Dispatchers.IO) { store.load() }
         items = loaded
+        // A result of the search opens its item at once.
+        if (openId != 0L) loaded.firstOrNull { it.id == openId }?.let { editing = it }
         pullNow()
         withContext(Dispatchers.IO) { TodoReminders.verify(context, loaded) }
         health = TodoReminders.health(context)

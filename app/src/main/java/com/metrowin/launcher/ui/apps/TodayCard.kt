@@ -124,6 +124,9 @@ internal fun TodayCard(
                 accent = true,
             ) { onAction(TodayAction.Reminders) }
         }
+        info.note?.let { note ->
+            TodayLine(Glyph.Notes, note.title.ifBlank { stringResource(R.string.today_note_untitled) }, "today:note", exiting) { onAction(TodayAction.Note(note.id)) }
+        }
         info.alarmMillis?.let { alarm ->
             TodayLine(
                 Glyph.Alarm, stringResource(R.string.today_alarm, LockText.alarm(alarm, info.nowMillis, zone, is24, locale)), "today:alarm", exiting,

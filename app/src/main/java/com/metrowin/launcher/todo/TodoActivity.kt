@@ -6,5 +6,10 @@ import com.metrowin.launcher.ui.mini.MiniActivity
 /** The things to do of the launcher: lists, a date for each (it rings as a reminder), stars, and what is done. */
 class TodoActivity : MiniActivity() {
     @Composable
-    override fun Content() = TodoScreen()
+    override fun Content() = TodoScreen(openId = intent.getLongExtra(EXTRA_TODO, 0L))
+
+    companion object {
+        /** The id of the thing to do to open at once, put by a result of the search. */
+        const val EXTRA_TODO = "todo"
+    }
 }

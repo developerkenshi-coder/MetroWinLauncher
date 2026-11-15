@@ -1031,6 +1031,10 @@
     <string name="apps_calendar">rechercher dans le calendrier</string>
     <string name="apps_calendar_hint">Les événements des six prochains mois dont le titre correspond. Nécessite l’autorisation du calendrier ; il est lu sur le téléphone et rien ne le quitte.</string>
     <string name="search_section_events">calendrier</string>
+    <string name="search_section_notes">notes</string>
+    <string name="search_section_todos">tâches</string>
+    <string name="search_mini_apps">Chercher dans les notes et les tâches</string>
+    <string name="search_mini_apps_hint">Cherche aussi dans les notes et les tâches du launcher. Les notes verrouillées et la corbeille sont exclues.</string>
     <string name="apps_compact">liste compacte</string>
     <string name="apps_compact_hint">Carrés plus petits et lignes plus serrées : plus d’applications à l’écran.</string>
     <string name="menu_store">ouvrir dans le store</string>
@@ -1404,6 +1408,7 @@
     <string name="volume_slider">Volume %1$s</string>
     <!-- Carte Aujourd’hui, barre d’applications, panorama -->
     <string name="today_title">Aujourd’hui</string>
+    <string name="today_note_untitled">Note sans titre</string>
     <string name="today_alarm">Alarme %1$s</string>
     <string name="today_near">Près de moi</string>
     <string name="near_pharmacy">Pharmacie</string>

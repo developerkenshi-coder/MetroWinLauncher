@@ -13,6 +13,8 @@ object SearchOperators {
         Events("event", "evento", "events", "e"),
         Notifications("notif", "notifica", "notifiche", "n"),
         Tiles("tile", "riquadro", "t"),
+        Notes("note", "notes", "nota"),
+        Todos("todo", "todos", "task", "tasks", "fare"),
         Web("web", "w"),
     }
 

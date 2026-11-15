@@ -552,6 +552,8 @@ data class LauncherSettings(
     val searchAnswers: Boolean = true,
     /** Currency conversions in the search box, with rates from the Internet: off until the user allows it. */
     val searchCurrency: Boolean = false,
+    /** The notes and the things to do of the launcher that match the search. */
+    val searchMiniApps: Boolean = true,
     /** The events of the calendar whose title matches the search. */
     val searchCalendar: Boolean = false,
     /** The kinds of file the search looks for by name (see [FileType.code]); none means the search does not look for files. */
