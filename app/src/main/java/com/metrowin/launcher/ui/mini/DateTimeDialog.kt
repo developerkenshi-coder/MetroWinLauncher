@@ -14,7 +14,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroDatePicker
 import com.metrowin.launcher.ui.components.MetroTimePicker
-import com.metrowin.launcher.ui.start.DialogFrame
+import com.metrowin.launcher.ui.components.DialogFrame
 import androidx.compose.foundation.layout.fillMaxWidth
 import java.time.Instant
 import java.time.LocalDate

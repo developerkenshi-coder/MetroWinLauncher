@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.components.DialogFrame
 import com.metrowin.launcher.ui.components.Spacing
 import com.metrowin.launcher.ui.components.MetroType
 import androidx.compose.foundation.background

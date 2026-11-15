@@ -21,7 +21,6 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.data.SimInfo
 import com.metrowin.launcher.data.SimUse
 import com.metrowin.launcher.ui.anim.metroPress
-import com.metrowin.launcher.ui.start.DialogFrame
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 

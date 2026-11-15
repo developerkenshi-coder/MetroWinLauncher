@@ -95,7 +95,7 @@ import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.MetroToggle
 import com.metrowin.launcher.ui.mini.MiniFrame
 import com.metrowin.launcher.ui.pages.PageChip
-import com.metrowin.launcher.ui.start.DialogFrame
+import com.metrowin.launcher.ui.components.DialogFrame
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.LocalStyle

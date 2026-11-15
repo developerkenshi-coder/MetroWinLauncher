@@ -36,7 +36,7 @@ import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.mini.MiniFrame
 import com.metrowin.launcher.ui.pages.PageNote
 import com.metrowin.launcher.ui.settings.ToggleSetting
-import com.metrowin.launcher.ui.start.DialogFrame
+import com.metrowin.launcher.ui.components.DialogFrame
 import java.util.Locale
 
 /** What the pivot calls a page. */

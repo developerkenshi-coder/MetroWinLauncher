@@ -21,7 +21,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroTextField
-import com.metrowin.launcher.ui.start.DialogFrame
+import com.metrowin.launcher.ui.components.DialogFrame
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

@@ -122,7 +122,7 @@ import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.pages.PageNote
-import com.metrowin.launcher.ui.start.DialogFrame
+import com.metrowin.launcher.ui.components.DialogFrame
 import com.metrowin.launcher.ui.start.whenText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors

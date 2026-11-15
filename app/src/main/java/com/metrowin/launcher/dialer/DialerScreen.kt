@@ -101,7 +101,7 @@ import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.pages.FavouriteSquare
 import com.metrowin.launcher.ui.pages.PageChip
 import com.metrowin.launcher.ui.pages.PageNote
-import com.metrowin.launcher.ui.start.DialogFrame
+import com.metrowin.launcher.ui.components.DialogFrame
 import com.metrowin.launcher.ui.start.whenText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors

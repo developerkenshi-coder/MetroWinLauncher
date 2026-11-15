@@ -1,5 +1,6 @@
 package com.metrowin.launcher.ui.start
 
+import com.metrowin.launcher.ui.components.DialogFrame
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding

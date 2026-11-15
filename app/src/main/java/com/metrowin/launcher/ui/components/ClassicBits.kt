@@ -35,7 +35,7 @@ import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.theme.LocalStyle
 
-/** True inside a [com.metrowin.launcher.ui.start.DialogFrame]: Classic buttons there are lowercase, as in the Windows Phone MessageBox. */
+/** True inside a [com.metrowin.launcher.ui.components.DialogFrame]: Classic buttons there are lowercase, as in the Windows Phone MessageBox. */
 val LocalInDialog = staticCompositionLocalOf { false }
 
 /** How the five dots of the progress bar move: each one crosses the bar a little after the one before it, slow at both ends and quick in the middle. */

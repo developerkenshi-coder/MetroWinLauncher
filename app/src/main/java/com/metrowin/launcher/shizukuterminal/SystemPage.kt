@@ -35,7 +35,7 @@ import com.metrowin.launcher.data.ShizukuShell
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroSlider
 import com.metrowin.launcher.ui.components.MetroTextField
-import com.metrowin.launcher.ui.start.DialogFrame
+import com.metrowin.launcher.ui.components.DialogFrame
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

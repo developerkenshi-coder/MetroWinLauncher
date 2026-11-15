@@ -82,7 +82,7 @@ import com.metrowin.launcher.ui.components.FontScaleAtMost
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.topBarsPadding
-import com.metrowin.launcher.ui.start.DialogFrame
+import com.metrowin.launcher.ui.components.DialogFrame
 import com.metrowin.launcher.ui.theme.DarkColors
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
