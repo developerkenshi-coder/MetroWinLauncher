@@ -343,7 +343,7 @@ class ExtraTilesUiTest : ScreenshotBase() {
     @Test
     fun theRestoreDialogPutsBackOnlyWhatWasChosen() {
         var chosen: Set<com.metrowin.launcher.data.RestorePart>? = null
-        show { com.metrowin.launcher.ui.settings.RestoreDialog(onDone = { chosen = it }, onCancel = {}) }
+        show { com.metrowin.launcher.ui.settings.RestoreDialog(com.metrowin.launcher.data.LayoutBackup(emptyList(), emptyList(), com.metrowin.launcher.data.LauncherSettings()), com.metrowin.launcher.data.LauncherSettings(), 0, onDone = { chosen = it }, onCancel = {}) }
         advance(300)
         compose.onNodeWithTag("restore:Settings").performClick()
         compose.onNodeWithTag("restore:go").performClick()
