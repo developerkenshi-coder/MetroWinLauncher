@@ -325,7 +325,7 @@
             android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
             android:name=".notes.NotesActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/stock_notes"
             android:launchMode="singleTask"
@@ -333,7 +333,7 @@
 
         <activity
             android:name=".todo.TodoActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/stock_todo"
             android:launchMode="singleTask"
@@ -341,7 +341,7 @@
 
         <activity
             android:name=".recorder.RecorderActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/recorder_default_label"
             android:launchMode="singleTask"
@@ -349,7 +349,7 @@
 
         <activity
             android:name=".calendar.CalendarActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/stock_calendar"
             android:launchMode="singleTask"
@@ -357,7 +357,7 @@
 
         <activity
             android:name=".recents.RecentsActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/rc_title"
             android:launchMode="singleTask"
@@ -365,7 +365,7 @@
 
         <activity
             android:name=".power.PowerActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/pw_open"
             android:launchMode="singleTask"
@@ -373,7 +373,7 @@
 
         <activity
             android:name=".systemsettings.SystemSettingsActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/stock_settings"
             android:launchMode="singleTask"
@@ -381,7 +381,7 @@
 
         <activity
             android:name=".shizukuterminal.ShizukuTerminalActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/stock_shizukuterminal"
             android:launchMode="singleTask"
@@ -389,14 +389,14 @@
 
         <activity
             android:name=".datasense.DataSenseActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/stock_datasense"
             android:launchMode="singleTask" />
 
         <activity
             android:name=".wallet.WalletActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/stock_wallet"
             android:launchMode="singleTask"
@@ -404,14 +404,14 @@
 
         <activity
             android:name=".news.NewsActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/stock_news"
             android:launchMode="singleTask" />
 
         <activity
             android:name=".people.PeopleActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/stock_people"
             android:launchMode="singleTask"
@@ -419,21 +419,21 @@
 
         <activity
             android:name=".music.NowPlayingActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/stock_nowplaying"
             android:launchMode="singleTask" />
 
         <activity
             android:name=".photos.PhotosActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/stock_photohub"
             android:launchMode="singleTask" />
 
         <activity
             android:name=".files.FilesActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"
             android:label="@string/stock_files"
             android:launchMode="singleTask"
@@ -506,7 +506,7 @@
             android:exported="true"
             android:label="@string/mail_app_title"
             android:launchMode="singleTask"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <!-- Where the page of Microsoft sends the browser back after the sign in (see MicrosoftOAuth). -->
             <intent-filter>
