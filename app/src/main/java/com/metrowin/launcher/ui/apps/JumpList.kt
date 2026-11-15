@@ -4,7 +4,9 @@ import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.anim.metroTween
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,7 +43,8 @@ import com.metrowin.launcher.ui.theme.litFill
 import com.metrowin.launcher.ui.theme.onAccent
 import kotlinx.coroutines.delay
 
-private const val COLUMNS = 4
+/** Squares per row of the grid: more when the screen is wide, so the rows still fit without a scroll. */
+fun jumpColumns(landscape: Boolean): Int = if (landscape) 7 else 4
 
 /** The cell that is not a letter: the last app opened. */
 const val RECENT_KEY = "recent"
@@ -64,6 +67,7 @@ fun JumpList(
     showRecent: Boolean = true,
 ) {
     val currentDismiss by rememberUpdatedState(onDismiss)
+    val columns = jumpColumns(LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE)
     Box(
         modifier
             .fillMaxSize()
@@ -79,18 +83,18 @@ fun JumpList(
                 .padding(horizontal = 12.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.Center,
         ) {
-            ((if (showRecent) listOf(RECENT_KEY) else emptyList()) + keys).chunked(COLUMNS).forEachIndexed { rowIndex, rowKeys ->
+            ((if (showRecent) listOf(RECENT_KEY) else emptyList()) + keys).chunked(columns).forEachIndexed { rowIndex, rowKeys ->
                 Row(Modifier.fillMaxWidth()) {
                     rowKeys.forEachIndexed { colIndex, key ->
                         JumpCell(
                             key = key,
                             enabled = if (key == RECENT_KEY) hasRecent else key in available,
-                            order = rowIndex * COLUMNS + colIndex,
+                            order = rowIndex * columns + colIndex,
                             onPick = if (key == RECENT_KEY) ({ onPickRecent() }) else onPick,
                             modifier = Modifier.weight(1f).padding(3.dp),
                         )
                     }
-                    repeat(COLUMNS - rowKeys.size) { Box(Modifier.weight(1f)) }
+                    repeat(columns - rowKeys.size) { Box(Modifier.weight(1f)) }
                 }
             }
         }

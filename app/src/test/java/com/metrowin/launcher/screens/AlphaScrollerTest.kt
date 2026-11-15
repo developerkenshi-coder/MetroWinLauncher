@@ -14,6 +14,7 @@ import com.metrowin.launcher.model.Launch
 import com.metrowin.launcher.ui.apps.AlphaIndex
 import com.metrowin.launcher.ui.apps.AppListModel
 import com.metrowin.launcher.ui.apps.AppListScreen
+import com.metrowin.launcher.ui.apps.jumpColumns
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -40,6 +41,11 @@ class AlphaScrollerTest : ScreenshotBase() {
             )
         }
         advance(900)
+    }
+
+    @Test fun jumpGridHasMoreColumnsWhenWide() {
+        assertEquals(4, jumpColumns(false))
+        assertEquals(7, jumpColumns(true))
     }
 
     @Test

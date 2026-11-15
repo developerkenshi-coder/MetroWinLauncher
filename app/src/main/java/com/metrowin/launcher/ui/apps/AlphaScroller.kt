@@ -132,5 +132,6 @@ fun AlphaScroller(
     }
 }
 
-private val THUMB = 44.dp
+// 48 dp is the smallest target Android asks for.
+private val THUMB = 48.dp
 private const val IDLE_MS = 1_400L
