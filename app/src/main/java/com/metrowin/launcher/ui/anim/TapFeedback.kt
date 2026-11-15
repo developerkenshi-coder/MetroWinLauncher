@@ -12,7 +12,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import com.metrowin.launcher.data.ClickSound
 import java.io.File
 import kotlinx.coroutines.Dispatchers
@@ -124,6 +127,43 @@ fun rememberTapFeedback(sound: Boolean, haptics: Boolean, strength: Int = 100): 
         {
             if (withSound) player.click()
             if (withHaptics) player.tick(withStrength)
+        }
+    }
+}
+
+/** Where a haptic feedback asked for by a gesture (a long press, a drag that starts) goes. */
+enum class HapticRoute { None, System, Own }
+
+object HapticPolicy {
+    /** Nothing when the strength is 0; the launcher's own tap (the one of the tap switch, at the strength chosen) when [own]; the effect of the system otherwise. */
+    fun route(own: Boolean, strength: Int): HapticRoute = when {
+        strength <= 0 -> HapticRoute.None
+        own -> HapticRoute.Own
+        else -> HapticRoute.System
+    }
+}
+
+/**
+ * The haptic feedback every gesture of Compose asks for (the long press of a tile or an app, the start of a drag) in one place, so that the
+ * strength of the vibration in the settings counts for them as it does for a tap, and the vibration on tap switch makes them the same tap
+ * instead of a second, different one. Provide it as [LocalHapticFeedback] and the call sites need no change.
+ */
+@Composable
+fun rememberMetroHaptics(own: Boolean, strength: Int): HapticFeedback {
+    val context = LocalContext.current
+    val system = LocalHapticFeedback.current
+    val player = remember(context) { TapFeedbackPlayer(context) }
+    val currentOwn by rememberUpdatedState(own)
+    val currentStrength by rememberUpdatedState(strength)
+    return remember(player, system) {
+        object : HapticFeedback {
+            override fun performHapticFeedback(hapticFeedbackType: HapticFeedbackType) {
+                when (HapticPolicy.route(currentOwn, currentStrength)) {
+                    HapticRoute.None -> Unit
+                    HapticRoute.Own -> player.tick(currentStrength)
+                    HapticRoute.System -> system.performHapticFeedback(hapticFeedbackType)
+                }
+            }
         }
     }
 }

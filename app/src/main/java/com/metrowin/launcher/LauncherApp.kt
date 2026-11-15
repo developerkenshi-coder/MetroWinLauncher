@@ -146,6 +146,7 @@ import com.metrowin.launcher.ui.components.LocalIconLoader
 import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
 import com.metrowin.launcher.ui.anim.LocalPowerSaving
 import com.metrowin.launcher.ui.anim.LocalTapFeedback
+import com.metrowin.launcher.ui.anim.rememberMetroHaptics
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.MotionStyle
 import com.metrowin.launcher.ui.anim.rememberMetroSounds
@@ -359,7 +360,7 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    val haptics = LocalHapticFeedback.current
+    val haptics = rememberMetroHaptics(settings.tapHaptics, settings.vibrationStrength)
     val tapFeedback = rememberTapFeedback(settings.tapSound, settings.tapHaptics, settings.vibrationStrength)
     // The Start screen that is home: the app opens on it and the Windows button returns to it. The screens before it are to its left.
     // The favourite Start screen, when the user chose one, is where it returns to instead of the home.
@@ -1325,6 +1326,7 @@ fun LauncherApp(vm: LauncherViewModel) {
         LocalMetroStatusBar provides ownBar,
         LocalIconLoader provides vm.icons, LocalIconShape provides settings.iconShape.asShape(), LocalWidgetHost provides vm.widgets, LocalPowerSaving provides (powerSaving || tilesHidden),
         LocalTapFeedback provides tapFeedback,
+        LocalHapticFeedback provides haptics,
     ) {
         MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode, textScale = settings.textScale / 100f, boldText = settings.boldText, systemFont = settings.systemFont, appFont = settings.appFont, fontRevision = settings.fontRevision, tilt = settings.tiltStrength / 100f, speed = settings.animationSpeed / 100f, pagePadding = settings.pagePadding, actionBar = settings.actionBar) {
             Box(

@@ -40,6 +40,8 @@ import com.metrowin.launcher.ui.theme.pageIsLight
 import androidx.lifecycle.lifecycleScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import com.metrowin.launcher.ui.anim.rememberMetroHaptics
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.padding
 import com.metrowin.launcher.data.IconLoader
@@ -99,7 +101,10 @@ abstract class MiniActivity : ComponentActivity() {
                     setTaskDescription(ActivityManager.TaskDescription(title.toString(), null as Bitmap?, accent))
                 }
                 val swipe = with(LocalDensity.current) { HOME_SWIPE.toPx() }
-                CompositionLocalProvider(LocalAppTitle provides title.toString()) {
+                CompositionLocalProvider(
+                    LocalAppTitle provides title.toString(),
+                    LocalHapticFeedback provides rememberMetroHaptics(settings.tapHaptics, settings.vibrationStrength),
+                ) {
                     TurnPage(turn, onBack = ::finish) {
                         // Two fingers up or down close the app and go back to Start (the gesture of Start's own two-finger actions; off by default).
                         Box(Modifier.twoFingerSwipe(settings.miniHomeSwipe, swipe, onDown = ::finish, onUp = ::finish).rotateOnTurn()) { Content() }
