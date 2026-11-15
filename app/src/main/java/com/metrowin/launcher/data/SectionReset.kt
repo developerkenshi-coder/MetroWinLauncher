@@ -13,7 +13,7 @@ object SectionReset {
         "StartTheme" to setOf(
             "accentApps", "accentIndex", "accentNightIndex", "accentPanel", "accentStart", "autoAccent", "customAccent", "miniAccents", "darkFromHour", "darkToHour",
             "dynamicColor", "oledMode", "pageBackgrounds", "panoramaTitles", "parallax", "tileOpacity", "startPhotoFit", "startPhotoInside", "startPhotoX", "startPhotoY", "startPhotoZoom",
-            "systemWallpaperFollows", "themeMode", "themeStyle", "iconPack", "iconShape", "iconTileColors", "largeTileIcons", "glassIcons",
+            "systemWallpaperFollows", "themeMode", "themeStyle", "iconPack", "iconPicks", "iconShape", "iconTileColors", "largeTileIcons", "glassIcons",
         ),
         "Start" to setOf(
             "batteryEstimate", "calendarAgenda", "favoritePage", "collectionTiles", "groupTitles", "twoPanels", "largeTiles", "freeLayout", "layoutSchedule", "moreTiles", "appsHint", "showTileNames", "tileColumns",

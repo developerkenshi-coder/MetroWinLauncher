@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="iconpick_heading">Icons pro App</string>
+    <string name="menu_icon">Symbol ändern</string>
+    <string name="iconpick_title">Symbol wählen</string>
+    <string name="iconpick_hint">Tippe Apps an, um sie zu wählen, und ändere dann alle Symbole auf einmal. Eine App mit eigenem Symbol zeigt es unter ihrem Namen; die anderen haben das Symbol des Standardpakets.</string>
+    <string name="iconpick_change_n">Symbol von %1$d Apps ändern</string>
+    <string name="iconpick_select_all">Angezeigte Apps wählen</string>
+    <string name="iconpick_clear_selection">Auswahl aufheben</string>
+    <string name="iconpick_reset_default">Standard verwenden</string>
+    <string name="iconpick_own">Das Symbol der App</string>
+    <string name="iconpick_whole_pack">Alles aus diesem Paket</string>
+    <string name="iconpick_search">Symbole suchen</string>
+    <string name="iconpick_empty">Kein Symbol passt.</string>
+    <string name="iconpick_cell">Symbol %1$s</string>
+    <string name="iconpick_loading">Symbole werden gelesen…</string>
+</resources>

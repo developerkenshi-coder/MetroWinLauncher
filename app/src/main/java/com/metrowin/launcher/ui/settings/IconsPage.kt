@@ -38,6 +38,7 @@ fun ColumnScope.IconsSettings(env: SettingsEnv) {
             tag = "icons:pack", id = "icons.pack",
         )
     }
+    if (packs.isNotEmpty()) IconsPerApp(env)
     ActionSetting(
         text = stringResource(R.string.icons_pack_find),
         onClick = {

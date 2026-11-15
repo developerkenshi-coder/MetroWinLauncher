@@ -142,6 +142,7 @@ object SettingsIndex {
         e("icons.glass", StartTheme, R.string.icons_glass, "glass", "transparent", "see-through", "icon", "tile", "vetro", "trasparente", "icona", "riquadro"),
         e("icons.largetiles", StartTheme, R.string.icons_large_tiles, "large", "big", "tile", "icon", "full", "grandi", "grande", "riquadro", "icona", "riempie"),
         e("icons.find", StartTheme, R.string.icons_pack_find, "play store", "download", "icon pack", "install", "scarica", "cerca", "icone"),
+        e("icons.perapp", StartTheme, R.string.iconpick_heading, "icons", "icon pack", "per app", "single app", "change icon", "icone", "cambia icona", "singola app"),
         e("icons.pack", StartTheme, R.string.icons_pack, "icons", "icon pack", "nova", "adw", "apex", "go launcher", "icone"),
         e("icons.export", StartTheme, R.string.theme_export, "theme file", "share", "save", "file tema", "condividi", "salva"),
         e("icons.import", StartTheme, R.string.theme_import, "theme file", "load", "open", "file tema", "carica", "apri"),

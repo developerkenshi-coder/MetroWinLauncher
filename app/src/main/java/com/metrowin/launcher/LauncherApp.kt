@@ -1242,7 +1242,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     // Pull down from the top of Start, or from the top edge of any page, to open the Action Center.
     val pullBlocked = kidsMode || !settings.actionCenterEnabled || voice.isOpen || lockPreviewOpen || launching || settingsOpen || weatherOpen || panels.isOpen ||
         adding.placeDialogOpen || adding.albumPickerOpen || adding.groupPickerOpen || menu != null || jumpOpen || editingKey != null ||
-        folderPick != null || folderChooserFor != null || vpnChoices != null || naming.newListOpen || naming.listMenuFor != null || naming.renamingListId != null || naming.addToListFor != null ||
+        folderPick != null || folderChooserFor != null || vpnChoices != null || naming.newListOpen || naming.listMenuFor != null || naming.renamingListId != null || naming.addToListFor != null || naming.iconPickFor.isNotEmpty() ||
         naming.renamingFolderId != null || tutorialVisible
     val currentPullBlocked by rememberUpdatedState(pullBlocked)
     val pullConnections = List(LauncherSettings.MAX_START_PAGES) { page ->
@@ -1557,6 +1557,14 @@ fun LauncherApp(vm: LauncherViewModel) {
                             {
                                 menu = null
                                 vm.updateSettings { it.copy(appLabels = it.appLabels - state.item.id) }
+                            }
+                        } else {
+                            null
+                        },
+                        onChangeIcon = if (installedIconPacks.isNotEmpty() && state.item.launch is Launch.Activity && state.item.glyph == null && !state.item.pinOnly) {
+                            {
+                                menu = null
+                                naming.iconPickFor = listOf(state.item.id)
                             }
                         } else {
                             null
@@ -2014,6 +2022,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onOpenDreamSettings = vm::openDreamSettings,
                             onPreviewLock = { lockPreviewOpen = true },
                             iconPacks = installedIconPacks,
+                            onPickIcons = { naming.iconPickFor = it },
                             update = updateState,
                             onCheckUpdate = vm::checkForUpdate,
                             onInstallUpdate = vm::installUpdate,
@@ -2131,7 +2140,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                     RestoreDialog(backup, settings, pages.sumOf { it.size }, onDone = vm::applyRestore, onCancel = vm::cancelRestore)
                 }
 
-                naming.Dialogs(vm = vm, pages = pages, items = items, settings = settings, onListCreated = { selectedList = it })
+                naming.Dialogs(vm = vm, pages = pages, items = items, settings = settings, iconPackList = installedIconPacks, onListCreated = { selectedList = it })
 
                 if (lockPreviewOpen) {
                     MetroLockScreen(

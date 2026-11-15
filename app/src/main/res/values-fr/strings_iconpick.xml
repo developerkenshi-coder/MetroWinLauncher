@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="iconpick_heading">icônes par appli</string>
+    <string name="menu_icon">changer l\'icône</string>
+    <string name="iconpick_title">Choisir l\'icône</string>
+    <string name="iconpick_hint">Touchez les applis pour les choisir, puis changez leurs icônes d\'un coup. Une appli avec une icône choisie l\'affiche sous son nom ; les autres ont l\'icône du pack par défaut.</string>
+    <string name="iconpick_change_n">Changer l\'icône de %1$d applis</string>
+    <string name="iconpick_select_all">Choisir les applis affichées</string>
+    <string name="iconpick_clear_selection">Effacer la sélection</string>
+    <string name="iconpick_reset_default">Utiliser celui par défaut</string>
+    <string name="iconpick_own">L\'icône de l\'appli</string>
+    <string name="iconpick_whole_pack">Tout de ce pack</string>
+    <string name="iconpick_search">chercher des icônes</string>
+    <string name="iconpick_empty">Aucune icône ne correspond.</string>
+    <string name="iconpick_cell">Icône %1$s</string>
+    <string name="iconpick_loading">Lecture des icônes…</string>
+</resources>

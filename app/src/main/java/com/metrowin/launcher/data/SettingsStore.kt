@@ -569,6 +569,8 @@ data class LauncherSettings(
     val rememberSearches: Boolean = true,
     /** Package of the icon pack in use, or empty for the apps' own icons. */
     val iconPack: String = "",
+    /** The icon chosen for single apps, by [com.metrowin.launcher.model.AppItem.id]: `pack` or `pack|drawable` (see [IconPick]); a missing app has the icon of [iconPack]. */
+    val iconPicks: Map<String, String> = emptyMap(),
     /** The apps opened most often, in a group at the top of the list. */
     val showFrequentApps: Boolean = true,
     /** The apps installed in the last week, in a group at the top of the list. */

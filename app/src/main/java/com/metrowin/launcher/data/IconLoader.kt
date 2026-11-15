@@ -71,8 +71,17 @@ class IconLoader(context: Context) {
 
     private fun key(item: AppItem, sizePx: Int) = "${item.id}@$sizePx${if (glass) "g" else ""}"
 
-    fun usePack(newPack: IconPack?) {
+    /** The packs the apps with an icon of their own choice use, by package, and the choices (see [IconPicks]). */
+    @Volatile
+    private var others: Map<String, IconPack> = emptyMap()
+
+    @Volatile
+    private var picks: Map<String, String> = emptyMap()
+
+    fun usePack(newPack: IconPack?, picked: Map<String, String> = emptyMap(), otherPacks: Map<String, IconPack> = emptyMap()) {
         pack = newPack
+        picks = picked
+        others = otherPacks
         cache.evictAll()
         tileColors.clear()
         revision++
@@ -88,8 +97,9 @@ class IconLoader(context: Context) {
         cache.get(key)?.let { return it }
         val bitmap = withContext(Dispatchers.IO) {
             runCatching {
-                val current = pack
-                val own = current?.iconFor(activity.component)?.let { render(it, sizePx) }
+                val pick = IconPick.parse(picks[item.id])
+                val current = IconPicks.packFor(pick, pack, others)
+                val own = (pick?.drawable?.let { current?.drawable(it) } ?: current?.iconFor(activity.component))?.let { render(it, sizePx) }
                 val icon = own ?: render(iconOf(activity), sizePx).let { original -> current?.dress(original, sizePx, activity.component.packageName) ?: original }
                 val shown = if (glass) glassOf(icon) else icon
                 shown.also { if (item.isWork) drawWorkBadge(it) else if (item.isPrivate) drawPrivateBadge(it) }
@@ -98,6 +108,10 @@ class IconLoader(context: Context) {
         if (bitmap != null) cache.put(key, bitmap)
         return bitmap
     }
+
+    /** [name] of [pack] as a square of [sizePx] for the grid that picks an icon; null if the pack has no such drawable. */
+    suspend fun packIcon(pack: IconPack, name: String, sizePx: Int): Bitmap? =
+        withContext(Dispatchers.IO) { runCatching { pack.drawable(name)?.let { render(it, sizePx) } }.getOrNull() }
 
     /** A shortcut of an app put on Start has the icon of its app (the launcher icon of the package). */
     private suspend fun loadPackageIcon(item: AppItem, sizePx: Int): Bitmap? {

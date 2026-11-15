@@ -189,6 +189,7 @@ object SettingsCodec {
         put("compactList", s.compactList)
         put("rememberSearches", s.rememberSearches)
         put("iconPack", s.iconPack)
+        put("iconPicks", IconPicks.encode(s.iconPicks))
         put("showFrequentApps", s.showFrequentApps)
         put("showNewApps", s.showNewApps)
         put("showCategories", s.showCategories)
@@ -451,6 +452,7 @@ object SettingsCodec {
             compactList = o.optBoolean("compactList", base.compactList),
             rememberSearches = o.optBoolean("rememberSearches", base.rememberSearches),
             iconPack = o.optString("iconPack", base.iconPack),
+            iconPicks = if (o.has("iconPicks")) IconPicks.decode(o.optJSONObject("iconPicks")) else base.iconPicks,
             showFrequentApps = o.optBoolean("showFrequentApps", base.showFrequentApps),
             showNewApps = o.optBoolean("showNewApps", base.showNewApps),
             showCategories = o.optBoolean("showCategories", base.showCategories),

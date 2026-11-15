@@ -91,7 +91,9 @@ import com.metrowin.launcher.data.LiveTileData
 import kotlinx.coroutines.flow.update
 import com.metrowin.launcher.data.updatedWith
 import com.metrowin.launcher.data.keeping
+import com.metrowin.launcher.data.IconPack
 import com.metrowin.launcher.data.IconPackInfo
+import com.metrowin.launcher.data.IconPicks
 import com.metrowin.launcher.data.IconPackRepository
 import com.metrowin.launcher.data.PhoneCalls
 import com.metrowin.launcher.data.AppLinks
@@ -244,6 +246,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val people = PeopleReader(application)
     private val profilesController = ProfilesController(application)
     private val iconPacks = IconPackRepository(application)
+    /** The packs opened so far (an open pack is read once, the grid that picks an icon asks for its pictures one by one). */
+    private val packCache = java.util.concurrent.ConcurrentHashMap<String, IconPack>()
     private val appShortcuts = AppShortcuts(application)
     private val sound = SoundController(application)
     private val brightnessControl = BrightnessController(application)
@@ -716,7 +720,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     init {
         TileFeed.load(application)
-        applyIconPack(_settings.value.iconPack)
+        applyIconPack(_settings.value.iconPack, _settings.value.iconPicks)
         icons.useGlass(_settings.value.glassIcons)
         apps.galleryApp = _settings.value.galleryApp
         NotificationHub.clearOnOpen = _settings.value.clearOnOpen
@@ -1185,18 +1189,35 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             val found = withContext(Dispatchers.IO) { runCatching { iconPacks.installed() }.getOrDefault(emptyList()) }
             _iconPacks.value = found
             _galleryApps.value = withContext(Dispatchers.IO) { runCatching { GalleryApps.installed(getApplication()) }.getOrDefault(emptyList()) }
-            // A pack that was uninstalled: back to the icons of the apps.
+            packCache.clear()
+            // A pack that was uninstalled: back to the icons of the apps, and the apps that had a choice in it to the default pack.
             val chosen = _settings.value.iconPack
-            if (chosen.isNotEmpty() && found.none { it.packageName == chosen }) updateSettings { it.copy(iconPack = "") }
+            val installed = found.map { it.packageName }.toSet()
+            val kept = IconPicks.withoutMissing(_settings.value.iconPicks, installed)
+            val gone = chosen.isNotEmpty() && chosen !in installed
+            if (gone || kept != _settings.value.iconPicks) updateSettings { it.copy(iconPack = if (gone) "" else it.iconPack, iconPicks = kept) }
         }
     }
 
-    private fun applyIconPack(packageName: String) {
+    private fun openPack(packageName: String): IconPack? =
+        packCache[packageName] ?: iconPacks.load(packageName)?.also { packCache[packageName] = it }
+
+    /** Opens the default pack and those the chosen icons come from, and gives them to the loader. */
+    private fun applyIconPack(packageName: String, picks: Map<String, String>) {
         viewModelScope.launch {
-            val pack = if (packageName.isEmpty()) null else withContext(Dispatchers.IO) { iconPacks.load(packageName) }
-            icons.usePack(pack)
+            val opened = withContext(Dispatchers.IO) {
+                (IconPicks.packsOf(picks) + packageName).filter { it.isNotEmpty() }.mapNotNull { name -> openPack(name)?.let { name to it } }.toMap()
+            }
+            icons.usePack(opened[packageName], picks, opened)
         }
     }
+
+    /** The names of the icons of [packageName], for the grid that picks one. */
+    suspend fun iconPackNames(packageName: String): List<String> = withContext(Dispatchers.IO) { openPack(packageName)?.names.orEmpty() }
+
+    /** One icon of [packageName] drawn [sizePx] square, for the grid that picks one. */
+    suspend fun iconPackPreview(packageName: String, name: String, sizePx: Int): ImageBitmap? =
+        withContext(Dispatchers.IO) { openPack(packageName) }?.let { icons.packIcon(it, name, sizePx)?.asImageBitmap() }
 
     /** Writes the theme (see [ThemeCodec]) to [uri], a file the user chose. */
     fun exportTheme(uri: Uri) {
@@ -1387,7 +1408,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 }
             }
             weatherCtl.onSettingsChanged(previous, updated)
-            if (updated.iconPack != previous.iconPack) applyIconPack(updated.iconPack)
+            if (updated.iconPack != previous.iconPack || updated.iconPicks != previous.iconPicks) applyIconPack(updated.iconPack, updated.iconPicks)
             icons.useGlass(updated.glassIcons)
             if (updated.updateAuto != previous.updateAuto) UpdateCheckJob.schedule(getApplication(), updated.updateAuto)
             if (updated.galleryApp != previous.galleryApp) {

@@ -179,6 +179,8 @@ class SettingsEnv(
     val onOpenDreamSettings: () -> Unit = {},
     val onPreviewLock: () -> Unit = {},
     val iconPacks: List<IconPackInfo> = emptyList(),
+    /** Opens the dialog that chooses the icon of these apps (by id). */
+    val onPickIcons: (List<String>) -> Unit = {},
     /** The update from GitHub: where it is, and what the page does about it. */
     val update: com.metrowin.launcher.data.UpdateState = com.metrowin.launcher.data.UpdateState.Idle,
     val onCheckUpdate: () -> Unit = {},

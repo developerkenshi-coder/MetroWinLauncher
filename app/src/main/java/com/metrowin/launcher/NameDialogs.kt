@@ -18,6 +18,7 @@ import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Folder
 import com.metrowin.launcher.model.StartEntry
 import com.metrowin.launcher.ui.start.FolderNameDialog
+import com.metrowin.launcher.ui.settings.IconPickDialog
 
 /** Which dialog that names or sorts a folder, a tile, an app or a list of apps is open. */
 internal class NameDialogState {
@@ -28,6 +29,8 @@ internal class NameDialogState {
     var listMenuFor by mutableStateOf<String?>(null)
     var renamingListId by mutableStateOf<String?>(null)
     var addToListFor by mutableStateOf<AppItem?>(null)
+    /** The apps (by id) whose icon is being chosen, from the long press menu or the settings. */
+    var iconPickFor by mutableStateOf<List<String>>(emptyList())
 }
 
 /** The dialogs that name a group of tiles, a folder, an app or a list of apps, and the choices of a list. [onListCreated] gets the id of a new list. */
@@ -37,6 +40,7 @@ internal fun NameDialogState.Dialogs(
     pages: List<List<StartEntry>>,
     items: List<AppItem>,
     settings: LauncherSettings,
+    iconPackList: List<com.metrowin.launcher.data.IconPackInfo>,
     onListCreated: (String) -> Unit,
 ) {
         val appContext = LocalContext.current
@@ -139,6 +143,13 @@ internal fun NameDialogState.Dialogs(
                     onCancel = { renamingListId = null },
                 )
             }
+        }
+
+        if (iconPickFor.isNotEmpty()) {
+            IconPickDialog(
+                ids = iconPickFor, settings = settings, packs = iconPackList, names = vm::iconPackNames, preview = vm::iconPackPreview,
+                onChange = vm::updateSettings, onClose = { iconPickFor = emptyList() },
+            )
         }
 
         addToListFor?.let { item ->

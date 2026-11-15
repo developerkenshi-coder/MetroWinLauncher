@@ -100,6 +100,19 @@ object AppFilterXml {
         return IconPackMap(icons, backs, upon, scale, mask, calendars)
     }
 
+    /** The drawable names of a `drawable.xml` (`<item drawable="name"/>`, the list packs keep for their own icon picker). */
+    fun parseDrawables(parser: XmlPullParser): List<String> {
+        val names = LinkedHashSet<String>()
+        var event = parser.eventType
+        while (event != XmlPullParser.END_DOCUMENT) {
+            if (event == XmlPullParser.START_TAG && parser.name == "item") {
+                parser.getAttributeValue(null, "drawable")?.let(::drawableName)?.takeIf { it.isNotBlank() }?.let(names::add)
+            }
+            event = parser.next()
+        }
+        return names.toList()
+    }
+
     /** `@drawable/name` (some packs write it so) as `name`. */
     fun drawableName(raw: String): String = raw.trim().substringAfterLast('/').removeSuffix(".png")
 
@@ -108,12 +121,21 @@ object AppFilterXml {
 }
 
 /** One icon pack, opened: its drawables by name, and how it dresses the apps it has no icon for. */
-class IconPack(private val resources: Resources, val packageName: String, private val map: IconPackMap) {
+class IconPack(
+    private val resources: Resources,
+    val packageName: String,
+    private val map: IconPackMap,
+    /** The names the pack's `drawable.xml` lists, if it has one. */
+    extraNames: List<String> = emptyList(),
+) {
     val size: Int get() = map.icons.size
+
+    /** Every icon the pack lists, by name (the appfilter first, then drawable.xml), one each, for the user to pick from. */
+    val names: List<String> = (map.icons.values + extraNames).distinct().sortedBy { it.lowercase() }
 
     // An icon pack is another app: its drawables can only be found by name.
     @SuppressLint("DiscouragedApi")
-    private fun drawable(name: String): Drawable? {
+    fun drawable(name: String): Drawable? {
         val id = resources.getIdentifier(name, "drawable", packageName).takeIf { it != 0 } ?: resources.getIdentifier(name, "mipmap", packageName)
         if (id == 0) return null
         return runCatching { ResourcesCompat.getDrawable(resources, id, null) }.getOrNull()
@@ -178,8 +200,16 @@ class IconPackRepository(private val context: Context) {
     fun load(packageName: String): IconPack? = runCatching {
         val resources = pm.getResourcesForApplication(packageName)
         val parser = openFilter(resources, packageName) ?: return null
-        IconPack(resources, packageName, AppFilterXml.parse(parser))
+        IconPack(resources, packageName, AppFilterXml.parse(parser), runCatching { openList(resources, packageName)?.let(AppFilterXml::parseDrawables) }.getOrNull().orEmpty())
     }.getOrNull()
+
+    @SuppressLint("DiscouragedApi") // the drawable.xml of another app is only found by name
+    private fun openList(resources: Resources, packageName: String): XmlPullParser? {
+        val id = resources.getIdentifier("drawable", "xml", packageName)
+        if (id != 0) return resources.getXml(id)
+        val stream = runCatching { resources.assets.open("drawable.xml") }.getOrNull() ?: return null
+        return XmlPullParserFactory.newInstance().newPullParser().apply { setInput(stream, null) }
+    }
 
     @SuppressLint("DiscouragedApi") // the appfilter of another app is only found by name
     private fun openFilter(resources: Resources, packageName: String): XmlPullParser? {

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="iconpick_heading">iconos por app</string>
+    <string name="menu_icon">cambiar icono</string>
+    <string name="iconpick_title">Elige el icono</string>
+    <string name="iconpick_hint">Toca las apps para elegirlas y cambia sus iconos de una vez. Una app con un icono elegido lo muestra bajo su nombre; las demás tienen el icono del paquete predeterminado.</string>
+    <string name="iconpick_change_n">Cambiar el icono de %1$d apps</string>
+    <string name="iconpick_select_all">Elegir las apps mostradas</string>
+    <string name="iconpick_clear_selection">Quitar la selección</string>
+    <string name="iconpick_reset_default">Usar el predeterminado</string>
+    <string name="iconpick_own">El icono de la app</string>
+    <string name="iconpick_whole_pack">Todo de este paquete</string>
+    <string name="iconpick_search">buscar iconos</string>
+    <string name="iconpick_empty">Ningún icono coincide.</string>
+    <string name="iconpick_cell">Icono %1$s</string>
+    <string name="iconpick_loading">Leyendo los iconos…</string>
+</resources>

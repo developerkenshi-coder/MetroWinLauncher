@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="iconpick_heading">icons per app</string>
+    <string name="menu_icon">change icon</string>
+    <string name="iconpick_title">Choose the icon</string>
+    <string name="iconpick_hint">Touch the apps to pick them, then change their icon all at once. An app with an icon of its own shows it under its name; the others have the icon of the default pack.</string>
+    <string name="iconpick_change_n">Change the icon of %1$d apps</string>
+    <string name="iconpick_select_all">Pick the apps shown</string>
+    <string name="iconpick_clear_selection">Clear the selection</string>
+    <string name="iconpick_reset_default">Use the default</string>
+    <string name="iconpick_own">The icon of the app</string>
+    <string name="iconpick_whole_pack">Everything from this pack</string>
+    <string name="iconpick_search">search icons</string>
+    <string name="iconpick_empty">No icon matches.</string>
+    <string name="iconpick_cell">Icon %1$s</string>
+    <string name="iconpick_loading">Reading the icons…</string>
+</resources>

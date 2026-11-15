@@ -72,6 +72,8 @@ fun AppContextMenu(
     onRename: (() -> Unit)? = null,
     /** Null when the app still has its own name. */
     onResetName: (() -> Unit)? = null,
+    /** Null when the app has no icon to change (no icon pack is installed, or the entry is not an app). */
+    onChangeIcon: (() -> Unit)? = null,
     /** Null when the app has no "app info" screen (the launcher's own pages). */
     onInfo: (() -> Unit)? = null,
     /** Null when the app cannot be locked; otherwise whether it asks for the screen lock now. */
@@ -93,7 +95,7 @@ fun AppContextMenu(
 ) {
     val entries = MenuEntries(
         pinned, onPinToggle, onUninstall, onHide, onAddToFolder, shortcuts, onShortcut, onRename, onResetName, onInfo, locked, onToggleLock, onPinShortcut,
-        onStore, onShare, onAddToList, onSelect,
+        onStore, onShare, onAddToList, onSelect, onChangeIcon,
     )
     val currentDismiss by rememberUpdatedState(onDismiss)
     // A short tick as the menu opens, if the settings ask for touch feedback.
@@ -151,6 +153,7 @@ private class MenuEntries(
     val onShare: (() -> Unit)?,
     val onAddToList: (() -> Unit)?,
     val onSelect: (() -> Unit)?,
+    val onChangeIcon: (() -> Unit)?,
 )
 
 @Composable
@@ -178,6 +181,7 @@ private fun Menu(item: AppItem, e: MenuEntries, modifier: Modifier) {
         if (e.onAddToList != null) MenuItem(stringResource(R.string.menu_add_to_list), e.onAddToList, Modifier.testTag("menu:list"))
         if (e.onRename != null) MenuItem(stringResource(R.string.menu_rename), e.onRename, Modifier.testTag("menu:rename"))
         if (e.onResetName != null) MenuItem(stringResource(R.string.menu_reset_name), e.onResetName, Modifier.testTag("menu:resetname"))
+        if (e.onChangeIcon != null) MenuItem(stringResource(R.string.menu_icon), e.onChangeIcon, Modifier.testTag("menu:icon"))
         if (e.locked != null) {
             MenuItem(stringResource(if (e.locked) R.string.menu_unlock else R.string.menu_lock), e.onToggleLock, Modifier.testTag("menu:lock"))
         }
