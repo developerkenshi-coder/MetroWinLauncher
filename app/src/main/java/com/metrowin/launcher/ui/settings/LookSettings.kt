@@ -182,7 +182,7 @@ private fun CustomColor(argb: Int, active: Boolean, onChange: (Int) -> Unit, onU
             Brush.horizontalGradient(listOf(Color.Black, Color(ColorMath.hsvToArgb(hue, saturation, 1f)))),
         )
         if (active) {
-            MetroButton(stringResource(R.string.accent_use_preset), Modifier.fillMaxWidth().padding(top = 10.dp).testTag("accent:preset"), onUsePreset)
+            MetroButton(stringResource(R.string.accent_use_preset), Modifier.fillMaxWidth().padding(top = 10.dp).testTag("accent:preset"), onClick = onUsePreset)
         }
     }
 }

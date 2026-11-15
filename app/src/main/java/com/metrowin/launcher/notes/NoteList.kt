@@ -58,6 +58,7 @@ import com.metrowin.launcher.ui.anim.swivel
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.ChoiceRow
+import com.metrowin.launcher.ui.components.ButtonRole
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
@@ -158,7 +159,7 @@ internal fun NoteList(
             }
             if (lost) {
                 PageNote(stringResource(R.string.notes_lost), Modifier.padding(top = 14.dp).testTag("notes:lost"))
-                MetroButton(stringResource(if (confirmDiscard) R.string.notes_delete_confirm else R.string.notes_lost_discard), Modifier.fillMaxWidth().padding(top = 8.dp).testTag("notes:discard")) {
+                MetroButton(stringResource(if (confirmDiscard) R.string.notes_delete_confirm else R.string.notes_lost_discard), Modifier.fillMaxWidth().padding(top = 8.dp).testTag("notes:discard"), role = if (confirmDiscard) ButtonRole.Danger else ButtonRole.Normal) {
                     if (confirmDiscard) onDiscard() else confirmDiscard = true
                 }
             }
@@ -385,7 +386,7 @@ private fun BinPage(binned: List<Note>, onRestore: (Note) -> Unit, onForever: (N
                     }
                 }
             }
-            MetroButton(stringResource(if (confirm) R.string.notes_delete_confirm else R.string.notes_bin_clear), Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag("notes:bin:clear")) {
+            MetroButton(stringResource(if (confirm) R.string.notes_delete_confirm else R.string.notes_bin_clear), Modifier.fillMaxWidth().padding(vertical = 8.dp).testTag("notes:bin:clear"), role = if (confirm) ButtonRole.Danger else ButtonRole.Normal) {
                 if (confirm) { onEmpty(); confirm = false } else confirm = true
             }
         }

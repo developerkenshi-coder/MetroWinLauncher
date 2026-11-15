@@ -78,28 +78,45 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.ui.theme.Danger
 import com.metrowin.launcher.ui.theme.LocalAccent
+import com.metrowin.launcher.ui.theme.onAccent
 import com.metrowin.launcher.ui.theme.LightColors
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.TileWhite
 
+/** What a button is for: [Normal] is the plain one, [Primary] the answer a dialog wants (in the accent), [Danger] a thing that cannot be undone (red). */
+enum class ButtonRole { Normal, Primary, Danger }
+
 /**
  * Windows Phone buttons are plain outlined rectangles. In Modern Glass a button is a capsule of frosted glass, in Modern
- * Droid a filled tonal pill.
+ * Droid a filled tonal pill. A [role] other than [ButtonRole.Normal] fills it with the accent or with the red of a danger, in every look.
  */
 @Composable
-fun MetroButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun MetroButton(text: String, modifier: Modifier = Modifier, role: ButtonRole = ButtonRole.Normal, onClick: () -> Unit) {
     val style = LocalStyle.current
     val colors = LocalMetroColors.current
     // The Windows Phone button fills with the foreground colour while it is touched, and its text takes the colour of the page.
     var pressed by remember { mutableStateOf(false) }
     val pressable = modifier.metroPress(onClick = onClick, onPressedChange = { pressed = it })
-    val surface = when (style.kind) {
-        ThemeStyle.Classic -> pressable.border(2.dp, colors.foreground).background(if (pressed) colors.foreground else Color.Transparent)
-        ThemeStyle.Glass -> pressable.glass(style.controlShape, veil = if (colors.dark) 0.16f else 0.55f)
-        ThemeStyle.Droid -> pressable.clip(style.controlShape).background(colors.containers.getOrElse(1) { colors.surface }).highContrastEdge(style.controlShape)
+    val fill = when (role) {
+        ButtonRole.Normal -> null
+        ButtonRole.Primary -> LocalAccent.current
+        ButtonRole.Danger -> Danger
+    }
+    val surface = when {
+        fill != null -> when (style.kind) {
+            ThemeStyle.Classic -> pressable.border(2.dp, fill).background(fill)
+            ThemeStyle.Glass -> pressable.glass(style.controlShape, tint = fill, tintAlpha = 0.72f, veil = if (colors.dark) 0.12f else 0.4f)
+            ThemeStyle.Droid -> pressable.clip(style.controlShape).background(fill).highContrastEdge(style.controlShape)
+        }
+        style.kind == ThemeStyle.Classic -> pressable.border(2.dp, colors.foreground).background(if (pressed) colors.foreground else Color.Transparent)
+        style.kind == ThemeStyle.Glass -> pressable.glass(style.controlShape, veil = if (colors.dark) 0.16f else 0.55f)
+        else -> pressable.clip(style.controlShape).background(colors.containers.getOrElse(1) { colors.surface }).highContrastEdge(style.controlShape)
     }
     val ink = when {
+        role == ButtonRole.Danger -> Color.White
+        role == ButtonRole.Primary -> onAccent()
         style.isClassic && pressed -> colors.background
         style.kind == ThemeStyle.Droid -> colors.onContainers.getOrElse(1) { colors.foreground }
         else -> colors.foreground

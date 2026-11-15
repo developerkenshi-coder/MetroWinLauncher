@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.ui.components.ButtonRole
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
@@ -127,7 +128,7 @@ fun EditForm(item: TodoItem, names: List<String>, now: Long, onSave: (TodoItem) 
                 onSave(item.copy(text = it, due = due, starred = star, list = Todos.cleanList(listName), note = Todos.cleanNote(note), repeat = if (due == 0L) Repeat.None else repeat, subs = if (pending != null) subs + Sub(pending) else subs))
             }
         }
-        MetroButton(stringResource(if (confirm) R.string.todo_delete_confirm else R.string.todo_delete), Modifier.weight(1f).testTag("todo:edit:delete")) {
+        MetroButton(stringResource(if (confirm) R.string.todo_delete_confirm else R.string.todo_delete), Modifier.weight(1f).testTag("todo:edit:delete"), role = if (confirm) ButtonRole.Danger else ButtonRole.Normal) {
             if (confirm) onDelete() else confirm = true
         }
     }
@@ -243,7 +244,7 @@ private fun ListEditor(name: String, count: Int, color: Int, onRename: (String, 
         }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             MetroButton(stringResource(R.string.todo_rename), Modifier.weight(1f).testTag("todo:lists:rename:$name")) { if (Todos.cleanList(text).isNotEmpty() && text != name) onRename(name, text) }
-            MetroButton(stringResource(if (confirm) R.string.todo_delete_confirm else R.string.todo_delete), Modifier.weight(1f).testTag("todo:lists:delete:$name")) {
+            MetroButton(stringResource(if (confirm) R.string.todo_delete_confirm else R.string.todo_delete), Modifier.weight(1f).testTag("todo:lists:delete:$name"), role = if (confirm) ButtonRole.Danger else ButtonRole.Normal) {
                 if (confirm) onDelete(name) else confirm = true
             }
         }

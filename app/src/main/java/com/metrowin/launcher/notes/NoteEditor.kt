@@ -89,6 +89,7 @@ import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
+import com.metrowin.launcher.ui.components.ButtonRole
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
@@ -419,7 +420,7 @@ internal fun NoteEditor(
             if (note.strokes.isNotEmpty()) MetroButton(stringResource(R.string.notes_export_sketch), Modifier.fillMaxWidth()) { png.launch("$fileName.png") }
             if (note.strokes.isNotEmpty()) MetroButton(stringResource(R.string.notes_sketch_remove), Modifier.fillMaxWidth()) { onChange(snapshot().copy(strokes = emptyList())); more = false }
             if (body.text.isNotBlank()) MetroButton(stringResource(R.string.notes_present), Modifier.fillMaxWidth().testTag("notes:presentation")) { more = false; present = true }
-            MetroButton(stringResource(if (confirmDelete) R.string.notes_delete_confirm else if (prefs.on(NotePrefs.BIN)) R.string.notes_to_bin else R.string.notes_delete), Modifier.fillMaxWidth().testTag("notes:delete")) {
+            MetroButton(stringResource(if (confirmDelete) R.string.notes_delete_confirm else if (prefs.on(NotePrefs.BIN)) R.string.notes_to_bin else R.string.notes_delete), Modifier.fillMaxWidth().testTag("notes:delete"), role = if (confirmDelete) ButtonRole.Danger else ButtonRole.Normal) {
                 if (confirmDelete) onDelete() else confirmDelete = true
             }
         }

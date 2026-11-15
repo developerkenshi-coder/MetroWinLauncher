@@ -30,6 +30,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.data.NewsItem
 import com.metrowin.launcher.data.NewsSources
 import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.ui.components.ButtonRole
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
@@ -84,7 +85,7 @@ internal fun SourcesDialog(
                 Column(Modifier.testTag("nws:confirm"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     MetroText(stringResource(R.string.nws_remove_ask, source.name), size = 18.sp, weight = FontWeight.Normal, maxLines = 3)
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        MetroButton(stringResource(R.string.nws_remove_yes), Modifier.weight(1f).testTag("nws:remove_yes")) { onRemove(source.id); asking = null }
+                        MetroButton(stringResource(R.string.nws_remove_yes), Modifier.weight(1f).testTag("nws:remove_yes"), role = ButtonRole.Danger) { onRemove(source.id); asking = null }
                         MetroButton(stringResource(R.string.nws_keep), Modifier.weight(1f).testTag("nws:remove_no")) { asking = null }
                     }
                 }

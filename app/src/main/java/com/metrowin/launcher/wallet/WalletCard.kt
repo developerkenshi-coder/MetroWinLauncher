@@ -51,6 +51,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
+import com.metrowin.launcher.ui.components.ButtonRole
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.mini.MiniFrame
@@ -181,7 +182,7 @@ internal fun CardView(
             }
         }
         // The question is above the bar, always in view, and not at the end of a long page.
-        if (confirm) MetroButton(stringResource(R.string.notes_delete_confirm), Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp).testTag("wal:delete:confirm")) { onDelete() }
+        if (confirm) MetroButton(stringResource(R.string.notes_delete_confirm), Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp).testTag("wal:delete:confirm"), role = ButtonRole.Danger) { onDelete() }
         AppBar(
             listOf(
                 AppBarItem("←", stringResource(R.string.rec_back), onBack),

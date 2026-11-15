@@ -90,6 +90,7 @@ import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.apps.JumpList
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
+import com.metrowin.launcher.ui.components.ButtonRole
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
@@ -666,7 +667,7 @@ private fun HistoryPage(
             }
             SectionTitle(stringResource(R.string.dialer_section_manage))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                MetroButton(stringResource(R.string.dialer_delete_call), Modifier.weight(1f).testTag("dialer:delete_call")) { target = null; removeAsked(listOf(group)) }
+                MetroButton(stringResource(R.string.dialer_delete_call), Modifier.weight(1f).testTag("dialer:delete_call"), role = ButtonRole.Danger) { target = null; removeAsked(listOf(group)) }
                 if (DialerRole.canBlock(context)) {
                     MetroButton(stringResource(R.string.dialer_block), Modifier.weight(1f).testTag("dialer:block")) { DialerRole.block(context, latest.number); target = null }
                 }

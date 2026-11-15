@@ -73,6 +73,7 @@ import com.metrowin.launcher.data.CalcTools
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
+import com.metrowin.launcher.ui.components.ButtonRole
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroToggle
@@ -222,7 +223,7 @@ private fun OptionsDialog(options: CalcOptions, onClose: () -> Unit) {
                 MetroToggle(stringResource(option.title), options[option], { options[option] = it }, Modifier.testTag("calc:option:${option.name}"))
                 PageNote(stringResource(option.hint), Modifier.padding(bottom = 8.dp))
             }
-            MetroButton(stringResource(R.string.calc_close), Modifier.padding(top = 6.dp), onClose)
+            MetroButton(stringResource(R.string.calc_close), Modifier.padding(top = 6.dp), onClick = onClose)
         }
     }
 }
@@ -504,7 +505,7 @@ private fun HistoryPage(view: CalcSession.View, options: CalcOptions, act: (Calc
     if (confirmClear) {
         DialogFrame(onCancel = { confirmClear = false }, title = stringResource(R.string.calc_clear_confirm)) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                MetroButton(stringResource(R.string.calc_clear_yes), Modifier.weight(1f).testTag("calc:history:clear:yes")) { act { clearHistory() }; confirmClear = false }
+                MetroButton(stringResource(R.string.calc_clear_yes), Modifier.weight(1f).testTag("calc:history:clear:yes"), role = ButtonRole.Danger) { act { clearHistory() }; confirmClear = false }
                 MetroButton(stringResource(R.string.calc_cancel), Modifier.weight(1f)) { confirmClear = false }
             }
         }

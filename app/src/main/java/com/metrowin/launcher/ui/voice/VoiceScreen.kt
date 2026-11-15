@@ -101,7 +101,7 @@ fun VoiceScreen(
                     MetroText(text, size = 28.sp, modifier = Modifier.testTag("voice:message"))
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        if (!state.final) MetroButton(stringResource(R.string.voice_try_again), Modifier.testTag("voice:retry"), onRetry)
+                        if (!state.final) MetroButton(stringResource(R.string.voice_try_again), Modifier.testTag("voice:retry"), onClick = onRetry)
                         state.webQuery?.let { query ->
                             MetroButton(stringResource(R.string.voice_search_web), Modifier.testTag("voice:web")) { onSearchWeb(query) }
                         }

@@ -63,7 +63,7 @@ fun OptionsDialog(isOn: (Opt) -> Boolean, onToggle: (Opt) -> Unit, onClose: () -
         Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState())) {
             Opt.entries.forEach { opt -> MenuRow(stringResource(opt.label), "fm:opt:${opt.name}", checked = isOn(opt)) { onToggle(opt) } }
         }
-        MetroButton(stringResource(R.string.fmx_close), Modifier.fillMaxWidth(), onClose)
+        MetroButton(stringResource(R.string.fmx_close), Modifier.fillMaxWidth(), onClick = onClose)
     }
 }
 
@@ -119,7 +119,7 @@ fun ArchiveListDialog(file: File, onExtractOne: (String) -> Unit, onClose: () ->
                 }
             }
         }
-        MetroButton(stringResource(R.string.fmx_close), Modifier.fillMaxWidth(), onClose)
+        MetroButton(stringResource(R.string.fmx_close), Modifier.fillMaxWidth(), onClick = onClose)
     }
 }
 
@@ -155,7 +155,7 @@ fun AnalyzerDialog(dir: File, showHidden: Boolean, onGo: (File) -> Unit, onClose
                 }
             }
         }
-        MetroButton(stringResource(R.string.fmx_close), Modifier.fillMaxWidth(), onClose)
+        MetroButton(stringResource(R.string.fmx_close), Modifier.fillMaxWidth(), onClick = onClose)
     }
 }
 

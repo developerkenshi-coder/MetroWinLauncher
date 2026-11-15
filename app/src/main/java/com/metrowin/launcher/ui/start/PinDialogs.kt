@@ -80,6 +80,7 @@ import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.LocalInDialog
 import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.ButtonRole
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroDatePicker
 import com.metrowin.launcher.ui.components.MetroText
@@ -116,7 +117,7 @@ fun NoteDialog(initial: String, onDone: (String) -> Unit, onCancel: () -> Unit, 
             modifier = Modifier.fillMaxWidth().heightIn(min = 96.dp).focusRequester(focus).testTag("note:field").hideKeyboardWhenGone(),
         )
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
-            MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("note:ok")) { onDone(text) }
+            MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("note:ok"), role = ButtonRole.Primary) { onDone(text) }
             MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag("note:cancel"), onClick = onCancel)
         }
     }
@@ -146,7 +147,7 @@ fun CountdownDialog(
         // The date is chosen on three wheels, as on Windows Phone.
         MetroDatePicker(date, { date = it }, tag = "countdown")
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
-            MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("countdown:ok")) { onDone(title, date.toEpochDay()) }
+            MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("countdown:ok"), role = ButtonRole.Primary) { onDone(title, date.toEpochDay()) }
             MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag("countdown:cancel"), onClick = onCancel)
         }
     }
@@ -171,7 +172,7 @@ fun CounterDialog(
         MetroText(if (reset) "0" else count.toString(), size = 40.sp, modifier = Modifier.testTag("counter:value"))
         MetroButton(stringResource(R.string.counter_reset), Modifier.fillMaxWidth().testTag("counter:reset")) { reset = true }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
-            MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("counter:ok")) { onDone(name, reset) }
+            MetroButton(stringResource(android.R.string.ok), Modifier.weight(1f).testTag("counter:ok"), role = ButtonRole.Primary) { onDone(name, reset) }
             MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag("counter:cancel"), onClick = onCancel)
         }
     }

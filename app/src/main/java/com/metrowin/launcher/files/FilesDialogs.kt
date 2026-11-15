@@ -379,10 +379,10 @@ val TAG_COLORS = listOf(Color(0xFFE51400), Color(0xFFFA6800), Color(0xFFF0A30A),
 fun ZipChoice(file: File, list: Boolean, onHere: () -> Unit, onFolder: () -> Unit, onList: () -> Unit, onOpen: () -> Unit, onCancel: () -> Unit) {
     DialogFrame(onCancel = onCancel) {
         MetroText(file.name, size = 20.sp, weight = FontWeight.Normal)
-        if (list) MetroButton(stringResource(R.string.fmx_archive_content), Modifier.fillMaxWidth().testTag("fm:zip:list"), onList)
-        MetroButton(stringResource(R.string.fm_extract_here), Modifier.fillMaxWidth().testTag("fm:zip:here"), onHere)
-        MetroButton(stringResource(R.string.fm_extract_to), Modifier.fillMaxWidth().testTag("fm:zip:folder"), onFolder)
-        MetroButton(stringResource(R.string.fm_open_with), Modifier.fillMaxWidth(), onOpen)
+        if (list) MetroButton(stringResource(R.string.fmx_archive_content), Modifier.fillMaxWidth().testTag("fm:zip:list"), onClick = onList)
+        MetroButton(stringResource(R.string.fm_extract_here), Modifier.fillMaxWidth().testTag("fm:zip:here"), onClick = onHere)
+        MetroButton(stringResource(R.string.fm_extract_to), Modifier.fillMaxWidth().testTag("fm:zip:folder"), onClick = onFolder)
+        MetroButton(stringResource(R.string.fm_open_with), Modifier.fillMaxWidth(), onClick = onOpen)
     }
 }
 
@@ -469,7 +469,7 @@ fun ProgressDialog(job: FileJob, onHide: () -> Unit) {
             else size(done) + " / " + size(progress.totalBytes) + if (speed > 0) "  ·  " + stringResource(R.string.fmx_speed, size(speed), clock((progress.totalBytes - done) / speed)) else "",
             size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, maxLines = 2,
         )
-        MetroButton(stringResource(R.string.fmx_background), Modifier.fillMaxWidth().testTag("fm:hide"), onHide)
+        MetroButton(stringResource(R.string.fmx_background), Modifier.fillMaxWidth().testTag("fm:hide"), onClick = onHide)
         MetroButton(stringResource(R.string.fm_cancel), Modifier.fillMaxWidth().testTag("fm:cancel")) { progress.cancel() }
     }
 }
@@ -504,6 +504,6 @@ fun FailuresDialog(failures: List<Failure>, onClose: () -> Unit) {
                 }
             }
         }
-        MetroButton(stringResource(R.string.fmx_close), Modifier.fillMaxWidth(), onClose)
+        MetroButton(stringResource(R.string.fmx_close), Modifier.fillMaxWidth(), onClick = onClose)
     }
 }
