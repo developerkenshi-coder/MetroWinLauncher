@@ -91,7 +91,7 @@ fun CalendarScreen() {
     var month by rememberSaveable(stateSaver = MonthSaver) { mutableStateOf(YearMonth.now()) }
     var version by remember { mutableIntStateOf(0) }
     var editing by remember { mutableStateOf<CalEvent?>(null) }
-    var searching by remember { mutableStateOf(false) }
+    var searching by rememberSaveable { mutableStateOf(false) }
     var dialog by remember { mutableStateOf<String?>(null) }
     var imported by remember { mutableStateOf<List<IcsEvent>?>(null) }
 

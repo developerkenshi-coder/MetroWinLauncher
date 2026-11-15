@@ -1,5 +1,6 @@
 package com.metrowin.launcher.recorder
 
+import androidx.compose.runtime.saveable.rememberSaveable
 import android.Manifest
 import android.app.Activity
 import android.content.Context
@@ -118,7 +119,7 @@ fun RecorderScreen() {
     }
     var selected by remember { mutableStateOf<String?>(null) }
     var picked by remember { mutableStateOf(setOf<String>()) }
-    var query by remember { mutableStateOf("") }
+    var query by rememberSaveable { mutableStateOf("") }
     var label by remember { mutableStateOf("") }
     var importing by remember { mutableStateOf<Pair<Int, Int>?>(null) }
     var working by remember { mutableStateOf(false) }

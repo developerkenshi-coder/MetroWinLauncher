@@ -5,6 +5,9 @@ import android.view.Choreographer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import com.metrowin.launcher.ui.gesture.BackGestureHandler
+import com.metrowin.launcher.ui.gesture.TurnstileBack
 import androidx.compose.ui.Alignment
 import com.metrowin.launcher.ui.actioncenter.MetroToastHost
 import com.metrowin.launcher.ui.apps.LocalRowMenu
@@ -38,7 +41,7 @@ private val choreographerClock = object : MonotonicFrameClock {
  * page swings in from the right edge when the launcher opens it and swings out again before it closes. It only happens when the launcher
  * asked for it ([EXTRA]); an app opened by someone else, or with the modern animation, takes the window animation of Android.
  */
-class PageTurn(private val on: Boolean) {
+class PageTurn(val on: Boolean) {
     /** 1 turned away, 0 facing the screen. */
     val away = Animatable(if (on) 1f else 0f)
     private var leaving = false
@@ -67,10 +70,16 @@ class PageTurn(private val on: Boolean) {
     }
 }
 
-/** The page of an activity of the launcher, turning in when it opens and out when [PageTurn.leave] says so. */
+/**
+ * The page of an activity of the launcher, turning in when it opens and out when [PageTurn.leave] says so. The back gesture that nothing
+ * in [content] handles turns the page away under the finger, and [onBack] (the activity's `finish`) takes it away for good from there.
+ */
 @Composable
-fun TurnPage(turn: PageTurn, content: @Composable () -> Unit) {
+fun TurnPage(turn: PageTurn, onBack: () -> Unit = {}, content: @Composable () -> Unit) {
     LaunchedEffect(turn) { turn.enter() }
+    val scope = rememberCoroutineScope()
+    // Composed before the content, so it is the last handler asked: the ones of the screens come first.
+    if (turn.on) BackGestureHandler { TurnstileBack(turn.away, scope, onBack) }
     val rowMenu = remember { RowMenuState() }
     val reduced = LocalReduceMotion.current
     CompositionLocalProvider(LocalRowMenu provides rowMenu) {

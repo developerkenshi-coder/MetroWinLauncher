@@ -1,5 +1,6 @@
 package com.metrowin.launcher.notes
 
+import androidx.compose.runtime.saveable.rememberSaveable
 import android.text.format.DateUtils
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
@@ -129,7 +130,7 @@ internal fun NoteList(
 ) {
     val colors = LocalMetroColors.current
     var confirmDiscard by remember { mutableStateOf(false) }
-    var query by remember { mutableStateOf("") }
+    var query by rememberSaveable { mutableStateOf("") }
     var folder by remember { mutableStateOf("") }
     var options by remember { mutableStateOf(false) }
     var picked by remember { mutableStateOf(emptySet<String>()) }

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.todo
 
+import androidx.compose.runtime.saveable.rememberSaveable
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
@@ -144,8 +145,8 @@ fun TodoScreen() {
     var list by remember { mutableStateOf<String?>(null) }
     var editing by remember { mutableStateOf<TodoItem?>(null) }
     var panel by remember { mutableStateOf<Panel?>(null) }
-    var searching by remember { mutableStateOf(false) }
-    var query by remember { mutableStateOf("") }
+    var searching by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
     var undo by remember { mutableStateOf<List<TodoItem>?>(null) }
     var completing by remember { mutableStateOf(emptySet<Long>()) }
     var health by remember { mutableStateOf<TodoReminders.Health?>(null) }

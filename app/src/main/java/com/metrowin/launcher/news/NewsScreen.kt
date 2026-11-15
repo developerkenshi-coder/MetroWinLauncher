@@ -1,5 +1,6 @@
 package com.metrowin.launcher.news
 
+import androidx.compose.runtime.saveable.rememberSaveable
 import android.content.Context
 import android.content.Intent
 import androidx.activity.compose.BackHandler
@@ -114,7 +115,7 @@ fun NewsScreen() {
     var read by remember { mutableStateOf<Set<String>>(emptySet()) }
     var saved by remember { mutableStateOf<List<NewsItem>>(emptyList()) }
     var tile by remember { mutableStateOf(hub.tileSource) }
-    var query by remember { mutableStateOf<String?>(null) }
+    var query by rememberSaveable { mutableStateOf<String?>(null) }
     // The ages under the headlines move on by themselves.
     val now by produceState(System.currentTimeMillis()) { while (true) { delay(60_000); value = System.currentTimeMillis() } }
     val topics = NewsSources.TOPICS.associateWith { topicRes(it)?.let(context::getString) ?: it }

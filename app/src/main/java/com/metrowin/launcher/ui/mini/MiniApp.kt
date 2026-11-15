@@ -79,7 +79,7 @@ abstract class MiniActivity : ComponentActivity() {
                     @Suppress("DEPRECATION")
                     setTaskDescription(ActivityManager.TaskDescription(title.toString(), null as Bitmap?, accent))
                 }
-                CompositionLocalProvider(LocalAppTitle provides title.toString()) { TurnPage(turn) { Box(Modifier.rotateOnTurn()) { Content() } } }
+                CompositionLocalProvider(LocalAppTitle provides title.toString()) { TurnPage(turn, onBack = ::finish) { Box(Modifier.rotateOnTurn()) { Content() } } }
             }
         }
     }
