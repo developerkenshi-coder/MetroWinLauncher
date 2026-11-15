@@ -100,7 +100,7 @@ import com.metrowin.launcher.ui.components.SimPickDialog
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
-import com.metrowin.launcher.ui.components.LocalAppTitle
+import com.metrowin.launcher.ui.components.AppTitleLine
 import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.featherRow
@@ -571,7 +571,7 @@ private fun ThreadTitle(title: String, classic: Boolean, photo: String?, reposit
         if (classic) {
             // The page title of Windows Phone: the name of the app in small capitals, and the title lowercase and large under it.
             Column {
-                LocalAppTitle.current?.let { MetroText(it.uppercase(Locale.getDefault()), size = 14.sp, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(bottom = 2.dp)) }
+                AppTitleLine()
                 MetroText(title.lowercase(Locale.getDefault()), size = 40.sp, maxLines = 1)
             }
         } else {

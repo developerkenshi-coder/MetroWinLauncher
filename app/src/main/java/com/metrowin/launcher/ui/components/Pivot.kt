@@ -1,6 +1,8 @@
 package com.metrowin.launcher.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -30,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import kotlinx.coroutines.launch
+import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.roundToInt
@@ -68,30 +71,40 @@ fun PivotHeader(
     val fraction = (position - lower).coerceIn(0f, 1f)
     val shift = leftOf(lower) + (leftOf(upper) - leftOf(lower)) * fraction
 
-    Column(modifier) {
-        LocalAppTitle.current?.let { appTitle ->
-            MetroText(appTitle.uppercase(), size = MetroType.Note, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(bottom = 2.dp))
-        }
-        Row(
-            Modifier
-                .clipToBounds()
-                .wrapContentWidth(Alignment.Start, unbounded = true)
-                .offset { IntOffset(-shift.roundToInt(), 0) },
-            horizontalArrangement = Arrangement.spacedBy(Spacing.Page),
-        ) {
-            titles.forEachIndexed { index, title ->
-                MetroText(
-                    text = title,
-                    size = size,
-                    color = if (color == null) lerp(colors.foreground, colors.subtle, abs(position - index).coerceIn(0f, 1f))
-                    else color.copy(alpha = 1f - 0.45f * abs(position - index).coerceIn(0f, 1f)),
-                    modifier = Modifier
-                        .onSizeChanged { widths[index] = it.width }
-                        // A title is a tab of the pivot (the outer role wins over the button one metroPress sets), and says which page it is on.
-                        .semantics { heading(); role = Role.Tab; selected = index == pagerState.currentPage }
-                        .metroPress(onClick = { scope.launch { pagerState.animateScrollToPage(index) } }),
-                )
+    BoxWithConstraints(modifier) {
+        // A title longer than the page (German, French) is drawn smaller to fit it, not run off the edge.
+        val room = maxWidth
+        Column {
+            AppTitleLine()
+            Row(
+                Modifier
+                    .clipToBounds()
+                    .wrapContentWidth(Alignment.Start, unbounded = true)
+                    .offset { IntOffset(-shift.roundToInt(), 0) },
+                horizontalArrangement = Arrangement.spacedBy(Spacing.Page),
+            ) {
+                titles.forEachIndexed { index, title ->
+                    MetroText(
+                        text = title,
+                        size = size,
+                        maxLines = 1,
+                        color = if (color == null) lerp(colors.foreground, colors.subtle, abs(position - index).coerceIn(0f, 1f))
+                        else color.copy(alpha = 1f - 0.45f * abs(position - index).coerceIn(0f, 1f)),
+                        modifier = Modifier
+                            .widthIn(max = room)
+                            .onSizeChanged { widths[index] = it.width }
+                            // A title is a tab of the pivot (the outer role wins over the button one metroPress sets), and says which page it is on.
+                            .semantics { heading(); role = Role.Tab; selected = index == pagerState.currentPage }
+                            .metroPress(onClick = { scope.launch { pagerState.animateScrollToPage(index) } }),
+                    )
+                }
             }
         }
     }
+}
+
+/** The name of the app in small capitals over a page title ([LocalAppTitle]); nothing when the app has none. */
+@Composable
+fun AppTitleLine() {
+    LocalAppTitle.current?.let { MetroText(it.uppercase(Locale.getDefault()), size = MetroType.Note, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(bottom = 2.dp)) }
 }
