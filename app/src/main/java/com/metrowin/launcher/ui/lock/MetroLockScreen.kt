@@ -282,8 +282,10 @@ fun MetroLockScreen(
         if (photo != null) {
             Image(photo, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         }
-        // A shade that grows toward the bottom keeps the white time readable on a bright photo and leaves the top of the picture alone.
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.35f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.6f))))
+        // A shade that grows toward the bottom keeps the white time readable on a bright photo and leaves the top of the picture alone;
+        // it is stronger on a bright photo and lighter on a dark one.
+        val veil by produceState(LockVeil.DEFAULT_ALPHA, photo) { value = if (photo == null) LockVeil.DEFAULT_ALPHA else withContext(Dispatchers.Default) { LockVeil.alpha(photo) } }
+        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.35f to Color.Transparent, 1f to Color.Black.copy(alpha = veil))))
 
         // Where the camera is, read from the phone: the battery is kept out from under a hole in the corner, the rest below any hole.
         val holes = rememberTopCutouts()
