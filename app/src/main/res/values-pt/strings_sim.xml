@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sim_pick_call">Ligar com qual SIM?</string>
+    <string name="sim_pick_sms">Enviar com qual SIM?</string>
+    <string name="sim_remember">Usar sempre este SIM para este contacto</string>
+    <string name="sim_ask">Perguntar</string>
+    <string name="sim_choose">Escolher SIM</string>
+    <string name="sim_default_title">SIM predefinido</string>
+    <string name="sim_default_call">Chamadas</string>
+    <string name="sim_default_sms">SMS</string>
+    <string name="sim_contact_title">SIM para este contacto</string>
+</resources>

@@ -123,7 +123,8 @@ internal fun InboxCard(card: LiveCard.Inbox, height: Dp) {
 internal val INBOX_ROW = 40.dp
 
 
-internal val INBOX_LABEL = 28.dp
+// Room under the rows for the name of the app (left) and the number of what is waiting (right).
+internal val INBOX_LABEL = 42.dp
 
 
 /** Someone wrote: their picture (when there is one), their name, the chat it came in, and the last line. */
@@ -137,7 +138,7 @@ internal fun MessageCard(card: LiveCard.Message, size: TileSize) {
             modifier = Modifier.align(Alignment.TopEnd).padding(top = FACE_MARGIN, end = FACE_MARGIN).testTag("card:more"),
         )
     }
-    Row(Modifier.fillMaxSize().padding(start = FACE_MARGIN, top = FACE_MARGIN, end = if (card.more > 0) 38.dp else 10.dp, bottom = 26.dp)) {
+    Row(Modifier.fillMaxSize().padding(start = FACE_MARGIN, top = FACE_MARGIN, end = if (card.more > 0) 38.dp else 10.dp, bottom = 38.dp)) {
         card.avatar?.let { avatar ->
             val side = if (size == TileSize.Wide) 64.dp else 44.dp
             Image(avatar, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(side).testTag("card:avatar"))

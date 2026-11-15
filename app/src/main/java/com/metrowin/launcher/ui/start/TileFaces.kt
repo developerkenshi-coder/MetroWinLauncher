@@ -188,7 +188,11 @@ fun TileFace(
                         else StaticFace(item, size, width, height)
                 }
             }
-            if (!iconic) CountBadge(count, size, Modifier.align(Alignment.TopEnd))
+            // The faces of an app with something to say (the list of what is waiting, a chat) fill the top right with who and when: the
+            // number goes to the bottom right corner, where the name of the app does not reach.
+            val cardsTile = size != TileSize.Small && widget == null && item.data == null && item.photoPath == null && faces.isNotEmpty() &&
+                (item.live == null || item.live == LiveKind.Phone || item.live == LiveKind.Messages || item.live == LiveKind.Mail)
+            if (!iconic) CountBadge(count, size, Modifier.align(if (cardsTile) Alignment.BottomEnd else Alignment.TopEnd))
         }
     }
 }

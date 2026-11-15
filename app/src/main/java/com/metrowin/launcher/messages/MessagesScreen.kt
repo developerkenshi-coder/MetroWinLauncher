@@ -88,6 +88,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.LivePermissions
+import com.metrowin.launcher.data.SimChoice
+import com.metrowin.launcher.data.SimInfo
+import com.metrowin.launcher.data.SimPrefs
+import com.metrowin.launcher.data.SimReader
+import com.metrowin.launcher.data.SimRouting
+import com.metrowin.launcher.data.SimUse
+import com.metrowin.launcher.ui.components.SimPickDialog
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
@@ -408,9 +415,22 @@ private fun ThreadPage(
     var sending by remember { mutableStateOf(false) }
     var viewing by remember { mutableStateOf<android.net.Uri?>(null) }
     var deleting by remember { mutableStateOf<Sms?>(null) }
-    val sims by produceState(emptyList<Pair<Int, String>>(), options.on(MessagesOptions.Key.Sims)) { value = if (options.on(MessagesOptions.Key.Sims)) withContext(Dispatchers.IO) { repository.sims() } else emptyList() }
-    var simIndex by rememberSaveable { mutableIntStateOf(0) }
-    val sub = sims.getOrNull(simIndex % maxOf(sims.size, 1))?.first ?: -1
+    // Two SIMs: the one picked in this conversation, else the one kept for the contact, else the default for texts, else the user is asked.
+    // The permission to read the SIMs is asked once, and only on a phone built for two.
+    var phoneOk by remember { mutableStateOf(LivePermissions.isGranted(context, android.Manifest.permission.READ_PHONE_STATE)) }
+    val askPhone = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok -> phoneOk = ok; if (!ok) options.set(MessagesOptions.Key.Sims, false) }
+    LaunchedEffect(Unit) {
+        @Suppress("DEPRECATION")
+        val dual = context.getSystemService(android.telephony.TelephonyManager::class.java)?.phoneCount.let { it != null && it > 1 }
+        if (dual && options.on(MessagesOptions.Key.Sims) && !phoneOk) askPhone.launch(android.Manifest.permission.READ_PHONE_STATE)
+    }
+    val simPrefs = remember { SimPrefs(context) }
+    val sims by produceState(emptyList<SimInfo>(), options.on(MessagesOptions.Key.Sims), phoneOk) { value = if (options.on(MessagesOptions.Key.Sims)) withContext(Dispatchers.IO) { SimReader.read(context) } else emptyList() }
+    var picked by rememberSaveable { mutableStateOf<Int?>(null) }
+    var choosing by remember { mutableStateOf<String?>(null) }
+    val choice: SimChoice = picked?.let { slot -> sims.firstOrNull { it.slot == slot }?.let { SimChoice.Use(it) } }
+        ?: SimRouting.choose(sims, simPrefs.forContact(SimUse.Sms, address), simPrefs.default(SimUse.Sms))
+    val sub = (choice as? SimChoice.Use)?.sim?.subId ?: -1
     val report = options.on(MessagesOptions.Key.Delivery)
     val menu = LocalRowMenu.current
     val retryText = stringResource(R.string.messages_retry)
@@ -475,16 +495,33 @@ private fun ThreadPage(
         if (failed) PageNote(stringResource(R.string.messages_failed), Modifier.padding(horizontal = 24.dp))
         // A group is read here: writing to it is a multimedia message, which this app does not send.
         if (',' !in address) {
-            fun send() {
-                val body = text.trim()
+            fun deliver(body: String, subId: Int) {
                 if (body.isEmpty() || sending) return
                 sending = true
                 scope.launch {
-                    val ok = withContext(Dispatchers.IO) { repository.send(address, body, sub, report) }
+                    val ok = withContext(Dispatchers.IO) { repository.send(address, body, subId, report) }
                     sending = false
                     failed = !ok
                     if (ok) { text = ""; version++; onChanged() }
                 }
+            }
+            // Two SIMs and no SIM said for this contact: the text waits for the answer, then goes.
+            fun send() {
+                val body = text.trim()
+                if (body.isEmpty() || sending) return
+                if (choice == SimChoice.Ask) choosing = body else deliver(body, sub)
+            }
+            choosing?.let { body ->
+                SimPickDialog(
+                    SimUse.Sms, sims, SimRouting.key(address).isNotEmpty(),
+                    { sim, keep ->
+                        choosing = null
+                        picked = sim.slot
+                        if (keep) simPrefs.setForContact(SimUse.Sms, address, sim.slot)
+                        deliver(body, sim.subId)
+                    },
+                    { choosing = null },
+                )
             }
             if (options.on(MessagesOptions.Key.Quick)) QuickReplies { text = if (text.isBlank()) it else "${text.trimEnd()} $it" }
             Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.Bottom) {
@@ -493,7 +530,11 @@ private fun ThreadPage(
                     counter(text)?.let { MetroText(it, size = 11.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, modifier = Modifier.padding(start = 4.dp, top = 2.dp)) }
                 }
                 if (sims.size > 1) {
-                    MetroText(stringResource(R.string.messages_sim, sims[simIndex % sims.size].second), size = 12.sp, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(start = 8.dp).metroPress(onClick = { simIndex++ }).padding(8.dp))
+                    // The SIM that will send; a tap asks again and changes it for this conversation (the question also offers to keep it for the contact).
+                    MetroText(
+                        (choice as? SimChoice.Use)?.sim?.label ?: stringResource(R.string.sim_choose), size = 12.sp, weight = FontWeight.SemiBold, maxLines = 1,
+                        modifier = Modifier.padding(start = 8.dp).testTag("messages:sim").metroPress(onClick = { choosing = "" }).padding(8.dp),
+                    )
                 }
                 if (!classic) MetroButton(stringResource(R.string.messages_send), Modifier.padding(start = 8.dp).testTag("messages:send"), onClick = ::send)
             }

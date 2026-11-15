@@ -25,8 +25,8 @@ class MessagesOptions(context: Context) {
         Quick("quick_replies", false),
         /** Ask the network for the delivery report of each message sent (the SMS centre tells when it arrived). */
         Delivery("delivery_reports", false),
-        /** Choose the SIM of each message (asks for the permission to read the SIM list). */
-        Sims("sim_choice", false),
+        /** Two SIMs: the SIM of the contact, the default for texts, or a question (asks once for the permission to read the SIM list). */
+        Sims("sim_choice", true),
         /** A "copy code" button on the notification of a message with a one-time code. */
         Otp("otp_copy", false),
         /** Messages of blocked numbers are kept but not told; blocking from the long press menu. */

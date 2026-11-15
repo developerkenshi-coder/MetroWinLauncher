@@ -77,6 +77,12 @@ import com.metrowin.launcher.data.PeopleReader
 import com.metrowin.launcher.data.PhoneCalls
 import com.metrowin.launcher.data.RecentCall
 import com.metrowin.launcher.data.SettingsStore
+import com.metrowin.launcher.data.SimChoice
+import com.metrowin.launcher.data.SimPrefs
+import com.metrowin.launcher.data.SimReader
+import com.metrowin.launcher.data.SimRouting
+import com.metrowin.launcher.data.SimUse
+import com.metrowin.launcher.ui.components.SimPickDialog
 import com.metrowin.launcher.messages.MessagesActivity
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.ui.actioncenter.MetroToast
@@ -148,9 +154,17 @@ fun DialerScreen(
         DialerRole.call(context, target, canCall, sim)
         onPlaced()
     }
+    // Two SIMs: the one kept for this contact, else the default for calls, else the user is asked (unless asking is turned off).
+    val simInfos = remember(canCall) { SimReader.read(context).filter { it.handle != null } }
+    val simPrefs = remember { SimPrefs(context) }
     fun call(target: String, sim: PhoneAccountHandle? = null) {
         if (target.isEmpty()) return
-        if (sim == null && prefs.askSim && sims.size > 1) simFor = target else place(target, sim)
+        if (sim != null || simInfos.size < 2) { place(target, sim); return }
+        when (val choice = SimRouting.choose(simInfos, simPrefs.forContact(SimUse.Call, target), simPrefs.default(SimUse.Call))) {
+            is SimChoice.Use -> place(target, choice.sim.handle)
+            SimChoice.Ask -> if (prefs.askSim) simFor = target else place(target, null)
+            SimChoice.System -> place(target, null)
+        }
     }
     fun voicemail() {
         DialerRole.voicemail(context)
@@ -241,7 +255,13 @@ fun DialerScreen(
             Dialogs.Blocked -> BlockedDialog { dialogs = Dialogs.None }
             Dialogs.None -> Unit
         }
-        simFor?.let { target -> SimChooser(sims, { sim -> simFor = null; place(target, sim) }, { simFor = null }) }
+        simFor?.let { target ->
+            SimPickDialog(
+                SimUse.Call, simInfos, SimRouting.key(target).isNotEmpty(),
+                { sim, keep -> simFor = null; if (keep) simPrefs.setForContact(SimUse.Call, target, sim.slot); place(target, sim.handle) },
+                { simFor = null },
+            )
+        }
         if (explain) {
             DialogFrame(onCancel = { explain = false; prefs.explained = true; ask.launch(missing.toTypedArray()) }, title = stringResource(R.string.dialer_rationale_title)) {
                 PageNote(stringResource(R.string.dialer_rationale), Modifier.testTag("dialer:rationale"))

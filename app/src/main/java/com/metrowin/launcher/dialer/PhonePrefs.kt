@@ -46,7 +46,7 @@ class PhonePrefs(context: Context) {
     var bigText by flag("big_text", false)
 
     /** With two SIMs, a call from the contacts, the history or the quick dial asks which SIM to use. */
-    var askSim by flag("ask_sim", false)
+    var askSim by flag("ask_sim", true)
 
     /** The pages of the phone fade and slide as the finger turns them. */
     var pageFade by flag("page_fade", true)

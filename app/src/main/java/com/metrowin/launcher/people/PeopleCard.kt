@@ -47,6 +47,13 @@ import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.calls.DialerRole
 import com.metrowin.launcher.data.ClockFormat
+import com.metrowin.launcher.data.SimChoice
+import com.metrowin.launcher.data.SimPrefs
+import com.metrowin.launcher.data.SimReader
+import com.metrowin.launcher.data.SimRouting
+import com.metrowin.launcher.data.SimUse
+import com.metrowin.launcher.ui.components.SimPickDialog
+import com.metrowin.launcher.ui.components.SimSelector
 import com.metrowin.launcher.messages.MessagesActivity
 import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.ui.anim.featherIn
@@ -97,8 +104,20 @@ fun ContactCard(target: Target, snapshot: PeopleSnapshot, prefs: PeoplePrefs, mo
     val main = numbers.firstOrNull()
     val starred = person?.starred == true || (target.key != null && prefs.isFavourite(target.key))
     fun place(number: String, sim: android.telecom.PhoneAccountHandle? = null) = DialerRole.call(context, number, direct = false, sim = sim)
+    val allSims = remember { SimReader.read(context) }
+    val simInfos = remember(allSims) { allSims.filter { it.handle != null } }
+    val simPrefs = remember { SimPrefs(context) }
+    // A long press always asks which SIM; a tap uses the SIM kept for the number, else the default for calls, else asks (two SIMs).
     fun callWithChoice(number: String) {
-        if (DialerRole.sims(context).isEmpty()) place(number) else simFor = number
+        if (simInfos.size < 2) place(number) else simFor = number
+    }
+    fun callRouted(number: String) {
+        if (simInfos.size < 2) { place(number); return }
+        when (val choice = SimRouting.choose(simInfos, simPrefs.forContact(SimUse.Call, number), simPrefs.default(SimUse.Call))) {
+            is SimChoice.Use -> place(number, choice.sim.handle)
+            SimChoice.Ask -> simFor = number
+            SimChoice.System -> place(number)
+        }
     }
     fun write(number: String) { runCatching { context.startActivity(Intent(context, MessagesActivity::class.java).putExtra(MessagesActivity.EXTRA_ADDRESS, number)) } }
     fun open(intent: Intent?) { if (intent != null) runCatching { context.startActivity(intent) } }
@@ -120,7 +139,7 @@ fun ContactCard(target: Target, snapshot: PeopleSnapshot, prefs: PeoplePrefs, mo
         Column(m) {
             FlowRow(Modifier.fillMaxWidth().padding(vertical = 14.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 if (main != null) {
-                    Round(PeopleGlyph.Phone, stringResource(R.string.ppl_call), onLongClick = { callWithChoice(main) }, modifier = Modifier.testTag("people:call")) { place(main) }
+                    Round(PeopleGlyph.Phone, stringResource(R.string.ppl_call), onLongClick = { callWithChoice(main) }, modifier = Modifier.testTag("people:call")) { callRouted(main) }
                     Round(PeopleGlyph.Message, stringResource(R.string.ppl_message)) { write(main) }
                 }
                 detail?.emails?.firstOrNull()?.let { mail -> Round(PeopleGlyph.Mail, stringResource(R.string.pp_mail)) { open(PeopleActions.mail(mail.value)) } }
@@ -139,13 +158,21 @@ fun ContactCard(target: Target, snapshot: PeopleSnapshot, prefs: PeoplePrefs, mo
                     SectionLabel(stringResource(R.string.pp_numbers))
                     it.forEach { number ->
                         Row(Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Column(Modifier.weight(1f).metroPress(onClick = { place(number) }, onLongClick = { callWithChoice(number) }).padding(vertical = 4.dp)) {
+                            Column(Modifier.weight(1f).metroPress(onClick = { callRouted(number) }, onLongClick = { callWithChoice(number) }).padding(vertical = 4.dp)) {
                                 MetroText(number, size = 22.sp, maxLines = 1)
                                 labels[number]?.let { MetroText(it, size = 13.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1) }
                             }
                             Box(Modifier.size(48.dp).metroPress(onClick = { write(number) }).semantics { contentDescription = context.getString(R.string.ppl_message) }, contentAlignment = Alignment.Center) { PeopleIcon(PeopleGlyph.Message, 24.dp) }
                         }
                     }
+                }
+                // Two SIMs: which one this contact is called and texted with (kept for every number of the contact); "ask" leaves it to the default.
+                if (allSims.size > 1 && main != null) {
+                    SectionLabel(stringResource(R.string.sim_contact_title))
+                    var callSlot by remember(main) { mutableStateOf(simPrefs.forContact(SimUse.Call, main)) }
+                    var smsSlot by remember(main) { mutableStateOf(simPrefs.forContact(SimUse.Sms, main)) }
+                    SimSelector(stringResource(R.string.sim_default_call), allSims, callSlot, { callSlot = it; numbers.forEach { n -> simPrefs.setForContact(SimUse.Call, n, it) } }, "people:sim:call")
+                    SimSelector(stringResource(R.string.sim_default_sms), allSims, smsSlot, { smsSlot = it; numbers.forEach { n -> simPrefs.setForContact(SimUse.Sms, n, it) } }, "people:sim:sms")
                 }
                 detail?.let { d ->
                     if (d.emails.isNotEmpty()) SectionLabel(stringResource(R.string.pp_emails))
@@ -200,12 +227,11 @@ fun ContactCard(target: Target, snapshot: PeopleSnapshot, prefs: PeoplePrefs, mo
             }
         }
         simFor?.let { number ->
-            Sheet(onDismiss = { simFor = null }) {
-                MetroText(stringResource(R.string.pp_sim_choose), size = 20.sp, color = LocalAccent.current, modifier = Modifier.padding(bottom = 8.dp))
-                DialerRole.sims(context).forEach { sim ->
-                    MetroButton(DialerRole.simLabel(context, sim).ifBlank { stringResource(R.string.pp_sim_unnamed) }, Modifier.padding(bottom = 8.dp)) { simFor = null; place(number, sim) }
-                }
-            }
+            SimPickDialog(
+                SimUse.Call, simInfos, SimRouting.key(number).isNotEmpty(),
+                { sim, keep -> simFor = null; if (keep) simPrefs.setForContact(SimUse.Call, number, sim.slot); place(number, sim.handle) },
+                { simFor = null },
+            )
         }
         if (whole && photo != null) FullPhoto(photo, target.name) { whole = false }
     }

@@ -23,6 +23,10 @@ import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.calls.DialerRole
 import com.metrowin.launcher.data.RecentCall
+import com.metrowin.launcher.data.SimPrefs
+import com.metrowin.launcher.data.SimReader
+import com.metrowin.launcher.data.SimUse
+import com.metrowin.launcher.ui.components.SimSelector
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
@@ -43,6 +47,7 @@ internal fun OptionsDialog(prefs: PhonePrefs, onTexts: () -> Unit, onDismiss: ()
         Column(Modifier.testTag("dialer:options"), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             MetroToggle(stringResource(R.string.dialer_opt_confirm_quick), prefs.confirmQuickDial, { prefs.confirmQuickDial = it }, Modifier.testTag("dialer:opt:confirm"))
             MetroToggle(stringResource(R.string.dialer_opt_ask_sim), prefs.askSim, { prefs.askSim = it }, Modifier.testTag("dialer:opt:asksim"))
+            SimDefaults()
             MetroToggle(stringResource(R.string.dialer_opt_quick_row), prefs.quickRow, { prefs.quickRow = it }, Modifier.testTag("dialer:opt:quickrow"))
             MetroToggle(stringResource(R.string.dialer_opt_key_tones), prefs.keyTones, { prefs.keyTones = it }, Modifier.testTag("dialer:opt:tones"))
             MetroToggle(stringResource(R.string.dialer_opt_day_headers), prefs.dayHeaders, { prefs.dayHeaders = it }, Modifier.testTag("dialer:opt:days"))
@@ -154,17 +159,19 @@ internal fun NumberChooser(name: String, numbers: List<Pair<Int, String>>, onPic
     }
 }
 
-/** Which SIM places the call: one row per SIM. */
+/** The SIM for calls and the SIM for texts the phone uses when a contact has none of its own: "ask" or one of the two SIMs. Shown only with two SIMs. */
 @Composable
-internal fun SimChooser(sims: List<android.telecom.PhoneAccountHandle>, onPick: (android.telecom.PhoneAccountHandle) -> Unit, onDismiss: () -> Unit) {
+internal fun SimDefaults() {
     val context = LocalContext.current
-    DialogFrame(onCancel = onDismiss, title = stringResource(R.string.dialer_choose_sim)) {
-        sims.forEachIndexed { index, sim ->
-            MetroText(
-                DialerRole.simLabel(context, sim).ifBlank { "SIM ${index + 1}" }, size = 22.sp,
-                modifier = Modifier.fillMaxWidth().testTag("dialer:sim:$index").metroPress(onClick = { onPick(sim) }).padding(vertical = 10.dp),
-            )
-        }
+    val sims = remember { SimReader.read(context) }
+    if (sims.size < 2) return
+    val prefs = remember { SimPrefs(context) }
+    var call by remember { mutableStateOf(prefs.default(SimUse.Call)) }
+    var sms by remember { mutableStateOf(prefs.default(SimUse.Sms)) }
+    Column(Modifier.testTag("sim:defaults")) {
+        MetroText(stringResource(R.string.sim_default_title), size = 18.sp, color = LocalAccent.current, modifier = Modifier.padding(top = 8.dp))
+        SimSelector(stringResource(R.string.sim_default_call), sims, call, { call = it; prefs.setDefault(SimUse.Call, it) }, "sim:default:call")
+        SimSelector(stringResource(R.string.sim_default_sms), sims, sms, { sms = it; prefs.setDefault(SimUse.Sms, it) }, "sim:default:sms")
     }
 }
 
