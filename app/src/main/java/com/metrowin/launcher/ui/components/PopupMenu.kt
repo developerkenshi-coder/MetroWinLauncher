@@ -19,6 +19,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.ui.anim.Motion
+import com.metrowin.launcher.ui.anim.MotionTable
+import com.metrowin.launcher.ui.anim.Surface
+import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.anim.metroTween
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -33,7 +36,8 @@ import com.metrowin.launcher.ui.theme.panel
 fun MenuPanel(modifier: Modifier = Modifier, tag: String? = null, content: @Composable ColumnScope.() -> Unit) {
     val reduce = LocalReduceMotion.current
     val shown = remember { Animatable(if (reduce) 1f else 0f) }
-    LaunchedEffect(Unit) { if (!reduce) shown.animateTo(1f, metroTween(durationMillis = 160, easing = Motion.Decelerate)) }
+    val timing = MotionTable.timing(Surface.Menu, LocalStyle.current.kind, reduce)
+    LaunchedEffect(Unit) { if (!reduce) shown.animateTo(1f, metroTween(durationMillis = timing.inMs, easing = Motion.Decelerate)) }
     Column(
         modifier
             .then(if (tag != null) Modifier.testTag(tag) else Modifier)

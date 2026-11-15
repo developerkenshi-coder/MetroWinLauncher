@@ -52,6 +52,8 @@ import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.metroTween
 import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.anim.MotionTable
+import com.metrowin.launcher.ui.anim.Surface
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.theme.panel
@@ -75,16 +77,17 @@ fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, title: Stri
     val scope = rememberCoroutineScope()
     val classic = LocalStyle.current.isClassic
     val animated = !LocalReduceMotion.current
+    val timing = MotionTable.timing(Surface.Dialog, LocalStyle.current.kind, !animated)
     // 1 while the panel is turned away, 0 when it faces the screen.
     val away = remember { Animatable(if (animated) 1f else 0f) }
-    LaunchedEffect(Unit) { if (animated) away.animateTo(0f, metroTween(durationMillis = TURN_MS, easing = Motion.Decelerate)) }
+    LaunchedEffect(Unit) { if (animated) away.animateTo(0f, metroTween(durationMillis = timing.inMs, easing = Motion.Decelerate)) }
     var leaving by remember { mutableStateOf(false) }
     fun cancel() {
         if (leaving) return
         if (!animated) { currentCancel(); return }
         leaving = true
         scope.launch {
-            away.animateTo(1f, metroTween(durationMillis = TURN_OUT_MS, easing = Motion.Accelerate))
+            away.animateTo(1f, metroTween(durationMillis = timing.outMs, easing = Motion.Accelerate))
             currentCancel()
         }
     }
@@ -164,8 +167,6 @@ fun DialogButtons(
     }
 }
 
-private const val TURN_MS = 250
-private const val TURN_OUT_MS = 180
 private const val SWIVEL_DEGREES = 85f
 private const val POP_FROM = 0.08f
 private val MAX_WIDTH = 480.dp

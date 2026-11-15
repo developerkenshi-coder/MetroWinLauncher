@@ -14,6 +14,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import com.metrowin.launcher.ui.anim.Motion
+import com.metrowin.launcher.ui.anim.MotionTable
+import com.metrowin.launcher.ui.anim.Surface
+import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.anim.turnstile
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 
@@ -33,16 +36,16 @@ fun TurnstileHost(
 ) {
     var composed by remember { mutableStateOf(show) }
     val reduced = LocalReduceMotion.current
+    val timing = MotionTable.timing(Surface.Page, LocalStyle.current.kind, reduced)
     LaunchedEffect(show) {
         if (show) {
             composed = true
-            away.animateTo(0f, metroTween(durationMillis = if (reduced) REDUCED_MS else Motion.TURNSTILE_IN_MS, easing = Motion.TurnstileIn))
+            away.animateTo(0f, metroTween(durationMillis = timing.inMs, easing = Motion.TurnstileIn))
         } else {
-            away.animateTo(1f, metroTween(durationMillis = if (reduced) REDUCED_MS else Motion.TURNSTILE_OUT_MS, easing = Motion.TurnstileOut))
+            away.animateTo(1f, metroTween(durationMillis = timing.outMs, easing = Motion.TurnstileOut))
             composed = false
         }
     }
     if (composed) Box(modifier.graphicsLayer { turnstile(away.value, reduced) }) { content() }
 }
 
-private const val REDUCED_MS = 120
