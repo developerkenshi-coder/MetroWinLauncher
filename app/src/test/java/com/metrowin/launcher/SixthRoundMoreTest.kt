@@ -221,7 +221,7 @@ class SixthRoundMoreTest {
         assertEquals(setOf("com.example.hidden"), back.hiddenApps)
         assertEquals(3, back.startPages)
         assertFalse(SectionReset.changed(back, "StartBehaviour"))
-        assertTrue(SectionReset.changed(back, "Icons"))
+        assertTrue(SectionReset.changed(back, "StartTheme"))
     }
 
     // --- the new settings in the saved file

@@ -2,6 +2,7 @@ package com.metrowin.launcher.ui.settings
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -10,9 +11,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import com.metrowin.launcher.R
 
-/** Icon packs, and the theme file: how the launcher looks, to share. */
+/** Icon packs, and the theme file: how the launcher looks, to share (the second part of the Look page). */
 @Composable
-fun IconsPage(env: SettingsEnv) {
+fun ColumnScope.IconsSettings(env: SettingsEnv) {
     val export = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) env.onExportTheme(uri)
     }
@@ -21,48 +22,46 @@ fun IconsPage(env: SettingsEnv) {
     }
     val packs = env.iconPacks
     val context = LocalContext.current
-    SettingsPage {
-        IconLookSettings(env)
-        if (packs.isEmpty()) {
-            SettingHint(stringResource(R.string.icons_pack_none), androidx.compose.ui.Modifier.testTag("icons:none"))
-        } else {
-            val none = stringResource(R.string.icons_pack_default)
-            val names = listOf(none) + packs.map { it.label }
-            val chosen = packs.indexOfFirst { it.packageName == env.settings.iconPack } + 1
-            OptionList(
-                label = stringResource(R.string.icons_pack),
-                options = names,
-                selected = chosen,
-                onSelect = { i -> env.onChange { it.copy(iconPack = if (i == 0) "" else packs[i - 1].packageName) } },
-                hint = stringResource(R.string.icons_pack_hint),
-                tag = "icons:pack", id = "icons.pack",
-            )
-        }
-        ActionSetting(
-            text = stringResource(R.string.icons_pack_find),
-            onClick = {
-                // The store app first; a phone without it gets the web page of the store.
-                val store = Intent(Intent.ACTION_VIEW, "market://search?q=icon%20pack&c=apps".toUri())
-                val web = Intent(Intent.ACTION_VIEW, "https://play.google.com/store/search?q=icon%20pack&c=apps".toUri())
-                if (runCatching { context.startActivity(store.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isFailure) {
-                    runCatching { context.startActivity(web.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
-                }
-            },
-            hint = stringResource(R.string.icons_pack_find_hint),
-            tag = "icons:find", id = "icons.find",
-        )
-        SettingHeading(stringResource(R.string.theme_heading))
-        ActionSetting(
-            text = stringResource(R.string.theme_export),
-            onClick = { export.launch("metrowin-theme.json") },
-            hint = stringResource(R.string.theme_export_hint),
-            tag = "theme:export", id = "icons.export",
-        )
-        ActionSetting(
-            text = stringResource(R.string.theme_import),
-            onClick = { import.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
-            hint = stringResource(R.string.theme_import_hint),
-            tag = "theme:import", id = "icons.import",
+    IconLookSettings(env)
+    if (packs.isEmpty()) {
+        SettingHint(stringResource(R.string.icons_pack_none), androidx.compose.ui.Modifier.testTag("icons:none"))
+    } else {
+        val none = stringResource(R.string.icons_pack_default)
+        val names = listOf(none) + packs.map { it.label }
+        val chosen = packs.indexOfFirst { it.packageName == env.settings.iconPack } + 1
+        OptionList(
+            label = stringResource(R.string.icons_pack),
+            options = names,
+            selected = chosen,
+            onSelect = { i -> env.onChange { it.copy(iconPack = if (i == 0) "" else packs[i - 1].packageName) } },
+            hint = stringResource(R.string.icons_pack_hint),
+            tag = "icons:pack", id = "icons.pack",
         )
     }
+    ActionSetting(
+        text = stringResource(R.string.icons_pack_find),
+        onClick = {
+            // The store app first; a phone without it gets the web page of the store.
+            val store = Intent(Intent.ACTION_VIEW, "market://search?q=icon%20pack&c=apps".toUri())
+            val web = Intent(Intent.ACTION_VIEW, "https://play.google.com/store/search?q=icon%20pack&c=apps".toUri())
+            if (runCatching { context.startActivity(store.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isFailure) {
+                runCatching { context.startActivity(web.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            }
+        },
+        hint = stringResource(R.string.icons_pack_find_hint),
+        tag = "icons:find", id = "icons.find",
+    )
+    SettingHeading(stringResource(R.string.theme_heading))
+    ActionSetting(
+        text = stringResource(R.string.theme_export),
+        onClick = { export.launch("metrowin-theme.json") },
+        hint = stringResource(R.string.theme_export_hint),
+        tag = "theme:export", id = "icons.export",
+    )
+    ActionSetting(
+        text = stringResource(R.string.theme_import),
+        onClick = { import.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
+        hint = stringResource(R.string.theme_import_hint),
+        tag = "theme:import", id = "icons.import",
+    )
 }

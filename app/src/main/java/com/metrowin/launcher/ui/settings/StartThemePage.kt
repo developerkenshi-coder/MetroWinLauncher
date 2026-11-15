@@ -26,6 +26,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -56,206 +57,204 @@ import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.MetroAccents
 import java.util.Locale
 
-/** How Start and the rest look: the theme, light or dark, the accent colour and the photo behind Start. */
+/** How Start and the rest look: the theme, light or dark, the accent colour and the photo behind Start (the first part of the Look page). */
 @Composable
-fun StartThemePage(env: SettingsEnv) {
+fun ColumnScope.StartThemeSettings(env: SettingsEnv) {
     val settings = env.settings
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) env.onPickBackground(uri)
     }
-    SettingsPage {
-        Box(Modifier.settingAnchor("theme.style")) {
-            StylePicker(
-                selected = settings.themeStyle,
-                accent = MetroAccents[settings.accentIndex.coerceIn(MetroAccents.indices)],
-                dark = LocalMetroColors.current.dark,
-                onSelect = { style -> env.onChange { it.copy(themeStyle = style) } },
-            )
-        }
-        OptionList(
-            label = stringResource(R.string.theme_mode),
-            options = listOf(
-                stringResource(R.string.theme_dark),
-                stringResource(R.string.theme_light),
-                stringResource(R.string.theme_auto_system),
-                stringResource(R.string.theme_auto_hours),
-                stringResource(R.string.theme_auto_sun),
-            ),
-            selected = settings.themeMode.ordinal,
-            onSelect = { index -> env.onChange { it.copy(themeMode = ThemeMode.entries[index]) } },
-            tag = "theme:mode",
-            id = "theme.mode",
-        )
-        if (settings.themeMode == ThemeMode.Schedule || settings.themeMode == ThemeMode.Sun) {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                if (settings.themeMode == ThemeMode.Sun) SettingHint(stringResource(R.string.theme_sun_hint), Modifier.testTag("theme:sunhint"))
-                StepperSetting(
-                    label = stringResource(R.string.theme_dark_from),
-                    value = hourLabel(settings.darkFromHour),
-                    onDecrement = { env.onChange { it.copy(darkFromHour = (it.darkFromHour + 23) % 24) } },
-                    onIncrement = { env.onChange { it.copy(darkFromHour = (it.darkFromHour + 1) % 24) } },
-                    tag = "theme:from",
-                    id = "theme.from",
-                )
-                StepperSetting(
-                    label = stringResource(R.string.theme_dark_to),
-                    value = hourLabel(settings.darkToHour),
-                    onDecrement = { env.onChange { it.copy(darkToHour = (it.darkToHour + 23) % 24) } },
-                    onIncrement = { env.onChange { it.copy(darkToHour = (it.darkToHour + 1) % 24) } },
-                    tag = "theme:to",
-                    id = "theme.to",
-                )
-                SettingHint(stringResource(R.string.theme_hours_hint))
-            }
-        }
-        ToggleSetting(
-            label = stringResource(R.string.theme_system_wallpaper),
-            checked = settings.systemWallpaperFollows,
-            onChange = { value -> env.onChange { it.copy(systemWallpaperFollows = value) } },
-            hint = stringResource(R.string.theme_system_wallpaper_hint),
-            tag = "theme:syswallpaper",
-            id = "theme.syswallpaper",
-        )
-        ToggleSetting(
-            label = stringResource(R.string.theme_oled),
-            checked = settings.oledMode,
-            onChange = { value -> env.onChange { it.copy(oledMode = value) } },
-            hint = stringResource(R.string.theme_oled_hint),
-            tag = "theme:oled",
-            id = "theme.oled",
-        )
-        if (settings.themeStyle == ThemeStyle.Droid) {
-            ToggleSetting(
-                label = stringResource(R.string.style_dynamic),
-                checked = settings.dynamicColor,
-                onChange = { value -> env.onChange { it.copy(dynamicColor = value) } },
-                hint = stringResource(R.string.style_dynamic_hint),
-                tag = "theme:dynamic",
-                id = "theme.dynamic",
-            )
-        }
-        val automatic = settings.autoAccent && settings.hasStartBackground
-        Box(Modifier.settingAnchor("theme.accent")) {
-            AccentPicker(
-                settings = settings,
-                selectedPreset = if (automatic) env.autoAccentIndex ?: settings.accentIndex else settings.accentIndex,
-                muted = automatic || usesWallpaperColors(settings),
-                onPreset = { index -> env.onChange { it.copy(accentIndex = index, customAccent = 0, autoAccent = false) } },
-                onCustom = { argb -> env.onChange { it.copy(customAccent = argb, autoAccent = false) } },
-                onUsePreset = { env.onChange { it.copy(customAccent = 0) } },
-            )
-        }
-        ToggleSetting(
-            label = stringResource(R.string.theme_auto_accent),
-            checked = settings.autoAccent,
-            onChange = { value -> env.onChange { it.copy(autoAccent = value) } },
-            hint = stringResource(R.string.theme_auto_accent_hint),
-            enabled = settings.hasStartBackground,
-            tag = "theme:autoaccent",
-            id = "theme.autoaccent",
-        )
-        NightAccentSettings(env)
-        Column(Modifier.settingAnchor("theme.background")) {
-            SettingLabel(stringResource(R.string.theme_start_background))
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top) {
-                BackgroundPreview(env.startBackground)
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.weight(1f)) {
-                    MetroButton(stringResource(R.string.theme_choose_photo), Modifier.fillMaxWidth()) {
-                        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                    }
-                    if (settings.hasStartBackground) {
-                        MetroButton(stringResource(R.string.theme_remove_photo), Modifier.fillMaxWidth(), onClick = env.onClearBackground)
-                    }
-                    SettingHint(stringResource(R.string.theme_start_background_hint))
-                }
-            }
-        }
-        PageBackgroundsSettings(env)
-        if (settings.hasStartBackground) {
-            DropdownSetting(
-                label = stringResource(R.string.photo_fit),
-                options = PhotoFit.entries.map { stringResource(photoFitLabel(it)) },
-                selected = settings.startPhotoFit.ordinal,
-                onSelect = { index -> env.onChange { it.copy(startPhotoFit = PhotoFit.entries[index]) } },
-                tag = "theme:photofit",
-                id = "theme.photofit",
-            )
-        }
-        if (settings.hasStartBackground && settings.startPhotoFit == PhotoFit.Fill) {
-            Column(Modifier.settingAnchor("theme.framing"), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
-                SettingLabel(stringResource(R.string.photo_framing))
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    BackgroundPreview(env.startBackground, PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY), settings.startPhotoFit)
-                    Column(Modifier.weight(1f)) {
-                        FramingSlider(R.string.photo_zoom, PhotoFraming.fractionOfZoom(settings.startPhotoZoom), "theme:photozoom") { f ->
-                            env.onChange { it.copy(startPhotoZoom = PhotoFraming.zoomOf(f)) }
-                        }
-                        FramingSlider(R.string.photo_x, PhotoFraming.fractionOf(settings.startPhotoX), "theme:photox") { f ->
-                            env.onChange { it.copy(startPhotoX = PhotoFraming.percentOf(f)) }
-                        }
-                        FramingSlider(R.string.photo_y, PhotoFraming.fractionOf(settings.startPhotoY), "theme:photoy") { f ->
-                            env.onChange { it.copy(startPhotoY = PhotoFraming.percentOf(f)) }
-                        }
-                        MetroButton(stringResource(R.string.photo_reset), Modifier.fillMaxWidth().testTag("theme:photoreset")) {
-                            env.onChange { it.copy(startPhotoZoom = 100, startPhotoX = 50, startPhotoY = 50) }
-                        }
-                    }
-                }
-                SettingHint(stringResource(R.string.photo_framing_hint))
-            }
-        }
-        Column(Modifier.settingAnchor("theme.accentuse"), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
-            SettingLabel(stringResource(R.string.accent_use))
-            ToggleSetting(
-                label = stringResource(R.string.accent_use_start), checked = settings.accentStart,
-                onChange = { value -> env.onChange { it.copy(accentStart = value) } }, tag = "theme:accentstart",
-            )
-            ToggleSetting(
-                label = stringResource(R.string.accent_use_panel), checked = settings.accentPanel,
-                onChange = { value -> env.onChange { it.copy(accentPanel = value) } }, tag = "theme:accentpanel",
-            )
-            ToggleSetting(
-                label = stringResource(R.string.accent_use_apps), checked = settings.accentApps,
-                onChange = { value -> env.onChange { it.copy(accentApps = value) } }, tag = "theme:accentapps",
-            )
-            SettingHint(stringResource(R.string.accent_use_hint))
-        }
-        MiniAccentSetting(env)
-        ToggleSetting(
-            label = stringResource(R.string.theme_photo_inside),
-            checked = settings.startPhotoInside,
-            onChange = { value -> env.onChange { it.copy(startPhotoInside = value) } },
-            hint = stringResource(R.string.theme_photo_inside_hint),
-            enabled = settings.hasStartBackground,
-            tag = "theme:photoinside",
-            id = "theme.photoinside",
-        )
-        ToggleSetting(
-            label = stringResource(R.string.theme_parallax),
-            checked = settings.parallax,
-            onChange = { value -> env.onChange { it.copy(parallax = value) } },
-            enabled = settings.hasStartBackground,
-            tag = "theme:parallax",
-            id = "theme.parallax",
-        )
-        val opacities = listOf(100, 80, 60, 40)
-        DropdownSetting(
-            label = stringResource(R.string.theme_tile_opacity),
-            options = opacities.map { stringResource(if (it == 100) R.string.theme_tile_opaque else R.string.theme_tile_see_through, it) },
-            selected = opacities.indexOf(opacities.minBy { kotlin.math.abs(it - settings.tileOpacity) }),
-            onSelect = { i -> env.onChange { it.copy(tileOpacity = opacities[i]) } },
-            tag = "theme:tileopacity",
-            id = "theme.tileopacity",
-        )
-        ToggleSetting(
-            label = stringResource(R.string.theme_panorama),
-            checked = settings.panoramaTitles,
-            onChange = { value -> env.onChange { it.copy(panoramaTitles = value) } },
-            hint = stringResource(R.string.theme_panorama_hint),
-            tag = "theme:panorama",
-            id = "theme.panorama",
+    Box(Modifier.settingAnchor("theme.style")) {
+        StylePicker(
+            selected = settings.themeStyle,
+            accent = MetroAccents[settings.accentIndex.coerceIn(MetroAccents.indices)],
+            dark = LocalMetroColors.current.dark,
+            onSelect = { style -> env.onChange { it.copy(themeStyle = style) } },
         )
     }
+    OptionList(
+        label = stringResource(R.string.theme_mode),
+        options = listOf(
+            stringResource(R.string.theme_dark),
+            stringResource(R.string.theme_light),
+            stringResource(R.string.theme_auto_system),
+            stringResource(R.string.theme_auto_hours),
+            stringResource(R.string.theme_auto_sun),
+        ),
+        selected = settings.themeMode.ordinal,
+        onSelect = { index -> env.onChange { it.copy(themeMode = ThemeMode.entries[index]) } },
+        tag = "theme:mode",
+        id = "theme.mode",
+    )
+    if (settings.themeMode == ThemeMode.Schedule || settings.themeMode == ThemeMode.Sun) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            if (settings.themeMode == ThemeMode.Sun) SettingHint(stringResource(R.string.theme_sun_hint), Modifier.testTag("theme:sunhint"))
+            StepperSetting(
+                label = stringResource(R.string.theme_dark_from),
+                value = hourLabel(settings.darkFromHour),
+                onDecrement = { env.onChange { it.copy(darkFromHour = (it.darkFromHour + 23) % 24) } },
+                onIncrement = { env.onChange { it.copy(darkFromHour = (it.darkFromHour + 1) % 24) } },
+                tag = "theme:from",
+                id = "theme.from",
+            )
+            StepperSetting(
+                label = stringResource(R.string.theme_dark_to),
+                value = hourLabel(settings.darkToHour),
+                onDecrement = { env.onChange { it.copy(darkToHour = (it.darkToHour + 23) % 24) } },
+                onIncrement = { env.onChange { it.copy(darkToHour = (it.darkToHour + 1) % 24) } },
+                tag = "theme:to",
+                id = "theme.to",
+            )
+            SettingHint(stringResource(R.string.theme_hours_hint))
+        }
+    }
+    ToggleSetting(
+        label = stringResource(R.string.theme_system_wallpaper),
+        checked = settings.systemWallpaperFollows,
+        onChange = { value -> env.onChange { it.copy(systemWallpaperFollows = value) } },
+        hint = stringResource(R.string.theme_system_wallpaper_hint),
+        tag = "theme:syswallpaper",
+        id = "theme.syswallpaper",
+    )
+    ToggleSetting(
+        label = stringResource(R.string.theme_oled),
+        checked = settings.oledMode,
+        onChange = { value -> env.onChange { it.copy(oledMode = value) } },
+        hint = stringResource(R.string.theme_oled_hint),
+        tag = "theme:oled",
+        id = "theme.oled",
+    )
+    if (settings.themeStyle == ThemeStyle.Droid) {
+        ToggleSetting(
+            label = stringResource(R.string.style_dynamic),
+            checked = settings.dynamicColor,
+            onChange = { value -> env.onChange { it.copy(dynamicColor = value) } },
+            hint = stringResource(R.string.style_dynamic_hint),
+            tag = "theme:dynamic",
+            id = "theme.dynamic",
+        )
+    }
+    val automatic = settings.autoAccent && settings.hasStartBackground
+    Box(Modifier.settingAnchor("theme.accent")) {
+        AccentPicker(
+            settings = settings,
+            selectedPreset = if (automatic) env.autoAccentIndex ?: settings.accentIndex else settings.accentIndex,
+            muted = automatic || usesWallpaperColors(settings),
+            onPreset = { index -> env.onChange { it.copy(accentIndex = index, customAccent = 0, autoAccent = false) } },
+            onCustom = { argb -> env.onChange { it.copy(customAccent = argb, autoAccent = false) } },
+            onUsePreset = { env.onChange { it.copy(customAccent = 0) } },
+        )
+    }
+    ToggleSetting(
+        label = stringResource(R.string.theme_auto_accent),
+        checked = settings.autoAccent,
+        onChange = { value -> env.onChange { it.copy(autoAccent = value) } },
+        hint = stringResource(R.string.theme_auto_accent_hint),
+        enabled = settings.hasStartBackground,
+        tag = "theme:autoaccent",
+        id = "theme.autoaccent",
+    )
+    NightAccentSettings(env)
+    Column(Modifier.settingAnchor("theme.background")) {
+        SettingLabel(stringResource(R.string.theme_start_background))
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top) {
+            BackgroundPreview(env.startBackground)
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.weight(1f)) {
+                MetroButton(stringResource(R.string.theme_choose_photo), Modifier.fillMaxWidth()) {
+                    picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }
+                if (settings.hasStartBackground) {
+                    MetroButton(stringResource(R.string.theme_remove_photo), Modifier.fillMaxWidth(), onClick = env.onClearBackground)
+                }
+                SettingHint(stringResource(R.string.theme_start_background_hint))
+            }
+        }
+    }
+    PageBackgroundsSettings(env)
+    if (settings.hasStartBackground) {
+        DropdownSetting(
+            label = stringResource(R.string.photo_fit),
+            options = PhotoFit.entries.map { stringResource(photoFitLabel(it)) },
+            selected = settings.startPhotoFit.ordinal,
+            onSelect = { index -> env.onChange { it.copy(startPhotoFit = PhotoFit.entries[index]) } },
+            tag = "theme:photofit",
+            id = "theme.photofit",
+        )
+    }
+    if (settings.hasStartBackground && settings.startPhotoFit == PhotoFit.Fill) {
+        Column(Modifier.settingAnchor("theme.framing"), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
+            SettingLabel(stringResource(R.string.photo_framing))
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                BackgroundPreview(env.startBackground, PhotoFrame(settings.startPhotoZoom, settings.startPhotoX, settings.startPhotoY), settings.startPhotoFit)
+                Column(Modifier.weight(1f)) {
+                    FramingSlider(R.string.photo_zoom, PhotoFraming.fractionOfZoom(settings.startPhotoZoom), "theme:photozoom") { f ->
+                        env.onChange { it.copy(startPhotoZoom = PhotoFraming.zoomOf(f)) }
+                    }
+                    FramingSlider(R.string.photo_x, PhotoFraming.fractionOf(settings.startPhotoX), "theme:photox") { f ->
+                        env.onChange { it.copy(startPhotoX = PhotoFraming.percentOf(f)) }
+                    }
+                    FramingSlider(R.string.photo_y, PhotoFraming.fractionOf(settings.startPhotoY), "theme:photoy") { f ->
+                        env.onChange { it.copy(startPhotoY = PhotoFraming.percentOf(f)) }
+                    }
+                    MetroButton(stringResource(R.string.photo_reset), Modifier.fillMaxWidth().testTag("theme:photoreset")) {
+                        env.onChange { it.copy(startPhotoZoom = 100, startPhotoX = 50, startPhotoY = 50) }
+                    }
+                }
+            }
+            SettingHint(stringResource(R.string.photo_framing_hint))
+        }
+    }
+    Column(Modifier.settingAnchor("theme.accentuse"), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
+        SettingLabel(stringResource(R.string.accent_use))
+        ToggleSetting(
+            label = stringResource(R.string.accent_use_start), checked = settings.accentStart,
+            onChange = { value -> env.onChange { it.copy(accentStart = value) } }, tag = "theme:accentstart",
+        )
+        ToggleSetting(
+            label = stringResource(R.string.accent_use_panel), checked = settings.accentPanel,
+            onChange = { value -> env.onChange { it.copy(accentPanel = value) } }, tag = "theme:accentpanel",
+        )
+        ToggleSetting(
+            label = stringResource(R.string.accent_use_apps), checked = settings.accentApps,
+            onChange = { value -> env.onChange { it.copy(accentApps = value) } }, tag = "theme:accentapps",
+        )
+        SettingHint(stringResource(R.string.accent_use_hint))
+    }
+    MiniAccentSetting(env)
+    ToggleSetting(
+        label = stringResource(R.string.theme_photo_inside),
+        checked = settings.startPhotoInside,
+        onChange = { value -> env.onChange { it.copy(startPhotoInside = value) } },
+        hint = stringResource(R.string.theme_photo_inside_hint),
+        enabled = settings.hasStartBackground,
+        tag = "theme:photoinside",
+        id = "theme.photoinside",
+    )
+    ToggleSetting(
+        label = stringResource(R.string.theme_parallax),
+        checked = settings.parallax,
+        onChange = { value -> env.onChange { it.copy(parallax = value) } },
+        enabled = settings.hasStartBackground,
+        tag = "theme:parallax",
+        id = "theme.parallax",
+    )
+    val opacities = listOf(100, 80, 60, 40)
+    DropdownSetting(
+        label = stringResource(R.string.theme_tile_opacity),
+        options = opacities.map { stringResource(if (it == 100) R.string.theme_tile_opaque else R.string.theme_tile_see_through, it) },
+        selected = opacities.indexOf(opacities.minBy { kotlin.math.abs(it - settings.tileOpacity) }),
+        onSelect = { i -> env.onChange { it.copy(tileOpacity = opacities[i]) } },
+        tag = "theme:tileopacity",
+        id = "theme.tileopacity",
+    )
+    ToggleSetting(
+        label = stringResource(R.string.theme_panorama),
+        checked = settings.panoramaTitles,
+        onChange = { value -> env.onChange { it.copy(panoramaTitles = value) } },
+        hint = stringResource(R.string.theme_panorama_hint),
+        tag = "theme:panorama",
+        id = "theme.panorama",
+    )
 }
 
 @StringRes

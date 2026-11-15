@@ -40,11 +40,10 @@ enum class SettingsSection(
     @param:StringRes val words: Int,
 ) {
     // look: what you see
-    StartTheme(SettingsGroup.Look, R.string.settings_start_theme, R.string.sec_start_theme_desc, R.string.kw_start_theme),
+    StartTheme(SettingsGroup.Look, R.string.sec_look, R.string.sec_look_desc, R.string.kw_look),
     Start(SettingsGroup.Look, R.string.sec_start, R.string.sec_start_desc, R.string.kw_start),
     StartBars(SettingsGroup.Look, R.string.sec_bars, R.string.sec_bars_desc, R.string.kw_start_bars),
     StatusBar(SettingsGroup.Look, R.string.sec_statusbar, R.string.sec_statusbar_desc, R.string.kw_status_bar),
-    Icons(SettingsGroup.Look, R.string.sec_icons, R.string.sec_icons_desc, R.string.kw_icons),
     Accessibility(SettingsGroup.Look, R.string.sec_access, R.string.sec_access_desc, R.string.kw_access),
     Lock(SettingsGroup.Look, R.string.sec_lock, R.string.sec_lock_desc, R.string.kw_lock),
 

@@ -41,7 +41,6 @@
     <string name="stock_xbox">Spielehub</string>
 
     <!-- start+theme (the launcher's own settings) -->
-    <string name="settings_start_theme">Start+Design</string>
     <string name="theme_dark">Dunkel</string>
     <string name="theme_light">Hell</string>
     <string name="theme_accent">Akzentfarbe</string>
@@ -115,7 +114,6 @@
 
     <!-- settings: structure -->
     <string name="settings_group_tools">Werkzeuge</string>
-    <string name="sec_start_theme_desc">Hell oder dunkel, Design, Akzentfarbe, das Foto hinter Start</string>
     <string name="sec_kids_desc">Das Handy mit einem Kind teilen, nur mit den Apps deiner Wahl</string>
     <string name="theme_mode">Hell oder dunkel</string>
     <string name="theme_auto_system">Wie Android</string>
@@ -493,8 +491,6 @@
     <string name="screen_high_refresh_hint">Fordert vom Bildschirm den schnellsten Modus (120 Hz und mehr) bei der aktuellen Auflösung an, aber nur während der Nutzung: Drei Sekunden nach der letzten Berührung werden 60 Hz angefordert, die niedrigste Rate, die noch flüssig aussieht. Schalte die Option aus, damit immer Android entscheidet.</string>
 
     <!-- icons and themes -->
-    <string name="sec_icons">Symbole &amp; Designs</string>
-    <string name="sec_icons_desc">Symbolpakete und Designdateien zum Teilen</string>
     <string name="icons_pack">Symbolpaket</string>
     <string name="icons_pack_default">Die Symbole der Apps</string>
     <string name="icons_pack_none">Kein Symbolpaket installiert. Pakete aus dem Play Store für Nova, ADW, Apex, Smart, Go Launcher und ähnliche funktionieren hier.</string>
@@ -2304,11 +2300,13 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="a11y_sb_dnd">Nicht stören</string>
     <string name="a11y_sb_saver">Energiesparmodus</string>
     <string name="a11y_alpha_scroller">Nach Buchstaben scrollen, jetzt bei %1$s</string>
-    <string name="kw_start_theme">Farben, Design, dunkel, hell, Hintergrund, Akzent, Hintergrundbild</string>
+    <string name="kw_look">Farben, Design, dunkel, hell, Hintergrund, Akzent, Hintergrundbild, Symbole, Form, Symbolpaket, Designdatei</string>
+    <string name="sec_look">aussehen</string>
+    <string name="sec_look_desc">Design, hell oder dunkel, Akzentfarbe, das Foto hinter Start, Icon-Pakete und Design-Dateien</string>
+    <string name="look_icons_heading">Icons und Design-Dateien</string>
     <string name="kw_start">Kacheln, Spalten, Seiten, Anordnung</string>
     <string name="kw_start_bars">Uhr, Datum, Leiste, Tasten</string>
     <string name="kw_status_bar">Statusleiste, Signal, Akku, WLAN, Uhrzeit</string>
-    <string name="kw_icons">Symbole, Form, Symbolpaket, Designdatei</string>
     <string name="kw_access">Bedienungshilfen, Schriftgröße, Schriftart, Kontrast, Animationen, Screenreader</string>
     <string name="kw_lock">Sperrbildschirm, Hintergrundbild, Fingerabdruck, Bildschirmschoner</string>
     <string name="kw_screen">Drehung, Ausrichtung, Sprache, Bildwiederholrate, Ränder</string>

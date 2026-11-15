@@ -17,7 +17,6 @@ import com.metrowin.launcher.ui.settings.SettingsSection.OtherProjects
 import com.metrowin.launcher.ui.settings.SettingsSection.StartBars
 import com.metrowin.launcher.ui.settings.SettingsSection.StatusBar
 import com.metrowin.launcher.ui.settings.SettingsSection.StartBehaviour
-import com.metrowin.launcher.ui.settings.SettingsSection.Icons
 import com.metrowin.launcher.ui.settings.SettingsSection.Kids
 import com.metrowin.launcher.ui.settings.SettingsSection.LiveTiles
 import com.metrowin.launcher.ui.settings.SettingsSection.MiniApps
@@ -133,18 +132,18 @@ object SettingsIndex {
         e("start.actionbar", StartBars, R.string.action_bar_title, "retro", "super", "app bar", "application bar", "buttons", "ellipsis", "barra", "barra delle azioni", "azioni", "pulsanti"),
 
         // --- icons & themes
-        e("icons.shape", Icons, R.string.icons_shape, "shape", "round", "circle", "square", "squircle", "forma", "rotonde", "cerchio", "quadrate"),
-        e("icons.tilecolors", Icons, R.string.icons_tile_colors, "colour", "color", "tile", "icon", "colore", "riquadro", "icona", "dominante"),
+        e("icons.shape", StartTheme, R.string.icons_shape, "shape", "round", "circle", "square", "squircle", "forma", "rotonde", "cerchio", "quadrate"),
+        e("icons.tilecolors", StartTheme, R.string.icons_tile_colors, "colour", "color", "tile", "icon", "colore", "riquadro", "icona", "dominante"),
         e("gest.gameapps", Gestures, R.string.gest_game_apps, "game", "games", "add", "list", "not recognised", "gioco", "giochi", "aggiungi", "elenco", "non riconosciuto"),
         e("gest.gamebars", Gestures, R.string.gest_game_bars, "game", "games", "bars", "hide", "status bar", "navigation", "gioco", "giochi", "barre", "nascondi", "barra di stato", "navigazione"),
         e("gest.navspacing", Gestures, R.string.gest_navbar_spacing, "navigation", "bar", "spacing", "distance", "buttons", "barra", "distanza", "tasti", "spaziatura"),
         e("gest.navbarhold", Gestures, R.string.gest_navbar_hold, "navigation", "bar", "hold", "recent", "long", "barra", "tieni", "recenti", "lunga"),
-        e("icons.glass", Icons, R.string.icons_glass, "glass", "transparent", "see-through", "icon", "tile", "vetro", "trasparente", "icona", "riquadro"),
-        e("icons.largetiles", Icons, R.string.icons_large_tiles, "large", "big", "tile", "icon", "full", "grandi", "grande", "riquadro", "icona", "riempie"),
-        e("icons.find", Icons, R.string.icons_pack_find, "play store", "download", "icon pack", "install", "scarica", "cerca", "icone"),
-        e("icons.pack", Icons, R.string.icons_pack, "icons", "icon pack", "nova", "adw", "apex", "go launcher", "icone"),
-        e("icons.export", Icons, R.string.theme_export, "theme file", "share", "save", "file tema", "condividi", "salva"),
-        e("icons.import", Icons, R.string.theme_import, "theme file", "load", "open", "file tema", "carica", "apri"),
+        e("icons.glass", StartTheme, R.string.icons_glass, "glass", "transparent", "see-through", "icon", "tile", "vetro", "trasparente", "icona", "riquadro"),
+        e("icons.largetiles", StartTheme, R.string.icons_large_tiles, "large", "big", "tile", "icon", "full", "grandi", "grande", "riquadro", "icona", "riempie"),
+        e("icons.find", StartTheme, R.string.icons_pack_find, "play store", "download", "icon pack", "install", "scarica", "cerca", "icone"),
+        e("icons.pack", StartTheme, R.string.icons_pack, "icons", "icon pack", "nova", "adw", "apex", "go launcher", "icone"),
+        e("icons.export", StartTheme, R.string.theme_export, "theme file", "share", "save", "file tema", "condividi", "salva"),
+        e("icons.import", StartTheme, R.string.theme_import, "theme file", "load", "open", "file tema", "carica", "apri"),
 
         // --- accessibility: how it reads and moves
         e("access.textsize", Accessibility, R.string.text_size, "font size", "bigger", "larger", "smaller", "text", "dimensione", "testo", "grande", "piccolo", "scala"),

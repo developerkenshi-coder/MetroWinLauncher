@@ -259,7 +259,6 @@ abstract class TextFitBase(private val scale: Float, private val style: ThemeSty
     @Test fun settingsScreenPage() = fit("settings_screen", overlaps = false) { SettingsPage(SettingsSection.Screen) }
     @Test fun settingsBattery() = fit("settings_battery", overlaps = false) { SettingsPage(SettingsSection.Battery) }
     @Test fun settingsAccessibility() = fit("settings_accessibility", overlaps = false) { SettingsPage(SettingsSection.Accessibility) }
-    @Test fun settingsIcons() = fit("settings_icons", overlaps = false) { SettingsPage(SettingsSection.Icons) }
     @Test fun settingsGestures() = fit("settings_gestures", overlaps = false) { SettingsPage(SettingsSection.Gestures) }
     @Test fun settingsActions() = fit("settings_actions", overlaps = false) { SettingsPage(SettingsSection.Actions) }
     @Test fun settingsLiveTiles() = fit("settings_live_tiles", overlaps = false) { SettingsPage(SettingsSection.LiveTiles) }

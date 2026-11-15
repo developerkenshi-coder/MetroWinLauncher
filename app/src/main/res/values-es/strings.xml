@@ -41,7 +41,6 @@
     <string name="stock_xbox">Centro de juegos</string>
 
     <!-- start+tema (los ajustes propios del launcher) -->
-    <string name="settings_start_theme">start+tema</string>
     <string name="theme_dark">oscuro</string>
     <string name="theme_light">claro</string>
     <string name="theme_accent">color de acento</string>
@@ -115,7 +114,6 @@
 
     <!-- ajustes: estructura -->
     <string name="settings_group_tools">herramientas</string>
-    <string name="sec_start_theme_desc">Claro u oscuro, tema, color de acento, la foto detrás de Start</string>
     <string name="sec_kids_desc">Comparte el teléfono con un niño, solo con las apps que elijas</string>
     <string name="theme_mode">claro u oscuro</string>
     <string name="theme_auto_system">como Android</string>
@@ -493,8 +491,6 @@
     <string name="screen_high_refresh_hint">Pide a la pantalla su modo más rápido (120 Hz o más) a la resolución actual, pero solo mientras la usas: tres segundos después del último toque pide 60 Hz, la frecuencia más baja que aún se ve fluida. Desactívalo para que Android decida siempre.</string>
 
     <!-- iconos y temas -->
-    <string name="sec_icons">iconos &amp; temas</string>
-    <string name="sec_icons_desc">Paquetes de iconos y archivos de tema que puedes compartir</string>
     <string name="icons_pack">paquete de iconos</string>
     <string name="icons_pack_default">los iconos de las apps</string>
     <string name="icons_pack_none">No hay ningún paquete de iconos instalado. Aquí funcionan los paquetes de Play Store hechos para Nova, ADW, Apex, Smart, Go Launcher y similares.</string>
@@ -2321,11 +2317,13 @@ en primer plano %3$s · en segundo plano %4$s
     <string name="a11y_sb_dnd">No molestar</string>
     <string name="a11y_sb_saver">Ahorro de batería</string>
     <string name="a11y_alpha_scroller">Desplazar por letra, ahora en %1$s</string>
-    <string name="kw_start_theme">colores, tema, oscuro, claro, fondo, acento, fondo de pantalla</string>
+    <string name="kw_look">colores, tema, oscuro, claro, fondo, acento, fondo de pantalla, iconos, forma, paquete de iconos, archivo de tema</string>
+    <string name="sec_look">aspecto</string>
+    <string name="sec_look_desc">Tema, claro u oscuro, color de acento, la foto detrás de Start, paquetes de iconos y archivos de tema</string>
+    <string name="look_icons_heading">iconos y archivos de tema</string>
     <string name="kw_start">mosaicos, columnas, páginas, disposición</string>
     <string name="kw_start_bars">reloj, fecha, barra, botones</string>
     <string name="kw_status_bar">barra de estado, señal, batería, wifi, hora</string>
-    <string name="kw_icons">iconos, forma, paquete de iconos, archivo de tema</string>
     <string name="kw_access">accesibilidad, tamaño del texto, fuente, contraste, animaciones, lector de pantalla</string>
     <string name="kw_lock">pantalla de bloqueo, fondo, huella, protector de pantalla</string>
     <string name="kw_screen">rotación, orientación, idioma, frecuencia, márgenes</string>

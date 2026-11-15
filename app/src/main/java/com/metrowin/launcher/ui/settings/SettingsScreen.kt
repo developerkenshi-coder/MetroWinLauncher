@@ -277,7 +277,7 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, fromTop: Flo
             // The page can be put back to the start when the section allows it (see SectionReset).
             CompositionLocalProvider(LocalPageReset provides PageReset(section.name, env.settings) { env.onChange { SectionReset.reset(it, section.name) } }) {
             when (section) {
-                SettingsSection.StartTheme -> StartThemePage(env)
+                SettingsSection.StartTheme -> AppearancePage(env)
                 SettingsSection.Start -> StartPage(env)
                 SettingsSection.StartBars -> StartBarsPage(env)
                 SettingsSection.StatusBar -> StatusBarPage(env)
@@ -292,7 +292,6 @@ private fun SectionPage(section: SettingsSection, env: SettingsEnv, fromTop: Flo
                 SettingsSection.Screen -> ScreenPage(env)
                 SettingsSection.Battery -> BatteryPage(env)
                 SettingsSection.Accessibility -> AccessibilityPage(env)
-                SettingsSection.Icons -> IconsPage(env)
                 SettingsSection.Lock -> LockScreenPage(env)
                 SettingsSection.Voice -> VoicePage(env)
                 SettingsSection.Profiles -> ProfilesPage(env)

@@ -57,7 +57,7 @@ class SettingsIndexTest : ScreenshotBase() {
     @Test
     fun everyIdSaysWhichSectionItIsIn() {
         val prefixes = mapOf(
-            SettingsSection.StartTheme to "theme", SettingsSection.Start to "start", SettingsSection.Icons to "icons",
+            SettingsSection.StartTheme to "theme", SettingsSection.Start to "start",
             SettingsSection.Accessibility to "access", SettingsSection.Lock to "lock", SettingsSection.Screen to "screen",
             SettingsSection.Gestures to "gest", SettingsSection.Actions to "ac", SettingsSection.Voice to "voice",
             SettingsSection.Battery to "battery", SettingsSection.Apps to "apps", SettingsSection.Search to "search",
@@ -69,7 +69,8 @@ class SettingsIndexTest : ScreenshotBase() {
             val prefix = entry.id.substringBefore('.')
             val expected = prefixes.getValue(entry.section)
             // The sync switches live on the backup page and say so by their name.
-            val ok = prefix == expected || (entry.section == SettingsSection.Backup && prefix == "sync")
+            // The Look page holds the icons and the theme files too.
+            val ok = prefix == expected || (entry.section == SettingsSection.Backup && prefix == "sync") || (entry.section == SettingsSection.StartTheme && prefix == "icons")
             assertTrue("${entry.id} is in ${entry.section}", ok)
         }
     }
@@ -174,7 +175,6 @@ class SettingsIndexTest : ScreenshotBase() {
     @Test fun theStatusBarPageIsTheIndex() = assertPageHasExactly(SettingsSection.StatusBar, anchorsOf(SettingsSection.StatusBar))
     @Test fun theStartBehaviourPageIsTheIndex() = assertPageHasExactly(SettingsSection.StartBehaviour, anchorsOf(SettingsSection.StartBehaviour))
     @Test fun theNotificationsPageIsTheIndex() = assertPageHasExactly(SettingsSection.Notifications, anchorsOf(SettingsSection.Notifications))
-    @Test fun theIconsPageIsTheIndex() = assertPageHasExactly(SettingsSection.Icons, anchorsOf(SettingsSection.Icons))
     @Test fun theAccessibilityPageIsTheIndex() = assertPageHasExactly(SettingsSection.Accessibility, anchorsOf(SettingsSection.Accessibility))
     @Test fun theLockPageIsTheIndex() = assertPageHasExactly(SettingsSection.Lock, anchorsOf(SettingsSection.Lock))
     @Test fun theScreenPageIsTheIndex() = assertPageHasExactly(SettingsSection.Screen, anchorsOf(SettingsSection.Screen))

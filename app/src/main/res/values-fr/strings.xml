@@ -41,7 +41,6 @@
     <string name="stock_xbox">Hub de jeux</string>
 
     <!-- start+thème (les paramètres propres au launcher) -->
-    <string name="settings_start_theme">start+thème</string>
     <string name="theme_dark">sombre</string>
     <string name="theme_light">clair</string>
     <string name="theme_accent">couleur d’accentuation</string>
@@ -115,7 +114,6 @@
 
     <!-- paramètres : structure -->
     <string name="settings_group_tools">outils</string>
-    <string name="sec_start_theme_desc">Clair ou sombre, thème, couleur d’accentuation, la photo derrière Start</string>
     <string name="sec_kids_desc">Partager le téléphone avec un enfant, avec seulement les applications choisies</string>
     <string name="theme_mode">clair ou sombre</string>
     <string name="theme_auto_system">comme Android</string>
@@ -493,8 +491,6 @@
     <string name="screen_high_refresh_hint">Demande à l’écran son mode le plus rapide (120 Hz et plus) à la résolution actuelle, mais seulement pendant l’utilisation : trois secondes après le dernier toucher, il demande 60 Hz, la fréquence la plus basse qui reste fluide. Désactivez pour laisser Android décider en permanence.</string>
 
     <!-- icônes et thèmes -->
-    <string name="sec_icons">icônes et thèmes</string>
-    <string name="sec_icons_desc">Packs d’icônes et fichiers de thème à partager</string>
     <string name="icons_pack">pack d’icônes</string>
     <string name="icons_pack_default">les icônes des applications</string>
     <string name="icons_pack_none">Aucun pack d’icônes n’est installé. Les packs du Play Store conçus pour Nova, ADW, Apex, Smart, Go Launcher et similaires fonctionnent ici.</string>
@@ -2321,11 +2317,13 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="a11y_sb_dnd">Ne pas déranger</string>
     <string name="a11y_sb_saver">Économiseur de batterie</string>
     <string name="a11y_alpha_scroller">Défiler par lettre, actuellement %1$s</string>
-    <string name="kw_start_theme">couleurs, thème, sombre, clair, fond, accent, fond d’écran</string>
+    <string name="kw_look">couleurs, thème, sombre, clair, fond, accent, fond d’écran, icônes, forme, pack d’icônes, fichier de thème</string>
+    <string name="sec_look">apparence</string>
+    <string name="sec_look_desc">Thème, clair ou sombre, couleur d’accent, la photo derrière Start, packs d’icônes et fichiers de thème</string>
+    <string name="look_icons_heading">icônes et fichiers de thème</string>
     <string name="kw_start">tuiles, colonnes, pages, disposition</string>
     <string name="kw_start_bars">horloge, date, barre, boutons</string>
     <string name="kw_status_bar">barre d’état, signal, batterie, wifi, heure</string>
-    <string name="kw_icons">icônes, forme, pack d’icônes, fichier de thème</string>
     <string name="kw_access">accessibilité, taille du texte, police, contraste, animations, lecteur d’écran</string>
     <string name="kw_lock">écran de verrouillage, fond d’écran, empreinte, économiseur d’écran</string>
     <string name="kw_screen">rotation, orientation, langue, fréquence, marges</string>

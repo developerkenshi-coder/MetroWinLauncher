@@ -13,7 +13,7 @@ object SectionReset {
         "StartTheme" to setOf(
             "accentApps", "accentIndex", "accentNightIndex", "accentPanel", "accentStart", "autoAccent", "customAccent", "miniAccents", "darkFromHour", "darkToHour",
             "dynamicColor", "oledMode", "pageBackgrounds", "panoramaTitles", "parallax", "tileOpacity", "startPhotoFit", "startPhotoInside", "startPhotoX", "startPhotoY", "startPhotoZoom",
-            "systemWallpaperFollows", "themeMode", "themeStyle",
+            "systemWallpaperFollows", "themeMode", "themeStyle", "iconPack", "iconShape", "iconTileColors", "largeTileIcons", "glassIcons",
         ),
         "Start" to setOf(
             "batteryEstimate", "calendarAgenda", "favoritePage", "collectionTiles", "groupTitles", "largeTiles", "freeLayout", "layoutSchedule", "moreTiles", "appsHint", "showTileNames", "tileColumns",
@@ -50,7 +50,6 @@ object SectionReset {
         "Screen" to setOf("highRefreshRate", "launchAnimation", "orientation", "pagePadding"),
         "Battery" to setOf("batterySaving"),
         "Accessibility" to setOf("appFont", "boldText", "fontRevision", "highContrast", "reduceMotion", "systemFont", "textScale"),
-        "Icons" to setOf("iconPack", "iconShape", "iconTileColors", "largeTileIcons", "glassIcons"),
         "Lock" to setOf("lockShowAlarm", "lockShowBattery", "lockShowEvent", "lockShowNotifications", "lockIconsOneRow", "lockShowWeather", "lockSensorUnderScreen", "lockSensorY", "lockSensorOwnIcon"),
         "Voice" to setOf("assistantIcon", "voiceButton", "voiceCallDirect", "voiceOffline"),
     )
