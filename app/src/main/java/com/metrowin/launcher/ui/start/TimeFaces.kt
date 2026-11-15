@@ -1,8 +1,14 @@
 package com.metrowin.launcher.ui.start
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.runtime.rememberUpdatedState
+import com.metrowin.launcher.ui.components.shrinkToHeight
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -106,29 +112,46 @@ internal fun WorldClockFace(item: AppItem, size: TileSize, width: Dp, height: Dp
             delay(60_000L - now.toEpochMilli() % 60_000L + 50L)
         }
     }
-    val zoneId = remember(zone) { runCatching { java.time.ZoneId.of(zone) }.getOrNull() }
-    if (zoneId == null) {
-        StaticFace(item, size, width, height)
-        return
-    }
+    // A zone that cannot be read (a backup from elsewhere) is the zone of the phone: the face still tells the time.
+    val zoneId = remember(zone) { runCatching { java.time.ZoneId.of(zone) }.getOrNull() ?: java.time.ZoneId.systemDefault() }
     val there = WorldCities.timeIn(zoneId, now, java.time.ZoneId.systemDefault())
     val locale = Locale.getDefault()
     val is24 = LocalTileFeatures.current.clockHours.is24(android.text.format.DateFormat.is24HourFormat(context))
+    // On a wide or large tile the time sits on the left and the day and the date on the right, so that neither half is empty.
+    val sideBySide = size == TileSize.Wide || size == TileSize.Large
     Box(Modifier.fillMaxSize()) {
-        val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.26f else 0.3f).toSp() }
-        Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-            val meridiem = ClockFormat.meridiem(there.time, is24, locale)
+        val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.26f else if (sideBySide) 0.38f else 0.3f).toSp() }
+        val meridiem = ClockFormat.meridiem(there.time, is24, locale)
+        val timeRow: @Composable () -> Unit = {
             Row(verticalAlignment = Alignment.Bottom) {
                 MetroText(ClockFormat.time(there.time, is24, locale), size = digits, maxLines = 1, modifier = Modifier.weight(1f, fill = false).testTag("worldclock:time"))
                 // "AM" and "PM" are small, next to the digits: the time never wraps or gets cut on a narrow tile.
                 if (meridiem.isNotEmpty()) MetroText(meridiem, size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.padding(start = 3.dp, bottom = 6.dp))
             }
-            if (size != TileSize.Small) {
-                MetroText(item.label, size = 18.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("worldclock:city"))
-                when (there.dayOffset) {
-                    1 -> MetroText(stringResource(R.string.live_tomorrow), size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("worldclock:day"))
-                    -1 -> MetroText(stringResource(R.string.worldclock_yesterday), size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("worldclock:day"))
+        }
+        val details: @Composable () -> Unit = {
+            val ahead = remember(zoneId, now) { ((zoneId.rules.getOffset(now).totalSeconds - java.time.ZoneId.systemDefault().rules.getOffset(now).totalSeconds) / 60) }
+            MetroText(
+                if (ahead == 0) item.label else item.label + " · " + hoursAhead(ahead),
+                size = 18.sp, weight = FontWeight.Normal, maxLines = 1, modifier = Modifier.testTag("worldclock:city"),
+            )
+            when (there.dayOffset) {
+                1 -> MetroText(stringResource(R.string.live_tomorrow), size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("worldclock:day"))
+                -1 -> MetroText(stringResource(R.string.worldclock_yesterday), size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("worldclock:day"))
+            }
+        }
+        if (sideBySide) {
+            Row(Modifier.align(Alignment.Center).padding(horizontal = FACE_MARGIN), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(22.dp)) {
+                timeRow()
+                Column {
+                    MetroText(java.time.LocalDate.ofInstant(now, zoneId).dayOfWeek.getDisplayName(TextStyle.FULL, locale), size = 22.sp, maxLines = 1, modifier = Modifier.testTag("worldclock:weekday"))
+                    details()
                 }
+            }
+        } else {
+            Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+                timeRow()
+                if (size != TileSize.Small) details()
             }
         }
         if (size == TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
@@ -218,7 +241,8 @@ internal fun AlarmFace(item: AppItem, size: TileSize, width: Dp, height: Dp, tri
     }
     val context = androidx.compose.ui.platform.LocalContext.current
     val locale = Locale.getDefault()
-    val is24 = android.text.format.DateFormat.is24HourFormat(context)
+    // The hours are written as the clock of Start says (the same as on the time face).
+    val is24 = LocalTileFeatures.current.clockHours.is24(android.text.format.DateFormat.is24HourFormat(context))
     Box(Modifier.fillMaxSize()) {
         val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.26f else 0.3f).toSp() }
         Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -246,9 +270,20 @@ internal fun AlarmFace(item: AppItem, size: TileSize, width: Dp, height: Dp, tri
 
 
 @Composable
-internal fun CalendarFace(item: AppItem, size: TileSize, width: Dp, height: Dp, event: LiveEvent?, events: List<LiveEvent>, seed: Int) {
+internal fun CalendarFace(
+    item: AppItem, size: TileSize, width: Dp, height: Dp, event: LiveEvent?, events: List<LiveEvent>, seed: Int,
+    /** Inside an info tile: which event this turn shows (no turn of its own, no day number: the time face has the date). */
+    sub: Int? = null,
+    hideTitle: Boolean = false,
+    actions: Boolean = false,
+) {
     val today = rememberToday()
     val features = LocalTileFeatures.current
+    if (sub != null) {
+        val shown = events.getOrNull(sub) ?: event
+        if (shown == null) StaticFace(item, size, width, height) else EventFace(item, size, shown, today, hideTitle, actions)
+        return
+    }
     if (features.calendarAgenda && size == TileSize.Large) {
         LargeCalendar(item, events, today)
         return
@@ -275,19 +310,87 @@ internal fun CalendarFace(item: AppItem, size: TileSize, width: Dp, height: Dp, 
                 AgendaList(events.take(3), today, Modifier.align(Alignment.TopStart).padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN, bottom = NAME_ROOM))
                 TileLabel(item.label, Modifier.align(Alignment.BottomStart))
             } else {
-                Column(Modifier.align(Alignment.TopStart).padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN)) {
-                    MetroText(describeWhen(event, today), size = 14.sp, weight = FontWeight.Normal)
-                    MetroText(
-                        event.title,
-                        size = 22.sp,
-                        maxLines = 3,
-                        lineHeight = 26.sp,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
-                }
-                TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+                EventFace(item, size, event, today, hideTitle = false, actions = false)
             }
         }
+    }
+}
+
+/** The minute that is now, kept right while the launcher is on screen. */
+@Composable
+internal fun rememberNowMinute(): Long {
+    var now by remember { mutableStateOf(System.currentTimeMillis()) }
+    LaunchedWhileStarted(Unit) {
+        while (true) {
+            now = System.currentTimeMillis()
+            delay(60_000L - now % 60_000L + 50L)
+        }
+    }
+    return now
+}
+
+/** When an event is, in the words that are quickest to read: "in 25 min" within the hour, "now, until 15:30" while it goes on, else the day and the hour. */
+@Composable
+internal fun eventWhen(event: LiveEvent, today: LocalDate, now: Long): String {
+    if (event.isOn(now) && event.endMillis > 0L) {
+        val end = Instant.ofEpochMilli(event.endMillis).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
+        return stringResource(R.string.infot_event_now, end)
+    }
+    val minutes = ((event.startMillis - now + 59_999L) / 60_000L).toInt()
+    if (!event.allDay && minutes in 1..59) return pluralStringResource(R.plurals.infot_in_minutes, minutes, minutes)
+    return describeWhen(event, today)
+}
+
+/** The event a tile says: when it is, its title (as much as the tile holds), and, if it has them, the buttons to join the meeting and to go there. */
+@Composable
+internal fun EventFace(item: AppItem, size: TileSize, event: LiveEvent, today: LocalDate, hideTitle: Boolean, actions: Boolean) {
+    val now = rememberNowMinute()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    Box(Modifier.fillMaxSize()) {
+        // The text shrinks to the room that is left over the name of the tile: a long title is made smaller, it never runs over the name.
+        Column(Modifier.fillMaxSize().padding(bottom = if (size == TileSize.Small) 0.dp else NAME_ROOM)) {
+            Column(Modifier.shrinkToHeight(0.7f).padding(start = FACE_MARGIN, top = FACE_MARGIN, end = FACE_MARGIN)) {
+                MetroText(eventWhen(event, today, now), size = 14.sp, weight = FontWeight.Normal, modifier = Modifier.testTag("event:when"))
+                MetroText(
+                    if (hideTitle) stringResource(R.string.infot_event_hidden) else event.title,
+                    size = 22.sp, maxLines = 3, lineHeight = 26.sp, modifier = Modifier.padding(top = 4.dp).testTag("event:title"),
+                )
+            }
+        }
+        if (size != TileSize.Small) {
+            TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+            val link = event.link
+            val place = event.location.takeIf { it.isNotBlank() && !hideTitle }
+            if (actions && (link != null || place != null)) {
+                Row(Modifier.align(Alignment.BottomEnd).padding(end = FACE_MARGIN, bottom = FACE_MARGIN), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    if (link != null) EventChip(stringResource(R.string.infot_join), "event:join") { openAddress(context, link) }
+                    if (place != null) EventChip(stringResource(R.string.infot_go), "event:go") { openAddress(context, "geo:0,0?q=" + android.net.Uri.encode(place)) }
+                }
+            }
+        }
+    }
+}
+
+/** A small button on a face: its own touch, so that it does not open the app. */
+@Composable
+internal fun EventChip(text: String, tag: String, onClick: () -> Unit) {
+    val ink = LocalMetroColors.current.tileContent
+    val feedback by rememberUpdatedState(com.metrowin.launcher.ui.anim.LocalTapFeedback.current)
+    Box(
+        Modifier
+            .heightIn(min = 32.dp)
+            .testTag(tag)
+            .border(2.dp, ink.copy(alpha = 0.8f))
+            .pointerInput(onClick) { detectTapGestures { feedback(); onClick() } }
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center,
+    ) { MetroText(text, size = 14.sp, weight = FontWeight.Normal, maxLines = 1) }
+}
+
+/** Opens an address (a web page or a place) in the app that takes it; nothing happens when there is none. */
+internal fun openAddress(context: android.content.Context, address: String) {
+    runCatching {
+        context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(address)).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 }
 
@@ -317,4 +420,11 @@ internal fun describeWhen(event: LiveEvent, today: LocalDate): String {
     }
     if (event.allDay) return day
     return "$day ${start.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))}"
+}
+
+/** "+6 h" or "-5:30 h": how far a place is from the phone, in hours. */
+internal fun hoursAhead(minutes: Int): String {
+    val sign = if (minutes < 0) "-" else "+"
+    val abs = kotlin.math.abs(minutes)
+    return sign + (abs / 60) + (if (abs % 60 != 0) ":" + "%02d".format(abs % 60) else "") + " h"
 }

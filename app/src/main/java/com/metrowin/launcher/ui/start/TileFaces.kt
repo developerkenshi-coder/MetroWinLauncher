@@ -230,7 +230,7 @@ private fun NoteFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
 
 /** The things still to do: the count on a small tile, the first ones (as many as fit) on the others; nothing to do, the plain tile. */
 @Composable
-private fun TodoFace(item: AppItem, size: TileSize, width: Dp, height: Dp, todo: LiveTodo?) {
+internal fun TodoFace(item: AppItem, size: TileSize, width: Dp, height: Dp, todo: LiveTodo?) {
     if (todo == null || todo.open == 0) {
         StaticFace(item, size, width, height)
         return
@@ -423,7 +423,7 @@ private fun IconicFace(item: AppItem, size: TileSize, width: Dp, height: Dp, cou
  */
 @Composable
 @Suppress("DEPRECATION") // updateAppWidgetSize(Bundle, ...) is the form that works on every version we support
-private fun WidgetFace(
+internal fun WidgetFace(
     item: AppItem, size: TileSize, width: Dp, height: Dp, appWidgetId: Int, interactive: Boolean, onLongClick: () -> Unit,
 ) {
     val host = LocalWidgetHost.current

@@ -3,6 +3,7 @@ package com.metrowin.launcher.data
 import androidx.annotation.StringRes
 import com.metrowin.launcher.R
 import com.metrowin.launcher.model.AppItem
+import com.metrowin.launcher.model.InfoPart
 import com.metrowin.launcher.model.LiveKind
 import com.metrowin.launcher.model.StartEntry
 import com.metrowin.launcher.model.TileData
@@ -45,6 +46,8 @@ object PowerPolicy {
             LiveKind.People, LiveKind.Group -> 30 * MINUTE
             LiveKind.Storage -> 10 * MINUTE
             LiveKind.Birthdays -> 12 * HOUR
+            // The photos of this day change once a day.
+            LiveKind.Memories -> 6 * HOUR
             else -> 2 * MINUTE
         }
         return if (saving) minOf(base * 6, 24 * HOUR) else base
@@ -91,6 +94,21 @@ object LiveSources {
     /** The tiles that read from the Internet: nothing is asked for while none of them is on Start. */
     private val feeds = setOf(LiveKind.News, LiveKind.Finance)
 
+    /** What the info tiles on Start ask for, apart from the rest: each different choice of photos, memories and calendars is read once. */
+    fun infoNeeds(pages: List<List<StartEntry>>, items: List<AppItem>): InfoNeeds {
+        val pinned = StartPages.pinnedIds(pages)
+        val configs = items.filter { it.id in pinned }.mapNotNull { (it.data as? TileData.Info)?.config }
+        if (configs.isEmpty()) return InfoNeeds()
+        val every = configs.map { it to it.everyPart() }
+        return InfoNeeds(
+            photos = every.filter { InfoPart.Photos in it.second }.mapTo(HashSet()) { (c, _) -> PhotoSpec(c.album, c.favorites, c.noShots, c.excluded.toSet(), c.picked) },
+            memories = every.filter { InfoPart.Memories in it.second }.mapTo(HashSet()) { (c, _) -> MemorySpec(c.album, c.noShots, c.excluded.toSet(), c.memoryDays) },
+            calendars = every.filter { it.first.calendars.isNotEmpty() }.mapTo(HashSet()) { it.first.calendars.toSet() },
+            week = every.any { InfoPart.Week in it.second },
+            day = every.any { InfoPart.Day in it.second },
+        )
+    }
+
     /** The kinds of live tile among the apps pinned to Start (inside folders too) that need to read data from the phone. */
     fun wanted(pages: List<List<StartEntry>>, items: List<AppItem>): Set<LiveKind> {
         val pinned = StartPages.pinnedIds(pages)
@@ -103,8 +121,7 @@ object LiveSources {
     /** The ids of the photo albums that have a tile on Start. */
     fun albumIds(pages: List<List<StartEntry>>, items: List<AppItem>): Set<String> {
         val pinned = StartPages.pinnedIds(pages)
-        // The albums of the info tiles count too.
-        return items.filter { it.id in pinned }.mapNotNullTo(HashSet()) { (it.data as? TileData.Album)?.bucket ?: (it.data as? TileData.Info)?.config?.album?.takeIf { id -> id.isNotEmpty() } }
+        return items.filter { it.id in pinned }.mapNotNullTo(HashSet()) { (it.data as? TileData.Album)?.bucket }
     }
 
     /** The ids of the groups of contacts that have a tile on Start. */
@@ -116,7 +133,15 @@ object LiveSources {
     /** The kinds of live tile among the apps pinned to Start that read headlines or quotes from the Internet. */
     fun feedsWanted(pages: List<List<StartEntry>>, items: List<AppItem>): Set<LiveKind> {
         val pinned = StartPages.pinnedIds(pages)
-        return items.filter { it.id in pinned }.mapNotNullTo(HashSet()) { it.live?.takeIf { kind -> kind in feeds } }
+        return items.filter { it.id in pinned }.flatMapTo(HashSet()) { item ->
+            // An info tile with the headlines or the quotes among its faces reads them too.
+            val info = (item.data as? TileData.Info)?.config?.everyPart().orEmpty()
+            listOfNotNull(
+                item.live?.takeIf { kind -> kind in feeds },
+                LiveKind.News.takeIf { InfoPart.News in info },
+                LiveKind.Finance.takeIf { InfoPart.Finance in info },
+            )
+        }
     }
 
     val all: Set<LiveKind> get() = sources

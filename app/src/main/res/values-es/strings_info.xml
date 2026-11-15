@@ -3,26 +3,12 @@
     <string name="add_info">InfoTile: hora, calendario, fotos y más</string>
     <string name="info_default_label">InfoTile</string>
     <string name="info_title">InfoTile</string>
-    <string name="info_time">La hora</string>
-    <string name="info_calendar">Los próximos eventos del calendario</string>
-    <string name="info_alarm">La próxima alarma</string>
-    <string name="info_weather">El tiempo</string>
-    <string name="info_battery">La batería</string>
-    <string name="info_photos">Las últimas fotos</string>
-    <string name="info_memories">Las fotos de este día en años anteriores</string>
-    <string name="info_smart_title">Inteligente</string>
-    <string name="info_smart">Primero lo que importa ahora: un evento o alarma en la próxima hora se queda solo, de noche solo la hora</string>
-    <string name="info_saver">Solo la hora cuando el teléfono ahorra batería</string>
-    <string name="info_pace">Velocidad de cambio</string>
     <string name="info_pace_slow">Lenta</string>
     <string name="info_pace_normal">Normal</string>
     <string name="info_pace_fast">Rápida</string>
-    <string name="info_zone">Zona horaria: %1$s</string>
     <string name="info_zone_phone">del teléfono</string>
-    <string name="info_zone_reset">Usar la zona del teléfono</string>
     <string name="info_album">Fotos de: %1$s</string>
     <string name="info_album_latest">las últimas del teléfono</string>
     <string name="info_album_reset">Usar las últimas fotos del teléfono</string>
-    <string name="info_note">Con más de una cara activa, el mosaico pasa de una a otra; siempre queda una. Un toque abre aquello de lo que trata la cara mostrada. Esta elección se reabre desde el modo de edición del mosaico.</string>
     <string name="info_done">Hecho</string>
 </resources>

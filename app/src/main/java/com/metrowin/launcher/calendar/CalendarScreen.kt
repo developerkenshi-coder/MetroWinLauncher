@@ -76,7 +76,7 @@ private val DaySaver = Saver<LocalDate, Long>(save = { it.toEpochDay() }, restor
 private val MonthSaver = Saver<YearMonth, String>(save = { it.toString() }, restore = { YearMonth.parse(it) })
 
 @Composable
-fun CalendarScreen() {
+fun CalendarScreen(initialDay: LocalDate? = null) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val repository = remember { CalendarRepository(context) }
@@ -88,7 +88,7 @@ fun CalendarScreen() {
     var zone by remember { mutableStateOf(ZoneId.systemDefault()) }
     var is24 by remember { mutableStateOf(DateFormat.is24HourFormat(context)) }
     var today by remember { mutableStateOf(LocalDate.now()) }
-    var selected by rememberSaveable(stateSaver = DaySaver) { mutableStateOf(LocalDate.now()) }
+    var selected by rememberSaveable(stateSaver = DaySaver) { mutableStateOf(initialDay ?: LocalDate.now()) }
     var month by rememberSaveable(stateSaver = MonthSaver) { mutableStateOf(YearMonth.now()) }
     var version by remember { mutableIntStateOf(0) }
     var editing by remember { mutableStateOf<CalEvent?>(null) }

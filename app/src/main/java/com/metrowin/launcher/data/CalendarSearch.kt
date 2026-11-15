@@ -43,23 +43,39 @@ class CalendarSearch(private val context: Context) {
     /** Blocking, call it off the main thread. The next event that has not ended, within [windowMillis]; null without the permission. */
     fun next(now: Long = System.currentTimeMillis(), windowMillis: Long = WEEK_MILLIS): LiveEvent? = upcoming(now, windowMillis, 1).firstOrNull()
 
-    /** Blocking. Up to [limit] events that have not ended, the nearest first, within [windowMillis]; none without the permission. */
-    fun upcoming(now: Long = System.currentTimeMillis(), windowMillis: Long = WEEK_MILLIS, limit: Int = UPCOMING): List<LiveEvent> {
+    /**
+     * Blocking. Up to [limit] events that have not ended, the nearest first, within [windowMillis]; none without the permission. [calendars]
+     * are the ids of the calendars to read (empty: all of them).
+     */
+    fun upcoming(now: Long = System.currentTimeMillis(), windowMillis: Long = WEEK_MILLIS, limit: Int = UPCOMING, calendars: Collection<Long> = emptyList()): List<LiveEvent> =
+        between(now, now + windowMillis, limit, calendars, now)
+
+    /** Blocking. The events that have not ended and begin before [to], from [from], the nearest first; the days a longer one covers are not counted again. */
+    fun between(from: Long, to: Long, limit: Int, calendars: Collection<Long> = emptyList(), now: Long = from): List<LiveEvent> {
         if (!LivePermissions.isGranted(context, LivePermissions.calendar)) return emptyList()
         return runCatching {
             val uri = CalendarContract.Instances.CONTENT_URI.buildUpon().also {
-                ContentUris.appendId(it, now)
-                ContentUris.appendId(it, now + windowMillis)
+                ContentUris.appendId(it, from)
+                ContentUris.appendId(it, to)
             }.build()
             val found = ArrayList<LiveEvent>(limit)
+            val selection = if (calendars.isEmpty()) null else "${CalendarContract.Instances.CALENDAR_ID} IN (${calendars.joinToString(",") { it.toString() }})"
             context.contentResolver.query(
                 uri,
-                arrayOf(CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN, CalendarContract.Instances.END, CalendarContract.Instances.ALL_DAY),
-                null, null, "${CalendarContract.Instances.BEGIN} ASC",
+                arrayOf(
+                    CalendarContract.Instances.TITLE, CalendarContract.Instances.BEGIN, CalendarContract.Instances.END, CalendarContract.Instances.ALL_DAY,
+                    CalendarContract.Instances.EVENT_ID, CalendarContract.Instances.EVENT_LOCATION, CalendarContract.Instances.DESCRIPTION, CalendarContract.Instances.CALENDAR_ID,
+                ),
+                selection, null, "${CalendarContract.Instances.BEGIN} ASC",
             )?.use { cursor ->
                 while (found.size < limit && cursor.moveToNext()) {
                     if (cursor.getLong(2) <= now) continue
-                    found += LiveEvent(cursor.getString(0).orEmpty(), cursor.getLong(1), cursor.getInt(3) == 1)
+                    val location = cursor.getString(5).orEmpty()
+                    found += LiveEvent(
+                        cursor.getString(0).orEmpty(), cursor.getLong(1), cursor.getInt(3) == 1,
+                        endMillis = cursor.getLong(2), id = cursor.getLong(4), location = location.take(MAX_TEXT),
+                        link = MeetingLinks.find(location + " " + cursor.getString(6).orEmpty().take(MAX_TEXT * 4)), calendarId = cursor.getLong(7),
+                    )
                 }
             }
             found
@@ -71,10 +87,22 @@ class CalendarSearch(private val context: Context) {
         const val LIMIT = 5
         const val UPCOMING = 4
         private const val MIN_QUERY = 2
+        private const val MAX_TEXT = 200
         private const val DAY_MILLIS = 24 * 60 * 60 * 1000L
         private const val WINDOW_MILLIS = 183 * DAY_MILLIS
 
         /** The page of an event in the calendar app. */
         fun uri(eventId: Long): String = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId).toString()
+    }
+}
+
+/** The address of an online meeting in the place or the notes of an event (Meet, Zoom, Teams and the like), or null when there is none. Pure. */
+object MeetingLinks {
+    private val address = Regex("""https://[^\s<>"')\]]+""", RegexOption.IGNORE_CASE)
+    private val hosts = listOf("meet.google.com", "zoom.us", "teams.microsoft.com", "teams.live.com", "webex.com", "whereby.com", "jit.si", "gotomeeting.com", "skype.com", "discord.gg", "meet.jit.si")
+
+    fun find(text: String): String? = address.findAll(text).map { it.value.trimEnd('.', ',', ';') }.firstOrNull { link ->
+        val host = link.substringAfter("://").substringBefore('/').lowercase()
+        hosts.any { host == it || host.endsWith(".$it") }
     }
 }

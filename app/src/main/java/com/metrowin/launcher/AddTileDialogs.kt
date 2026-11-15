@@ -23,7 +23,16 @@ import com.metrowin.launcher.ui.start.AddMenu
 import com.metrowin.launcher.data.Countdown
 import com.metrowin.launcher.ui.start.CountdownDialog
 import com.metrowin.launcher.ui.start.ChecklistDialog
-import com.metrowin.launcher.ui.start.InfoTileDialog
+import com.metrowin.launcher.ui.start.InfoEditor
+import com.metrowin.launcher.ui.start.InfoEditorEnv
+import com.metrowin.launcher.ui.start.InfoPage
+import com.metrowin.launcher.calendar.CalendarRepository
+import com.metrowin.launcher.notes.NoteStore
+import com.metrowin.launcher.data.TileFeed
+import com.metrowin.launcher.data.UsageAccess
+import com.metrowin.launcher.data.LiveTileData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.metrowin.launcher.model.InfoConfig
 import com.metrowin.launcher.ui.start.CityPicker
 import com.metrowin.launcher.ui.start.AlbumPicker
@@ -57,8 +66,14 @@ internal class AddTileState {
     var checklistEditingId by mutableStateOf<String?>(null)
     var infoEditingId by mutableStateOf<String?>(null)
 
-    /** The picker open over the choice of an info tile: "zone" or "album". */
-    var infoPick by mutableStateOf<String?>(null)
+    /** The page of the info tile editor that is open, null for its home. */
+    var infoPage by mutableStateOf<InfoPage?>(null)
+
+    /** The info tile was just put on Start: the editor first offers a model. */
+    var infoNew by mutableStateOf(false)
+
+    /** The info tile that is waiting for the widget being chosen. */
+    var infoWidgetFor by mutableStateOf<String?>(null)
     var countdownNew by mutableStateOf(false)
     var countdownEditingId by mutableStateOf<String?>(null)
 
@@ -71,6 +86,7 @@ internal class AddTileState {
 internal fun AddTileState.Dialogs(
     vm: LauncherViewModel,
     items: List<AppItem>,
+    live: LiveTileData,
     panels: PanelState,
     onPickContact: () -> Unit,
     onPickNumber: () -> Unit,
@@ -123,6 +139,8 @@ internal fun AddTileState.Dialogs(
                 },
                 onInfo = {
                     addMenuOpen = false
+                    infoPage = null
+                    infoNew = true
                     infoEditingId = vm.addInfo(addPage)
                 },
                 onMoon = {
@@ -364,31 +382,35 @@ internal fun AddTileState.Dialogs(
             val info = items.firstOrNull { it.id == id }
             if (info != null) {
                 val config = (info.data as? TileData.Info)?.config ?: InfoConfig()
-                InfoTileDialog(
-                    initial = config,
-                    onChange = { next -> vm.saveInfo(id, next) },
-                    onZone = { infoPick = "zone" },
-                    onAlbum = { infoPick = "album" },
-                    onClose = { infoEditingId = null },
-                )
-                when (infoPick) {
-                    "zone" -> CityPicker(
-                        onPick = { city -> infoPick = null; vm.saveInfo(id, config.copy(zone = city.zone)) },
-                        onDismiss = { infoPick = null },
+                val env = remember(vm, id) {
+                    InfoEditorEnv(
+                        albums = { vm.albums() },
+                        calendars = { withContext(Dispatchers.IO) { CalendarRepository(appContext).calendars() } },
+                        notes = {
+                            withContext(Dispatchers.IO) {
+                                NoteStore(appContext).load().filter { !it.locked && it.deleted == 0L }
+                                    .map { note -> note.id to note.title.ifBlank { note.text.lineSequence().firstOrNull { it.isNotBlank() }.orEmpty() }.ifBlank { "…" } }
+                            }
+                        },
+                        publishers = {
+                            val manager = appContext.packageManager
+                            TileFeed.tiles.value.keys.map { pkg -> pkg to (runCatching { manager.getApplicationLabel(manager.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)) }
+                        },
+                        followedCities = { vm.settings.value.weatherCities },
+                        searchPlaces = vm::searchPlaces,
+                        followPlace = vm::followPlace,
+                        pickWidget = { infoWidgetFor = id; widgetPickerOpen = true },
+                        openUsageAccess = { UsageAccess.openSettings(appContext) },
+                        refresh = { vm.refreshLive(force = true); vm.refreshExtras(force = true) },
+                        usageAllowed = { UsageAccess.granted(appContext) },
                     )
-                    "album" -> {
-                        var granted by remember { mutableStateOf(LivePermissions.canReadPhotos(appContext)) }
-                        val photosPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-                            granted = LivePermissions.canReadPhotos(appContext)
-                        }
-                        val albums by produceState<List<AlbumInfo>?>(null, granted) { value = if (granted) vm.albums() else emptyList() }
-                        AlbumPicker(
-                            albums = albums, permissionMissing = !granted, onAllow = { photosPermission.launch(LivePermissions.photos) },
-                            onPick = { album -> infoPick = null; vm.saveInfo(id, config.copy(album = album.id, albumName = album.name)) },
-                            onDismiss = { infoPick = null },
-                        )
-                    }
                 }
+                InfoEditor(
+                    item = info, initial = config, live = live, page = infoPage, onPage = { infoPage = it }, env = env,
+                    onChange = { next -> vm.saveInfo(id, next) },
+                    onClose = { infoEditingId = null; infoPage = null; infoNew = false },
+                    isNew = infoNew,
+                )
             }
         }
 

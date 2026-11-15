@@ -96,6 +96,11 @@ import com.metrowin.launcher.data.VpnApp
 import com.metrowin.launcher.data.InfoTileState
 import com.metrowin.launcher.model.Glyph
 import com.metrowin.launcher.ui.start.openInfoPart
+import com.metrowin.launcher.ui.start.InfoActions
+import com.metrowin.launcher.ui.start.InfoSpeech
+import com.metrowin.launcher.ui.start.LocalInfoActions
+import com.metrowin.launcher.ui.start.LocalTimers
+import com.metrowin.launcher.model.InfoConfig
 import com.metrowin.launcher.data.GestureAction
 import com.metrowin.launcher.ui.start.FolderChoice
 import com.metrowin.launcher.ui.start.FolderChooser
@@ -349,7 +354,11 @@ fun LauncherApp(vm: LauncherViewModel) {
     val reminders by vm.reminders.collectAsStateWithLifecycle()
     val battery by vm.battery.collectAsStateWithLifecycle()
     val nowPlaying by vm.nowPlaying.collectAsStateWithLifecycle()
-    val liveNow = remember(live, torchOn, weather, battery, nowPlaying) { live.copy(torchOn = torchOn, weather = weather, battery = battery, nowPlaying = nowPlaying) }
+    val cityWeather by vm.cityWeather.collectAsStateWithLifecycle()
+    val infoContext by vm.infoContext.collectAsStateWithLifecycle()
+    val liveNow = remember(live, torchOn, weather, battery, nowPlaying, cityWeather, infoContext, settings.weatherCity) {
+        live.copy(torchOn = torchOn, weather = weather, battery = battery, nowPlaying = nowPlaying, cityWeather = cityWeather.mapKeys { it.key }, context = infoContext, place = settings.weatherCity)
+    }
     val appContext = LocalContext.current
     val screenWidthDp = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp().value }
     val screenHeightDp = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp().value }
@@ -622,7 +631,7 @@ fun LauncherApp(vm: LauncherViewModel) {
             adding.albumPickerOpen -> InstantBack { adding.albumPickerOpen = false }
             adding.groupPickerOpen -> InstantBack { adding.groupPickerOpen = false }
             panels.isOpen -> TurnstileBack(panelAway, scope) { panels.close() }
-            adding.widgetPickerOpen -> InstantBack { adding.widgetPickerOpen = false }
+            adding.widgetPickerOpen -> InstantBack { adding.widgetPickerOpen = false; adding.infoWidgetFor = null }
             adding.siteDialogOpen -> InstantBack { adding.siteDialogOpen = false }
             adding.noteEditingId != null -> InstantBack { adding.noteEditingId = null }
             adding.countdownEditingId != null || adding.countdownNew -> InstantBack {
@@ -633,7 +642,8 @@ fun LauncherApp(vm: LauncherViewModel) {
             adding.cityPickerOpen -> InstantBack { adding.cityPickerOpen = false }
             adding.counterEditingId != null -> InstantBack { adding.counterEditingId = null }
             adding.checklistEditingId != null -> InstantBack { adding.checklistEditingId = null }
-            adding.infoEditingId != null -> InstantBack { adding.infoEditingId = null }
+            adding.infoEditingId != null && adding.infoPage != null -> InstantBack { adding.infoPage = null }
+            adding.infoEditingId != null -> InstantBack { adding.infoEditingId = null; adding.infoNew = false }
             colorPickFor != null -> InstantBack { colorPickFor = null }
             adding.addMenuOpen -> InstantBack { adding.addMenuOpen = false }
             naming.renamingFolderId != null -> InstantBack { naming.renamingFolderId = null }
@@ -685,6 +695,13 @@ fun LauncherApp(vm: LauncherViewModel) {
     val widgets = vm.widgets
 
     fun finishWidget(id: Int, provider: WidgetProvider) {
+        // A widget asked for by an info tile goes into that tile, not onto Start by itself.
+        adding.infoWidgetFor?.let { infoId ->
+            vm.setInfoWidget(infoId, id)
+            adding.infoWidgetFor = null
+            pendingWidget = null
+            return
+        }
         // The smallest tile the widget fits whole in, with the real size of the tiles of this phone and this setting.
         val sides = TileGrid.sidesFor(settings.pagePadding, startWidthDp)
         val columns = TileGrid.columnsFor(startWidthDp, settings.moreTiles, sides, settings.tileColumns, screenHeightDp)
@@ -696,6 +713,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     fun abandonWidget() {
         pendingWidget?.let { (id, _) -> widgets.delete(id) }
         pendingWidget = null
+        adding.infoWidgetFor = null
     }
 
     /** The widget is allowed: if it needs setting up, its own screen comes first. */
@@ -796,9 +814,15 @@ fun LauncherApp(vm: LauncherViewModel) {
                 adding.checklistEditingId = item.id
                 return
             }
-            // An info tile opens what its face on show is about; the weather has no page of its own, so its touch opens the choice of the tile.
+            // An info tile opens what its face on show is about (the forecast for the weather, the photo itself for a photo); before it has said a face, its choice opens.
             AppRepository.ROUTE_INFO -> {
-                if (!openInfoPart(context, InfoTileState.current(item.id))) adding.infoEditingId = item.id
+                val config = (item.data as? TileData.Info)?.config ?: InfoConfig()
+                val part = InfoTileState.current(item.id)
+                val opened = openInfoPart(context, part, config, InfoTileState.target(item.id), openWeather = { weatherOpen = true })
+                if (!opened) {
+                    if (part == null) adding.infoEditingId = item.id
+                    else android.widget.Toast.makeText(context, R.string.infot_no_app, android.widget.Toast.LENGTH_SHORT).show()
+                }
                 return
             }
             AppRepository.ROUTE_NONE -> return
@@ -1339,7 +1363,16 @@ fun LauncherApp(vm: LauncherViewModel) {
     val ownBar = if (settings.metroStatusBar) metroStatusBarHeight() else 0.dp
     // The tiles that flip and cycle by themselves stand still while the apps list or Settings is in front: every flip keeps the frame clock running.
     val tilesHidden by remember(appsPage) { derivedStateOf { pagerState.settledPage == appsPage || settingsOpen } }
+    val timerStates = remember(items) { items.mapNotNull { (it.data as? TileData.Timer)?.state } }
+    val infoActions = remember(vm, appContext) {
+        InfoActions(
+            toggle = { vm.activateQuickAction(it) }, isOn = { vm.quickActionState(it) },
+            openWeather = { weatherOpen = true }, speak = { InfoSpeech.speak(appContext, it) },
+        )
+    }
     CompositionLocalProvider(
+        LocalTimers provides timerStates,
+        LocalInfoActions provides infoActions,
         LocalMetroStatusBar provides ownBar,
         LocalIconLoader provides vm.icons, LocalIconShape provides settings.iconShape.asShape(), LocalWidgetHost provides vm.widgets, LocalPowerSaving provides (powerSaving || tilesHidden),
         LocalTapFeedback provides tapFeedback,
@@ -2128,7 +2161,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 }
 
                 adding.Dialogs(
-                    vm = vm, items = items, panels = panels,
+                    vm = vm, items = items, live = liveNow, panels = panels,
                     onPickContact = { pickContact.launch(null) },
                     onPickNumber = { pickNumber.launch(Intent(Intent.ACTION_PICK, android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI)) },
                     requestPermission = { birthdaysPermission.launch(it) },

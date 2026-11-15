@@ -56,7 +56,66 @@ object LivePermissions {
 data class LivePerson(val name: String, val photo: ImageBitmap)
 
 @Immutable
-data class LiveEvent(val title: String, val startMillis: Long, val allDay: Boolean)
+data class LiveEvent(
+    val title: String,
+    val startMillis: Long,
+    val allDay: Boolean,
+    /** When it ends (epoch milliseconds), or 0 when that is not known. */
+    val endMillis: Long = 0L,
+    val id: Long = 0L,
+    /** Where it is, and the address of an online meeting in its place or notes. */
+    val location: String = "",
+    val link: String? = null,
+    val calendarId: Long = 0L,
+) {
+    /** Begun and not over at [now]. */
+    fun isOn(now: Long) = !allDay && startMillis <= now && (endMillis == 0L || endMillis > now)
+
+    /** Over at [now]: an event of which the end is not known is over when it began long ago (an hour). */
+    fun isOver(now: Long) = if (endMillis > 0L) endMillis <= now else !allDay && startMillis + 60 * 60_000L <= now
+}
+
+/** A photo of a face of the info tile: the picture, where it is (to open it and to share it) and the year it was taken, for a memory. */
+@Immutable
+data class PhotoCard(val bitmap: ImageBitmap, val uri: String = "", val year: Int = 0)
+
+/** Which photos an info tile asks for: its own album, favourites, screenshots, folders and the ones it was given. Equal specs are read once. */
+@Immutable
+data class PhotoSpec(
+    val album: String = "",
+    val favorites: Boolean = false,
+    val noShots: Boolean = false,
+    val excluded: Set<String> = emptySet(),
+    val picked: List<String> = emptyList(),
+)
+
+/** Which memories an info tile asks for: the days around today (0: today only) and the album and folders it leaves out. */
+@Immutable
+data class MemorySpec(val album: String = "", val noShots: Boolean = false, val excluded: Set<String> = emptySet(), val days: Int = 0)
+
+/** What the info tiles on Start ask for besides what the other tiles need; their data is read with the kinds they belong to. */
+@Immutable
+data class InfoNeeds(
+    val photos: Set<PhotoSpec> = emptySet(),
+    val memories: Set<MemorySpec> = emptySet(),
+    /** The calendars (ids) some tile limits itself to; each set is read once. */
+    val calendars: Set<Set<Long>> = emptySet(),
+    val week: Boolean = false,
+    val day: Boolean = false,
+) {
+    val isEmpty get() = photos.isEmpty() && memories.isEmpty() && calendars.isEmpty() && !week && !day
+}
+
+/** What the info tiles show that the other tiles do not: photos and events by what each tile asked for (see [InfoNeeds]). */
+@Immutable
+data class InfoData(
+    val photos: Map<PhotoSpec, List<PhotoCard>> = emptyMap(),
+    val memories: Map<MemorySpec, List<PhotoCard>> = emptyMap(),
+    val events: Map<Set<Long>, List<LiveEvent>> = emptyMap(),
+    /** The days (epoch days) of the next week that have an event, and the events of today with their hours. */
+    val weekDays: Set<Long> = emptySet(),
+    val today: List<LiveEvent> = emptyList(),
+)
 
 /** The open things to do, for the Todo tile: how many there are and the first ones as the mini app lists them. */
 @Immutable
@@ -89,8 +148,6 @@ data class LiveTileData(
     val birthdays: List<Birthday> = emptyList(),
     /** The latest photos of each album pinned to Start, by the id of the album. */
     val albums: Map<String, List<ImageBitmap>> = emptyMap(),
-    /** The photos taken on this day in the years before (for the info tile). */
-    val memories: List<ImageBitmap> = emptyList(),
     /** The faces of the people of each group of contacts pinned to Start, by the id of the group. */
     val groups: Map<Long, List<LivePerson>> = emptyMap(),
     /** The headlines for the News tile and the quotes for the Finance tile: they come from the Internet and are set apart from the rest. */
@@ -100,6 +157,14 @@ data class LiveTileData(
     val reminders: List<Reminder> = emptyList(),
     /** What the steps, camera, recorder, wallet, place, person and site tiles show (see [TileExtras]). */
     val extras: TileExtras = TileExtras(),
+    /** What the info tiles ask for (see [InfoData]). */
+    val info: InfoData = InfoData(),
+    /** The weather of the cities that are followed, by [SavedCity.key], for the info tiles that have a city of their own. Not read with the rest. */
+    val cityWeather: Map<String, WeatherData> = emptyMap(),
+    /** What the phone is doing now that the info tiles go by (see [InfoContext]). Not read with the rest. */
+    val context: InfoContext = InfoContext(),
+    /** The name of the city of the weather tile, for the info tiles that say whose weather it is. */
+    val place: String = "",
 )
 
 /**
@@ -119,7 +184,13 @@ fun LiveTileData.keeping(kinds: Set<LiveKind>, albumIds: Set<String> = emptySet(
     birthdays = if (LiveKind.Birthdays in kinds) birthdays else emptyList(),
     albums = if (LiveKind.Album in kinds) albums.filterKeys { it in albumIds } else emptyMap(),
     groups = if (LiveKind.Group in kinds) groups.filterKeys { it in groupIds } else emptyMap(),
-    memories = if (LiveKind.Memories in kinds) memories else emptyList(),
+    info = info.copy(
+        photos = if (LiveKind.Photos in kinds) info.photos else emptyMap(),
+        memories = if (LiveKind.Memories in kinds) info.memories else emptyMap(),
+        events = if (LiveKind.Calendar in kinds) info.events else emptyMap(),
+        weekDays = if (LiveKind.Calendar in kinds) info.weekDays else emptySet(),
+        today = if (LiveKind.Calendar in kinds) info.today else emptyList(),
+    ),
     news = if (LiveKind.News in kinds) news else null,
     finance = if (LiveKind.Finance in kinds) finance else null,
 )
@@ -138,7 +209,13 @@ fun LiveTileData.updatedWith(fresh: LiveTileData, kinds: Set<LiveKind>) = copy(
     birthdays = if (LiveKind.Birthdays in kinds) fresh.birthdays else birthdays,
     albums = if (LiveKind.Album in kinds) fresh.albums else albums,
     groups = if (LiveKind.Group in kinds) fresh.groups else groups,
-    memories = if (LiveKind.Memories in kinds) fresh.memories else memories,
+    info = info.copy(
+        photos = if (LiveKind.Photos in kinds) fresh.info.photos else info.photos,
+        memories = if (LiveKind.Memories in kinds) fresh.info.memories else info.memories,
+        events = if (LiveKind.Calendar in kinds) fresh.info.events else info.events,
+        weekDays = if (LiveKind.Calendar in kinds) fresh.info.weekDays else info.weekDays,
+        today = if (LiveKind.Calendar in kinds) fresh.info.today else info.today,
+    ),
 )
 
 class LiveTileRepository(private val context: Context) {
@@ -156,6 +233,8 @@ class LiveTileRepository(private val context: Context) {
         galleryAlbums: Set<String> = emptySet(),
         /** Photos the user picked for the Photos tile; not null: these are the pictures, whatever the albums. */
         galleryPhotos: List<Uri>? = null,
+        /** What the info tiles on Start ask for besides the rest. */
+        needs: InfoNeeds = InfoNeeds(),
     ): LiveTileData {
         val events = if (LiveKind.Calendar in wanted) CalendarSearch(context).upcoming() else emptyList()
         return LiveTileData(
@@ -171,7 +250,13 @@ class LiveTileRepository(private val context: Context) {
         birthdays = if (LiveKind.Birthdays in wanted) birthdays() else emptyList(),
         albums = if (LiveKind.Album in wanted) albumIds.associateWith { album(it) } else emptyMap(),
         groups = if (LiveKind.Group in wanted) groupIds.associateWith { group(it) } else emptyMap(),
-        memories = if (LiveKind.Memories in wanted) memoryPhotos() else emptyList(),
+        info = InfoData(
+            photos = if (LiveKind.Photos in wanted) needs.photos.associateWith { infoPhotos(it) } else emptyMap(),
+            memories = if (LiveKind.Memories in wanted) needs.memories.associateWith { infoMemories(it) } else emptyMap(),
+            events = if (LiveKind.Calendar in wanted) needs.calendars.associateWith { CalendarSearch(context).upcoming(calendars = it) } else emptyMap(),
+            weekDays = if (LiveKind.Calendar in wanted && needs.week) weekDays() else emptySet(),
+            today = if (LiveKind.Calendar in wanted && needs.day) todayEvents() else emptyList(),
+        ),
         )
     }
 
@@ -229,26 +314,83 @@ class LiveTileRepository(private val context: Context) {
         }.getOrDefault(emptyList())
     }
 
-    /** The photos taken on this day in the years before, as thumbnails (the date taken of the newest few thousand photos is read; see [PhotoMemories]). */
+    /** The photos of an info tile: the ones the user picked for it, or the latest of its album (or of the phone) by what it leaves out. */
     @Synchronized
-    private fun memoryPhotos(limit: Int = 6): List<ImageBitmap> {
+    private fun infoPhotos(spec: PhotoSpec, limit: Int = 6): List<PhotoCard> {
+        if (spec.picked.isNotEmpty()) {
+            return spec.picked.shuffled().asSequence().mapNotNull { text -> card(Uri.parse(text), 0) }.take(limit).toList()
+        }
         if (!LivePermissions.canReadPhotos(context)) return emptyList()
         return runCatching {
-            val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            val args = Bundle().apply {
-                putInt(ContentResolver.QUERY_ARG_LIMIT, MEMORY_SCAN)
-                putStringArray(ContentResolver.QUERY_ARG_SORT_COLUMNS, arrayOf(MediaStore.Images.Media.DATE_TAKEN))
-                putInt(ContentResolver.QUERY_ARG_SORT_DIRECTION, ContentResolver.QUERY_SORT_DIRECTION_DESCENDING)
-            }
-            val now = System.currentTimeMillis()
-            val uris = ArrayList<Uri>()
-            resolver.query(collection, arrayOf(MediaStore.Images.Media._ID, MediaStore.Images.Media.DATE_TAKEN), args, null)?.use { cursor ->
-                while (cursor.moveToNext()) {
-                    if (PhotoMemories.isMemory(cursor.getLong(1), now)) uris += ContentUris.withAppendedId(collection, cursor.getLong(0))
-                }
-            }
-            uris.shuffled().take(limit).mapNotNull { uri -> photoCache[uri] ?: thumbnail(uri, PHOTO_PX)?.asImageBitmap()?.also { photoCache[uri] = it } }
+            val filter = PhotoFilter.selection(spec.album.takeIf { it.isNotEmpty() }, spec.favorites, spec.noShots, spec.excluded, Build.VERSION.SDK_INT)
+            queryPhotos(filter, MediaStore.Images.Media.DATE_ADDED, limit).mapNotNull { (uri, _) -> card(uri, 0) }
         }.getOrDefault(emptyList())
+    }
+
+    /**
+     * The photos taken on this day in the years before, or around it when the tile asks for days and today has none. One query for each year
+     * (the date taken is indexed), so the oldest ones are found too, and the choice does not change until tomorrow.
+     */
+    @Synchronized
+    private fun infoMemories(spec: MemorySpec, limit: Int = 6): List<PhotoCard> {
+        if (!LivePermissions.canReadPhotos(context)) return emptyList()
+        return runCatching {
+            val now = System.currentTimeMillis()
+            val zone = java.time.ZoneId.systemDefault()
+            val filter = PhotoFilter.selection(spec.album.takeIf { it.isNotEmpty() }, false, spec.noShots, spec.excluded, Build.VERSION.SDK_INT)
+            fun found(days: Int): List<Pair<Uri, Long>> = PhotoMemories.ranges(now, zone, days).flatMap { range ->
+                val withDate = PhotoFilter.Selection(
+                    (if (filter.text.isEmpty()) "" else filter.text + " AND ") + "${MediaStore.Images.Media.DATE_TAKEN} BETWEEN ? AND ?",
+                    filter.args + arrayOf(range.first.toString(), range.last.toString()),
+                )
+                queryPhotos(withDate, MediaStore.Images.Media.DATE_TAKEN, MEMORIES_PER_YEAR)
+            }
+            val rows = found(0).ifEmpty { if (spec.days > 0) found(spec.days) else emptyList() }
+            val random = java.util.Random(java.time.LocalDate.now(zone).toEpochDay())
+            rows.shuffled(random).asSequence().mapNotNull { (uri, taken) -> card(uri, java.time.Instant.ofEpochMilli(taken).atZone(zone).year) }.take(limit).toList()
+        }.getOrDefault(emptyList())
+    }
+
+    /** The addresses (and the date taken) of the photos that match [filter], the newest by [sort] first. */
+    private fun queryPhotos(filter: PhotoFilter.Selection, sort: String, limit: Int): List<Pair<Uri, Long>> {
+        val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        val args = Bundle().apply {
+            putInt(ContentResolver.QUERY_ARG_LIMIT, limit)
+            putStringArray(ContentResolver.QUERY_ARG_SORT_COLUMNS, arrayOf(sort))
+            putInt(ContentResolver.QUERY_ARG_SORT_DIRECTION, ContentResolver.QUERY_SORT_DIRECTION_DESCENDING)
+            if (filter.text.isNotEmpty()) {
+                putString(ContentResolver.QUERY_ARG_SQL_SELECTION, filter.text)
+                putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, filter.args)
+            }
+        }
+        val rows = ArrayList<Pair<Uri, Long>>(limit)
+        resolver.query(collection, arrayOf(MediaStore.Images.Media._ID, MediaStore.Images.Media.DATE_TAKEN), args, null)?.use { cursor ->
+            while (cursor.moveToNext()) rows += ContentUris.withAppendedId(collection, cursor.getLong(0)) to cursor.getLong(1)
+        }
+        return rows
+    }
+
+    private fun card(uri: Uri, year: Int): PhotoCard? =
+        (photoCache[uri] ?: thumbnail(uri, PHOTO_PX)?.asImageBitmap()?.also { photoCache[uri] = it })?.let { PhotoCard(it, uri.toString(), year) }
+
+    /** The days (epoch days) of the next week that have an event, the ones a long event covers included. */
+    private fun weekDays(): Set<Long> {
+        val zone = java.time.ZoneId.systemDefault()
+        val now = System.currentTimeMillis()
+        val days = HashSet<Long>()
+        CalendarSearch(context).between(now, now + CalendarSearch.WEEK_MILLIS, WEEK_EVENTS).forEach { event ->
+            val first = java.time.Instant.ofEpochMilli(event.startMillis.coerceAtLeast(now)).atZone(zone).toLocalDate().toEpochDay()
+            val last = if (event.endMillis > event.startMillis) java.time.Instant.ofEpochMilli(event.endMillis - 1).atZone(zone).toLocalDate().toEpochDay() else first
+            for (day in first..minOf(last, first + 7)) days += day
+        }
+        return days
+    }
+
+    /** What is on today, finished or not (for the line of the day). */
+    private fun todayEvents(): List<LiveEvent> {
+        val zone = java.time.ZoneId.systemDefault()
+        val start = java.time.LocalDate.now(zone).atStartOfDay(zone).toInstant().toEpochMilli()
+        return CalendarSearch(context).between(start, start + 24 * 60 * 60_000L, TODAY_EVENTS, now = start).filter { !it.allDay }
     }
 
     /** The faces of the people of one group of the contacts, in a different order each time. */
@@ -394,10 +536,11 @@ class LiveTileRepository(private val context: Context) {
         const val FACE_PX = 256
         const val MAX_BIRTHDAYS = 2_000
         const val MAX_FACES = 16
-        const val MAX_PHOTOS = 8
+        const val MAX_PHOTOS = 24
         const val TODO_SHOWN = 8
-        /** How many of the newest photos are looked at for the ones taken on this day. */
-        const val MEMORY_SCAN = 3000
+        const val MEMORIES_PER_YEAR = 4
+        const val WEEK_EVENTS = 60
+        const val TODAY_EVENTS = 20
         const val MAX_GROUP_ROWS = 2_000
         const val WEEK_MILLIS = 7L * 24 * 60 * 60 * 1000
     }

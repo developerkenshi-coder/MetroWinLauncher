@@ -79,6 +79,10 @@ import com.metrowin.launcher.data.AppUsage
 import com.metrowin.launcher.gestures.RecentsTileService
 import com.metrowin.launcher.data.AppRepository
 import com.metrowin.launcher.data.BatteryInfo
+import com.metrowin.launcher.data.InfoBrief
+import com.metrowin.launcher.data.InfoContext
+import com.metrowin.launcher.data.InfoNeeds
+import com.metrowin.launcher.model.InfoPart
 import com.metrowin.launcher.gestures.ChargeAnnounce
 import com.metrowin.launcher.data.AppSection
 import com.metrowin.launcher.data.AppSections
@@ -531,6 +535,39 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         override fun onReceive(context: Context, intent: Intent) = syncAlarm()
     }
 
+    /** What the phone is doing that the info tiles go by (see [InfoContext]); read again when Do Not Disturb changes and at every return to Start. */
+    private val _infoContext = MutableStateFlow(InfoContext())
+    val infoContext: StateFlow<InfoContext> = _infoContext.asStateFlow()
+
+    /** An event added or changed while Start is on screen: the tiles of the calendar read it (at most once in a while). */
+    private val calendarObserver = object : android.database.ContentObserver(android.os.Handler(android.os.Looper.getMainLooper())) {
+        override fun onChange(selfChange: Boolean) {
+            if (loadedLive?.contains(LiveKind.Calendar) == true && throttle.due("calendar:observer", 20_000L)) {
+                throttle.reset("live:${LiveKind.Calendar.name}")
+                refreshLive()
+            }
+        }
+    }
+
+    private val dndReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) = refreshInfoContext()
+    }
+
+    /** Only reads what some info tile on Start goes by: the Wi-Fi name needs the position permission, so it is asked for only when a plan names a Wi-Fi. */
+    private fun refreshInfoContext() {
+        val app = getApplication<Application>()
+        val configs = _items.value.mapNotNull { (it.data as? TileData.Info)?.config }
+        val manager = app.getSystemService(android.app.NotificationManager::class.java)
+        val dnd = manager?.currentInterruptionFilter.let { it != null && it != android.app.NotificationManager.INTERRUPTION_FILTER_ALL && it != android.app.NotificationManager.INTERRUPTION_FILTER_UNKNOWN }
+        val wifi = if (configs.any { c -> c.triggers.any { it.kind == com.metrowin.launcher.model.TriggerKind.Wifi } }) com.metrowin.launcher.data.InfoDevice.wifiName(app) else ""
+        val bt = configs.any { c -> c.triggers.any { it.kind == com.metrowin.launcher.model.TriggerKind.Bluetooth } } && com.metrowin.launcher.data.InfoDevice.bluetoothAudio(app)
+        val next = InfoContext(
+            dnd = dnd, wifi = wifi, btAudio = bt, zone = java.util.TimeZone.getDefault().id,
+            restricted = _settings.value.kidsMode, hideText = _settings.value.liveHideText,
+        )
+        if (next != _infoContext.value) _infoContext.value = next
+    }
+
     /**
      * Whether the launcher is sparing the battery now (see [PowerPolicy]): the screens stop what moves by itself, the
      * 120 Hz request is dropped and the data is refreshed less often.
@@ -545,6 +582,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val weatherCtl = WeatherController(weatherRepository, viewModelScope, _settings, ::updateSettings, powerSaving, throttle)
     val weather: StateFlow<WeatherData?> = weatherCtl.weather
     private var loadedLive: Set<LiveKind>? = null
+    private var loadedNeeds: InfoNeeds = InfoNeeds()
     private var loadedAlbums: Set<String> = emptySet()
     private var loadedGroups: Set<Long> = emptySet()
     private var feedsJob: Job? = null
@@ -838,6 +876,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         ContextCompat.registerReceiver(app, batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(app, powerSaveReceiver, IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(app, alarmReceiver, IntentFilter(android.app.AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
+        ContextCompat.registerReceiver(app, dndReceiver, IntentFilter(android.app.NotificationManager.ACTION_INTERRUPTION_FILTER_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
+        if (LivePermissions.isGranted(app, LivePermissions.calendar)) {
+            runCatching { app.contentResolver.registerContentObserver(android.provider.CalendarContract.CONTENT_URI, true, calendarObserver) }
+        }
         plugReceiver = ChargeAnnounce.listen(app)
         syncAlarm()
         quickActions.start()
@@ -861,6 +903,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         runCatching { app.unregisterReceiver(batteryReceiver) }
         runCatching { app.unregisterReceiver(powerSaveReceiver) }
         runCatching { app.unregisterReceiver(alarmReceiver) }
+        runCatching { app.unregisterReceiver(dndReceiver) }
+        runCatching { app.contentResolver.unregisterContentObserver(calendarObserver) }
         plugReceiver?.let { runCatching { app.unregisterReceiver(it) } }
         plugReceiver = null
         quickActions.stop()
@@ -1107,9 +1151,13 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val albumIds = LiveSources.albumIds(_pages.value, _items.value)
         val groupIds = LiveSources.groupIds(_pages.value, _items.value)
         val feeds = LiveSources.feedsWanted(_pages.value, _items.value)
+        val needs = LiveSources.infoNeeds(_pages.value, _items.value)
+        refreshInfoContext()
+        // An info tile with a city of its own: the cities that are followed are read now.
+        if (_items.value.any { (it.data as? TileData.Info)?.config?.weatherCity?.isNotEmpty() == true }) weatherCtl.refreshCities()
         // A permission given or taken away since the last read changes what there is to show at once.
         val grants = LivePermissions.all.count { LivePermissions.isGranted(getApplication(), it) }
-        val everything = force || wanted != loadedLive || grants != loadedGrants || albumIds != loadedAlbums || groupIds != loadedGroups
+        val everything = force || wanted != loadedLive || grants != loadedGrants || albumIds != loadedAlbums || groupIds != loadedGroups || needs != loadedNeeds
         // Every kind has its own age (see PowerPolicy.liveMaxAgeMs): the birthdays are not read again at every return to Start.
         val saving = powerSaving.value
         val stale = wanted.filterTo(HashSet()) { throttle.due("live:${it.name}", PowerPolicy.liveMaxAgeMs(it, saving)) }
@@ -1123,8 +1171,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         loadedGrants = grants
         loadedAlbums = albumIds
         loadedGroups = groupIds
+        loadedNeeds = needs
         viewModelScope.launch {
-            val fresh = if (toRead.isEmpty()) LiveTileData() else withContext(Dispatchers.IO) { liveTiles.load(toRead, albumIds, groupIds, galleryAlbums(_settings.value), galleryPhotos(_settings.value)) }
+            val fresh = if (toRead.isEmpty()) LiveTileData() else withContext(Dispatchers.IO) { liveTiles.load(toRead, albumIds, groupIds, galleryAlbums(_settings.value), galleryPhotos(_settings.value), needs) }
             _live.update { it.keeping(wanted + feeds, albumIds, groupIds).updatedWith(fresh, toRead) }
         }
     }
@@ -1767,6 +1816,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         shortcutStore.save(_shortcuts.value)
         shortcutStore.deletePhoto(removed.photoFile)
         if (removed.kind == ShortcutKind.Widget) widgets.delete(removed.widgetId)
+        if (removed.kind == ShortcutKind.Info) {
+            com.metrowin.launcher.model.InfoConfig.decode(removed.text).widget.takeIf { it != 0 }?.let { widgets.delete(it) }
+            InfoBrief.schedule(getApplication(), removed.id, -1)
+            com.metrowin.launcher.data.InfoTileState.forget(removed.id)
+        }
         if (removed.kind == ShortcutKind.Timer) Alerts.cancelTimer(getApplication(), removed.id)
         rebuildItems()
         updatePages { StartPages.unpin(it, id) }
@@ -1868,7 +1922,22 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         return id
     }
 
-    fun saveInfo(id: String, config: com.metrowin.launcher.model.InfoConfig) = updateShortcut(id) { it.copy(text = config.encode()) }
+    fun saveInfo(id: String, config: com.metrowin.launcher.model.InfoConfig) {
+        val old = _shortcuts.value.firstOrNull { it.id == id }?.text?.let(com.metrowin.launcher.model.InfoConfig::decode)
+        updateShortcut(id) { it.copy(text = config.encode()) }
+        // A widget the tile gave up goes back to Android.
+        if (old != null && old.widget != 0 && old.widget != config.widget) widgets.delete(old.widget)
+        InfoBrief.schedule(getApplication(), id, config.briefHour)
+        // What the tile asks for may have changed: its photos, its calendars, its city.
+        refreshLive()
+        refreshExtras()
+    }
+
+    /** The widget Android bound for the face of an info tile (the face is put on). */
+    fun setInfoWidget(id: String, appWidgetId: Int) {
+        val config = _shortcuts.value.firstOrNull { it.id == id }?.text?.let(com.metrowin.launcher.model.InfoConfig::decode) ?: return
+        saveInfo(id, config.copy(widget = appWidgetId, parts = if (com.metrowin.launcher.model.InfoPart.Widget in config.parts) config.parts else config.parts + com.metrowin.launcher.model.InfoPart.Widget))
+    }
 
     /** Pins the time in [city]. */
     fun addWorldClock(city: City, page: Int) =
@@ -2019,14 +2088,16 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val pinned = StartPages.pinnedIds(_pages.value)
         val tiles = _items.value.filter { it.id in pinned }
         val kinds = tiles.mapNotNull { it.data }
+        // The faces of an info tile ask for the same things as the tiles that are only that face.
+        val infoParts = kinds.filterIsInstance<TileData.Info>().flatMap { it.config.everyPart() }.toSet()
         val sites = tiles.filter { it.data is TileData.Site }
         setExtras { old ->
             old.copy(
                 cards = if (kinds.any { it is TileData.Wallet }) _wallet.value.size else 0,
                 recordings = if (kinds.any { it is TileData.Recorder }) recordings.list().size else 0,
-                battery = if (kinds.any { it is TileData.BatteryGraph }) _battery.value else null,
+                battery = if (kinds.any { it is TileData.BatteryGraph } || InfoPart.BatteryGraph in infoParts) _battery.value else null,
                 usageAllowed = UsageAccess.granted(app),
-                parked = if (kinds.any { it is TileData.Parking }) parkedCarStore.load() else null,
+                parked = if (kinds.any { it is TileData.Parking } || InfoPart.Parking in infoParts) parkedCarStore.load() else null,
                 sites = old.sites.filterKeys { id -> sites.any { it.id == id } },
                 toggles = kinds.filterIsInstance<TileData.Toggle>().mapNotNull { tile ->
                     QuickAction.fromId(tile.action)?.let { action -> quickActions.isOn(action)?.let { tile.action to it } }
@@ -2037,7 +2108,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         if (!force && extrasJob?.isActive == true) return
         extrasJob?.cancel()
         extrasJob = viewModelScope.launch {
-            if (kinds.any { it is TileData.Steps } && (force || throttle.due("extra:steps", 60_000L))) {
+            if ((kinds.any { it is TileData.Steps } || InfoPart.Steps in infoParts) && (force || throttle.due("extra:steps", 60_000L))) {
                 Steps.read(app)?.let { n -> setExtras { it.copy(steps = n, stepDays = Steps.history(app)) } }
             }
             if (kinds.any { it is TileData.WhereAmI } && (force || throttle.due("extra:where", 15 * 60_000L))) {
@@ -2045,11 +2116,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             }
             // These three read what the usage access gives: the slot of the throttle depends on it, so giving the access shows at the next return to Start.
             val allowed = UsageAccess.granted(app)
-            if (kinds.any { it is TileData.AppsRecap } && (force || throttle.due("extra:apps:$allowed", 5 * 60_000L))) {
+            if ((kinds.any { it is TileData.AppsRecap } || InfoPart.AppsUsed in infoParts) && (force || throttle.due("extra:apps:$allowed", 5 * 60_000L))) {
                 val stats = withContext(Dispatchers.IO) { AppStats.read(app, _items.value) }
                 setExtras { it.copy(apps = stats) }
             }
-            if (kinds.any { it is TileData.DataUse } && (force || throttle.due("extra:data:$allowed", 5 * 60_000L))) {
+            if ((kinds.any { it is TileData.DataUse } || InfoPart.DataUse in infoParts) && (force || throttle.due("extra:data:$allowed", 5 * 60_000L))) {
                 val usage = withContext(Dispatchers.IO) { DataStats.read(app) }
                 setExtras { it.copy(dataUsage = usage) }
             }

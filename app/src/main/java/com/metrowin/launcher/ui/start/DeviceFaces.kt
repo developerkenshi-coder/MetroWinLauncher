@@ -44,12 +44,13 @@ import java.util.Locale
 
 /** The Battery Saver tile: the charge in large type with a bar under it, and on the other face how it is charging. */
 @Composable
-internal fun BatteryFace(item: AppItem, size: TileSize, width: Dp, height: Dp, battery: BatteryInfo?, seed: Int) {
+internal fun BatteryFace(item: AppItem, size: TileSize, width: Dp, height: Dp, battery: BatteryInfo?, seed: Int, sub: Int? = null) {
     if (battery == null) {
         StaticFace(item, size, width, height)
         return
     }
-    FlipContainer(if (size == TileSize.Small) 1 else 2, seed) { face ->
+    val faces = if (size == TileSize.Small) 1 else 2
+    val pane: @Composable (Int) -> Unit = { face ->
         Box(Modifier.fillMaxSize()) {
             if (face == 0) {
                 val digits = with(LocalDensity.current) { (height * if (size == TileSize.Small) 0.34f else 0.3f).toSp() }
@@ -89,6 +90,7 @@ internal fun BatteryFace(item: AppItem, size: TileSize, width: Dp, height: Dp, b
             if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
         }
     }
+    if (sub != null) pane(sub % faces) else FlipContainer(faces, seed) { face -> pane(face) }
 }
 
 

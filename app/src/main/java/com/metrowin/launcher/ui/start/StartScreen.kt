@@ -67,6 +67,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import com.metrowin.launcher.data.AppsHint
+import com.metrowin.launcher.data.InfoTileState
 import com.metrowin.launcher.data.PhotoFit
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -157,7 +158,7 @@ data class FolderCell(val folder: Folder, val items: List<AppItem>, val expanded
 
 /** The tile keeps something the user writes or sets (a note, a countdown, a counter, a list): the pencil opens its editor. */
 val AppCell.hasContentToEdit: Boolean
-    get() = folderId == null && (item.note != null || item.targetDay != 0L || item.data is TileData.Counter || item.data is TileData.Checklist)
+    get() = folderId == null && (item.note != null || item.targetDay != 0L || item.data is TileData.Counter || item.data is TileData.Checklist || item.data is TileData.Info)
 
 /** The cell the user gave this one in free mode, or null when it flows (also every app of an open folder). */
 val StartCell.fixedCell: Pair<Int, Int>?
@@ -913,8 +914,11 @@ private fun PositionedTile(
     } else {
         null
     }
+    // An info tile that follows what it says (a low battery, rain, the night) takes the colour of that, unless the user gave it one.
+    val infoTint = if (ownColor == 0 && cell is AppCell && cell.item.data is TileData.Info) InfoTileState.tint(cell.item.id) else null
     val tileColor = when {
         ownColor != 0 -> Color(ownColor)
+        infoTint != null -> Color(infoTint)
         iconColor != null -> iconColor
         // A window onto the photo: nothing of its own (the photo brings its own light shade).
         transparent -> if (inside) Color.Transparent else Color.Black.copy(alpha = 0.12f)
@@ -1106,6 +1110,13 @@ private fun Modifier.tileSemantics(
         else -> null
     }
     val nextState = next?.let { stringResource(R.string.a11y_tile_next, it) }
+    // An info tile says what it holds in words, whichever of its faces is on show.
+    val infoId = app?.takeIf { it.data is TileData.Info }?.id
+    val infoSummary = infoId?.let { InfoTileState.summary(it) }
+    val infoActions = com.metrowin.launcher.ui.start.LocalInfoActions.current
+    val nextFace = stringResource(R.string.infot_a11y_next)
+    val readAloud = stringResource(R.string.infot_a11y_read)
+    val editTile = stringResource(R.string.infot_a11y_edit)
     val selectedState = picked?.let { stringResource(if (it) R.string.a11y_selected else R.string.a11y_not_selected) }
     val state = when {
         selectedState != null -> selectedState
@@ -1113,6 +1124,7 @@ private fun Modifier.tileSemantics(
         else -> listOfNotNull(
             if (notifications > 0) pluralStringResource(R.plurals.a11y_tile_notifications, notifications, (cell as AppCell).item.label, notifications) else null,
             nextState,
+            infoSummary,
         ).joinToString(". ").ifEmpty { null }
     }
     val unpin = stringResource(if (cell is FolderCell) R.string.a11y_release else R.string.a11y_unpin)
@@ -1120,8 +1132,13 @@ private fun Modifier.tileSemantics(
     val earlier = stringResource(R.string.a11y_move_earlier)
     val later = stringResource(R.string.a11y_move_later)
     val rename = stringResource(R.string.a11y_rename)
+    val infoList = if (infoId == null) emptyList() else listOf(
+        CustomAccessibilityAction(nextFace) { com.metrowin.launcher.ui.start.InfoControls.of(infoId)?.next(); true },
+        CustomAccessibilityAction(readAloud) { InfoTileState.summary(infoId)?.let(infoActions.speak); true },
+    )
     return semantics {
         if (state != null) stateDescription = state
+        if (infoId != null && readOnly) customActions = infoList
         if (!readOnly) {
             val list = mutableListOf<CustomAccessibilityAction>()
             list += CustomAccessibilityAction(unpin) { currentActions.onUnpin(currentCell); true }
@@ -1129,7 +1146,8 @@ private fun Modifier.tileSemantics(
             if (previousId != null) list += CustomAccessibilityAction(earlier) { currentActions.onMove(currentCell.entryId, previousId); true }
             if (nextId != null) list += CustomAccessibilityAction(later) { currentActions.onMove(currentCell.entryId, nextId); true }
             if (cell is FolderCell) list += CustomAccessibilityAction(rename) { (currentCell as? FolderCell)?.let(currentActions.onRename); true }
-            customActions = list
+            if (cell is AppCell && cell.hasContentToEdit) list += CustomAccessibilityAction(editTile) { currentActions.onEditContent(currentCell); true }
+            customActions = infoList + list
         }
     }
 }

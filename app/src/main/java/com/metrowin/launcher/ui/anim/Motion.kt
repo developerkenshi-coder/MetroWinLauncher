@@ -303,11 +303,20 @@ private val ReleaseSpring = spring<Float>(dampingRatio = 0.55f, stiffness = Spri
 /** How the faces of a live tile follow one another (see [TileTransition]); the same for every tile of Start. */
 val LocalTileTransition = staticCompositionLocalOf { TileTransition.Flip }
 
+/** Asks a [FlipContainer] to go to its next face now (the dots of the info tile, an action of TalkBack). */
+class FlipControl {
+    internal val requests = kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED)
+
+    fun next() {
+        requests.trySend(Unit)
+    }
+}
+
 /**
  * The faces of a live tile, one after the other: the tile turns over (the face rotates away around its horizontal axis and the
  * next one swings in from behind) or, in the slide transition, the face goes up and the next one comes in from below. Tiles
  * change at different times, as on the phone, so Start never moves all at once. Nothing moves while the launcher is not on
- * screen, with reduced motion, or while the battery is spared.
+ * screen, with reduced motion, or while the battery is spared (unless the tile is [calm]: it then changes its face without any movement).
  */
 @Composable
 fun FlipContainer(
@@ -321,6 +330,15 @@ fun FlipContainer(
     slides: Boolean = false,
     /** How long each face stays: 1 as usual, more for slower, less for faster (the info tile lets the user choose). */
     pace: Float = 1f,
+    /** A tile with several things to say that must not lose any with reduced motion or the saving of battery: it changes face by itself, cutting from one to the next (slowly while saving). */
+    calm: Boolean = false,
+    /** How long (milliseconds, before [pace]) the face [index] stays; null: the same for all. */
+    dwell: ((Int) -> Long)? = null,
+    /** False: no face changes by itself (TalkBack is on); [control] still moves it. */
+    auto: Boolean = true,
+    control: FlipControl? = null,
+    /** Told which face is on, once it is (not the one that comes in while a slide goes on). */
+    onFace: ((Int) -> Unit)? = null,
     content: @Composable (face: Int) -> Unit,
 ) {
     var index by remember(resetKey) { mutableIntStateOf(startFace) }
@@ -336,13 +354,29 @@ fun FlipContainer(
 
     val reduced = LocalReduceMotion.current
     val saving = LocalPowerSaving.current
-    LaunchedWhileStarted(listOf(faces, reduced || saving, slide, resetKey, pace)) {
-        // With reduced motion, or while saving battery, the tile keeps its face: nothing flips by itself.
-        if (faces <= 1 || reduced || saving) return@LaunchedWhileStarted
+    val still = reduced || saving
+    LaunchedWhileStarted(listOf(faces, still, slide, resetKey, pace, calm, auto)) {
+        if (faces <= 1) return@LaunchedWhileStarted
+        suspend fun wait(ms: Long) {
+            if (control == null) delay(ms) else kotlinx.coroutines.withTimeoutOrNull(ms) { control.requests.receive() }
+        }
+        if (still) {
+            // With reduced motion, or while saving battery, the tile keeps its face: nothing flips by itself. A calm tile still changes it, without moving.
+            if (!calm) {
+                if (control != null) while (true) { control.requests.receive(); index = (index + 1) % faces }
+                return@LaunchedWhileStarted
+            }
+            angle.snapTo(0f)
+            while (true) {
+                if (auto) wait(((dwell?.invoke(index % faces) ?: DEFAULT_DWELL) * pace * (if (saving) CALM_SAVING else 1f)).toLong())
+                else control?.requests?.receive() ?: return@LaunchedWhileStarted
+                index = (index + 1) % faces
+            }
+        }
         // Coming back after being off screen in the middle of a slide: settle on the face that was coming in. (A tile that turns over changes its face at the edge-on moment, so any other angle already shows the right one.)
         if (slide && angle.value >= 90f) index = (index + 1) % faces
         angle.snapTo(0f)
-        delay(((1_500L + (seed.mod(6)) * 800L) * pace).toLong())
+        if (auto) wait(((1_500L + (seed.mod(6)) * 800L) * pace).toLong()) else control?.requests?.receive() ?: return@LaunchedWhileStarted
         while (true) {
             if (slide) {
                 angle.animateTo(180f, metroTween(durationMillis = Motion.SLIDE_MS, easing = Motion.Decelerate))
@@ -356,10 +390,12 @@ fun FlipContainer(
                 angle.snapTo(-90f)
                 angle.animateTo(0f, metroTween(durationMillis = Motion.FLIP_HALF_MS, easing = Motion.FlipIn))
             }
-            delay(((5_000L + (seed.mod(4)) * 900L) * pace).toLong())
+            val stay = dwell?.invoke(index % faces) ?: (5_000L + (seed.mod(4)) * 900L)
+            if (auto) wait((stay * pace).toLong()) else control?.requests?.receive() ?: return@LaunchedWhileStarted
         }
     }
 
+    androidx.compose.runtime.SideEffect { onFace?.invoke(if (faces <= 1) 0 else index % faces) }
     if (slide && faces > 1) {
         Box(modifier.clipToBounds()) {
             Box(Modifier.graphicsLayer { translationY = -size.height * angle.value / 180f }) { content(index % faces) }
@@ -379,6 +415,11 @@ fun FlipContainer(
         content(visible)
     }
 }
+
+private const val DEFAULT_DWELL = 5_500L
+
+/** While saving battery a calm tile waits this many times as long. */
+private const val CALM_SAVING = 4f
 
 private const val FLIP_SIGN = 1f
 

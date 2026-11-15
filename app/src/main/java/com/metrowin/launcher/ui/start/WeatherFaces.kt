@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.DayForecast
 import com.metrowin.launcher.data.OpenMeteo
+import com.metrowin.launcher.data.RainOutlook
 import com.metrowin.launcher.data.WeatherBlock
 import com.metrowin.launcher.data.WeatherData
 import com.metrowin.launcher.model.AppItem
@@ -76,12 +77,11 @@ internal fun HoursFace(weather: WeatherData, width: Dp) {
 
 
 /** The weather tile: the temperature in large type with the weather under it, and on the other face the next days. */
+/** The faces the weather tile may turn to after the first (the rain, the next hours, the next days, the details, the air), by what the tile has room for and the user chose. */
+private class WeatherShape(val outlook: RainOutlook?, val others: List<Char>)
+
 @Composable
-internal fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, weather: WeatherData?, seed: Int) {
-    if (weather == null) {
-        StaticFace(item, size, width, height)
-        return
-    }
+private fun weatherShape(weather: WeatherData, size: TileSize): WeatherShape {
     val withDays = size != TileSize.Small && weather.days.size >= 2
     val blocks = LocalTileFeatures.current.weatherBlocks
     val withDetails = size != TileSize.Small && !weather.details.isEmpty && WeatherBlock.Details.code in blocks
@@ -94,13 +94,35 @@ internal fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, w
     }
     val withAir = size != TileSize.Small && WeatherBlock.Air.code in blocks && weather.air?.aqi != null
     // The faces after the first, in order: the rain, the next hours, the next days, the details, the air.
-    val others = listOfNotNull(
-        if (outlook != null) 'r' else null, if (withHours) 'h' else null, if (withDays) 'd' else null,
-        if (withDetails) 'x' else null, if (withAir) 'a' else null,
+    return WeatherShape(
+        outlook,
+        listOfNotNull(
+            if (outlook != null) 'r' else null, if (withHours) 'h' else null, if (withDays) 'd' else null,
+            if (withDetails) 'x' else null, if (withAir) 'a' else null,
+        ),
     )
-    FlipContainer(1 + others.size, seed) { face ->
+}
+
+/** How many faces the weather tile turns through at [size]: the one with the temperature and the others. */
+@Composable
+internal fun weatherFaceCount(weather: WeatherData, size: TileSize): Int = 1 + weatherShape(weather, size).others.size
+
+/**
+ * The weather tile: the temperature in large type with the weather under it, and on the other faces the rain, the next hours, the next days.
+ * [sub] (inside an info tile, which does the turning) is the face to show; [place] is what is written in the corner instead of the name of the tile.
+ */
+@Composable
+internal fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, weather: WeatherData?, seed: Int, sub: Int? = null, place: String? = null) {
+    if (weather == null) {
+        StaticFace(item, size, width, height)
+        return
+    }
+    val shape = weatherShape(weather, size)
+    val outlook = shape.outlook
+    val others = shape.others
+    val corner = place ?: item.label
+    val pane: @Composable (Char) -> Unit = { kind ->
         Box(Modifier.fillMaxSize()) {
-            val kind = if (face == 0) 'n' else others[(face - 1) % others.size]
             if (kind == 'x') {
                 WeatherDetailsFace(weather)
             } else if (kind == 'r' && outlook != null) {
@@ -154,7 +176,9 @@ internal fun WeatherFace(item: AppItem, size: TileSize, width: Dp, height: Dp, w
                     Column(Modifier.align(Alignment.TopStart).fillMaxHeight().padding(start = FACE_MARGIN, top = FACE_MARGIN, bottom = NAME_ROOM)) { shown.forEach { rows(it) } }
                 }
             }
-            if (size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
+            if (size != TileSize.Small) TileLabel(corner, Modifier.align(Alignment.BottomStart))
         }
     }
+    if (sub != null) pane(if (sub % (1 + others.size) == 0) 'n' else others[(sub % (1 + others.size)) - 1])
+    else FlipContainer(1 + others.size, seed) { face -> pane(if (face == 0) 'n' else others[(face - 1) % others.size]) }
 }

@@ -165,7 +165,7 @@ class StartMoreUiTest : ScreenshotBase() {
         advance(500)
         capture("tile_worldclock")
         compose.onNodeWithTag("worldclock:time").assertExists()
-        compose.onNodeWithTag("worldclock:city").assertTextContains("Tokyo")
+        compose.onNodeWithTag("worldclock:city").assertTextContains("Tokyo", substring = true)
     }
 
     @Test
@@ -177,10 +177,10 @@ class StartMoreUiTest : ScreenshotBase() {
     }
 
     @Test
-    fun aCityThatDoesNotExistFallsBackToTheNameOfTheTile() {
+    fun aCityThatDoesNotExistStillTellsTheTimeOfThePhone() {
         showFace(ShortcutDef("w", ShortcutKind.WorldClock, "Nowhere", "Mars/Olympus").toItem(null))
         advance(500)
-        compose.onAllNodesWithTag("worldclock:time").assertCountEquals(0)
+        compose.onAllNodesWithTag("worldclock:time").assertCountEquals(1)
         compose.onAllNodesWithText("Nowhere").assertCountEquals(1)
     }
 
