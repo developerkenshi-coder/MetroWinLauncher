@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="156" height="156" viewBox="0 0 156 156" role="img" aria-label="action center">
+<rect x="3" y="3" width="150" height="150" fill="#6a00ff"/>
+<g transform="translate(78 66)"><g fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"><path d="M-16 12V-2C-16 -14 -8 -20 0 -20C8 -20 16 -14 16 -2V12Z"/><path d="M-22 12H22"/><path d="M-5 20H5"/></g></g>
+<text x="14" y="140" font-family="'Segoe UI Light','Segoe UI','Selawik','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="17" font-weight="300" fill="#ffffff">action center</text>
+</svg>

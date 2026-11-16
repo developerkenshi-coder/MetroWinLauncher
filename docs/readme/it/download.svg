@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="96" viewBox="0 0 480 96" role="img" aria-label="scarica l’ultima versione">
+<rect x="3" y="3" width="474" height="90" fill="#1ba1e2"/>
+<g transform="translate(52 48) scale(0.85)"><g fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"><path d="M0 -20V12M-12 0L0 12L12 0"/><path d="M-20 20H20"/></g></g>
+<text x="96" y="58" font-family="'Segoe UI Light','Segoe UI','Selawik','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="26" font-weight="300" fill="#ffffff">scarica l’ultima versione</text>
+</svg>

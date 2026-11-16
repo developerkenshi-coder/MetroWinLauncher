@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="156" height="156" viewBox="0 0 156 156" role="img" aria-label="apps &amp; search">
+<rect x="3" y="3" width="150" height="150" fill="#a4c400"/>
+<g transform="translate(78 66)"><g fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"><circle cx="-14" cy="-14" r="5"/><path d="M-2 -14H22"/><circle cx="-14" cy="0" r="5"/><path d="M-2 0H22"/><circle cx="-14" cy="14" r="5"/><path d="M-2 14H22"/></g></g>
+<text x="14" y="140" font-family="'Segoe UI Light','Segoe UI','Selawik','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="17" font-weight="300" fill="#ffffff">apps &amp; search</text>
+</svg>
