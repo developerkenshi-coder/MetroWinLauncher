@@ -17,33 +17,13 @@
 
 <p align="center"><a href="README.md">English</a> · <b>Italiano</b></p>
 
-<table align="center" cellspacing="0" cellpadding="0" border="0">
-<tr>
-<td colspan="2"><a href="#schermata-start"><img src="docs/readme/it/tile-start.svg" width="312" height="156" alt="schermata start"></a></td>
-<td colspan="1"><a href="#live-tile"><img src="docs/readme/it/tile-live.svg" width="156" height="156" alt="live tile"></a></td>
-<td colspan="1"><a href="#lista-app-e-ricerca"><img src="docs/readme/it/tile-apps.svg" width="156" height="156" alt="app e ricerca"></a></td>
-</tr>
-<tr>
-<td colspan="1"><a href="#action-center-e-notifiche"><img src="docs/readme/it/tile-action.svg" width="156" height="156" alt="action center"></a></td>
-<td colspan="1"><a href="#blocco-schermo-voce-e-gesti"><img src="docs/readme/it/tile-lock.svg" width="156" height="156" alt="blocco schermo"></a></td>
-<td colspan="2"><a href="#aspetto-e-colori"><img src="docs/readme/it/tile-looks.svg" width="312" height="156" alt="aspetto e colori"></a></td>
-</tr>
-<tr>
-<td colspan="2"><a href="#app-integrate"><img src="docs/readme/it/tile-builtin.svg" width="312" height="156" alt="app integrate"></a></td>
-<td colspan="1"><a href="#blocco-schermo-voce-e-gesti"><img src="docs/readme/it/tile-gestures.svg" width="156" height="156" alt="voce e gesti"></a></td>
-<td colspan="1"><a href="#backup-profili-e-accessibilità"><img src="docs/readme/it/tile-backup.svg" width="156" height="156" alt="backup"></a></td>
-</tr>
-<tr>
-<td colspan="1"><a href="#impostazioni-e-tutorial"><img src="docs/readme/it/tile-settings.svg" width="156" height="156" alt="impostazioni"></a></td>
-<td colspan="1"><a href="#per-chi-sviluppa-unapp-un-riquadro-tuo-su-start"><img src="docs/readme/it/tile-developers.svg" width="156" height="156" alt="per sviluppatori"></a></td>
-<td colspan="2"><a href="#compilare-dal-sorgente"><img src="docs/readme/it/tile-build.svg" width="312" height="156" alt="compila dal sorgente"></a></td>
-</tr>
-<tr>
-<td colspan="2"><a href="#privacy-e-permessi"><img src="docs/readme/it/tile-privacy.svg" width="312" height="156" alt="privacy"></a></td>
-<td colspan="1"><a href="CHANGELOG.md"><img src="docs/readme/it/tile-changelog.svg" width="156" height="156" alt="novità"></a></td>
-<td colspan="1"><a href="#documentazione"><img src="docs/readme/it/tile-docs.svg" width="156" height="156" alt="documentazione"></a></td>
-</tr>
-</table>
+<p align="center">
+<a href="#schermata-start"><img src="docs/readme/it/tile-start.svg" width="312" height="156" alt="schermata start"></a><a href="#live-tile"><img src="docs/readme/it/tile-live.svg" width="156" height="156" alt="live tile"></a><a href="#lista-app-e-ricerca"><img src="docs/readme/it/tile-apps.svg" width="156" height="156" alt="app e ricerca"></a><br>
+<a href="#action-center-e-notifiche"><img src="docs/readme/it/tile-action.svg" width="156" height="156" alt="action center"></a><a href="#blocco-schermo-voce-e-gesti"><img src="docs/readme/it/tile-lock.svg" width="156" height="156" alt="blocco schermo"></a><a href="#aspetto-e-colori"><img src="docs/readme/it/tile-looks.svg" width="312" height="156" alt="aspetto e colori"></a><br>
+<a href="#app-integrate"><img src="docs/readme/it/tile-builtin.svg" width="312" height="156" alt="app integrate"></a><a href="#blocco-schermo-voce-e-gesti"><img src="docs/readme/it/tile-gestures.svg" width="156" height="156" alt="voce e gesti"></a><a href="#backup-profili-e-accessibilità"><img src="docs/readme/it/tile-backup.svg" width="156" height="156" alt="backup"></a><br>
+<a href="#impostazioni-e-tutorial"><img src="docs/readme/it/tile-settings.svg" width="156" height="156" alt="impostazioni"></a><a href="#per-chi-sviluppa-unapp-un-riquadro-tuo-su-start"><img src="docs/readme/it/tile-developers.svg" width="156" height="156" alt="per sviluppatori"></a><a href="#compilare-dal-sorgente"><img src="docs/readme/it/tile-build.svg" width="312" height="156" alt="compila dal sorgente"></a><br>
+<a href="#privacy-e-permessi"><img src="docs/readme/it/tile-privacy.svg" width="312" height="156" alt="privacy"></a><a href="CHANGELOG.md"><img src="docs/readme/it/tile-changelog.svg" width="156" height="156" alt="novità"></a><a href="#documentazione"><img src="docs/readme/it/tile-docs.svg" width="156" height="156" alt="documentazione"></a>
+</p>
 
 <p align="center">
   <img src="fastlane/metadata/android/it-IT/images/phoneScreenshots/1.png" width="24%" alt="Schermata Start con riquadri animati">

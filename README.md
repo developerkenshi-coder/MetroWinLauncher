@@ -17,33 +17,13 @@
 
 <p align="center"><b>English</b> · <a href="README.it.md">Italiano</a></p>
 
-<table align="center" cellspacing="0" cellpadding="0" border="0">
-<tr>
-<td colspan="2"><a href="#start-screen"><img src="docs/readme/en/tile-start.svg" width="312" height="156" alt="start screen"></a></td>
-<td colspan="1"><a href="#live-tiles"><img src="docs/readme/en/tile-live.svg" width="156" height="156" alt="live tiles"></a></td>
-<td colspan="1"><a href="#app-list-and-search"><img src="docs/readme/en/tile-apps.svg" width="156" height="156" alt="apps &amp; search"></a></td>
-</tr>
-<tr>
-<td colspan="1"><a href="#action-center-and-notifications"><img src="docs/readme/en/tile-action.svg" width="156" height="156" alt="action center"></a></td>
-<td colspan="1"><a href="#lock-screen-voice-and-gestures"><img src="docs/readme/en/tile-lock.svg" width="156" height="156" alt="lock screen"></a></td>
-<td colspan="2"><a href="#looks-and-colors"><img src="docs/readme/en/tile-looks.svg" width="312" height="156" alt="looks &amp; colors"></a></td>
-</tr>
-<tr>
-<td colspan="2"><a href="#apps-built-in"><img src="docs/readme/en/tile-builtin.svg" width="312" height="156" alt="apps built in"></a></td>
-<td colspan="1"><a href="#lock-screen-voice-and-gestures"><img src="docs/readme/en/tile-gestures.svg" width="156" height="156" alt="voice &amp; gestures"></a></td>
-<td colspan="1"><a href="#backup-profiles-and-accessibility"><img src="docs/readme/en/tile-backup.svg" width="156" height="156" alt="backup"></a></td>
-</tr>
-<tr>
-<td colspan="1"><a href="#settings-and-tutorial"><img src="docs/readme/en/tile-settings.svg" width="156" height="156" alt="settings"></a></td>
-<td colspan="1"><a href="#for-app-developers-your-own-tile-on-start"><img src="docs/readme/en/tile-developers.svg" width="156" height="156" alt="for developers"></a></td>
-<td colspan="2"><a href="#build-from-source"><img src="docs/readme/en/tile-build.svg" width="312" height="156" alt="build from source"></a></td>
-</tr>
-<tr>
-<td colspan="2"><a href="#privacy-and-permissions"><img src="docs/readme/en/tile-privacy.svg" width="312" height="156" alt="privacy"></a></td>
-<td colspan="1"><a href="CHANGELOG.md"><img src="docs/readme/en/tile-changelog.svg" width="156" height="156" alt="changelog"></a></td>
-<td colspan="1"><a href="#documentation"><img src="docs/readme/en/tile-docs.svg" width="156" height="156" alt="documentation"></a></td>
-</tr>
-</table>
+<p align="center">
+<a href="#start-screen"><img src="docs/readme/en/tile-start.svg" width="312" height="156" alt="start screen"></a><a href="#live-tiles"><img src="docs/readme/en/tile-live.svg" width="156" height="156" alt="live tiles"></a><a href="#app-list-and-search"><img src="docs/readme/en/tile-apps.svg" width="156" height="156" alt="apps &amp; search"></a><br>
+<a href="#action-center-and-notifications"><img src="docs/readme/en/tile-action.svg" width="156" height="156" alt="action center"></a><a href="#lock-screen-voice-and-gestures"><img src="docs/readme/en/tile-lock.svg" width="156" height="156" alt="lock screen"></a><a href="#looks-and-colors"><img src="docs/readme/en/tile-looks.svg" width="312" height="156" alt="looks &amp; colors"></a><br>
+<a href="#apps-built-in"><img src="docs/readme/en/tile-builtin.svg" width="312" height="156" alt="apps built in"></a><a href="#lock-screen-voice-and-gestures"><img src="docs/readme/en/tile-gestures.svg" width="156" height="156" alt="voice &amp; gestures"></a><a href="#backup-profiles-and-accessibility"><img src="docs/readme/en/tile-backup.svg" width="156" height="156" alt="backup"></a><br>
+<a href="#settings-and-tutorial"><img src="docs/readme/en/tile-settings.svg" width="156" height="156" alt="settings"></a><a href="#for-app-developers-your-own-tile-on-start"><img src="docs/readme/en/tile-developers.svg" width="156" height="156" alt="for developers"></a><a href="#build-from-source"><img src="docs/readme/en/tile-build.svg" width="312" height="156" alt="build from source"></a><br>
+<a href="#privacy-and-permissions"><img src="docs/readme/en/tile-privacy.svg" width="312" height="156" alt="privacy"></a><a href="CHANGELOG.md"><img src="docs/readme/en/tile-changelog.svg" width="156" height="156" alt="changelog"></a><a href="#documentation"><img src="docs/readme/en/tile-docs.svg" width="156" height="156" alt="documentation"></a>
+</p>
 
 <p align="center">
   <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="24%" alt="Start screen with live tiles">
