@@ -48,6 +48,7 @@ fun MetroText(
     highlight: String = "",
     /** Digits of one width each, so that a clock or a counter does not shift as the numbers change (a font with proportional digits would). */
     tabular: Boolean = false,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
 ) {
     val style = LocalStyle.current
     // An accent used as the color of text is made to read on the page (the yellow accent on the white of the light theme would not).
@@ -62,6 +63,7 @@ fun MetroText(
         lineHeight = lineHeight,
         textAlign = textAlign,
         fontFeatureSettings = if (tabular) "tnum" else null,
+        letterSpacing = letterSpacing,
     )
     val shaped = if (minScale < 1f) modifier.shrinkToFit(minScale, singleLine = maxLines == 1) else modifier
     if (highlight.isBlank()) {

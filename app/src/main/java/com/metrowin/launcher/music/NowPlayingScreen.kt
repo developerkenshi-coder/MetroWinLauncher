@@ -430,12 +430,13 @@ private fun Controls(media: MediaInfo, snap: Snap, look: Look, players: List<Med
     }
     Progress(media, snap, look)
     val big = if (opts.car) 96.dp else 64.dp
+    val ring = LocalStyle.current.isClassic
     Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-        Dimmed(ab.previous) { TransportButton(Transport.Previous, "np:prev", look.ink, stringResource(R.string.np_previous), big) { if (ab.previous) media.previous() } }
+        Dimmed(ab.previous) { TransportButton(Transport.Previous, "np:prev", look.ink, stringResource(R.string.np_previous), big, ring) { if (ab.previous) media.previous() } }
         Crossfade(media.playing, animationSpec = if (reduced) snap() else tween(200), label = "np:toggle") { playing ->
-            TransportButton(if (playing) Transport.Pause else Transport.Play, "np:toggle", look.ink, stringResource(if (playing) R.string.np_pause else R.string.np_play), big) { media.playPause() }
+            TransportButton(if (playing) Transport.Pause else Transport.Play, "np:toggle", look.ink, stringResource(if (playing) R.string.np_pause else R.string.np_play), big, ring) { media.playPause() }
         }
-        Dimmed(ab.next) { TransportButton(Transport.Next, "np:next", look.ink, stringResource(R.string.np_next), big) { if (ab.next) media.next() } }
+        Dimmed(ab.next) { TransportButton(Transport.Next, "np:next", look.ink, stringResource(R.string.np_next), big, ring) { if (ab.next) media.next() } }
     }
     Extras(media, snap, look)
     if (!opts.car) {
@@ -471,7 +472,9 @@ private fun Progress(media: MediaInfo, snap: Snap, look: Look) {
     val shown = drag?.let { (duration * it).toLong() } ?: at
     val fraction = drag ?: (at.toFloat() / duration).coerceIn(0f, 1f)
     fun seek(ms: Long) { runCatching { media.controller.transportControls.seekTo(ms) } }
-    val thick = if (look.opts.contrast || look.opts.car) 8.dp else 4.dp
+    // Windows Phone slider: a track of 9 dp and a block of 9 x 18 dp.
+    val classic = LocalStyle.current.isClassic
+    val thick = if (classic) 9.dp else if (look.opts.contrast || look.opts.car) 8.dp else 4.dp
     val positionLabel = stringResource(R.string.np_position)
     Box(
         Modifier.padding(top = 10.dp).fillMaxWidth().height(48.dp).testTag("np:seek").semantics { contentDescription = "$positionLabel ${mmss(shown)} / ${mmss(duration)}" }
@@ -492,7 +495,8 @@ private fun Progress(media: MediaInfo, snap: Snap, look: Look) {
             val y = (size.height - h) / 2
             drawRect(look.faint.copy(alpha = 0.35f), Offset(0f, y), androidx.compose.ui.geometry.Size(size.width, h))
             drawRect(look.accent, Offset(0f, y), androidx.compose.ui.geometry.Size(size.width * fraction, h))
-            if (seekable) drawCircle(look.accent, if (drag != null) 11.dp.toPx() else 7.dp.toPx(), Offset(size.width * fraction, size.height / 2))
+            if (seekable && classic) drawRect(look.ink, Offset((size.width - 9.dp.toPx()) * fraction, size.height / 2 - 9.dp.toPx()), androidx.compose.ui.geometry.Size(9.dp.toPx(), 18.dp.toPx()))
+            else if (seekable) drawCircle(look.accent, if (drag != null) 11.dp.toPx() else 7.dp.toPx(), Offset(size.width * fraction, size.height / 2))
         }
     }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.ui.gesture.PANORAMA_SPEED
 import com.metrowin.launcher.ui.gesture.panoramaOffset
@@ -105,7 +106,7 @@ fun ColumnScope.HubPager(
                 beyondViewportPageCount = 0, userScrollEnabled = userScrollEnabled,
             ) { page ->
                 Column(Modifier.fillMaxSize()) {
-                    MetroText(titles.getOrElse(page) { "" }, size = if (LocalHubHeadings.current) 49.5.sp else 27.sp, color = accent, maxLines = 1, modifier = Modifier.padding(start = side, bottom = Spacing.Medium))
+                    MetroText(titles.getOrElse(page) { "" }, size = if (LocalHubHeadings.current) 49.5.sp else 27.sp, color = accent, maxLines = 1, letterSpacing = (-0.035).em, modifier = Modifier.padding(start = side, bottom = Spacing.Medium))
                     Box(Modifier.weight(1f).fillMaxWidth()) { content(page) }
                 }
             }

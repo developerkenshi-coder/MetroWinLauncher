@@ -69,7 +69,12 @@ import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.ui.anim.FlipContainer
 import com.metrowin.launcher.ui.components.AppArt
 import com.metrowin.launcher.ui.components.MetroText
+import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.onAccent
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 
 /** The steps of today in large light type. A small tile has the number and nothing else. */
 @Composable
@@ -264,8 +269,16 @@ internal fun MusicControls(playing: Boolean, modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun TransportButton(kind: Transport, tag: String, ink: Color = LocalMetroColors.current.tileContent, label: String = "", box: Dp = 48.dp, onClick: () -> Unit) {
-    Box(Modifier.size(box).testTag(tag).semantics { if (label.isNotEmpty()) { contentDescription = label; role = Role.Button } }.metroPress(onClick = onClick), contentAlignment = Alignment.Center) {
+internal fun TransportButton(kind: Transport, tag: String, ink: Color = LocalMetroColors.current.tileContent, label: String = "", box: Dp = 48.dp, ring: Boolean = false, onClick: () -> Unit) {
+    var pressed by remember { mutableStateOf(false) }
+    // With [ring] the glyph sits in a circle like the buttons of the Windows Phone bar, which fills with the accent while it is touched.
+    val glyph = if (ring && pressed) onAccent() else ink
+    val circle = if (ring) Modifier.padding(4.dp).border(2.dp, ink, CircleShape).clip(CircleShape).background(if (pressed) LocalAccent.current else Color.Transparent) else Modifier
+    Box(
+        Modifier.size(box).testTag(tag).semantics { if (label.isNotEmpty()) { contentDescription = label; role = Role.Button } }
+            .metroPress(onClick = onClick, onPressedChange = if (ring) { { pressed = it } } else null).then(circle),
+        contentAlignment = Alignment.Center,
+    ) {
         Canvas(Modifier.size(box * 0.375f)) {
             val w = size.width
             val h = size.height
@@ -278,20 +291,20 @@ internal fun TransportButton(kind: Transport, tag: String, ink: Color = LocalMet
                 close()
             }
             when (kind) {
-                Transport.Play -> drawPath(triangle(w * 0.2f, true), ink)
+                Transport.Play -> drawPath(triangle(w * 0.2f, true), glyph)
                 Transport.Pause -> {
                     drawRect(ink, Offset(w * 0.15f, 0f), Size(w * 0.25f, h))
                     drawRect(ink, Offset(w * 0.6f, 0f), Size(w * 0.25f, h))
                 }
                 Transport.Previous -> {
                     drawRect(ink, Offset(0f, 0f), Size(w * 0.12f, h))
-                    drawPath(triangle(w * 0.1f, false), ink)
-                    drawPath(triangle(w * 0.5f, false), ink)
+                    drawPath(triangle(w * 0.1f, false), glyph)
+                    drawPath(triangle(w * 0.5f, false), glyph)
                 }
                 Transport.Next -> {
                     drawRect(ink, Offset(w * 0.88f, 0f), Size(w * 0.12f, h))
-                    drawPath(triangle(w * 0.0f, true), ink)
-                    drawPath(triangle(w * 0.4f, true), ink)
+                    drawPath(triangle(w * 0.0f, true), glyph)
+                    drawPath(triangle(w * 0.4f, true), glyph)
                 }
             }
         }
