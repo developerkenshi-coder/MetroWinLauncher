@@ -1,5 +1,6 @@
 package com.metrowin.launcher.messages
 
+import com.metrowin.launcher.ui.components.PageSwitch
 import com.metrowin.launcher.ui.components.isWide
 import com.metrowin.launcher.ui.theme.Danger
 import com.metrowin.launcher.ui.mini.MiniFrame
@@ -181,25 +182,34 @@ fun MessagesScreen(address: String?, body: String, onAddress: (String?) -> Unit,
     val menu = optionItems(options) { if (it) askPhone.launch(Manifest.permission.READ_PHONE_STATE) }
     val wide = options.on(MessagesOptions.Key.Panes) && isWide()
     BackHandler(enabled = address != null) { onAddress(null); refresh++ }
-    MiniFrame(modifier, ime = true, panes = wide) {
-        when {
-            !allowed -> Column(Modifier.padding(24.dp)) {
-                PageNote(stringResource(R.string.messages_need_sms))
-                MetroButton(stringResource(R.string.page_allow), Modifier.fillMaxWidth().padding(top = 8.dp)) { ask.launch(permissions.toTypedArray()) }
-            }
-            wide -> Row(Modifier.fillMaxSize()) {
-                Box(Modifier.weight(0.4f).fillMaxHeight()) {
-                    ListPage(conversations, repository, options, menu, forward, address, onDropForward = { forward = null }, onOpen = { chosen -> forward?.let { onBody(it); forward = null }; onAddress(chosen) }, onRefresh = { refresh++ })
-                }
-                Box(Modifier.weight(0.6f).fillMaxHeight()) {
-                    if (address != null) ThreadPage(address, body, onBody, repository, options, menu, conversations.orEmpty(), onChanged = { refresh++ }, onForward = { forward = it; onAddress(null); refresh++ })
-                    else PageNote(stringResource(R.string.messages_pick), Modifier.padding(24.dp))
-                }
-            }
-            address != null -> ThreadPage(address, body, onBody, repository, options, menu, conversations.orEmpty(), onChanged = { refresh++ }, onForward = { forward = it; onAddress(null); refresh++ })
-            else -> ListPage(conversations, repository, options, menu, forward, null, onDropForward = { forward = null }, onOpen = { chosen -> forward?.let { onBody(it); forward = null }; onAddress(chosen) }, onRefresh = { refresh++ })
-        }
+    val openThread: @Composable (String) -> Unit = { a ->
+        ThreadPage(a, body, onBody, repository, options, menu, conversations.orEmpty(), onChanged = { refresh++ }, onForward = { forward = it; onAddress(null); refresh++ })
     }
+    PageSwitch(
+        page = address.takeIf { allowed && !wide },
+        onBack = { onAddress(null); refresh++ },
+        list = {
+            MiniFrame(modifier, ime = true, panes = wide) {
+                when {
+                    !allowed -> Column(Modifier.padding(24.dp)) {
+                        PageNote(stringResource(R.string.messages_need_sms))
+                        MetroButton(stringResource(R.string.page_allow), Modifier.fillMaxWidth().padding(top = 8.dp)) { ask.launch(permissions.toTypedArray()) }
+                    }
+                    wide -> Row(Modifier.fillMaxSize()) {
+                        Box(Modifier.weight(0.4f).fillMaxHeight()) {
+                            ListPage(conversations, repository, options, menu, forward, address, onDropForward = { forward = null }, onOpen = { chosen -> forward?.let { onBody(it); forward = null }; onAddress(chosen) }, onRefresh = { refresh++ })
+                        }
+                        Box(Modifier.weight(0.6f).fillMaxHeight()) {
+                            if (address != null) openThread(address)
+                            else PageNote(stringResource(R.string.messages_pick), Modifier.padding(24.dp))
+                        }
+                    }
+                    else -> ListPage(conversations, repository, options, menu, forward, null, onDropForward = { forward = null }, onOpen = { chosen -> forward?.let { onBody(it); forward = null }; onAddress(chosen) }, onRefresh = { refresh++ })
+                }
+            }
+        },
+        detail = { a -> MiniFrame(modifier, ime = true) { openThread(a) } },
+    )
 }
 
 

@@ -32,7 +32,8 @@ class NowPlayingUiTest : ScreenshotBase() {
         compose.onNodeWithText("…").performClick()
         advance(400)
         compose.onNodeWithText("options").performClick()
-        advance(400)
+        // The player turns away and then the options turn in.
+        advance(1500)
         compose.onNodeWithTag("np:options").assertExists()
     }
 }

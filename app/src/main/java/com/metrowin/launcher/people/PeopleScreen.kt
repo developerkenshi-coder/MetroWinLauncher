@@ -1,18 +1,12 @@
 package com.metrowin.launcher.people
 
+import com.metrowin.launcher.ui.components.PageSwitch
 import com.metrowin.launcher.ui.components.windowClass
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -95,7 +89,6 @@ import com.metrowin.launcher.ui.start.ageText
 import com.metrowin.launcher.ui.start.whenText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.theme.pageBackground
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -137,8 +130,6 @@ fun PeopleScreen() {
     val recent by produceState<List<RecentCall>>(emptyList(), calls, callTick) { value = if (calls) withContext(Dispatchers.IO) { PeopleReader(context).recentCalls() } else emptyList() }
     val news by NotificationHub.entries.collectAsState()
     var target by rememberSaveable(stateSaver = TargetSaver) { mutableStateOf<Target?>(null) }
-    var shown by remember { mutableStateOf<Target?>(null) }
-    if (target != null) shown = target
     var query by rememberSaveable { mutableStateOf("") }
     var quick by remember { mutableStateOf<Person?>(null) }
     var options by remember { mutableStateOf(false) }
@@ -164,7 +155,7 @@ fun PeopleScreen() {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val wide = maxWidth.windowClass.isWide
         Row(Modifier.fillMaxSize()) {
-            Box(Modifier.weight(1f).fillMaxSize()) {
+            PageSwitch(page = target.takeIf { !wide }, onBack = { target = null }, modifier = Modifier.weight(1f).fillMaxSize(), detail = { ContactCard(it, snapshot ?: PeopleSnapshot.Empty, prefs) }, list = {
                 Frame {
                     HubPager(stringResource(R.string.peoplehub_default_label), pages.map { names[it] }, pager, userScrollEnabled = allowed) { slot ->
                         if (!allowed) {
@@ -191,8 +182,7 @@ fun PeopleScreen() {
                         ),
                     )
                 }
-                if (!wide) CardOverlay(target != null, shown, snapshot ?: PeopleSnapshot.Empty, prefs)
-            }
+            })
             if (wide) Box(Modifier.weight(1f).fillMaxSize().pageBackground().topBarsPadding().navigationBarsPadding()) {
                 val t = target
                 if (t == null) EmptyState(PeopleGlyph.Person, stringResource(R.string.pp_pick), Modifier.align(Alignment.Center))
@@ -203,17 +193,6 @@ fun PeopleScreen() {
         if (options) OptionsSheet(prefs, pager.currentPage.let { pages[it] }) { options = false }
         if (dupes) DuplicatesSheet(snapshot?.people.orEmpty(), onOpen = { p -> dupes = false; open(p) }) { dupes = false }
     }
-}
-
-/** The card over the list on a narrow page: it slides in from the right (it is just there with reduced motion). */
-@Composable
-private fun CardOverlay(visible: Boolean, target: Target?, snapshot: PeopleSnapshot, prefs: PeoplePrefs) {
-    val reduced = LocalReduceMotion.current
-    AnimatedVisibility(
-        visible,
-        enter = if (reduced) EnterTransition.None else slideInHorizontally { it / 3 } + fadeIn(),
-        exit = if (reduced) ExitTransition.None else slideOutHorizontally { it / 3 } + fadeOut(),
-    ) { target?.let { ContactCard(it, snapshot, prefs) } }
 }
 
 /** The page of the hub: the colour of the look in use, clear of the bars and the camera hole, and lifted by the keyboard. */

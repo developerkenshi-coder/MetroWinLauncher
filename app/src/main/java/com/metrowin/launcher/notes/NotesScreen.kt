@@ -1,5 +1,6 @@
 package com.metrowin.launcher.notes
 
+import com.metrowin.launcher.ui.components.PageSwitch
 import com.metrowin.launcher.ui.actioncenter.BANNER_MS
 import android.app.Activity
 import android.app.KeyguardManager
@@ -185,69 +186,88 @@ fun NotesScreen(openId: String? = null) {
         if (openId != null) notes?.firstOrNull { it.id == openId && it.deleted == 0L }?.let(::open)
     }
 
-    val current = (page as? Page.Edit)?.id ?: (page as? Page.Sketch)?.id
-    val note = notes?.firstOrNull { it.id == current }
-    when (val shown = page) {
-        Page.List -> NoteList(
-            notes = notes,
-            prefs = prefs,
-            noteFiles = noteFiles,
-            saveFailed = saveFailed,
-            onOpen = ::open,
-            onNew = { val n = create(); replace(n); page = Page.Edit(n.id) },
-            onNewSketch = { val n = create(); replace(n); page = Page.Sketch(n.id) },
-            onBackup = {
-                if (prefs.on(NotePrefs.SEAL)) { password = ""; ask = Ask.Backup } else backup.launch("$backupName-" + java.time.LocalDate.now() + ".zip")
-            },
-            onRestore = { restore.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream")) },
-            lost = lost && notes.orEmpty().isEmpty(),
-            onDiscard = { scope.launch(Dispatchers.IO) { store.discardUnreadable(); lost = false } },
-            onBin = { ids, on -> commit(notes.orEmpty().map { if (it.id in ids) it.copy(deleted = if (on) System.currentTimeMillis() else 0L) else it }) },
-            onForever = { ids ->
-                val gone = notes.orEmpty().filter { it.id in ids }
-                gone.flatMap { it.files }.forEach(noteFiles::delete)
-                commit(notes.orEmpty().filter { it.id !in ids })
-            },
-            onPin = { ids, on -> commit(notes.orEmpty().map { if (it.id in ids) it.copy(pinned = on) else it }) },
-        )
-        is Page.Edit -> if (note == null || note.deleted > 0) page = Page.List else NoteEditor(
-            note = note,
-            noteFiles = noteFiles,
-            prefs = prefs,
-            folders = notes.orEmpty().filter { it.deleted == 0L }.map { it.folder }.filter { it.isNotBlank() }.distinct(),
-            onChange = ::replace,
-            onSketch = { page = Page.Sketch(note.id) },
-            onDelete = {
-                if (prefs.on(NotePrefs.BIN)) commit(notes.orEmpty().map { if (it.id == note.id) it.copy(deleted = System.currentTimeMillis()) else it })
-                else {
-                    // The note leaves the list now, and its files when the banner that offers to bring it back is gone.
-                    // shortcut: closing the app in those seconds leaves the files of the note on the phone, unseen; upgrade with a sweep of orphans.
-                    commit(notes.orEmpty().filter { it.id != note.id })
-                    MetroToast.show(context, context.getString(R.string.notes_deleted), context.getString(R.string.undo)) { commit(notes.orEmpty() + note) }
-                    scope.launch {
-                        delay(BANNER_MS + 1_000L)
-                        if (notes.orEmpty().none { it.id == note.id }) note.files.forEach(noteFiles::delete)
-                    }
-                }
-                page = Page.List
-            },
-            onClose = {
-                // A note with nothing in it is not kept.
-                if (note.isBlank) commit(notes.orEmpty().filter { it.id != note.id })
-                page = Page.List
-            },
-        )
-        is Page.Sketch -> if (note == null) page = Page.List else SketchEditor(
-            initial = note.strokes,
-            initialPaper = note.paper,
-            prefs = prefs,
-            onDraft = { strokes, paper -> notes?.firstOrNull { it.id == shown.id }?.let { replace(it.copy(strokes = strokes, paper = paper, updated = System.currentTimeMillis())) } },
-            onDone = { strokes, paper ->
-                notes?.firstOrNull { it.id == shown.id }?.let { replace(it.copy(strokes = strokes, paper = paper, updated = System.currentTimeMillis())) }
-                page = Page.Edit(shown.id)
-            },
-        )
-    }
+    // What a page shows is kept while it turns away: the note may be gone from the list by then.
+    val shownNote = remember { arrayOfNulls<Note>(1) }
+    PageSwitch(
+        page = page.takeIf { it !is Page.List },
+        onBack = { page = Page.List },
+        list = {
+            NoteList(
+                notes = notes,
+                prefs = prefs,
+                noteFiles = noteFiles,
+                saveFailed = saveFailed,
+                onOpen = ::open,
+                onNew = { val n = create(); replace(n); page = Page.Edit(n.id) },
+                onNewSketch = { val n = create(); replace(n); page = Page.Sketch(n.id) },
+                onBackup = {
+                    if (prefs.on(NotePrefs.SEAL)) { password = ""; ask = Ask.Backup } else backup.launch("$backupName-" + java.time.LocalDate.now() + ".zip")
+                },
+                onRestore = { restore.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream")) },
+                lost = lost && notes.orEmpty().isEmpty(),
+                onDiscard = { scope.launch(Dispatchers.IO) { store.discardUnreadable(); lost = false } },
+                onBin = { ids, on -> commit(notes.orEmpty().map { if (it.id in ids) it.copy(deleted = if (on) System.currentTimeMillis() else 0L) else it }) },
+                onForever = { ids ->
+                    val gone = notes.orEmpty().filter { it.id in ids }
+                    gone.flatMap { it.files }.forEach(noteFiles::delete)
+                    commit(notes.orEmpty().filter { it.id !in ids })
+                },
+                onPin = { ids, on -> commit(notes.orEmpty().map { if (it.id in ids) it.copy(pinned = on) else it }) },
+            )
+        },
+        detail = { open ->
+            val id = (open as? Page.Edit)?.id ?: (open as Page.Sketch).id
+            val found = notes?.firstOrNull { it.id == id }
+            if (found != null) shownNote[0] = found
+            if (page !is Page.List && (found == null || found.deleted > 0)) page = Page.List
+            val note = found ?: shownNote[0]
+            if (note != null) PageSwitch(
+                page = open as? Page.Sketch,
+                onBack = { page = Page.Edit(id) },
+                list = {
+                    NoteEditor(
+                        note = note,
+                        noteFiles = noteFiles,
+                        prefs = prefs,
+                        folders = notes.orEmpty().filter { it.deleted == 0L }.map { it.folder }.filter { it.isNotBlank() }.distinct(),
+                        onChange = ::replace,
+                        onSketch = { page = Page.Sketch(note.id) },
+                        onDelete = {
+                            if (prefs.on(NotePrefs.BIN)) commit(notes.orEmpty().map { if (it.id == note.id) it.copy(deleted = System.currentTimeMillis()) else it })
+                            else {
+                                // The note leaves the list now, and its files when the banner that offers to bring it back is gone.
+                                // shortcut: closing the app in those seconds leaves the files of the note on the phone, unseen; upgrade with a sweep of orphans.
+                                commit(notes.orEmpty().filter { it.id != note.id })
+                                MetroToast.show(context, context.getString(R.string.notes_deleted), context.getString(R.string.undo)) { commit(notes.orEmpty() + note) }
+                                scope.launch {
+                                    delay(BANNER_MS + 1_000L)
+                                    if (notes.orEmpty().none { it.id == note.id }) note.files.forEach(noteFiles::delete)
+                                }
+                            }
+                            page = Page.List
+                        },
+                        onClose = {
+                            // A note with nothing in it is not kept.
+                            if (note.isBlank) commit(notes.orEmpty().filter { it.id != note.id })
+                            page = Page.List
+                        },
+                    )
+                },
+                detail = { shown ->
+                    SketchEditor(
+                        initial = note.strokes,
+                        initialPaper = note.paper,
+                        prefs = prefs,
+                        onDraft = { strokes, paper -> notes?.firstOrNull { it.id == shown.id }?.let { replace(it.copy(strokes = strokes, paper = paper, updated = System.currentTimeMillis())) } },
+                        onDone = { strokes, paper ->
+                            notes?.firstOrNull { it.id == shown.id }?.let { replace(it.copy(strokes = strokes, paper = paper, updated = System.currentTimeMillis())) }
+                            page = Page.Edit(shown.id)
+                        },
+                    )
+                },
+            )
+        },
+    )
 
     ask?.let { what ->
         DialogFrame(onCancel = { ask = null; password = "" }) {

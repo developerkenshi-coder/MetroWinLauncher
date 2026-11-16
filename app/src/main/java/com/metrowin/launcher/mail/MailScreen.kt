@@ -5,13 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import com.metrowin.launcher.ui.mini.MiniFrame
 import android.util.LruCache
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -78,7 +71,7 @@ import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.pages.PageNote
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
-import com.metrowin.launcher.ui.theme.LocalReduceMotion
+import com.metrowin.launcher.ui.components.PageSwitch
 import com.metrowin.launcher.ui.theme.pageBackground
 import com.metrowin.launcher.ui.theme.panel
 import kotlinx.coroutines.Dispatchers
@@ -511,24 +504,14 @@ fun MailScreen(modifier: Modifier = Modifier) {
             }
         }
     }
-    val reduced = LocalReduceMotion.current
     Box(Modifier.fillMaxSize()) {
-        if (look.transitions && !reduced) {
-            AnimatedContent(
-                targetState = view,
-                transitionSpec = {
-                    // A page opens from the right and goes back to the right; the list stays where it is.
-                    if (targetState > initialState) {
-                        (slideInHorizontally(tween(220)) { it / 4 } + fadeIn(tween(220))) togetherWith fadeOut(tween(120))
-                    } else {
-                        fadeIn(tween(160)) togetherWith (slideOutHorizontally(tween(220)) { it / 4 } + fadeOut(tween(160)))
-                    }
-                },
-                label = "mail-view",
-            ) { v -> content(v) }
-        } else {
-            content(view)
-        }
+        PageSwitch(
+            page = view.takeIf { it != 0 },
+            onBack = { if (showOptions) showOptions = false else if (composing) composing = false else selected = null },
+            animated = look.transitions,
+            list = { content(0) },
+            detail = { v -> content(v) },
+        )
         confirmDelete?.let { ids ->
             MailConfirm(
                 stringResource(R.string.mail_delete_forever, ids.size), stringResource(R.string.mail_delete),

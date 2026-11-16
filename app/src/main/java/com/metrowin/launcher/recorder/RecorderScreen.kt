@@ -1,5 +1,6 @@
 package com.metrowin.launcher.recorder
 
+import com.metrowin.launcher.ui.components.PageSwitch
 import com.metrowin.launcher.ui.components.isWide
 import androidx.compose.runtime.saveable.rememberSaveable
 import android.Manifest
@@ -13,15 +14,6 @@ import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -59,7 +51,6 @@ import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.mini.MiniFrame
-import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -272,83 +263,81 @@ fun RecorderScreen() {
         RecordingDetail(rec, env, onChanged = { version++ }, onClose = { selected = null }, onSelect = { selected = it.name; version++ }, onDelete = ::delete, modifier = modifier)
     }
 
-    val animated = opts.on(Opt.TRANSITIONS) && !LocalReduceMotion.current
-    AnimatedContent(
-        targetState = if (wide) null else open?.name,
-        transitionSpec = {
-            if (!animated) ContentTransform(EnterTransition.None, ExitTransition.None)
-            else if (targetState != null) (slideInHorizontally { it / 4 } + fadeIn()) togetherWith (fadeOut())
-            else fadeIn() togetherWith (slideOutHorizontally { it / 4 } + fadeOut())
-        },
-        label = "recDetail",
-    ) { name ->
-        val rec = recs.firstOrNull { it.name == name }
-        if (rec != null) {
-            MiniFrame {
-                detail(rec, Modifier.weight(1f).padding(horizontal = 24.dp))
-                AppBar(listOf(AppBarItem("←", stringResource(R.string.rec_back)) { selected = null }))
-            }
-            return@AnimatedContent
-        }
-        MiniFrame(panes = wide) {
-            PivotHeader(listOf(stringResource(R.string.rec_pivot_record), stringResource(R.string.rec_pivot_list)), pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp))
-            androidx.compose.foundation.layout.Box(Modifier.weight(1f).fillMaxWidth()) {
-                HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
-                    if (page == 0) {
-                        RecordPage(
-                            RecordState(allowed, denied, recording, paused, elapsed, levels, level, peak, VoiceRecorder.marks.size, busy, VoiceRecorder.failure, VoiceRecorder.notice),
-                            opts,
-                            onAllow = { ask.launch(Manifest.permission.RECORD_AUDIO) },
-                            onSettings = { runCatching { context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))) } },
-                            onToggle = { if (recording) stopRecording() else begin() },
-                            onPause = { if (VoiceRecorder.paused) VoiceRecorder.resume() else VoiceRecorder.pause() },
-                            onMark = { VoiceRecorder.addMark(); say(R.string.rec_announce_marked) },
-                        )
-                    } else {
-                        val list = ListState(recs, loaded, picked, query, label, recording, elapsed, importing, undo != null, player.file?.name)
-                        val onOpenRec: (Rec) -> Unit = { selected = it.name }
-                        val onPickRec: (Rec) -> Unit = { r -> picked = if (r.name in picked) picked - r.name else picked + r.name; armed = false }
-                        val page1: @Composable (Modifier) -> Unit = { m ->
-                            RecordingsPage(
-                                list, opts, onQuery = { query = it }, onLabel = { label = it }, onSort = { opts.cycle(Opt.SORT) },
-                                onOpen = onOpenRec, onPick = onPickRec, onGoRecord = { scope.launch { pager.animateScrollToPage(0) } }, onUndo = ::restore,
-                                modifier = m,
+    val animated = opts.on(Opt.TRANSITIONS)
+    PageSwitch(
+        page = if (wide) null else open?.name,
+        onBack = { selected = null },
+        animated = animated,
+        list = {
+            MiniFrame(panes = wide) {
+                PivotHeader(listOf(stringResource(R.string.rec_pivot_record), stringResource(R.string.rec_pivot_list)), pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp))
+                androidx.compose.foundation.layout.Box(Modifier.weight(1f).fillMaxWidth()) {
+                    HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
+                        if (page == 0) {
+                            RecordPage(
+                                RecordState(allowed, denied, recording, paused, elapsed, levels, level, peak, VoiceRecorder.marks.size, busy, VoiceRecorder.failure, VoiceRecorder.notice),
+                                opts,
+                                onAllow = { ask.launch(Manifest.permission.RECORD_AUDIO) },
+                                onSettings = { runCatching { context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))) } },
+                                onToggle = { if (recording) stopRecording() else begin() },
+                                onPause = { if (VoiceRecorder.paused) VoiceRecorder.resume() else VoiceRecorder.pause() },
+                                onMark = { VoiceRecorder.addMark(); say(R.string.rec_announce_marked) },
                             )
-                        }
-                        if (wide) Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
-                            page1(Modifier.weight(0.42f))
-                            Box(Modifier.weight(0.58f).fillMaxHeight().padding(start = 20.dp)) {
-                                if (open != null) detail(open, Modifier.fillMaxSize()) else androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) { MicIllustration(Modifier.align(androidx.compose.ui.Alignment.Center)) }
+                        } else {
+                            val list = ListState(recs, loaded, picked, query, label, recording, elapsed, importing, undo != null, player.file?.name)
+                            val onOpenRec: (Rec) -> Unit = { selected = it.name }
+                            val onPickRec: (Rec) -> Unit = { r -> picked = if (r.name in picked) picked - r.name else picked + r.name; armed = false }
+                            val page1: @Composable (Modifier) -> Unit = { m ->
+                                RecordingsPage(
+                                    list, opts, onQuery = { query = it }, onLabel = { label = it }, onSort = { opts.cycle(Opt.SORT) },
+                                    onOpen = onOpenRec, onPick = onPickRec, onGoRecord = { scope.launch { pager.animateScrollToPage(0) } }, onUndo = ::restore,
+                                    modifier = m,
+                                )
                             }
-                        } else page1(Modifier.padding(horizontal = 24.dp))
+                            if (wide) Row(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+                                page1(Modifier.weight(0.42f))
+                                Box(Modifier.weight(0.58f).fillMaxHeight().padding(start = 20.dp)) {
+                                    if (open != null) detail(open, Modifier.fillMaxSize()) else androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) { MicIllustration(Modifier.align(androidx.compose.ui.Alignment.Center)) }
+                                }
+                            } else page1(Modifier.padding(horizontal = 24.dp))
+                        }
                     }
                 }
-            }
-            if (working) com.metrowin.launcher.ui.components.MetroProgressBar(Modifier.padding(horizontal = 24.dp, vertical = 4.dp))
-            if (opts.on(Opt.MINI) && pager.currentPage == 1 && player.file != null) MiniPlayer(player, opts.on(Opt.PRETTY), onOpen = { player.file?.let { f -> selected = f.name } })
-            val menu = listOf(
-                AppBarItem("⚙", stringResource(R.string.rec_options)) { showOptions = true },
-                AppBarItem("∑", stringResource(R.string.rec_stats)) { showStats = true },
-            )
-            if (pager.currentPage == 1) {
-                // The bar of the list: bring sound in, and act on the recordings that are ticked (a long press ticks one).
-                AppBar(
-                    buildList {
-                        add(AppBarItem("＋", stringResource(R.string.rec_import)) { importer.launch(RecorderShare.IMPORT_TYPES) })
-                        if (picked.isNotEmpty()) {
-                            val chosen = recs.filter { it.name in picked }.map { it.file }
-                            add(AppBarItem("⇧", stringResource(R.string.recorder_share)) { RecorderShare.audio(context, chosen)?.let { runCatching { context.startActivity(it) } } })
-                            add(AppBarItem("", stringResource(R.string.rec_play_all)) { player.playQueue(chosen.sortedBy { it.name }, 0); picked = emptySet() }.icon(Mark.Play))
-                            if (chosen.size >= 2 && !working) add(AppBarItem("⊕", stringResource(R.string.rec_merge)) { merge(chosen) })
-                            add(AppBarItem("⌫", stringResource(if (armed) R.string.notes_delete_confirm else R.string.recorder_delete)) { if (armed) delete(chosen) else armed = true }.marked(armed))
-                            add(AppBarItem("✕", stringResource(R.string.rec_clear)) { picked = emptySet(); armed = false })
-                        }
-                    },
-                    menu = menu,
+                if (working) com.metrowin.launcher.ui.components.MetroProgressBar(Modifier.padding(horizontal = 24.dp, vertical = 4.dp))
+                if (opts.on(Opt.MINI) && pager.currentPage == 1 && player.file != null) MiniPlayer(player, opts.on(Opt.PRETTY), onOpen = { player.file?.let { f -> selected = f.name } })
+                val menu = listOf(
+                    AppBarItem("⚙", stringResource(R.string.rec_options)) { showOptions = true },
+                    AppBarItem("∑", stringResource(R.string.rec_stats)) { showStats = true },
                 )
-            } else AppBar(emptyList(), menu = menu)
-        }
-    }
+                if (pager.currentPage == 1) {
+                    // The bar of the list: bring sound in, and act on the recordings that are ticked (a long press ticks one).
+                    AppBar(
+                        buildList {
+                            add(AppBarItem("＋", stringResource(R.string.rec_import)) { importer.launch(RecorderShare.IMPORT_TYPES) })
+                            if (picked.isNotEmpty()) {
+                                val chosen = recs.filter { it.name in picked }.map { it.file }
+                                add(AppBarItem("⇧", stringResource(R.string.recorder_share)) { RecorderShare.audio(context, chosen)?.let { runCatching { context.startActivity(it) } } })
+                                add(AppBarItem("", stringResource(R.string.rec_play_all)) { player.playQueue(chosen.sortedBy { it.name }, 0); picked = emptySet() }.icon(Mark.Play))
+                                if (chosen.size >= 2 && !working) add(AppBarItem("⊕", stringResource(R.string.rec_merge)) { merge(chosen) })
+                                add(AppBarItem("⌫", stringResource(if (armed) R.string.notes_delete_confirm else R.string.recorder_delete)) { if (armed) delete(chosen) else armed = true }.marked(armed))
+                                add(AppBarItem("✕", stringResource(R.string.rec_clear)) { picked = emptySet(); armed = false })
+                            }
+                        },
+                        menu = menu,
+                    )
+                } else AppBar(emptyList(), menu = menu)
+            }
+    
+        },
+        detail = { name ->
+            recs.firstOrNull { it.name == name }?.let { rec ->
+                MiniFrame {
+                    detail(rec, Modifier.weight(1f).padding(horizontal = 24.dp))
+                    AppBar(listOf(AppBarItem("←", stringResource(R.string.rec_back)) { selected = null }))
+                }
+            }
+        },
+    )
     if (showOptions) OptionsDialog(opts) { showOptions = false }
     if (showStats) StatsDialog(recs) { showStats = false }
 }

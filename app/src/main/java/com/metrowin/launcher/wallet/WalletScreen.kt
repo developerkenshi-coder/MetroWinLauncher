@@ -1,16 +1,10 @@
 package com.metrowin.launcher.wallet
 
+import com.metrowin.launcher.ui.components.PageSwitch
 import android.app.Activity
 import android.app.KeyguardManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -176,49 +170,53 @@ fun WalletScreen() {
     // --- the pages
     val still = LocalReduceMotion.current || !prefs.motion.on
     Box(Modifier.background(LocalMetroColors.current.background)) {
-        AnimatedContent(
-            targetState = pageKey,
-            transitionSpec = { if (still) EnterTransition.None togetherWith ExitTransition.None else fadeIn(tween(160)) togetherWith fadeOut(tween(120)) },
-            label = "wallet-page",
-        ) { key ->
-            val id = key.drop(2)
-            when {
-                key.startsWith("v:") -> {
-                    val found = all.firstOrNull { it.id == id }
-                    // The page that is leaving after a delete still has the card to draw.
-                    val kept = remember(id) { arrayOfNulls<Card>(1) }
-                    if (found != null) kept[0] = found
-                    val card = found ?: kept[0]
-                    if (card == null) LaunchedEffect(Unit) { pageKey = LIST }
-                    else CardView(
-                        card, prefs, today, onEdit = { pageKey = "e:${card.id}" },
-                        onDelete = { undo = card to all.indexOfFirst { it.id == card.id }; commit(all.filter { it.id != card.id }); pageKey = LIST },
-                        onBack = { pageKey = LIST },
-                        onFavorite = { commit(all.map { if (it.id == card.id) it.copy(favorite = !it.favorite) else it }) },
-                        onExport = { startExport(listOf(card), sealed = true) },
-                    )
-                }
-                key.startsWith("e:") || key.startsWith("n:") -> {
-                    val existing = all.firstOrNull { it.id == id }
-                    val card = existing ?: remember(id) { Card(id, "", "", created = System.currentTimeMillis()) }
-                    CardEdit(
-                        card, prefs, today,
-                        onSave = { saved ->
-                            commit(if (all.any { it.id == saved.id }) all.map { if (it.id == saved.id) saved else it } else all + saved)
-                            pageKey = "v:${saved.id}"
-                        },
-                        onCancel = { pageKey = if (existing != null) "v:$id" else LIST },
-                    )
-                }
-                else -> CardList(
+        PageSwitch(
+            page = pageKey.takeIf { it != LIST },
+            onBack = { pageKey = LIST },
+            animated = !still,
+            list = {
+                CardList(
                     cards, prefs, today, unreadable && all.isEmpty(), onOpen = ::open,
                     onNew = { pageKey = "n:${UUID.randomUUID()}" },
                     onExport = { startExport(all, sealed = false) },
                     onImport = { import.launch(arrayOf("application/json", "text/plain", "application/octet-stream", "application/vnd.apple.pkpass")) },
                     onOptions = { options = true },
                 )
-            }
-        }
+            },
+            detail = { key ->
+                val id = key.drop(2)
+                when {
+                    key.startsWith("v:") -> {
+                        val found = all.firstOrNull { it.id == id }
+                        // The page that is leaving after a delete still has the card to draw.
+                        val kept = remember(id) { arrayOfNulls<Card>(1) }
+                        if (found != null) kept[0] = found
+                        val card = found ?: kept[0]
+                        if (card == null) LaunchedEffect(Unit) { pageKey = LIST }
+                        else CardView(
+                            card, prefs, today, onEdit = { pageKey = "e:${card.id}" },
+                            onDelete = { undo = card to all.indexOfFirst { it.id == card.id }; commit(all.filter { it.id != card.id }); pageKey = LIST },
+                            onBack = { pageKey = LIST },
+                            onFavorite = { commit(all.map { if (it.id == card.id) it.copy(favorite = !it.favorite) else it }) },
+                            onExport = { startExport(listOf(card), sealed = true) },
+                        )
+                    }
+                    key.startsWith("e:") || key.startsWith("n:") -> {
+                        val existing = all.firstOrNull { it.id == id }
+                        val card = existing ?: remember(id) { Card(id, "", "", created = System.currentTimeMillis()) }
+                        CardEdit(
+                            card, prefs, today,
+                            onSave = { saved ->
+                                commit(if (all.any { it.id == saved.id }) all.map { if (it.id == saved.id) saved else it } else all + saved)
+                                pageKey = "v:${saved.id}"
+                            },
+                            onCancel = { pageKey = if (existing != null) "v:$id" else LIST },
+                        )
+                    }
+                    else -> Unit
+                }
+            },
+        )
         // The card that was deleted can be brought back for a few seconds.
         undo?.let { (card, index) ->
             LaunchedEffect(card) { delay(UNDO_MS); undo = null }

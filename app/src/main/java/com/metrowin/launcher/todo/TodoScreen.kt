@@ -1,5 +1,6 @@
 package com.metrowin.launcher.todo
 
+import com.metrowin.launcher.ui.components.PageSwitch
 import com.metrowin.launcher.ui.components.isWide
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.mini.miniPageSide
@@ -14,11 +15,9 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -351,67 +350,73 @@ fun TodoScreen(openId: Long = 0L) {
     val editPage = editing != null && options.editPage
 
     MiniFrame(panes = wide) {
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            Column(Modifier.fillMaxSize()) {
-                val titles = listOf(stringResource(R.string.todo_pivot_open), stringResource(R.string.todo_pivot_done)).let { t ->
-                    if (options.counts && all.isNotEmpty()) listOf(t[0] + " " + Todos.openCount(all, list), t[1]) else t
-                }
-                PivotHeader(titles, pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 4.dp))
-                if (searching) {
-                    MetroTextField(query, { query = it.take(Todos.MAX_TEXT) }, stringResource(R.string.todo_search_hint), Modifier.padding(horizontal = 24.dp).padding(bottom = 8.dp).testTag("todo:search"))
-                }
-                val problem = health?.takeIf { !it.ok && all.any { i -> !i.done && i.due != 0L } }
-                if (problem != null) {
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp).testTag("todo:health"), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        PageNote(stringResource(if (!problem.exactAlarms) R.string.todo_health_exact else R.string.todo_health_notif), Modifier.weight(1f))
-                        MetroButton(stringResource(R.string.todo_fix)) {
-                            val intent = if (!problem.exactAlarms && android.os.Build.VERSION.SDK_INT >= 31) {
-                                Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:" + context.packageName))
-                            } else {
-                                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        // The page of an edit, or the focus page, takes the place of the list.
+        PageSwitch(
+            page = if (editPage) editing else if (panel == Panel.Focus) Panel.Focus else null,
+            onBack = { if (editPage) editing = null else panel = null },
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            list = {
+                Column(Modifier.fillMaxSize()) {
+                    val titles = listOf(stringResource(R.string.todo_pivot_open), stringResource(R.string.todo_pivot_done)).let { t ->
+                        if (options.counts && all.isNotEmpty()) listOf(t[0] + " " + Todos.openCount(all, list), t[1]) else t
+                    }
+                    PivotHeader(titles, pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 4.dp))
+                    if (searching) {
+                        MetroTextField(query, { query = it.take(Todos.MAX_TEXT) }, stringResource(R.string.todo_search_hint), Modifier.padding(horizontal = 24.dp).padding(bottom = 8.dp).testTag("todo:search"))
+                    }
+                    val problem = health?.takeIf { !it.ok && all.any { i -> !i.done && i.due != 0L } }
+                    if (problem != null) {
+                        Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp).testTag("todo:health"), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            PageNote(stringResource(if (!problem.exactAlarms) R.string.todo_health_exact else R.string.todo_health_notif), Modifier.weight(1f))
+                            MetroButton(stringResource(R.string.todo_fix)) {
+                                val intent = if (!problem.exactAlarms && android.os.Build.VERSION.SDK_INT >= 31) {
+                                    Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:" + context.packageName))
+                                } else {
+                                    Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                }
+                                runCatching { context.startActivity(intent) }
                             }
-                            runCatching { context.startActivity(intent) }
+                        }
+                    }
+                    if (names.isNotEmpty() && !wide) {
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 24.dp), modifier = Modifier.padding(bottom = 8.dp).fadeEdges()) {
+                            item { TodoChip(chipName(stringResource(R.string.todo_all), if (options.counts) Todos.openCount(all) else null), list == null, "todo:list:all") { list = null } }
+                            items(names) { name -> TodoChip(chipName(name, if (options.counts) Todos.openCount(all, name) else null), list == name, "todo:list:$name", tint = colorOf(name)) { list = name } }
+                        }
+                    }
+                    Row(Modifier.weight(1f).fillMaxWidth()) {
+                        if (wide) {
+                            Column(Modifier.width(200.dp).verticalScroll(rememberScrollState()).padding(start = 24.dp, top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                TodoChip(chipName(stringResource(R.string.todo_all), if (options.counts) Todos.openCount(all) else null), list == null, "todo:list:all") { list = null }
+                                names.forEach { name -> TodoChip(chipName(name, if (options.counts) Todos.openCount(all, name) else null), list == name, "todo:list:$name", tint = colorOf(name)) { list = name } }
+                            }
+                        }
+                        HorizontalPager(pager, Modifier.weight(1f).fillMaxSize()) { page ->
+                            if (page == 0) {
+                                OpenPage(
+                                    groups, items != null, all.any { it.done }, query.isNotBlank() || options.filter != Todos.Filter.All, env, list.orEmpty(), kanban,
+                                    if (options.dashboard) Todos.today(all, now) else null,
+                                    spoken, { spoken = null }, if (options.dictation) {
+                                        { runCatching { dictate.launch(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)) }.onFailure { toast(R.string.todo_dictation_missing) } }
+                                    } else null,
+                                    onAdd = ::create, onReorder = { ids -> commit(Todos.reorder(items.orEmpty(), ids)) }, onDelete = ::delete,
+                                    tipSeen = tipSeen, onTipSeen = { tipSeen = true; optionStore.dragTipSeen = true },
+                                )
+                            } else {
+                                DonePage(finished, env)
+                            }
                         }
                     }
                 }
-                if (names.isNotEmpty() && !wide) {
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 24.dp), modifier = Modifier.padding(bottom = 8.dp).fadeEdges()) {
-                        item { TodoChip(chipName(stringResource(R.string.todo_all), if (options.counts) Todos.openCount(all) else null), list == null, "todo:list:all") { list = null } }
-                        items(names) { name -> TodoChip(chipName(name, if (options.counts) Todos.openCount(all, name) else null), list == name, "todo:list:$name", tint = colorOf(name)) { list = name } }
-                    }
-                }
-                Row(Modifier.weight(1f).fillMaxWidth()) {
-                    if (wide) {
-                        Column(Modifier.width(200.dp).verticalScroll(rememberScrollState()).padding(start = 24.dp, top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TodoChip(chipName(stringResource(R.string.todo_all), if (options.counts) Todos.openCount(all) else null), list == null, "todo:list:all") { list = null }
-                            names.forEach { name -> TodoChip(chipName(name, if (options.counts) Todos.openCount(all, name) else null), list == name, "todo:list:$name", tint = colorOf(name)) { list = name } }
-                        }
-                    }
-                    HorizontalPager(pager, Modifier.weight(1f).fillMaxSize()) { page ->
-                        if (page == 0) {
-                            OpenPage(
-                                groups, items != null, all.any { it.done }, query.isNotBlank() || options.filter != Todos.Filter.All, env, list.orEmpty(), kanban,
-                                if (options.dashboard) Todos.today(all, now) else null,
-                                spoken, { spoken = null }, if (options.dictation) {
-                                    { runCatching { dictate.launch(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)) }.onFailure { toast(R.string.todo_dictation_missing) } }
-                                } else null,
-                                onAdd = ::create, onReorder = { ids -> commit(Todos.reorder(items.orEmpty(), ids)) }, onDelete = ::delete,
-                                tipSeen = tipSeen, onTipSeen = { tipSeen = true; optionStore.dragTipSeen = true },
-                            )
-                        } else {
-                            DonePage(finished, env)
-                        }
-                    }
-                }
-            }
-            EditOverlay(if (editPage) editing else null, names, now, onSave = { change(it); editing = null }, onDelete = { delete(it); editing = null })
-            if (panel == Panel.Focus) {
-                FocusPage(
+            },
+            detail = { page ->
+                if (page is TodoItem) EditPage(page, names, now, { change(it); editing = null }, { delete(page); editing = null })
+                else FocusPage(
                     Todos.groups(all, list, Todos.GroupBy.Section, now, options.filter).flatMap { it.items },
                     onDone = { toggle(it) }, onClose = { panel = null },
                 )
-            }
-        }
+            },
+        )
         if (!editPage && panel != Panel.Focus) {
             AppBar(
                 listOf(

@@ -1,5 +1,6 @@
 package com.metrowin.launcher.files
 
+import com.metrowin.launcher.ui.components.PageSwitch
 import com.metrowin.launcher.ui.components.isWide
 import com.metrowin.launcher.ui.components.windowClass
 import com.metrowin.launcher.ui.components.sectionStarts
@@ -362,65 +363,79 @@ private fun Manager() {
         prefs.tags = map
     }
 
-    MiniFrame(panes = isWide()) {
-        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
-            // Two panels side by side when the screen is as wide as a tablet, not whenever it is turned.
-            val wide = maxWidth.windowClass.isWide
-            val look = RowLook(on(Opt.CategoryColors), on(Opt.ListThumbs), on(Opt.RichThumbs), on(Opt.RecentMark), on(Opt.LargeText))
-            if (wide) {
-                Row(Modifier.fillMaxSize()) {
-                    for (i in 0..1) Box(Modifier.weight(1f).fillMaxSize()) {
-                        PanePage(pane(i), i, places, data(i), tiles, tileSide, look, on(Opt.ContentSearch), if (on(Opt.Tags)) tags else emptyMap(), onActivate = { active = i }, onGo = { go(pane(i), it, i) }, onOpenFile = ::openFile, lettered = sortFor(pane(i)).key == SortKey.Name, range = on(Opt.Range))
+    // The editor and the picture viewer are pages: they come in over the folder, the other dialogs stay dialogs.
+    PageSwitch(
+        page = dialog.takeIf { it is FilesDialog.Editor || it is FilesDialog.Viewer },
+        onBack = { dialog = null },
+        list = {
+            MiniFrame(panes = isWide()) {
+                BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+                    // Two panels side by side when the screen is as wide as a tablet, not whenever it is turned.
+                    val wide = maxWidth.windowClass.isWide
+                    val look = RowLook(on(Opt.CategoryColors), on(Opt.ListThumbs), on(Opt.RichThumbs), on(Opt.RecentMark), on(Opt.LargeText))
+                    if (wide) {
+                        Row(Modifier.fillMaxSize()) {
+                            for (i in 0..1) Box(Modifier.weight(1f).fillMaxSize()) {
+                                PanePage(pane(i), i, places, data(i), tiles, tileSide, look, on(Opt.ContentSearch), if (on(Opt.Tags)) tags else emptyMap(), onActivate = { active = i }, onGo = { go(pane(i), it, i) }, onOpenFile = ::openFile, lettered = sortFor(pane(i)).key == SortKey.Name, range = on(Opt.Range))
+                            }
+                        }
+                    } else {
+                        Column(Modifier.fillMaxSize()) {
+                            PivotHeader(
+                                listOf(relative(places, left.path).last().first, relative(places, right.path).last().first),
+                                pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 4.dp),
+                            )
+                            LaunchedEffect(pager.currentPage) { active = pager.currentPage }
+                            HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth(), beyondViewportPageCount = 1) { i ->
+                                PanePage(pane(i), i, places, data(i), tiles, tileSide, look, on(Opt.ContentSearch), if (on(Opt.Tags)) tags else emptyMap(), onActivate = { active = i }, onGo = { go(pane(i), it, i) }, onOpenFile = ::openFile, lettered = sortFor(pane(i)).key == SortKey.Name, range = on(Opt.Range))
+                            }
+                        }
                     }
                 }
-            } else {
-                Column(Modifier.fillMaxSize()) {
-                    PivotHeader(
-                        listOf(relative(places, left.path).last().first, relative(places, right.path).last().first),
-                        pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 4.dp),
+                job?.takeIf { it.hidden }?.let { j -> ProgressStrip(j) { j.hidden = false } }
+                undo?.let { u ->
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp).defaultMinSize(minHeight = 48.dp).testTag("fm:undo"), verticalAlignment = Alignment.CenterVertically) {
+                        MetroText(stringResource(if (u.move) R.string.fmx_moved else R.string.fmx_copied), size = 16.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, modifier = Modifier.weight(1f))
+                        MetroText(
+                            stringResource(R.string.fmx_undo), size = 17.sp, color = LocalAccent.current,
+                            modifier = Modifier.semantics { role = Role.Button }.metroPress(onClick = { undoNow(u) }).defaultMinSize(minHeight = 48.dp, minWidth = 48.dp).padding(horizontal = 8.dp, vertical = 12.dp),
+                        )
+                    }
+                }
+                if (pickedAny) {
+                    FilesBar(
+                        buildList {
+                            add(FilesBarItem(FilesIcon.Copy, stringResource(R.string.fm_copy)) { clip = Clip(picked, false); current.selection = emptySet() })
+                            add(FilesBarItem(FilesIcon.Cut, stringResource(R.string.fm_cut)) { clip = Clip(picked, true); current.selection = emptySet() })
+                            add(FilesBarItem(FilesIcon.Delete, stringResource(R.string.fm_delete)) { dialog = FilesDialog.Delete(picked.size) { forever -> delete(picked, forever) } })
+                            add(FilesBarItem(FilesIcon.Share, stringResource(R.string.fm_share)) { FilesSupport.share(context, picked) })
+                            add(FilesBarItem(FilesIcon.Compress, stringResource(R.string.fm_compress)) { dialog = FilesDialog.Compress(picked) })
+                            if (picked.size == 1) add(FilesBarItem(FilesIcon.Rename, stringResource(R.string.fm_rename_short)) { dialog = FilesDialog.Rename(picked.first()) })
+                            add(FilesBarItem(FilesIcon.More, stringResource(R.string.fm_more)) { dialog = FilesDialog.Actions(picked) })
+                        },
                     )
-                    LaunchedEffect(pager.currentPage) { active = pager.currentPage }
-                    HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth(), beyondViewportPageCount = 1) { i ->
-                        PanePage(pane(i), i, places, data(i), tiles, tileSide, look, on(Opt.ContentSearch), if (on(Opt.Tags)) tags else emptyMap(), onActivate = { active = i }, onGo = { go(pane(i), it, i) }, onOpenFile = ::openFile, lettered = sortFor(pane(i)).key == SortKey.Name, range = on(Opt.Range))
-                    }
+                } else {
+                    FilesBar(
+                        buildList {
+                            add(FilesBarItem(FilesIcon.New, stringResource(R.string.fm_new)) { dialog = FilesDialog.New })
+                            clip?.let { add(FilesBarItem(FilesIcon.Paste, stringResource(R.string.fm_paste)) { start(it.files, current.path, it.move); if (it.move) clip = null }) }
+                            add(FilesBarItem(FilesIcon.Select, stringResource(R.string.fm_select)) { current.selection = entries(active).map { it.absolutePath }.toSet() })
+                            add(FilesBarItem(FilesIcon.View, stringResource(R.string.fm_view)) { dialog = FilesDialog.View })
+                            add(FilesBarItem(FilesIcon.Categories, stringResource(R.string.fm_categories)) { dialog = FilesDialog.Categories })
+                            add(FilesBarItem(FilesIcon.More, stringResource(R.string.fm_more)) { dialog = FilesDialog.Menu })
+                        },
+                    )
                 }
             }
-        }
-        job?.takeIf { it.hidden }?.let { j -> ProgressStrip(j) { j.hidden = false } }
-        undo?.let { u ->
-            Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp).defaultMinSize(minHeight = 48.dp).testTag("fm:undo"), verticalAlignment = Alignment.CenterVertically) {
-                MetroText(stringResource(if (u.move) R.string.fmx_moved else R.string.fmx_copied), size = 16.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, modifier = Modifier.weight(1f))
-                MetroText(
-                    stringResource(R.string.fmx_undo), size = 17.sp, color = LocalAccent.current,
-                    modifier = Modifier.semantics { role = Role.Button }.metroPress(onClick = { undoNow(u) }).defaultMinSize(minHeight = 48.dp, minWidth = 48.dp).padding(horizontal = 8.dp, vertical = 12.dp),
-                )
+        },
+        detail = { page ->
+            when (page) {
+                is FilesDialog.Editor -> TextEditor(page.file, onClose = { dialog = null; version++ })
+                is FilesDialog.Viewer -> ImageViewer(page.file, onClose = { dialog = null })
+                else -> Unit
             }
-        }
-        if (pickedAny) {
-            FilesBar(
-                buildList {
-                    add(FilesBarItem(FilesIcon.Copy, stringResource(R.string.fm_copy)) { clip = Clip(picked, false); current.selection = emptySet() })
-                    add(FilesBarItem(FilesIcon.Cut, stringResource(R.string.fm_cut)) { clip = Clip(picked, true); current.selection = emptySet() })
-                    add(FilesBarItem(FilesIcon.Delete, stringResource(R.string.fm_delete)) { dialog = FilesDialog.Delete(picked.size) { forever -> delete(picked, forever) } })
-                    add(FilesBarItem(FilesIcon.Share, stringResource(R.string.fm_share)) { FilesSupport.share(context, picked) })
-                    add(FilesBarItem(FilesIcon.Compress, stringResource(R.string.fm_compress)) { dialog = FilesDialog.Compress(picked) })
-                    if (picked.size == 1) add(FilesBarItem(FilesIcon.Rename, stringResource(R.string.fm_rename_short)) { dialog = FilesDialog.Rename(picked.first()) })
-                    add(FilesBarItem(FilesIcon.More, stringResource(R.string.fm_more)) { dialog = FilesDialog.Actions(picked) })
-                },
-            )
-        } else {
-            FilesBar(
-                buildList {
-                    add(FilesBarItem(FilesIcon.New, stringResource(R.string.fm_new)) { dialog = FilesDialog.New })
-                    clip?.let { add(FilesBarItem(FilesIcon.Paste, stringResource(R.string.fm_paste)) { start(it.files, current.path, it.move); if (it.move) clip = null }) }
-                    add(FilesBarItem(FilesIcon.Select, stringResource(R.string.fm_select)) { current.selection = entries(active).map { it.absolutePath }.toSet() })
-                    add(FilesBarItem(FilesIcon.View, stringResource(R.string.fm_view)) { dialog = FilesDialog.View })
-                    add(FilesBarItem(FilesIcon.Categories, stringResource(R.string.fm_categories)) { dialog = FilesDialog.Categories })
-                    add(FilesBarItem(FilesIcon.More, stringResource(R.string.fm_more)) { dialog = FilesDialog.Menu })
-                },
-            )
-        }
-    }
+        },
+    )
 
     // --- the dialogs
     job?.takeIf { !it.hidden }?.let { j -> ProgressDialog(j) { j.hidden = true } }
@@ -540,8 +555,7 @@ private fun Manager() {
             onCancel = { dialog = null },
         )
         is FilesDialog.Properties -> PropertiesDialog(d.file, onClose = { dialog = null })
-        is FilesDialog.Editor -> TextEditor(d.file, onClose = { dialog = null; version++ })
-        is FilesDialog.Viewer -> ImageViewer(d.file, onClose = { dialog = null })
+        is FilesDialog.Editor, is FilesDialog.Viewer -> Unit
         is FilesDialog.ArchiveList -> ArchiveListDialog(d.file, onExtractOne = { name ->
             dialog = null
             val folder = d.file.parentFile ?: current.path

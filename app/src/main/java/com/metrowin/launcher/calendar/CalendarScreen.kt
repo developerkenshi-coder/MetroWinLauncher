@@ -1,5 +1,6 @@
 package com.metrowin.launcher.calendar
 
+import com.metrowin.launcher.ui.components.PageSwitch
 import com.metrowin.launcher.ui.components.isWide
 import android.Manifest
 import android.content.Intent
@@ -199,77 +200,82 @@ fun CalendarScreen(initialDay: LocalDate? = null) {
         LocalDensity provides if (options[Option.LargeText]) Density(density.density, density.fontScale * 1.25f) else density,
     ) {
         Box(Modifier.fillMaxSize()) {
-            MiniFrame(panes = wide) {
-                val titles = pages.map { p ->
-                    when (p) {
-                        Page.Agenda -> stringResource(R.string.cal_pivot_agenda)
-                        Page.Month -> (if (month == YearMonth.from(today)) "• " else "") + monthTitle(month)
-                        Page.Week -> stringResource(R.string.cal_pivot_week)
-                        Page.Day -> stringResource(R.string.cal_pivot_day)
-                        Page.Year -> stringResource(R.string.cal_pivot_year)
-                    }
-                }
-                PivotHeader(titles, pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp))
-                if (!canRead) {
-                    Column(Modifier.weight(1f).padding(horizontal = 24.dp)) {
-                        EmptyState(stringResource(R.string.cal_need_permission), locked = true) {
-                            MetroButton(stringResource(R.string.recorder_allow), Modifier.padding(top = 14.dp).testTag("cal:allow")) { askRead.launch(Manifest.permission.READ_CALENDAR) }
-                            MetroButton(stringResource(R.string.cal_open_settings), Modifier.padding(top = 8.dp).testTag("cal:settings")) {
-                                runCatching { context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            PageSwitch(
+                page = editing, onBack = { editing = null },
+                list = {
+                    MiniFrame(panes = wide) {
+                        val titles = pages.map { p ->
+                            when (p) {
+                                Page.Agenda -> stringResource(R.string.cal_pivot_agenda)
+                                Page.Month -> (if (month == YearMonth.from(today)) "• " else "") + monthTitle(month)
+                                Page.Week -> stringResource(R.string.cal_pivot_week)
+                                Page.Day -> stringResource(R.string.cal_pivot_day)
+                                Page.Year -> stringResource(R.string.cal_pivot_year)
                             }
                         }
-                    }
-                } else if (searching) {
-                    Box(Modifier.weight(1f)) { SearchPage(repository, today, zone, options.hidden) { editing = it } }
-                } else Row(Modifier.weight(1f).fillMaxWidth()) {
-                    if (wide) Box(Modifier.weight(0.45f)) {
-                        MonthPage(shown, month, selected, roomy = true, onMonth = { month = it }, onSelect = { selected = it }, onOpenDay = { open(selected) }, onEdit = { editing = it })
-                    }
-                    Box(Modifier.weight(if (wide) 0.55f else 1f)) {
-                        HorizontalPager(pager, Modifier.fillMaxSize()) { index ->
-                            when (pages[index]) {
-                                Page.Agenda -> AgendaPage(shown, selected, loaded.truncated) { editing = it }
-                                Page.Month -> MonthPage(shown, month, selected, roomy = false, onMonth = { month = it }, onSelect = { selected = it }, onOpenDay = { open(selected) }, onEdit = { editing = it })
-                                Page.Week -> WeekPage(shown, selected, onShift = { selected = selected.plusDays(it * 7L); month = YearMonth.from(selected) }, onOpenDay = { open(it) }, onEdit = { editing = it }, onCreate = { d, h -> startNew(newEvent(d, h)) })
-                                Page.Day -> DayPage(
-                                    shown, selected, onShift = { selected = selected.plusDays(it.toLong()); month = YearMonth.from(selected) }, onEdit = { editing = it }, onCreate = { d, h -> startNew(newEvent(d, h)) },
-                                    onMove = { e, s, en -> scope.launch { val ok = withContext(Dispatchers.IO) { repository.move(e, s, en) }; if (!ok) MetroToast.show(context, failure()); version++ } },
-                                )
-                                Page.Year -> YearPage(shown, month.year, onShift = { month = month.plusYears(it.toLong()); selected = selected.plusYears(it.toLong()) }, onPick = { m -> month = m; selected = if (m == YearMonth.from(today)) today else m.atDay(1); if (!wide) scope.launch { pager.animateScrollToPage(pages.indexOf(Page.Month)) } })
+                        PivotHeader(titles, pager, Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp))
+                        if (!canRead) {
+                            Column(Modifier.weight(1f).padding(horizontal = 24.dp)) {
+                                EmptyState(stringResource(R.string.cal_need_permission), locked = true) {
+                                    MetroButton(stringResource(R.string.recorder_allow), Modifier.padding(top = 14.dp).testTag("cal:allow")) { askRead.launch(Manifest.permission.READ_CALENDAR) }
+                                    MetroButton(stringResource(R.string.cal_open_settings), Modifier.padding(top = 8.dp).testTag("cal:settings")) {
+                                        runCatching { context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                                    }
+                                }
+                            }
+                        } else if (searching) {
+                            Box(Modifier.weight(1f)) { SearchPage(repository, today, zone, options.hidden) { editing = it } }
+                        } else Row(Modifier.weight(1f).fillMaxWidth()) {
+                            if (wide) Box(Modifier.weight(0.45f)) {
+                                MonthPage(shown, month, selected, roomy = true, onMonth = { month = it }, onSelect = { selected = it }, onOpenDay = { open(selected) }, onEdit = { editing = it })
+                            }
+                            Box(Modifier.weight(if (wide) 0.55f else 1f)) {
+                                HorizontalPager(pager, Modifier.fillMaxSize()) { index ->
+                                    when (pages[index]) {
+                                        Page.Agenda -> AgendaPage(shown, selected, loaded.truncated) { editing = it }
+                                        Page.Month -> MonthPage(shown, month, selected, roomy = false, onMonth = { month = it }, onSelect = { selected = it }, onOpenDay = { open(selected) }, onEdit = { editing = it })
+                                        Page.Week -> WeekPage(shown, selected, onShift = { selected = selected.plusDays(it * 7L); month = YearMonth.from(selected) }, onOpenDay = { open(it) }, onEdit = { editing = it }, onCreate = { d, h -> startNew(newEvent(d, h)) })
+                                        Page.Day -> DayPage(
+                                            shown, selected, onShift = { selected = selected.plusDays(it.toLong()); month = YearMonth.from(selected) }, onEdit = { editing = it }, onCreate = { d, h -> startNew(newEvent(d, h)) },
+                                            onMove = { e, s, en -> scope.launch { val ok = withContext(Dispatchers.IO) { repository.move(e, s, en) }; if (!ok) MetroToast.show(context, failure()); version++ } },
+                                        )
+                                        Page.Year -> YearPage(shown, month.year, onShift = { month = month.plusYears(it.toLong()); selected = selected.plusYears(it.toLong()) }, onPick = { m -> month = m; selected = if (m == YearMonth.from(today)) today else m.atDay(1); if (!wide) scope.launch { pager.animateScrollToPage(pages.indexOf(Page.Month)) } })
+                                    }
+                                }
                             }
                         }
+                        AppBar(
+                            listOf(
+                                AppBarItem("＋", stringResource(R.string.cal_new)) { startNew(newEvent(selected)) },
+                                AppBarItem("⌂", stringResource(R.string.cal_today)) { selected = today; month = YearMonth.from(today); searching = false },
+                            ),
+                            menu = listOf(
+                                AppBarItem("⌕", stringResource(R.string.cal_search)) { searching = !searching },
+                                AppBarItem("▦", stringResource(R.string.cal_calendars)) { dialog = "calendars" },
+                                AppBarItem("⇄", stringResource(R.string.cal_tools)) { dialog = "tools" },
+                                AppBarItem("⚙", stringResource(R.string.cal_options)) { dialog = "options" },
+                            ),
+                        )
                     }
-                }
-                AppBar(
-                    listOf(
-                        AppBarItem("＋", stringResource(R.string.cal_new)) { startNew(newEvent(selected)) },
-                        AppBarItem("⌂", stringResource(R.string.cal_today)) { selected = today; month = YearMonth.from(today); searching = false },
-                    ),
-                    menu = listOf(
-                        AppBarItem("⌕", stringResource(R.string.cal_search)) { searching = !searching },
-                        AppBarItem("▦", stringResource(R.string.cal_calendars)) { dialog = "calendars" },
-                        AppBarItem("⇄", stringResource(R.string.cal_tools)) { dialog = "tools" },
-                        AppBarItem("⚙", stringResource(R.string.cal_options)) { dialog = "options" },
-                    ),
-                )
-            }
-            editing?.let { event ->
-                if (event.readOnly) EventView(event, repository, onCancel = { editing = null }, onJoin = ::join)
-                else EventForm(
-                    event, repository,
-                    onSave = { saved ->
-                        scope.launch {
-                            val ok = withContext(Dispatchers.IO) { if (saved.event.id == 0L) repository.insert(saved.event, saved.rule) != 0L else repository.update(saved.event, event, saved.all, saved.touchReminders) }
-                            version++
-                            // A save that failed leaves the form open: what was typed is not lost.
-                            if (ok) editing = null else MetroToast.show(context, failure())
-                        }
-                    },
-                    onDelete = { all -> scope.launch { val ok = withContext(Dispatchers.IO) { repository.delete(event, all) }; version++; if (ok) editing = null else MetroToast.show(context, failure()) } },
-                    onCancel = { editing = null },
-                    onJoin = ::join,
-                )
-            }
+                },
+                detail = { event ->
+                    if (event.readOnly) EventView(event, repository, onCancel = { editing = null }, onJoin = ::join)
+                    else EventForm(
+                        event, repository,
+                        onSave = { saved ->
+                            scope.launch {
+                                val ok = withContext(Dispatchers.IO) { if (saved.event.id == 0L) repository.insert(saved.event, saved.rule) != 0L else repository.update(saved.event, event, saved.all, saved.touchReminders) }
+                                version++
+                                // A save that failed leaves the form open: what was typed is not lost.
+                                if (ok) editing = null else MetroToast.show(context, failure())
+                            }
+                        },
+                        onDelete = { all -> scope.launch { val ok = withContext(Dispatchers.IO) { repository.delete(event, all) }; version++; if (ok) editing = null else MetroToast.show(context, failure()) } },
+                        onCancel = { editing = null },
+                        onJoin = ::join,
+                    )
+                },
+            )
             when (dialog) {
                 "options" -> OptionsDialog(options, onBirthdays = { on ->
                     if (!on) options.set(Option.Birthdays, false)

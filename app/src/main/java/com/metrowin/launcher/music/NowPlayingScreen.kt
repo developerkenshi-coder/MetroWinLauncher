@@ -1,5 +1,6 @@
 package com.metrowin.launcher.music
 
+import com.metrowin.launcher.ui.components.PageSwitch
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -267,13 +268,14 @@ fun NowPlayingScreen() {
             )
             val frame = Modifier.fillMaxSize().topBarsPadding().navigationBarsPadding().cutoutSidesPadding()
             Column(if (pageCover && wide) frame else frame.centeredContent()) {
-                Box(Modifier.weight(1f).fillMaxWidth()) {
-                    when {
-                        showOptions -> Options(opts, ::change, look)
-                        media == null || snap == null -> Empty(access, look)
-                        else -> Player(media, snap, cover, look, sessions.list, { pick = it }, listened)
-                    }
-                }
+                PageSwitch(
+                    page = true.takeIf { showOptions }, onBack = { showOptions = false }, modifier = Modifier.weight(1f).fillMaxWidth(),
+                    list = {
+                        if (media == null || snap == null) Empty(access, look)
+                        else Player(media, snap, cover, look, sessions.list, { pick = it }, listened)
+                    },
+                    detail = { Options(opts, ::change, look) },
+                )
                 AppBar(
                     buildList { if (media != null) add(AppBarItem("↗", stringResource(R.string.np_open_source)) { openSource(context, media) }) },
                     Modifier.background(colors.background),
