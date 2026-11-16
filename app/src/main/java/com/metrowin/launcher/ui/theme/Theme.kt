@@ -4,6 +4,7 @@ import com.metrowin.launcher.data.PagePadding
 import com.metrowin.launcher.ui.anim.MotionSpeed
 import com.metrowin.launcher.data.ActionBarStyle
 import com.metrowin.launcher.ui.components.LocalActionBar
+import com.metrowin.launcher.ui.components.LocalHubHeadings
 import com.metrowin.launcher.ui.components.LocalPagePadding
 import com.metrowin.launcher.ui.anim.LocalTiltStrength
 import android.app.Activity
@@ -180,6 +181,8 @@ fun MetroTheme(
     pagePadding: PagePadding = PagePadding.Normal,
     /** Which action bar the mini apps and the edit bar of Start draw. */
     actionBar: ActionBarStyle = ActionBarStyle.Super,
+    /** The headings of the sections of the hubs in the large size of Windows Phone. */
+    hubHeadings: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     SideEffect { MotionSpeed.factor = speed.coerceIn(0.25f, 4f) }
@@ -203,6 +206,7 @@ fun MetroTheme(
         LocalTiltStrength provides tilt,
         LocalPagePadding provides pagePadding,
         LocalActionBar provides actionBar,
+        LocalHubHeadings provides hubHeadings,
         LocalDensity provides density.let { Density(it.density, it.fontScale * textScale) },
         content = content,
     )

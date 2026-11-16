@@ -94,6 +94,7 @@ object SettingsCodec {
         put("highRefreshRate", s.highRefreshRate)
         put("launchAnimation", s.launchAnimation.code)
         put("panoramaTitles", s.panoramaTitles)
+        put("hubHeadings", s.hubHeadings)
         put("appBar", s.appBar)
         put("actionBar", s.actionBar.code)
 
@@ -356,6 +357,7 @@ object SettingsCodec {
             highRefreshRate = o.optBoolean("highRefreshRate", base.highRefreshRate),
             launchAnimation = if (o.has("launchAnimation")) LaunchAnimation.fromCode(o.optString("launchAnimation")) else base.launchAnimation,
             panoramaTitles = o.optBoolean("panoramaTitles", base.panoramaTitles),
+            hubHeadings = o.optBoolean("hubHeadings", base.hubHeadings),
             appBar = o.optBoolean("appBar", base.appBar),
             actionBar = if (o.has("actionBar")) ActionBarStyle.fromCode(o.optString("actionBar")) else base.actionBar,
 

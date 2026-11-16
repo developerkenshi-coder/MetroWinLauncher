@@ -1326,6 +1326,8 @@
     <string name="finance_items_hint">Currencies come from the European Central Bank (api.frankfurter.dev), coins from CoinGecko. There are no stock prices: no free source gives them without an account.</string>
     <string name="theme_panorama">Panorama titles</string>
     <string name="theme_panorama_hint">A large title (start, apps) behind the pages, which moves slower than the page when it slides. Off until you ask for it.</string>
+    <string name="theme_hub_headings">Large hub headings</string>
+    <string name="theme_hub_headings_hint">The headings of the sections of the hubs (Photos, People, News) as large as in Windows Phone: 49.5 dp instead of 27. Classic look only.</string>
     <string name="theme_app_bar">Bar with …</string>
     <string name="theme_app_bar_hint">At the bottom while you edit the tiles: the … button shows the names of the buttons.</string>
     <string name="action_bar_title">Action bar</string>

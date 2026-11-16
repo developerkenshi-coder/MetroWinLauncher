@@ -266,6 +266,14 @@ fun ColumnScope.StartThemeSettings(env: SettingsEnv) {
         tag = "theme:panorama",
         id = "theme.panorama",
     )
+    ToggleSetting(
+        label = stringResource(R.string.theme_hub_headings),
+        checked = settings.hubHeadings,
+        onChange = { value -> env.onChange { it.copy(hubHeadings = value) } },
+        hint = stringResource(R.string.theme_hub_headings_hint),
+        tag = "theme:hubheadings",
+        id = "theme.hubheadings",
+    )
 }
 
 @StringRes

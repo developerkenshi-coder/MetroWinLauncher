@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
@@ -31,6 +32,9 @@ import com.metrowin.launcher.ui.theme.LocalStyle
 
 /** How fast the backdrop of a panorama hub moves compared with the sections: slower than the title, which is slower than the sections. */
 const val PANORAMA_BACKDROP_SPEED = 0.25f
+
+/** Whether the headings of the sections are as large as in Windows Phone (49.5 dp, its panorama item header); see `LauncherSettings.hubHeadings`. */
+val LocalHubHeadings = staticCompositionLocalOf { false }
 
 /** How much of the next section peeks in at the right edge, so it is clear the hub goes on. */
 private val PEEK = 36.dp
@@ -101,7 +105,7 @@ fun ColumnScope.HubPager(
                 beyondViewportPageCount = 0, userScrollEnabled = userScrollEnabled,
             ) { page ->
                 Column(Modifier.fillMaxSize()) {
-                    MetroText(titles.getOrElse(page) { "" }, size = 27.sp, color = accent, maxLines = 1, modifier = Modifier.padding(start = side, bottom = Spacing.Medium))
+                    MetroText(titles.getOrElse(page) { "" }, size = if (LocalHubHeadings.current) 49.5.sp else 27.sp, color = accent, maxLines = 1, modifier = Modifier.padding(start = side, bottom = Spacing.Medium))
                     Box(Modifier.weight(1f).fillMaxWidth()) { content(page) }
                 }
             }

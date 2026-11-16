@@ -26,6 +26,7 @@ internal object SettingsInfoTable {
         "theme.photoinside" to R.string.info_theme_photoinside,
         "theme.parallax" to R.string.info_theme_parallax,
         "theme.panorama" to R.string.info_theme_panorama,
+        "theme.hubheadings" to R.string.info_theme_hubheadings,
         "theme.export" to R.string.info_theme_files,
         "theme.import" to R.string.info_theme_files,
         "screen.orientation" to R.string.info_screen_orientation,

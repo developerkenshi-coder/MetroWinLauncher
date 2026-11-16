@@ -18,6 +18,7 @@
     <string name="info_theme_photoinside">Chaque tuile devient une fenêtre sur la photo, sans espace entre elles, comme sur Windows Phone. Il faut une photo de Start.</string>
     <string name="info_theme_parallax">La photo bouge plus lentement que les tuiles quand on fait défiler, pour la profondeur. Il faut une photo de Start et c’est désactivé avec moins de mouvement.</string>
     <string name="info_theme_panorama">Un grand titre (start, apps) derrière les pages, qui bouge plus lentement que la page quand elle glisse, comme dans le panorama de Windows Phone.</string>
+    <string name="info_theme_hubheadings">Les en-têtes des sections des hubs (Photos, Contacts, Actualités) aussi grands que dans Windows Phone, 49,5 dp au lieu de 27. Seulement dans le look Classique.</string>
     <string name="info_theme_files">Un fichier de thème contient les couleurs, le mode sombre ou clair, l’horloge, la taille des tuiles et le pack d’icônes, pas vos tuiles. Exportez-le pour garder ou partager l’apparence ; importez-en un pour l’appliquer. Vos tuiles et autres réglages ne changent pas.</string>
     <string name="info_screen_orientation">Fait suivre au launcher la rotation du téléphone, ou le garde droit (portrait) ou à l’horizontale (paysage).</string>
     <string name="info_screen_launch">Comment une application s’ouvre depuis une tuile : le turnstile original de Windows Phone, un moderne plus doux, expansion depuis la tuile, fondu, glissement, montée, zoom ou rien. Avec moins de mouvement, les applications s’ouvrent aussitôt.</string>

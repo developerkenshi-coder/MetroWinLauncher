@@ -18,6 +18,7 @@
     <string name="info_theme_photoinside">Cada mosaico se convierte en una ventana a la foto, sin espacio entre ellos, como en Windows Phone. Necesita una foto de Start.</string>
     <string name="info_theme_parallax">La foto se mueve más despacio que los mosaicos al desplazarte, para dar profundidad. Necesita una foto de Start y se apaga con menos movimiento.</string>
     <string name="info_theme_panorama">Un título grande (start, apps) detrás de las páginas, que se mueve más despacio que la página al deslizar, como en el panorama de Windows Phone.</string>
+    <string name="info_theme_hubheadings">Los encabezados de las secciones de los hubs (Fotos, Contactos, Noticias) tan grandes como en Windows Phone, 49,5 dp en lugar de 27. Solo en el aspecto Clásico.</string>
     <string name="info_theme_files">Un archivo de tema contiene colores, modo oscuro o claro, reloj, tamaño de mosaicos y paquete de iconos, no tus mosaicos. Expórtalo para guardar o compartir el aspecto; importa uno para aplicarlo. Tus mosaicos y demás ajustes no cambian.</string>
     <string name="info_screen_orientation">Hace que el launcher siga la rotación del teléfono, o lo mantiene vertical o apaisado.</string>
     <string name="info_screen_launch">Cómo se abre una app desde un mosaico: el turnstile original de Windows Phone, uno moderno más suave, expandirse desde el mosaico, fundido, deslizamiento, subida, zoom o nada. Con menos movimiento las apps se abren al instante.</string>

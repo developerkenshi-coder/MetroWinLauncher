@@ -18,6 +18,7 @@
     <string name="info_theme_photoinside">Every tile becomes a window onto the photo, with no gap between tiles, as on Windows Phone. It needs a Start photo.</string>
     <string name="info_theme_parallax">The photo moves slower than the tiles when you scroll, for a feeling of depth. It needs a Start photo and is off with reduced motion.</string>
     <string name="info_theme_panorama">A big title (start, apps) behind the pages, which moves slower than the page when it slides, as in the Windows Phone panorama.</string>
+    <string name="info_theme_hubheadings">The headings of the sections of the hubs (Photos, People, News) as large as in Windows Phone, 49.5 dp instead of 27. Only in the Classic look.</string>
     <string name="info_theme_files">A theme file holds the colors, dark or light mode, clock, tile size and icon pack, not your tiles. Export it to keep or share the look; import one to apply it. Your tiles and other settings do not change.</string>
     <string name="info_screen_orientation">Lets the launcher follow the rotation of the phone, or keeps it upright (portrait) or sideways (landscape).</string>
     <string name="info_screen_launch">How an app opens from a tile: the original Windows Phone turnstile, a softer modern one, expanding out of the tile, fade, slide, rise, zoom or nothing. With reduced motion apps open at once.</string>

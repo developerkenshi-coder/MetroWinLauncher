@@ -1333,6 +1333,8 @@
     <string name="finance_items_hint">Le valute vengono dalla Banca centrale europea (api.frankfurter.dev), le criptovalute da CoinGecko. Non ci sono le azioni: nessuna fonte gratuita le dà senza un account.</string>
     <string name="theme_panorama">Titoli panorama</string>
     <string name="theme_panorama_hint">Un titolo grande (start, app) dietro le pagine, che si muove più piano della pagina quando scorre. Spento finché non lo chiedi.</string>
+    <string name="theme_hub_headings">Intestazioni dei hub grandi</string>
+    <string name="theme_hub_headings_hint">Le intestazioni delle sezioni dei hub (Foto, Persone, Notizie) grandi come in Windows Phone: 49,5 dp invece di 27. Solo nel look Classico.</string>
     <string name="theme_app_bar">Barra con …</string>
     <string name="theme_app_bar_hint">In basso mentre modifichi i tile: il pulsante … mostra i nomi dei pulsanti.</string>
     <string name="action_bar_title">Barra delle azioni</string>

@@ -399,6 +399,8 @@ data class LauncherSettings(
     val launchAnimation: LaunchAnimation = LaunchAnimation.Original,
     /** The big title of a page (start, apps) behind the content, moving slower than it when the pages slide: off until asked for. */
     val panoramaTitles: Boolean = false,
+    /** The headings of the sections of a hub (Photos, People, News) as large as in Windows Phone; the Classic look only. */
+    val hubHeadings: Boolean = false,
     /** The bar at the bottom of the edit mode: its "…" button shows the names of the buttons. */
     val appBar: Boolean = true,
     /** Which action bar Start and the mini apps use. */

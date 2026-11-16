@@ -1340,6 +1340,8 @@
     <string name="finance_items_hint">Les devises viennent de la Banque centrale européenne (api.frankfurter.dev), les cryptomonnaies de CoinGecko. Il n’y a pas de cours de bourse : aucune source gratuite ne les donne sans compte.</string>
     <string name="theme_panorama">Titres panorama</string>
     <string name="theme_panorama_hint">Un grand titre (start, applications) derrière les pages, qui bouge plus lentement que la page quand elle glisse. Désactivé tant que vous ne le demandez pas.</string>
+    <string name="theme_hub_headings">Grands en-têtes des hubs</string>
+    <string name="theme_hub_headings_hint">Les en-têtes des sections des hubs (Photos, Contacts, Actualités) aussi grands que dans Windows Phone : 49,5 dp au lieu de 27. Look Classique seulement.</string>
     <string name="theme_app_bar">Barre avec …</string>
     <string name="theme_app_bar_hint">En bas pendant la modification des tuiles : le bouton … affiche les noms des boutons.</string>
     <string name="action_bar_title">Barre d’actions</string>

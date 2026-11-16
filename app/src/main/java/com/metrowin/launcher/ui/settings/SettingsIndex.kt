@@ -83,6 +83,7 @@ object SettingsIndex {
         e("theme.photoinside", StartTheme, R.string.theme_photo_inside, "photo", "background", "inside", "tiles", "window", "foto", "sfondo", "dentro", "riquadri", "finestra"),
         e("theme.parallax", StartTheme, R.string.theme_parallax, "parallax", "parallasse", "scroll", "depth", "motion", "scorrimento", "profondita", "movimento"),
         e("theme.panorama", StartTheme, R.string.theme_panorama, "panorama", "title", "big title", "parallax", "titolo", "titoli", "parallasse", "pagine"),
+        e("theme.hubheadings", StartTheme, R.string.theme_hub_headings, "hub", "headings", "section", "photos", "people", "news", "intestazioni", "sezioni", "foto", "persone", "notizie"),
 
         // --- start: tiles and screens (clock, bars and behaviour are listed with their own sections below)
         e("start.moretiles", Start, R.string.theme_more_tiles, "columns", "smaller", "bigger", "colonne", "piu riquadri", "piccoli"),

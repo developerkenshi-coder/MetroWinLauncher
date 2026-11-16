@@ -95,6 +95,7 @@ import com.metrowin.launcher.ui.apps.JumpList
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.ButtonRole
+import com.metrowin.launcher.ui.components.LetterTile
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
@@ -111,6 +112,7 @@ import com.metrowin.launcher.ui.start.whenText
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
+import com.metrowin.launcher.ui.theme.LocalStyle
 import com.metrowin.launcher.ui.theme.pageBackground
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -427,6 +429,7 @@ private fun ContactsPage(hasPermission: Boolean, onRequest: () -> Unit, fresh: I
     val shown = contacts.orEmpty().filter { it.shownIn(mask) && (query.isBlank() || it.name.contains(query.trim(), ignoreCase = true)) }
     // The name is never blank (the reader leaves those out), but the letter is taken without assuming it.
     val groups = shown.groupBy { it.name.firstOrNull()?.uppercaseChar() ?: '#' }
+    val classic = LocalStyle.current.isClassic
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var jumping by remember { mutableStateOf(false) }
@@ -467,7 +470,10 @@ private fun ContactsPage(hasPermission: Boolean, onRequest: () -> Unit, fresh: I
         }
         if (contacts != null && shown.isEmpty()) item { EmptyState(Glyph.People, stringResource(R.string.dialer_no_contacts)) }
         groups.forEach { (letter, people) ->
-            sectionHeader("h$letter", onClick = { jumping = true }) { MetroText(letter.toString(), size = 26.sp, color = LocalAccent.current, modifier = Modifier.padding(top = 12.dp, bottom = 2.dp)) }
+            sectionHeader("h$letter", onClick = { jumping = true }) {
+                if (classic) LetterTile(letter.toString(), Modifier.padding(top = 8.dp, bottom = 4.dp), size = 42.dp, fontSize = 32.sp)
+                else MetroText(letter.toString(), size = 26.sp, color = LocalAccent.current, modifier = Modifier.padding(top = 12.dp, bottom = 2.dp))
+            }
             items(people, key = { it.lookupUri }) { person ->
                 Row(
                     Modifier.fillMaxWidth().testTag("dialer:contact").metroPress(

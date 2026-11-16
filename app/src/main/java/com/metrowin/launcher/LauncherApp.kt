@@ -1378,7 +1378,7 @@ fun LauncherApp(vm: LauncherViewModel) {
         LocalTapFeedback provides tapFeedback,
         LocalHapticFeedback provides haptics,
     ) {
-        MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode, textScale = settings.textScale / 100f, boldText = settings.boldText, systemFont = settings.systemFont, appFont = settings.appFont, fontRevision = settings.fontRevision, tilt = settings.tiltStrength / 100f, speed = settings.animationSpeed / 100f, pagePadding = settings.pagePadding, actionBar = settings.actionBar) {
+        MetroTheme(accent = accent, dark = dark, reduceMotion = reduceMotion, highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode, textScale = settings.textScale / 100f, boldText = settings.boldText, systemFont = settings.systemFont, appFont = settings.appFont, fontRevision = settings.fontRevision, tilt = settings.tiltStrength / 100f, speed = settings.animationSpeed / 100f, pagePadding = settings.pagePadding, actionBar = settings.actionBar, hubHeadings = settings.hubHeadings) {
             Box(
                 Modifier
                     .fillMaxSize()

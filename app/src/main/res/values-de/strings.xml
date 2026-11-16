@@ -1326,6 +1326,8 @@
     <string name="finance_items_hint">Währungen stammen von der Europäischen Zentralbank (api.frankfurter.dev), Kryptowährungen von CoinGecko. Aktienkurse gibt es nicht: Keine kostenlose Quelle liefert sie ohne Konto.</string>
     <string name="theme_panorama">Panorama-Titel</string>
     <string name="theme_panorama_hint">Ein großer Titel (Start, Apps) hinter den Seiten, der sich beim Wischen langsamer bewegt als die Seite. Aus, bis du es verlangst.</string>
+    <string name="theme_hub_headings">Große Hub-Überschriften</string>
+    <string name="theme_hub_headings_hint">Die Überschriften der Hub-Abschnitte (Fotos, Personen, Nachrichten) so groß wie in Windows Phone: 49,5 dp statt 27. Nur im klassischen Look.</string>
     <string name="theme_app_bar">Leiste mit …</string>
     <string name="theme_app_bar_hint">Unten beim Bearbeiten der Kacheln: Die Taste … zeigt die Namen der Tasten.</string>
     <string name="action_bar_title">Aktionsleiste</string>

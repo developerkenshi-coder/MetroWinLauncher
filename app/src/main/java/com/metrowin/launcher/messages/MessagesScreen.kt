@@ -477,7 +477,7 @@ private fun ThreadPage(
                 val firstOfDay = rich && (older == null || MessagesLogic.day(older.date) != MessagesLogic.day(sms.date))
                 val startsRun = !rich || !MessagesLogic.continues(older, sms)
                 val endsRun = !rich || !MessagesLogic.continues(sms, newer ?: sms.copy(outgoing = !sms.outgoing))
-                Column(Modifier.then(if (LocalReduceMotion.current) Modifier else Modifier.animateItem()).padding(top = if (rich && startsRun) 6.dp else 0.dp)) {
+                Column(Modifier.featherRow(index).then(if (LocalReduceMotion.current) Modifier else Modifier.animateItem()).padding(top = if (rich && startsRun) 6.dp else 0.dp)) {
                     if (firstOfDay) DayHeader(sms.date)
                     BubbleRow(
                         sms, repository, rich, endsRun, if (group && !sms.outgoing && startsRun) sms.sender else null, Modifier.anchor(bounds),
@@ -562,10 +562,13 @@ private const val PAGE = 100
 
 @Composable
 private fun QuickReplies(onPick: (String) -> Unit) {
+    val classic = LocalStyle.current.isClassic
     val replies = listOf(R.string.messages_quick_1, R.string.messages_quick_2, R.string.messages_quick_3, R.string.messages_quick_4).map { stringResource(it) }
     androidx.compose.foundation.lazy.LazyRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items(replies) { r ->
-            MetroText(r, size = 14.sp, weight = FontWeight.Normal, maxLines = 1, modifier = Modifier.background(LocalMetroColors.current.surface).metroPress(onClick = { onPick(r) }).padding(horizontal = 12.dp, vertical = 8.dp))
+            // Windows Phone: the same outlined button as everywhere.
+            if (classic) MetroButton(r) { onPick(r) }
+            else MetroText(r, size = 14.sp, weight = FontWeight.Normal, maxLines = 1, modifier = Modifier.background(LocalMetroColors.current.surface).metroPress(onClick = { onPick(r) }).padding(horizontal = 12.dp, vertical = 8.dp))
         }
     }
 }

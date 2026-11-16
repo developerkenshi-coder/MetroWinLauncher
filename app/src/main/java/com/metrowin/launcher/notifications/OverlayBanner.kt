@@ -158,7 +158,7 @@ internal fun OverlayTheme(settings: LauncherSettings, icons: IconLoader, accentO
         highContrast = settings.highContrast, style = settings.themeStyle, droid = droid, oled = settings.oledMode,
         textScale = settings.textScale / 100f, boldText = settings.boldText, systemFont = settings.systemFont, appFont = settings.appFont, fontRevision = settings.fontRevision,
         tilt = settings.tiltStrength / 100f, speed = settings.animationSpeed / 100f,
-        pagePadding = settings.pagePadding, actionBar = settings.actionBar,
+        pagePadding = settings.pagePadding, actionBar = settings.actionBar, hubHeadings = settings.hubHeadings,
     ) {
         CompositionLocalProvider(LocalIconLoader provides icons, content = content)
     }

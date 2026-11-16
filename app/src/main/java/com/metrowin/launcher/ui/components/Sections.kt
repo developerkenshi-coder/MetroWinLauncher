@@ -6,7 +6,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.metrowin.launcher.ui.theme.LocalAccent
+import com.metrowin.launcher.ui.theme.onAccent
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 
@@ -31,6 +39,14 @@ fun LazyListScope.sectionHeader(key: Any, onClick: (() -> Unit)? = null, animate
 }
 
 private const val STRIP_ALPHA = 0.96f
+
+/** The letter of a section of a list of people as Windows Phone draws it: a lowercase letter in a square of the accent colour. */
+@Composable
+fun LetterTile(letter: String, modifier: Modifier = Modifier, size: Dp = 52.dp, fontSize: TextUnit = 30.sp) {
+    Box(modifier.size(size).background(LocalAccent.current), contentAlignment = Alignment.Center) {
+        MetroText(letter.lowercase(), size = fontSize, color = onAccent())
+    }
+}
 
 /** How the rows of a list glide to their places when the order changes: soft, no bounce. */
 val ReorderSpring = androidx.compose.animation.core.spring<androidx.compose.ui.unit.IntOffset>(stiffness = androidx.compose.animation.core.Spring.StiffnessLow)

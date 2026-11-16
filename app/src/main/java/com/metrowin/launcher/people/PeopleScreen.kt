@@ -76,6 +76,7 @@ import com.metrowin.launcher.ui.apps.JumpList
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.HubPager
+import com.metrowin.launcher.ui.components.LetterTile
 import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
@@ -249,9 +250,7 @@ private fun AllPage(
             groups.forEach { (letter, list) ->
                 item(key = "letter:$letter") {
                     if (prefs.plainLetters) MetroText(letter.lowercase(), size = 26.sp, color = LocalAccent.current, modifier = Modifier.padding(start = side, top = 12.dp, bottom = 2.dp).metroPress(onClick = { jump = true }).testTag("people:letter:$letter"))
-                    else Box(Modifier.padding(start = side, top = 8.dp, bottom = 4.dp).size(52.dp).background(LocalAccent.current).metroPress(onClick = { jump = true }).semantics { contentDescription = letter }.testTag("people:letter:$letter"), contentAlignment = Alignment.Center) {
-                        MetroText(letter.lowercase(), size = 30.sp, color = com.metrowin.launcher.ui.theme.onAccent())
-                    }
+                    else LetterTile(letter, Modifier.padding(start = side, top = 8.dp, bottom = 4.dp).metroPress(onClick = { jump = true }).semantics { contentDescription = letter }.testTag("people:letter:$letter"))
                 }
                 itemsIndexed(list, key = { _, p -> p.key }) { index, person ->
                     PersonRow(person, query, prefs, dots, line, side, Modifier.featherIn(index, person.key), onOpen = { onOpen(person) }, onQuick = { onQuick(person) })

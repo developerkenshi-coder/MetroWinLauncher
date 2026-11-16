@@ -51,6 +51,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | Sfondo dentro ai riquadri | `theme.photoinside` | aspetto › aspetto | aspetto e temi › tema e colori |
 | la foto scorre più piano dei riquadri | `theme.parallax` | aspetto › aspetto | aspetto e temi › tema e colori |
 | Titoli panorama | `theme.panorama` | aspetto › aspetto | aspetto e temi › tema e colori |
+| Intestazioni dei hub grandi | `theme.hubheadings` | aspetto › aspetto | aspetto e temi › tema e colori |
 | esporta il tema | `theme.export` | aspetto › aspetto | aspetto e temi › tema e colori |
 | importa un tema | `theme.import` | aspetto › aspetto | aspetto e temi › tema e colori |
 | rotazione | `screen.orientation` | uso › schermo+lingua | aspetto e temi › schermo+lingua |
