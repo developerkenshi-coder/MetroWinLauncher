@@ -119,6 +119,7 @@ internal sealed interface InfoDialog {
     data class SlotParts(val index: Int) : InfoDialog
     data class TriggerParts(val kind: TriggerKind) : InfoDialog
     data object Rule : InfoDialog
+    data object Models : InfoDialog
 }
 
 /** The content of one page of the editor. */
@@ -147,7 +148,7 @@ internal fun InfoPageContent(page: InfoPage, item: AppItem, config: InfoConfig, 
             InfoPage.LookPage -> LookPage(config, change)
             InfoPage.PrivacyPage -> PrivacyPage(config, change)
             InfoPage.AutoPage -> AutoPage(config, change, askPermission::launch, open)
-            InfoPage.SharePage -> SharePage(item, config, change)
+            InfoPage.SharePage -> SharePage(item, config, change, open)
         }
     }
 }
@@ -469,12 +470,11 @@ private fun AutoPage(config: InfoConfig, change: (InfoConfig) -> Unit, ask: (Str
 // --- models and sharing
 
 @Composable
-private fun SharePage(item: AppItem, config: InfoConfig, change: (InfoConfig) -> Unit) {
+private fun SharePage(item: AppItem, config: InfoConfig, change: (InfoConfig) -> Unit, open: (InfoDialog) -> Unit) {
     val context = LocalContext.current
-    var models by remember { mutableStateOf(false) }
     var pasted by remember { mutableStateOf("") }
     var wrong by remember { mutableStateOf(false) }
-    ActionSetting(stringResource(R.string.infos_share_presets), { models = true }, tag = "info:presets", id = "share.presets")
+    ActionSetting(stringResource(R.string.infos_share_presets), { open(InfoDialog.Models) }, tag = "info:presets", id = "share.presets")
     ActionSetting(
         stringResource(R.string.infos_share_send),
         {
@@ -494,7 +494,7 @@ private fun SharePage(item: AppItem, config: InfoConfig, change: (InfoConfig) ->
     }
     ActionSetting(stringResource(R.string.infos_share_speak), { InfoSpeech.speak(context, InfoTileState.summary(item.id).orEmpty()) }, tag = "info:speak", id = "share.speak")
     ActionSetting(stringResource(R.string.infos_share_reset), { change(InfoConfig()) }, tag = "info:reset", id = "share.reset")
-    if (models) InfoModelDialog(onPick = { models = false; change(it) }, onCancel = { models = false })
+    // The models dialog is opened by the editor itself, outside this scrolling page (a dialog with its own scroll cannot sit inside one).
 }
 
 // --- the dialogs
@@ -558,6 +558,7 @@ internal fun InfoDialogs(dialog: InfoDialog, config: InfoConfig, change: (InfoCo
             config.triggers.firstOrNull { it.kind == dialog.kind }?.parts.orEmpty(),
             { parts -> change(config.copy(triggers = config.triggers.map { if (it.kind == dialog.kind) it.copy(parts = parts) else it })); close() }, close,
         )
+        InfoDialog.Models -> InfoModelDialog(onPick = { change(it); close() }, onCancel = close)
         InfoDialog.Rule -> RuleDialog(onDone = { rule -> change(config.copy(rules = config.rules + rule)); close() }, onCancel = close)
     }
 }

@@ -216,6 +216,17 @@ class InfoEditorUiTest : ScreenshotBase() {
     }
 
     @Test
+    fun theModelsOfTheSharePageOpenAndOneIsPicked() {
+        // Once crashed: a dialog with its own scroll was inside the scrolling page ("infinity maximum height").
+        open(at = InfoPage.SharePage)
+        click("info:presets")
+        compose.onNodeWithTag("info:models").assertExists()
+        compose.onNodeWithTag("info:model:night").performClick()
+        advance(300)
+        assertTrue(changes.last().dnd)
+    }
+
+    @Test
     fun aChoiceFromTextIsUsedAndAnythingElseIsRefused() {
         open(at = InfoPage.SharePage)
         scrollIntoView("info:import:use")
