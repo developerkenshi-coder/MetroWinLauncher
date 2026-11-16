@@ -17,29 +17,13 @@
 
 <p align="center"><a href="README.md">English</a> · <b>Italiano</b></p>
 
-<table align="center" cellspacing="0" cellpadding="0" border="0">
-<tr>
-<td colspan="2"><a href="#schermata-start"><img src="docs/readme/it/tile-start.svg" width="312" height="156" alt="schermata start"></a></td>
-<td colspan="1"><a href="#live-tile"><img src="docs/readme/it/tile-live.svg" width="156" height="156" alt="live tile"></a></td>
-<td colspan="1"><a href="#lista-app-e-ricerca"><img src="docs/readme/it/tile-apps.svg" width="156" height="156" alt="app e ricerca"></a></td>
-</tr>
-<tr>
-<td colspan="1"><a href="#action-center-e-notifiche"><img src="docs/readme/it/tile-action.svg" width="156" height="156" alt="action center"></a></td>
-<td colspan="1"><a href="#blocco-schermo-voce-e-gesti"><img src="docs/readme/it/tile-lock.svg" width="156" height="156" alt="blocco schermo"></a></td>
-<td colspan="2"><a href="#aspetto-e-colori"><img src="docs/readme/it/tile-looks.svg" width="312" height="156" alt="aspetto e colori"></a></td>
-</tr>
-<tr>
-<td colspan="1"><a href="#blocco-schermo-voce-e-gesti"><img src="docs/readme/it/tile-gestures.svg" width="156" height="156" alt="voce e gesti"></a></td>
-<td colspan="1"><a href="#backup-profili-e-accessibilità"><img src="docs/readme/it/tile-backup.svg" width="156" height="156" alt="backup"></a></td>
-<td colspan="1"><a href="#impostazioni-e-tutorial"><img src="docs/readme/it/tile-settings.svg" width="156" height="156" alt="impostazioni"></a></td>
-<td colspan="1"><a href="#per-chi-sviluppa-unapp-un-riquadro-tuo-su-start"><img src="docs/readme/it/tile-developers.svg" width="156" height="156" alt="per sviluppatori"></a></td>
-</tr>
-<tr>
-<td colspan="1"><a href="#privacy-e-permessi"><img src="docs/readme/it/tile-privacy.svg" width="156" height="156" alt="privacy"></a></td>
-<td colspan="2"><a href="#compilare-dal-sorgente"><img src="docs/readme/it/tile-build.svg" width="312" height="156" alt="compila dal sorgente"></a></td>
-<td colspan="1"><a href="#documentazione"><img src="docs/readme/it/tile-docs.svg" width="156" height="156" alt="documentazione"></a></td>
-</tr>
-</table>
+<p align="center">
+<a href="#schermata-start"><img src="docs/readme/it/tile-start.svg" width="312" height="156" alt="schermata start"></a><a href="#live-tile"><img src="docs/readme/it/tile-live.svg" width="156" height="156" alt="live tile"></a><a href="#lista-app-e-ricerca"><img src="docs/readme/it/tile-apps.svg" width="156" height="156" alt="app e ricerca"></a><br>
+<a href="#action-center-e-notifiche"><img src="docs/readme/it/tile-action.svg" width="156" height="156" alt="action center"></a><a href="#blocco-schermo-voce-e-gesti"><img src="docs/readme/it/tile-lock.svg" width="156" height="156" alt="blocco schermo"></a><a href="#aspetto-e-colori"><img src="docs/readme/it/tile-looks.svg" width="312" height="156" alt="aspetto e colori"></a><br>
+<a href="#app-integrate"><img src="docs/readme/it/tile-builtin.svg" width="312" height="156" alt="app integrate"></a><a href="#blocco-schermo-voce-e-gesti"><img src="docs/readme/it/tile-gestures.svg" width="156" height="156" alt="voce e gesti"></a><a href="#backup-profili-e-accessibilità"><img src="docs/readme/it/tile-backup.svg" width="156" height="156" alt="backup"></a><br>
+<a href="#impostazioni-e-tutorial"><img src="docs/readme/it/tile-settings.svg" width="156" height="156" alt="impostazioni"></a><a href="#per-chi-sviluppa-unapp-un-riquadro-tuo-su-start"><img src="docs/readme/it/tile-developers.svg" width="156" height="156" alt="per sviluppatori"></a><a href="#compilare-dal-sorgente"><img src="docs/readme/it/tile-build.svg" width="312" height="156" alt="compila dal sorgente"></a><br>
+<a href="#privacy-e-permessi"><img src="docs/readme/it/tile-privacy.svg" width="312" height="156" alt="privacy"></a><a href="CHANGELOG.md"><img src="docs/readme/it/tile-changelog.svg" width="156" height="156" alt="novità"></a><a href="#documentazione"><img src="docs/readme/it/tile-docs.svg" width="156" height="156" alt="documentazione"></a>
+</p>
 
 <p align="center">
   <img src="fastlane/metadata/android/it-IT/images/phoneScreenshots/1.png" width="24%" alt="Schermata Start con riquadri animati">
@@ -57,8 +41,7 @@
 
 <p align="center"><a href="https://github.com/developerkenshi-coder/MetroWinLauncher/releases/latest"><img src="docs/readme/it/download.svg" width="480" alt="scarica l’ultima versione"></a></p>
 
-Per Android 8.0 (API 26) o successivo: `MetroWinLauncher-26.5.5S.apk`.
-
+`MetroWinLauncher-26.9.2S.apk`, per Android 8.0 (API 26) o successivo.
 
 1. Scarica l'APK sul telefono.
 2. Aprilo. Quando Android lo chiede, consenti al browser o al gestore di file di installare app sconosciute.
@@ -77,7 +60,7 @@ Ogni versione ha anche un file `SHA256SUMS`. Per controllare tutti e due:
 
 ```sh
 shasum -a 256 -c SHA256SUMS
-apksigner verify --print-certs MetroWinLauncher-26.5.5S.apk
+apksigner verify --print-certs MetroWinLauncher-26.9.2S.apk
 ```
 
 Android permette di aggiornare l'app solo con la stessa chiave di firma, quindi installa gli aggiornamenti da questa pagina. Una versione
@@ -89,7 +72,7 @@ su F-Droid è prevista più avanti; i suoi APK saranno firmati da F-Droid, quind
 
 MetroWin Launcher porta su Android la schermata Start di Windows Phone (Metro, 8 e 8.1): riquadri piatti che girano mostrando contenuti dal vivo,
 lista app alfabetica, animazioni a tornello e inclinazione, e le funzioni di sistema che un launcher può davvero offrire. Ha tre aspetti
-(*Classic*, *Modern Glass*, *Modern Droid*) con colori personalizzabili, e non fa nulla quando non è sullo schermo.
+(*Classic*, *Modern Glass*, *Modern Droid*) con colori personalizzabili, e non fa nulla quando non è sullo schermo. Porta con sé anche le sue app (telefono, persone, messaggi, posta, calendario, foto, note e altre) con lo stesso aspetto.
 
 <details>
 <summary>Altri screenshot</summary>
@@ -110,6 +93,7 @@ lista app alfabetica, animazioni a tornello e inclinazione, e le funzioni di sis
 - **Stili dei riquadri**: standard con giro, *Iconic* (grande numero e icona), *Cycle* e *collage* per le foto; transizioni a giro o a scorrimento.
 - **Aggiungi a Start**: contatti (con la foto), siti web, widget di Android, impostazioni di Android, scorciatoie delle app, numeri di chiamata rapida, note, liste, contatori, conti alla rovescia, timer, un cronometro, un portafoglio per le carte fedeltà.
 - **La tua foto dietro Start** con parallasse, zoom e inquadratura, e **colore d'accento preso dalla foto**; orologio e data, un secondo fuso orario, titoli per i gruppi di riquadri.
+- **Dopo l'ultimo riquadro** scegli la freccia tonda, tre puntini o niente; la **modalità libera** aggancia i riquadri grandi ai blocchi e fa scorrere gli altri attorno a quello che lasci; la foto di Start resta ferma tra due Start; in **orizzontale** ci sono sei colonne su un telefono di lato.
 
 ### live tile
 Ognuno è facoltativo e legge i dati solo finché è fissato su Start.
@@ -134,6 +118,7 @@ Ognuno è facoltativo e legge i dati solo finché è fissato su Start.
 - Un **blocco schermo Metro** con foto, ora grande, prossima sveglia, notifiche per app, meteo e musica. Android non lascia a un launcher sostituire la sua schermata di blocco: funziona come salvaschermo e ha un'anteprima nel launcher.
 - **Comandi vocali** in italiano e inglese, riconosciuti sul telefono se la lingua c'è: apri un'app, chiama qualcuno, imposta un timer o una sveglia, torcia, cerca, meteo e altro.
 - **Gesti** a scelta: doppio tocco, swipe a due dita, Home premuto due volte; Indietro predittivo; animazioni di apertura (tornello o espansione).
+- Una schermata **Glance** come salvaschermo (l'ora e le icone su nero, che si spostano ogni minuto) e le **animazioni di ricarica**: un banner quando colleghi il cavo, nel launcher e sopra le altre app, e una batteria che si riempie nella barra di stato e nel blocco schermo (un interruttore le spegne).
 
 ### aspetto e colori
 - **Classic** (Windows Phone piatto), **Modern Glass** (vetro smerigliato e arrotondato su uno sfondo che brilla) e **Modern Droid** (Material You), ognuno scuro, chiaro, a orario o dal tramonto all'alba.
@@ -143,10 +128,12 @@ Ognuno è facoltativo e legge i dati solo finché è fissato su Start.
 - **Backup** del layout in un file o in una cartella (qualsiasi cartella che Android sa aprire), a mano o ogni 1, 7 o 30 giorni, e **sincronizzazione cifrata tra telefoni** attraverso quella cartella (AES-256-GCM, chiave dalla tua passphrase con PBKDF2-SHA256).
 - **Profilo di lavoro** e **spazio privato** (Android 15), **Angolo bambini**, e accessibilità: TalkBack su ogni riquadro e riga, dimensione del testo, meno movimento, contrasto più forte.
 
-### impostazioni e tutorial
-- **Tredici categorie** (aspetto e temi, start e tile, schermata di blocco, barre e action center, gesti e scorciatoie, app e icone, mini app, notifiche, privacy e sicurezza, batteria, accessibilità, backup e profili, informazioni), ciascuna un pivot delle sue pagine: due livelli, mai di più. Ogni impostazione sta in un solo posto, e la ricerca dice dov'è.
-- Una **"i" accanto a ogni categoria e impostazione** spiega cosa fa, quando serve e quanto costa in batteria, privacy o permessi, in sei lingue (inglese, italiano, tedesco, spagnolo, francese, portoghese).
-- Un **tutorial di 25 pagine brevi**, in ordine di tema, con un pulsante in ogni pagina che apre la sua impostazione. La mappa di ogni impostazione, pagina vecchia e nuova, è in [docs/impostazioni-mappa.md](docs/impostazioni-mappa.md).
+### app integrate
+Il launcher porta con sé le sue app, con lo stesso aspetto e lo stesso tema, che si aprono con il turnstile. Non servono account propri.
+- **Telefono** (tastierino, chiamate recenti, preferiti, la foto del contatto a tutto schermo durante una chiamata), un **hub Persone** (tutti, novità, preferiti, una lista a lettere e una scheda con la cronologia di chiamate e messaggi), **Messaggi** (fumetti con la coda, un pivot per tutti e non letti) e **Posta** (non letti in grassetto, anteprime, miniature delle immagini allegate, più messaggi alla volta).
+- **Calendario** (mesi come pagine da scorrere, una vista del giorno con le ore e la linea di "adesso"), **Foto** (un hub con album, date e preferite, e un visore completo con pizzico, doppio tocco, condividi, elimina e informazioni) e **In riproduzione** (la copertina su tutta la pagina, una barra di avanzamento, i controlli e la coda).
+- **Note** (come riquadri con colore e data, e schizzi con penna, evidenziatore e gomma), **Da fare** (trascina per riordinare), il **Registratore** (l'onda dal vivo mentre registra), la **Calcolatrice**, il **Wallet** (carte impilate e scansione di un codice con la fotocamera: un permesso della fotocamera, usato solo lì), **Notizie** e **File** (lettere e una lista a lettere).
+- **Shizuku Terminal**, per chi usa Shizuku: pulsanti diretti scelti uno per uno, un medico della batteria, sensori e monitor, maggiori informazioni sul telefono, un terminale, pagine delle app e del sistema, e **impostazioni Metro** per Wi-Fi, rete cellulare, Bluetooth, data e ora e suoni.
 
 ### per chi sviluppa un'app: un riquadro tuo su start
 
@@ -187,7 +174,7 @@ La documentazione completa, in italiano, descrive ogni funzione, ogni impostazio
 ## contribuire
 
 Segnalazioni e idee sono benvenute nel [tracker delle segnalazioni](https://github.com/developerkenshi-coder/MetroWinLauncher/issues), in italiano o in inglese.
-Per un errore, indica il telefono, la versione di Android e la versione del launcher (*impostazioni → informazioni*). Le pull request sono benvenute; per le cose grandi apri prima una segnalazione.
+Per un errore, indica il telefono, la versione di Android e la versione del launcher (*impostazioni → strumenti → informazioni*). Le pull request sono benvenute; per le cose grandi apri prima una segnalazione.
 
 ## licenza e crediti
 

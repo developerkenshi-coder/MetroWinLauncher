@@ -17,29 +17,13 @@
 
 <p align="center"><b>English</b> · <a href="README.it.md">Italiano</a></p>
 
-<table align="center" cellspacing="0" cellpadding="0" border="0">
-<tr>
-<td colspan="2"><a href="#start-screen"><img src="docs/readme/en/tile-start.svg" width="312" height="156" alt="start screen"></a></td>
-<td colspan="1"><a href="#live-tiles"><img src="docs/readme/en/tile-live.svg" width="156" height="156" alt="live tiles"></a></td>
-<td colspan="1"><a href="#app-list-and-search"><img src="docs/readme/en/tile-apps.svg" width="156" height="156" alt="apps &amp; search"></a></td>
-</tr>
-<tr>
-<td colspan="1"><a href="#action-center-and-notifications"><img src="docs/readme/en/tile-action.svg" width="156" height="156" alt="action center"></a></td>
-<td colspan="1"><a href="#lock-screen-voice-and-gestures"><img src="docs/readme/en/tile-lock.svg" width="156" height="156" alt="lock screen"></a></td>
-<td colspan="2"><a href="#looks-and-colors"><img src="docs/readme/en/tile-looks.svg" width="312" height="156" alt="looks &amp; colors"></a></td>
-</tr>
-<tr>
-<td colspan="1"><a href="#lock-screen-voice-and-gestures"><img src="docs/readme/en/tile-gestures.svg" width="156" height="156" alt="voice &amp; gestures"></a></td>
-<td colspan="1"><a href="#backup-profiles-and-accessibility"><img src="docs/readme/en/tile-backup.svg" width="156" height="156" alt="backup"></a></td>
-<td colspan="1"><a href="#settings-and-tutorial"><img src="docs/readme/en/tile-settings.svg" width="156" height="156" alt="settings"></a></td>
-<td colspan="1"><a href="#for-app-developers-your-own-tile-on-start"><img src="docs/readme/en/tile-developers.svg" width="156" height="156" alt="for developers"></a></td>
-</tr>
-<tr>
-<td colspan="1"><a href="#privacy-and-permissions"><img src="docs/readme/en/tile-privacy.svg" width="156" height="156" alt="privacy"></a></td>
-<td colspan="2"><a href="#build-from-source"><img src="docs/readme/en/tile-build.svg" width="312" height="156" alt="build from source"></a></td>
-<td colspan="1"><a href="#documentation"><img src="docs/readme/en/tile-docs.svg" width="156" height="156" alt="documentation"></a></td>
-</tr>
-</table>
+<p align="center">
+<a href="#start-screen"><img src="docs/readme/en/tile-start.svg" width="312" height="156" alt="start screen"></a><a href="#live-tiles"><img src="docs/readme/en/tile-live.svg" width="156" height="156" alt="live tiles"></a><a href="#app-list-and-search"><img src="docs/readme/en/tile-apps.svg" width="156" height="156" alt="apps &amp; search"></a><br>
+<a href="#action-center-and-notifications"><img src="docs/readme/en/tile-action.svg" width="156" height="156" alt="action center"></a><a href="#lock-screen-voice-and-gestures"><img src="docs/readme/en/tile-lock.svg" width="156" height="156" alt="lock screen"></a><a href="#looks-and-colors"><img src="docs/readme/en/tile-looks.svg" width="312" height="156" alt="looks &amp; colors"></a><br>
+<a href="#apps-built-in"><img src="docs/readme/en/tile-builtin.svg" width="312" height="156" alt="apps built in"></a><a href="#lock-screen-voice-and-gestures"><img src="docs/readme/en/tile-gestures.svg" width="156" height="156" alt="voice &amp; gestures"></a><a href="#backup-profiles-and-accessibility"><img src="docs/readme/en/tile-backup.svg" width="156" height="156" alt="backup"></a><br>
+<a href="#settings-and-tutorial"><img src="docs/readme/en/tile-settings.svg" width="156" height="156" alt="settings"></a><a href="#for-app-developers-your-own-tile-on-start"><img src="docs/readme/en/tile-developers.svg" width="156" height="156" alt="for developers"></a><a href="#build-from-source"><img src="docs/readme/en/tile-build.svg" width="312" height="156" alt="build from source"></a><br>
+<a href="#privacy-and-permissions"><img src="docs/readme/en/tile-privacy.svg" width="312" height="156" alt="privacy"></a><a href="CHANGELOG.md"><img src="docs/readme/en/tile-changelog.svg" width="156" height="156" alt="changelog"></a><a href="#documentation"><img src="docs/readme/en/tile-docs.svg" width="156" height="156" alt="documentation"></a>
+</p>
 
 <p align="center">
   <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="24%" alt="Start screen with live tiles">
@@ -57,8 +41,7 @@
 
 <p align="center"><a href="https://github.com/developerkenshi-coder/MetroWinLauncher/releases/latest"><img src="docs/readme/en/download.svg" width="480" alt="download the latest release"></a></p>
 
-For Android 8.0 (API 26) or newer: `MetroWinLauncher-26.5.5S.apk`.
-
+`MetroWinLauncher-26.9.2S.apk`, for Android 8.0 (API 26) or newer.
 
 1. Download the APK on your phone.
 2. Open it. When Android asks, allow your browser or file manager to install unknown apps.
@@ -77,7 +60,7 @@ Each release also has a `SHA256SUMS` file. To check both:
 
 ```sh
 shasum -a 256 -c SHA256SUMS
-apksigner verify --print-certs MetroWinLauncher-26.5.5S.apk
+apksigner verify --print-certs MetroWinLauncher-26.9.2S.apk
 ```
 
 Android keeps the app updatable only with the same signing key, so install updates from this page. An F-Droid release is planned
@@ -88,7 +71,7 @@ for later; its APKs will be signed by F-Droid, so moving from one to the other w
 
 MetroWin Launcher brings the Start screen of Windows Phone (Metro, 8 and 8.1) to Android: flat tiles that flip with live content,
 an alphabetical app list, turnstile and tilt animations, and the system features a launcher can really offer. It has three looks
-(*Classic*, *Modern Glass*, *Modern Droid*) with customizable colors, and it does nothing while it is not on screen.
+(*Classic*, *Modern Glass*, *Modern Droid*) with customizable colors, and it does nothing while it is not on screen. It also brings its own apps (phone, people, messages, mail, calendar, photos, notes and more) in the same look.
 
 <details>
 <summary>More screenshots</summary>
@@ -109,6 +92,7 @@ an alphabetical app list, turnstile and tilt animations, and the system features
 - **Tile styles**: standard flip, *Iconic* (big number and icon), *Cycle* and *collage* for photos; flip or slide transitions.
 - **Add to Start**: contacts (with their photo), websites, Android widgets, Android settings, app shortcuts, quick-dial numbers, notes, lists, counters, countdowns, timers, a stopwatch, a wallet for loyalty cards.
 - **Your photo behind Start** with parallax, zoom and framing, and the **accent color taken from the photo**; clock and date, a second time zone, titles for groups of tiles.
+- **After the last tile** you choose the round arrow, three plain dots or nothing; **free mode** snaps big tiles to blocks and lets the others flow around the one you drop; the photo of Start stays still between two Starts; **landscape** has six columns on a phone on its side.
 
 ### live tiles
 Every one is optional and reads data only while it is pinned to Start.
@@ -133,6 +117,7 @@ Every one is optional and reads data only while it is pinned to Start.
 - A **Metro lock screen** with photo, big clock, next alarm, notification counts per app, weather and music. Android does not let a launcher replace its lock screen, so it works as the screensaver and has a preview in the launcher.
 - **Voice commands** in English and Italian, recognized on the phone when your language is available: open an app, call someone, set a timer or alarm, flashlight, search, weather, and more.
 - **Gestures** you configure: double tap, two-finger swipes, home pressed twice; predictive back; open-app animations (turnstile or expand).
+- A **Glance screen** as a screensaver (the time and the icons on black, moving every minute) and **charging animations**: a banner when you plug the cable in, inside the launcher and over other apps, and a battery that fills in the status bar and on the lock screen (one switch turns it off).
 
 ### looks and colors
 - **Classic** (flat Windows Phone), **Modern Glass** (frosted, rounded glass over a glowing backdrop) and **Modern Droid** (Material You), each in dark, light, by-the-hour or sunset-to-sunrise.
@@ -142,10 +127,12 @@ Every one is optional and reads data only while it is pinned to Start.
 - **Backup** of the layout to a file or a folder (any folder Android can open), by hand or every 1, 7 or 30 days, and **encrypted sync between phones** through that folder (AES-256-GCM, key from your passphrase with PBKDF2-SHA256).
 - **Work profile** and **private space** (Android 15), **Kids Corner**, and accessibility: TalkBack for every tile and row, text size, reduced motion, stronger contrast.
 
-### settings and tutorial
-- **Thirteen categories** (look and themes, start and tiles, lock screen, bars and Action Center, gestures and shortcuts, apps and icons, mini apps, notifications, privacy and security, battery, accessibility, backup and profiles, about), each a pivot of its pages: two levels, never more. Every setting is in one place only, and the search tells you where.
-- An **"i" next to every category and setting** explains what it does, when it matters and what it costs in battery, privacy or permissions, in six languages (English, Italian, German, Spanish, French, Portuguese).
-- A **tutorial of 25 short pages**, in order of theme, with a button on each page that opens its setting. The map of every setting, old page and new, is in [docs/impostazioni-mappa.md](docs/impostazioni-mappa.md).
+### apps built in
+The launcher brings its own apps, in the same look and with the same theme, opening with the turnstile. They need no account of their own.
+- **Phone** (keypad, recent calls, favourites, the photo of the contact on the whole screen during a call), a **People hub** (all, what's new, favourites, a jump list and a card with the history of calls and messages), **Messages** (bubbles with their tail, a pivot for all and unread) and **Mail** (unread in bold, previews, thumbnails of attached pictures, several messages at once).
+- **Calendar** (months as pages you swipe, a day view with the hours and the line of "now"), **Photos** (a hub with albums, dates and favourites, and a full viewer with pinch, double tap, share, delete and info) and **Now Playing** (the cover on the whole page, a seek bar, the controls and the queue).
+- **Notes** (as tiles with colour and date, and sketches with pen, highlighter and eraser), **To do** (drag to reorder), the **Recorder** (the live wave while it records), the **Calculator**, **Wallet** (stacked cards, and scanning a code with the camera: a camera permission, used only there), **News** and **Files** (letters and a jump list).
+- **Shizuku Terminal**, for people who run Shizuku: direct buttons you choose one by one, a battery doctor, sensors and monitor, more information about the phone, a terminal, apps and system pages, and **Metro settings** for Wi-Fi, mobile network, Bluetooth, date and time and sounds.
 
 ### for app developers: your own tile on start
 
@@ -185,7 +172,7 @@ The complete documentation, in Italian, covers every feature, every setting, the
 ## contributing
 
 Bug reports and ideas are welcome in the [issue tracker](https://github.com/developerkenshi-coder/MetroWinLauncher/issues), in English or Italian.
-For a bug, tell us the phone, the Android version and the launcher version (*settings → about*). Pull requests are welcome; please open an issue first for anything big.
+For a bug, tell us the phone, the Android version and the launcher version (*settings → tools → about*). Pull requests are welcome; please open an issue first for anything big.
 
 ## license and credits
 

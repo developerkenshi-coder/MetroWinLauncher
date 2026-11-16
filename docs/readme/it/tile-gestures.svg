@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="156" height="156" viewBox="0 0 156 156" role="img" aria-label="voce e gesti">
-<rect x="3" y="3" width="150" height="150" fill="#a4c400"/>
+<rect x="3" y="3" width="150" height="150" fill="#fa6800"/>
 <g transform="translate(78 66)"><g fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"><circle cx="-14" cy="0" r="6"/><path d="M-6 0H22M12 -10L22 0L12 10"/></g></g>
 <text x="14" y="140" font-family="'Segoe UI Light','Segoe UI','Selawik','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="17" font-weight="300" fill="#ffffff">voce e gesti</text>
 </svg>

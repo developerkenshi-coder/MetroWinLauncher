@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="156" height="156" viewBox="0 0 156 156" role="img" aria-label="privacy">
-<rect x="3" y="3" width="150" height="150" fill="#fa6800"/>
-<g transform="translate(78 66)"><g fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"><path d="M0 -22L18 -15V0C18 12 8 19 0 22C-8 19 -18 12 -18 0V-15Z"/><path d="M-7 1L-2 7L8 -5"/></g></g>
+<svg xmlns="http://www.w3.org/2000/svg" width="312" height="156" viewBox="0 0 312 156" role="img" aria-label="privacy">
+<rect x="3" y="3" width="306" height="150" fill="#fa6800"/>
+<g transform="translate(156 66)"><g fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"><path d="M0 -22L18 -15V0C18 12 8 19 0 22C-8 19 -18 12 -18 0V-15Z"/><path d="M-7 1L-2 7L8 -5"/></g></g>
 <text x="14" y="140" font-family="'Segoe UI Light','Segoe UI','Selawik','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="17" font-weight="300" fill="#ffffff">privacy</text>
 </svg>
