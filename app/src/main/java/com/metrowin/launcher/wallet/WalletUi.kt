@@ -70,7 +70,7 @@ internal val CARD_HEIGHT = 120.dp
 internal val CARD_STRIP = 60.dp
 internal val TILE_HEIGHT = 72.dp
 internal val SCAN_FRAME = 260.dp
-internal val SWATCH = 40.dp
+internal val SWATCH = 48.dp
 internal const val SEARCH_LIMIT = 60
 
 internal fun cardColor(index: Int): Color? = MetroAccents.getOrNull(index - 1)

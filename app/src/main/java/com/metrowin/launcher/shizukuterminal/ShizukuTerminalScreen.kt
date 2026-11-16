@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.RectangleShape
+import com.metrowin.launcher.ui.theme.LocalStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -164,7 +166,9 @@ private fun Locked(onUnlock: () -> Unit) {
 @Composable
 private fun StateLight(state: ShizukuState, modifier: Modifier) {
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(10.dp).clip(CircleShape).background(if (state.ready) LocalAccent.current else LocalMetroColors.current.subtle))
+        // A square in Classic, as the dots of the progress bar are; a round light otherwise.
+        val classic = LocalStyle.current.isClassic
+        Box(Modifier.size(if (classic) 9.dp else 10.dp).clip(if (classic) RectangleShape else CircleShape).background(if (state.ready) LocalAccent.current else LocalMetroColors.current.subtle))
         val version = if (state.ready) runCatching { " · v${Shizuku.getVersion()}" }.getOrDefault("") else ""
         MetroText(
             stringResource(

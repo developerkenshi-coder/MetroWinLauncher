@@ -11,6 +11,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -76,6 +77,7 @@ private class Checked(val code: String, val format: CodeFormat, val matrix: BitM
 
 private const val CHECK_DELAY_MS = 150L
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 internal fun CardEdit(initial: Card, prefs: WalletPrefs, today: Long, onSave: (Card) -> Unit, onCancel: () -> Unit) {
     val context = LocalContext.current
@@ -140,7 +142,7 @@ internal fun CardEdit(initial: Card, prefs: WalletPrefs, today: Long, onSave: (C
             }
             MetroTextField(note, { note = it.take(Wallet.MAX_NOTE) }, stringResource(R.string.cal_notes_hint), Modifier.testTag("wal:edit:note"), singleLine = false)
             SectionTitle(stringResource(R.string.wal_sec_colour), sections)
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 (0..7).forEach { index ->
                     val label = if (index == 0) stringResource(R.string.wal_color_phone) else stringResource(R.string.wal_color_n, index)
                     val base = cardColor(index) ?: LocalAccent.current

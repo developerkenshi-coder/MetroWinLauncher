@@ -6,12 +6,8 @@ import android.app.KeyguardManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,25 +17,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.data.readAtMost
 import com.metrowin.launcher.ui.actioncenter.MetroToast
-import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroButton
-import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroToggle
 import com.metrowin.launcher.ui.components.DialogFrame
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -53,7 +43,6 @@ private const val LIST = ""
 
 /** For how long an opened card stays open to the next one without asking for the lock of the phone again. */
 private const val UNLOCK_MS = 60_000L
-private const val UNDO_MS = 6_000L
 
 private class ExportJob(val cards: List<Card>, val passphrase: String?)
 
@@ -71,7 +60,6 @@ fun WalletScreen() {
     var lastUnlock by rememberSaveable { mutableLongStateOf(0L) }
     var pendingOpen by rememberSaveable { mutableStateOf<String?>(null) }
     var options by rememberSaveable { mutableStateOf(false) }
-    var undo by remember { mutableStateOf<Pair<Card, Int>?>(null) }
     val today = rememberToday()
     LaunchedEffect(Unit) {
         val loaded = withContext(Dispatchers.IO) { vault.load() to vault.unreadable }
@@ -195,7 +183,14 @@ fun WalletScreen() {
                         if (card == null) LaunchedEffect(Unit) { pageKey = LIST }
                         else CardView(
                             card, prefs, today, onEdit = { pageKey = "e:${card.id}" },
-                            onDelete = { undo = card to all.indexOfFirst { it.id == card.id }; commit(all.filter { it.id != card.id }); pageKey = LIST },
+                            onDelete = {
+                                val index = all.indexOfFirst { it.id == card.id }
+                                commit(all.filter { it.id != card.id }); pageKey = LIST
+                                // The card that was deleted can be brought back while the banner is up.
+                                MetroToast.show(context, context.getString(R.string.wal_deleted), context.getString(R.string.wal_undo)) {
+                                    commit(latest.get().toMutableList().apply { add(index.coerceIn(0, size), card) })
+                                }
+                            },
                             onBack = { pageKey = LIST },
                             onFavorite = { commit(all.map { if (it.id == card.id) it.copy(favorite = !it.favorite) else it }) },
                             onExport = { startExport(listOf(card), sealed = true) },
@@ -217,30 +212,10 @@ fun WalletScreen() {
                 }
             },
         )
-        // The card that was deleted can be brought back for a few seconds.
-        undo?.let { (card, index) ->
-            LaunchedEffect(card) { delay(UNDO_MS); undo = null }
-            UndoBar(Modifier.align(Alignment.BottomCenter)) {
-                commit(all.toMutableList().apply { add(index.coerceIn(0, size), card) })
-                undo = null
-            }
-        }
     }
     askExport?.let { list -> PassphraseDialog(twice = true, onDone = { askExport = null; launchExport(list, it) }, onCancel = { askExport = null }) }
     pendingImport?.let { bytes -> PassphraseDialog(twice = false, onDone = { finishImport(bytes, it) }, onCancel = { pendingImport = null }) }
     if (options) OptionsDialog(prefs) { options = false }
-}
-
-@Composable
-private fun UndoBar(modifier: Modifier, onUndo: () -> Unit) {
-    val colors = LocalMetroColors.current
-    Row(
-        modifier.fillMaxWidth().navigationBarsPadding().padding(start = 16.dp, end = 16.dp, bottom = 96.dp).background(colors.containers.getOrElse(0) { colors.surface }).padding(horizontal = 16.dp, vertical = 12.dp).testTag("wal:undo"),
-        horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
-    ) {
-        MetroText(stringResource(R.string.wal_deleted), size = 18.sp)
-        MetroText(stringResource(R.string.wal_undo), size = 18.sp, weight = androidx.compose.ui.text.font.FontWeight.SemiBold, color = com.metrowin.launcher.ui.theme.LocalAccent.current, modifier = Modifier.metroPress(onClick = onUndo).padding(8.dp))
-    }
 }
 
 @Composable

@@ -69,12 +69,14 @@ import com.metrowin.launcher.data.StorageInfo
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MarkIcon
 import com.metrowin.launcher.ui.components.Mark
+import com.metrowin.launcher.ui.components.MetroProgressBar
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.theme.ColorMath
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalHighContrast
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.LocalReduceMotion
+import com.metrowin.launcher.ui.theme.LocalStyle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -130,14 +132,21 @@ internal fun Legend(p: DsPalette, modifier: Modifier = Modifier) {
     }
 }
 
-/** A bar of two parts: [first] of its width in [firstColor], the rest in [restColor] (hatched when [hatchRest]). */
+/**
+ * A bar of two parts: [first] of its width in [firstColor], the rest in [restColor] (hatched when [hatchRest]). With [thin], in Classic, it is the bar of
+ * Windows Phone instead (3 dp, over a faint track): for a figure that is one amount of a whole, not for a split in two parts; high contrast keeps the full bar.
+ */
 @Composable
 internal fun Bar(
-    first: Float, firstColor: Color, restColor: Color, modifier: Modifier = Modifier, height: Dp = 12.dp, hatchRest: Boolean = false, description: String? = null,
+    first: Float, firstColor: Color, restColor: Color, modifier: Modifier = Modifier, height: Dp = 12.dp, hatchRest: Boolean = false, description: String? = null, thin: Boolean = false,
 ) {
     val reduce = LocalReduceMotion.current
     val animated = LocalDsOptions.current[Opt.Chart] && !reduce
     val shown by animateFloatAsState(first.coerceIn(0f, 1f), if (animated) tween(450) else snap(), label = "bar")
+    if (thin && LocalStyle.current.isClassic && !LocalHighContrast.current) {
+        MetroProgressBar(modifier.then(if (description != null) Modifier.semantics { contentDescription = description } else Modifier), firstColor, shown)
+        return
+    }
     val outline = if (LocalHighContrast.current) LocalMetroColors.current.foreground else Color.Transparent
     Canvas(modifier.fillMaxWidth().height(height).border(1.dp, outline).then(if (description != null) Modifier.semantics { contentDescription = description } else Modifier)) {
         if (hatchRest) hatchRect(restColor, Offset.Zero, size) else drawRect(restColor, Offset.Zero, size)

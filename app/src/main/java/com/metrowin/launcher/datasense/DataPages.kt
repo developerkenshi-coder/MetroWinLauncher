@@ -228,7 +228,7 @@ private fun LimitBlock(used: Long, limitMb: Long, alertPct: Int, billDay: Int, p
         stringResource(R.string.ds_limit_used, bytes(used), bytes(limit)), size = 15.sp, weight = FontWeight.Normal,
         color = if (share >= 1f) LocalAccent.current else colors.subtle, modifier = Modifier.padding(top = 12.dp).testTag("ds:limit:text"),
     )
-    Bar(share, if (warn) p.warn else p.mobile, colors.surface, Modifier.padding(top = 4.dp), height = 18.dp, description = stringResource(R.string.dsx_limit_desc, (share * 100).toInt()))
+    Bar(share, if (warn) p.warn else p.mobile, colors.surface, Modifier.padding(top = 4.dp), height = 18.dp, description = stringResource(R.string.dsx_limit_desc, (share * 100).toInt()), thin = true)
     if (!DataLimitWatch.canNotify(context)) PageNote(stringResource(R.string.dsx_notif_needed), Modifier.padding(top = 6.dp))
     if (options[Opt.Trends]) {
         val now = ZonedDateTime.now()
@@ -305,7 +305,7 @@ private fun AppDataRow(app: AppData, value: Long, top: Long, total: Long, open: 
             MetroText(app.label, size = if (compact) 16.sp else 19.sp, weight = if (heavy) FontWeight.SemiBold else FontWeight.Light, color = if (heavy) LocalAccent.current else colors.foreground, maxLines = 1, modifier = Modifier.weight(1f))
             MetroText(bytes(value), size = if (compact) 15.sp else 17.sp, weight = FontWeight.Normal, color = colors.subtle)
         }
-        if (!compact) Bar(DataPeriods.share(value, top), p.wifi, colors.surface, Modifier.padding(top = 3.dp), height = 6.dp)
+        if (!compact) Bar(DataPeriods.share(value, top), p.wifi, colors.surface, Modifier.padding(top = 3.dp), height = 6.dp, thin = true)
         if (open) {
             MetroText(
                 stringResource(R.string.ds_app_detail, bytes(app.wifi), bytes(app.mobile), bytes(app.foreground), bytes(app.background), (DataPeriods.share(app.total, total) * 100).toInt()),
@@ -350,7 +350,7 @@ internal fun TimePage(reader: UsageReader, refresh: Int) {
                     MetroText(duration(app.millis), size = if (compact) 15.sp else 17.sp, weight = FontWeight.Normal, color = colors.subtle)
                 }
                 if (!compact) {
-                    Bar(DataPeriods.share(app.millis, rows.first().millis), p.wifi, colors.surface, Modifier.padding(top = 3.dp), height = 6.dp)
+                    Bar(DataPeriods.share(app.millis, rows.first().millis), p.wifi, colors.surface, Modifier.padding(top = 3.dp), height = 6.dp, thin = true)
                     MetroText(
                         stringResource(R.string.ds_last_used, android.text.format.DateUtils.getRelativeTimeSpanString(app.lastUsed, System.currentTimeMillis(), android.text.format.DateUtils.MINUTE_IN_MILLIS).toString()),
                         size = 12.sp, weight = FontWeight.Normal, color = colors.subtle,

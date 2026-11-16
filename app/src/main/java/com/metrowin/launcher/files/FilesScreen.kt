@@ -8,6 +8,10 @@ import com.metrowin.launcher.ui.components.sectionHeader
 import com.metrowin.launcher.ui.apps.JumpList
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.theme.LocalStyle
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.components.scrollIndicator
 import androidx.compose.ui.res.pluralStringResource
 import android.content.ClipData
@@ -402,29 +406,32 @@ private fun Manager() {
                         )
                     }
                 }
-                if (pickedAny) {
-                    FilesBar(
-                        buildList {
-                            add(FilesBarItem(FilesIcon.Copy, stringResource(R.string.fm_copy)) { clip = Clip(picked, false); current.selection = emptySet() })
-                            add(FilesBarItem(FilesIcon.Cut, stringResource(R.string.fm_cut)) { clip = Clip(picked, true); current.selection = emptySet() })
-                            add(FilesBarItem(FilesIcon.Delete, stringResource(R.string.fm_delete)) { dialog = FilesDialog.Delete(picked.size) { forever -> delete(picked, forever) } })
-                            add(FilesBarItem(FilesIcon.Share, stringResource(R.string.fm_share)) { FilesSupport.share(context, picked) })
-                            add(FilesBarItem(FilesIcon.Compress, stringResource(R.string.fm_compress)) { dialog = FilesDialog.Compress(picked) })
-                            if (picked.size == 1) add(FilesBarItem(FilesIcon.Rename, stringResource(R.string.fm_rename_short)) { dialog = FilesDialog.Rename(picked.first()) })
-                            add(FilesBarItem(FilesIcon.More, stringResource(R.string.fm_more)) { dialog = FilesDialog.Actions(picked) })
-                        },
-                    )
-                } else {
-                    FilesBar(
-                        buildList {
-                            add(FilesBarItem(FilesIcon.New, stringResource(R.string.fm_new)) { dialog = FilesDialog.New })
-                            clip?.let { add(FilesBarItem(FilesIcon.Paste, stringResource(R.string.fm_paste)) { start(it.files, current.path, it.move); if (it.move) clip = null }) }
-                            add(FilesBarItem(FilesIcon.Select, stringResource(R.string.fm_select)) { current.selection = entries(active).map { it.absolutePath }.toSet() })
-                            add(FilesBarItem(FilesIcon.View, stringResource(R.string.fm_view)) { dialog = FilesDialog.View })
-                            add(FilesBarItem(FilesIcon.Categories, stringResource(R.string.fm_categories)) { dialog = FilesDialog.Categories })
-                            add(FilesBarItem(FilesIcon.More, stringResource(R.string.fm_more)) { dialog = FilesDialog.Menu })
-                        },
-                    )
+                // A fade between the two bars, so the change does not jump.
+                Crossfade(pickedAny, animationSpec = if (LocalReduceMotion.current) snap() else tween(150), label = "fm:bar") { selecting ->
+                    if (selecting) {
+                        FilesBar(
+                            buildList {
+                                add(FilesBarItem(FilesIcon.Copy, stringResource(R.string.fm_copy)) { clip = Clip(picked, false); current.selection = emptySet() })
+                                add(FilesBarItem(FilesIcon.Cut, stringResource(R.string.fm_cut)) { clip = Clip(picked, true); current.selection = emptySet() })
+                                add(FilesBarItem(FilesIcon.Delete, stringResource(R.string.fm_delete)) { dialog = FilesDialog.Delete(picked.size) { forever -> delete(picked, forever) } })
+                                add(FilesBarItem(FilesIcon.Share, stringResource(R.string.fm_share)) { FilesSupport.share(context, picked) })
+                                add(FilesBarItem(FilesIcon.Compress, stringResource(R.string.fm_compress)) { dialog = FilesDialog.Compress(picked) })
+                                if (picked.size == 1) add(FilesBarItem(FilesIcon.Rename, stringResource(R.string.fm_rename_short)) { dialog = FilesDialog.Rename(picked.first()) })
+                                add(FilesBarItem(FilesIcon.More, stringResource(R.string.fm_more)) { dialog = FilesDialog.Actions(picked) })
+                            },
+                        )
+                    } else {
+                        FilesBar(
+                            buildList {
+                                add(FilesBarItem(FilesIcon.New, stringResource(R.string.fm_new)) { dialog = FilesDialog.New })
+                                clip?.let { add(FilesBarItem(FilesIcon.Paste, stringResource(R.string.fm_paste)) { start(it.files, current.path, it.move); if (it.move) clip = null }) }
+                                add(FilesBarItem(FilesIcon.Select, stringResource(R.string.fm_select)) { current.selection = entries(active).map { it.absolutePath }.toSet() })
+                                add(FilesBarItem(FilesIcon.View, stringResource(R.string.fm_view)) { dialog = FilesDialog.View })
+                                add(FilesBarItem(FilesIcon.Categories, stringResource(R.string.fm_categories)) { dialog = FilesDialog.Categories })
+                                add(FilesBarItem(FilesIcon.More, stringResource(R.string.fm_more)) { dialog = FilesDialog.Menu })
+                            },
+                        )
+                    }
                 }
             }
         },
