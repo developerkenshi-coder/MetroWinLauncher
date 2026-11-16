@@ -26,6 +26,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.metrowin.launcher.ui.kids.CheckSquare
+import com.metrowin.launcher.ui.theme.LocalStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -101,7 +103,7 @@ fun EditForm(item: TodoItem, names: List<String>, now: Long, onSave: (TodoItem) 
     subs.forEachIndexed { index, sub ->
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(Modifier.size(48.dp).testTag("todo:edit:sub:$index").metroPress(onClick = { subs = subs.toMutableList().also { it[index] = sub.copy(done = !sub.done) } }), contentAlignment = Alignment.Center) {
-                MetroText(if (sub.done) "☑" else "☐", size = 24.sp, color = LocalAccent.current)
+                if (LocalStyle.current.isClassic) CheckSquare(sub.done) else MetroText(if (sub.done) "☑" else "☐", size = 24.sp, color = LocalAccent.current)
             }
             Box(Modifier.weight(1f)) { MetroText(sub.text, size = 18.sp, color = if (sub.done) LocalMetroColors.current.subtle else LocalMetroColors.current.foreground) }
             TodoChip("✕", false, "todo:edit:subdel:$index", description = stringResource(R.string.todo_delete)) { subs = subs.toMutableList().also { it.removeAt(index) } }

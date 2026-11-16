@@ -313,8 +313,13 @@ fun EditWave(
         val line = if (contrast) 6.dp.toPx() else 4.dp.toPx()
         listOf(from, to).forEach { f ->
             drawRect(colors.foreground, Offset(f * size.width - line / 2f, 0f), Size(line, size.height))
-            drawCircle(colors.foreground, 9.dp.toPx(), Offset(f * size.width, size.height / 2f))
-            drawCircle(accent, 5.dp.toPx(), Offset(f * size.width, size.height / 2f))
+            if (kind == ThemeStyle.Classic) {
+                // The block of the slider of Windows Phone, 9 x 18 dp.
+                drawRect(colors.foreground, Offset(f * size.width - 4.5.dp.toPx(), size.height / 2f - 9.dp.toPx()), Size(9.dp.toPx(), 18.dp.toPx()))
+            } else {
+                drawCircle(colors.foreground, 9.dp.toPx(), Offset(f * size.width, size.height / 2f))
+                drawCircle(accent, 5.dp.toPx(), Offset(f * size.width, size.height / 2f))
+            }
         }
         if (duration > 0) drawRect(colors.foreground.copy(alpha = 0.7f), Offset(position.toFloat() / duration * size.width, 0f), Size(2.dp.toPx(), size.height))
     }
