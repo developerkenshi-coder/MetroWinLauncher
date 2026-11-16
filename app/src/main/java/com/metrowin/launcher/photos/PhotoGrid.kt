@@ -1,5 +1,6 @@
 package com.metrowin.launcher.photos
 
+import com.metrowin.launcher.ui.components.scrollIndicator
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -189,7 +190,7 @@ internal fun PhotoSections(sections: List<GridSection>, tag: String, ctx: GridCo
             }
         }
         val background = LocalMetroColors.current.background.copy(alpha = 0.92f)
-        LazyColumn(Modifier.fillMaxSize(), state, contentPadding = androidx.compose.foundation.layout.PaddingValues(start = SIDE, end = SIDE, bottom = 16.dp)) {
+        LazyColumn(Modifier.fillMaxSize().scrollIndicator(state), state, contentPadding = androidx.compose.foundation.layout.PaddingValues(start = SIDE, end = SIDE, bottom = 16.dp)) {
             entries.forEachIndexed { index, entry ->
                 if (entry.header) {
                     val header: @Composable () -> Unit = {

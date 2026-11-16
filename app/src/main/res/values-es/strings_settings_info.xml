@@ -367,4 +367,5 @@
     <string name="tut_backup_tip2">Restaurar pregunta qué partes recuperar: Start, ajustes, aspecto, datos. Las copias guardadas se listan, la más reciente primero, y una restauración se puede deshacer.</string>
     <string name="tut_backup_tip3">Mantén dos teléfonos sincronizados con la misma carpeta: el archivo se cifra con una frase secreta que solo tú conoces y que nunca va a la carpeta.</string>
     <string name="tut_backup_tip4">Pausa u oculta el perfil de trabajo y el espacio privado, y guarda la lista de tus apps para encontrarlas de nuevo en un teléfono nuevo.</string>
+    <string name="info_theme_wplook">Activa a la vez: el aspecto Clásico, la barra de aplicación Retro, el torniquete original y el margen estrecho de las páginas (18 dp, como en Windows Phone). El acento, el tema claro u oscuro y los mosaicos no cambian.</string>
 </resources>

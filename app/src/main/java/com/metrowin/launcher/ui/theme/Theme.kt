@@ -109,7 +109,8 @@ val DarkColors = MetroColors(
 val LightColors = MetroColors(
     dark = false,
     background = Color(0xFFFFFFFF),
-    foreground = Color(0xFF000000),
+    // 87% black, as Windows Phone's light theme (`PhoneForegroundColor` #DE000000 over white). Its grey for secondary text (#999) is under 4.5:1, so subtle stays.
+    foreground = Color(0xFF212121),
     subtle = Color(0xFF666666),
     surface = Color(0xFFE6E6E6),
     inactive = Color(0xFFD6D6D6),

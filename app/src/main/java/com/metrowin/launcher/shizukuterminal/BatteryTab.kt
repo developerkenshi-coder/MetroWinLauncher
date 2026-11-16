@@ -1,5 +1,7 @@
 package com.metrowin.launcher.shizukuterminal
 
+import com.metrowin.launcher.ui.components.scrollIndicator
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -51,7 +53,8 @@ internal fun BatteryTab(state: ShizukuState, refresh: Int, opts: TerminalOptions
     val deep by produceState<BatteryDeep?>(null, state, refresh) { value = withContext(Dispatchers.IO) { BatteryDeep.read() } }
     val sections by produceState(emptyList<BatterySection>(), deep, beat, refresh) { value = withContext(Dispatchers.IO) { BatteryDoctor.collect(context, deep) } }
     SideEffect { onReport { sections.joinToString("\n\n") { s -> s.title + "\n" + s.rows.joinToString("\n") { (k, v) -> if (k.isEmpty()) v else "$k: $v" } } } }
-    LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    val listState = rememberLazyListState()
+    LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState), state = listState, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         item(key = "history") { HistoryBlock(refresh, beat, opts) }
         infoSections(sections, "bat", opts.sticky.on)
         item { Spacer(Modifier.height(24.dp)) }

@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.LocalStyle
 import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.math.abs
@@ -50,11 +51,12 @@ fun PivotHeader(
     titles: List<String>,
     pagerState: PagerState,
     modifier: Modifier = Modifier,
-    size: androidx.compose.ui.unit.TextUnit = MetroType.Pivot,
+    size: androidx.compose.ui.unit.TextUnit = if (LocalStyle.current.isClassic) MetroType.PivotClassic else MetroType.Pivot,
     /** A colour for the titles (the current one in full, the others fainter) instead of the foreground; null keeps the usual look. */
     color: androidx.compose.ui.graphics.Color? = null,
 ) {
     val colors = LocalMetroColors.current
+    val classic = LocalStyle.current.isClassic
     val scope = rememberCoroutineScope()
     val widths = remember(titles) { mutableStateListOf<Int>().apply { repeat(titles.size) { add(0) } } }
     val spacing = with(LocalDensity.current) { Spacing.Page.roundToPx() }
@@ -90,8 +92,11 @@ fun PivotHeader(
                         text = title,
                         size = size,
                         maxLines = 1,
-                        color = if (color == null) lerp(colors.foreground, colors.subtle, abs(position - index).coerceIn(0f, 1f))
-                        else color.copy(alpha = 1f - 0.45f * abs(position - index).coerceIn(0f, 1f)),
+                        color = if (color == null) {
+                            val away = abs(position - index).coerceIn(0f, 1f)
+                            // Classic: the same ink, fainter (as Windows Phone does); the other looks fade to the grey.
+                            if (classic) colors.foreground.copy(alpha = 1f - (1f - MetroType.PivotIdleAlpha) * away) else lerp(colors.foreground, colors.subtle, away)
+                        } else color.copy(alpha = 1f - 0.45f * abs(position - index).coerceIn(0f, 1f)),
                         modifier = Modifier
                             .widthIn(max = room)
                             .onSizeChanged { widths[index] = it.width }
@@ -109,5 +114,5 @@ fun PivotHeader(
 /** The name of the app in small capitals over a page title ([LocalAppTitle]); nothing when the app has none. */
 @Composable
 fun AppTitleLine() {
-    LocalAppTitle.current?.let { MetroText(it.uppercase(Locale.getDefault()), size = MetroType.Note, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(bottom = 2.dp)) }
+    LocalAppTitle.current?.let { MetroText(it.uppercase(Locale.getDefault()), size = if (LocalStyle.current.isClassic) MetroType.AppTitleClassic else MetroType.Note, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(bottom = 2.dp)) }
 }

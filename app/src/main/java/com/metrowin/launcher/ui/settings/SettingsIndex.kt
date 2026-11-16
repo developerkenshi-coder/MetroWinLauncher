@@ -63,6 +63,7 @@ object SettingsIndex {
     val entries: List<SettingEntry> = listOf(
         // --- start+theme: the colors and the background
         e("theme.style", StartTheme, R.string.style_title, "style", "look", "classic", "glass", "droid", "material", "stile", "aspetto", "vetro"),
+        e("theme.wplook", StartTheme, R.string.wp_look, "windows phone", "preset", "original", "retro", "turnstile", "faithful", "fedele", "originale", "tornello", "predefinito"),
         e("theme.mode", StartTheme, R.string.theme_mode, "dark", "light", "night", "auto", "automatic", "sunset", "sunrise", "scuro", "chiaro", "notte", "automatico", "tramonto", "alba"),
         e("theme.from", StartTheme, R.string.theme_dark_from, "hours", "schedule", "dark from", "ore", "orario", "scuro dalle"),
         e("theme.to", StartTheme, R.string.theme_dark_to, "hours", "schedule", "dark until", "ore", "orario", "scuro fino alle"),

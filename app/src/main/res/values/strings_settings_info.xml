@@ -367,4 +367,5 @@
     <string name="tut_backup_tip2">Restore asks which parts to put back: Start, settings, look, data. The copies kept are listed, the newest first, and a restore can be undone.</string>
     <string name="tut_backup_tip3">Keep two phones in sync through the same folder: the file is encrypted with a passphrase that only you know and that never goes in the folder.</string>
     <string name="tut_backup_tip4">Pause or hide the work profile and the private space, and save the list of your apps to find them again on a new phone.</string>
+    <string name="info_theme_wplook">Switches on together: the Classic look, the Retro application bar, the original turnstile and the narrow page margin (18 dp, as on Windows Phone). The accent, light or dark, and the tiles stay as they are.</string>
 </resources>

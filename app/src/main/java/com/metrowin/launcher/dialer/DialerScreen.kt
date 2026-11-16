@@ -1,5 +1,6 @@
 package com.metrowin.launcher.dialer
 
+import com.metrowin.launcher.ui.components.scrollIndicator
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.ui.components.WindowClass
 import com.metrowin.launcher.ui.components.windowClass
@@ -433,7 +434,7 @@ private fun ContactsPage(hasPermission: Boolean, onRequest: () -> Unit, fresh: I
     val starts = sectionStarts(groups.values.map { it.size }, first = 1 + if (contacts != null && shown.isEmpty()) 1 else 0)
     val startOf = groups.keys.map { it.toString() }.zip(starts).toMap()
     Box(Modifier.fillMaxSize()) {
-    LazyColumn(Modifier.fillMaxSize().testTag("dialer:contacts"), state = listState) {
+    LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("dialer:contacts"), state = listState) {
         item {
             Column(Modifier.padding(bottom = 8.dp)) {
                 MetroTextField(query, { query = it }, stringResource(R.string.dialer_search_hint), Modifier.testTag("dialer:search"))
@@ -600,7 +601,7 @@ private fun HistoryPage(
             }
         }
         if (shown?.isEmpty() == true) EmptyState(Glyph.Phone, stringResource(R.string.dialer_no_history), Modifier.testTag("dialer:nohistory"))
-        LazyColumn(Modifier.weight(1f).testTag("dialer:history"), state = listState) {
+        LazyColumn(Modifier.weight(1f).scrollIndicator(listState).testTag("dialer:history"), state = listState) {
             val row: @Composable (CallGroup) -> Unit = { group -> HistoryRow(group, notes, prefs, sims.size > 1, group.let { keyOf(it) } in selected, selecting,
                 onClick = { if (selecting) selected = if (keyOf(group) in selected) selected - keyOf(group) else selected + keyOf(group) else call(group.latest.number) },
                 onLongClick = { if (prefs.multiSelect && !selecting) selected = setOf(keyOf(group)) else if (selecting) selected = selected + keyOf(group) else target = group },

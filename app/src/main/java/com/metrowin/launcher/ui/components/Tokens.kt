@@ -24,4 +24,10 @@ object MetroType {
     val Title = 34.sp
     /** The titles of a pivot. */
     val Pivot = 44.sp
+    /** Windows Phone 8.1: 72 px of a 480-wide screen = 54 dp (`PivotHeaderFontSize`). The Classic look only; the others keep [Pivot]. */
+    val PivotClassic = 54.sp
+    /** The name of the app over the pivot, 22.667 px = 17 dp (`PivotTitleFontSize`). Classic only. */
+    val AppTitleClassic = 17.sp
+    /** Titles of the pivot that are not the current one: 0.4 of the ink (`PhonePivotUnselectedItemOpacity`; the light theme's 0.23 would not read). */
+    const val PivotIdleAlpha = 0.4f
 }

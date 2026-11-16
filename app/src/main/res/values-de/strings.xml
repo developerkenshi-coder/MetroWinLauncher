@@ -2817,4 +2817,6 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="prj_spesa_about">Behalte deine Ausgaben im Blick, erstelle ein Budget und erreiche deine Sparziele.</string>
     <string name="prj_github">GitHub</string>
     <string name="prj_play">Google Play</string>
+    <string name="wp_look">Windows-Phone-Look</string>
+    <string name="wp_look_hint">Stellt den klassischen Look, die Retro-Aktionsleiste, das originale Drehkreuz und schmale Seitenränder auf einmal ein. Danach lässt sich alles einzeln ändern.</string>
 </resources>

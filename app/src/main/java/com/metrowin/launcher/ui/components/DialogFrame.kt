@@ -63,7 +63,7 @@ import java.util.Locale
 /**
  * A dimmed page with [content] in a panel in the middle; touching outside it calls [onCancel]. The panel scrolls by itself when its content is
  * long: never put a vertically scrolling list or column in [content] without a fixed height (it would be measured with no limit and crash).
- * In the classic look the panel swivels in from its top edge, in the others it fades in and grows a little; when closed by a touch outside it
+ * In the classic look the panel hangs from the top of the screen like the MessageBox of Windows Phone (the width of the screen, up to 480 dp) and swivels in from its top edge, in the others it fades in and grows a little; when closed by a touch outside it
  * goes the same way back before [onCancel] runs (with reduced motion it just appears and goes); a dialog the content itself closes (its own
  * button) just goes, as it is taken off the screen at once. The panel is at most 480 dp wide, in the middle of the page.
  *
@@ -106,15 +106,17 @@ fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, title: Stri
             .fillMaxSize()
             .drawBehind { drawRect(colors.background.copy(alpha = 0.85f), alpha = 1f - away.value) }
             .pointerInput(Unit) { detectTapGestures { cancel() } }
-            .imePadding(),
-        contentAlignment = Alignment.Center,
+            .imePadding()
+            // Classic: the MessageBox of Windows Phone hangs from the top of the screen, below the system bar, the width of the screen.
+            .then(if (classic) Modifier.topBarsPadding() else Modifier),
+        contentAlignment = if (classic) Alignment.TopCenter else Alignment.Center,
     ) {
         Column(
             Modifier
                 // On a tablet or in landscape the panel does not stretch over the screen: it keeps the width of a phone, in the middle.
-                .widthIn(max = MAX_WIDTH + Spacing.Page * 2)
+                .widthIn(max = if (classic) MAX_WIDTH else MAX_WIDTH + Spacing.Page * 2)
                 .fillMaxWidth()
-                .padding(horizontal = Spacing.Page)
+                .padding(horizontal = if (classic) 0.dp else Spacing.Page)
                 .graphicsLayer {
                     if (classic) {
                         transformOrigin = TransformOrigin(0.5f, 0f)
@@ -162,7 +164,8 @@ fun DialogButtons(
     okText: String = stringResource(android.R.string.ok),
 ) {
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(Spacing.Large)) {
-        MetroButton(okText, Modifier.weight(1f).testTag(okTag), role = ButtonRole.Primary, onClick = onOk)
+        // Windows Phone's MessageBox has two outlined buttons, none filled.
+        MetroButton(okText, Modifier.weight(1f).testTag(okTag), role = if (LocalStyle.current.isClassic) ButtonRole.Normal else ButtonRole.Primary, onClick = onOk)
         MetroButton(stringResource(android.R.string.cancel), Modifier.weight(1f).testTag(cancelTag), onClick = onCancel)
     }
 }

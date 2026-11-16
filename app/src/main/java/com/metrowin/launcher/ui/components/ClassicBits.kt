@@ -83,7 +83,7 @@ internal fun scrollThumb(viewport: Float, content: Float, scrolled: Float, minLe
 }
 
 /**
- * The thin scroll bar of Windows Phone: 2 dp at the right edge, there while the list is scrolled and gone a moment after. Only in Classic.
+ * The thin scroll bar of Windows Phone: 3.75 dp (5 px of a screen 480 wide) at the right edge, there while the list is scrolled and gone a moment after. Only in Classic.
  * The length of the list is guessed from the rows on screen, so a list of rows of very different heights makes the bar jump a little.
  */
 @Composable
@@ -94,7 +94,7 @@ fun Modifier.scrollIndicator(state: LazyListState): Modifier {
     val scrolling = state.isScrollInProgress
     val alpha by animateFloatAsState(
         if (scrolling) 0.6f else 0f,
-        if (reduced) snap() else if (scrolling) tween(80) else tween(450, delayMillis = 700),
+        if (reduced) snap() else if (scrolling) tween(80) else tween(500, delayMillis = 700),
         label = "scrollIndicator",
     )
     if (!classic) return this
@@ -109,7 +109,7 @@ fun Modifier.scrollIndicator(state: LazyListState): Modifier {
         val content = average * info.totalItemsCount
         val scrolled = state.firstVisibleItemIndex * average + state.firstVisibleItemScrollOffset
         val (top, length) = scrollThumb(viewport, content, if (info.reverseLayout) content - viewport - scrolled else scrolled, 24.dp.toPx()) ?: return@drawWithContent
-        val width = 2.dp.toPx()
+        val width = 3.75.dp.toPx()
         drawRect(color.copy(alpha = alpha), Offset(size.width - width, top), Size(width, length))
     }
 }

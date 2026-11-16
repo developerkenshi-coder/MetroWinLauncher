@@ -6,6 +6,7 @@ import com.metrowin.launcher.R
 internal object SettingsInfoTable {
     val byId: Map<String, Int> = mapOf(
         "theme.style" to R.string.info_theme_style,
+        "theme.wplook" to R.string.info_theme_wplook,
         "theme.mode" to R.string.info_theme_mode,
         "theme.from" to R.string.info_theme_hours,
         "theme.to" to R.string.info_theme_hours,

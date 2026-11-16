@@ -1,5 +1,7 @@
 package com.metrowin.launcher.shizukuterminal
 
+import com.metrowin.launcher.ui.components.scrollIndicator
+import androidx.compose.foundation.lazy.rememberLazyListState
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -162,7 +164,8 @@ internal fun AppsPage(state: ShizukuState, refresh: Int, ui: AppsUi, opts: Termi
         }
         MetroTextField(ui.query, { ui.query = it }, stringResource(R.string.st_search), Modifier.fillMaxWidth())
         if (message.isNotEmpty()) PageNote(message)
-        LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
+        val listState = rememberLazyListState()
+        LazyColumn(Modifier.weight(1f).fillMaxWidth().scrollIndicator(listState), state = listState) {
             items(shown, key = { it.pkg }) { app ->
                 Row(
                     Modifier.fillMaxWidth().metroPress(onClick = { if (state.ready) { chosen = app; confirmRemove = false } }).padding(vertical = 8.dp),

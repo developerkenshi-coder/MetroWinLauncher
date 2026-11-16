@@ -31,6 +31,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | impostazione | id | pagina vecchia | pagina nuova |
 |---|---|---|---|
 | tema | `theme.style` | aspetto › aspetto | aspetto e temi › tema e colori |
+| look Windows Phone | `theme.wplook` | (nuova) | aspetto e temi › tema e colori |
 | chiaro o scuro | `theme.mode` | aspetto › aspetto | aspetto e temi › tema e colori |
 | scuro dalle | `theme.from` | aspetto › aspetto | aspetto e temi › tema e colori |
 | fino alle | `theme.to` | aspetto › aspetto | aspetto e temi › tema e colori |

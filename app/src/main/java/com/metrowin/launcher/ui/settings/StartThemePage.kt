@@ -6,7 +6,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.ui.components.MetroText
 import androidx.compose.ui.platform.testTag
+import com.metrowin.launcher.data.ActionBarStyle
 import com.metrowin.launcher.data.LauncherSettings
+import com.metrowin.launcher.data.LaunchAnimation
+import com.metrowin.launcher.data.PagePadding
 import com.metrowin.launcher.ui.start.PhotoFrame
 import com.metrowin.launcher.ui.components.MetroSlider
 import com.metrowin.launcher.data.PhotoFit
@@ -72,6 +75,14 @@ fun ColumnScope.StartThemeSettings(env: SettingsEnv) {
             onSelect = { style -> env.onChange { it.copy(themeStyle = style) } },
         )
     }
+    // The look of Windows Phone 8.1 in one touch: the settings that make the pages and the apps resemble it most.
+    ActionSetting(
+        text = stringResource(R.string.wp_look),
+        onClick = { env.onChange { it.copy(themeStyle = ThemeStyle.Classic, actionBar = ActionBarStyle.Retro, launchAnimation = LaunchAnimation.Original, pagePadding = PagePadding.Compact) } },
+        hint = stringResource(R.string.wp_look_hint),
+        tag = "theme:wplook",
+        id = "theme.wplook",
+    )
     OptionList(
         label = stringResource(R.string.theme_mode),
         options = listOf(

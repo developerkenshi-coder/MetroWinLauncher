@@ -1,5 +1,7 @@
 package com.metrowin.launcher.shizukuterminal
 
+import com.metrowin.launcher.ui.components.scrollIndicator
+import androidx.compose.foundation.lazy.rememberLazyListState
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -67,7 +69,8 @@ internal fun MorePage(state: ShizukuState, refresh: Int, opts: TerminalOptions) 
     val sensorList = remember { sensorsOf(context) }
     val title = stringResource(R.string.mi_sensors, sensorList.size)
     val sensorRows = sensorList.map { sensor -> sensor.name to "${typeName(sensor)} · ${live[key(sensor)] ?: "—"}" }
-    LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    val listState = rememberLazyListState()
+    LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState), state = listState, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         infoSections(sections, "more", opts.sticky.on)
         infoSections(listOf(BatterySection(title, sensorRows)), "sensors", opts.sticky.on)
         item { Spacer(Modifier.height(24.dp)) }

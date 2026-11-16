@@ -2,6 +2,12 @@ package com.metrowin.launcher.ui.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.layout.Box
+import com.metrowin.launcher.ui.theme.onAccent
+import com.metrowin.launcher.ui.theme.LocalAccent
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -59,11 +65,15 @@ fun MenuPanel(modifier: Modifier = Modifier, tag: String? = null, content: @Comp
 /** An entry of a [MenuPanel]: at least 48 dp high, so that a finger finds it, and growing with the text when this is made bigger. */
 @Composable
 fun MenuItem(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, color: Color? = null) {
+    // Windows Phone: the entry that is touched fills with the accent.
+    var pressed by remember { mutableStateOf(false) }
+    val lit = pressed && LocalStyle.current.isClassic
     Box(
-        modifier.fillMaxWidth().heightIn(min = 48.dp).metroPress(onClick = onClick).padding(horizontal = Spacing.Page, vertical = Spacing.Large),
+        modifier.fillMaxWidth().heightIn(min = 48.dp).then(if (lit) Modifier.background(LocalAccent.current) else Modifier)
+            .metroPress(onClick = onClick, onPressedChange = { pressed = it }).padding(horizontal = Spacing.Page, vertical = Spacing.Large),
         contentAlignment = Alignment.CenterStart,
     ) {
-        MetroText(text, size = MetroType.Subtitle, color = color ?: LocalMetroColors.current.foreground)
+        MetroText(text, size = MetroType.Subtitle, color = if (lit) onAccent() else color ?: LocalMetroColors.current.foreground)
     }
 }
 

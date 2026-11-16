@@ -46,6 +46,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.foundation.text.BasicTextField
@@ -81,9 +84,11 @@ import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.theme.Danger
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.onAccent
-import com.metrowin.launcher.ui.theme.LightColors
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import com.metrowin.launcher.ui.theme.TileWhite
+
+/** The outline of a Windows Phone button and text box: 3 px of a screen 480 wide. */
+private val BUTTON_BORDER = 2.25.dp
 
 /** What a button is for: [Normal] is the plain one, [Primary] the answer a dialog wants (in the accent), [Danger] a thing that cannot be undone (red). */
 enum class ButtonRole { Normal, Primary, Danger }
@@ -96,7 +101,7 @@ enum class ButtonRole { Normal, Primary, Danger }
 fun MetroButton(text: String, modifier: Modifier = Modifier, role: ButtonRole = ButtonRole.Normal, onClick: () -> Unit) {
     val style = LocalStyle.current
     val colors = LocalMetroColors.current
-    // The Windows Phone button fills with the foreground colour while it is touched, and its text takes the colour of the page.
+    // The Windows Phone button fills with the accent while it is touched (border 3 px = 2.25 dp, text 17 dp semibold).
     var pressed by remember { mutableStateOf(false) }
     val pressable = modifier.metroPress(onClick = onClick, onPressedChange = { pressed = it })
     val fill = when (role) {
@@ -106,18 +111,18 @@ fun MetroButton(text: String, modifier: Modifier = Modifier, role: ButtonRole = 
     }
     val surface = when {
         fill != null -> when (style.kind) {
-            ThemeStyle.Classic -> pressable.border(2.dp, fill).background(fill)
+            ThemeStyle.Classic -> pressable.border(BUTTON_BORDER, fill).background(fill)
             ThemeStyle.Glass -> pressable.glass(style.controlShape, tint = fill, tintAlpha = 0.72f, veil = if (colors.dark) 0.12f else 0.4f)
             ThemeStyle.Droid -> pressable.clip(style.controlShape).background(fill).highContrastEdge(style.controlShape)
         }
-        style.kind == ThemeStyle.Classic -> pressable.border(2.dp, colors.foreground).background(if (pressed) colors.foreground else Color.Transparent)
+        style.kind == ThemeStyle.Classic -> pressable.border(BUTTON_BORDER, colors.foreground).background(if (pressed) LocalAccent.current else Color.Transparent)
         style.kind == ThemeStyle.Glass -> pressable.glass(style.controlShape, veil = if (colors.dark) 0.16f else 0.55f)
         else -> pressable.clip(style.controlShape).background(colors.containers.getOrElse(1) { colors.surface }).highContrastEdge(style.controlShape)
     }
     val ink = when {
         role == ButtonRole.Danger -> Color.White
         role == ButtonRole.Primary -> onAccent()
-        style.isClassic && pressed -> colors.background
+        style.isClassic && pressed -> onAccent()
         style.kind == ThemeStyle.Droid -> colors.onContainers.getOrElse(1) { colors.foreground }
         else -> colors.foreground
     }
@@ -128,7 +133,7 @@ fun MetroButton(text: String, modifier: Modifier = Modifier, role: ButtonRole = 
         surface.padding(horizontal = wide, vertical = if (style.isClassic) 11.dp else 12.dp),
         contentAlignment = Alignment.Center,
     ) {
-        MetroText(label, size = 19.sp, weight = FontWeight.Normal, color = ink, textAlign = TextAlign.Center)
+        MetroText(label, size = if (style.isClassic) 17.sp else 19.sp, weight = if (style.isClassic) FontWeight.SemiBold else FontWeight.Normal, color = ink, textAlign = TextAlign.Center)
     }
 }
 
@@ -412,12 +417,17 @@ fun MetroTextField(
     val colors = LocalMetroColors.current
     val style = LocalStyle.current
     val field = style.innerShape
-    // The TextBox of Windows Phone: an outline on the page, and while it is typed in a white box with black text.
+    // The TextBox of Windows Phone: a filled box at rest (75% white with black text on the dark theme, 15% black on the light one), and
+    // while it is typed in a white box (dark) or the page itself (light) with a border of 3 px in the accent.
     var focused by remember { mutableStateOf(false) }
     val lit = style.isClassic && focused
-    val ink = if (lit) Color.Black else colors.foreground
+    val classicInk = if (colors.dark) Color.Black else colors.foreground
+    val ink = if (style.isClassic) classicInk else colors.foreground
+    val accent = LocalAccent.current
     val surface = when (style.kind) {
-        ThemeStyle.Classic -> modifier.fillMaxWidth().heightIn(min = 52.dp).border(2.dp, colors.foreground).background(if (lit) Color.White else Color.Transparent)
+        ThemeStyle.Classic -> modifier.fillMaxWidth().heightIn(min = 52.dp)
+            .background(if (lit) (if (colors.dark) Color.White else Color.Transparent) else (if (colors.dark) Color.White.copy(alpha = 0.75f) else Color.Black.copy(alpha = 0.15f)))
+            .border(BUTTON_BORDER, if (lit) accent else Color.Transparent)
         ThemeStyle.Glass -> modifier.fillMaxWidth().heightIn(min = 52.dp).glass(field, veil = if (colors.dark) 0.12f else 0.55f)
         ThemeStyle.Droid -> modifier.fillMaxWidth().heightIn(min = 52.dp).clip(field).background(colors.surface).highContrastEdge(field)
     }
@@ -426,33 +436,36 @@ fun MetroTextField(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.weight(1f)) {
-            if (value.isEmpty()) MetroText(placeholder, size = MetroType.Subtitle, color = if (lit) LightColors.subtle else colors.subtle)
-            BasicTextField(
-                value = value,
-                onValueChange = onValueChange,
-                singleLine = singleLine,
-                textStyle = fieldTextStyle(ink, 20.sp),
-                cursorBrush = SolidColor(LocalAccent.current),
-                keyboardOptions = KeyboardOptions(
-                    imeAction = if (singleLine) ImeAction.Search else ImeAction.Default,
-                    keyboardType = if (password) KeyboardType.Password else keyboardType,
-                    autoCorrectEnabled = !password,
-                ),
-                visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
-                keyboardActions = KeyboardActions(onSearch = { onSearch?.invoke() }),
-                modifier = Modifier.fillMaxWidth().hideKeyboardWhenGone().onFocusChanged { focused = it.isFocused },
-            )
+            if (value.isEmpty()) MetroText(placeholder, size = 19.sp, color = if (style.isClassic) classicInk.copy(alpha = 0.6f) else colors.subtle)
+            // The selection of Windows Phone is the accent itself.
+            CompositionLocalProvider(LocalTextSelectionColors provides if (style.isClassic) TextSelectionColors(accent, accent.copy(alpha = 0.5f)) else LocalTextSelectionColors.current) {
+                BasicTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    singleLine = singleLine,
+                    textStyle = fieldTextStyle(ink, 19.sp),
+                    cursorBrush = SolidColor(if (style.isClassic) classicInk else accent),
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = if (singleLine) ImeAction.Search else ImeAction.Default,
+                        keyboardType = if (password) KeyboardType.Password else keyboardType,
+                        autoCorrectEnabled = !password,
+                    ),
+                    visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
+                    keyboardActions = KeyboardActions(onSearch = { onSearch?.invoke() }),
+                    modifier = Modifier.fillMaxWidth().hideKeyboardWhenGone().onFocusChanged { focused = it.isFocused },
+                )
+            }
         }
         if (lit && value.isNotEmpty()) {
             val description = stringResource(R.string.search_clear)
-            // A cross drawn, not typed: it does not depend on the font. It sits on the white box, so it is black.
+            // A cross drawn, not typed: it does not depend on the font.
             Canvas(
                 Modifier.padding(start = Spacing.Medium).size(36.dp).semantics { contentDescription = description }
                     .pointerInput(Unit) { detectTapGestures { onValueChange("") } }.padding(Spacing.Large),
             ) {
                 val stroke = 2.dp.toPx()
-                drawLine(Color.Black, Offset(0f, 0f), Offset(size.width, size.height), stroke)
-                drawLine(Color.Black, Offset(size.width, 0f), Offset(0f, size.height), stroke)
+                drawLine(ink, Offset(0f, 0f), Offset(size.width, size.height), stroke)
+                drawLine(ink, Offset(size.width, 0f), Offset(0f, size.height), stroke)
             }
         }
     }

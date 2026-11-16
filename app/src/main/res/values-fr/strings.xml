@@ -2851,4 +2851,6 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="prj_spesa_about">Suis tes dépenses, crée un budget et atteins tes objectifs d\'épargne.</string>
     <string name="prj_github">GitHub</string>
     <string name="prj_play">Google Play</string>
+    <string name="wp_look">Look Windows Phone</string>
+    <string name="wp_look_hint">Règle d’un coup l’aspect Classique, la barre d’application Retro, le tourniquet d’origine et les marges étroites. Chaque réglage reste modifiable ensuite.</string>
 </resources>

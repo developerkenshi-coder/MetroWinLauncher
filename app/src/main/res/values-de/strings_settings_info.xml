@@ -367,4 +367,5 @@
     <string name="tut_backup_tip2">Die Wiederherstellung fragt, welche Teile zurückkommen sollen: Start, Einstellungen, Look, Daten. Die aufbewahrten Kopien sind aufgelistet, die neueste zuerst, und eine Wiederherstellung lässt sich rückgängig machen.</string>
     <string name="tut_backup_tip3">Halte zwei Handys über denselben Ordner abgeglichen: die Datei wird mit einer Passphrase verschlüsselt, die nur du kennst und die nie in den Ordner kommt.</string>
     <string name="tut_backup_tip4">Pausiere oder verberge das Arbeitsprofil und den privaten Bereich und sichere die Liste deiner Apps, um sie auf einem neuen Handy wiederzufinden.</string>
+    <string name="info_theme_wplook">Schaltet gemeinsam ein: den klassischen Look, die Retro-Aktionsleiste, das originale Drehkreuz und den schmalen Seitenrand (18 dp, wie bei Windows Phone). Akzentfarbe, hell oder dunkel und die Kacheln bleiben unverändert.</string>
 </resources>

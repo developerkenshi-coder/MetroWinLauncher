@@ -1,5 +1,7 @@
 package com.metrowin.launcher.shizukuterminal
 
+import com.metrowin.launcher.ui.components.scrollIndicator
+import androidx.compose.foundation.lazy.rememberLazyListState
 import com.metrowin.launcher.ui.components.isWide
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -105,7 +107,8 @@ internal fun MonitorPage(state: ShizukuState, refresh: Int, buffers: MonitorBuff
     }
     val wide = isWide()
     val smooth = opts.smooth.on
-    LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    val listState = rememberLazyListState()
+    LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState), state = listState, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         if (opts.cards.on) item(key = "cards") {
             Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Gauge(stringResource(R.string.mo_chart_cpu), cpu.lastOrNull(), 100f, "%", Modifier.weight(1f))

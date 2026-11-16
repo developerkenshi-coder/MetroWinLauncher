@@ -367,4 +367,5 @@
     <string name="tut_backup_tip2">Il ripristino chiede quali parti rimettere: Start, impostazioni, aspetto, dati. Le copie conservate sono elencate, la più recente per prima, e un ripristino si può annullare.</string>
     <string name="tut_backup_tip3">Tieni sincronizzati due telefoni con la stessa cartella: il file è cifrato con una frase segreta che solo tu conosci e che non va mai nella cartella.</string>
     <string name="tut_backup_tip4">Metti in pausa o nascondi il profilo di lavoro e lo spazio privato, e salva l’elenco delle tue app per ritrovarle su un telefono nuovo.</string>
+    <string name="info_theme_wplook">Attiva insieme: l’aspetto Classico, la barra delle azioni Retro, il tornello originale e il margine stretto delle pagine (18 dp, come su Windows Phone). L’accento, chiaro o scuro, e i tile restano come sono.</string>
 </resources>

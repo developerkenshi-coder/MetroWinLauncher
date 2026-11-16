@@ -2851,4 +2851,6 @@ em primeiro plano %3$s · em segundo plano %4$s
     <string name="prj_spesa_about">Acompanha as tuas despesas, cria um orçamento e atinge os teus objetivos de poupança.</string>
     <string name="prj_github">GitHub</string>
     <string name="prj_play">Google Play</string>
+    <string name="wp_look">Aspeto Windows Phone</string>
+    <string name="wp_look_hint">Define de uma vez o aspeto Clássico, a barra de aplicações Retro, o torniquete original e as margens estreitas. Depois pode alterar cada definição.</string>
 </resources>

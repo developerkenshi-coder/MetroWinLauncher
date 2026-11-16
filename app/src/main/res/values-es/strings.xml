@@ -2851,4 +2851,6 @@ en primer plano %3$s · en segundo plano %4$s
     <string name="prj_spesa_about">Controla tus gastos, crea un presupuesto y alcanza tus metas de ahorro.</string>
     <string name="prj_github">GitHub</string>
     <string name="prj_play">Google Play</string>
+    <string name="wp_look">Aspecto Windows Phone</string>
+    <string name="wp_look_hint">Activa de una vez el aspecto Clásico, la barra de aplicación Retro, el torniquete original y los márgenes estrechos. Después puedes cambiar cada ajuste.</string>
 </resources>

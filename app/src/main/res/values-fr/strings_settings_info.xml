@@ -367,4 +367,5 @@
     <string name="tut_backup_tip2">La restauration demande quelles parties remettre : Start, réglages, apparence, données. Les copies gardées sont listées, la plus récente en premier, et une restauration peut être annulée.</string>
     <string name="tut_backup_tip3">Gardez deux téléphones synchronisés via le même dossier : le fichier est chiffré avec une phrase secrète que vous seul connaissez et qui ne va jamais dans le dossier.</string>
     <string name="tut_backup_tip4">Mettez en pause ou masquez le profil professionnel et l’espace privé, et enregistrez la liste de vos applications pour les retrouver sur un nouveau téléphone.</string>
+    <string name="info_theme_wplook">Active ensemble : l’aspect Classique, la barre d’application Retro, le tourniquet d’origine et la marge étroite des pages (18 dp, comme sur Windows Phone). La couleur d’accentuation, le thème clair ou sombre et les tuiles ne changent pas.</string>
 </resources>

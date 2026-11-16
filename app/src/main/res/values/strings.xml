@@ -2817,4 +2817,6 @@ in front %3$s · in the background %4$s
     <string name="prj_spesa_about">Track your spending, build a budget and reach your savings goals.</string>
     <string name="prj_github">GitHub</string>
     <string name="prj_play">Google Play</string>
+    <string name="wp_look">Windows Phone look</string>
+    <string name="wp_look_hint">Sets the Classic look, the Retro application bar, the original turnstile and narrow page margins in one go. Each can be changed again afterwards.</string>
 </resources>
