@@ -46,7 +46,8 @@ object BatteryDoctor {
 
     private fun num(value: Double, decimals: Int = 1) = String.format(locale, "%.${decimals}f", value)
 
-    fun collect(context: Context, deep: BatteryDeep?): List<BatterySection> {
+    /** [waiting] is what a group says while the shell is still being read, when Shizuku is ready: not "needs Shizuku", which is for when it is not. */
+    fun collect(context: Context, deep: BatteryDeep?, waiting: String? = null): List<BatterySection> {
         val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         val manager = context.getSystemService(BatteryManager::class.java)
         val power = context.getSystemService(PowerManager::class.java)
@@ -55,7 +56,7 @@ object BatteryDoctor {
         val sysfs = deep?.let { BatteryDumps.sysfs(it.sysfs) }.orEmpty()
         val stats = deep?.let { BatteryDumps.statLines(it.stats) }.orEmpty()
         val supply = sysfs["battery"] ?: sysfs.values.firstOrNull { "CAPACITY" in it }.orEmpty()
-        val needs = context.s(R.string.bd_needs_shizuku)
+        val needs = waiting ?: context.s(R.string.bd_needs_shizuku)
 
         fun property(id: Int): Long? = runCatching { manager.getLongProperty(id) }.getOrNull()?.takeIf { it != Long.MIN_VALUE && it != 0L }
         fun extra(key: String): Int? = intent?.takeIf { it.hasExtra(key) }?.getIntExtra(key, 0)
@@ -185,8 +186,8 @@ object BatteryDoctor {
             BatterySection(context.s(R.string.bd_g_apps), apps),
             BatterySection(context.s(R.string.bd_g_wakelocks), locks),
             BatterySection(context.s(R.string.bd_g_raw_broadcast), extras),
-            BatterySection(context.s(R.string.bd_g_raw_dumpsys), raw.ifEmpty { listOf(context.s(R.string.bd_dumpsys) to needs) }),
-            BatterySection(context.s(R.string.bd_g_raw_sysfs), files.ifEmpty { listOf(context.s(R.string.bd_sysfs) to needs) }),
+            BatterySection(context.s(R.string.bd_g_raw_dumpsys), raw.ifEmpty { listOf(context.s(R.string.bd_dumpsys) to if (deep == null) needs else context.s(R.string.bd_none)) }),
+            BatterySection(context.s(R.string.bd_g_raw_sysfs), files.ifEmpty { listOf(context.s(R.string.bd_sysfs) to if (deep == null) needs else context.s(R.string.bd_none)) }),
         ).filter { it.rows.isNotEmpty() }
     }
 

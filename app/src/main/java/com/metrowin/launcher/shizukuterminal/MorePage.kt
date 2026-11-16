@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -62,8 +63,10 @@ private fun mb(kb: Long) = String.format(Locale.getDefault(), "%.0f MB", kb / 10
 @Composable
 internal fun MorePage(state: ShizukuState, refresh: Int, opts: TerminalOptions) {
     val context = LocalContext.current
-    val shell by produceState<MoreShell?>(null, state, refresh) { value = if (state.ready) readShell() else null }
-    val needs = stringResource(R.string.bd_needs_shizuku)
+    // What was read stays on screen while it is read again, and until the first reading a group says so, not "needs Shizuku".
+    var shell by remember { mutableStateOf<MoreShell?>(null) }
+    LaunchedEffect(state, refresh) { shell = if (state.ready) readShell() else null }
+    val needs = stringResource(if (state.ready) R.string.bd_reading else R.string.bd_needs_shizuku)
     val sections by produceState(emptyList<BatterySection>(), shell, needs) { value = withContext(Dispatchers.IO) { build(context, shell, needs) } }
     val live = rememberSensors(context)
     val sensorList = remember { sensorsOf(context) }
@@ -118,8 +121,8 @@ private fun build(context: Context, shell: MoreShell?, needs: String): List<Batt
         BatterySection(s(R.string.mi_faults_by_app), byApp.ifEmpty { noFaults }),
         BatterySection(s(R.string.mi_faults_recent), recent),
         BatterySection(s(R.string.mi_security), security),
-        BatterySection(s(R.string.mi_memory), totals + memory.ifEmpty { listOf(s(R.string.mi_memory) to needs) }),
-        BatterySection(s(R.string.mi_services), services.ifEmpty { listOf(s(R.string.mi_services) to needs) }),
+        BatterySection(s(R.string.mi_memory), totals + memory.ifEmpty { listOf(s(R.string.mi_memory) to if (shell == null) needs else s(R.string.bd_none)) }),
+        BatterySection(s(R.string.mi_services), services.ifEmpty { listOf(s(R.string.mi_services) to if (shell == null) needs else s(R.string.bd_none)) }),
         BatterySection(s(R.string.tm_users), users),
     )
 }

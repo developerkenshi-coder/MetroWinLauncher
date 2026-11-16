@@ -18,6 +18,12 @@ object ShizukuShell {
 
     private const val LIMIT = 256 * 1024
     private const val TIMEOUT_MS = 20_000L
+    private const val RETRY_MS = 300L
+    private const val POLL_MS = 40L
+
+    /** [Result.code] of a command that Shizuku could not start: Shizuku is not there (or not allowed), or it is there and the start failed. */
+    const val NO_SHIZUKU = -1
+    const val FAILED = -4
 
     fun ready(): Boolean = ShizukuRadio.running() && ShizukuRadio.granted()
 
@@ -27,10 +33,7 @@ object ShizukuShell {
         /** Called from a worker thread with everything written so far, while the program still runs. */
         onOutput: ((String) -> Unit)? = null,
     ): Result = runCatching {
-        // shortcut: Shizuku API 13 keeps newProcess private (it wants a bound user service for anything bigger); reflection is enough for one-shot commands, upgrade if a later version drops it.
-        val method = Shizuku::class.java.getDeclaredMethod("newProcess", Array<String>::class.java, Array<String>::class.java, String::class.java)
-        method.isAccessible = true
-        val process = method.invoke(null, args, null, null) as Process
+        val process = start(args)
         var outDrain: Drain? = null
         var errDrain: Drain? = null
         val push = { onOutput?.invoke((outDrain?.text() ?: "") + (errDrain?.text() ?: "")); Unit }
@@ -38,15 +41,46 @@ object ShizukuShell {
         val err = Drain(process.errorStream, limit, if (onOutput != null) push else null).also { errDrain = it }
         out.start()
         err.start()
-        // Waits in short slices so that [cancel] (the Stop key of the Terminal) ends the process before the timeout does.
+        // Waits in short slices so that [cancel] (the Stop key of the Terminal) ends the process before the timeout does. The exit is asked for
+        // directly: the waitFor(timeout) of Shizuku 13.6 on Android 17 says "done" while a short command (`settings put`) is still running.
         val end = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMs)
-        var done = false
-        while (!done && System.nanoTime() < end && cancel?.get() != true) done = process.waitFor(200, TimeUnit.MILLISECONDS)
-        if (!done) process.destroy()
+        var exit: Int? = exitOf(process)
+        while (exit == null && System.nanoTime() < end && cancel?.get() != true) {
+            Thread.sleep(POLL_MS)
+            exit = exitOf(process)
+        }
+        if (exit == null) process.destroy()
         out.join(1_000)
         err.join(1_000)
-        Result(if (done) process.exitValue() else if (cancel?.get() == true) -3 else -2, (out.text() + err.text()).trim(), out.text().trim(), err.text().trim())
-    }.logged("shizuku.run", withMessage = false).getOrElse { Result(-1, it.message.orEmpty()) }
+        Result(exit ?: if (cancel?.get() == true) -3 else -2, (out.text() + err.text()).trim(), out.text().trim(), err.text().trim())
+    }.logged("shizuku.run", withMessage = false).getOrElse {
+        // "No Shizuku" (-1) only when it really is not there: a command that could not be started while Shizuku is ready is a failure of its own, with its reason.
+        Result(if (ready()) FAILED else NO_SHIZUKU, it.message.orEmpty())
+    }
+
+    /** The exit code of [process], or null while it still runs. */
+    // Through Shizuku's binder the "process hasn't exited" of a local Process (IllegalThreadStateException) arrives as its superclass, a plain IllegalArgumentException.
+    internal fun exitOf(process: Process): Int? = try { process.exitValue() } catch (e: IllegalArgumentException) { null } catch (e: IllegalStateException) { null }
+
+    // shortcut: Shizuku API 13 keeps newProcess private (it wants a bound user service for anything bigger); reflection is enough for one-shot commands, upgrade if a later version drops it.
+    private fun spawn(args: Array<String>): Process {
+        val method = Shizuku::class.java.getDeclaredMethod("newProcess", Array<String>::class.java, Array<String>::class.java, String::class.java)
+        method.isAccessible = true
+        return try {
+            method.invoke(null, args, null, null) as Process
+        } catch (e: java.lang.reflect.InvocationTargetException) {
+            throw e.cause ?: e
+        }
+    }
+
+    /** The process, started once more after a moment when Shizuku is there but its connection hiccuped (nothing has run yet, so nothing runs twice). */
+    private fun start(args: Array<String>): Process = try {
+        spawn(args)
+    } catch (e: Exception) {
+        if (!ready()) throw e
+        Thread.sleep(RETRY_MS)
+        spawn(args)
+    }
 
     /** A line for the shell, for the terminal where the user types it himself and for the fixed pipelines (`dumpsys | grep`) of the battery doctor. */
     fun shell(

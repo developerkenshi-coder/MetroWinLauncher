@@ -35,12 +35,12 @@ class SystemSettingsActivity : MiniActivity() {
     @Composable
     override fun Content() {
         val context = LocalContext.current
-        // null: still looking. Shizuku hands its connection over a moment after the process starts, so a "no" is only given after a few tries.
+        // null: still looking. Shizuku hands its connection over a moment after the process starts, so a "no" is only given after a few seconds of tries (6, a cold start of the phone can take that long).
         var ready by remember { mutableStateOf<Boolean?>(null) }
         var attempt by remember { mutableIntStateOf(0) }
         LaunchedEffect(attempt) {
             ready = null
-            repeat(12) {
+            repeat(24) {
                 if (ShizukuState.read(context).ready) {
                     ready = true
                     return@LaunchedEffect

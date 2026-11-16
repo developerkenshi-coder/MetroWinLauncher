@@ -15,9 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.res.stringResource
+import com.metrowin.launcher.R
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,8 +54,11 @@ internal fun BatteryTab(state: ShizukuState, refresh: Int, opts: TerminalOptions
             beat++
         }
     }
-    val deep by produceState<BatteryDeep?>(null, state, refresh) { value = withContext(Dispatchers.IO) { BatteryDeep.read() } }
-    val sections by produceState(emptyList<BatterySection>(), deep, beat, refresh) { value = withContext(Dispatchers.IO) { BatteryDoctor.collect(context, deep) } }
+    // What was read stays on screen while it is read again (a few seconds), and until the first reading a group says so, not "needs Shizuku".
+    var deep by remember { mutableStateOf<BatteryDeep?>(null) }
+    LaunchedEffect(state, refresh) { deep = withContext(Dispatchers.IO) { BatteryDeep.read() } }
+    val waiting = if (state.ready) stringResource(R.string.bd_reading) else null
+    val sections by produceState(emptyList<BatterySection>(), deep, beat, refresh, waiting) { value = withContext(Dispatchers.IO) { BatteryDoctor.collect(context, deep, waiting) } }
     SideEffect { onReport { sections.joinToString("\n\n") { s -> s.title + "\n" + s.rows.joinToString("\n") { (k, v) -> if (k.isEmpty()) v else "$k: $v" } } } }
     val listState = rememberLazyListState()
     LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState), state = listState, verticalArrangement = Arrangement.spacedBy(2.dp)) {
