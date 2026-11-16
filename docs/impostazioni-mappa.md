@@ -147,6 +147,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | Barra di stato Windows Phone | `statusbar.metro` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | Animazione di ricarica | `statusbar.charge` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | Barra di stato Windows Phone nelle altre app | `statusbar.apps` | aspetto › Barra di stato | barre e action center › Barra di stato |
+| Barra di stato Windows Phone nelle mini app | `statusbar.mini` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | notifiche | `statusbar.notifications` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | modalità aereo | `statusbar.airplane` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | hotspot | `statusbar.hotspot` | aspetto › Barra di stato | barre e action center › Barra di stato |

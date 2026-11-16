@@ -5,7 +5,20 @@ import com.metrowin.launcher.ui.components.PageMaxWidthPanes
 import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.pageSide
 import android.app.ActivityManager
+import android.content.Intent
 import android.content.SharedPreferences
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import com.metrowin.launcher.data.BatteryInfo
+import com.metrowin.launcher.data.StatusItem
+import com.metrowin.launcher.gestures.LockAccessibilityService
+import com.metrowin.launcher.ui.components.LocalMetroStatusBar
+import com.metrowin.launcher.ui.components.MetroStatusBar
+import com.metrowin.launcher.ui.components.metroStatusBarHeight
+import com.metrowin.launcher.ui.components.rememberBroadcast
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
@@ -106,13 +119,25 @@ abstract class MiniActivity : ComponentActivity() {
                     setTaskDescription(ActivityManager.TaskDescription(title.toString(), null as Bitmap?, accent))
                 }
                 val swipe = with(LocalDensity.current) { HOME_SWIPE.toPx() }
+                // The bar of Windows Phone inside the app, if asked; the bar over the apps (when it works) already covers this one.
+                val overApps = remember(settings.metroStatusBarOverApps) { settings.metroStatusBarOverApps && LockAccessibilityService.isEnabled(this@MiniActivity) }
+                val ownBar = settings.metroStatusBar && settings.miniStatusBar && !overApps
+                DisposableEffect(ownBar) {
+                    val controller = WindowCompat.getInsetsController(window, window.decorView)
+                    if (ownBar) controller.hide(WindowInsetsCompat.Type.statusBars()) else controller.show(WindowInsetsCompat.Type.statusBars())
+                    onDispose { }
+                }
                 CompositionLocalProvider(
+                    LocalMetroStatusBar provides if (ownBar) metroStatusBarHeight() else 0.dp,
                     LocalAppTitle provides title.toString(),
                     LocalHapticFeedback provides rememberMetroHaptics(settings.tapHaptics, settings.vibrationStrength),
                 ) {
-                    TurnPage(turn, onBack = ::finish) {
-                        // Two fingers up or down close the app and go back to Start (the gesture of Start's own two-finger actions; off by default).
-                        Box(Modifier.twoFingerSwipe(settings.miniHomeSwipe, swipe, onDown = ::finish, onUp = ::finish).rotateOnTurn()) { Content() }
+                    Box(Modifier.fillMaxSize()) {
+                        TurnPage(turn, onBack = ::finish) {
+                            // Two fingers up or down close the app and go back to Start (the gesture of Start's own two-finger actions; off by default).
+                            Box(Modifier.twoFingerSwipe(settings.miniHomeSwipe, swipe, onDown = ::finish, onUp = ::finish).rotateOnTurn()) { Content() }
+                        }
+                        if (ownBar) MiniStatusBar(settings, Modifier.align(Alignment.TopStart))
                     }
                 }
             }
@@ -168,6 +193,16 @@ fun MiniFrame(
         verticalArrangement = verticalArrangement,
         content = content,
     )
+}
+
+/** The status bar of Windows Phone over the top of a mini app (the pages start under it, see `LocalMetroStatusBar`). */
+@Composable
+private fun MiniStatusBar(settings: LauncherSettings, modifier: Modifier) {
+    val context = LocalContext.current
+    // The percentage follows Android's own: the phone says every change, and the first answer comes at once (the broadcast is sticky).
+    val intent = rememberBroadcast(Intent.ACTION_BATTERY_CHANGED)
+    val battery = remember(intent) { intent?.let { BatteryInfo.from(it, context) } ?: BatteryInfo.read(context) }
+    MetroStatusBar(battery, modifier, hidden = StatusItem.hiddenIds(settings.statusBarHidden), chargeAnimation = settings.chargeAnimation)
 }
 
 private const val SOUND_TAIL_MS = 600L

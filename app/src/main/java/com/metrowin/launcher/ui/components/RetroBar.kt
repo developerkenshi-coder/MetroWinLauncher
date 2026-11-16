@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -48,6 +49,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.anim.metroCollapse
 import com.metrowin.launcher.ui.anim.metroExpand
 import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.data.ActionBarStyle
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import java.util.Locale
@@ -58,7 +60,7 @@ internal const val RETRO_BUTTONS = 4
 /**
  * The application bar of Windows Phone, as the guidelines draw it: a row of round icon buttons without names and a "…" at the
  * right end. The "…" opens the bar: the names appear under the buttons and the text items (all lowercase) slide up from under
- * them. Touching it again closes it. Nothing else: no gestures, no modes.
+ * them. Touching it again closes it. With the minimized look ([ActionBarStyle.RetroMin]) the bar rests as a thin strip with only the "…". No gestures.
  */
 @Composable
 internal fun RetroBar(buttons: List<AppBarItem>, items: List<AppBarItem>, modifier: Modifier = Modifier) {
@@ -66,6 +68,9 @@ internal fun RetroBar(buttons: List<AppBarItem>, items: List<AppBarItem>, modifi
     val colors = LocalMetroColors.current
     var open by remember { mutableStateOf(false) }
     val reduced = LocalReduceMotion.current
+    // Minimized: at rest only a thin strip with the "…"; open, the bar is the full one.
+    val minimized = LocalActionBar.current == ActionBarStyle.RetroMin
+    val collapsed = minimized && !open
     Column(modifier.fillMaxWidth().background(retroBackground()).animateContentSize()) {
         AnimatedVisibility(open && items.isNotEmpty(), enter = metroExpand, exit = metroCollapse) {
             // Five items fit without scrolling, as the guidelines ask; more of them scroll inside this height.
@@ -80,17 +85,20 @@ internal fun RetroBar(buttons: List<AppBarItem>, items: List<AppBarItem>, modifi
             }
         }
         Row(Modifier.fillMaxWidth().padding(start = Spacing.Medium), verticalAlignment = Alignment.Top) {
-            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.SpaceEvenly) {
+            if (!collapsed) Row(Modifier.weight(1f), horizontalArrangement = Arrangement.SpaceEvenly) {
                 buttons.forEachIndexed { index, item ->
+                    // Pressed, the circle fills with the colour of the text and the sign takes the colour of the bar, as on Windows Phone.
+                    var pressed by remember { mutableStateOf(false) }
+                    val sign = if (pressed) retroBackground() else colors.foreground
                     Column(
-                        Modifier.testTag("retro:button:$index").metroPress(onClick = item.onClick).padding(horizontal = Spacing.Medium).semantics { contentDescription = item.label },
+                        Modifier.testTag("retro:button:$index").metroPress(onClick = { if (minimized) open = false; item.onClick() }, onPressedChange = { pressed = it }).padding(horizontal = Spacing.Medium).semantics { contentDescription = item.label },
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Box(
-                            Modifier.padding(top = (BAR_HEIGHT - BUTTON) / 2).size(BUTTON).border(2.dp, colors.foreground, CircleShape).clip(CircleShape),
+                            Modifier.padding(top = (BAR_HEIGHT - BUTTON) / 2).size(BUTTON).border(2.dp, colors.foreground, CircleShape).clip(CircleShape).background(if (pressed) colors.foreground else Color.Transparent),
                             contentAlignment = Alignment.Center,
                         ) {
-                            item.icon?.let { MarkIcon(it, 18.dp) } ?: MetroText(item.symbol, size = MetroType.Lead, weight = FontWeight.Normal)
+                            item.icon?.let { MarkIcon(it, 18.dp, color = sign) } ?: MetroText(item.symbol, size = MetroType.Lead, weight = FontWeight.Normal, color = sign)
                         }
                         // The names are under the buttons only while the bar is open.
                         // They slide down from under the buttons as the bar rises.
@@ -105,12 +113,14 @@ internal fun RetroBar(buttons: List<AppBarItem>, items: List<AppBarItem>, modifi
             }
             val description = stringResource(if (open) R.string.edit_more_hide else R.string.edit_more_show)
             Box(
-                Modifier.size(width = 48.dp, height = BAR_HEIGHT).testTag("retro:more").semantics { contentDescription = description }.metroPress(onClick = { open = !open }),
-                contentAlignment = Alignment.Center,
+                // Collapsed, the whole strip is the touch target, the dots at its end.
+                (if (collapsed) Modifier.weight(1f).height(MIN_HEIGHT) else Modifier.size(width = 48.dp, height = BAR_HEIGHT))
+                    .testTag("retro:more").semantics { contentDescription = description }.metroPress(onClick = { open = !open }),
+                contentAlignment = if (collapsed) Alignment.CenterEnd else Alignment.Center,
             ) {
                 // Three dots drawn, not typed: they do not depend on the font.
                 val dots = colors.foreground
-                Canvas(Modifier.size(width = 24.dp, height = 6.dp)) {
+                Canvas(Modifier.padding(end = if (collapsed) 12.dp else 0.dp).size(width = 24.dp, height = 6.dp)) {
                     val radius = 2.dp.toPx()
                     repeat(3) { i -> drawCircle(dots, radius, Offset(radius + i * (size.width - 2 * radius) / 2f, size.height / 2f)) }
                 }
@@ -125,5 +135,6 @@ internal fun retroBackground(): Color = if (LocalMetroColors.current.dark) Color
 
 // 72 pixels on a screen 480 wide, as in the guidelines, on the width of a phone of today.
 private val BAR_HEIGHT = 56.dp
+private val MIN_HEIGHT = 32.dp
 private val BUTTON = 38.dp
 private val MENU_ITEM = 48.dp

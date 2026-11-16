@@ -50,7 +50,7 @@
     <string name="info_start_zone">Une seconde horloge sous la date, pour une autre ville ou un autre fuseau (un proche à l’étranger, un collègue).</string>
     <string name="info_start_clocktaps">Un toucher sur l’heure ouvre l’application horloge, sur la date l’agenda. Désactivé, l’horloge de Start n’est qu’à regarder.</string>
     <string name="info_start_appbar">La barre du bas pendant que vous éditez les tuiles : avec le bouton …, ses boutons affichent leur nom.</string>
-    <string name="info_start_actionbar">L’aspect de la barre d’actions qui apparaît pendant l’édition : la moderne ou la rétro de Windows Phone (la barre « super »).</string>
+    <string name="info_start_actionbar">L’aspect de la barre d’actions qui apparaît pendant l’édition : la moderne ou la rétro de Windows Phone (la barre « super »). « Barre rétro réduite » ne garde qu’une fine bande avec le … jusqu’à ce qu’on la touche.</string>
     <string name="info_start_stepgoal">L’objectif vers lequel compte la tuile Pas. Elle lit le compteur de pas du téléphone et demande l’autorisation d’activité ; désactivé, aucun objectif n’est affiché.</string>
     <string name="info_start_topafter">Quand vous revenez d’une autre application après ce délai, Start est en haut, comme après Accueil. Désactivé, Start reste là où vous l’avez laissé.</string>
     <string name="info_start_lock">Les tuiles ne peuvent pas être déplacées, redimensionnées, retirées ou ajoutées par erreur. Désactivez-le ici pour les modifier de nouveau.</string>
@@ -76,6 +76,7 @@
     <string name="info_statusbar_hide">Masque la barre d’état pour donner plus de place à Start. Un balayage depuis le bord haut l’affiche un instant ; avec la barre masquée, ce balayage est celui d’Android, ouvrez donc l’Action Center avec un geste de la page Gestes.</string>
     <string name="info_statusbar_metro">Dessine la barre d’état de Windows Phone à la place de celle d’Android : notifications à gauche, et à droite signal, Wi-Fi, batterie avec pourcentage et heure. Elle écarte aussi la barre d’Android.</string>
     <string name="info_statusbar_apps">Dessine la barre par-dessus la barre d’état d’Android dans les applications hors du launcher. Elle couvre le haut de l’application et ne reçoit aucun toucher. Elle demande le service de verrouillage (accessibilité) ; les applications bancaires sont laissées tranquilles par le mode sûr.</string>
+    <string name="info_statusbar_mini">Dessine la barre d’état Windows Phone dans les mini-applications (Calculatrice, Notes, Mail…), les pages commençant en dessous. Elle demande la barre d’état Windows Phone activée et s’efface si la barre par-dessus les autres applications est activée.</string>
     <string name="info_statusbar_charge">Une courte bannière quand le câble est branché, et la batterie qui se remplit dans la barre d’état et sur l’écran de verrouillage pendant la charge. Avec moins de mouvement, seul l’état reste.</string>
     <string name="info_statusbar_icon">Affiche ou masque cette icône dans la barre d’état MetroWin. Cela ne change que la barre ; l’état du téléphone ne change pas.</string>
     <string name="info_statusbar_network">Affiche le type de réseau (5G, 4G, 3G, E) à côté du signal. Android ne le dit qu’aux applications autorisées à lire l’état du téléphone ; l’activer demande donc cette autorisation.</string>

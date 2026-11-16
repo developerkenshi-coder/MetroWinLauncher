@@ -78,7 +78,7 @@ fun EditBar(
     /** The button that picks several tiles, or whole groups, to move to another Start screen; null leaves it out (there is only one screen). */
     onSelectMany: (() -> Unit)? = null,
 ) {
-    if (LocalActionBar.current == ActionBarStyle.Retro) {
+    if (LocalActionBar.current.retro) {
         RetroEditBar(size, page, pageCount, onSize, onMovePage, onDone, modifier, style, onStyle, onAdd, onFolder, sizes, onGroup, onSelectMany)
         return
     }

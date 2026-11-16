@@ -39,7 +39,7 @@ class FilesBarItem(val icon: FilesIcon, val label: String, val onClick: () -> Un
  */
 @Composable
 fun FilesBar(items: List<FilesBarItem>, modifier: Modifier = Modifier) {
-    if (LocalActionBar.current == ActionBarStyle.Retro) {
+    if (LocalActionBar.current.retro) {
         AppBar(items.map { AppBarItem(it.icon.symbol, it.label, it.onClick) }, modifier)
         return
     }

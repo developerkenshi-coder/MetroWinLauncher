@@ -66,6 +66,21 @@ class RetroBarUiTest : ScreenshotBase() {
     }
 
     @Test
+    fun theMinimizedBarRestsAsTheDotsAloneAndAButtonClosesItAgain() {
+        showBar(ActionBarStyle.RetroMin) { AppBar(listOf(item("Reply"), item("Delete"))) }
+        compose.onAllNodesWithTag("retro:button:0").assertCountEquals(0)
+        compose.onNodeWithTag("retro:more").performClick()
+        compose.waitForIdle()
+        advance(500)
+        compose.onNodeWithTag("retro:button:0").assertExists()
+        compose.onNodeWithTag("retro:button:0").performClick()
+        assertEquals(listOf("Reply"), clicked)
+        compose.waitForIdle()
+        advance(500)
+        compose.onAllNodesWithTag("retro:button:0").assertCountEquals(0)
+    }
+
+    @Test
     fun theSuperBarStaysAsItWasAndHasNoDots() {
         showBar(ActionBarStyle.Super) { AppBar(listOf(item("Reply"), item("Delete"))) }
         compose.onAllNodesWithTag("retro:more").assertCountEquals(0)

@@ -1331,7 +1331,8 @@
     <string name="action_bar_title">Action bar</string>
     <string name="action_bar_super">Super action bar</string>
     <string name="action_bar_retro">Retro action bar</string>
-    <string name="action_bar_hint">Super: the bar of MetroWin, with all its functions. Retro: the app bar of Windows Phone 8.1, with round buttons and a … that shows their names and the text items. It applies to Start and the mini apps.</string>
+    <string name="action_bar_retro_min">Retro bar, minimized</string>
+    <string name="action_bar_hint">Super: the bar of MetroWin, with all its functions. Retro: the app bar of Windows Phone 8.1, with round buttons and a … that shows their names and the text items. It applies to Start and the mini apps. Retro, minimized: the same, but at rest only a thin strip with the … that a touch opens.</string>
     <string name="lock_quick_title">Status on the lock screen</string>
     <string name="lock_quick">Quick status (app counters)</string>
     <string name="lock_quick_hint">Up to five apps with the number of their notifications, under the time. If you do not choose, the apps with the most notifications.</string>
@@ -1901,6 +1902,8 @@
     <string name="theme_metro_status_bar_hint">Draws the status bar of Windows Phone in place of the one of Android: the notifications on the left, and on the right the signal, Wi-Fi, battery with its percentage and the time. It also takes the bar of Android out of the way.</string>
     <string name="theme_metro_status_bar_apps">Windows Phone status bar in other apps</string>
     <string name="theme_metro_status_bar_apps_hint">Draws the bar over the status bar of Android in the apps outside the launcher. It covers the top of the app and takes no touch. Needs the screen lock service in the accessibility settings.</string>
+    <string name="theme_metro_status_bar_mini">Windows Phone status bar in the mini apps</string>
+    <string name="theme_metro_status_bar_mini_hint">Draws the bar at the top of the mini apps and takes Android’s out of the way. It needs the Windows Phone status bar above to be on; with the bar over the apps on, that one is used instead.</string>
     <string name="sec_statusbar">Status bar</string>
     <string name="sec_statusbar_desc">The Windows Phone bar: in the launcher and in other apps, hidden on Start, and which icons it shows</string>
     <string name="statusbar_items">what it shows</string>

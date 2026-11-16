@@ -20,6 +20,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -31,6 +33,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.Locale
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
@@ -53,6 +56,11 @@ fun LoopingSelector(items: List<String>, selected: Int, onSelected: (Int) -> Uni
     val currentSelected by rememberUpdatedState(onSelected)
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
+    // A tick for each row that passes under the finger or the fling (not for the moves made from outside).
+    val haptic = LocalHapticFeedback.current
+    LaunchedEffect(state, haptic) {
+        snapshotFlow { state.firstVisibleItemIndex }.drop(1).filter { state.isScrollInProgress }.collect { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
+    }
     // When the wheel stops, its middle row is what is chosen.
     LaunchedEffect(state, size) {
         snapshotFlow { state.isScrollInProgress to state.firstVisibleItemIndex }

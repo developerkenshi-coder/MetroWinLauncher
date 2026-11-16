@@ -35,6 +35,14 @@ fun StatusBarPage(env: SettingsEnv) {
                 id = "statusbar.apps",
             )
             ToggleSetting(
+                label = stringResource(R.string.theme_metro_status_bar_mini),
+                checked = settings.miniStatusBar,
+                onChange = { value -> env.onChange { it.copy(miniStatusBar = value) } },
+                hint = stringResource(R.string.theme_metro_status_bar_mini_hint),
+                tag = "statusbar:mini",
+                id = "statusbar.mini",
+            )
+            ToggleSetting(
                 label = stringResource(R.string.theme_hide_status_bar),
                 checked = settings.hideStatusBar,
                 onChange = { value -> env.onChange { it.copy(hideStatusBar = value) } },

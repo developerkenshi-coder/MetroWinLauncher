@@ -50,7 +50,7 @@
     <string name="info_start_zone">Un segundo reloj bajo la fecha, para otra ciudad o zona horaria (un familiar en el extranjero, un colega).</string>
     <string name="info_start_clocktaps">Un toque en la hora abre la app de reloj, en la fecha el calendario. Apagado, el reloj de Start es solo para mirar.</string>
     <string name="info_start_appbar">La barra de abajo mientras editas los mosaicos: con el botón … sus botones muestran su nombre.</string>
-    <string name="info_start_actionbar">El aspecto de la barra de acciones que aparece al editar: la moderna o la retro de Windows Phone (la barra «super»).</string>
+    <string name="info_start_actionbar">El aspecto de la barra de acciones que aparece al editar: la moderna o la retro de Windows Phone (la barra «super»). «Barra retro reducida» deja solo una franja fina con el … hasta que la tocas.</string>
     <string name="info_start_stepgoal">La meta hacia la que cuenta el mosaico Pasos. Lee el contador de pasos del teléfono y necesita el permiso de actividad; apagado no muestra meta.</string>
     <string name="info_start_topafter">Cuando vuelves de otra app pasado este tiempo, Start está arriba, como tras Inicio. Apagado, Start se queda donde lo dejaste.</string>
     <string name="info_start_lock">Los mosaicos no se pueden mover, cambiar de tamaño, quitar ni añadir por error. Apágalo aquí para cambiarlos de nuevo.</string>
@@ -76,6 +76,7 @@
     <string name="info_statusbar_hide">Oculta la barra de estado para dar más espacio a Start. Un deslizamiento desde el borde superior la muestra un momento; con la barra oculta ese deslizamiento es de Android, así que abre el Action Center con un gesto de la página Gestos.</string>
     <string name="info_statusbar_metro">Dibuja la barra de estado de Windows Phone en lugar de la de Android: notificaciones a la izquierda y a la derecha señal, Wi-Fi, batería con porcentaje y hora. También quita de en medio la barra de Android.</string>
     <string name="info_statusbar_apps">Dibuja la barra sobre la barra de estado de Android en las apps fuera del launcher. Cubre la parte superior de la app y no recibe toques. Necesita el servicio de bloqueo (accesibilidad); las apps bancarias se dejan en paz en modo seguro.</string>
+    <string name="info_statusbar_mini">Dibuja la barra de estado de Windows Phone dentro de las miniaplicaciones (Calculadora, Notas, Correo…), con las páginas empezando debajo. Necesita la barra de estado de Windows Phone activada y se aparta si está activada la barra sobre otras aplicaciones.</string>
     <string name="info_statusbar_charge">Un breve banner al conectar el cable, y la batería llenándose en la barra de estado y en la pantalla de bloqueo mientras carga. Con menos movimiento solo queda el estado.</string>
     <string name="info_statusbar_icon">Muestra u oculta este icono en la barra de estado MetroWin. Solo cambia la barra; el estado del teléfono no cambia.</string>
     <string name="info_statusbar_network">Muestra el tipo de red (5G, 4G, 3G, E) junto a la señal. Android lo dice solo a apps que pueden leer el estado del teléfono, así que al activarlo se pide ese permiso.</string>

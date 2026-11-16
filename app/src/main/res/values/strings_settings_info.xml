@@ -50,7 +50,7 @@
     <string name="info_start_zone">A second clock under the date, for another city or time zone (a relative abroad, a colleague).</string>
     <string name="info_start_clocktaps">A touch on the time opens the clock app, on the date the calendar. Off, the clock of Start is only to look at.</string>
     <string name="info_start_appbar">The bar at the bottom while you edit the tiles: with the … button its buttons show their names.</string>
-    <string name="info_start_actionbar">The look of the bar of actions that appears while you edit: the modern one or the retro one of Windows Phone (the “super” bar).</string>
+    <string name="info_start_actionbar">The look of the bar of actions that appears while you edit: the modern one or the retro one of Windows Phone (the “super” bar). “Retro, minimized” keeps only a thin strip with the … until you touch it.</string>
     <string name="info_start_stepgoal">The goal the Steps tile counts toward. It reads the step counter of the phone and needs the activity permission; off shows no goal.</string>
     <string name="info_start_topafter">When you come back from another app after this long, Start is at the top, as after Home. Off, Start stays where you left it.</string>
     <string name="info_start_lock">Tiles cannot be moved, resized, removed or added by mistake. Switch it off here to change them again.</string>
@@ -76,6 +76,7 @@
     <string name="info_statusbar_hide">Hides the status bar for more room on Start. A swipe from the top edge shows it for a moment; with the bar hidden that swipe is Android’s, so open the Action Center with a gesture from the Gestures page.</string>
     <string name="info_statusbar_metro">Draws the Windows Phone status bar in place of Android’s: notifications on the left, and on the right signal, Wi-Fi, battery with its percentage and time. It also takes Android’s bar out of the way.</string>
     <string name="info_statusbar_apps">Draws the bar over the status bar of Android in apps outside the launcher. It covers the top of the app and takes no touch. It needs the screen lock service (accessibility); banking apps are left alone in safe mode.</string>
+    <string name="info_statusbar_mini">Draws the Windows Phone status bar inside the mini apps (Calculator, Notes, Mail…), with the pages starting under it. It needs the Windows Phone status bar to be on, and it steps aside when the bar over other apps is on.</string>
     <string name="info_statusbar_charge">A short banner when the cable goes in, and the battery filling in the status bar and on the lock screen while it charges. With reduced motion only the state stays.</string>
     <string name="info_statusbar_icon">Shows or hides this icon in the MetroWin status bar. It only changes the bar; the phone’s own state does not change.</string>
     <string name="info_statusbar_network">Shows the kind of network (5G, 4G, 3G, E) next to the signal. Android tells it only to apps that may read the phone state, so turning it on asks for that permission.</string>

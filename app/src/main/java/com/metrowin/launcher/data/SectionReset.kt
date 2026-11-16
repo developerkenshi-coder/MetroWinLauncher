@@ -23,7 +23,7 @@ object SectionReset {
         "StartBars" to setOf(
             "appBar", "actionBar", "clockAlarm", "clockHours", "clockTaps", "clockWeek", "clockZone", "showClock",
         ),
-        "StatusBar" to setOf("metroStatusBar", "metroStatusBarOverApps", "statusBarHidden", "chargeAnimation", "hideStatusBar"),
+        "StatusBar" to setOf("metroStatusBar", "metroStatusBarOverApps", "miniStatusBar", "statusBarHidden", "chargeAnimation", "hideStatusBar"),
         "StartBehaviour" to setOf("antiBurnIn", "lockStart", "startLowerPercent", "startTopAfterMin", "stepGoal", "undoSteps"),
         "Search" to setOf(
             "rememberSearches", "searchAnswers", "searchAssistant", "searchCalendar", "searchCommands", "searchContacts", "searchCurrency", "searchEngine",

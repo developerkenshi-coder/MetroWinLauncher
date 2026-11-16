@@ -216,7 +216,12 @@ enum class GallerySource(val code: String) {
 /** The bar of actions at the bottom of Start (while editing) and of the mini apps: the Super one, or the original of Windows Phone 8.1. */
 enum class ActionBarStyle(val code: String, @param:StringRes val label: Int) {
     Super("super", R.string.action_bar_super),
-    Retro("retro", R.string.action_bar_retro);
+    Retro("retro", R.string.action_bar_retro),
+
+    /** The Retro bar at rest as a thin strip with only the "…": a touch opens it, as the minimized mode of Windows Phone does. */
+    RetroMin("retro_min", R.string.action_bar_retro_min);
+
+    val retro get() = this != Super
 
     companion object {
         fun fromCode(code: String?) = entries.firstOrNull { it.code == code } ?: Super
@@ -373,6 +378,8 @@ data class LauncherSettings(
     val metroStatusBar: Boolean = false,
     /** The same bar drawn over the apps outside the launcher, by the accessibility service. */
     val metroStatusBarOverApps: Boolean = false,
+    /** The Windows Phone status bar is drawn inside the mini apps (needs [metroStatusBar]; the bar over the apps takes its place when it is on). */
+    val miniStatusBar: Boolean = false,
     /** The ids of [StatusItem] the user turned off in the status bar, comma-separated; empty shows them all. */
     val statusBarHidden: String = "",
     /** The animations of charging: a banner when the cable goes in, the battery filling in the status bar and on the lock screen. */

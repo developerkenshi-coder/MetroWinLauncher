@@ -86,6 +86,7 @@ object SettingsCodec {
         put("hideStatusBar", s.hideStatusBar)
         put("metroStatusBar", s.metroStatusBar)
         put("metroStatusBarOverApps", s.metroStatusBarOverApps)
+        put("miniStatusBar", s.miniStatusBar)
         put("statusBarHidden", s.statusBarHidden)
         put("chargeAnimation", s.chargeAnimation)
 
@@ -333,6 +334,7 @@ object SettingsCodec {
             hideStatusBar = o.optBoolean("hideStatusBar", base.hideStatusBar),
             metroStatusBar = o.optBoolean("metroStatusBar", base.metroStatusBar),
             metroStatusBarOverApps = o.optBoolean("metroStatusBarOverApps", base.metroStatusBarOverApps),
+            miniStatusBar = o.optBoolean("miniStatusBar", base.miniStatusBar),
             statusBarHidden = o.optString("statusBarHidden", base.statusBarHidden),
             chargeAnimation = o.optBoolean("chargeAnimation", base.chargeAnimation),
             showTileNames = o.optBoolean("showTileNames", base.showTileNames),

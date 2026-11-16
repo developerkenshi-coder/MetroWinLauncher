@@ -1331,7 +1331,8 @@
     <string name="action_bar_title">Aktionsleiste</string>
     <string name="action_bar_super">Super-Aktionsleiste</string>
     <string name="action_bar_retro">Retro-Aktionsleiste</string>
-    <string name="action_bar_hint">Super: die Leiste von MetroWin mit allen Funktionen. Retro: die App-Leiste von Windows Phone 8.1, mit runden Schaltflächen und einem …, das ihre Namen und die Textelemente zeigt. Gilt für Start und die Mini-Apps.</string>
+    <string name="action_bar_retro_min">Retro-Leiste, verkleinert</string>
+    <string name="action_bar_hint">Super: die Leiste von MetroWin mit allen Funktionen. Retro: die App-Leiste von Windows Phone 8.1, mit runden Schaltflächen und einem …, das ihre Namen und die Textelemente zeigt. Gilt für Start und die Mini-Apps. Retro, verkleinert: dieselbe, aber in Ruhe nur ein dünner Streifen mit dem …, den eine Berührung öffnet.</string>
     <string name="lock_quick_title">Status auf dem Sperrbildschirm</string>
     <string name="lock_quick">Schnellstatus (App-Zähler)</string>
     <string name="lock_quick_hint">Bis zu fünf Apps mit der Anzahl ihrer Benachrichtigungen, unter der Uhrzeit. Wenn du keine wählst, erscheinen die Apps mit den meisten Benachrichtigungen.</string>
@@ -1901,6 +1902,8 @@
     <string name="theme_metro_status_bar_hint">Zeichnet die Statusleiste von Windows Phone anstelle der von Android: links die Benachrichtigungen, rechts Signal, WLAN, Akku mit Prozentzahl und die Uhrzeit. Die Leiste von Android wird ausgeblendet.</string>
     <string name="theme_metro_status_bar_apps">Windows-Phone-Statusleiste in anderen Apps</string>
     <string name="theme_metro_status_bar_apps_hint">Zeichnet die Leiste über die von Android in Apps außerhalb des Launchers. Sie deckt den oberen Rand der App ab und nimmt keine Berührungen an. Braucht den Bildschirmsperre-Dienst in den Bedienungshilfen.</string>
+    <string name="theme_metro_status_bar_mini">Windows-Phone-Statusleiste in den Mini-Apps</string>
+    <string name="theme_metro_status_bar_mini_hint">Zeichnet die Leiste oben in den Mini-Apps und räumt die von Android weg. Braucht die Windows-Phone-Statusleiste oben; ist die Leiste über anderen Apps an, gilt diese.</string>
     <string name="sec_statusbar">Statusleiste</string>
     <string name="sec_statusbar_desc">Die Windows-Phone-Leiste: im Launcher und in anderen Apps, auf Start ausgeblendet, und welche Symbole sie zeigt</string>
     <string name="statusbar_items">was sie zeigt</string>

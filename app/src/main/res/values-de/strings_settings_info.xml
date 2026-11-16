@@ -50,7 +50,7 @@
     <string name="info_start_zone">Eine zweite Uhr unter dem Datum, für eine andere Stadt oder Zeitzone (Verwandte im Ausland, Kollegen).</string>
     <string name="info_start_clocktaps">Ein Tippen auf die Uhrzeit öffnet die Uhr-App, auf das Datum den Kalender. Aus: die Uhr von Start ist nur zum Ansehen.</string>
     <string name="info_start_appbar">Die Leiste unten beim Bearbeiten der Kacheln: mit der Taste … zeigen ihre Tasten ihre Namen.</string>
-    <string name="info_start_actionbar">Der Look der Aktionsleiste beim Bearbeiten: die moderne oder die Retro-Leiste von Windows Phone (die „Super“-Leiste).</string>
+    <string name="info_start_actionbar">Der Look der Aktionsleiste beim Bearbeiten: die moderne oder die Retro-Leiste von Windows Phone (die „Super“-Leiste). „Retro, verkleinert“ lässt nur einen dünnen Streifen mit dem … stehen, bis man ihn berührt.</string>
     <string name="info_start_stepgoal">Das Ziel, auf das die Schritte-Kachel zählt. Sie liest den Schrittzähler des Handys und braucht die Aktivitätsberechtigung; aus zeigt kein Ziel.</string>
     <string name="info_start_topafter">Kommst du nach dieser Zeit aus einer anderen App zurück, steht Start oben, wie nach Home. Aus: Start bleibt, wo du es verlassen hast.</string>
     <string name="info_start_lock">Kacheln lassen sich nicht aus Versehen verschieben, vergrößern, entfernen oder hinzufügen. Hier ausschalten, um sie wieder zu ändern.</string>
@@ -76,6 +76,7 @@
     <string name="info_statusbar_hide">Blendet die Statusleiste aus, für mehr Platz auf Start. Ein Wisch vom oberen Rand zeigt sie kurz; bei ausgeblendeter Leiste gehört dieser Wisch Android, öffne das Action Center daher mit einer Geste von der Seite Gesten.</string>
     <string name="info_statusbar_metro">Zeichnet die Windows-Phone-Statusleiste anstelle der von Android: links Benachrichtigungen, rechts Signal, WLAN, Akku mit Prozent und Uhrzeit. Androids Leiste wird dabei aus dem Weg geräumt.</string>
     <string name="info_statusbar_apps">Zeichnet die Leiste über Androids Statusleiste in Apps außerhalb des Launchers. Sie deckt den oberen Teil der App ab und nimmt keine Berührung an. Sie braucht den Bildschirmsperr-Dienst (Bedienungshilfen); Banking-Apps lässt der sichere Modus in Ruhe.</string>
+    <string name="info_statusbar_mini">Zeichnet die Windows-Phone-Statusleiste in den Mini-Apps (Rechner, Notizen, Mail …), die Seiten beginnen darunter. Sie braucht die eingeschaltete Windows-Phone-Statusleiste und tritt zurück, wenn die Leiste über anderen Apps an ist.</string>
     <string name="info_statusbar_charge">Ein kurzes Banner beim Einstecken des Kabels und der sich füllende Akku in der Statusleiste und auf dem Sperrbildschirm beim Laden. Bei reduzierter Bewegung bleibt nur der Zustand.</string>
     <string name="info_statusbar_icon">Zeigt oder verbirgt dieses Symbol in der MetroWin-Statusleiste. Es ändert nur die Leiste; der Zustand des Handys selbst ändert sich nicht.</string>
     <string name="info_statusbar_network">Zeigt die Netzart (5G, 4G, 3G, E) neben dem Signal. Android verrät sie nur Apps, die den Telefonstatus lesen dürfen; das Einschalten fragt daher diese Berechtigung an.</string>

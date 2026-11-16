@@ -1345,7 +1345,8 @@
     <string name="action_bar_title">Barra de acciones</string>
     <string name="action_bar_super">Super barra de acciones</string>
     <string name="action_bar_retro">Barra de acciones retro</string>
-    <string name="action_bar_hint">Super: la barra de MetroWin, con todas sus funciones. Retro: la barra de aplicación de Windows Phone 8.1, con botones redondos y un … que muestra sus nombres y las opciones de texto. Vale para Inicio y las miniaplicaciones.</string>
+    <string name="action_bar_retro_min">Barra retro reducida</string>
+    <string name="action_bar_hint">Super: la barra de MetroWin, con todas sus funciones. Retro: la barra de aplicación de Windows Phone 8.1, con botones redondos y un … que muestra sus nombres y las opciones de texto. Vale para Inicio y las miniaplicaciones. Retro reducida: la misma, pero en reposo solo una franja fina con el … que un toque abre.</string>
     <string name="lock_quick_title">Estado en la pantalla de bloqueo</string>
     <string name="lock_quick">Estado rápido (contadores de apps)</string>
     <string name="lock_quick_hint">Hasta cinco apps con el número de sus notificaciones, bajo la hora. Si no eliges, las apps con más notificaciones.</string>
@@ -1918,6 +1919,8 @@
     <string name="theme_metro_status_bar_hint">Dibuja la barra de estado de Windows Phone en lugar de la de Android: las notificaciones a la izquierda y, a la derecha, la señal, el Wi-Fi, la batería con su porcentaje y la hora. También oculta la barra de Android.</string>
     <string name="theme_metro_status_bar_apps">Barra de estado de Windows Phone en otras aplicaciones</string>
     <string name="theme_metro_status_bar_apps_hint">Dibuja la barra sobre la de Android en las aplicaciones fuera del launcher. Cubre la parte superior de la aplicación y no recibe toques. Necesita el servicio de bloqueo de pantalla en los ajustes de accesibilidad.</string>
+    <string name="theme_metro_status_bar_mini">Barra de estado de Windows Phone en las miniaplicaciones</string>
+    <string name="theme_metro_status_bar_mini_hint">Dibuja la barra arriba de las miniaplicaciones y aparta la de Android. Necesita la barra de estado de Windows Phone de arriba; con la barra sobre otras aplicaciones activada se usa esa.</string>
     <string name="sec_statusbar">Barra de estado</string>
     <string name="sec_statusbar_desc">La barra de Windows Phone: en el launcher y en otras apps, oculta en Start, y qué iconos muestra</string>
     <string name="statusbar_items">qué muestra</string>

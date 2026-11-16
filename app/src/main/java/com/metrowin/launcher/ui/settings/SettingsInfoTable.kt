@@ -89,6 +89,7 @@ internal object SettingsInfoTable {
         "statusbar.hide" to R.string.info_statusbar_hide,
         "statusbar.metro" to R.string.info_statusbar_metro,
         "statusbar.apps" to R.string.info_statusbar_apps,
+        "statusbar.mini" to R.string.info_statusbar_mini,
         "statusbar.charge" to R.string.info_statusbar_charge,
         "statusbar.notifications" to R.string.info_statusbar_icon,
         "statusbar.airplane" to R.string.info_statusbar_icon,

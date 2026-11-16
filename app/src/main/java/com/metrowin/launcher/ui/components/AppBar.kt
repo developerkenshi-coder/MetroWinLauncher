@@ -56,7 +56,7 @@ class AppBarItem(val symbol: String, val label: String, val onClick: () -> Unit)
  */
 @Composable
 fun AppBar(items: List<AppBarItem>, modifier: Modifier = Modifier, menu: List<AppBarItem> = emptyList()) {
-    if (LocalActionBar.current == ActionBarStyle.Retro) {
+    if (LocalActionBar.current.retro) {
         RetroBar(items.take(RETRO_BUTTONS), items.drop(RETRO_BUTTONS) + menu, modifier)
         return
     }
