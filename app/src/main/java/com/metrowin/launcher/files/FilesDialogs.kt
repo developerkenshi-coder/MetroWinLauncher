@@ -455,15 +455,12 @@ fun ProgressDialog(job: FileJob, onHide: () -> Unit) {
         while (true) { done = progress.doneBytes; name = progress.current; elapsed = System.currentTimeMillis() - job.startedAt; delay(200) }
     }
     val share = if (progress.totalBytes <= 0) 0f else (done.toFloat() / progress.totalBytes).coerceIn(0f, 1f)
-    val accent = LocalAccent.current
     val speed = if (elapsed > 1500 && !progress.byCount) done * 1000 / elapsed else 0L
     DialogFrame(onCancel = onHide) {
         MetroText(job.title, size = 22.sp)
         MetroText(name, size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, maxLines = 1)
         if (progress.totalBytes <= 0) MetroProgressBar(Modifier.padding(vertical = 3.dp))
-        else Box(Modifier.fillMaxWidth().height(10.dp).background(LocalMetroColors.current.surface).testTag("fm:progress").semantics { progressBarRangeInfo = ProgressBarRangeInfo(share, 0f..1f) }) {
-            Box(Modifier.fillMaxWidth(share).height(10.dp).background(accent))
-        }
+        else MetroProgressBar(Modifier.padding(vertical = 3.dp).testTag("fm:progress"), progress = share)
         MetroText(
             if (progress.byCount) stringResource(R.string.fmx_count_of, done, progress.totalBytes)
             else size(done) + " / " + size(progress.totalBytes) + if (speed > 0) "  ·  " + stringResource(R.string.fmx_speed, size(speed), clock((progress.totalBytes - done) / speed)) else "",
@@ -484,7 +481,7 @@ fun ProgressStrip(job: FileJob, onShow: () -> Unit) {
     val label = job.title + if (progress.totalBytes > 0) " · " + (share * 100).toInt() + "%" else ""
     Column(Modifier.fillMaxWidth().testTag("fm:strip").semantics { contentDescription = label; role = Role.Button }.metroPress(onClick = onShow).padding(horizontal = 24.dp, vertical = 6.dp)) {
         MetroText(label, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, maxLines = 1)
-        Box(Modifier.fillMaxWidth().padding(top = 4.dp).height(4.dp).background(LocalMetroColors.current.surface)) { Box(Modifier.fillMaxWidth(share).height(4.dp).background(LocalAccent.current)) }
+        MetroProgressBar(Modifier.padding(top = 4.dp), progress = share)
     }
 }
 

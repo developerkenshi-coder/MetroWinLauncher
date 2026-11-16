@@ -54,11 +54,21 @@ internal object DotsMotion {
 }
 
 /**
- * The indeterminate progress bar of Windows Phone: five dots that run across the width one after the other. With reduced motion the dots
- * stand still, evenly spaced.
+ * The progress bar of Windows Phone. Without [progress], the indeterminate one: five dots that run across the width one after the other (with
+ * reduced motion they stand still, evenly spaced). With it (0 to 1), a thin bar that fills.
  */
 @Composable
-fun MetroProgressBar(modifier: Modifier = Modifier, color: Color = LocalAccent.current) {
+fun MetroProgressBar(modifier: Modifier = Modifier, color: Color = LocalAccent.current, progress: Float? = null) {
+    // A known amount: the bar of Windows Phone, 4 px = 3 dp, in the accent over a track of 10% of the ink.
+    if (progress != null) {
+        val share = progress.coerceIn(0f, 1f)
+        val track = LocalMetroColors.current.foreground.copy(alpha = 0.1f)
+        Canvas(modifier.fillMaxWidth().height(3.dp).semantics { progressBarRangeInfo = ProgressBarRangeInfo(share, 0f..1f) }) {
+            drawRect(track)
+            drawRect(color, size = Size(size.width * share, size.height))
+        }
+        return
+    }
     val reduced = LocalReduceMotion.current
     val clock = if (reduced) null else rememberInfiniteTransition(label = "progressDots").animateFloat(
         0f, DotsMotion.CYCLE_MS.toFloat(), infiniteRepeatable(tween(DotsMotion.CYCLE_MS, easing = LinearEasing), RepeatMode.Restart), label = "dotsClock",

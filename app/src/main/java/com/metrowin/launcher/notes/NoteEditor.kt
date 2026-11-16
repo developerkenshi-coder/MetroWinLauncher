@@ -18,6 +18,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import com.metrowin.launcher.ui.kids.CheckSquare
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -518,12 +519,14 @@ private fun NoteBody(text: String, onToggle: (Int) -> Unit, scale: Float = 1f) {
                 when (line.kind) {
                     NoteText.Kind.Bullet -> MetroText("•", size = size, modifier = Modifier.width(24.dp * scale))
                     NoteText.Kind.Numbered -> MetroText("${line.number}.", size = size, modifier = Modifier.width(34.dp * scale))
-                    NoteText.Kind.Unchecked, NoteText.Kind.Checked -> MetroText(
-                        if (done) "☑" else "☐", size = size, color = LocalAccent.current,
-                        modifier = Modifier.width(34.dp * scale).heightIn(min = 36.dp).testTag("notes:box:${line.index}")
+                    NoteText.Kind.Unchecked, NoteText.Kind.Checked -> {
+                        val box = Modifier.width(34.dp * scale).heightIn(min = 36.dp).testTag("notes:box:${line.index}")
                             .semantics { role = Role.Checkbox; toggleableState = if (done) ToggleableState.On else ToggleableState.Off; contentDescription = line.body }
-                            .metroPress(onClick = { onToggle(line.index) }),
-                    )
+                            .metroPress(onClick = { onToggle(line.index) })
+                        // Classic: the box of Windows Phone, drawn; the other looks keep the sign of the font.
+                        if (style.isClassic) Box(box, contentAlignment = Alignment.CenterStart) { CheckSquare(done) }
+                        else MetroText(if (done) "☑" else "☐", size = size, color = LocalAccent.current, modifier = box)
+                    }
                     else -> {}
                 }
                 BasicText(

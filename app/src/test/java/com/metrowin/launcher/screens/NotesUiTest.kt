@@ -1,7 +1,7 @@
 package com.metrowin.launcher.screens
 
-import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -35,7 +35,7 @@ class NotesUiTest : ScreenshotBase() {
         capture("notes_read")
         compose.onNodeWithTag("notes:box:1", useUnmergedTree = true).performClick()
         settle()
-        compose.onNodeWithTag("notes:box:1", useUnmergedTree = true).assertTextEquals("☑")
+        compose.onNodeWithTag("notes:box:1", useUnmergedTree = true).assertIsOn()
     }
 
     @Test

@@ -365,19 +365,20 @@ fun MetroSlider(
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(if (style.isClassic) 8.dp else 12.dp)
+                .height(if (style.isClassic) 9.dp else 12.dp)
                 .clip(shape)
                 .background(colors.inactive)
                 .then(if (track != null) Modifier.background(track) else Modifier),
         )
         if (track == null) {
-            Box(Modifier.fillMaxWidth(fraction).height(if (style.isClassic) 8.dp else 12.dp).clip(shape).background(accent))
+            Box(Modifier.fillMaxWidth(fraction).height(if (style.isClassic) 9.dp else 12.dp).clip(shape).background(accent))
         }
-        val thumb = if (style.isClassic) 14.dp else 28.dp
+        // Windows Phone: the thumb is a block 12 x 24 px = 9 x 18 dp, the track 12 px = 9 dp.
+        val thumb = if (style.isClassic) 9.dp else 28.dp
         Box(
             Modifier
                 .offset { IntOffset(((width - thumb.toPx()) * fraction).roundToInt(), 0) }
-                .size(thumb, if (style.isClassic) 34.dp else 28.dp)
+                .size(thumb, if (style.isClassic) 18.dp else 28.dp)
                 .clip(if (style.isClassic) RectangleShape else CircleShape)
                 .background(if (style.isClassic) colors.foreground else Color.White)
                 .border(if (style.isClassic) 0.dp else 1.dp, Color.Black.copy(alpha = 0.18f), if (style.isClassic) RectangleShape else CircleShape),
