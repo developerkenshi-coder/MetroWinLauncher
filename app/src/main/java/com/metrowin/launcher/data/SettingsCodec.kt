@@ -89,6 +89,7 @@ object SettingsCodec {
         put("metroStatusBarOverApps", s.metroStatusBarOverApps)
         put("miniStatusBar", s.miniStatusBar)
         put("statusBarHidden", s.statusBarHidden)
+        put("statusMainSim", s.statusMainSim)
         put("chargeAnimation", s.chargeAnimation)
 
         put("orientation", s.orientation.code)
@@ -196,6 +197,7 @@ object SettingsCodec {
         put("iconPicks", IconPicks.encode(s.iconPicks))
         put("showFrequentApps", s.showFrequentApps)
         put("showNewApps", s.showNewApps)
+        put("showRecentApps", s.showRecentApps)
         put("showCategories", s.showCategories)
         put("appLabels", AppLabels.encode(s.appLabels))
         put("lockedApps", JSONArray(s.lockedApps.sorted()))
@@ -340,6 +342,7 @@ object SettingsCodec {
             metroStatusBarOverApps = o.optBoolean("metroStatusBarOverApps", base.metroStatusBarOverApps),
             miniStatusBar = o.optBoolean("miniStatusBar", base.miniStatusBar),
             statusBarHidden = o.optString("statusBarHidden", base.statusBarHidden),
+            statusMainSim = o.optInt("statusMainSim", base.statusMainSim).coerceIn(0, 2),
             chargeAnimation = o.optBoolean("chargeAnimation", base.chargeAnimation),
             showTileNames = o.optBoolean("showTileNames", base.showTileNames),
             boldText = o.optBoolean("boldText", base.boldText),
@@ -463,6 +466,7 @@ object SettingsCodec {
             iconPicks = if (o.has("iconPicks")) IconPicks.decode(o.optJSONObject("iconPicks")) else base.iconPicks,
             showFrequentApps = o.optBoolean("showFrequentApps", base.showFrequentApps),
             showNewApps = o.optBoolean("showNewApps", base.showNewApps),
+            showRecentApps = o.optBoolean("showRecentApps", base.showRecentApps),
             showCategories = o.optBoolean("showCategories", base.showCategories),
             appLabels = if (o.has("appLabels")) AppLabels.decode(o.optJSONObject("appLabels")) else base.appLabels,
             lockedApps = strings("lockedApps", base.lockedApps).toSet(),

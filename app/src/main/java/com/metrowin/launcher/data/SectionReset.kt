@@ -23,7 +23,7 @@ object SectionReset {
         "StartBars" to setOf(
             "appBar", "actionBar", "clockAlarm", "clockHours", "clockTaps", "clockWeek", "clockZone", "showClock",
         ),
-        "StatusBar" to setOf("metroStatusBar", "metroStatusBarOverApps", "miniStatusBar", "statusBarHidden", "chargeAnimation", "hideStatusBar"),
+        "StatusBar" to setOf("metroStatusBar", "metroStatusBarOverApps", "miniStatusBar", "statusBarHidden", "statusMainSim", "chargeAnimation", "hideStatusBar"),
         "StartBehaviour" to setOf("antiBurnIn", "lockStart", "startLowerPercent", "startTopAfterMin", "stepGoal", "undoSteps"),
         "Search" to setOf(
             "rememberSearches", "searchAnswers", "searchAssistant", "searchCalendar", "searchCommands", "searchContacts", "searchCurrency", "searchEngine",
@@ -50,7 +50,7 @@ object SectionReset {
             "liveHideText", "liveMessages", "liveNowPlaying", "liveOffApps", "livePictures", "liveProgress", "thirdPartyTiles",
             "galleryAlbums", "galleryApp", "gallerySource", "galleryPhotos", "weatherBlocks", "weatherFahrenheit",
         ),
-        "Apps" to setOf("appLabels", "compactList", "showCategories", "showFrequentApps", "showNewApps"),
+        "Apps" to setOf("appLabels", "compactList", "showCategories", "showFrequentApps", "showNewApps", "showRecentApps"),
         "Screen" to setOf("highRefreshRate", "launchAnimation", "orientation", "pagePadding"),
         "Battery" to setOf("batterySaving"),
         "Accessibility" to setOf("appFont", "boldText", "fontRevision", "highContrast", "reduceMotion", "systemFont", "textScale"),

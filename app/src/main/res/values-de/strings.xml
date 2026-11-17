@@ -185,7 +185,7 @@
     <string name="bug_field">Beschreibe das Problem hier</string>
     <string name="bug_send">E-Mail vorbereiten</string>
     <string name="bug_send_hint">Öffnet deine E-Mail-App mit Adresse, Betreff und dem Protokoll der App bereits im Anhang. Das Absenden übernimmst du.</string>
-    <string name="bug_privacy">Das Protokoll enthält nur, was diese App geschrieben hat, die letzten 8000 Zeilen. Es kann die Namen der Apps zeigen, die du nutzt. Lies die E-Mail, bevor du sie sendest.</string>
+    <string name="bug_privacy">Das Protokoll enthält nur, was diese App geschrieben hat, die letzten 8000 Zeilen. Es kann die Namen der Apps zeigen, die du nutzt. Ist der Launcher abgestürzt, wird der letzte Absturz (der Fehler und die Stelle) angehängt. Lies die E-Mail, bevor du sie sendest.</string>
     <string name="bug_log_failed">Das Protokoll konnte nicht gelesen werden, die E-Mail hat keinen Anhang</string>
     <string name="gest_navbar">Navigationstasten wie bei Windows Phone</string>
     <string name="gest_navbar_hint">Zeichnet Zurück, das Windows-Logo und Suchen über die Tasten von Android. Ein langer Druck auf das Logo öffnet die zuletzt verwendeten Apps. Erfordert den Bedienungshilfendienst.</string>
@@ -812,6 +812,7 @@
     <!-- App list: groups, categories, rename, lock -->
     <string name="list_frequent">Meistgenutzt</string>
     <string name="list_new">Neu</string>
+    <string name="list_recent">zuletzt</string>
     <string name="cat_all">Alle</string>
     <string name="cat_game">Spiele</string>
     <string name="cat_audio">Musik &amp; Audio</string>
@@ -835,6 +836,8 @@
     <string name="apps_frequent_hint">Die Apps, die du am häufigsten über den Launcher öffnest, in einer Gruppe oben in der Liste. Die Zähler bleiben auf diesem Handy und sind nicht Teil der Backups.</string>
     <string name="apps_new">Neue Apps</string>
     <string name="apps_new_hint">Die in der letzten Woche installierten Apps, oben in der Liste. Direkt nach dem Einrichten oder Wiederherstellen eines Handys gilt nichts als neu.</string>
+    <string name="apps_recent">zuletzt genutzte Apps</string>
+    <string name="apps_recent_hint">Die zuletzt geöffneten Apps, in einer Gruppe oben in der Liste. Aus, bis du es einschaltest.</string>
     <string name="apps_categories">Nach Kategorie filtern</string>
     <string name="apps_categories_hint">Schaltflächen unter dem Suchfeld, die nur die Apps einer Art zeigen. Nur Apps, die angeben, was sie sind (Spiele, Social, Musik …), sind darin enthalten.</string>
     <string name="apps_renamed">Umbenannte Apps</string>
@@ -1567,6 +1570,7 @@
     <string name="feel_volume">Lautstärke von Klick und Tönen</string>
     <string name="feel_volume_try">Töne ausprobieren</string>
     <string name="settings_recent">zuletzt verwendet</string>
+    <string name="settings_new">neu</string>
     <string name="loading_slow">noch einen Moment …</string>
     <string name="search_notifications">Benachrichtigungen durchsuchen</string>
     <string name="search_notifications_hint">Sucht auch in den Benachrichtigungen, die im Action Center warten. Sie werden auf dem Handy gelesen, nur während du suchst.</string>
@@ -1934,6 +1938,12 @@
     <string name="statusbar_battery_percent">Akkuprozent</string>
     <string name="statusbar_battery">Akku</string>
     <string name="statusbar_time">Uhrzeit</string>
+    <string name="statusbar_main_sim">Hauptkarte der Leiste</string>
+    <string name="statusbar_main_sim_auto">das Telefon entscheidet</string>
+    <string name="statusbar_main_sim_slot">SIM %1$d</string>
+    <string name="statusbar_main_sim_hint">Bei zwei SIM-Karten die, deren Signal die großen Balken der Leiste zeigen; die andere steht darunter, kleiner.</string>
+    <string name="statusbar_roaming">Roaming (ein kleines R)</string>
+    <string name="statusbar_data_sim">SIM, die die mobilen Daten nutzt (ein Punkt)</string>
     <string name="statusbar_network_hint">Android nennt die Netzart nur Apps, die den Telefonstatus lesen dürfen: die Berechtigung wird jetzt angefragt.</string>
     <string name="sec_bars">Uhr und Leisten</string>
     <string name="sec_bars_desc">Uhr und Datum auf Start, App-Leiste und Aktionsleiste</string>
@@ -2298,6 +2308,8 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="a11y_unlock">Entsperren</string>
     <string name="a11y_sb_signal">Signal, %1$d von 4 Balken</string>
     <string name="a11y_sb_signal2">Signal, %1$d von 4 Balken; zweite SIM, %2$d von 4</string>
+    <string name="a11y_sb_data_sim">mobile Daten über SIM %1$d</string>
+    <string name="a11y_sb_roaming">Roaming</string>
     <string name="a11y_sb_wifi">Wi-Fi</string>
     <string name="a11y_sb_battery">Akku %1$d %%</string>
     <string name="a11y_sb_charging">Lädt</string>

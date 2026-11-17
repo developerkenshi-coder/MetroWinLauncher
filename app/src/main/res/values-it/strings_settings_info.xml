@@ -81,6 +81,7 @@
     <string name="info_statusbar_charge">Un breve banner quando si inserisce il cavo, e la batteria che si riempie nella barra di stato e sulla schermata di blocco durante la ricarica. Con meno movimento resta solo lo stato.</string>
     <string name="info_statusbar_icon">Mostra o nasconde questa icona nella barra di stato MetroWin. Cambia solo la barra; lo stato del telefono non cambia.</string>
     <string name="info_statusbar_network">Mostra il tipo di rete (5G, 4G, 3G, E) accanto al segnale. Android lo comunica solo alle app che possono leggere lo stato del telefono, quindi attivarlo chiede quel permesso.</string>
+    <string name="info_statusbar_mainsim">Con due SIM, sceglie quale mostra la barra di stato come principale (le tacche grandi e il tipo di rete); l’altra va sotto, più piccola. Di base la scelta del telefono. Con una SIM non cambia nulla.</string>
     <string name="info_icons_shape">La forma delle icone delle app su tile e nella lista: come arrivano, rotonde, quadrate o squircle.</string>
     <string name="info_icons_tilecolors">Il tile di un’app prende il colore principale della sua icona invece dell’accento. Le icone grigie mantengono l’accento.</string>
     <string name="info_icons_glass">Le icone di ogni app diventano vetro traslucido e i loro tile sono trasparenti, così lo sfondo di Start si vede dietro. Le app integrate mantengono il loro glifo Metro.</string>
@@ -142,6 +143,7 @@
     <string name="info_voice_try">Inizia subito ad ascoltare, così puoi provare il microfono e il riconoscimento prima di usarlo davvero.</string>
     <string name="info_apps_frequent">Le app che apri di più dal launcher, in un gruppo in cima alla lista. I conteggi restano su questo telefono e non fanno parte dei backup.</string>
     <string name="info_apps_new">Le app installate nell’ultima settimana, in cima alla lista. Subito dopo aver configurato o ripristinato un telefono niente è chiamato nuovo.</string>
+    <string name="info_apps_recent">Aggiunge in cima alla lista un gruppo «recenti» con le ultime app aperte. L’elenco resta su questo telefono e non fa parte dei backup. Spento di base.</string>
     <string name="info_apps_compact">Quadrati più piccoli e righe più strette nella lista app: più app sullo schermo.</string>
     <string name="info_apps_categories">Chip sotto la casella di ricerca che mostrano solo le app di un tipo. Compaiono solo le app che dichiarano cosa sono (giochi, social, musica…).</string>
     <string name="info_apps_hidden">App che hai nascosto dalla lista. Tocca un’app per mostrarla di nuovo. Le app nascoste si aprono ancora dal loro tile su Start.</string>

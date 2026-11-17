@@ -81,6 +81,7 @@
     <string name="info_statusbar_charge">Une courte bannière quand le câble est branché, et la batterie qui se remplit dans la barre d’état et sur l’écran de verrouillage pendant la charge. Avec moins de mouvement, seul l’état reste.</string>
     <string name="info_statusbar_icon">Affiche ou masque cette icône dans la barre d’état MetroWin. Cela ne change que la barre ; l’état du téléphone ne change pas.</string>
     <string name="info_statusbar_network">Affiche le type de réseau (5G, 4G, 3G, E) à côté du signal. Android ne le dit qu’aux applications autorisées à lire l’état du téléphone ; l’activer demande donc cette autorisation.</string>
+    <string name="info_statusbar_mainsim">Avec deux SIM, choisit laquelle la barre d’état montre comme principale (les grandes barres et le type de réseau) ; l’autre est dessous, plus petite. Par défaut le choix du téléphone. Avec une SIM, rien ne change.</string>
     <string name="info_icons_shape">La forme des icônes des applications sur les tuiles et dans la liste : telles quelles, rondes, carrées ou squircle.</string>
     <string name="info_icons_tilecolors">La tuile d’une application prend la couleur principale de son icône au lieu de l’accent. Les icônes grises gardent l’accent.</string>
     <string name="info_icons_glass">Les icônes de toutes les applications deviennent du verre translucide et leurs tuiles transparentes, si bien que le fond de Start apparaît derrière. Les applications intégrées gardent leur glyphe Metro.</string>
@@ -142,6 +143,7 @@
     <string name="info_voice_try">Commence à écouter tout de suite, pour tester le micro et la reconnaissance avant de s’en servir pour de bon.</string>
     <string name="info_apps_frequent">Les applications que vous ouvrez le plus depuis le launcher, dans un groupe en haut de la liste. Les compteurs restent sur ce téléphone et ne font pas partie des sauvegardes.</string>
     <string name="info_apps_new">Les applications installées la semaine dernière, en haut de la liste. Juste après la configuration ou la restauration d’un téléphone, rien n’est appelé nouveau.</string>
+    <string name="info_apps_recent">Ajoute en haut de la liste un groupe « récentes » avec les dernières applications ouvertes. La liste reste sur ce téléphone et ne fait pas partie des sauvegardes. Désactivé par défaut.</string>
     <string name="info_apps_compact">Carrés plus petits et lignes plus serrées dans la liste des applications : plus d’applications à l’écran.</string>
     <string name="info_apps_categories">Des pastilles sous la zone de recherche qui n’affichent que les applications d’un type. Seules celles qui disent ce qu’elles sont (jeux, social, musique…) y figurent.</string>
     <string name="info_apps_hidden">Applications que vous avez masquées de la liste. Touchez-en une pour la réafficher. Les applications masquées s’ouvrent toujours depuis leur tuile sur Start.</string>

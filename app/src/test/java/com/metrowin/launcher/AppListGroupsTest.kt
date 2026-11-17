@@ -192,6 +192,15 @@ class AppListGroupsTest {
         assertEquals(listOf("Search", "Header", "App"), model.rows.map { it::class.simpleName })
     }
 
+    @Test
+    fun theRecentGroupIsFirstAndHasItsOwnKeys() {
+        val items = AppSections.sort(listOf(app("a", "Alpha"), app("b", "Bravo")))
+        val model = AppListModel(AppSections.group(items), frequent = listOf(items[0]), recent = listOf(items[1], items[0]))
+        assertEquals(listOf("Search", "Section", "App", "App", "Section", "App", "Header", "App", "Header", "App"), model.rows.map { it::class.simpleName })
+        assertEquals(model.rows.size, model.rows.map { it.key }.distinct().size)
+        assertEquals("b", ((model.rows[2]) as ListRow.App).item.id)
+    }
+
     // --- names
 
     @Test

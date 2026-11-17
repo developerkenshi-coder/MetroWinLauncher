@@ -202,7 +202,7 @@ private fun MiniStatusBar(settings: LauncherSettings, modifier: Modifier) {
     // The percentage follows Android's own: the phone says every change, and the first answer comes at once (the broadcast is sticky).
     val intent = rememberBroadcast(Intent.ACTION_BATTERY_CHANGED)
     val battery = remember(intent) { intent?.let { BatteryInfo.from(it, context) } ?: BatteryInfo.read(context) }
-    MetroStatusBar(battery, modifier, hidden = StatusItem.hiddenIds(settings.statusBarHidden), chargeAnimation = settings.chargeAnimation)
+    MetroStatusBar(battery, modifier, hidden = StatusItem.hiddenIds(settings.statusBarHidden), chargeAnimation = settings.chargeAnimation, mainSim = settings.statusMainSim)
 }
 
 private const val SOUND_TAIL_MS = 600L

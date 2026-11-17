@@ -224,7 +224,7 @@ sealed interface ListRow {
 
 /**
  * The alphabetical app list flattened into rows: a letter header, then the apps under it. Above the letters: the chips of
- * the [lists], the apps opened most often ([frequent]) and the ones installed lately ([fresh]), when there are any.
+ * the [lists], the apps opened last ([recent]), the ones opened most often ([frequent]) and the ones installed lately ([fresh]), when there are any.
  */
 @Immutable
 class AppListModel(
@@ -235,6 +235,8 @@ class AppListModel(
     lists: List<AppList>? = null,
     /** The Today card goes above the search box. */
     today: Boolean = false,
+    /** The apps opened last, newest first; empty (the default) leaves the group out. */
+    recent: List<AppItem> = emptyList(),
 ) {
     /** How many rows come before the first one that belongs to the apps: the search box, and the Today card when there is one. */
     val head: Int = if (today) 2 else 1
@@ -243,6 +245,10 @@ class AppListModel(
         if (today) add(ListRow.Today)
         add(ListRow.Search)
         if (lists != null) add(ListRow.Categories)
+        if (recent.isNotEmpty()) {
+            add(ListRow.Section(R.string.list_recent))
+            recent.forEach { add(ListRow.App(it, GROUP_RECENT)) }
+        }
         if (frequent.isNotEmpty()) {
             add(ListRow.Section(R.string.list_frequent))
             frequent.forEach { add(ListRow.App(it, GROUP_FREQUENT)) }
@@ -274,6 +280,7 @@ class AppListModel(
     companion object {
         const val GROUP_FREQUENT = "f"
         const val GROUP_NEW = "n"
+        const val GROUP_RECENT = "r"
     }
 }
 

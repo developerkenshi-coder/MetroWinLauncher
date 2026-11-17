@@ -7,6 +7,7 @@ import com.metrowin.launcher.data.AboutInfo
 import com.metrowin.launcher.data.GallerySource
 import com.metrowin.launcher.gestures.LockAccessibilityService
 import com.metrowin.launcher.data.BugReport
+import com.metrowin.launcher.data.CrashLog
 import com.metrowin.launcher.data.AppStats
 import com.metrowin.launcher.data.DataStats
 import com.metrowin.launcher.data.MemoryStats
@@ -2444,7 +2445,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             val app = getApplication<Application>()
             val uri = withContext(Dispatchers.IO) {
                 runCatching {
-                    val file = BugReport.writeLog(java.io.File(app.cacheDir, "shared"), about) ?: return@runCatching null
+                    val file = BugReport.writeLog(java.io.File(app.cacheDir, "shared"), about, CrashLog.read(app.filesDir)) ?: return@runCatching null
                     androidx.core.content.FileProvider.getUriForFile(app, app.packageName + ".files", file)
                 }.getOrNull()
             }

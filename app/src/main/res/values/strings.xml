@@ -185,7 +185,7 @@
     <string name="bug_field">describe the problem here</string>
     <string name="bug_send">prepare the mail</string>
     <string name="bug_send_hint">Opens your mail app with the address, the subject and the log of the app already attached. You send it.</string>
-    <string name="bug_privacy">The log holds only what this app wrote, the last 8000 lines. It can show the names of apps you use. Read the mail before you send it.</string>
+    <string name="bug_privacy">The log holds only what this app wrote, the last 8000 lines. It can show the names of apps you use. If the launcher crashed, its last crash (the error and where it happened) is added. Read the mail before you send it.</string>
     <string name="bug_log_failed">The log could not be read, the mail has no attachment</string>
     <string name="gest_navbar">Windows Phone navigation buttons</string>
     <string name="gest_navbar_hint">Draws back, the Windows logo and search over the buttons of Android. A long press on the logo opens the recent apps. Needs the accessibility service.</string>
@@ -812,6 +812,7 @@
     <!-- App list: groups, categories, rename, lock -->
     <string name="list_frequent">most used</string>
     <string name="list_new">new</string>
+    <string name="list_recent">recent</string>
     <string name="cat_all">all</string>
     <string name="cat_game">games</string>
     <string name="cat_audio">music &amp; audio</string>
@@ -835,6 +836,8 @@
     <string name="apps_frequent_hint">The apps you open most from the launcher, in a group at the top of the list. The counts stay on this phone and are not part of the backups.</string>
     <string name="apps_new">new apps</string>
     <string name="apps_new_hint">The apps installed in the last week, at the top of the list. Right after setting up or restoring a phone nothing is called new.</string>
+    <string name="apps_recent">recent apps</string>
+    <string name="apps_recent_hint">The apps you opened last, in a group at the top of the list. Off until you turn it on.</string>
     <string name="apps_categories">filter by category</string>
     <string name="apps_categories_hint">Chips under the search box that show only the apps of one kind. Only the apps that say what they are (games, social, music…) are in them.</string>
     <string name="apps_renamed">renamed apps</string>
@@ -1567,6 +1570,7 @@
     <string name="feel_volume">Volume of the click and sounds</string>
     <string name="feel_volume_try">try the sounds</string>
     <string name="settings_recent">used recently</string>
+    <string name="settings_new">new</string>
     <string name="loading_slow">just a moment more…</string>
     <string name="search_notifications">Search the notifications</string>
     <string name="search_notifications_hint">Also looks in the notifications that wait in the Action Center. They are read on the phone, only while you search.</string>
@@ -1934,6 +1938,12 @@
     <string name="statusbar_battery_percent">battery percentage</string>
     <string name="statusbar_battery">battery</string>
     <string name="statusbar_time">time</string>
+    <string name="statusbar_main_sim">main SIM of the bar</string>
+    <string name="statusbar_main_sim_auto">the phone decides</string>
+    <string name="statusbar_main_sim_slot">SIM %1$d</string>
+    <string name="statusbar_main_sim_hint">With two SIMs, the one whose signal is the big bars of the bar; the other is under it, smaller.</string>
+    <string name="statusbar_roaming">roaming (a small R)</string>
+    <string name="statusbar_data_sim">SIM that uses the mobile data (a dot)</string>
     <string name="statusbar_network_hint">Android tells the kind of network only to apps that may read the phone state: it asks for that now.</string>
     <string name="sec_bars">clock and bars</string>
     <string name="sec_bars_desc">Clock and date on Start, app bar and action bar</string>
@@ -2298,6 +2308,8 @@ in front %3$s · in the background %4$s
     <string name="a11y_unlock">Unlock</string>
     <string name="a11y_sb_signal">Signal, %1$d of 4 bars</string>
     <string name="a11y_sb_signal2">Signal, %1$d of 4 bars; second SIM, %2$d of 4 bars</string>
+    <string name="a11y_sb_data_sim">mobile data on SIM %1$d</string>
+    <string name="a11y_sb_roaming">Roaming</string>
     <string name="a11y_sb_wifi">Wi-Fi</string>
     <string name="a11y_sb_battery">Battery %1$d%%</string>
     <string name="a11y_sb_charging">Charging</string>

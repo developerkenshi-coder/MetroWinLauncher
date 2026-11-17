@@ -81,6 +81,7 @@
     <string name="info_statusbar_charge">Ein kurzes Banner beim Einstecken des Kabels und der sich füllende Akku in der Statusleiste und auf dem Sperrbildschirm beim Laden. Bei reduzierter Bewegung bleibt nur der Zustand.</string>
     <string name="info_statusbar_icon">Zeigt oder verbirgt dieses Symbol in der MetroWin-Statusleiste. Es ändert nur die Leiste; der Zustand des Handys selbst ändert sich nicht.</string>
     <string name="info_statusbar_network">Zeigt die Netzart (5G, 4G, 3G, E) neben dem Signal. Android verrät sie nur Apps, die den Telefonstatus lesen dürfen; das Einschalten fragt daher diese Berechtigung an.</string>
+    <string name="info_statusbar_mainsim">Wählt bei zwei SIM-Karten, welche die Statusleiste als Hauptkarte zeigt (die großen Signalbalken und die Netzart); die andere steht darunter, kleiner. Standard ist die Wahl des Telefons. Mit einer SIM ändert sich nichts.</string>
     <string name="info_icons_shape">Die Form der App-Symbole auf Kacheln und in der Liste: wie sie kommen, rund, quadratisch oder Squircle.</string>
     <string name="info_icons_tilecolors">Die Kachel einer App nimmt die Hauptfarbe ihres Symbols statt des Akzents. Graue Symbole behalten den Akzent.</string>
     <string name="info_icons_glass">Die Symbole aller Apps werden zu durchscheinendem Glas und ihre Kacheln durchsichtig, sodass ein Start-Hintergrund dahinter erscheint. Eingebaute Apps behalten ihr Metro-Symbol.</string>
@@ -142,6 +143,7 @@
     <string name="info_voice_try">Beginnt sofort zuzuhören, damit du Mikrofon und Erkennung testen kannst, bevor du sie richtig nutzt.</string>
     <string name="info_apps_frequent">Die Apps, die du am häufigsten vom Launcher öffnest, in einer Gruppe oben in der Liste. Die Zähler bleiben auf diesem Handy und gehören nicht zu den Backups.</string>
     <string name="info_apps_new">Die Apps der letzten Woche, oben in der Liste. Direkt nach dem Einrichten oder Wiederherstellen eines Handys gilt nichts als neu.</string>
+    <string name="info_apps_recent">Fügt oben in der Liste eine Gruppe „zuletzt“ mit den zuletzt geöffneten Apps hinzu. Die Liste bleibt auf diesem Telefon und gehört nicht zu den Backups. Standardmäßig aus.</string>
     <string name="info_apps_compact">Kleinere Quadrate und engere Zeilen in der App-Liste: mehr Apps auf dem Bildschirm.</string>
     <string name="info_apps_categories">Chips unter dem Suchfeld, die nur Apps einer Art zeigen. Es erscheinen nur Apps, die angeben, was sie sind (Spiele, Soziales, Musik …).</string>
     <string name="info_apps_hidden">Apps, die du aus der Liste ausgeblendet hast. Tippe eine an, um sie wieder zu zeigen. Ausgeblendete Apps öffnen sich weiter über ihre Kachel auf Start.</string>

@@ -44,6 +44,11 @@ fun AppsPage(env: SettingsEnv) {
                 hint = stringResource(R.string.apps_new_hint), tag = "apps:new", id = "apps.new",
             )
             ToggleSetting(
+                stringResource(R.string.apps_recent), env.settings.showRecentApps,
+                onChange = { value -> env.onChange { it.copy(showRecentApps = value) } },
+                hint = stringResource(R.string.apps_recent_hint), tag = "apps:recent", id = "apps.recent",
+            )
+            ToggleSetting(
                 stringResource(R.string.apps_compact), env.settings.compactList,
                 onChange = { value -> env.onChange { it.copy(compactList = value) } },
                 hint = stringResource(R.string.apps_compact_hint), tag = "apps:compact", id = "apps.compact",

@@ -3,6 +3,7 @@ package com.metrowin.launcher.screens
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.data.HourForecast
@@ -69,9 +70,11 @@ class InfoFaceUiTest : ScreenshotBase() {
     @Test
     fun withReducedMotionTheTileStillTurnsThroughItsFaces() {
         val live = LiveTileData(events = listOf(event("Dentist", 300)), nextEvent = event("Dentist", 300))
-        tile(InfoConfig(parts = listOf(InfoPart.Time, InfoPart.Calendar)), live, reduceMotion = true)
+        // No night (from 0 to 0): at 23 to 6 a smart tile shows only the time, and the test would depend on the hour.
+        tile(InfoConfig(parts = listOf(InfoPart.Time, InfoPart.Calendar), nightFrom = 0, nightTo = 0), live, reduceMotion = true)
         compose.onNodeWithTag("worldclock:time").assertExists()
-        advance(12_000)
+        // The stays have a little chance on top (see nextJitter), so the face is waited for, a second at a time, not at one moment.
+        repeat(30) { if (compose.onAllNodesWithTag("event:title").fetchSemanticsNodes().isEmpty()) advance(1_000) }
         compose.onNodeWithTag("event:title").assertExists()
     }
 

@@ -86,6 +86,7 @@ fun SettingsPage(modifier: Modifier = Modifier, content: @Composable ColumnScope
  */
 @Composable
 internal fun WithInfo(id: String?, title: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    @Suppress("NAME_SHADOWING") val modifier = modifier.newMark(id)
     val info = id?.let { SettingsInfo.of(it) }
     if (info == null) {
         Box(modifier) { content() }

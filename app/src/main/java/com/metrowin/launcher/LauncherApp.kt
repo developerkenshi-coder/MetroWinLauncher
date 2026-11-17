@@ -250,6 +250,9 @@ private val TWO_FINGER_SWIPE = 96.dp
 
 private const val HOME_DOUBLE_DELAY_MS = 350L
 
+/** How many apps the "recent" group of the list holds. */
+private const val RECENT_GROUP = 4
+
 /**
  * The launcher: a pager with the Start screen and the app list, plus the pages and overlays that sit
  * above both (settings, context menu, jump list, first-run permissions).
@@ -321,11 +324,15 @@ fun LauncherApp(vm: LauncherViewModel) {
     val shownSections = remember(sections, listItems, chosenList) {
         chosenList?.let { AppSections.group(AppLists.members(it, listItems)) } ?: sections
     }
-    val appList = remember(shownSections, frequent, fresh, visibleLists, chosenList, settings.searchToday) {
+    // The apps opened last, when the list is asked to show them.
+    val lastApps = remember(recents, listItems, settings.showRecentApps) {
+        if (!settings.showRecentApps) emptyList() else listItems.associateBy { it.id }.let { byId -> recents.mapNotNull { byId[it] }.take(RECENT_GROUP) }
+    }
+    val appList = remember(shownSections, frequent, fresh, lastApps, visibleLists, chosenList, settings.searchToday) {
         // A chosen list shows only its apps, in letters; the groups at the top are for the whole list.
         AppListModel(
-            shownSections, if (chosenList == null) frequent else emptyList(), if (chosenList == null) fresh else emptyList(), visibleLists,
-            today = settings.searchToday,
+            shownSections, if (chosenList == null) frequent else emptyList(), if (chosenList == null) fresh else emptyList(), lists = visibleLists,
+            recent = if (chosenList == null) lastApps else emptyList(), today = settings.searchToday,
         )
     }
     val jumpKeys = remember(sections) { AppSections.jumpKeys(sections) }
@@ -2223,7 +2230,7 @@ fun LauncherApp(vm: LauncherViewModel) {
 
                 // With the bar over the apps on (it is on the launcher as well, without a background) this one would be a second copy under it.
                 if (settings.metroStatusBar && !(settings.metroStatusBarOverApps && lockServiceEnabled)) {
-                    MetroStatusBar(battery, Modifier.align(Alignment.TopStart), hidden = StatusItem.hiddenIds(settings.statusBarHidden), onOpenActionCenter = panel::open, chargeAnimation = settings.chargeAnimation)
+                    MetroStatusBar(battery, Modifier.align(Alignment.TopStart), hidden = StatusItem.hiddenIds(settings.statusBarHidden), onOpenActionCenter = panel::open, chargeAnimation = settings.chargeAnimation, mainSim = settings.statusMainSim)
                 }
 
                 if (tutorialVisible) {

@@ -58,6 +58,15 @@ fun StatusBarPage(env: SettingsEnv) {
                 tag = "statusbar:charge",
                 id = "statusbar.charge",
             )
+            val sims = listOf(0, 1, 2)
+            DropdownSetting(
+                label = stringResource(R.string.statusbar_main_sim),
+                options = sims.map { if (it == 0) stringResource(R.string.statusbar_main_sim_auto) else stringResource(R.string.statusbar_main_sim_slot, it) },
+                selected = settings.statusMainSim.coerceIn(0, 2),
+                onSelect = { i -> env.onChange { it.copy(statusMainSim = sims[i]) } },
+                tag = "statusbar:mainsim", id = "statusbar.mainsim",
+            )
+            SettingHint(stringResource(R.string.statusbar_main_sim_hint))
             AdvancedGroup(StatusItem.entries.map { "statusbar.${it.id}" }, title = stringResource(R.string.statusbar_items)) {
             SettingHint(stringResource(R.string.statusbar_items_hint))
             StatusItem.entries.forEach { item ->

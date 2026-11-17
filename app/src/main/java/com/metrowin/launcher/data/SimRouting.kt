@@ -94,4 +94,22 @@ object SimReader {
         val handles = if (byId.all { it == null } && accounts.size == subs.size) accounts else byId
         subs.mapIndexed { index, sub -> SimInfo(sub.simSlotIndex, sub.subscriptionId, sub.displayName?.toString().orEmpty(), handles.getOrNull(index)) }
     }.getOrDefault(emptyList())
+
+    /** The operator of each active SIM as (slot, name): needs the phone permission, and is empty without it. */
+    @SuppressLint("MissingPermission") // runCatching absorbs the SecurityException
+    fun operators(context: Context): List<Pair<Int, String>> = runCatching {
+        if (!LivePermissions.isGranted(context, android.Manifest.permission.READ_PHONE_STATE)) return@runCatching emptyList()
+        context.getSystemService(SubscriptionManager::class.java).activeSubscriptionInfoList.orEmpty()
+            .map { it.simSlotIndex to it.carrierName?.toString().orEmpty() }
+    }.getOrDefault(emptyList())
+
+    /** The line of the Action Center: "SIM 1 · Operator   SIM 2 · Operator", or just the name with one SIM; null when no SIM has a name. */
+    fun operatorLine(sims: List<Pair<Int, String>>): String? {
+        val named = sims.filter { it.second.isNotBlank() }.sortedBy { it.first }
+        return when {
+            named.isEmpty() -> null
+            sims.size == 1 -> named.first().second.trim()
+            else -> named.joinToString("   ") { "SIM ${it.first + 1} · ${it.second.trim()}" }
+        }
+    }
 }

@@ -150,6 +150,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | Animazione di ricarica | `statusbar.charge` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | Barra di stato Windows Phone nelle altre app | `statusbar.apps` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | Barra di stato Windows Phone nelle mini app | `statusbar.mini` | aspetto › Barra di stato | barre e action center › Barra di stato |
+| SIM principale della barra | `statusbar.mainsim` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | notifiche | `statusbar.notifications` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | modalità aereo | `statusbar.airplane` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | hotspot | `statusbar.hotspot` | aspetto › Barra di stato | barre e action center › Barra di stato |
@@ -162,6 +163,8 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | risparmio energetico | `statusbar.saver` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | segnale della rete mobile | `statusbar.signal` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | tipo di rete (5G, 4G, 3G, E) | `statusbar.network` | aspetto › Barra di stato | barre e action center › Barra di stato |
+| roaming (una R piccola) | `statusbar.roaming` | aspetto › Barra di stato | barre e action center › Barra di stato |
+| SIM che usa i dati mobili (un puntino) | `statusbar.dataSim` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | Wi-Fi | `statusbar.wifi` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | percentuale della batteria | `statusbar.batteryPercent` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | batteria | `statusbar.battery` | aspetto › Barra di stato | barre e action center › Barra di stato |
@@ -218,6 +221,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | icone per app | `icons.perapp` | aspetto › aspetto | app e icone › icone |
 | icon pack | `icons.pack` | aspetto › aspetto | app e icone › icone |
 | app più usate | `apps.frequent` | app › lista app | app e icone › lista app |
+| app usate di recente | `apps.recent` | app › lista app | app e icone › lista app |
 | app nuove | `apps.new` | app › lista app | app e icone › lista app |
 | elenco compatto | `apps.compact` | app › lista app | app e icone › lista app |
 | filtro per categoria | `apps.categories` | app › lista app | app e icone › lista app |
@@ -384,7 +388,7 @@ Il pulsante "ripristina questa pagina" (`SectionReset`) rimette ai valori di par
 - **app e icone › icone** (`Icons`): `glassIcons`, `iconPack`, `iconPicks`, `iconShape`, `iconTileColors`, `largeTileIcons`
 - **start e tile › schermata start** (`Start`): `appsHint`, `batteryEstimate`, `calendarAgenda`, `collectionTiles`, `favoritePage`, `freeLayout`, `groupTitles`, `largeTiles`, `layoutSchedule`, `moreTiles`, `showTileNames`, `tileColumns`, `tileMusicControls`, `tileSpacing`, `twoPanels`
 - **start e tile › orologio e barre** (`StartBars`): `actionBar`, `appBar`, `clockAlarm`, `clockHours`, `clockTaps`, `clockWeek`, `clockZone`, `showClock`
-- **barre e action center › Barra di stato** (`StatusBar`): `chargeAnimation`, `hideStatusBar`, `metroStatusBar`, `metroStatusBarOverApps`, `statusBarHidden`
+- **barre e action center › Barra di stato** (`StatusBar`): `chargeAnimation`, `hideStatusBar`, `metroStatusBar`, `metroStatusBarOverApps`, `statusBarHidden`, `statusMainSim`
 - **start e tile › comportamento di start** (`StartBehaviour`): `antiBurnIn`, `lockStart`, `startLowerPercent`, `startTopAfterMin`, `stepGoal`, `undoSteps`
 - **app e icone › ricerca** (`Search`): `rememberSearches`, `searchAnswers`, `searchAssistant`, `searchCalendar`, `searchCommands`, `searchContacts`, `searchCurrency`, `searchEngine`, `searchFileTypes`, `searchLauncherSettings`, `searchMiniApps`, `searchNotifications`, `searchOperators`, `searchSettings`, `searchSmartDial`, `searchTiles`, `searchToday`, `searchWeb`, `tipOfDay`, `todayAlarm`, `todayDate`, `todayNear`, `todayWeather`
 - **gesti e scorciatoie › gesti** (`Gestures`): `doubleTapAction`, `doubleTapApp`, `doubleTapSleep`, `edgeBackPan`, `edgePull`, `homeDoubleAction`, `homeDoubleApp`, `miniHomeSwipe`, `twoFingerDownAction`, `twoFingerDownApp`, `twoFingerUpAction`, `twoFingerUpApp`
@@ -394,7 +398,7 @@ Il pulsante "ripristina questa pagina" (`SectionReset`) rimette ai valori di par
 - **barre e action center › action center** (`Actions`): `actionCenterEnabled`, `actionSliders`, `edgeActionCenter`, `quickActions`, `torchAutoOffMin`, `torchStrength`, `useShizuku`, `volumePanel`, `volumeProfilesShow`, `vpnApp`
 - **notifiche › notifiche** (`Notifications`): `clearOnOpen`, `dndMinutes`, `groupConversations`, `hideSystemNotifications`, `inlineReply`, `metroSounds`, `muteFromPanel`, `notifFilterOn`, `notifFilterWords`, `notifPriority`, `notificationPeek`, `overlayBanner`, `panelSounds`, `toastBanner`
 - **start e tile › live tile** (`LiveTiles`): `galleryAlbums`, `galleryApp`, `galleryPhotos`, `gallerySource`, `liveHideText`, `liveMessages`, `liveNowPlaying`, `liveOffApps`, `livePictures`, `liveProgress`, `thirdPartyTiles`, `weatherBlocks`, `weatherFahrenheit`
-- **app e icone › lista app** (`Apps`): `appLabels`, `compactList`, `showCategories`, `showFrequentApps`, `showNewApps`
+- **app e icone › lista app** (`Apps`): `appLabels`, `compactList`, `showCategories`, `showFrequentApps`, `showNewApps`, `showRecentApps`
 - **aspetto e temi › schermo+lingua** (`Screen`): `highRefreshRate`, `launchAnimation`, `orientation`, `pagePadding`
 - **batteria › batteria** (`Battery`): `batterySaving`
 - **accessibilità › accessibilità** (`Accessibility`): `appFont`, `boldText`, `fontRevision`, `highContrast`, `reduceMotion`, `systemFont`, `textScale`

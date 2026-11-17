@@ -22,8 +22,8 @@ object BugReport {
         appendLine(about.device)
     }
 
-    /** Blocking. Writes the last [LOG_LINES] lines of the log of the app in [dir] and returns the file, or null when it cannot be read. */
-    fun writeLog(dir: File, about: AboutInfo): File? = runCatching {
+    /** Blocking. Writes the last [LOG_LINES] lines of the log of the app (and the [crash] saved last, when there is one) in [dir] and returns the file, or null when it cannot be read. */
+    fun writeLog(dir: File, about: AboutInfo, crash: String? = null): File? = runCatching {
         dir.mkdirs()
         val process = ProcessBuilder("logcat", "-d", "-v", "threadtime", "-t", LOG_LINES.toString())
             .redirectErrorStream(true).start()
@@ -41,6 +41,8 @@ object BugReport {
             appendText(lines.joinToString("\n", postfix = "\n"))
             // The log of Android keeps minutes on a busy phone: what happened to notifications lately is kept apart (packages and reasons, never words).
             appendText("--- notification journal ---\n" + com.metrowin.launcher.notifications.NotificationHub.journal().joinToString("\n", postfix = "\n"))
+            // The last crash, kept by [CrashLog] when it happened: the log of Android may have lost it by now.
+            if (crash != null) appendText("--- last crash ---\n$crash\n")
         }
     }.getOrNull()
 }

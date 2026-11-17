@@ -497,6 +497,11 @@ private fun HistoryPage(view: CalcSession.View, options: CalcOptions, act: (Calc
                         MetroText(shown(entry.expression, look) + " =", size = 16.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 2, textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth())
                         MetroText(shown(entry.result, look), size = 32.sp, maxLines = 1, textAlign = TextAlign.End, modifier = Modifier.fillMaxWidth())
                     }
+                    // One touch copies the result, without the menu of the long press (the clipboard stays for the option that allows it).
+                    if (clipboard) MetroText(
+                        stringResource(R.string.calc_history_copy_result), size = 14.sp, weight = FontWeight.SemiBold, color = LocalAccent.current, textAlign = TextAlign.End,
+                        modifier = Modifier.fillMaxWidth().testTag("calc:history:copy:$index").metroPress(onClick = { copyText(context, entry.result.replace('−', '-'), copied) }).padding(bottom = 6.dp),
+                    )
                 }
             }
         }

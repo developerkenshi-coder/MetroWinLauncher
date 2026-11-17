@@ -15,6 +15,7 @@ import android.view.WindowInsets
 import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,6 +49,7 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
     private var watching = false
     private var barHeight by mutableStateOf(0.dp)
     private var hidden by mutableStateOf(emptySet<String>())
+    private var mainSim by mutableIntStateOf(0)
     private var chargeAnimation by mutableStateOf(true)
 
     /** The settings the look is made from: the bar over other apps is the one of Start, in the same style, light or dark and accent. */
@@ -107,7 +109,7 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
     fun show() {
         val height = heightPx()
         barHeight = (height / service.resources.displayMetrics.density).dp
-        SettingsStore.of(service).load().let { look = it; hidden = StatusItem.hiddenIds(it.statusBarHidden); launcherBar = it.metroStatusBar; chargeAnimation = it.chargeAnimation }
+        SettingsStore.of(service).load().let { look = it; hidden = StatusItem.hiddenIds(it.statusBarHidden); mainSim = it.statusMainSim; launcherBar = it.metroStatusBar; chargeAnimation = it.chargeAnimation }
         shown?.let {
             if (it.params.height != height) {
                 it.params.height = height
@@ -118,6 +120,7 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
         val settings = SettingsStore.of(service).load()
         look = settings
         hidden = StatusItem.hiddenIds(settings.statusBarHidden)
+        mainSim = settings.statusMainSim
         launcherBar = settings.metroStatusBar
         chargeAnimation = settings.chargeAnimation
         val icons = com.metrowin.launcher.data.IconLoader(service.applicationContext)
@@ -137,7 +140,7 @@ internal class StatusBarOverlay(private val service: AccessibilityService) {
                     MetroStatusBar(
                         battery, Modifier, colors.foreground, barHeight,
                         if (inLauncher && launcherBar) Color.Transparent else solid, hidden,
-                        chargeAnimation = chargeAnimation,
+                        chargeAnimation = chargeAnimation, mainSim = mainSim,
                     )
                 }
             }

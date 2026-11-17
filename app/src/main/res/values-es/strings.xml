@@ -185,7 +185,7 @@
     <string name="bug_field">describe aquí el problema</string>
     <string name="bug_send">preparar el correo</string>
     <string name="bug_send_hint">Abre tu app de correo con la dirección, el asunto y el registro de la app ya adjuntos. Tú lo envías.</string>
-    <string name="bug_privacy">El registro contiene solo lo que ha escrito esta app, las últimas 8000 líneas. Puede mostrar los nombres de las apps que usas. Lee el correo antes de enviarlo.</string>
+    <string name="bug_privacy">El registro contiene solo lo que ha escrito esta app, las últimas 8000 líneas. Puede mostrar los nombres de las apps que usas. Si el launcher falló, se añade su último fallo (el error y dónde ocurrió). Lee el correo antes de enviarlo.</string>
     <string name="bug_log_failed">No se pudo leer el registro, el correo no lleva adjunto</string>
     <string name="gest_navbar">Botones de navegación de Windows Phone</string>
     <string name="gest_navbar_hint">Dibuja atrás, el logotipo de Windows y buscar sobre los botones de Android. Una pulsación larga en el logotipo abre las apps recientes. Necesita el servicio de accesibilidad.</string>
@@ -817,6 +817,7 @@
     <!-- Lista de apps: grupos, categorías, renombrar, bloquear -->
     <string name="list_frequent">más usadas</string>
     <string name="list_new">nuevas</string>
+    <string name="list_recent">recientes</string>
     <string name="cat_all">todas</string>
     <string name="cat_game">juegos</string>
     <string name="cat_audio">música &amp; audio</string>
@@ -840,6 +841,8 @@
     <string name="apps_frequent_hint">Las apps que más abres desde el launcher, en un grupo al principio de la lista. Los recuentos se quedan en este teléfono y no forman parte de las copias.</string>
     <string name="apps_new">apps nuevas</string>
     <string name="apps_new_hint">Las apps instaladas en la última semana, al principio de la lista. Justo después de configurar o restaurar un teléfono, nada se considera nuevo.</string>
+    <string name="apps_recent">apps usadas recientemente</string>
+    <string name="apps_recent_hint">Las últimas apps que abriste, en un grupo al principio de la lista. Apagado hasta que lo actives.</string>
     <string name="apps_categories">filtrar por categoría</string>
     <string name="apps_categories_hint">Chips bajo el cuadro de búsqueda que muestran solo las apps de un tipo. Solo aparecen en ellos las apps que indican lo que son (juegos, social, música…).</string>
     <string name="apps_renamed">apps renombradas</string>
@@ -1584,6 +1587,7 @@
     <string name="feel_volume">Volumen del clic y de los sonidos</string>
     <string name="feel_volume_try">probar los sonidos</string>
     <string name="settings_recent">usadas recientemente</string>
+    <string name="settings_new">nuevo</string>
     <string name="loading_slow">un momento más…</string>
     <string name="search_notifications">Buscar en las notificaciones</string>
     <string name="search_notifications_hint">Busca también en las notificaciones que esperan en el Action Center. Se leen en el teléfono, solo mientras buscas.</string>
@@ -1951,6 +1955,12 @@
     <string name="statusbar_battery_percent">porcentaje de la batería</string>
     <string name="statusbar_battery">batería</string>
     <string name="statusbar_time">hora</string>
+    <string name="statusbar_main_sim">SIM principal de la barra</string>
+    <string name="statusbar_main_sim_auto">lo decide el teléfono</string>
+    <string name="statusbar_main_sim_slot">SIM %1$d</string>
+    <string name="statusbar_main_sim_hint">Con dos SIM, la que da las barras grandes de la barra; la otra va debajo, más pequeña.</string>
+    <string name="statusbar_roaming">roaming (una R pequeña)</string>
+    <string name="statusbar_data_sim">SIM que usa los datos móviles (un punto)</string>
     <string name="statusbar_network_hint">Android solo dice el tipo de red a las aplicaciones que pueden leer el estado del teléfono: ahora te pide el permiso.</string>
     <string name="sec_bars">reloj y barras</string>
     <string name="sec_bars_desc">Reloj y fecha en Start, barra de la app y barra de acciones</string>
@@ -2315,6 +2325,8 @@ en primer plano %3$s · en segundo plano %4$s
     <string name="a11y_unlock">Desbloquear</string>
     <string name="a11y_sb_signal">Señal, %1$d de 4 barras</string>
     <string name="a11y_sb_signal2">Señal, %1$d de 4 barras; segunda SIM, %2$d de 4</string>
+    <string name="a11y_sb_data_sim">datos móviles en la SIM %1$d</string>
+    <string name="a11y_sb_roaming">Roaming</string>
     <string name="a11y_sb_wifi">Wi-Fi</string>
     <string name="a11y_sb_battery">Batería %1$d %%</string>
     <string name="a11y_sb_charging">Cargando</string>

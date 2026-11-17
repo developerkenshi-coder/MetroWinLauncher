@@ -384,6 +384,8 @@ data class LauncherSettings(
     val miniStatusBar: Boolean = false,
     /** The ids of [StatusItem] the user turned off in the status bar, comma-separated; empty shows them all. */
     val statusBarHidden: String = "",
+    /** The SIM (1 or 2, its slot) the status bar shows as the main one with two SIMs; 0 follows the phone. */
+    val statusMainSim: Int = 0,
     /** The animations of charging: a banner when the cable goes in, the battery filling in the status bar and on the lock screen. */
     val chargeAnimation: Boolean = true,
     /** How the Start photo is framed: zoom in percent (100 to 300), and the point of the photo that stays in view, in percent. */
@@ -589,6 +591,8 @@ data class LauncherSettings(
     val showFrequentApps: Boolean = true,
     /** The apps installed in the last week, in a group at the top of the list. */
     val showNewApps: Boolean = true,
+    /** The apps opened last, in a group at the top of the list (off until it is turned on). */
+    val showRecentApps: Boolean = false,
     /** Chips under the search box that filter the list by what the apps say they are. */
     val showCategories: Boolean = true,
     /** Names the user gave to apps, by [com.metrowin.launcher.model.AppItem.id]. */

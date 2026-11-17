@@ -55,6 +55,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import com.metrowin.launcher.data.SimReader
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -270,6 +274,7 @@ fun ActionCenter(
                 item(key = "quick") {
                     Column(Modifier.padding(horizontal = 12.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         PanelClock(clockHours, Modifier.padding(start = 12.dp, bottom = 4.dp))
+                        SimOperators(panel.isShown)
                         QuickRow(topFour, shownStates, tap, timeout, connections = connections, onHold = holdButton)
                         AnimatedVisibility(
                             openList != null,
@@ -423,6 +428,18 @@ fun ActionCenter(
 
 /** The messages of the notifications that hold several (see [ActionCenter]); read by each row. */
 private val LocalMessageLines = staticCompositionLocalOf<Map<String, List<MessageLine>>> { emptyMap() }
+
+/** The operator of each SIM under the clock, read each time the panel comes up (it needs the phone permission; without it the line is left out). */
+@Composable
+private fun SimOperators(shown: Boolean) {
+    val context = LocalContext.current
+    val line by produceState<String?>(null, shown) {
+        if (shown) value = withContext(Dispatchers.IO) { SimReader.operatorLine(SimReader.operators(context)) }
+    }
+    line?.let {
+        MetroText(it, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, maxLines = 1, modifier = Modifier.padding(start = 12.dp, bottom = 4.dp).testTag("ac:operators"))
+    }
+}
 
 /** The time in large light type with the date next to it, at the top of the panel; redrawn when the minute changes. */
 @Composable

@@ -367,8 +367,11 @@ fun FlipContainer(
                 return@LaunchedWhileStarted
             }
             angle.snapTo(0f)
+            var calmJitter = -1L
             while (true) {
-                if (auto) wait(((dwell?.invoke(index % faces) ?: DEFAULT_DWELL) * pace * (if (saving) CALM_SAVING else 1f)).toLong())
+                // Several tiles of one kind (the super tiles) must not change face together either: each stay gets a little chance on top.
+                calmJitter = nextJitter(calmJitter, DWELL_JITTER_STEP_MS, kotlin.random.Random)
+                if (auto) wait((((dwell?.invoke(index % faces) ?: DEFAULT_DWELL) + calmJitter) * pace * (if (saving) CALM_SAVING else 1f)).toLong())
                 else control?.requests?.receive() ?: return@LaunchedWhileStarted
                 index = (index + 1) % faces
             }
@@ -392,11 +395,13 @@ fun FlipContainer(
                 angle.snapTo(-90f)
                 angle.animateTo(0f, metroTween(durationMillis = Motion.FLIP_HALF_MS, easing = Motion.FlipIn))
             }
-            val stay = dwell?.invoke(index % faces) ?: run {
-                var jitter: Long
-                do { jitter = kotlin.random.Random.nextLong(0L, 8L) * 80L } while (jitter == lastJitter)
-                lastJitter = jitter
-                5_000L + (seed.mod(4)) * 900L - jitter
+            val stay = if (dwell != null) {
+                // The stay of a super tile is the same for all of them: a chance on top (never the one before) keeps two of them from going in step for long.
+                lastJitter = nextJitter(lastJitter, DWELL_JITTER_STEP_MS, kotlin.random.Random)
+                dwell(index % faces) + lastJitter
+            } else {
+                lastJitter = nextJitter(lastJitter, 80L, kotlin.random.Random)
+                5_000L + (seed.mod(4)) * 900L - lastJitter
             }
             if (auto) wait((stay * pace).toLong()) else control?.requests?.receive() ?: return@LaunchedWhileStarted
         }
@@ -424,6 +429,16 @@ fun FlipContainer(
 }
 
 private const val DEFAULT_DWELL = 5_500L
+
+/** The step of the chance added to the stay of a tile that has its own stays: up to seven steps. */
+private const val DWELL_JITTER_STEP_MS = 200L
+
+/** A multiple of [step] from zero to seven steps, never [last] (the one before; -1 for none). */
+internal fun nextJitter(last: Long, step: Long, random: kotlin.random.Random): Long {
+    var jitter: Long
+    do { jitter = random.nextLong(0L, 8L) * step } while (jitter == last)
+    return jitter
+}
 
 /** While saving battery a calm tile waits this many times as long. */
 private const val CALM_SAVING = 4f

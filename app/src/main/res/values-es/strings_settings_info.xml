@@ -81,6 +81,7 @@
     <string name="info_statusbar_charge">Un breve banner al conectar el cable, y la batería llenándose en la barra de estado y en la pantalla de bloqueo mientras carga. Con menos movimiento solo queda el estado.</string>
     <string name="info_statusbar_icon">Muestra u oculta este icono en la barra de estado MetroWin. Solo cambia la barra; el estado del teléfono no cambia.</string>
     <string name="info_statusbar_network">Muestra el tipo de red (5G, 4G, 3G, E) junto a la señal. Android lo dice solo a apps que pueden leer el estado del teléfono, así que al activarlo se pide ese permiso.</string>
+    <string name="info_statusbar_mainsim">Con dos SIM, elige cuál muestra la barra de estado como principal (las barras grandes y el tipo de red); la otra va debajo, más pequeña. Por defecto la elección del teléfono. Con una SIM no cambia nada.</string>
     <string name="info_icons_shape">La forma de los iconos de las apps en mosaicos y en la lista: como vienen, redondos, cuadrados o squircle.</string>
     <string name="info_icons_tilecolors">El mosaico de una app toma el color principal de su icono en vez del acento. Los iconos grises conservan el acento.</string>
     <string name="info_icons_glass">Los iconos de todas las apps se vuelven cristal translúcido y sus mosaicos transparentes, así el fondo de Start se ve detrás. Las apps integradas conservan su glifo Metro.</string>
@@ -142,6 +143,7 @@
     <string name="info_voice_try">Empieza a escuchar ahora, para que pruebes el micrófono y el reconocimiento antes de usarlo de verdad.</string>
     <string name="info_apps_frequent">Las apps que más abres desde el launcher, en un grupo arriba de la lista. Los recuentos se quedan en este teléfono y no forman parte de las copias.</string>
     <string name="info_apps_new">Las apps instaladas en la última semana, arriba de la lista. Justo después de configurar o restaurar un teléfono nada se llama nuevo.</string>
+    <string name="info_apps_recent">Añade al principio de la lista un grupo «recientes» con las últimas apps abiertas. La lista se queda en este teléfono y no forma parte de las copias. Apagado por defecto.</string>
     <string name="info_apps_compact">Cuadrados más pequeños y filas más juntas en la lista de apps: más apps en pantalla.</string>
     <string name="info_apps_categories">Chips bajo el cuadro de búsqueda que muestran solo las apps de un tipo. Solo aparecen las apps que dicen qué son (juegos, social, música…).</string>
     <string name="info_apps_hidden">Apps que ocultaste de la lista. Toca una para mostrarla de nuevo. Las apps ocultas siguen abriéndose desde su mosaico en Start.</string>

@@ -140,7 +140,8 @@ fun SettingsScreen(
     }
     // The box of an "i" is drawn here, over everything, not where the "i" is: a page scrolls, and a dialog cannot be measured inside a scroll.
     var info by remember { mutableStateOf<InfoRequest?>(null) }
-    CompositionLocalProvider(LocalInfoHost provides { info = it }) {
+    val news = remember { SettingsNews.current(context) }
+    CompositionLocalProvider(LocalInfoHost provides { info = it }, LocalNewSettings provides news) {
     BoxWithConstraints(
         modifier
             .fillMaxSize()
@@ -296,6 +297,7 @@ private fun CategoryList(
                         size = MetroType.Note, weight = FontWeight.Normal, color = colors.subtle, lineHeight = 19.sp, maxLines = Int.MAX_VALUE,
                     )
                 }
+                if (SettingsNews.marks(category, LocalNewSettings.current)) NewSquare(Modifier.padding(end = 6.dp).testTag("settings:new:${category.name}"))
                 InfoMark(category.info, stringResource(category.title), tag = "info:cat:${category.name}")
             }
         }

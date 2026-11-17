@@ -81,6 +81,7 @@
     <string name="info_statusbar_charge">Uma faixa curta quando o cabo é ligado, e a bateria a encher na barra de estado e no ecrã de bloqueio enquanto carrega. Com menos movimento só fica o estado.</string>
     <string name="info_statusbar_icon">Mostra ou oculta este ícone na barra de estado MetroWin. Só muda a barra; o estado do telefone não muda.</string>
     <string name="info_statusbar_network">Mostra o tipo de rede (5G, 4G, 3G, E) junto ao sinal. O Android só o diz a apps que podem ler o estado do telefone, por isso ativá-lo pede essa permissão.</string>
+    <string name="info_statusbar_mainsim">Com dois SIMs, escolhe qual a barra de status mostra como principal (as barras grandes e o tipo de rede); o outro fica embaixo, menor. Por padrão a escolha do telefone. Com um SIM nada muda.</string>
     <string name="info_icons_shape">A forma dos ícones dos apps nos blocos e na lista: como vêm, redondos, quadrados ou squircle.</string>
     <string name="info_icons_tilecolors">O bloco de um app toma a cor principal do seu ícone em vez do destaque. Os ícones cinzentos mantêm o destaque.</string>
     <string name="info_icons_glass">Os ícones de todos os apps tornam-se vidro translúcido e os seus blocos transparentes, para que o fundo do Start apareça atrás. Os apps integrados mantêm o seu glifo Metro.</string>
@@ -142,6 +143,7 @@
     <string name="info_voice_try">Começa a ouvir já, para testar o microfone e o reconhecimento antes de o usar a sério.</string>
     <string name="info_apps_frequent">Os apps que mais abre a partir do launcher, num grupo no topo da lista. As contagens ficam neste telefone e não fazem parte das cópias.</string>
     <string name="info_apps_new">Os apps instalados na última semana, no topo da lista. Logo depois de configurar ou restaurar um telefone nada se chama novo.</string>
+    <string name="info_apps_recent">Adiciona no alto da lista um grupo «recentes» com os últimos apps abertos. A lista fica neste telefone e não faz parte dos backups. Desligado por padrão.</string>
     <string name="info_apps_compact">Quadrados mais pequenos e linhas mais juntas na lista de apps: mais apps no ecrã.</string>
     <string name="info_apps_categories">Etiquetas sob a caixa de pesquisa que mostram só os apps de um tipo. Só aparecem os apps que dizem o que são (jogos, social, música…).</string>
     <string name="info_apps_hidden">Apps que ocultou da lista. Toque num para o mostrar de novo. Os apps ocultos continuam a abrir a partir do seu bloco no Start.</string>

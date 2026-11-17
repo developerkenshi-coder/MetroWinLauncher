@@ -39,6 +39,8 @@ enum class StatusItem(val id: String, @param:StringRes val label: Int) {
     Saver("saver", R.string.statusbar_saver),
     Signal("signal", R.string.statusbar_signal),
     Network("network", R.string.statusbar_network),
+    Roaming("roaming", R.string.statusbar_roaming),
+    DataSim("dataSim", R.string.statusbar_data_sim),
     Wifi("wifi", R.string.statusbar_wifi),
     BatteryPercent("batteryPercent", R.string.statusbar_battery_percent),
     Battery("battery", R.string.statusbar_battery),
@@ -73,11 +75,28 @@ data class StatusReading(
     val saver: Boolean = false,
 )
 
-/** The mobile signal (0 to 4 bars, -1 without a SIM) and the kind of network ("5G", "4G", "3G", "E"...), null when it is not known. */
-data class CellState(val level: Int = -1, val label: String? = null, val second: SecondSim? = null)
+/**
+ * The mobile signal (0 to 4 bars, -1 without a SIM) and the kind of network ("5G", "4G", "3G", "E"...), null when it is not known, for the SIM the phone
+ * calls the default one ([slot] is its slot, 0 or 1). [roaming]: that SIM is on a foreign network. [data]: the mobile data goes through it (told only
+ * with two SIMs).
+ */
+data class CellState(
+    val level: Int = -1, val label: String? = null, val second: SecondSim? = null,
+    val roaming: Boolean = false, val data: Boolean = false, val slot: Int = 0,
+) {
+    /**
+     * What the bar shows as the main SIM when the user chose the SIM of slot [preferred] (1 or 2; 0 leaves the choice to the phone): with two SIMs and
+     * the chosen one being the other, the two change places. With one SIM, or a choice that is already the main one, nothing changes.
+     */
+    fun shown(preferred: Int): CellState {
+        val other = second ?: return this
+        if (preferred <= 0 || other.slot + 1 != preferred) return this
+        return CellState(other.level, other.label, SecondSim(level, label, slot, roaming, data), other.roaming, other.data, other.slot)
+    }
+}
 
-/** The other SIM, when the phone has two: its signal (0 to 4 bars) and kind of network, shown small under the main ones. */
-data class SecondSim(val level: Int, val label: String?)
+/** The other SIM, when the phone has two: its signal (0 to 4 bars) and kind of network, shown small under the main ones; its [slot], and whether it roams and carries the data. */
+data class SecondSim(val level: Int, val label: String?, val slot: Int = 1, val roaming: Boolean = false, val data: Boolean = false)
 
 object StatusIcons {
     /**
@@ -178,7 +197,7 @@ class CellWatcher(private val context: Context, private val onChange: (CellState
 
     fun start() {
         val manager = telephony ?: return
-        update(state.copy(level = levelNow(), second = readSecond()))
+        update(withSims(state.copy(level = levelNow()), readSims()))
         val executor = ContextCompat.getMainExecutor(context)
         if (Build.VERSION.SDK_INT >= 31) {
             val signal = object : TelephonyCallback(), TelephonyCallback.SignalStrengthsListener {
@@ -207,31 +226,45 @@ class CellWatcher(private val context: Context, private val onChange: (CellState
     @SuppressLint("MissingPermission") // hasPhoneState checked on the next line
     fun poll() {
         val manager = telephony ?: return
-        val second = readSecond()
+        val sims = readSims()
         if (displayCallback != null || !StatusIcons.hasPhoneState(context)) {
-            update(state.copy(second = second))
+            update(withSims(state, sims))
             return
         }
         val label = runCatching { StatusIcons.networkLabel(manager.dataNetworkType) }.getOrNull()
-        update(CellState(levelNow().takeIf { signalCallback == null && legacy == null } ?: state.level, label, second))
+        update(withSims(CellState(levelNow().takeIf { signalCallback == null && legacy == null } ?: state.level, label), sims))
     }
 
+    /** What [readSims] found, written into [base]. */
+    private fun withSims(base: CellState, sims: Sims) = base.copy(second = sims.second, slot = sims.slot, roaming = sims.roaming, data = sims.data)
+
+    private class Sims(val second: SecondSim?, val slot: Int, val roaming: Boolean, val data: Boolean)
+
     /**
-     * The SIM that is not the default one, read now (the signal level of the phone and the kind of network of its data connection). Null with one SIM
-     * or without the phone permission.
+     * The SIM that is not the default one, read now (the signal level of the phone and the kind of network of its data connection), with the slot of
+     * the default one and which of them roams and carries the data. No second SIM with one SIM or without the phone permission.
      * shortcut: polled with the rest of the bar, and without the 5G that rides on 4G (that needs a callback for each SIM); add the callbacks if it is missed.
      */
     @SuppressLint("MissingPermission") // hasPhoneState checked first
-    private fun readSecond(): SecondSim? = runCatching {
-        if (!StatusIcons.hasPhoneState(context)) return@runCatching null
-        val subs = context.getSystemService(SubscriptionManager::class.java).activeSubscriptionInfoList.orEmpty()
-        if (subs.size < 2) return@runCatching null
-        val main = SubscriptionManager.getDefaultSubscriptionId()
-        val other = subs.sortedBy { it.simSlotIndex }.firstOrNull { it.subscriptionId != main } ?: return@runCatching null
-        val sim = telephony?.createForSubscriptionId(other.subscriptionId) ?: return@runCatching null
-        if (sim.simState != TelephonyManager.SIM_STATE_READY) return@runCatching null
-        SecondSim((if (Build.VERSION.SDK_INT >= 28) sim.signalStrength?.level else null) ?: 0, StatusIcons.networkLabel(sim.dataNetworkType))
-    }.getOrNull()
+    private fun readSims(): Sims {
+        val roaming = runCatching { telephony?.isNetworkRoaming == true }.getOrDefault(false)
+        return runCatching {
+            if (!StatusIcons.hasPhoneState(context)) return@runCatching Sims(null, 0, roaming, false)
+            val subs = context.getSystemService(SubscriptionManager::class.java).activeSubscriptionInfoList.orEmpty()
+            if (subs.size < 2) return@runCatching Sims(null, 0, roaming, false)
+            val main = SubscriptionManager.getDefaultSubscriptionId()
+            val data = SubscriptionManager.getDefaultDataSubscriptionId()
+            val other = subs.sortedBy { it.simSlotIndex }.firstOrNull { it.subscriptionId != main } ?: return@runCatching Sims(null, 0, roaming, false)
+            val slot = subs.firstOrNull { it.subscriptionId == main }?.simSlotIndex ?: 0
+            val sim = telephony?.createForSubscriptionId(other.subscriptionId)?.takeIf { it.simState == TelephonyManager.SIM_STATE_READY }
+                ?: return@runCatching Sims(null, slot, roaming, false)
+            val second = SecondSim(
+                (if (Build.VERSION.SDK_INT >= 28) sim.signalStrength?.level else null) ?: 0, StatusIcons.networkLabel(sim.dataNetworkType),
+                other.simSlotIndex, sim.isNetworkRoaming, data == other.subscriptionId,
+            )
+            Sims(second, slot, roaming, data == main)
+        }.getOrDefault(Sims(null, 0, roaming, false))
+    }
 
     fun stop() {
         val manager = telephony ?: return

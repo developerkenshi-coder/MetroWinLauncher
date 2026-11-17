@@ -185,7 +185,7 @@
     <string name="bug_field">décrivez ici le problème</string>
     <string name="bug_send">préparer l’e-mail</string>
     <string name="bug_send_hint">Ouvre votre application de messagerie avec l’adresse, l’objet et le journal de l’application déjà joint. C’est vous qui l’envoyez.</string>
-    <string name="bug_privacy">Le journal ne contient que ce que cette application a écrit, soit les 8000 dernières lignes. Il peut montrer les noms des applications que vous utilisez. Relisez l’e-mail avant de l’envoyer.</string>
+    <string name="bug_privacy">Le journal ne contient que ce que cette application a écrit, soit les 8000 dernières lignes. Il peut montrer les noms des applications que vous utilisez. Si le lanceur a planté, son dernier plantage (l’erreur et l’endroit) est ajouté. Relisez l’e-mail avant de l’envoyer.</string>
     <string name="bug_log_failed">Le journal n’a pas pu être lu, l’e-mail est sans pièce jointe</string>
     <string name="gest_navbar">Boutons de navigation Windows Phone</string>
     <string name="gest_navbar_hint">Affiche retour, le logo Windows et recherche par-dessus les boutons d’Android. Un appui long sur le logo ouvre les applications récentes. Nécessite le service d’accessibilité.</string>
@@ -817,6 +817,7 @@
     <!-- Liste des applications : groupes, catégories, renommage, verrouillage -->
     <string name="list_frequent">les plus utilisées</string>
     <string name="list_new">nouvelles</string>
+    <string name="list_recent">récentes</string>
     <string name="cat_all">toutes</string>
     <string name="cat_game">jeux</string>
     <string name="cat_audio">musique et audio</string>
@@ -840,6 +841,8 @@
     <string name="apps_frequent_hint">Les applications que vous ouvrez le plus depuis le launcher, dans un groupe en haut de la liste. Les compteurs restent sur ce téléphone et ne font pas partie des sauvegardes.</string>
     <string name="apps_new">nouvelles applications</string>
     <string name="apps_new_hint">Les applications installées durant la dernière semaine, en haut de la liste. Juste après la configuration ou la restauration d’un téléphone, rien n’est considéré comme nouveau.</string>
+    <string name="apps_recent">applications récentes</string>
+    <string name="apps_recent_hint">Les dernières applications ouvertes, dans un groupe en haut de la liste. Désactivé tant que vous ne l’activez pas.</string>
     <string name="apps_categories">filtrer par catégorie</string>
     <string name="apps_categories_hint">Des puces sous la zone de recherche n’affichent que les applications d’un même type. Seules les applications qui indiquent ce qu’elles sont (jeux, social, musique…) y figurent.</string>
     <string name="apps_renamed">applications renommées</string>
@@ -1584,6 +1587,7 @@
     <string name="feel_volume">Volume du clic et des sons</string>
     <string name="feel_volume_try">essayer les sons</string>
     <string name="settings_recent">utilisés récemment</string>
+    <string name="settings_new">nouveau</string>
     <string name="loading_slow">encore un instant…</string>
     <string name="search_notifications">Rechercher dans les notifications</string>
     <string name="search_notifications_hint">Cherche aussi dans les notifications qui attendent dans l’Action Center. Elles sont lues sur le téléphone, seulement pendant la recherche.</string>
@@ -1951,6 +1955,12 @@
     <string name="statusbar_battery_percent">pourcentage de la batterie</string>
     <string name="statusbar_battery">batterie</string>
     <string name="statusbar_time">heure</string>
+    <string name="statusbar_main_sim">SIM principale de la barre</string>
+    <string name="statusbar_main_sim_auto">le téléphone décide</string>
+    <string name="statusbar_main_sim_slot">SIM %1$d</string>
+    <string name="statusbar_main_sim_hint">Avec deux SIM, celle dont le signal fait les grandes barres de la barre ; l’autre est dessous, plus petite.</string>
+    <string name="statusbar_roaming">itinérance (un petit R)</string>
+    <string name="statusbar_data_sim">SIM qui utilise les données mobiles (un point)</string>
     <string name="statusbar_network_hint">Android ne donne le type de réseau qu’aux applications autorisées à lire l’état du téléphone : il vous le demande maintenant.</string>
     <string name="sec_bars">horloge et barres</string>
     <string name="sec_bars_desc">Horloge et date sur Start, barre d’application et barre d’actions</string>
@@ -2315,6 +2325,8 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="a11y_unlock">Déverrouiller</string>
     <string name="a11y_sb_signal">Signal, %1$d barres sur 4</string>
     <string name="a11y_sb_signal2">Signal, %1$d barres sur 4 ; deuxième SIM, %2$d sur 4</string>
+    <string name="a11y_sb_data_sim">données mobiles sur la SIM %1$d</string>
+    <string name="a11y_sb_roaming">Itinérance</string>
     <string name="a11y_sb_wifi">Wi-Fi</string>
     <string name="a11y_sb_battery">Batterie %1$d %%</string>
     <string name="a11y_sb_charging">En charge</string>

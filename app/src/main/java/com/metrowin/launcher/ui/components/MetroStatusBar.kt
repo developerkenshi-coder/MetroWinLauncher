@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import android.text.format.DateFormat
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -164,6 +166,8 @@ fun MetroStatusBar(
     onOpenActionCenter: (() -> Unit)? = null,
     /** The battery fills in sweeps and the bolt pulses while the phone charges (the setting "charging animation"). */
     chargeAnimation: Boolean = true,
+    /** The SIM (1 or 2, its slot) that is the main one of the bar; 0 leaves it to the phone (see [CellState.shown]). */
+    mainSim: Int = 0,
 ) {
     val context = LocalContext.current
     // The polls run only while the bar is on screen (started): with the screen off, as over the lock screen, they stop and the phone can sleep; back, they read at once.
@@ -230,26 +234,42 @@ fun MetroStatusBar(
         if (on(StatusItem.Dnd) && reading.dnd) Said(R.string.a11y_sb_dnd) { GlyphIcon(Glyph.Moon, 12.dp, color = color) }
     }
     val radiosPart: @Composable () -> Unit = {
-        val second = cell.second
-        if (on(StatusItem.Signal) && !reading.airplane && cell.level >= 0) {
+        val sims = cell.shown(mainSim)
+        val second = sims.second
+        if (on(StatusItem.Signal) && !reading.airplane && sims.level >= 0) {
             // Two SIMs: under the bars of the main one, five thin lines say the other is there and how strong it is (no more room than before).
-            if (second == null) Said(R.string.a11y_sb_signal, cell.level) { Bars(cell.level, 4, color) }
-            else Said(R.string.a11y_sb_signal2, cell.level, second.level) {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Bars(cell.level, 4, color)
-                    SecondSimLines(second.level, color)
+            if (second == null) Said(R.string.a11y_sb_signal, sims.level) { Bars(sims.level, 4, color) }
+            else {
+                val showData = on(StatusItem.DataSim) && (sims.data || second.data)
+                val said = stringResource(R.string.a11y_sb_signal2, sims.level, second.level) +
+                    if (showData) ", " + stringResource(R.string.a11y_sb_data_sim, (if (sims.data) sims.slot else second.slot) + 1) else ""
+                Row(Modifier.semantics { contentDescription = said }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    // The SIM that carries the mobile data has a dot at the side of its signal: at the top for the main one, at the bottom for the other.
+                    if (showData) Column(Modifier.height(16.dp).testTag("statusbar:data"), verticalArrangement = Arrangement.SpaceBetween) {
+                        Box(Modifier.size(3.dp).background(if (sims.data) color else Color.Transparent, CircleShape))
+                        Box(Modifier.size(3.dp).background(if (second.data) color else Color.Transparent, CircleShape))
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Bars(sims.level, 4, color)
+                        SecondSimLines(second.level, color)
+                    }
                 }
             }
         }
-        if (on(StatusItem.Network) && !reading.airplane && cell.level >= 0) {
+        if (on(StatusItem.Network) && !reading.airplane && sims.level >= 0) {
             val other = second?.label
-            if (other == null) cell.label?.let {
+            if (other == null) sims.label?.let {
                 MetroText(it, size = MetroType.Caption, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:network"))
             } else Column {
                 // The kind of network of the other SIM under the main one, smaller.
-                cell.label?.let { MetroText(it, size = MetroType.Caption, color = color, maxLines = 1, lineHeight = 12.sp, modifier = Modifier.testTag("statusbar:network")) }
+                sims.label?.let { MetroText(it, size = MetroType.Caption, color = color, maxLines = 1, lineHeight = 12.sp, modifier = Modifier.testTag("statusbar:network")) }
                 MetroText(other, size = 8.sp, color = color.copy(alpha = 0.8f), maxLines = 1, lineHeight = 9.sp, modifier = Modifier.testTag("statusbar:network2"))
             }
+        }
+        // A small R after the signal while the main SIM is on a foreign network.
+        if (on(StatusItem.Roaming) && !reading.airplane && sims.level >= 0 && sims.roaming) {
+            val said = stringResource(R.string.a11y_sb_roaming)
+            MetroText("R", size = 9.sp, weight = FontWeight.Bold, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:roaming").semantics { contentDescription = said })
         }
         if (on(StatusItem.Wifi)) reading.wifi?.let { Said(R.string.a11y_sb_wifi) { WifiFan(it, color) } }
     }

@@ -104,6 +104,9 @@ object SettingsIndex {
         e("statusbar.mini", StatusBar, R.string.theme_metro_status_bar_mini, "windows phone", "status bar", "mini apps", "inside apps", "barra di stato", "mini app", "dentro le app"),
         e("statusbar.charge", StatusBar, R.string.charge_animation, "charging", "charge", "battery", "animation", "ricarica", "animazione", "batteria"),
         e("statusbar.apps", StatusBar, R.string.theme_metro_status_bar_apps, "windows phone", "status bar", "other apps", "over apps", "barra di stato", "altre app", "sopra le app"),
+        e("statusbar.mainsim", StatusBar, R.string.statusbar_main_sim, "status bar", "sim", "main", "primary", "dual sim", "barra di stato", "sim principale", "doppia sim", "due sim"),
+        e("statusbar.roaming", StatusBar, R.string.statusbar_roaming, "status bar", "roaming", "abroad", "foreign", "barra di stato", "estero", "itineranza"),
+        e("statusbar.dataSim", StatusBar, R.string.statusbar_data_sim, "status bar", "sim", "data", "mobile data", "dot", "barra di stato", "dati mobili", "puntino"),
         e("statusbar.notifications", StatusBar, R.string.statusbar_notifications, "status bar", "notifications", "bell", "barra di stato", "notifiche", "campanella"),
         e("statusbar.airplane", StatusBar, R.string.statusbar_airplane, "status bar", "airplane", "flight", "barra di stato", "aereo", "volo"),
         e("statusbar.hotspot", StatusBar, R.string.statusbar_hotspot, "status bar", "hotspot", "tethering", "barra di stato", "condivisione"),
@@ -252,6 +255,7 @@ object SettingsIndex {
 
         // --- apps: the list
         e("apps.frequent", Apps, R.string.apps_frequent, "most used", "top", "favorites", "piu usate", "preferite"),
+        e("apps.recent", Apps, R.string.apps_recent, "recent", "last opened", "history", "recenti", "ultime aperte", "cronologia"),
         e("apps.new", Apps, R.string.apps_new, "recent", "installed", "recenti", "installate", "nuove"),
         e("apps.compact", Apps, R.string.apps_compact, "small", "tight", "dense", "compatta", "piccola", "stretta"),
         e("apps.categories", Apps, R.string.apps_categories, "chips", "filter", "games", "social", "filtro", "categorie", "giochi"),

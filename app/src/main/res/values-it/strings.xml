@@ -178,7 +178,7 @@
     <string name="bug_field">descrivi qui il problema</string>
     <string name="bug_send">prepara la mail</string>
     <string name="bug_send_hint">Apre la tua app di posta con indirizzo, oggetto e log dell\'app già allegato. L\'invio lo fai tu.</string>
-    <string name="bug_privacy">Il log contiene solo ciò che ha scritto questa app, le ultime 8000 righe. Può mostrare i nomi delle app che usi. Rileggi la mail prima di inviarla.</string>
+    <string name="bug_privacy">Il log contiene solo ciò che ha scritto questa app, le ultime 8000 righe. Può mostrare i nomi delle app che usi. Se il launcher è andato in crash, si aggiunge l’ultimo crash (l’errore e dove è successo). Rileggi la mail prima di inviarla.</string>
     <string name="bug_log_failed">Non è stato possibile leggere il log, la mail è senza allegato</string>
     <string name="gest_navbar">Pulsanti di navigazione Windows Phone</string>
     <string name="gest_navbar_hint">Disegna indietro, il logo Windows e cerca sopra i pulsanti di Android. Una pressione lunga sul logo apre le app recenti. Serve il servizio di accessibilità.</string>
@@ -810,6 +810,7 @@
     <!-- App list: groups, categories, rename, lock -->
     <string name="list_frequent">più usate</string>
     <string name="list_new">nuove</string>
+    <string name="list_recent">recenti</string>
     <string name="cat_all">tutte</string>
     <string name="cat_game">giochi</string>
     <string name="cat_audio">musica e audio</string>
@@ -833,6 +834,8 @@
     <string name="apps_frequent_hint">Le app che apri più spesso dal launcher, in un gruppo in cima alla lista. I conteggi restano su questo telefono e non entrano nei backup.</string>
     <string name="apps_new">app nuove</string>
     <string name="apps_new_hint">Le app installate nell\'ultima settimana, in cima alla lista. Subito dopo aver configurato o ripristinato un telefono nessuna è chiamata nuova.</string>
+    <string name="apps_recent">app usate di recente</string>
+    <string name="apps_recent_hint">Le ultime app che hai aperto, in un gruppo in cima alla lista. Spenta finché non la accendi.</string>
     <string name="apps_categories">filtro per categoria</string>
     <string name="apps_categories_hint">Pastiglie sotto la casella di ricerca che mostrano solo le app di un tipo. Ci sono dentro solo le app che dichiarano cosa sono (giochi, social, musica…).</string>
     <string name="apps_renamed">app rinominate</string>
@@ -1577,6 +1580,7 @@
     <string name="feel_volume">Volume del clic e dei suoni</string>
     <string name="feel_volume_try">prova i suoni</string>
     <string name="settings_recent">usate di recente</string>
+    <string name="settings_new">nuovo</string>
     <string name="loading_slow">ancora un attimo…</string>
     <string name="search_notifications">Cerca nelle notifiche</string>
     <string name="search_notifications_hint">Cerca anche nelle notifiche che aspettano nell\'Action Center. Sono lette sul telefono, solo mentre cerchi.</string>
@@ -1944,6 +1948,12 @@
     <string name="statusbar_battery_percent">percentuale della batteria</string>
     <string name="statusbar_battery">batteria</string>
     <string name="statusbar_time">ora</string>
+    <string name="statusbar_main_sim">SIM principale della barra</string>
+    <string name="statusbar_main_sim_auto">la sceglie il telefono</string>
+    <string name="statusbar_main_sim_slot">SIM %1$d</string>
+    <string name="statusbar_main_sim_hint">Con due SIM, quella il cui segnale sono le tacche grandi della barra; l’altra sta sotto, più piccola.</string>
+    <string name="statusbar_roaming">roaming (una R piccola)</string>
+    <string name="statusbar_data_sim">SIM che usa i dati mobili (un puntino)</string>
     <string name="statusbar_network_hint">Android dice il tipo di rete solo alle app che possono leggere lo stato del telefono: ora ti chiede il permesso.</string>
     <string name="sec_bars">orologio e barre</string>
     <string name="sec_bars_desc">Orologio e data su Start, barra dell\'app e barra delle azioni</string>
@@ -2308,6 +2318,8 @@ in primo piano %3$s · in background %4$s
     <string name="a11y_unlock">Sblocca</string>
     <string name="a11y_sb_signal">Segnale, %1$d tacche su 4</string>
     <string name="a11y_sb_signal2">Segnale, %1$d tacche su 4; seconda SIM, %2$d su 4</string>
+    <string name="a11y_sb_data_sim">dati mobili sulla SIM %1$d</string>
+    <string name="a11y_sb_roaming">Roaming</string>
     <string name="a11y_sb_wifi">Wi-Fi</string>
     <string name="a11y_sb_battery">Batteria %1$d%%</string>
     <string name="a11y_sb_charging">In carica</string>
