@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.PagerState
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -61,6 +63,14 @@ fun PivotHeader(
     val widths = remember(titles) { mutableStateListOf<Int>().apply { repeat(titles.size) { add(0) } } }
     val spacing = with(LocalDensity.current) { Spacing.Page.roundToPx() }
     val position = pagerState.currentPage + pagerState.currentPageOffsetFraction
+    // A light tick each time the pivot passes to another page while it is moving (a swipe, its fling, a touch on a title); a jump made from outside is silent.
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+    androidx.compose.runtime.LaunchedEffect(pagerState, haptic) {
+        androidx.compose.runtime.snapshotFlow { pagerState.currentPage }
+            .drop(1)
+            .filter { pagerState.isScrollInProgress }
+            .collect { haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove) }
+    }
 
     fun leftOf(index: Int): Float {
         var x = 0f

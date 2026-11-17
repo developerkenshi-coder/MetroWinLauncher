@@ -209,6 +209,7 @@ object SettingsIndex {
         e("gest.tapsound", Feel, R.string.gest_tap_sound, "click", "sound", "audio", "suono", "tocco"),
         e("gest.animspeed", Feel, R.string.feel_speed, "animation", "speed", "fast", "slow", "animazioni", "velocita", "veloce", "lento"),
         e("gest.tilt", Feel, R.string.feel_tilt, "tilt", "press", "lean", "inclinazione", "pressione"),
+        e("gest.soundvolume", Feel, R.string.feel_volume, "sound", "volume", "click", "chime", "loud", "suono", "volume", "click", "campanello"),
         e("gest.vibration", Feel, R.string.feel_vibration, "vibration", "haptic", "strength", "vibrazione", "forza", "intensita"),
         e("gest.taphaptics", Feel, R.string.gest_tap_haptics, "vibration", "haptic", "buzz", "vibrazione", "tocco"),
 

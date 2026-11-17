@@ -176,6 +176,7 @@ import com.metrowin.launcher.gestures.LockAccessibilityService
 import com.metrowin.launcher.ui.gesture.pullDownConnection
 import com.metrowin.launcher.ui.gesture.twoFingerSwipe
 import com.metrowin.launcher.ui.gesture.pullDownFromTop
+import com.metrowin.launcher.calls.callBarHeight
 import com.metrowin.launcher.ui.gesture.rememberPullPanel
 import com.metrowin.launcher.ui.gesture.returnToStart
 import com.metrowin.launcher.ui.kids.KidsHeader
@@ -379,7 +380,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val haptics = rememberMetroHaptics(settings.tapHaptics, settings.vibrationStrength)
-    val tapFeedback = rememberTapFeedback(settings.tapSound, settings.tapHaptics, settings.vibrationStrength)
+    val tapFeedback = rememberTapFeedback(settings.tapSound, settings.tapHaptics, settings.vibrationStrength, settings.soundVolume)
     // The Start screen that is home: the app opens on it and the Windows button returns to it. The screens before it are to its left.
     // The favourite Start screen, when the user chose one, is where it returns to instead of the home.
     val homePage = (if (settings.favoritePage >= 0) settings.favoritePage else settings.homePage).coerceIn(0, (pages.size - 1).coerceAtLeast(0))
@@ -476,8 +477,10 @@ fun LauncherApp(vm: LauncherViewModel) {
 
     // The Action Center. The panel is one state that follows the finger, whatever starts the pull.
     val panel = rememberPullPanel()
+    // The tick when the pull passes the point where letting go opens (or closes) the Action Center.
+    androidx.compose.runtime.SideEffect { panel.onThreshold = { haptics.performHapticFeedback(HapticFeedbackType.LongPress) } }
     // The glide of the Action Center as it comes down and goes, and the chime of a banner, when the sounds are on.
-    val metroSound = rememberMetroSounds(settings.metroSounds)
+    val metroSound = rememberMetroSounds(settings.metroSounds, settings.soundVolume)
     val panelSounds by rememberUpdatedState(settings.panelSounds)
     LaunchedEffect(panel) {
         snapshotFlow { panel.isShown }.drop(1).collect { if (panelSounds) metroSound(if (it) MetroSound.Open else MetroSound.Close) }
@@ -2114,7 +2117,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                                 vm.openNotification(entry)
                             },
                             onDismiss = { if (banner?.key == entry.key) banner = null },
-                            modifier = Modifier.align(Alignment.TopCenter),
+                            modifier = Modifier.align(Alignment.TopCenter).padding(top = callBarHeight()),
                         ) }
                     }
                 }
@@ -2128,7 +2131,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 }
 
                 // The toasts of the launcher itself (see MetroToast): the same banner, with the app's icon.
-                if (!tutorialVisible) AccentScope(settings.accentPanel) { MetroToastHost(Modifier.align(Alignment.TopCenter)) }
+                if (!tutorialVisible) AccentScope(settings.accentPanel) { MetroToastHost(Modifier.align(Alignment.TopCenter).padding(top = callBarHeight())) }
 
                 // The volume panel: over everything but the tutorial, while the launcher is on screen.
                 val volumeHud by vm.volumeHud.collectAsStateWithLifecycle()

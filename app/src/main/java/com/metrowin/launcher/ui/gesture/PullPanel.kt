@@ -48,6 +48,12 @@ object PullRules {
         startedOpen -> (1f - progress) * travelDp < CLOSE_COMMIT_DP
         else -> progress * travelDp > COMMIT_DP
     }
+
+    /** Whether a finger moving the panel from [from] to [to] (0..1) went past the point where letting go would change what it does. Pure, so it can be tested. */
+    fun crossed(from: Float, to: Float, travelDp: Float, startedOpen: Boolean): Boolean {
+        val line = if (startedOpen) 1f - CLOSE_COMMIT_DP / travelDp else COMMIT_DP / travelDp
+        return if (startedOpen) from >= line && to < line else from <= line && to > line
+    }
 }
 
 /**
@@ -72,6 +78,9 @@ class PullPanel(
 
     val isShown: Boolean by derivedStateOf { progress > 0f }
 
+    /** Called once when a finger takes the panel past the point where letting go would open it (or, for an open one, close it): the tick of the gesture. */
+    var onThreshold: (() -> Unit)? = null
+
     private var animation: Job? = null
     private var headingOpen = false
     private var startedOpen: Boolean? = null
@@ -84,7 +93,9 @@ class PullPanel(
         animation?.cancel()
         val target = (progress + fraction).coerceIn(0f, 1f)
         val used = target - progress
+        val from = progress
         progress = target
+        if (PullRules.crossed(from, target, travelPx / density, startedOpen == true)) onThreshold?.invoke()
         return used
     }
 

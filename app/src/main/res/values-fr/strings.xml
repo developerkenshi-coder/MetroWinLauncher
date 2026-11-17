@@ -1581,6 +1581,10 @@
     <string name="feel_tilt_hint">De combien une tuile ou un bouton s’écarte du doigt. 0% ne garde que l’enfoncement. C’est l’appui de l’apparence Classique.</string>
     <string name="feel_vibration">Intensité de la vibration d’un appui</string>
     <string name="feel_percent">%d%%</string>
+    <string name="feel_volume">Volume du clic et des sons</string>
+    <string name="feel_volume_try">essayer les sons</string>
+    <string name="settings_recent">utilisés récemment</string>
+    <string name="loading_slow">encore un instant…</string>
     <string name="search_notifications">Rechercher dans les notifications</string>
     <string name="search_notifications_hint">Cherche aussi dans les notifications qui attendent dans l’Action Center. Elles sont lues sur le téléphone, seulement pendant la recherche.</string>
     <string name="search_operators">Opérateurs de recherche</string>

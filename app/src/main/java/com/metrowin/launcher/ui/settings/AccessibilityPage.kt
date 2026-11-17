@@ -95,6 +95,7 @@ private fun FontChoice(env: SettingsEnv) {
         label = stringResource(R.string.access_font), options = options, selected = selected,
         onSelect = { i -> env.onChange { it.copy(appFont = when { i == 0 -> ""; i <= fonts.size -> fonts[i - 1].code; else -> AppFonts.CUSTOM }) } },
         tag = "access:font", id = "access.font",
+        optionFont = { i -> if (i == 0) null else AppFonts.family(context, if (i <= fonts.size) fonts[i - 1].code else AppFonts.CUSTOM, settings.fontRevision) },
     )
     MetroText(stringResource(R.string.access_font_sample), size = MetroType.Subtitle)
     MetroButton(stringResource(R.string.access_font_pick), Modifier.fillMaxWidth()) { picker.launch(arrayOf("*/*")) }

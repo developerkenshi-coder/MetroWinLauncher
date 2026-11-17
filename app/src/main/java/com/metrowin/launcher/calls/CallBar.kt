@@ -39,7 +39,7 @@ fun CallBar(modifier: Modifier = Modifier) {
     val main = lines.firstOrNull { !it.ended && !it.ringing && !it.child } ?: return
     val context = LocalContext.current
     Row(
-        modifier.fillMaxWidth().height(40.dp).background(com.metrowin.launcher.dialer.CallGreen).testTag("callbar").metroPress(onClick = { openCallScreen(context) }).padding(horizontal = 16.dp),
+        modifier.fillMaxWidth().height(CALL_BAR_HEIGHT).background(com.metrowin.launcher.dialer.CallGreen).testTag("callbar").metroPress(onClick = { openCallScreen(context) }).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -52,4 +52,13 @@ fun CallBar(modifier: Modifier = Modifier) {
             weight = FontWeight.Normal, modifier = Modifier.testTag("callbar:time"),
         )
     }
+}
+
+private val CALL_BAR_HEIGHT = 40.dp
+
+/** The room the [CallBar] takes under the status bar right now (0 with no call on): a banner of the launcher hangs below it, not over it. */
+@Composable
+fun callBarHeight(): androidx.compose.ui.unit.Dp {
+    val lines by CallManager.lines.collectAsState()
+    return if (lines.any { !it.ended && !it.ringing && !it.child }) CALL_BAR_HEIGHT else 0.dp
 }

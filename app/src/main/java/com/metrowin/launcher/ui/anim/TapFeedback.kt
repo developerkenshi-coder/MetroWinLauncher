@@ -73,8 +73,8 @@ class TapFeedbackPlayer(context: Context) {
         pool = null
     }
 
-    fun click() {
-        if (loaded) pool?.play(soundId, 1f, 1f, 1, 0, 1f)
+    fun click(volume: Float = 1f) {
+        if (loaded) pool?.play(soundId, volume, volume, 1, 0, 1f)
     }
 
     /** A short tap of the motor, the one Android uses for a key: whatever the touch vibration switch of the phone says. */
@@ -108,12 +108,13 @@ class TapFeedbackPlayer(context: Context) {
  * kept ready only while the launcher is on screen.
  */
 @Composable
-fun rememberTapFeedback(sound: Boolean, haptics: Boolean, strength: Int = 100): () -> Unit {
+fun rememberTapFeedback(sound: Boolean, haptics: Boolean, strength: Int = 100, volume: Int = 100): () -> Unit {
     val context = LocalContext.current
     val player = remember(context) { TapFeedbackPlayer(context) }
     val withSound by rememberUpdatedState(sound)
     val withHaptics by rememberUpdatedState(haptics)
     val withStrength by rememberUpdatedState(strength)
+    val withVolume by rememberUpdatedState(volume)
     LaunchedWhileStarted(sound) {
         if (!sound) return@LaunchedWhileStarted
         try {
@@ -125,7 +126,7 @@ fun rememberTapFeedback(sound: Boolean, haptics: Boolean, strength: Int = 100): 
     }
     return remember(player) {
         {
-            if (withSound) player.click()
+            if (withSound) player.click(withVolume / 100f)
             if (withHaptics) player.tick(withStrength)
         }
     }

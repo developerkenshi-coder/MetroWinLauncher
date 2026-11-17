@@ -6,6 +6,8 @@ import com.metrowin.launcher.ui.components.Spacing
 import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.components.topBarsPadding
 import com.metrowin.launcher.ui.theme.LocalAccent
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import kotlinx.coroutines.delay
 import com.metrowin.launcher.data.SectionReset
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -127,6 +129,15 @@ fun SettingsScreen(
     // Where the name that was touched was on the screen: the title of the page flies up from there (the "continuum" of Windows Phone).
     var tappedTop by remember { mutableFloatStateOf(0f) }
 
+    // The last pages opened, kept on the phone: the home shows them over the categories.
+    val recentPrefs = remember { context.getSharedPreferences("settings_recent", android.content.Context.MODE_PRIVATE) }
+    var recents by remember { mutableStateOf(RecentPages.read(recentPrefs.getString("pages", ""))) }
+    LaunchedEffect(section) {
+        if (section != null) {
+            recents = RecentPages.push(recents, section)
+            recentPrefs.edit().putString("pages", recents.joinToString(",") { it.name }).apply()
+        }
+    }
     // The box of an "i" is drawn here, over everything, not where the "i" is: a page scrolls, and a dialog cannot be measured inside a scroll.
     var info by remember { mutableStateOf<InfoRequest?>(null) }
     CompositionLocalProvider(LocalInfoHost provides { info = it }) {
@@ -151,7 +162,10 @@ fun SettingsScreen(
                 modifier = Modifier.padding(start = Spacing.Page, end = Spacing.Page, top = 10.dp, bottom = 6.dp).testTag("settings:search"),
             )
             if (query.isBlank()) {
-                CategoryList(categories, if (twoPanes) section?.category else null, Modifier.weight(1f)) { opened, top ->
+                CategoryList(
+                    categories, if (twoPanes) section?.category else null, Modifier.weight(1f),
+                    recents = recents, onRecent = { tappedTop = 0f; onSectionChange(it) },
+                ) { opened, top ->
                     tappedTop = top
                     onSectionChange(opened.pages.first())
                 }
@@ -233,10 +247,30 @@ private fun SettingsHeader(modifier: Modifier = Modifier) {
 
 /** The home: one big row for each category, in the order you reach for them. On a wide screen the open one is marked. */
 @Composable
-private fun CategoryList(categories: List<SettingsCategory>, open: SettingsCategory?, modifier: Modifier = Modifier, onOpen: (SettingsCategory, Float) -> Unit) {
+private fun CategoryList(
+    categories: List<SettingsCategory>,
+    open: SettingsCategory?,
+    modifier: Modifier = Modifier,
+    recents: List<SettingsSection> = emptyList(),
+    onRecent: (SettingsSection) -> Unit = {},
+    onOpen: (SettingsCategory, Float) -> Unit,
+) {
     val colors = LocalMetroColors.current
     // Thirteen rows: a plain scrolling column, so that every row is there (and found by the semantics) whether it is on screen or not.
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("settings:categories")) {
+        if (recents.isNotEmpty()) {
+            MetroText(
+                stringResource(R.string.settings_recent), size = MetroType.Note, weight = FontWeight.Normal, color = colors.subtle,
+                modifier = Modifier.padding(start = Spacing.Page, top = 4.dp, bottom = 2.dp).semantics { heading() },
+            )
+            recents.forEach { page ->
+                MetroText(
+                    stringResource(page.title), size = 20.sp, color = LocalAccent.current, maxLines = 1,
+                    modifier = Modifier.fillMaxWidth().testTag("settings:recent:${page.name}").metroPress(onClick = { onRecent(page) }).padding(start = Spacing.Page, top = 6.dp, bottom = 6.dp, end = 4.dp),
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+        }
         categories.forEachIndexed { index, category ->
             var top by remember { mutableFloatStateOf(0f) }
             Row(
@@ -388,4 +422,15 @@ private fun PageContent(section: SettingsSection, env: SettingsEnv) {
         SettingsSection.OtherProjects -> OtherProjectsPage()
         SettingsSection.Tip -> TipPage()
     }
+}
+
+/** The pages of the settings opened last, newest first, for the line at the top of the home. */
+internal object RecentPages {
+    const val MAX = 3
+
+    /** The pages named in [saved] (comma separated); a name that no longer exists is dropped. */
+    fun read(saved: String?): List<SettingsSection> =
+        saved.orEmpty().split(',').mapNotNull { name -> SettingsSection.entries.firstOrNull { it.name == name } }.distinct().take(MAX)
+
+    fun push(list: List<SettingsSection>, page: SettingsSection): List<SettingsSection> = (listOf(page) + list.filter { it != page }).take(MAX)
 }

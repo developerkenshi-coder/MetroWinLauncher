@@ -72,7 +72,7 @@ fun InfoMark(@StringRes text: Int, title: String, modifier: Modifier = Modifier,
 @Composable
 internal fun InfoBox(request: InfoRequest, onClose: () -> Unit) {
     val colors = LocalMetroColors.current
-    DialogFrame(onCancel = onClose, title = request.title) {
+    DialogFrame(onCancel = onClose, title = request.title, atBottom = true) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             MetroText(request.title, size = 24.sp, maxLines = 3)
             MetroText(

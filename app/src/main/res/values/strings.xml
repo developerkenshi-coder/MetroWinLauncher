@@ -1564,6 +1564,10 @@
     <string name="feel_tilt_hint">How far a tile or a button leans away from the finger. 0% keeps only the sinking. It is the press of the Classic look.</string>
     <string name="feel_vibration">Strength of the vibration of a tap</string>
     <string name="feel_percent">%d%%</string>
+    <string name="feel_volume">Volume of the click and sounds</string>
+    <string name="feel_volume_try">try the sounds</string>
+    <string name="settings_recent">used recently</string>
+    <string name="loading_slow">just a moment more…</string>
     <string name="search_notifications">Search the notifications</string>
     <string name="search_notifications_hint">Also looks in the notifications that wait in the Action Center. They are read on the phone, only while you search.</string>
     <string name="search_operators">Operators in the search</string>

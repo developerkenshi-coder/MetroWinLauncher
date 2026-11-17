@@ -137,6 +137,7 @@ internal object SettingsInfoTable {
         "gest.animspeed" to R.string.info_feel_speed,
         "gest.tilt" to R.string.info_feel_tilt,
         "gest.vibration" to R.string.info_feel_vibration,
+        "gest.soundvolume" to R.string.info_feel_volume,
         "gest.navbar" to R.string.info_navbar_buttons,
         "gest.gamebars" to R.string.info_navbar_gamebars,
         "gest.gameapps" to R.string.info_navbar_gameapps,

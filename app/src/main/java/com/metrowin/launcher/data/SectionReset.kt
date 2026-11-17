@@ -34,7 +34,7 @@ object SectionReset {
             "doubleTapAction", "doubleTapApp", "edgeBackPan", "edgePull", "miniHomeSwipe", "doubleTapSleep", "homeDoubleAction", "homeDoubleApp",
             "twoFingerDownAction", "twoFingerDownApp", "twoFingerUpAction", "twoFingerUpApp",
         ),
-        "Feel" to setOf("animationSpeed", "tapHaptics", "tapSound", "tiltStrength", "vibrationStrength"),
+        "Feel" to setOf("animationSpeed", "soundVolume", "tapHaptics", "tapSound", "tiltStrength", "vibrationStrength"),
         "NavBar" to setOf("metroNavBar", "hideBarsInGames", "gameAdd", "gameSkip", "navHoldMs", "navSpacing"),
         "Privacy" to setOf("bankSafe", "bankSafeAdd", "bankSafeSkip"),
         "Actions" to setOf(

@@ -232,6 +232,8 @@ fun DropdownSetting(
     modifier: Modifier = Modifier,
     tag: String = "dropdown",
     id: String? = null,
+    /** The font to write option [index] in (the list of fonts shows each name in its own font); null writes it in the font of the page. */
+    optionFont: ((Int) -> androidx.compose.ui.text.font.FontFamily?)? = null,
 ) {
     var open by remember { mutableStateOf(false) }
     val colors = LocalMetroColors.current
@@ -265,7 +267,11 @@ fun DropdownSetting(
                     ) {
                         CheckSquare(index == selected)
                         Spacer(Modifier.width(14.dp))
-                        MetroText(text, size = MetroType.Lead, modifier = Modifier.weight(1f))
+                        val face = optionFont?.invoke(index)
+                        if (face == null) MetroText(text, size = MetroType.Lead, modifier = Modifier.weight(1f))
+                        else androidx.compose.runtime.CompositionLocalProvider(com.metrowin.launcher.ui.theme.LocalStyle provides com.metrowin.launcher.ui.theme.LocalStyle.current.withType(false, false, face)) {
+                            MetroText(text, size = MetroType.Lead, modifier = Modifier.weight(1f))
+                        }
                     }
                 }
             }

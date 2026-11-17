@@ -26,6 +26,7 @@ class MetroSoundPlayer(context: Context) {
     private val ids = HashMap<MetroSound, Int>()
     private val loaded = HashSet<Int>()
     private var waiting: Int? = null
+    private var waitingVolume = 1f
 
     /** Blocking: writes the small files once and loads them. Call it off the main thread. */
     @Synchronized
@@ -42,7 +43,7 @@ class MetroSoundPlayer(context: Context) {
                 loaded += id
                 if (waiting == id) {
                     waiting = null
-                    pool.play(id, 1f, 1f, 1, 0, 1f)
+                    pool.play(id, waitingVolume, waitingVolume, 1, 0, 1f)
                 }
             }
         }
@@ -65,18 +66,19 @@ class MetroSoundPlayer(context: Context) {
     }
 
     @Synchronized
-    fun play(sound: MetroSound) {
+    fun play(sound: MetroSound, volume: Float = 1f) {
         val id = ids[sound] ?: return
-        if (id in loaded) pool?.play(id, 1f, 1f, 1, 0, 1f) else waiting = id
+        if (id in loaded) pool?.play(id, volume, volume, 1, 0, 1f) else { waiting = id; waitingVolume = volume }
     }
 }
 
 /** The sounds of the Metro things while the launcher is on screen, when the setting is on; call the result with the sound to play. */
 @Composable
-fun rememberMetroSounds(enabled: Boolean): (MetroSound) -> Unit {
+fun rememberMetroSounds(enabled: Boolean, volume: Int = 100): (MetroSound) -> Unit {
     val context = LocalContext.current
     val player = remember(context) { MetroSoundPlayer(context) }
     val on by rememberUpdatedState(enabled)
+    val level by rememberUpdatedState(volume)
     LaunchedWhileStarted(enabled) {
         if (!enabled) return@LaunchedWhileStarted
         try {
@@ -86,5 +88,5 @@ fun rememberMetroSounds(enabled: Boolean): (MetroSound) -> Unit {
             player.release()
         }
     }
-    return remember(player) { { sound -> if (on) player.play(sound) } }
+    return remember(player) { { sound -> if (on) player.play(sound, level / 100f) } }
 }

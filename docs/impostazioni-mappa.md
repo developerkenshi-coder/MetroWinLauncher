@@ -198,6 +198,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | Velocità delle animazioni | `gest.animspeed` | uso › gesti | gesti e scorciatoie › tocco e sensazione |
 | Inclinazione alla pressione | `gest.tilt` | uso › gesti | gesti e scorciatoie › tocco e sensazione |
 | Forza della vibrazione di un tocco | `gest.vibration` | uso › gesti | gesti e scorciatoie › tocco e sensazione |
+| Volume del clic e dei suoni | `gest.soundvolume` | uso › gesti | gesti e scorciatoie › tocco e sensazione |
 | vibrazione al tocco | `gest.taphaptics` | uso › gesti | gesti e scorciatoie › tocco e sensazione |
 | Icona assistente su Start | `voice.icon` | uso › voce | gesti e scorciatoie › voce |
 | microfono nella casella di ricerca | `voice.button` | uso › voce | gesti e scorciatoie › voce |
@@ -369,6 +370,7 @@ Le impostazioni che hanno cambiato categoria o pagina, e perché:
 | Velocità delle animazioni (`gest.animspeed`) | uso › gesti | gesti e scorciatoie › tocco e sensazione | tocco, vibrazione e velocità riguardano come si sente il telefono, non un gesto |
 | Inclinazione alla pressione (`gest.tilt`) | uso › gesti | gesti e scorciatoie › tocco e sensazione | tocco, vibrazione e velocità riguardano come si sente il telefono, non un gesto |
 | Forza della vibrazione di un tocco (`gest.vibration`) | uso › gesti | gesti e scorciatoie › tocco e sensazione | tocco, vibrazione e velocità riguardano come si sente il telefono, non un gesto |
+| Volume del clic e dei suoni (`gest.soundvolume`) | uso › gesti | gesti e scorciatoie › tocco e sensazione | il suono di un tocco si sente come la vibrazione: sta con essa |
 | vibrazione al tocco (`gest.taphaptics`) | uso › gesti | gesti e scorciatoie › tocco e sensazione | tocco, vibrazione e velocità riguardano come si sente il telefono, non un gesto |
 | Usa l’Action Center (`ac.enabled`) | uso › notifiche | barre e action center › action center | accendere o spegnere l'Action Center è una scelta dell'Action Center |
 | Action Center sopra le altre app (`ac.edge`) | uso › notifiche | barre e action center › action center | accendere o spegnere l'Action Center è una scelta dell'Action Center |
@@ -386,7 +388,7 @@ Il pulsante "ripristina questa pagina" (`SectionReset`) rimette ai valori di par
 - **start e tile › comportamento di start** (`StartBehaviour`): `antiBurnIn`, `lockStart`, `startLowerPercent`, `startTopAfterMin`, `stepGoal`, `undoSteps`
 - **app e icone › ricerca** (`Search`): `rememberSearches`, `searchAnswers`, `searchAssistant`, `searchCalendar`, `searchCommands`, `searchContacts`, `searchCurrency`, `searchEngine`, `searchFileTypes`, `searchLauncherSettings`, `searchMiniApps`, `searchNotifications`, `searchOperators`, `searchSettings`, `searchSmartDial`, `searchTiles`, `searchToday`, `searchWeb`, `tipOfDay`, `todayAlarm`, `todayDate`, `todayNear`, `todayWeather`
 - **gesti e scorciatoie › gesti** (`Gestures`): `doubleTapAction`, `doubleTapApp`, `doubleTapSleep`, `edgeBackPan`, `edgePull`, `homeDoubleAction`, `homeDoubleApp`, `miniHomeSwipe`, `twoFingerDownAction`, `twoFingerDownApp`, `twoFingerUpAction`, `twoFingerUpApp`
-- **gesti e scorciatoie › tocco e sensazione** (`Feel`): `animationSpeed`, `tapHaptics`, `tapSound`, `tiltStrength`, `vibrationStrength`
+- **gesti e scorciatoie › tocco e sensazione** (`Feel`): `animationSpeed`, `soundVolume`, `tapHaptics`, `tapSound`, `tiltStrength`, `vibrationStrength`
 - **barre e action center › barra di navigazione** (`NavBar`): `gameAdd`, `gameSkip`, `hideBarsInGames`, `metroNavBar`, `navHoldMs`, `navSpacing`
 - **privacy e sicurezza › protezione** (`Privacy`): `bankSafe`, `bankSafeAdd`, `bankSafeSkip`
 - **barre e action center › action center** (`Actions`): `actionCenterEnabled`, `actionSliders`, `edgeActionCenter`, `quickActions`, `torchAutoOffMin`, `torchStrength`, `useShizuku`, `volumePanel`, `volumeProfilesShow`, `vpnApp`

@@ -582,7 +582,7 @@ private fun MailListScreen(
             )
             PivotHeader(titles, pager, Modifier.padding(top = 4.dp))
         }
-        if (syncing) MetroProgressBar(Modifier.padding(horizontal = 24.dp, vertical = 4.dp).testTag("mail:syncing"))
+        if (syncing) MetroProgressBar(Modifier.padding(horizontal = 24.dp, vertical = 4.dp).testTag("mail:syncing"), patient = false)
         if (searching) MetroTextField(query, onQuery, stringResource(R.string.mail_bar_search), Modifier.padding(horizontal = 24.dp, vertical = 4.dp).testTag("mail:search"))
         error?.let { PageNote(stringResource(R.string.mail_error, it), Modifier.padding(horizontal = 24.dp, vertical = 4.dp)) }
         HorizontalPager(pager, Modifier.weight(1f), beyondViewportPageCount = 1) { page ->

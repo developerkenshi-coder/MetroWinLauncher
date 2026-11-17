@@ -89,4 +89,16 @@ class PullRulesTest {
         assertEquals(0.4f, pageDistance(page = 1, currentPage = 1, currentPageOffsetFraction = -0.4f), 1e-6f)
         assertEquals(0.6f, pageDistance(page = 0, currentPage = 1, currentPageOffsetFraction = -0.4f), 1e-6f)
     }
+
+    @Test
+    fun thresholdTickFiresOnceWhenTheLineIsCrossed() {
+        val line = PullRules.COMMIT_DP / travel
+        assertTrue(PullRules.crossed(line - 0.01f, line + 0.01f, travel, startedOpen = false))
+        assertFalse(PullRules.crossed(line + 0.01f, line + 0.05f, travel, startedOpen = false))
+        // Going back under the line is not a tick; an open panel ticks when pushed up past the closing distance.
+        assertFalse(PullRules.crossed(line + 0.01f, line - 0.01f, travel, startedOpen = false))
+        val close = 1f - PullRules.CLOSE_COMMIT_DP / travel
+        assertTrue(PullRules.crossed(close + 0.01f, close - 0.01f, travel, startedOpen = true))
+        assertFalse(PullRules.crossed(1f, close + 0.01f, travel, startedOpen = true))
+    }
 }

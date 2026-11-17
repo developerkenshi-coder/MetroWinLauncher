@@ -1581,6 +1581,10 @@
     <string name="feel_tilt_hint">O quanto um bloco ou botão se afasta do dedo. 0% mantém só o afundar. É o efeito de pressionar do visual Clássico.</string>
     <string name="feel_vibration">Força da vibração de um toque</string>
     <string name="feel_percent">%d%%</string>
+    <string name="feel_volume">Volume do clique e dos sons</string>
+    <string name="feel_volume_try">experimentar os sons</string>
+    <string name="settings_recent">usadas recentemente</string>
+    <string name="loading_slow">só mais um instante…</string>
     <string name="search_notifications">Pesquisar nas notificações</string>
     <string name="search_notifications_hint">Procura também nas notificações que esperam no Action Center. São lidas no telefone, só enquanto você pesquisa.</string>
     <string name="search_operators">Operadores na pesquisa</string>

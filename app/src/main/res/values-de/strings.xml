@@ -1564,6 +1564,10 @@
     <string name="feel_tilt_hint">Wie weit sich eine Kachel oder eine Taste vom Finger wegneigt. Bei 0 Prozent bleibt nur das Einsinken. So drückt sich der klassische Look.</string>
     <string name="feel_vibration">Stärke der Vibration beim Tippen</string>
     <string name="feel_percent">%d%%</string>
+    <string name="feel_volume">Lautstärke von Klick und Tönen</string>
+    <string name="feel_volume_try">Töne ausprobieren</string>
+    <string name="settings_recent">zuletzt verwendet</string>
+    <string name="loading_slow">noch einen Moment …</string>
     <string name="search_notifications">Benachrichtigungen durchsuchen</string>
     <string name="search_notifications_hint">Sucht auch in den Benachrichtigungen, die im Action Center warten. Sie werden auf dem Handy gelesen, nur während du suchst.</string>
     <string name="search_operators">Operatoren in der Suche</string>

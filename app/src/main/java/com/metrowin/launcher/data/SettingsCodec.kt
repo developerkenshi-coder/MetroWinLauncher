@@ -69,6 +69,7 @@ object SettingsCodec {
         put("animationSpeed", s.animationSpeed)
         put("tiltStrength", s.tiltStrength)
         put("vibrationStrength", s.vibrationStrength)
+        put("soundVolume", s.soundVolume)
         put("searchOperators", s.searchOperators)
         put("backupCopies", s.backupCopies)
         put("showPhoneInfo", s.showPhoneInfo)
@@ -326,6 +327,7 @@ object SettingsCodec {
             animationSpeed = o.optInt("animationSpeed", base.animationSpeed).coerceIn(50, 200),
             tiltStrength = o.optInt("tiltStrength", base.tiltStrength).coerceIn(0, 150),
             vibrationStrength = o.optInt("vibrationStrength", base.vibrationStrength).coerceIn(0, 200),
+            soundVolume = o.optInt("soundVolume", base.soundVolume).coerceIn(0, 100),
             searchOperators = o.optBoolean("searchOperators", base.searchOperators),
             backupCopies = o.optInt("backupCopies", base.backupCopies).coerceIn(1, 10),
             showPhoneInfo = o.optBoolean("showPhoneInfo", base.showPhoneInfo),

@@ -2,6 +2,7 @@ package com.metrowin.launcher.ui.components
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -68,10 +69,10 @@ import java.util.Locale
  * button) just goes, as it is taken off the screen at once. The panel is at most 480 dp wide, in the middle of the page.
  *
  * This is the one dialog of the launcher and of every mini app: do not open a system `AlertDialog` or a bare `Dialog` for a question, a choice
- * or a form. (The only windows of their own are those that need a window: the camera scanner and the card in the Wallet.)
+ * or a form. With [atBottom] the panel sits at the bottom edge and the panel does not cover what is above it, so what it explains stays in view (the "i" of the settings). (The only windows of their own are those that need a window: the camera scanner and the card in the Wallet.)
  */
 @Composable
-fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, title: String? = null, content: @Composable () -> Unit) {
+fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, title: String? = null, atBottom: Boolean = false, content: @Composable () -> Unit) {
     val colors = LocalMetroColors.current
     val currentCancel by rememberUpdatedState(onCancel)
     val scope = rememberCoroutineScope()
@@ -104,12 +105,12 @@ fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, title: Stri
     Box(
         modifier
             .fillMaxSize()
-            .drawBehind { drawRect(colors.background.copy(alpha = 0.85f), alpha = 1f - away.value) }
+            .drawBehind { drawRect(colors.background.copy(alpha = if (atBottom) 0.8f else 0.85f), alpha = 1f - away.value) }
             .pointerInput(Unit) { detectTapGestures { cancel() } }
             .imePadding()
             // Classic: the MessageBox of Windows Phone hangs from the top of the screen, below the system bar, the width of the screen.
-            .then(if (classic) Modifier.topBarsPadding() else Modifier),
-        contentAlignment = if (classic) Alignment.TopCenter else Alignment.Center,
+            .then(if (classic && !atBottom) Modifier.topBarsPadding() else Modifier),
+        contentAlignment = if (atBottom) Alignment.BottomCenter else if (classic) Alignment.TopCenter else Alignment.Center,
     ) {
         Column(
             Modifier
@@ -119,8 +120,8 @@ fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, title: Stri
                 .padding(horizontal = if (classic) 0.dp else Spacing.Page)
                 .graphicsLayer {
                     if (classic) {
-                        transformOrigin = TransformOrigin(0.5f, 0f)
-                        rotationX = -SWIVEL_DEGREES * away.value
+                        transformOrigin = TransformOrigin(0.5f, if (atBottom) 1f else 0f)
+                        rotationX = (if (atBottom) SWIVEL_DEGREES else -SWIVEL_DEGREES) * away.value
                         cameraDistance = Motion.CAMERA * density
                         alpha = 1f - away.value * away.value
                     } else {
@@ -131,6 +132,8 @@ fun DialogFrame(onCancel: () -> Unit, modifier: Modifier = Modifier, title: Stri
                         alpha = 1f - away.value
                     }
                 }
+                // At the bottom the page behind shows through the panel (it is over its own controls): a solid ground keeps the text readable.
+                .then(if (atBottom) Modifier.background(colors.background, LocalStyle.current.cardShape) else Modifier)
                 .panel()
                 .pointerInput(Unit) { detectTapGestures { } }
                 // TalkBack announces the pane by its title and can dismiss it; Escape does the same on a keyboard.

@@ -1581,6 +1581,10 @@
     <string name="feel_tilt_hint">Cuánto se inclina un mosaico o un botón al apartarse del dedo. 0% deja solo el hundimiento. Es la pulsación del aspecto Clásico.</string>
     <string name="feel_vibration">Intensidad de la vibración al tocar</string>
     <string name="feel_percent">%d%%</string>
+    <string name="feel_volume">Volumen del clic y de los sonidos</string>
+    <string name="feel_volume_try">probar los sonidos</string>
+    <string name="settings_recent">usadas recientemente</string>
+    <string name="loading_slow">un momento más…</string>
     <string name="search_notifications">Buscar en las notificaciones</string>
     <string name="search_notifications_hint">Busca también en las notificaciones que esperan en el Action Center. Se leen en el teléfono, solo mientras buscas.</string>
     <string name="search_operators">Operadores en la búsqueda</string>

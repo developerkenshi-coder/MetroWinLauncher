@@ -212,7 +212,7 @@ private fun Attachments(
             ) {
                 AttachmentThumb(file, fetch)
                 MetroText(file.name, size = 15.sp, weight = FontWeight.Normal, color = LocalAccent.current, modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
-                if (busy) MetroProgressBar(Modifier.width(48.dp)) else MetroText(sizeText(file.size), size = 12.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
+                if (busy) MetroProgressBar(Modifier.width(48.dp), patient = false) else MetroText(sizeText(file.size), size = 12.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
             }
         }
     }

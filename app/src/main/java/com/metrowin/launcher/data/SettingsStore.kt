@@ -344,6 +344,8 @@ data class LauncherSettings(
     val tiltStrength: Int = 100,
     /** How strong the vibration of a tap is, in percent of the design (0 is none). */
     val vibrationStrength: Int = 100,
+    /** How loud the click of a tap and the little Metro sounds are while the launcher is on screen, in percent of the volume of the phone. */
+    val soundVolume: Int = 100,
     /** The search understands prefixes such as `app:` and `contact:`. */
     val searchOperators: Boolean = true,
     /** How many backup files are kept in the backup folder (the newest ones). */

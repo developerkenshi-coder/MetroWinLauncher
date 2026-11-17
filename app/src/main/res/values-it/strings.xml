@@ -1574,6 +1574,10 @@
     <string name="feel_tilt_hint">Quanto un riquadro o un pulsante si inclina via dal dito. Con 0% resta solo l\'affondamento. È la pressione dell\'aspetto Classic.</string>
     <string name="feel_vibration">Forza della vibrazione di un tocco</string>
     <string name="feel_percent">%d%%</string>
+    <string name="feel_volume">Volume del clic e dei suoni</string>
+    <string name="feel_volume_try">prova i suoni</string>
+    <string name="settings_recent">usate di recente</string>
+    <string name="loading_slow">ancora un attimo…</string>
     <string name="search_notifications">Cerca nelle notifiche</string>
     <string name="search_notifications_hint">Cerca anche nelle notifiche che aspettano nell\'Action Center. Sono lette sul telefono, solo mentre cerchi.</string>
     <string name="search_operators">Operatori nella ricerca</string>

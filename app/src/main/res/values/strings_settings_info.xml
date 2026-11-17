@@ -105,6 +105,7 @@
     <string name="info_feel_speed">How fast the animations run: 100% is as designed, 200% twice as fast. Springs (the bounce of a tile) keep their own pace.</string>
     <string name="info_feel_tilt">How far a tile or a button leans away from the finger when pressed. 0% keeps only the sinking. It is the press of the Classic look.</string>
     <string name="info_feel_vibration">The strength of the vibration of a tap (when “vibrate on tap” is on): 0% is none, 200% twice the usual.</string>
+    <string name="info_feel_volume">How loud the click of a tap and the little Metro sounds are while the launcher is on screen, as a share of the phone’s volume: 0% is silent. Sounds heard over other apps keep the phone’s volume.</string>
     <string name="info_navbar_buttons">Draws back, the Windows logo and search over Android’s buttons. A long press on the logo opens the recent apps. It needs the accessibility service and Android’s three-button navigation; with gesture navigation it has nothing to draw over.</string>
     <string name="info_navbar_gamebars">While a game is in front, the Windows Phone status bar and navigation buttons slide away so they do not cover it. Swipe up from the bottom edge for the buttons, down from the top edge for the status bar. It needs the accessibility service.</string>
     <string name="info_navbar_gameapps">The games the phone knows are listed. A game that is not recognized (the bars stay over it): search for it and switch it on. A wrong one: switch it off.</string>

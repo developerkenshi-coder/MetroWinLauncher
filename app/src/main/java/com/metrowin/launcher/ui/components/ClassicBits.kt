@@ -10,7 +10,17 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.metrowin.launcher.R
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
@@ -55,10 +65,11 @@ internal object DotsMotion {
 
 /**
  * The progress bar of Windows Phone. Without [progress], the indeterminate one: five dots that run across the width one after the other (with
- * reduced motion they stand still, evenly spaced). With it (0 to 1), a thin bar that fills.
+ * reduced motion they stand still, evenly spaced). With it (0 to 1), a thin bar that fills. An indeterminate bar that has run for
+ * [SLOW_MS] says "just a moment more" under the dots, unless [patient] is false (a bar in a row of other things, or one of a background job).
  */
 @Composable
-fun MetroProgressBar(modifier: Modifier = Modifier, color: Color = LocalAccent.current, progress: Float? = null) {
+fun MetroProgressBar(modifier: Modifier = Modifier, color: Color = LocalAccent.current, progress: Float? = null, patient: Boolean = true) {
     // A known amount: the bar of Windows Phone, 4 px = 3 dp, in the accent over a track of 10% of the ink.
     if (progress != null) {
         val share = progress.coerceIn(0f, 1f)
@@ -73,16 +84,27 @@ fun MetroProgressBar(modifier: Modifier = Modifier, color: Color = LocalAccent.c
     val clock = if (reduced) null else rememberInfiniteTransition(label = "progressDots").animateFloat(
         0f, DotsMotion.CYCLE_MS.toFloat(), infiniteRepeatable(tween(DotsMotion.CYCLE_MS, easing = LinearEasing), RepeatMode.Restart), label = "dotsClock",
     )
-    Canvas(
-        modifier.fillMaxWidth().height(4.dp).semantics { progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate },
-    ) {
-        val dot = 4.dp.toPx()
-        repeat(DotsMotion.COUNT) { i ->
-            val at = if (clock == null) i / (DotsMotion.COUNT - 1f) else DotsMotion.position(clock.value, i)
-            if (at != null) drawRect(color, Offset((size.width - dot) * at, 0f), Size(dot, dot))
+    var slow by remember { mutableStateOf(false) }
+    if (patient) LaunchedEffect(Unit) {
+        delay(SLOW_MS)
+        slow = true
+    }
+    Column {
+        Canvas(
+            modifier.fillMaxWidth().height(4.dp).semantics { progressBarRangeInfo = ProgressBarRangeInfo.Indeterminate },
+        ) {
+            val dot = 4.dp.toPx()
+            repeat(DotsMotion.COUNT) { i ->
+                val at = if (clock == null) i / (DotsMotion.COUNT - 1f) else DotsMotion.position(clock.value, i)
+                if (at != null) drawRect(color, Offset((size.width - dot) * at, 0f), Size(dot, dot))
+            }
         }
+        if (slow) MetroText(stringResource(R.string.loading_slow), Modifier.padding(top = 6.dp).testTag("progress:slow"), size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
     }
 }
+
+/** How long a bar of dots runs before it says "just a moment more". */
+const val SLOW_MS = 3_000L
 
 /**
  * The progress of a work whose length is known, in the dots of Windows Phone: a row of square dots across the width, the first ones in
