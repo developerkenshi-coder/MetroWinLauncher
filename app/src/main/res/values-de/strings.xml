@@ -2291,6 +2291,7 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="a11y_dismiss">Verwerfen</string>
     <string name="a11y_unlock">Entsperren</string>
     <string name="a11y_sb_signal">Signal, %1$d von 4 Balken</string>
+    <string name="a11y_sb_signal2">Signal, %1$d von 4 Balken; zweite SIM, %2$d von 4</string>
     <string name="a11y_sb_wifi">Wi-Fi</string>
     <string name="a11y_sb_battery">Akku %1$d %%</string>
     <string name="a11y_sb_charging">Lädt</string>

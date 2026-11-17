@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import com.metrowin.launcher.data.BatteryInfo
 import com.metrowin.launcher.ui.components.MetroStatusBar
 import com.metrowin.launcher.ui.components.rememberBroadcast
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -39,5 +40,12 @@ class StatusBarLiveTest : ScreenshotBase() {
         shadowOf(android.os.Looper.getMainLooper()).idle()
         advance(100)
         compose.onNodeWithTag("statusbar:battery").assertTextEquals("79%")
+    }
+
+    @Test
+    fun theLinesOfTheOtherSimSpreadFourBarsOverFive() {
+        assertEquals(listOf(0, 1, 3, 4, 5), (0..4).map { com.metrowin.launcher.ui.components.litLines(it) })
+        assertEquals(0, com.metrowin.launcher.ui.components.litLines(-1))
+        assertEquals(5, com.metrowin.launcher.ui.components.litLines(9))
     }
 }

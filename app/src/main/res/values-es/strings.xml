@@ -2308,6 +2308,7 @@ en primer plano %3$s · en segundo plano %4$s
     <string name="a11y_dismiss">Descartar</string>
     <string name="a11y_unlock">Desbloquear</string>
     <string name="a11y_sb_signal">Señal, %1$d de 4 barras</string>
+    <string name="a11y_sb_signal2">Señal, %1$d de 4 barras; segunda SIM, %2$d de 4</string>
     <string name="a11y_sb_wifi">Wi-Fi</string>
     <string name="a11y_sb_battery">Batería %1$d %%</string>
     <string name="a11y_sb_charging">Cargando</string>

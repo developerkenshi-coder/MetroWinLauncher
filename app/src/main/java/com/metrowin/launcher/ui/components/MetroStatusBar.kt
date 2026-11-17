@@ -9,6 +9,7 @@ import android.text.format.DateFormat
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.ui.graphics.Path
@@ -229,9 +230,26 @@ fun MetroStatusBar(
         if (on(StatusItem.Dnd) && reading.dnd) Said(R.string.a11y_sb_dnd) { GlyphIcon(Glyph.Moon, 12.dp, color = color) }
     }
     val radiosPart: @Composable () -> Unit = {
-        if (on(StatusItem.Signal) && !reading.airplane && cell.level >= 0) Said(R.string.a11y_sb_signal, cell.level) { Bars(cell.level, 4, color) }
-        if (on(StatusItem.Network) && !reading.airplane && cell.level >= 0) cell.label?.let {
-            MetroText(it, size = MetroType.Caption, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:network"))
+        val second = cell.second
+        if (on(StatusItem.Signal) && !reading.airplane && cell.level >= 0) {
+            // Two SIMs: under the bars of the main one, five thin lines say the other is there and how strong it is (no more room than before).
+            if (second == null) Said(R.string.a11y_sb_signal, cell.level) { Bars(cell.level, 4, color) }
+            else Said(R.string.a11y_sb_signal2, cell.level, second.level) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Bars(cell.level, 4, color)
+                    SecondSimLines(second.level, color)
+                }
+            }
+        }
+        if (on(StatusItem.Network) && !reading.airplane && cell.level >= 0) {
+            val other = second?.label
+            if (other == null) cell.label?.let {
+                MetroText(it, size = MetroType.Caption, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:network"))
+            } else Column {
+                // The kind of network of the other SIM under the main one, smaller.
+                cell.label?.let { MetroText(it, size = MetroType.Caption, color = color, maxLines = 1, lineHeight = 12.sp, modifier = Modifier.testTag("statusbar:network")) }
+                MetroText(other, size = 8.sp, color = color.copy(alpha = 0.8f), maxLines = 1, lineHeight = 9.sp, modifier = Modifier.testTag("statusbar:network2"))
+            }
         }
         if (on(StatusItem.Wifi)) reading.wifi?.let { Said(R.string.a11y_sb_wifi) { WifiFan(it, color) } }
     }
@@ -302,6 +320,19 @@ private fun Bars(level: Int, count: Int, color: Color) {
                 topLeft = Offset(i * 2 * bar, size.height - h), size = Size(bar, h),
             )
         }
+    }
+}
+
+/** How many of the five lines of the other SIM are lit for [level] (0 to 4): none, one, three, four, five. */
+internal fun litLines(level: Int) = (level.coerceIn(0, 4) * 5 + 2) / 4
+
+/** The signal of the other SIM: five thin lines side by side, as many lit as it has bars (0 to 4 of the phone, spread over the five). */
+@Composable
+private fun SecondSimLines(level: Int, color: Color) {
+    val lit = litLines(level)
+    Canvas(Modifier.size(width = 16.dp, height = 2.dp)) {
+        val line = size.width / 9f
+        for (i in 0 until 5) drawRect(if (i < lit) color else color.copy(alpha = 0.3f), Offset(i * 2 * line, 0f), Size(line, size.height))
     }
 }
 

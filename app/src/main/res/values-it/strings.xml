@@ -2301,6 +2301,7 @@ in primo piano %3$s · in background %4$s
     <string name="a11y_dismiss">Ignora</string>
     <string name="a11y_unlock">Sblocca</string>
     <string name="a11y_sb_signal">Segnale, %1$d tacche su 4</string>
+    <string name="a11y_sb_signal2">Segnale, %1$d tacche su 4; seconda SIM, %2$d su 4</string>
     <string name="a11y_sb_wifi">Wi-Fi</string>
     <string name="a11y_sb_battery">Batteria %1$d%%</string>
     <string name="a11y_sb_charging">In carica</string>

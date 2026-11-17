@@ -16,6 +16,7 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.telephony.PhoneStateListener
 import android.telephony.SignalStrength
+import android.telephony.SubscriptionManager
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyDisplayInfo
 import android.telephony.TelephonyManager
@@ -73,7 +74,10 @@ data class StatusReading(
 )
 
 /** The mobile signal (0 to 4 bars, -1 without a SIM) and the kind of network ("5G", "4G", "3G", "E"...), null when it is not known. */
-data class CellState(val level: Int = -1, val label: String? = null)
+data class CellState(val level: Int = -1, val label: String? = null, val second: SecondSim? = null)
+
+/** The other SIM, when the phone has two: its signal (0 to 4 bars) and kind of network, shown small under the main ones. */
+data class SecondSim(val level: Int, val label: String?)
 
 object StatusIcons {
     /**
@@ -174,23 +178,23 @@ class CellWatcher(private val context: Context, private val onChange: (CellState
 
     fun start() {
         val manager = telephony ?: return
-        update(CellState(levelNow(), state.label))
+        update(state.copy(level = levelNow(), second = readSecond()))
         val executor = ContextCompat.getMainExecutor(context)
         if (Build.VERSION.SDK_INT >= 31) {
             val signal = object : TelephonyCallback(), TelephonyCallback.SignalStrengthsListener {
-                override fun onSignalStrengthsChanged(signalStrength: SignalStrength) = update(CellState(levelOf(signalStrength), state.label))
+                override fun onSignalStrengthsChanged(signalStrength: SignalStrength) = update(state.copy(level = levelOf(signalStrength)))
             }
             if (runCatching { manager.registerTelephonyCallback(executor, signal) }.isSuccess) signalCallback = signal
             if (StatusIcons.hasPhoneState(context)) {
                 val display = object : TelephonyCallback(), TelephonyCallback.DisplayInfoListener {
                     override fun onDisplayInfoChanged(telephonyDisplayInfo: TelephonyDisplayInfo) =
-                        update(CellState(state.level, StatusIcons.networkLabel(telephonyDisplayInfo.networkType, telephonyDisplayInfo.overrideNetworkType)))
+                        update(state.copy(label = StatusIcons.networkLabel(telephonyDisplayInfo.networkType, telephonyDisplayInfo.overrideNetworkType)))
                 }
                 if (runCatching { manager.registerTelephonyCallback(executor, display) }.isSuccess) displayCallback = display
             }
         } else {
             val listener = object : PhoneStateListener() {
-                override fun onSignalStrengthsChanged(signalStrength: SignalStrength) = update(CellState(levelOf(signalStrength), state.label))
+                override fun onSignalStrengthsChanged(signalStrength: SignalStrength) = update(state.copy(level = levelOf(signalStrength)))
             }
             if (runCatching { manager.listen(listener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS) }.isSuccess) legacy = listener
         }
@@ -203,10 +207,31 @@ class CellWatcher(private val context: Context, private val onChange: (CellState
     @SuppressLint("MissingPermission") // hasPhoneState checked on the next line
     fun poll() {
         val manager = telephony ?: return
-        if (displayCallback != null || !StatusIcons.hasPhoneState(context)) return
+        val second = readSecond()
+        if (displayCallback != null || !StatusIcons.hasPhoneState(context)) {
+            update(state.copy(second = second))
+            return
+        }
         val label = runCatching { StatusIcons.networkLabel(manager.dataNetworkType) }.getOrNull()
-        update(CellState(levelNow().takeIf { signalCallback == null && legacy == null } ?: state.level, label))
+        update(CellState(levelNow().takeIf { signalCallback == null && legacy == null } ?: state.level, label, second))
     }
+
+    /**
+     * The SIM that is not the default one, read now (the signal level of the phone and the kind of network of its data connection). Null with one SIM
+     * or without the phone permission.
+     * shortcut: polled with the rest of the bar, and without the 5G that rides on 4G (that needs a callback for each SIM); add the callbacks if it is missed.
+     */
+    @SuppressLint("MissingPermission") // hasPhoneState checked first
+    private fun readSecond(): SecondSim? = runCatching {
+        if (!StatusIcons.hasPhoneState(context)) return@runCatching null
+        val subs = context.getSystemService(SubscriptionManager::class.java).activeSubscriptionInfoList.orEmpty()
+        if (subs.size < 2) return@runCatching null
+        val main = SubscriptionManager.getDefaultSubscriptionId()
+        val other = subs.sortedBy { it.simSlotIndex }.firstOrNull { it.subscriptionId != main } ?: return@runCatching null
+        val sim = telephony?.createForSubscriptionId(other.subscriptionId) ?: return@runCatching null
+        if (sim.simState != TelephonyManager.SIM_STATE_READY) return@runCatching null
+        SecondSim((if (Build.VERSION.SDK_INT >= 28) sim.signalStrength?.level else null) ?: 0, StatusIcons.networkLabel(sim.dataNetworkType))
+    }.getOrNull()
 
     fun stop() {
         val manager = telephony ?: return
