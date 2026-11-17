@@ -451,7 +451,7 @@ private fun Key(
         else -> colors.containers.getOrElse(0) { colors.surface }
     }
     val shape = if (keysLook && !style.isClassic) style.squareShape else RoundedCornerShape(0.dp)
-    val gap = if (keysLook) 1.5.dp else if (style.isClassic) 1.dp else 2.dp
+    val gap = if (keysLook || style.isClassic) 0.75.dp else 2.dp
     Box(
         modifier.fillMaxHeight().padding(gap).testTag(tag).metroPress(onClick = onClick, onPressedChange = { pressed = it }).clip(shape).background(fill)
             .then(if (description != null) Modifier.semantics { contentDescription = description } else Modifier),

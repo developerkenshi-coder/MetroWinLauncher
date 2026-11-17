@@ -195,6 +195,7 @@ object SettingsIndex {
 
         // --- gestures
         e("gest.doubletap", Gestures, R.string.gest_double_tap, "lock", "screen off", "blocca", "schermo", "tocco"),
+        e("gest.sleepall", Gestures, R.string.gest_sleep_all, "double tap", "screen off", "lock", "apps list", "empty", "doppio tocco", "schermo", "spegni", "elenco"),
         e("gest.homedouble", Gestures, R.string.gest_home_double, "home button", "twice", "tasto home", "due volte"),
         e("gest.twodown", Gestures, R.string.gest_two_down, "two finger", "swipe", "due dita", "scorri"),
         e("gest.twoup", Gestures, R.string.gest_two_up, "two finger", "swipe", "due dita", "scorri"),

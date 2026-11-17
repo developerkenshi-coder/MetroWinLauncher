@@ -478,7 +478,7 @@ Le app di Google si usano dove ci sono (Maps, Calendar, Keep, Lens, News, Financ
     (nessuna ricomposizione), con il movimento ridotto segue le pagine, e con una foto su Start si disegna sopra, molto chiaro, perché la foto lo coprirebbe.
 27. **Pagina chiamata rapida** (menu *aggiungi*): un riquadro che apre una pagina con la griglia dei preferiti; un tocco apre il tastierino con il numero, o chiama subito se hai acceso *chiama subito* e dato il permesso del telefono.
 28. **Hub Persone** (menu *aggiungi*): i preferiti, le ultime chiamate e le notifiche dei messaggi in una pagina.
-29. **Banner delle notifiche** mentre il launcher è sullo schermo, in stile Metro (*azioni*); resta 4,5 secondi, si scarta con uno swipe in su, un tocco apre la notifica. Per un secondo e mezzo dopo che il launcher torna davanti non annuncia nulla (il servizio sta rileggendo ciò che c'è), e annuncia solo notifiche di pochi secondi fa.
+29. **Banner delle notifiche** mentre il launcher è sullo schermo, in stile Metro (*azioni*); resta 5 secondi, si scarta con uno swipe in su, un tocco apre la notifica. Per un secondo e mezzo dopo che il launcher torna davanti non annuncia nulla (il servizio sta rileggendo ciò che c'è), e annuncia solo notifiche di pochi secondi fa.
 30. **Notifiche app per app** (*notifiche → notifiche app per app*, con un interruttore generale **per disattivare tutto**): per ogni app si sceglie se compare nell'Action Center, sul blocco schermo, come banner, e un tasto apre la pagina di Android dove si cambia il **suono**.
     Le scelte restano salvate anche con l'interruttore spento.
 

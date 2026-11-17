@@ -97,6 +97,13 @@ fun GesturesPage(env: SettingsEnv) {
             tag = "gestures:minihome", id = "gest.minihome",
         )
         ToggleSetting(
+            label = stringResource(R.string.gest_sleep_all),
+            checked = settings.doubleTapSleep,
+            onChange = { value -> env.onChange { it.copy(doubleTapSleep = value) } },
+            hint = stringResource(R.string.gest_sleep_all_hint),
+            tag = "gestures:sleepall", id = "gest.sleepall",
+        )
+        ToggleSetting(
             label = stringResource(R.string.gest_edge_back_pan),
             checked = settings.edgeBackPan,
             onChange = { value -> env.onChange { it.copy(edgeBackPan = value) } },

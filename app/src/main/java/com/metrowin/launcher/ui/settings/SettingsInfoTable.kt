@@ -130,6 +130,7 @@ internal object SettingsInfoTable {
         "gest.lockservice" to R.string.info_gest_lockservice,
         "gest.edgepull" to R.string.info_gest_edgepull,
         "gest.minihome" to R.string.info_gest_minihome,
+        "gest.sleepall" to R.string.info_gest_sleepall,
         "gest.edgeback" to R.string.info_gest_edgeback,
         "gest.tapsound" to R.string.info_feel_tap,
         "gest.taphaptics" to R.string.info_feel_tap,

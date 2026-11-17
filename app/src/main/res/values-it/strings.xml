@@ -141,6 +141,8 @@
     <string name="gest_edge_pull_hint">Apre l\'Action Center da qualsiasi pagina, non solo dalla cima di Start.</string>
     <string name="gest_mini_home">due dita in una mini app: torna a Start</string>
     <string name="gest_mini_home_hint">Due dita che scorrono insieme su o giù chiudono la mini app e tornano a Start. Spento all\'inizio: un pizzico su una foto può scivolarci dentro.</string>
+    <string name="gest_sleep_all">doppio tocco ovunque: schermo spento</string>
+    <string name="gest_sleep_all_hint">Un doppio tocco su un punto vuoto dell’elenco delle app spegne lo schermo, e anche su Start se il doppio tocco qui sopra non fa nulla. Spento all’inizio. Serve il servizio di accessibilità.</string>
     <string name="gest_edge_back_pan">gira pagina dal bordo dello schermo</string>
     <string name="gest_edge_back_pan_hint">Su Start, lo swipe dal bordo che Android usa per Indietro porta alla pagina successiva o precedente.</string>
     <string name="gest_tap_sound">suono al tocco</string>

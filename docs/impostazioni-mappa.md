@@ -192,6 +192,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | servizio per bloccare lo schermo | `gest.lockservice` | uso › gesti | gesti e scorciatoie › gesti |
 | tira giù dal bordo alto | `gest.edgepull` | uso › gesti | gesti e scorciatoie › gesti |
 | due dita in una mini app: torna a Start | `gest.minihome` | uso › gesti | gesti e scorciatoie › gesti |
+| doppio tocco ovunque: schermo spento | `gest.sleepall` | uso › gesti | gesti e scorciatoie › gesti |
 | gira pagina dal bordo dello schermo | `gest.edgeback` | uso › gesti | gesti e scorciatoie › gesti |
 | suono al tocco | `gest.tapsound` | uso › gesti | gesti e scorciatoie › tocco e sensazione |
 | Velocità delle animazioni | `gest.animspeed` | uso › gesti | gesti e scorciatoie › tocco e sensazione |
@@ -384,7 +385,7 @@ Il pulsante "ripristina questa pagina" (`SectionReset`) rimette ai valori di par
 - **barre e action center › Barra di stato** (`StatusBar`): `chargeAnimation`, `hideStatusBar`, `metroStatusBar`, `metroStatusBarOverApps`, `statusBarHidden`
 - **start e tile › comportamento di start** (`StartBehaviour`): `antiBurnIn`, `lockStart`, `startLowerPercent`, `startTopAfterMin`, `stepGoal`, `undoSteps`
 - **app e icone › ricerca** (`Search`): `rememberSearches`, `searchAnswers`, `searchAssistant`, `searchCalendar`, `searchCommands`, `searchContacts`, `searchCurrency`, `searchEngine`, `searchFileTypes`, `searchLauncherSettings`, `searchMiniApps`, `searchNotifications`, `searchOperators`, `searchSettings`, `searchSmartDial`, `searchTiles`, `searchToday`, `searchWeb`, `tipOfDay`, `todayAlarm`, `todayDate`, `todayNear`, `todayWeather`
-- **gesti e scorciatoie › gesti** (`Gestures`): `doubleTapAction`, `doubleTapApp`, `edgeBackPan`, `edgePull`, `homeDoubleAction`, `homeDoubleApp`, `miniHomeSwipe`, `twoFingerDownAction`, `twoFingerDownApp`, `twoFingerUpAction`, `twoFingerUpApp`
+- **gesti e scorciatoie › gesti** (`Gestures`): `doubleTapAction`, `doubleTapApp`, `doubleTapSleep`, `edgeBackPan`, `edgePull`, `homeDoubleAction`, `homeDoubleApp`, `miniHomeSwipe`, `twoFingerDownAction`, `twoFingerDownApp`, `twoFingerUpAction`, `twoFingerUpApp`
 - **gesti e scorciatoie › tocco e sensazione** (`Feel`): `animationSpeed`, `tapHaptics`, `tapSound`, `tiltStrength`, `vibrationStrength`
 - **barre e action center › barra di navigazione** (`NavBar`): `gameAdd`, `gameSkip`, `hideBarsInGames`, `metroNavBar`, `navHoldMs`, `navSpacing`
 - **privacy e sicurezza › protezione** (`Privacy`): `bankSafe`, `bankSafeAdd`, `bankSafeSkip`

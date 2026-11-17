@@ -99,6 +99,7 @@
     <string name="info_gest_lockservice">Android lässt eine App den Bildschirm sperren, die letzten Apps öffnen oder über anderen Apps zeichnen nur über einen Bedienungshilfen-Dienst. Dieser liest nichts vom Bildschirm; er erfährt nur, welche App vorn ist. Du schaltest ihn in den Bedienungshilfen von Android ein.</string>
     <string name="info_gest_edgepull">Ein Ziehen vom oberen Rand öffnet das Action Center auf jeder Seite, nicht nur oben auf Start.</string>
     <string name="info_gest_minihome">Zwei Finger, die gemeinsam nach oben oder unten wischen, schließen eine Mini-App und gehen zurück zu Start. Standardmäßig aus: ein Zoomen auf einem Foto kann hineinrutschen.</string>
+    <string name="info_gest_sleepall">Ein Doppeltippen auf eine leere Stelle der App-Liste schaltet den Bildschirm aus, und auch auf Start, wenn das Doppeltippen oben nichts tut. Anfangs aus. Es braucht den Bedienungshilfen-Dienst.</string>
     <string name="info_gest_edgeback">Auf Start führt der Wisch vom Rand, den Android für Zurück nutzt, zur nächsten oder vorigen Seite.</string>
     <string name="info_feel_tap">Ein Klickton oder ein kurzes Summen, wenn du etwas berührst. Standardmäßig aus. Das Summen folgt der unten eingestellten Stärke.</string>
     <string name="info_feel_speed">Wie schnell die Animationen laufen: 100 % ist wie entworfen, 200 % doppelt so schnell. Federn (das Federn einer Kachel) behalten ihr Tempo.</string>

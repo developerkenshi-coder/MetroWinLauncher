@@ -31,7 +31,7 @@ object SectionReset {
             "searchToday", "searchWeb", "tipOfDay", "todayAlarm", "todayDate", "todayNear", "todayWeather",
         ),
         "Gestures" to setOf(
-            "doubleTapAction", "doubleTapApp", "edgeBackPan", "edgePull", "miniHomeSwipe", "homeDoubleAction", "homeDoubleApp",
+            "doubleTapAction", "doubleTapApp", "edgeBackPan", "edgePull", "miniHomeSwipe", "doubleTapSleep", "homeDoubleAction", "homeDoubleApp",
             "twoFingerDownAction", "twoFingerDownApp", "twoFingerUpAction", "twoFingerUpApp",
         ),
         "Feel" to setOf("animationSpeed", "tapHaptics", "tapSound", "tiltStrength", "vibrationStrength"),

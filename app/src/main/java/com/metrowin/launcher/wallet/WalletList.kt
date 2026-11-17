@@ -188,11 +188,13 @@ internal fun WalletTile(
     val rich = prefs.rich.on
     val state = if (prefs.expiry.on) Wallet.expiryState(card, today) else ExpiryState.None
     val left = Wallet.daysLeft(card, today)
-    val shape = if (rich && !stacked) style.smallTileShape else RectangleShape
+    // Classic: sharp corners, a flat colour and no shadow, as a tile of Windows Phone; the other looks keep the rounded, lit card.
+    val soft = rich && !style.isClassic
+    val shape = if (soft && !stacked) style.smallTileShape else RectangleShape
     var pressed by remember { mutableStateOf(false) }
     val lift by animateDpAsState(if (pressed && rich && prefs.motion.on && !LocalReduceMotion.current) (-10).dp else 0.dp, label = "lift")
-    val depth = if (rich && !stacked) Modifier.elevated(shape) else Modifier
-    val sheen = if (rich) Modifier.background(Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.16f), Color.Transparent)), shape) else Modifier
+    val depth = if (soft && !stacked) Modifier.elevated(shape) else Modifier
+    val sheen = if (soft) Modifier.background(Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.16f), Color.Transparent)), shape) else Modifier
     val frame = when {
         LocalHighContrast.current -> Modifier.border(2.dp, ink, shape)
         stacked -> Modifier.border(1.dp, Color.Black.copy(alpha = 0.25f))

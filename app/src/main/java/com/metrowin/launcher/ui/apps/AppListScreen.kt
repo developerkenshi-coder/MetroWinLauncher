@@ -347,6 +347,8 @@ fun AppListScreen(
     onToday: (TodayAction) -> Unit = {},
     /** The apps picked to pin together (a touch picks or drops one); null when nothing is being picked. */
     picked: Set<String>? = null,
+    /** A double tap on an empty spot of the list (a row that takes the touch does not count); null leaves it out. */
+    onDoubleTap: (() -> Unit)? = null,
 ) {
     // The camera hole counts at the top too: with the status bar turned off the bar leaves no room, the hole is still there.
     val insets = WindowInsets.systemBars.union(WindowInsets.displayCutout.only(WindowInsetsSides.Top)).asPaddingValues()
@@ -452,7 +454,8 @@ fun AppListScreen(
 
     // The word searched for is in the accent colour in the results of every style; only the classic look has them come in one after the other.
     CompositionLocalProvider(LocalCompactList provides compact, LocalSearchQuery provides query, LocalSearchFeather provides (LocalStyle.current.isClassic && query.isNotBlank())) {
-    Box(modifier.fillMaxSize()) {
+    val currentDoubleTap by rememberUpdatedState(onDoubleTap)
+    Box(modifier.fillMaxSize().then(if (onDoubleTap != null) Modifier.pointerInput(Unit) { detectTapGestures(onDoubleTap = { currentDoubleTap?.invoke() }) } else Modifier)) {
     LazyColumn(
         state = listState,
         // The top inset shrinks the list itself, not its content padding: a sticky heading sticks to the top of the list and

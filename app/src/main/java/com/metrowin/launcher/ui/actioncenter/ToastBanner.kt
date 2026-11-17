@@ -44,7 +44,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /** How long a banner stays when nobody touches it. */
-const val BANNER_MS = 4_500L
+const val BANNER_MS = 5_000L
 
 /**
  * The banner of Windows Phone: a new notification slides down from the top edge of the screen, says who it is from and what, and

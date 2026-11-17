@@ -69,6 +69,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.metrowin.launcher.ui.theme.LocalStyle
+import java.util.Locale
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.anim.metroPress
@@ -252,7 +254,9 @@ private fun CategoryList(categories: List<SettingsCategory>, open: SettingsCateg
                 }
                 Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(1f)) {
-                    MetroText(stringResource(category.title), size = 26.sp, maxLines = Int.MAX_VALUE, lineHeight = 30.sp)
+                    // The list of the Settings of Windows Phone: the names lowercase and big (34 sp, so that most fit on one line), with the grey line under.
+                    val title = stringResource(category.title)
+                    MetroText(if (LocalStyle.current.isClassic) title.lowercase(Locale.getDefault()) else title, size = 34.sp, maxLines = Int.MAX_VALUE, lineHeight = 38.sp)
                     MetroText(
                         stringResource(category.description),
                         size = MetroType.Note, weight = FontWeight.Normal, color = colors.subtle, lineHeight = 19.sp, maxLines = Int.MAX_VALUE,

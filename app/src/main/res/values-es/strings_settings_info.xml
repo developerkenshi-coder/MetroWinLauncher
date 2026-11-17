@@ -99,6 +99,7 @@
     <string name="info_gest_lockservice">Android deja que una app bloquee la pantalla, abra las apps recientes o dibuje sobre otras solo mediante un servicio de accesibilidad. Este no lee nada de la pantalla; solo sabe qué app está delante. Lo activas en los ajustes de accesibilidad de Android.</string>
     <string name="info_gest_edgepull">Un arrastre desde el borde superior abre el Action Center desde cualquier página, no solo desde lo alto de Start.</string>
     <string name="info_gest_minihome">Dos dedos deslizando juntos hacia arriba o abajo cierran una mini app y vuelven a Start. Apagado por defecto: un pellizco sobre una foto puede acabar ahí.</string>
+    <string name="info_gest_sleepall">Un doble toque en un hueco vacío de la lista de apps apaga la pantalla, y también en Start si el doble toque de arriba no hace nada. Desactivado al inicio. Necesita el servicio de accesibilidad.</string>
     <string name="info_gest_edgeback">En Start, el deslizamiento desde el borde que Android usa para Atrás lleva a la página siguiente o anterior.</string>
     <string name="info_feel_tap">Un sonido de clic o una vibración breve al tocar algo. Apagado por defecto. La vibración sigue la intensidad fijada abajo.</string>
     <string name="info_feel_speed">Qué tan rápidas van las animaciones: 100 % es como se diseñó, 200 % el doble. Los muelles (el rebote de un mosaico) mantienen su ritmo.</string>

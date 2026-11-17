@@ -99,6 +99,7 @@
     <string name="info_gest_lockservice">Android permette a un’app di bloccare lo schermo, aprire le app recenti o disegnare sopra le altre solo tramite un servizio di accessibilità. Questo non legge nulla dallo schermo; sa solo quale app è davanti. Lo attivi nelle impostazioni di accessibilità di Android.</string>
     <string name="info_gest_edgepull">Una tirata dal bordo alto apre l’Action Center da qualsiasi pagina, non solo dalla cima di Start.</string>
     <string name="info_gest_minihome">Due dita che scorrono insieme in su o in giù chiudono una mini app e tornano a Start. Spento di default: un pizzico su una foto può scivolarci dentro.</string>
+    <string name="info_gest_sleepall">Un doppio tocco su un punto vuoto dell’elenco delle app spegne lo schermo, e anche su Start se il doppio tocco qui sopra non fa nulla. Spento all’inizio. Serve il servizio di accessibilità.</string>
     <string name="info_gest_edgeback">Su Start, lo swipe dal bordo che Android usa per Indietro porta alla pagina successiva o precedente.</string>
     <string name="info_feel_tap">Un suono di clic o una breve vibrazione quando tocchi qualcosa. Spento di default. La vibrazione segue l’intensità impostata sotto.</string>
     <string name="info_feel_speed">Quanto veloci vanno le animazioni: 100% è come progettato, 200% il doppio. Le molle (il rimbalzo di un tile) mantengono il loro ritmo.</string>

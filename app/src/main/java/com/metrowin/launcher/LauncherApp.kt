@@ -1272,7 +1272,11 @@ fun LauncherApp(vm: LauncherViewModel) {
         onTileBounds = { bounds ->
             tapBounds = android.graphics.Rect(bounds.left.toInt(), bounds.top.toInt(), bounds.right.toInt(), bounds.bottom.toInt())
         },
-        onDoubleTap = if (settings.doubleTapAction != GestureAction.None) ({ perform(settings.doubleTapAction, settings.doubleTapApp) }) else null,
+        onDoubleTap = when {
+            settings.doubleTapAction != GestureAction.None -> ({ perform(settings.doubleTapAction, settings.doubleTapApp) })
+            settings.doubleTapSleep -> ({ perform(GestureAction.LockScreen) })
+            else -> null
+        },
         onNextPage = { scope.launch { pagerState.animateScrollToPage((pagerState.currentPage + 1).coerceAtMost(appsPage)) } },
     )
 
@@ -1506,6 +1510,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             }
                         }
                         AppListScreen(
+                            onDoubleTap = if (settings.doubleTapSleep) ({ perform(GestureAction.LockScreen) }) else null,
                             model = appList,
                             listState = listState,
                             replayToken = listReplay,

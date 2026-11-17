@@ -99,6 +99,7 @@
     <string name="info_gest_lockservice">O Android só deixa um app bloquear o ecrã, abrir os apps recentes ou desenhar sobre outros através de um serviço de acessibilidade. Este não lê nada do ecrã; só sabe que app está à frente. Ativa-o nas definições de acessibilidade do Android.</string>
     <string name="info_gest_edgepull">Um puxão a partir da borda superior abre o Action Center a partir de qualquer página, não só do topo do Start.</string>
     <string name="info_gest_minihome">Dois dedos a deslizar juntos para cima ou para baixo fecham uma mini app e voltam ao Start. Desligado por defeito: um pinçar numa foto pode deslizar para aí.</string>
+    <string name="info_gest_sleepall">Um toque duplo num espaço vazio da lista de apps desliga o ecrã, e também no Start se o toque duplo acima não fizer nada. Desligado ao início. Precisa do serviço de acessibilidade.</string>
     <string name="info_gest_edgeback">No Start, o deslize pela borda que o Android usa para Voltar leva à página seguinte ou anterior.</string>
     <string name="info_feel_tap">Um som de clique ou uma vibração curta ao tocar em algo. Desligado por defeito. A vibração segue a intensidade definida abaixo.</string>
     <string name="info_feel_speed">A velocidade das animações: 100 % é como foi desenhado, 200 % o dobro. As molas (o ressalto de um bloco) mantêm o seu ritmo.</string>

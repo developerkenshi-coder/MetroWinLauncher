@@ -43,8 +43,8 @@ fun KidsHeader(onExit: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 /**
- * A square that is ticked when [checked]. Classic, as the CheckBox of Windows Phone: 24 dp, a 3 px outline, and the tick in the ink on the
- * page (no fill). The other looks fill the square with the accent.
+ * A square that is ticked when [checked]: 24 dp in Classic (28 dp in the other looks), a 3 px outline, and when ticked the square
+ * fills with the accent and carries a thin tick.
  */
 @Composable
 fun CheckSquare(checked: Boolean, modifier: Modifier = Modifier) {
@@ -52,32 +52,18 @@ fun CheckSquare(checked: Boolean, modifier: Modifier = Modifier) {
     val style = LocalStyle.current
     val shape = style.squareShape
     val ink = LocalMetroColors.current.foreground
-    val tick = if (style.isClassic) ink else onAccent()
-    val filled = checked && !style.isClassic
+    val tick = onAccent()
     Box(
         modifier
             .size(if (style.isClassic) 24.dp else 28.dp)
             .clip(shape)
-            .border(if (style.isClassic) 2.25.dp else 2.dp, if (filled) accent else ink, shape)
-            .background(if (filled) accent else Color.Transparent),
+            .border(if (style.isClassic) 2.25.dp else 2.dp, if (checked) accent else ink, shape)
+            .background(if (checked) accent else Color.Transparent),
         contentAlignment = Alignment.Center,
     ) {
-        if (checked && style.isClassic) {
-            // The mark of Windows Phone: a heavy tick, 23 x 21 px = 17 x 16 dp.
-            Canvas(Modifier.size(17.dp, 16.dp)) {
-                val tickPath = Path().apply {
-                    listOf(0f to 123f, 39f to 93f, 124f to 164f, 256f to 18f, 295f to 49f, 124f to 240f).forEachIndexed { i, (x, y) ->
-                        val px = x / 295f * size.width
-                        val py = y / 240f * size.height
-                        if (i == 0) moveTo(px, py) else lineTo(px, py)
-                    }
-                    close()
-                }
-                drawPath(tickPath, tick)
-            }
-        } else if (checked) {
+        if (checked) {
             Canvas(Modifier.size(14.dp)) {
-                val stroke = 2.4.dp.toPx()
+                val stroke = 1.8.dp.toPx()
                 drawLine(tick, Offset(0f, size.height * 0.55f), Offset(size.width * 0.38f, size.height * 0.95f), stroke, StrokeCap.Round)
                 drawLine(tick, Offset(size.width * 0.38f, size.height * 0.95f), Offset(size.width, size.height * 0.1f), stroke, StrokeCap.Round)
             }

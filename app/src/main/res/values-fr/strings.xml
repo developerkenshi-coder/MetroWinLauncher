@@ -148,6 +148,8 @@
     <string name="gest_edge_pull_hint">Ouvre l’Action Center depuis n’importe quelle page, pas seulement depuis le haut de Start.</string>
     <string name="gest_mini_home">deux doigts dans une mini app : retour à Start</string>
     <string name="gest_mini_home_hint">Deux doigts qui glissent ensemble vers le haut ou le bas ferment la mini app et reviennent à Start. Désactivé au départ : un pincement sur une photo peut y glisser.</string>
+    <string name="gest_sleep_all">double toucher partout : écran éteint</string>
+    <string name="gest_sleep_all_hint">Un double toucher sur un endroit vide de la liste des apps éteint l’écran, et aussi sur Start si le double toucher du dessus ne fait rien. Désactivé au départ. Il faut le service d’accessibilité.</string>
     <string name="gest_edge_back_pan">tourner les pages depuis le bord de l’écran</string>
     <string name="gest_edge_back_pan_hint">Sur Start, le balayage depuis le bord qu’Android utilise pour Retour mène à la page suivante ou précédente.</string>
     <string name="gest_tap_sound">clic sonore à l’appui</string>

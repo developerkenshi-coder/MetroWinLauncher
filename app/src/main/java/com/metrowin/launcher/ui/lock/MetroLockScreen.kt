@@ -315,7 +315,15 @@ fun MetroLockScreen(
                 modifier = Modifier.align(Alignment.BottomCenter).then(rise).navigationBarsPadding().padding(bottom = 10.dp).testTag("lock:fingerprint"),
             )
         }
-        val clock = @Composable { LockClock(time, is24Hour, locale) }
+        // The time sinks a little against the lift and fades sooner than the rest, as it is pulled.
+        val sink = with(LocalDensity.current) { 36.dp.toPx() }
+        val clock = @Composable {
+            LockClock(time, is24Hour, locale, Modifier.graphicsLayer {
+                val done = (-lift.value / height).coerceIn(0f, 1f)
+                translationY = done * sink
+                alpha = (1f - done * 2.5f).coerceIn(0f, 1f)
+            })
+        }
         val date = @Composable { LockDate(time, locale) }
         val lines = @Composable { LockLines(info, options, zone, is24Hour, locale, countOnly = !hasStatus, onOpen) }
         if (lockTwoColumns(maxWidth.value, maxHeight.value)) {

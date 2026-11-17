@@ -99,6 +99,7 @@
     <string name="info_gest_lockservice">Android ne laisse une application verrouiller l’écran, ouvrir les applications récentes ou dessiner par-dessus les autres que via un service d’accessibilité. Celui-ci ne lit rien à l’écran ; il sait seulement quelle application est au premier plan. Vous l’activez dans les réglages d’accessibilité d’Android.</string>
     <string name="info_gest_edgepull">Un tirage depuis le bord haut ouvre l’Action Center depuis n’importe quelle page, pas seulement du haut de Start.</string>
     <string name="info_gest_minihome">Deux doigts qui balayent ensemble vers le haut ou le bas ferment une mini app et reviennent à Start. Désactivé par défaut : un pincement sur une photo peut y glisser.</string>
+    <string name="info_gest_sleepall">Un double toucher sur un endroit vide de la liste des apps éteint l’écran, et aussi sur Start si le double toucher du dessus ne fait rien. Désactivé au départ. Il faut le service d’accessibilité.</string>
     <string name="info_gest_edgeback">Sur Start, le balayage depuis le bord qu’Android utilise pour Retour mène à la page suivante ou précédente.</string>
     <string name="info_feel_tap">Un son de clic ou une courte vibration quand vous touchez quelque chose. Désactivé par défaut. La vibration suit la force réglée ci-dessous.</string>
     <string name="info_feel_speed">La vitesse des animations : 100 % est comme conçu, 200 % deux fois plus vite. Les ressorts (le rebond d’une tuile) gardent leur rythme.</string>

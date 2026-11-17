@@ -99,6 +99,7 @@
     <string name="info_gest_lockservice">Android lets an app lock the screen, open the recent apps or draw over other apps only through an accessibility service. This one reads nothing from the screen; it only learns which app is in front. You turn it on in Android’s accessibility settings.</string>
     <string name="info_gest_edgepull">A pull down from the top edge opens the Action Center from any page, not only from the top of Start.</string>
     <string name="info_gest_minihome">Two fingers swiping up or down together close a mini app and go back to Start. Off by default: a pinch on a photo can drift into it.</string>
+    <string name="info_gest_sleepall">A double tap on an empty spot of the apps list turns the screen off, and on Start too when the double tap above does nothing. Off by default. It needs the accessibility service.</string>
     <string name="info_gest_edgeback">On Start, the swipe from the edge that Android uses for Back goes to the next or previous page instead.</string>
     <string name="info_feel_tap">A click sound or a short buzz when you touch something. Off by default. The buzz follows the strength set below.</string>
     <string name="info_feel_speed">How fast the animations run: 100% is as designed, 200% twice as fast. Springs (the bounce of a tile) keep their own pace.</string>

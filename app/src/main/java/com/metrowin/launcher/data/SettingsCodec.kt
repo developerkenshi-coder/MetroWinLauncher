@@ -100,6 +100,7 @@ object SettingsCodec {
 
         put("edgePull", s.edgePull)
         put("miniHomeSwipe", s.miniHomeSwipe)
+        put("doubleTapSleep", s.doubleTapSleep)
         put("actionCenterEnabled", s.actionCenterEnabled)
         put("edgeBackPan", s.edgeBackPan)
         put("doubleTapAction", s.doubleTapAction.code)
@@ -363,6 +364,7 @@ object SettingsCodec {
 
             edgePull = o.optBoolean("edgePull", base.edgePull),
             miniHomeSwipe = o.optBoolean("miniHomeSwipe", base.miniHomeSwipe),
+            doubleTapSleep = o.optBoolean("doubleTapSleep", base.doubleTapSleep),
             actionCenterEnabled = o.optBoolean("actionCenterEnabled", base.actionCenterEnabled),
             edgeBackPan = o.optBoolean("edgeBackPan", base.edgeBackPan),
             doubleTapAction = GestureAction.fromCode(o.optString("doubleTapAction").ifEmpty { null }, base.doubleTapAction),
