@@ -19,6 +19,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
+import kotlin.math.roundToInt
+import com.metrowin.launcher.ui.theme.LocalAccent
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
@@ -61,6 +66,8 @@ fun VolumeHudPanel(
     onToggle: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    /** The ringer key: ringing or vibrating. */
+    onRinger: () -> Unit = {},
 ) {
     val reduced = LocalReduceMotion.current
     val shown = remember { Animatable(0f) }
@@ -85,9 +92,9 @@ fun VolumeHudPanel(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            VolumeLine(hud.main, hud.app, main = true, expanded = hud.expanded, onSet = onSet, onToggle = onToggle)
+            VolumeLine(hud.main, hud.app, main = true, expanded = hud.expanded, onSet = onSet, onToggle = onToggle, onRinger = onRinger)
             if (hud.expanded) {
-                hud.others.forEach { row -> VolumeLine(row, null, main = false, expanded = true, onSet = onSet, onToggle = {}) }
+                hud.others.forEach { row -> VolumeLine(row, null, main = false, expanded = true, onSet = onSet, onToggle = {}, onRinger = onRinger) }
                 if (hud.main.stream == com.metrowin.launcher.data.VolumeStream.Music && hud.app != null) {
                     MetroText(
                         stringResource(R.string.volume_local_note), size = 12.sp, weight = FontWeight.Normal, color = colors.subtle,
@@ -103,7 +110,7 @@ fun VolumeHudPanel(
 private const val VOLUME_FONT_SCALE = 1.3f
 
 @Composable
-private fun VolumeLine(row: VolumeRow, app: String?, main: Boolean, expanded: Boolean, onSet: (VolumeRow, Float) -> Unit, onToggle: () -> Unit) {
+private fun VolumeLine(row: VolumeRow, app: String?, main: Boolean, expanded: Boolean, onSet: (VolumeRow, Float) -> Unit, onToggle: () -> Unit, onRinger: () -> Unit) {
     val colors = LocalMetroColors.current
     val name = row.stream?.let { stringResource(it.label) } ?: stringResource(R.string.volume_media)
     val title = when {
@@ -149,6 +156,17 @@ private fun VolumeLine(row: VolumeRow, app: String?, main: Boolean, expanded: Bo
                 }
             }
         }
+        // The strip of ticks of the panel of Windows Phone: one for each step, the ones up to the level in the colour of the accent.
+        if (row.max > row.min) VolumeTicks(row.level - row.min, row.max - row.min, Modifier.testTag("volume:ticks:$tag"))
+        // The key of the ringer: touched, the phone goes from ringing to vibrating and back.
+        if (row.stream == com.metrowin.launcher.data.VolumeStream.Ring) {
+            val vibrating = row.ringerMode != AudioManager.RINGER_MODE_NORMAL
+            val word = stringResource(if (vibrating) R.string.volume_vibrate else R.string.volume_ring)
+            MetroText(
+                word, size = 16.sp, color = LocalAccent.current, maxLines = 1,
+                modifier = Modifier.heightIn(min = 48.dp).wrapContentHeight(Alignment.CenterVertically).testTag("volume:ringer").metroPress(onClick = onRinger),
+            )
+        }
         // A player that only takes steps (no level to show) has no slider.
         if (row.max > row.min) {
             MetroSlider(
@@ -156,5 +174,19 @@ private fun VolumeLine(row: VolumeRow, app: String?, main: Boolean, expanded: Bo
                 description = stringResource(R.string.volume_slider, name), modifier = Modifier.testTag("volume:slider:$tag"),
             )
         }
+    }
+}
+
+/** [steps] small ticks in a row, [lit] of them filled with the accent: the level of a volume as the strip of Windows Phone shows it. A long scale is drawn in 30 ticks at most. */
+@Composable
+private fun VolumeTicks(lit: Int, steps: Int, modifier: Modifier = Modifier) {
+    val on = LocalAccent.current
+    val off = LocalMetroColors.current.inactive
+    val count = steps.coerceIn(1, 30)
+    val filled = if (steps > count) (lit.toFloat() / steps * count).roundToInt() else lit
+    Canvas(modifier.fillMaxWidth().height(10.dp)) {
+        val gap = 3.dp.toPx()
+        val w = (size.width - gap * (count - 1)) / count
+        for (i in 0 until count) drawRect(if (i < filled) on else off, Offset(i * (w + gap), 0f), androidx.compose.ui.geometry.Size(w, size.height))
     }
 }

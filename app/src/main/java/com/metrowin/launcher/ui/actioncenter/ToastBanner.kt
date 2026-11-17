@@ -43,12 +43,15 @@ import com.metrowin.launcher.ui.theme.panel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/** A sideways fling faster than this (px/s) takes the banner away. */
+private const val FLING_AWAY = 1_200f
+
 /** How long a banner stays when nobody touches it. */
 const val BANNER_MS = 5_000L
 
 /**
  * The banner of Windows Phone: a new notification slides down from the top edge of the screen, says who it is from and what, and
- * goes back up by itself (or with a swipe up). A touch opens the notification. Only while the launcher is on screen.
+ * goes back up by itself (or with a swipe up, or sideways). A touch opens the notification. Only while the launcher is on screen.
  */
 @Composable
 fun ToastBanner(
@@ -66,6 +69,9 @@ fun ToastBanner(
 ) {
     val scope = rememberCoroutineScope()
     val offset = remember(entry.key) { Animatable(0f) }
+    // The finger sideways: the banner follows it, goes away when it is taken far enough or flung, and comes back to its place when the finger goes back.
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val slide = remember(entry.key) { Animatable(0f) }
     var height by remember { mutableIntStateOf(1) }
     var width by remember { mutableIntStateOf(1) }
     val reduced = LocalReduceMotion.current
@@ -87,13 +93,26 @@ fun ToastBanner(
             .padding(horizontal = 12.dp, vertical = 8.dp)
             .fillMaxWidth()
             .onSizeChanged { height = it.height.coerceAtLeast(1); width = it.width.coerceAtLeast(1) }
-            .graphicsLayer { translationY = -(1f - shown.value) * (height + 80.dp.toPx()) + offset.value; translationX = aside.value * (width + 24.dp.toPx()) }
+            .graphicsLayer { translationY = -(1f - shown.value) * (height + 80.dp.toPx()) + offset.value; translationX = aside.value * (width + 24.dp.toPx()) + slide.value }
             .draggable(
                 orientation = Orientation.Vertical,
                 state = rememberDraggableState { delta -> scope.launch { offset.snapTo((offset.value + delta).coerceAtMost(0f)) } },
                 onDragStopped = {
                     scope.launch {
                         if (offset.value < -height / 3f) currentDismiss() else offset.animateTo(0f, metroTween(150))
+                    }
+                },
+            )
+            .draggable(
+                orientation = Orientation.Horizontal,
+                state = rememberDraggableState { delta -> scope.launch { slide.snapTo(slide.value + delta) } },
+                onDragStopped = { velocity ->
+                    scope.launch {
+                        val away = width + with(density) { 24.dp.toPx() }
+                        if (kotlin.math.abs(slide.value) > width / 3f || kotlin.math.abs(velocity) > FLING_AWAY) {
+                            slide.animateTo(if (slide.value + velocity * 0.1f < 0f) -away else away, metroTween(durationMillis = 160, easing = Motion.Accelerate))
+                            currentDismiss()
+                        } else slide.animateTo(0f, metroTween(150))
                     }
                 },
             )

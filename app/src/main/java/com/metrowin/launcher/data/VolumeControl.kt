@@ -110,6 +110,14 @@ class VolumeControl(context: Context) {
         return read(stream)
     }
 
+    /** The ringer key of the panel: ring, or vibrate. Silent is left to the keys, as it needs the "do not disturb" access. */
+    fun toggleRinger(): VolumeRow? {
+        val manager = audio ?: return null
+        val next = if (manager.ringerMode == AudioManager.RINGER_MODE_NORMAL) AudioManager.RINGER_MODE_VIBRATE else AudioManager.RINGER_MODE_NORMAL
+        runCatching { manager.ringerMode = next }
+        return read(VolumeStream.Ring)
+    }
+
     fun set(stream: VolumeStream, level: Int): VolumeRow? {
         val manager = audio ?: return null
         runCatching { manager.setStreamVolume(stream.androidStream, level, 0) }

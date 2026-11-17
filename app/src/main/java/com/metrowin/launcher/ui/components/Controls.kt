@@ -33,6 +33,8 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
+import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -176,6 +178,9 @@ fun ChoiceRow(options: List<String>, selected: Int, onSelect: (Int) -> Unit, mod
     }
 }
 
+/** The rail of the Classic slider: 4 dp, thin as the original's, against a thumb of 9 x 24 dp. */
+private val SLIDER_RAIL = 4.dp
+
 /** What the tests look for to measure the switch: the track, and the block that slides in it. */
 const val TOGGLE_TRACK_TAG = "toggle:track"
 const val TOGGLE_THUMB_TAG = "toggle:thumb"
@@ -242,8 +247,10 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
         MetroText(label, size = MetroType.Subtitle, modifier = Modifier.weight(1f))
         when (style.kind) {
             ThemeStyle.Classic -> {
+                // The block runs across and settles with a small bounce (a plain slide when the motion is reduced).
                 val thumbX by animateDpAsState(
-                    (ToggleGeometry.thumbLeft(checked) - ToggleGeometry.INSET).dp, metroTween(160), label = "toggleThumb",
+                    (ToggleGeometry.thumbLeft(checked) - ToggleGeometry.INSET).dp,
+                    if (LocalReduceMotion.current) metroTween(160) else spring(dampingRatio = 0.65f, stiffness = 380f), label = "toggleThumb",
                 )
                 // The word beside the switch only repeats what the switch shows: at the biggest text it must not take the room of the label.
                 // Both words take their room whatever the state, so the label does not wrap differently when the switch flips.
@@ -365,20 +372,20 @@ fun MetroSlider(
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(if (style.isClassic) 9.dp else 12.dp)
+                .height(if (style.isClassic) SLIDER_RAIL else 12.dp)
                 .clip(shape)
                 .background(colors.inactive)
                 .then(if (track != null) Modifier.background(track) else Modifier),
         )
         if (track == null) {
-            Box(Modifier.fillMaxWidth(fraction).height(if (style.isClassic) 9.dp else 12.dp).clip(shape).background(accent))
+            Box(Modifier.fillMaxWidth(fraction).height(if (style.isClassic) SLIDER_RAIL else 12.dp).clip(shape).background(accent))
         }
-        // Windows Phone: the thumb is a block 12 x 24 px = 9 x 18 dp, the track 12 px = 9 dp.
+        // Windows Phone: a thin rail (full to the left of the thumb, empty to the right) and a tall rectangular thumb of 12 x 32 px.
         val thumb = if (style.isClassic) 9.dp else 28.dp
         Box(
             Modifier
                 .offset { IntOffset(((width - thumb.toPx()) * fraction).roundToInt(), 0) }
-                .size(thumb, if (style.isClassic) 18.dp else 28.dp)
+                .size(thumb, if (style.isClassic) 24.dp else 28.dp)
                 .clip(if (style.isClassic) RectangleShape else CircleShape)
                 .background(if (style.isClassic) colors.foreground else Color.White)
                 .border(if (style.isClassic) 0.dp else 1.dp, Color.Black.copy(alpha = 0.18f), if (style.isClassic) RectangleShape else CircleShape),

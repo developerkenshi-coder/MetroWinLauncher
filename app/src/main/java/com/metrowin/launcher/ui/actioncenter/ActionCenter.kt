@@ -1,5 +1,9 @@
 package com.metrowin.launcher.ui.actioncenter
 
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import com.metrowin.launcher.ui.theme.MetroAccents
 import androidx.compose.ui.semantics.heading
 import com.metrowin.launcher.ui.components.centeredContent
 import com.metrowin.launcher.ui.components.topBarsPadding
@@ -797,6 +801,9 @@ private fun GroupRow(group: NotificationItem.Group, app: AppItem?, open: Boolean
     }
 }
 
+/** The colour of the bar of an app's notifications: one of the accents, the same one every time for the same app. */
+internal fun appBarColor(packageName: String): Color = MetroAccents[Math.floorMod(packageName.hashCode(), MetroAccents.size)]
+
 @Composable
 private fun NotificationRow(
     entry: NotificationEntry,
@@ -811,6 +818,7 @@ private fun NotificationRow(
     onMute: ((NotificationEntry, Mute.Option) -> Unit)? = null,
 ) {
     val colors = LocalMetroColors.current
+    val barColor = remember(entry.packageName) { appBarColor(entry.packageName) }
     // A long press shows what else can be done with it: put it away for a while, or open the settings of its app.
     var more by remember { mutableStateOf(false) }
     // A long text is read in full by a touch on the link under it.
@@ -836,7 +844,9 @@ private fun NotificationRow(
                     onLongClick = if (hasMore) ({ more = !more }) else null,
                     longClickLabel = if (hasMore) stringResource(R.string.a11y_more_options) else null,
                 )
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                // The bar at the left is in the colour of the app, as in the Action Center of Windows Phone.
+                .drawBehind { drawRect(barColor, size = Size(3.dp.toPx(), size.height)) }
+                .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.Top,
         ) {
             if (app != null) {
@@ -848,7 +858,18 @@ private fun NotificationRow(
             }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
-                if (entry.title.isNotBlank()) MetroText(entry.title, size = 18.sp, weight = FontWeight.Normal)
+                Row(verticalAlignment = Alignment.Top) {
+                    if (entry.title.isNotBlank()) MetroText(entry.title, size = 18.sp, weight = FontWeight.Normal, modifier = Modifier.weight(1f))
+                    else Spacer(Modifier.weight(1f))
+                    // The time is on the right of the first line.
+                    MetroText(
+                        text = DateUtils.getRelativeTimeSpanString(
+                            entry.postTime, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE,
+                        ).toString(),
+                        size = 12.sp, weight = FontWeight.Normal, color = colors.subtle,
+                        modifier = Modifier.padding(start = 8.dp, top = 4.dp),
+                    )
+                }
                 if (entry.text.isNotBlank()) {
                     MetroText(
                         if (wholeText) entry.longText ?: entry.text else entry.text, size = 15.sp, color = colors.subtle,
@@ -861,13 +882,6 @@ private fun NotificationRow(
                         modifier = Modifier.padding(top = 6.dp).fillMaxWidth().heightIn(max = 160.dp).testTag("notification:picture:${entry.key}"),
                     )
                 }
-                MetroText(
-                    text = DateUtils.getRelativeTimeSpanString(
-                        entry.postTime, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE,
-                    ).toString(),
-                    size = 12.sp, weight = FontWeight.Normal, color = colors.subtle,
-                    modifier = Modifier.padding(top = 2.dp),
-                )
             }
         }
         // A conversation with several messages says so under the newest one, and the earlier ones open out below it.

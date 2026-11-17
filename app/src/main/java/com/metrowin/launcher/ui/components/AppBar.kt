@@ -68,7 +68,7 @@ fun AppBar(items: List<AppBarItem>, modifier: Modifier = Modifier, menu: List<Ap
     // The "…" opens the common menu panel of the launcher above the bar, not a second bar.
     Column(modifier) {
         if (more) {
-            MenuPanel(Modifier.padding(horizontal = Spacing.Medium), tag = "appbar:menu") {
+            MenuPanel(tag = "appbar:menu") {
                 menu.forEachIndexed { i, item -> MenuItem(item.label, { more = false; item.onClick() }, Modifier.testTag("appbar:menu:$i")) }
             }
         }

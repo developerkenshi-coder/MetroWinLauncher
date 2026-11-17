@@ -2145,7 +2145,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                 volumeHud?.let { hud ->
                     if (!tutorialVisible) {
                         AccentScope(settings.accentPanel) { VolumeHudPanel(
-                            hud = hud, onSet = vm::setVolume, onToggle = vm::toggleVolumeHud, onDismiss = vm::dismissVolumeHud,
+                            hud = hud, onSet = vm::setVolume, onToggle = vm::toggleVolumeHud, onDismiss = vm::dismissVolumeHud, onRinger = vm::toggleRinger,
                             modifier = Modifier.align(Alignment.TopCenter),
                         ) }
                     }

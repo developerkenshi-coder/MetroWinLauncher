@@ -2288,6 +2288,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         )
     }
 
+    /** The ringer key of the panel was touched: the ringer goes from ringing to vibrating and back, and the panel stays up. */
+    fun toggleRinger() {
+        val hud = _volumeHud.value ?: return
+        val updated = volumeControl.toggleRinger() ?: return
+        fun swap(row: VolumeRow) = if (row.stream == VolumeStream.Ring) updated else row
+        _volumeHud.value = hud.copy(token = ++hudToken, main = swap(hud.main), others = hud.others.map(::swap))
+    }
+
     /** Opens the panel out to the other volumes, or folds it back. */
     fun toggleVolumeHud() {
         val hud = _volumeHud.value ?: return

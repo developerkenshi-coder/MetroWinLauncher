@@ -26,6 +26,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.MotionTable
 import com.metrowin.launcher.ui.anim.Surface
@@ -43,6 +46,7 @@ import com.metrowin.launcher.ui.theme.panel
 @Composable
 fun MenuPanel(modifier: Modifier = Modifier, tag: String? = null, content: @Composable ColumnScope.() -> Unit) {
     val reduce = LocalReduceMotion.current
+    val edge = LocalMetroColors.current.subtle.copy(alpha = 0.7f)
     val shown = remember { Animatable(if (reduce) 1f else 0f) }
     val timing = MotionTable.timing(Surface.Menu, LocalStyle.current.kind, reduce)
     LaunchedEffect(Unit) { if (!reduce) shown.animateTo(1f, metroTween(durationMillis = timing.inMs, easing = Motion.Decelerate)) }
@@ -59,6 +63,8 @@ fun MenuPanel(modifier: Modifier = Modifier, tag: String? = null, content: @Comp
                 alpha = shown.value
             }
             .panel()
+            // A thin line along the top edge, as the menu of an application bar of Windows Phone has it.
+            .drawBehind { drawLine(edge, Offset(0f, 0f), Offset(size.width, 0f), strokeWidth = 1.dp.toPx()) }
             .heightIn(max = MENU_MAX_HEIGHT)
             .verticalScroll(rememberScrollState())
             .padding(vertical = Spacing.Medium),
@@ -91,10 +97,12 @@ fun MenuItem(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, c
             .metroPress(onClick = onClick, onPressedChange = { pressed = it }).padding(horizontal = Spacing.Page, vertical = Spacing.Large),
         contentAlignment = Alignment.CenterStart,
     ) {
-        MetroText(text, size = MetroType.Subtitle, color = if (lit) onAccent() else color ?: LocalMetroColors.current.foreground)
+        MetroText(text, size = MENU_TEXT, color = if (lit) onAccent() else color ?: LocalMetroColors.current.foreground)
     }
 }
 
+/** The entries of a menu are 21 sp. */
+private val MENU_TEXT = 21.sp
 private const val POP_FROM = 0.94f
 private const val CASCADE_STEP_MS = 35
 private const val CASCADE_MAX = 8

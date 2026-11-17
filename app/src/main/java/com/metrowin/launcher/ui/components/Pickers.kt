@@ -19,6 +19,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -45,7 +47,7 @@ private val ROW_HEIGHT = 46.dp
 private const val LOOPS = 400
 
 /**
- * The selector of Windows Phone: a wheel of [items] that goes round without an end, snaps to a row, and has the chosen one in the middle in
+ * The selector of Windows Phone (two grey lines frame the middle row): a wheel of [items] that goes round without an end, snaps to a row, and has the chosen one in the middle in
  * the colour of the accent. [selected] moves the wheel when it is changed from outside; a touch on a row brings it to the middle.
  */
 @OptIn(ExperimentalFoundationApi::class)
@@ -80,7 +82,14 @@ fun LoopingSelector(items: List<String>, selected: Int, onSelected: (Int) -> Uni
         state.scrollToItem(state.firstVisibleItemIndex + delta)
     }
     LazyColumn(
-        modifier.height(ROW_HEIGHT * ROWS).testTag(tag),
+        // Two grey lines frame the row in the middle, as on the selector of Windows Phone.
+        modifier.height(ROW_HEIGHT * ROWS).testTag(tag).drawBehind {
+            val line = colors.subtle.copy(alpha = 0.6f)
+            for (row in intArrayOf(ROWS / 2, ROWS / 2 + 1)) {
+                val y = ROW_HEIGHT.toPx() * row
+                drawLine(line, Offset(0f, y), Offset(this.size.width, y), strokeWidth = 1.dp.toPx())
+            }
+        },
         state = state,
         contentPadding = PaddingValues(vertical = ROW_HEIGHT * (ROWS / 2)),
         flingBehavior = rememberSnapFlingBehavior(state),

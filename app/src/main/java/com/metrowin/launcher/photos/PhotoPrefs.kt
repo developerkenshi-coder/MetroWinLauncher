@@ -70,7 +70,7 @@ class PhotoPrefs(context: Context) {
     var gap: Int
         get() = gapState
         set(v) { gapState = v; prefs.edit().putInt("gap", v).apply() }
-    private var gapState by androidx.compose.runtime.mutableIntStateOf(prefs.getInt("gap", 4))
+    private var gapState by androidx.compose.runtime.mutableIntStateOf(prefs.getInt("gap", 2))
 
     /** What a heading of the date page covers. */
     var granularity: Granularity
