@@ -61,7 +61,7 @@ class InfoFaceUiTest : ScreenshotBase() {
     @Test
     fun anEventWithinTheHourComesFirstAndAloneWhenTheTileIsSmart() {
         val live = LiveTileData(events = listOf(event("Dentist", 20)), nextEvent = event("Dentist", 20))
-        tile(InfoConfig(parts = listOf(InfoPart.Time, InfoPart.Calendar), smart = true), live)
+        tile(InfoConfig(parts = listOf(InfoPart.Time, InfoPart.Calendar), smart = true, nightFrom = 0, nightTo = 0), live)
         compose.onNodeWithTag("event:title").assertIsDisplayed()
         compose.onNodeWithTag("worldclock:time").assertDoesNotExist()
     }
