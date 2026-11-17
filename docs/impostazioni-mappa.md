@@ -22,7 +22,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | batteria | batteria | Risparmio energetico e cosa fa il launcher quando non è sullo schermo |
 | accessibilità | accessibilità | Dimensione e spessore del testo, carattere, meno movimento, più contrasto, TalkBack |
 | backup e profili | backup+sync, profili | Salva e ripristina la disposizione, sincronizza i telefoni, profilo di lavoro e spazio privato |
-| informazioni | informazioni, segnalazione bug, altri progetti, mancia | Versione e aggiornamenti, il tutorial, segnalazione di problemi, crediti, altri progetti e la mancia |
+| informazioni | informazioni, mancia, segnalazione bug, altri progetti | Versione e aggiornamenti, il tutorial, segnalazione di problemi, crediti, altri progetti e la mancia |
 
 ## Impostazioni, una per una
 

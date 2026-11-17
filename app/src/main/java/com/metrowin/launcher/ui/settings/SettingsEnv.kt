@@ -111,9 +111,9 @@ enum class SettingsSection(
 
     // about
     About(SettingsCategory.About, R.string.sec_about, R.string.sec_about_desc, R.string.kw_about),
+    Tip(SettingsCategory.About, R.string.sec_tip, R.string.sec_tip_desc, R.string.kw_tip),
     BugReport(SettingsCategory.About, R.string.sec_bug, R.string.sec_bug_desc, R.string.kw_bug),
     OtherProjects(SettingsCategory.About, R.string.sec_projects, R.string.sec_projects_desc, R.string.kw_projects),
-    Tip(SettingsCategory.About, R.string.sec_tip, R.string.sec_tip_desc, R.string.kw_tip),
 }
 
 /**

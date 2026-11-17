@@ -6,9 +6,9 @@
     <string name="tip_title">premios para Maty</string>
     <string name="tip_p1">¡Hola! ¡Espero que estés disfrutando de MetroWin Launcher! El proyecto que estás usando se creó por pasión y con cariño por los viejos Windows Phone. MetroWin es y será siempre un proyecto FOSS. Si te apetece comprarle unos premios a mi gata, este es el enlace que necesitas:</string>
     <string name="tip_button">ko-fi.com/kenshi1299</string>
-    <string name="tip_p2">¡Seguro que agradecería tu gesto y te daría unos cabezazos o lametones de agradecimiento!</string>
+    <string name="tip_p2">¡Seguro que agradecería tu gesto y te daría unos lametones de agradecimiento!</string>
     <string name="tip_p3">Si has entrado solo por curiosidad, te lo agradezco igualmente, porque estás usando mi launcher. Si encuentras problemas o tienes sugerencias para mejorar la calidad del launcher, no dudes en abrir un ticket en la sección \"informe de error\".</string>
     <string name="tip_credits">gracias a</string>
-    <string name="tip_kenshi">El autor de MetroWin Launcher. Hecho con pasión, gratis, para todos.</string>
-    <string name="tip_maty">La gata. Catadora jefa de premios y responsable de calidad, a cabezazos.</string>
+    <string name="tip_kenshi">El mejor desarrollador del mundo y autor de MetroWin, hecho con pasión y amor, gratis para todos.</string>
+    <string name="tip_maty">Responsable de calidad de MetroWin</string>
 </resources>

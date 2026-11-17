@@ -1,9 +1,9 @@
 package com.metrowin.launcher.ui.settings
 
 import android.content.Intent
-import androidx.compose.foundation.background
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -11,7 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,7 +23,6 @@ import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.components.Spacing
 import com.metrowin.launcher.ui.theme.LocalAccent
-import com.metrowin.launcher.ui.theme.onAccent
 
 const val KOFI_URL = "https://ko-fi.com/kenshi1299"
 
@@ -42,22 +43,19 @@ fun TipPage() {
         SettingHint(stringResource(R.string.tip_p3), size = MetroType.Body, lineHeight = 22.sp, minScale = 1f)
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             SettingHeading(stringResource(R.string.tip_credits))
-            Credit("K", "Kenshi", stringResource(R.string.tip_kenshi), "tip:kenshi")
-            Credit("M", "Maty", stringResource(R.string.tip_maty), "tip:maty")
+            Credit(R.drawable.tip_kenshi, "Kenshi", stringResource(R.string.tip_kenshi), "tip:kenshi")
+            Credit(R.drawable.tip_maty, "Maty", stringResource(R.string.tip_maty), "tip:maty")
         }
     }
 }
 
-/** A person (or a cat) in the thanks: an accent tile with the initial, the name, and what they did. */
+/** A person (or a cat) in the thanks: a photo of them, the name, and what they did. */
 @Composable
-private fun Credit(initial: String, name: String, role: String, tag: String) {
-    val accent = LocalAccent.current
+private fun Credit(@DrawableRes photo: Int, name: String, role: String, tag: String) {
     Row(Modifier.testTag(tag), horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
-        Box(Modifier.size(64.dp).background(accent), contentAlignment = Alignment.Center) {
-            MetroText(initial, size = MetroType.Title, color = onAccent())
-        }
+        Image(painterResource(photo), contentDescription = name, contentScale = ContentScale.Crop, modifier = Modifier.size(104.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            MetroText(name, size = MetroType.Heading, color = accent)
+            MetroText(name, size = MetroType.Heading, color = LocalAccent.current)
             SettingHint(role)
         }
     }

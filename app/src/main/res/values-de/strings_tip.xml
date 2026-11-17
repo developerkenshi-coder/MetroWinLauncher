@@ -6,9 +6,9 @@
     <string name="tip_title">Leckerlis für Maty</string>
     <string name="tip_p1">Hallo! Ich hoffe, du magst MetroWin Launcher! Das Projekt, das du benutzt, ist aus Leidenschaft und mit Liebe zu den alten Windows Phones entstanden. MetroWin ist und bleibt für immer ein FOSS-Projekt. Wenn du Lust hast, meiner Katze ein paar Leckerlis zu kaufen, ist das hier der Link, den du brauchst:</string>
     <string name="tip_button">ko-fi.com/kenshi1299</string>
-    <string name="tip_p2">Ich bin sicher, dass sie deine Geste zu schätzen wüsste und sich mit ein paar Köpfchen oder Schleckern bedanken würde!</string>
+    <string name="tip_p2">Ich bin sicher, dass sie deine Geste zu schätzen wüsste und sich mit ein paar Schleckern bedanken würde!</string>
     <string name="tip_p3">Wenn du nur aus Neugier hier bist, danke ich dir trotzdem, denn du benutzt meinen Launcher. Wenn du Probleme findest oder Vorschläge hast, um den Launcher besser zu machen, nutze gern ein Ticket im Bereich \"Fehlerbericht\".</string>
     <string name="tip_credits">danke an</string>
-    <string name="tip_kenshi">Der Autor von MetroWin Launcher. Mit Leidenschaft gemacht, kostenlos, für alle.</string>
-    <string name="tip_maty">Die Katze. Oberste Leckerli-Testerin und Qualitätsleiterin, mit Köpfchen.</string>
+    <string name="tip_kenshi">Der beste Entwickler der Welt und Autor von MetroWin, gemacht mit Leidenschaft und Liebe, gratis für alle.</string>
+    <string name="tip_maty">Qualitätsverantwortliche von MetroWin</string>
 </resources>
