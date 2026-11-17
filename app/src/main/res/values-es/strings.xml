@@ -129,7 +129,7 @@
     <string name="stepper_minus">menos</string>
     <string name="stepper_plus">más</string>
     <string name="theme_auto_accent">acento según la foto de Start</string>
-    <string name="theme_auto_accent_hint">El acento toma el color principal de la foto, como el más cercano de los 20 colores de Windows Phone.</string>
+    <string name="theme_auto_accent_hint">El acento toma el color principal de la foto, como el más cercano de los 21 colores de Windows Phone.</string>
 
     <!-- barra de edición y reloj de Start -->
     <string name="edit_size_small">mosaico pequeño</string>
@@ -747,12 +747,12 @@
     <string name="accent_hue">tono</string>
     <string name="accent_saturation">intensidad</string>
     <string name="accent_brightness">luminosidad</string>
-    <string name="accent_use_preset">volver a los 20 colores</string>
+    <string name="accent_use_preset">volver a los 21 colores</string>
     <string name="tut_look_label">ASPECTO</string>
     <string name="tut_look_title">hazlo tuyo</string>
     <string name="tut_look_intro">Tres temas y cualquier color. Abre ajustes → aspecto y temas para elegir.</string>
     <string name="tut_look_tip1">Clásico es el aspecto plano de Windows Phone. Cristal moderno es cristal esmerilado sobre un fondo resplandeciente. Droid moderno sigue Material You.</string>
-    <string name="tut_look_tip2">Elige uno de los 20 colores de acento o crea el tuyo con los tres controles deslizantes. Oscuro, claro o por horas, en todos los temas.</string>
+    <string name="tut_look_tip2">Elige uno de los 21 colores de acento o crea el tuyo con los tres controles deslizantes. Oscuro, claro o por horas, en todos los temas.</string>
 
     <!-- batería -->
     <string name="sec_battery">batería</string>

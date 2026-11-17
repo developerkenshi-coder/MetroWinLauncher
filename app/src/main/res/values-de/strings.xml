@@ -129,7 +129,7 @@
     <string name="stepper_minus">Weniger</string>
     <string name="stepper_plus">Mehr</string>
     <string name="theme_auto_accent">Akzent aus dem Start-Foto</string>
-    <string name="theme_auto_accent_hint">Der Akzent übernimmt die Hauptfarbe des Fotos, und zwar die nächstliegende der 20 Windows-Phone-Farben.</string>
+    <string name="theme_auto_accent_hint">Der Akzent übernimmt die Hauptfarbe des Fotos, und zwar die nächstliegende der 21 Windows-Phone-Farben.</string>
 
     <!-- edit bar and Start clock -->
     <string name="edit_size_small">Kleine Kachel</string>
@@ -742,12 +742,12 @@
     <string name="accent_hue">Farbton</string>
     <string name="accent_saturation">Sättigung</string>
     <string name="accent_brightness">Helligkeit</string>
-    <string name="accent_use_preset">Zurück zu den 20 Farben</string>
+    <string name="accent_use_preset">Zurück zu den 21 Farben</string>
     <string name="tut_look_label">AUSSEHEN</string>
     <string name="tut_look_title">Passe es an</string>
     <string name="tut_look_intro">Drei Designs und jede Farbe. Öffne Einstellungen → Aussehen und Designs zum Auswählen.</string>
     <string name="tut_look_tip1">Klassisch ist der flache Windows-Phone-Look. Modern Glass ist mattiertes Glas vor leuchtendem Hintergrund. Modern Droid folgt Material You.</string>
-    <string name="tut_look_tip2">Wähle eine der 20 Akzentfarben oder mische mit den drei Reglern deine eigene. Dunkel, hell oder nach Uhrzeit, in jedem Design.</string>
+    <string name="tut_look_tip2">Wähle eine der 21 Akzentfarben oder mische mit den drei Reglern deine eigene. Dunkel, hell oder nach Uhrzeit, in jedem Design.</string>
 
     <!-- battery -->
     <string name="sec_battery">Akku</string>

@@ -106,7 +106,7 @@ internal fun RetroBar(buttons: List<AppBarItem>, items: List<AppBarItem>, modifi
                             open,
                             enter = if (reduced) EnterTransition.None else slideInVertically(metroTween(260)) { -it } + expandVertically(metroTween(260)) + fadeIn(metroTween(260)),
                             exit = if (reduced) ExitTransition.None else slideOutVertically(metroTween(180, easing = Motion.Accelerate)) { -it } + shrinkVertically(metroTween(180, easing = Motion.Accelerate)) + fadeOut(metroTween(180)),
-                        ) { FontScaleAtMost(TextScaleCap.BAR) { MetroText(item.label, size = MetroType.Caption, weight = FontWeight.Normal, maxLines = 1, color = colors.foreground, modifier = Modifier.padding(top = 2.dp, bottom = 6.dp)) } }
+                        ) { FontScaleAtMost(TextScaleCap.BAR) { MetroText(item.label.sentenceCase(), size = MetroType.Micro, weight = FontWeight.Normal, maxLines = 1, color = colors.foreground, modifier = Modifier.padding(top = 2.dp, bottom = 6.dp)) } }
                         Box(Modifier.padding(bottom = if (open) 0.dp else (BAR_HEIGHT - BUTTON) / 2))
                     }
                 }

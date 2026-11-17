@@ -257,9 +257,9 @@ controlli (pulsanti, interruttori, campi, cursori), non la struttura: i gesti e 
   grandi, pulsanti a pillola, interruttore con il cursore grande che cresce da acceso. I colori sono quelli dello **sfondo del
   telefono** da Android 12 (`system_accent1…neutral2`, mappati sui toni di Material), oppure, se lo spegni o il telefono è
   più vecchio, costruiti dal colore d'accento scelto: toni che hanno la stessa *luminosità percepita* (L\* di Lab) per ogni tinta, così il
-  testo si legge per tutti i 20 colori (lo controlla un test).
+  testo si legge per tutti i 21 colori (lo controlla un test).
 - **Colori**: i **20 di Windows Phone**, oppure un **colore tuo** con tre cursori (tonalità, intensità, luminosità) e
-  un'anteprima; "torna ai 20 colori" lo toglie. Vale per tutti e tre gli stili. Un colore d'accento dalla foto di Start è
+  un'anteprima; "torna ai 21 colori" lo toglie. Vale per tutti e tre gli stili. Un colore d'accento dalla foto di Start è
   sempre quello dei 20 e il colore tuo lo spegne; il file tema porta con sé stile e colore tuo.
 
 - **Nero OLED** (*start+theme*, interruttore): per gli schermi OLED, nel tema scuro lo sfondo è nero vero in tutti e tre gli stili, quindi
@@ -342,7 +342,7 @@ dati dell'app (conteggi, ricerche recenti) restano sul telefono e **non entrano 
 12. **Timer e sveglie**: `timer 10 minuti`, `timer 1h30`, `sveglia alle 7 e 30`, `sveglia 7:30`, anche a voce. Parte nell'app Orologio del telefono.
 
 **Start**
-13. **Colore del riquadro**: il pulsante sul riquadro selezionato apre i 20 colori (o il colore del tema).
+13. **Colore del riquadro**: il pulsante sul riquadro selezionato apre i 21 colori (o il colore del tema).
 14. **Annulla**: dopo aver tolto, ridimensionato, colorato o spostato un riquadro, o cambiato una cartella, una barra per sei secondi offre di
     annullare l'ultima modifica (un riquadro tolto con la sua nota o il suo numero torna com'era; un widget no: libera subito il suo posto).
 15. **Impostazioni di Android su Start**: dal **+** della barra di modifica, ad esempio *Wi-Fi* o *Batteria*, come riquadri.

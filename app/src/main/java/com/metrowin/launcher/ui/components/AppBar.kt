@@ -90,8 +90,11 @@ private fun SuperBar(items: List<AppBarItem>, modifier: Modifier) {
                 Box(Modifier.size(48.dp).border(2.dp, colors.foreground, CircleShape).clip(CircleShape), contentAlignment = Alignment.Center) {
                     item.icon?.let { MarkIcon(it, 20.dp) } ?: MetroText(item.symbol, size = MetroType.Subtitle, weight = FontWeight.Normal)
                 }
-                MetroText(item.label, size = MetroType.Micro, color = colors.subtle, modifier = Modifier.padding(top = 2.dp))
+                MetroText(item.label.sentenceCase(), size = MetroType.Micro, color = colors.subtle, modifier = Modifier.padding(top = 2.dp))
             }
         } }
     }
 }
+
+/** The label of a bar button: 11 sp, with a capital on the first letter only, as under the icons of Windows Phone. */
+internal fun String.sentenceCase() = replaceFirstChar { it.titlecase(java.util.Locale.getDefault()) }

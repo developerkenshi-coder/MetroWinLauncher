@@ -303,7 +303,7 @@ private fun Display(session: CalcSession.View, options: CalcOptions, modifier: M
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
             MetroText(
-                shown(session.expression, look).ifEmpty { "0" }, size = 54.sp, maxLines = 2, lineHeight = 58.sp, textAlign = TextAlign.End,
+                shown(session.expression, look).ifEmpty { "0" }, size = 64.sp, maxLines = 2, lineHeight = 68.sp, textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f, fill = false).alpha(if (session.finished) 0.25f + 0.75f * arrival.value else 1f).testTag("calc:expression"),
             )
             if (look && !session.finished && failure == null) Cursor()
@@ -458,7 +458,7 @@ private fun Key(
         contentAlignment = Alignment.Center,
     ) {
         MetroText(
-            label, size = if (small) labelSize else 28.sp, weight = if (digit || equals) FontWeight.Normal else FontWeight.Light,
+            label, size = if (small) labelSize else 32.sp, weight = FontWeight.Light,
             color = if (lit || equals) onAccent() else if (operator) accent else colors.foreground, maxLines = 1,
         )
     }

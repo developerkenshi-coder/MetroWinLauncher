@@ -5,9 +5,9 @@
     <string name="info_theme_hours">Le ore del tema scuro quando il tema segue l’orario. La fine può essere prima dell’inizio: la notte passa la mezzanotte.</string>
     <string name="info_theme_oled">Sfondi nero puro nel tema scuro: su schermo OLED quei pixel sono spenti, quindi più contrasto e meno batteria. Nessun effetto nel tema chiaro o su schermo LCD.</string>
     <string name="info_theme_dynamic">Costruisce il tema dai colori dello sfondo di Android (Android 12 e successivi). Spento, il tema usa il colore d’accento che scegli sotto.</string>
-    <string name="info_theme_accent">Il colore di tile, pulsanti ed evidenziazioni: uno dei 20 colori di Windows Phone, o uno tuo con tre cursori.</string>
+    <string name="info_theme_accent">Il colore di tile, pulsanti ed evidenziazioni: uno dei 21 colori di Windows Phone, o uno tuo con tre cursori.</string>
     <string name="info_theme_night_accent">Un secondo colore d’accento usato solo mentre il tema scuro è attivo, per esempio uno più morbido di notte.</string>
-    <string name="info_theme_auto_accent">L’accento segue la foto di Start: il più vicino ai suoi colori tra i 20 di Windows Phone. Serve una foto; scegliere un colore a mano lo ferma.</string>
+    <string name="info_theme_auto_accent">L’accento segue la foto di Start: il più vicino ai suoi colori tra i 21 di Windows Phone. Serve una foto; scegliere un colore a mano lo ferma.</string>
     <string name="info_theme_background">Una foto dietro Start, scelta dalla galleria. I tile delle app integrate la lasciano vedere attraverso. La foto resta sul telefono.</string>
     <string name="info_theme_syswallpaper">Finché MetroWin è la tua app home, lo sfondo di Android è la foto di Start (o il suo colore), quello che la schermata delle app recenti mostra dietro le schede. Spento, Android tiene il suo sfondo.</string>
     <string name="info_theme_pagebackgrounds">Ogni schermata Start può avere una foto propria. Una schermata senza foto mostra quella scelta per tutte.</string>

@@ -111,13 +111,13 @@ class LockScreenTest : ScreenshotBase() {
         advance(300)
         val box = compose.onNodeWithTag("lock:battery").fetchSemanticsNode().boundsInRoot
         val shot = capture("lock_battery")
-        // The icon is the first 28dp of the row: along its middle line, between the walls, a full charge is lit all the way (the old icon lit half).
+        // The icon is the first 28dp of the row: along its middle line, between the walls, a full charge is lit all the way, in five segments with a hair between them (the old icon lit half).
         val dp = compose.density.density
         val y = ((box.top + box.bottom) / 2).toInt()
         val from = (box.left + 4 * dp).toInt()
         val to = (box.left + 22 * dp).toInt()
         val lit = (from until to).count { shot.getPixel(it, y) and 0xFFFFFF == 0xFFFFFF }
-        assertTrue("a full battery is drawn full ($lit of ${to - from} pixels lit)", lit > (to - from) * 0.8)
+        assertTrue("a full battery is drawn full ($lit of ${to - from} pixels lit)", lit > (to - from) * 0.7)
     }
 
     @Test

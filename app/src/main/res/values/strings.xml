@@ -129,7 +129,7 @@
     <string name="stepper_minus">less</string>
     <string name="stepper_plus">more</string>
     <string name="theme_auto_accent">accent from the Start photo</string>
-    <string name="theme_auto_accent_hint">The accent takes the main color of the photo, as the closest of the 20 Windows Phone colors.</string>
+    <string name="theme_auto_accent_hint">The accent takes the main color of the photo, as the closest of the 21 Windows Phone colors.</string>
 
     <!-- edit bar and Start clock -->
     <string name="edit_size_small">small tile</string>
@@ -742,12 +742,12 @@
     <string name="accent_hue">hue</string>
     <string name="accent_saturation">strength</string>
     <string name="accent_brightness">lightness</string>
-    <string name="accent_use_preset">back to the 20 colors</string>
+    <string name="accent_use_preset">back to the 21 colors</string>
     <string name="tut_look_label">LOOK</string>
     <string name="tut_look_title">make it yours</string>
     <string name="tut_look_intro">Three themes and any color. Open settings → look and themes to choose.</string>
     <string name="tut_look_tip1">Classic is the flat Windows Phone look. Modern Glass is frosted glass over a glowing backdrop. Modern Droid follows Material You.</string>
-    <string name="tut_look_tip2">Pick one of the 20 accent colors, or make your own with the three sliders. Dark, light, or by the hour, in every theme.</string>
+    <string name="tut_look_tip2">Pick one of the 21 accent colors, or make your own with the three sliders. Dark, light, or by the hour, in every theme.</string>
 
     <!-- battery -->
     <string name="sec_battery">battery</string>

@@ -5,9 +5,9 @@
     <string name="info_theme_hours">As horas do tema escuro quando o tema segue a hora. O fim pode ser antes do início: a noite passa a meia-noite.</string>
     <string name="info_theme_oled">Fundos preto puro no tema escuro: em ecrãs OLED esses píxeis ficam apagados, logo mais contraste e menos bateria. Sem efeito no tema claro ou em ecrãs LCD.</string>
     <string name="info_theme_dynamic">Constrói o tema com as cores do papel de parede do Android (Android 12 e posteriores). Desligado, o tema usa a cor de destaque que escolher abaixo.</string>
-    <string name="info_theme_accent">A cor dos blocos, botões e realces: uma das 20 cores do Windows Phone, ou uma sua com três controlos.</string>
+    <string name="info_theme_accent">A cor dos blocos, botões e realces: uma das 21 cores do Windows Phone, ou uma sua com três controlos.</string>
     <string name="info_theme_night_accent">Uma segunda cor de destaque usada só com o tema escuro, por exemplo uma mais suave à noite.</string>
-    <string name="info_theme_auto_accent">O destaque segue a foto do Start: a mais próxima das 20 cores do Windows Phone da sua cor principal. Precisa de uma foto; escolher uma cor à mão para isso.</string>
+    <string name="info_theme_auto_accent">O destaque segue a foto do Start: a mais próxima das 21 cores do Windows Phone da sua cor principal. Precisa de uma foto; escolher uma cor à mão para isso.</string>
     <string name="info_theme_background">Uma foto atrás do Start, escolhida na galeria. Os blocos dos apps integrados deixam-na ver. A foto fica no telefone.</string>
     <string name="info_theme_syswallpaper">Enquanto o MetroWin for o seu app de início, o fundo do Android é a foto do Start (ou a sua cor), o que o ecrã de apps recentes mostra atrás dos cartões. Desligado, o Android mantém o seu fundo.</string>
     <string name="info_theme_pagebackgrounds">Cada ecrã Start pode ter a sua própria foto. Um ecrã sem foto mostra a escolhida para todos.</string>

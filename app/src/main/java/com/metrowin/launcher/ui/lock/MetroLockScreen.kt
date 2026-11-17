@@ -387,7 +387,7 @@ private fun Modifier.sensorSpot(y: Float, ownIcon: Boolean) = graphicsLayer(comp
 private fun LockClock(time: java.time.ZonedDateTime, is24Hour: Boolean, locale: Locale, modifier: Modifier = Modifier) {
     Row(modifier, verticalAlignment = Alignment.Bottom) {
         MetroText(
-            ClockFormat.time(time.toLocalTime(), is24Hour, locale), size = 104.sp, color = Color.White, maxLines = 1, tabular = true,
+            ClockFormat.time(time.toLocalTime(), is24Hour, locale), size = 100.sp, color = Color.White, maxLines = 1, tabular = true,
             modifier = Modifier.weight(1f, fill = false).testTag("lock:time"),
         )
         val meridiem = ClockFormat.meridiem(time.toLocalTime(), is24Hour, locale)
@@ -400,7 +400,7 @@ private fun LockClock(time: java.time.ZonedDateTime, is24Hour: Boolean, locale: 
 @Composable
 private fun LockDate(time: java.time.ZonedDateTime, locale: Locale) {
     MetroText(
-        ClockFormat.date(time.toLocalDate(), locale), size = 26.sp, color = Color.White, weight = FontWeight.Normal,
+        ClockFormat.date(time.toLocalDate(), locale), size = 30.sp, color = Color.White, weight = FontWeight.Normal,
         modifier = Modifier.testTag("lock:date"),
     )
 }

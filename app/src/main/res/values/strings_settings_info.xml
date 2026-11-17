@@ -5,9 +5,9 @@
     <string name="info_theme_hours">The hours of the dark theme when the theme follows the hour. The end may be earlier than the start: the night goes through midnight.</string>
     <string name="info_theme_oled">Pure black backgrounds in the dark theme: on an OLED screen those pixels are off, so more contrast and less battery. No effect in the light theme or on an LCD screen.</string>
     <string name="info_theme_dynamic">Builds the theme from the colors of your Android wallpaper (Android 12 and later). Off, the theme uses the accent you choose below.</string>
-    <string name="info_theme_accent">The color of live tiles, buttons and highlights: one of the 20 Windows Phone colors, or your own with three sliders.</string>
+    <string name="info_theme_accent">The color of live tiles, buttons and highlights: one of the 21 Windows Phone colors, or your own with three sliders.</string>
     <string name="info_theme_night_accent">A second accent color used only while the dark theme is on, for example a softer one at night.</string>
-    <string name="info_theme_auto_accent">The accent follows the Start photo: the closest of the 20 Windows Phone colors to its main color. It needs a photo; choosing a color by hand stops it.</string>
+    <string name="info_theme_auto_accent">The accent follows the Start photo: the closest of the 21 Windows Phone colors to its main color. It needs a photo; choosing a color by hand stops it.</string>
     <string name="info_theme_background">A photo behind Start, chosen from your gallery. The tiles of the built-in apps show it through them. The photo stays on the phone.</string>
     <string name="info_theme_syswallpaper">While MetroWin is your home app, Android’s wallpaper is the Start photo (or its color), which is what the recent-apps screen shows behind the cards. Off, Android keeps its own wallpaper.</string>
     <string name="info_theme_pagebackgrounds">Each Start screen can have its own photo. A screen without one shows the photo chosen for all.</string>

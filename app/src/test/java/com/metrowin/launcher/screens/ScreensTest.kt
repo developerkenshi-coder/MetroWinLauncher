@@ -567,7 +567,7 @@ class ScreensTest : ScreenshotBase() {
         // The colors are under the three looks now: scroll until the last swatch is on screen.
         scrollIntoView("accent:0", topMargin = 0.2f)
         val upper = capture("settings_start_theme").pixels()
-        scrollIntoView("accent:19", topMargin = 0.2f)
+        scrollIntoView("accent:20", topMargin = 0.2f)
         val lower = capture("settings_start_theme_colors").pixels()
         // Every accent colour has a swatch on the page.
         MetroAccents.forEachIndexed { i, color ->

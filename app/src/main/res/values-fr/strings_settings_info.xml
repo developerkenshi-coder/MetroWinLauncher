@@ -5,9 +5,9 @@
     <string name="info_theme_hours">Les heures du thème sombre quand le thème suit l’heure. La fin peut précéder le début : la nuit passe minuit.</string>
     <string name="info_theme_oled">Fonds noir pur dans le thème sombre : sur un écran OLED ces pixels sont éteints, donc plus de contraste et moins de batterie. Sans effet dans le thème clair ou sur un écran LCD.</string>
     <string name="info_theme_dynamic">Construit le thème à partir des couleurs du fond d’écran d’Android (Android 12 et suivants). Désactivé, le thème utilise la couleur d’accent choisie ci-dessous.</string>
-    <string name="info_theme_accent">La couleur des tuiles, des boutons et des surlignages : l’une des 20 couleurs de Windows Phone, ou la vôtre avec trois curseurs.</string>
+    <string name="info_theme_accent">La couleur des tuiles, des boutons et des surlignages : l’une des 21 couleurs de Windows Phone, ou la vôtre avec trois curseurs.</string>
     <string name="info_theme_night_accent">Une seconde couleur d’accent utilisée seulement avec le thème sombre, par exemple une plus douce la nuit.</string>
-    <string name="info_theme_auto_accent">L’accent suit la photo de Start : la plus proche des 20 couleurs de Windows Phone de sa couleur principale. Il faut une photo ; choisir une couleur à la main l’arrête.</string>
+    <string name="info_theme_auto_accent">L’accent suit la photo de Start : la plus proche des 21 couleurs de Windows Phone de sa couleur principale. Il faut une photo ; choisir une couleur à la main l’arrête.</string>
     <string name="info_theme_background">Une photo derrière Start, choisie dans votre galerie. Les tuiles des applications intégrées la laissent voir. La photo reste sur le téléphone.</string>
     <string name="info_theme_syswallpaper">Tant que MetroWin est votre application d’accueil, le fond d’Android est la photo de Start (ou sa couleur), ce que l’écran des applications récentes montre derrière les cartes. Désactivé, Android garde son fond.</string>
     <string name="info_theme_pagebackgrounds">Chaque écran Start peut avoir sa propre photo. Un écran sans photo affiche celle choisie pour tous.</string>

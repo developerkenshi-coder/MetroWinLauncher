@@ -71,6 +71,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import com.metrowin.launcher.model.AppCategory
 import androidx.compose.foundation.lazy.LazyListState
@@ -651,8 +654,17 @@ private fun SearchRow(
             .padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        GlyphIcon(Glyph.Search, 24.dp, color = colors.subtle)
-        Spacer(Modifier.width(12.dp))
+        // The search button of Windows Phone: a round lens in a ring. Touched, it puts the cursor in the box, or searches what is typed.
+        val searchLabel = stringResource(R.string.search_apps)
+        Box(
+            Modifier.size(38.dp).border(2.dp, colors.subtle, CircleShape).clip(CircleShape)
+                .metroPress(onClick = {
+                    if (query.isEmpty()) { requester.requestFocus(); keyboard?.show() } else { onSubmit(query); focus.clearFocus() }
+                })
+                .semantics { contentDescription = searchLabel }.testTag("search:button"),
+            contentAlignment = Alignment.Center,
+        ) { GlyphIcon(Glyph.Search, 20.dp, color = colors.subtle) }
+        Spacer(Modifier.width(10.dp))
         Box(Modifier.weight(1f)) {
             if (query.isEmpty()) MetroText(stringResource(R.string.search_apps), size = 20.sp, color = colors.subtle)
             BasicTextField(

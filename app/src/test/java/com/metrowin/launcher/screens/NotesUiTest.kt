@@ -23,13 +23,13 @@ class NotesUiTest : ScreenshotBase() {
         show { NotesScreen() }
         settle()
         compose.onNodeWithTag("notes:empty").assertIsDisplayed()
-        compose.onNodeWithText("new").performClick()
+        compose.onNodeWithText("New").performClick()
         settle()
         compose.onNodeWithTag("notes:title").performTextInput("Shopping")
         compose.onNodeWithTag("notes:body").performTextInput("# List\n☐ milk\n- eggs")
         settle()
         capture("notes_editor")
-        compose.onNodeWithText("read").performClick()
+        compose.onNodeWithText("Read").performClick()
         settle()
         compose.onNodeWithTag("notes:read").assertIsDisplayed()
         capture("notes_read")
@@ -42,7 +42,7 @@ class NotesUiTest : ScreenshotBase() {
     fun aSketchOpensWithItsTools() {
         show { NotesScreen() }
         settle()
-        compose.onNodeWithText("sketch").performClick()
+        compose.onNodeWithText("Sketch").performClick()
         settle()
         compose.onNodeWithTag("sketch:page").assertIsDisplayed()
         compose.onNodeWithTag("sketch:tool:Rect").performClick()

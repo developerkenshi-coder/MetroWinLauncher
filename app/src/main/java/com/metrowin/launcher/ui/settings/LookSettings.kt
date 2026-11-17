@@ -218,7 +218,7 @@ val dynamicColorAvailable: Boolean get() = Build.VERSION.SDK_INT >= Build.VERSIO
 fun usesWallpaperColors(settings: LauncherSettings): Boolean =
     settings.themeStyle == ThemeStyle.Droid && settings.dynamicColor && dynamicColorAvailable
 
-/** The 20 accent colours in a grid of five columns. The chosen one has a frame. [tag] prefixes the test tags: one per grid on the page. */
+/** The 21 accent colours in a grid of seven columns. The chosen one has a frame. [tag] prefixes the test tags: one per grid on the page. */
 @Composable
 internal fun AccentGrid(selected: Int, modifier: Modifier = Modifier, tag: String = "accent", onSelect: (Int) -> Unit) {
     val frame = LocalMetroColors.current.foreground
@@ -243,4 +243,4 @@ internal fun AccentGrid(selected: Int, modifier: Modifier = Modifier, tag: Strin
     }
 }
 
-private const val ACCENT_COLUMNS = 5
+private const val ACCENT_COLUMNS = 7

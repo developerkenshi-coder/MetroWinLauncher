@@ -91,7 +91,7 @@ class RetroBarUiTest : ScreenshotBase() {
     fun theSuperBarShowsTheMenuUnderItsOwnDots() {
         showBar(ActionBarStyle.Super) { AppBar(listOf(item("Reply")), menu = listOf(item("Flag"))) }
         compose.onAllNodesWithText("Flag").assertCountEquals(0)
-        compose.onNodeWithText("more").performClick()
+        compose.onNodeWithText("More").performClick()
         compose.waitForIdle()
         advance(300)
         compose.onNodeWithText("Flag").assertExists()

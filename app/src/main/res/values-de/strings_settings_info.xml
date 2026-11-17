@@ -5,9 +5,9 @@
     <string name="info_theme_hours">Die Stunden des dunklen Designs, wenn es der Uhrzeit folgt. Das Ende darf vor dem Beginn liegen: die Nacht geht über Mitternacht.</string>
     <string name="info_theme_oled">Reines Schwarz im dunklen Design: auf OLED-Bildschirmen sind diese Pixel aus, also mehr Kontrast und weniger Akkuverbrauch. Keine Wirkung im hellen Design oder auf LCD.</string>
     <string name="info_theme_dynamic">Baut das Design aus den Farben deines Android-Hintergrunds (ab Android 12). Aus: das Design nutzt die unten gewählte Akzentfarbe.</string>
-    <string name="info_theme_accent">Die Farbe von Kacheln, Tasten und Hervorhebungen: eine der 20 Windows-Phone-Farben oder deine eigene mit drei Reglern.</string>
+    <string name="info_theme_accent">Die Farbe von Kacheln, Tasten und Hervorhebungen: eine der 21 Windows-Phone-Farben oder deine eigene mit drei Reglern.</string>
     <string name="info_theme_night_accent">Eine zweite Akzentfarbe, die nur beim dunklen Design gilt, zum Beispiel eine weichere für die Nacht.</string>
-    <string name="info_theme_auto_accent">Der Akzent folgt dem Start-Foto: die nächste der 20 Windows-Phone-Farben zu seiner Hauptfarbe. Es braucht ein Foto; eine von Hand gewählte Farbe stoppt das.</string>
+    <string name="info_theme_auto_accent">Der Akzent folgt dem Start-Foto: die nächste der 21 Windows-Phone-Farben zu seiner Hauptfarbe. Es braucht ein Foto; eine von Hand gewählte Farbe stoppt das.</string>
     <string name="info_theme_background">Ein Foto hinter Start, aus deiner Galerie gewählt. Die Kacheln der eingebauten Apps zeigen es durch sich hindurch. Das Foto bleibt auf dem Handy.</string>
     <string name="info_theme_syswallpaper">Solange MetroWin deine Home-App ist, ist Androids Hintergrund das Start-Foto (oder seine Farbe); das zeigt die Übersicht der letzten Apps hinter den Karten. Aus: Android behält seinen Hintergrund.</string>
     <string name="info_theme_pagebackgrounds">Jeder Start-Bildschirm kann ein eigenes Foto haben. Ohne eigenes Foto zeigt er das für alle gewählte.</string>

@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -331,15 +332,15 @@ fun TileColorSheet(current: Int, onPick: (Int) -> Unit, onDismiss: () -> Unit, m
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             MetroText(stringResource(R.string.tile_color_title), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle)
-            MetroAccents.chunked(5).forEachIndexed { row, group ->
+            MetroAccents.chunked(7).forEachIndexed { row, group ->
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     group.forEachIndexed { column, color ->
-                        val index = row * 5 + column
+                        val index = row * 7 + column
                         val argb = color.toArgbInt()
                         Box(
                             Modifier
                                 .weight(1f)
-                                .size(52.dp)
+                                .aspectRatio(1f)
                                 .testTag("color:$index")
                                 .metroPress(onClick = { onPick(argb) })
                                 .background(color),

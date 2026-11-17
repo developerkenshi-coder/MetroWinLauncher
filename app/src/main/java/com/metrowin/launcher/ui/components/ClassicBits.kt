@@ -84,6 +84,24 @@ fun MetroProgressBar(modifier: Modifier = Modifier, color: Color = LocalAccent.c
     }
 }
 
+/**
+ * The progress of a work whose length is known, in the dots of Windows Phone: a row of square dots across the width, the first ones in
+ * the accent as far as [progress] (0 to 1) has gone and the rest faint. For an amount in a chart use [MetroProgressBar] with a progress.
+ */
+@Composable
+fun MetroDotsProgress(progress: Float, modifier: Modifier = Modifier, color: Color = LocalAccent.current) {
+    val share = progress.coerceIn(0f, 1f)
+    val track = LocalMetroColors.current.foreground.copy(alpha = 0.1f)
+    Canvas(modifier.fillMaxWidth().height(4.dp).semantics { progressBarRangeInfo = ProgressBarRangeInfo(share, 0f..1f) }) {
+        val dot = 4.dp.toPx()
+        val count = DOTS_KNOWN
+        val lit = (share * count).toInt()
+        repeat(count) { i -> drawRect(if (i < lit) color else track, Offset((size.width - dot) * i / (count - 1f), 0f), Size(dot, dot)) }
+    }
+}
+
+private const val DOTS_KNOWN = 24
+
 /** The bar of [scrollThumb]: where it starts and how long it is, in the height of the list. Null when everything fits. */
 internal fun scrollThumb(viewport: Float, content: Float, scrolled: Float, minLength: Float): Pair<Float, Float>? {
     if (viewport <= 0f || content <= viewport) return null

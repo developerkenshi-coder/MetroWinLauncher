@@ -52,7 +52,7 @@ val Danger = Color(0xFFE51400)
 val DefaultAccent = Color(0xFF1BA1E2)
 
 /**
- * The 20 accent colours of Windows Phone 8, in the order of its colour picker. Microsoft only
+ * The 21 accent colours of Windows Phone 8.1, in the order of its colour picker (taupe is the last, so saved indices keep their colour). Microsoft only
  * published the table as an image, so these come from transcriptions of it and may be a shade off.
  */
 val MetroAccents: List<Color> = listOf(
@@ -76,6 +76,7 @@ val MetroAccents: List<Color> = listOf(
     Color(0xFF647687), // steel
     Color(0xFF76608A), // mauve
     Color(0xFF7A3B3F), // sienna
+    Color(0xFF87794E), // taupe
 )
 
 /** The two Windows Phone backgrounds: dark (the default) and light. */

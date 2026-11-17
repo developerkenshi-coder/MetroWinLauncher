@@ -40,6 +40,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.state.ToggleableState
+import com.metrowin.launcher.ui.components.MetroDotsProgress
 import com.metrowin.launcher.ui.components.MetroProgressBar
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -460,7 +461,7 @@ fun ProgressDialog(job: FileJob, onHide: () -> Unit) {
         MetroText(job.title, size = 22.sp)
         MetroText(name, size = 15.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, maxLines = 1)
         if (progress.totalBytes <= 0) MetroProgressBar(Modifier.padding(vertical = 3.dp))
-        else MetroProgressBar(Modifier.padding(vertical = 3.dp).testTag("fm:progress"), progress = share)
+        else MetroDotsProgress(share, Modifier.padding(vertical = 3.dp).testTag("fm:progress"))
         MetroText(
             if (progress.byCount) stringResource(R.string.fmx_count_of, done, progress.totalBytes)
             else size(done) + " / " + size(progress.totalBytes) + if (speed > 0) "  ·  " + stringResource(R.string.fmx_speed, size(speed), clock((progress.totalBytes - done) / speed)) else "",
@@ -481,7 +482,7 @@ fun ProgressStrip(job: FileJob, onShow: () -> Unit) {
     val label = job.title + if (progress.totalBytes > 0) " · " + (share * 100).toInt() + "%" else ""
     Column(Modifier.fillMaxWidth().testTag("fm:strip").semantics { contentDescription = label; role = Role.Button }.metroPress(onClick = onShow).padding(horizontal = 24.dp, vertical = 6.dp)) {
         MetroText(label, size = 14.sp, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle, maxLines = 1)
-        MetroProgressBar(Modifier.padding(top = 4.dp), progress = share)
+        MetroDotsProgress(share, Modifier.padding(top = 4.dp))
     }
 }
 

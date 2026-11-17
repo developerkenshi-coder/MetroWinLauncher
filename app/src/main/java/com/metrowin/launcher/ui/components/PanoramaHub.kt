@@ -38,7 +38,7 @@ const val PANORAMA_BACKDROP_SPEED = 0.25f
 val LocalHubHeadings = staticCompositionLocalOf { false }
 
 /** How much of the next section peeks in at the right edge, so it is clear the hub goes on. */
-private val PEEK = 36.dp
+private val PEEK = 24.dp
 
 /**
  * The panorama of a Windows Phone hub (Photos, News): a huge title cut by the left and right edge that moves at half the speed of the

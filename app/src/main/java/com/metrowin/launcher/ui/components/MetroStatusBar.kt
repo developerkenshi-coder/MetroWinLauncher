@@ -255,6 +255,11 @@ fun MetroStatusBar(
     }
     val batteryPart: @Composable () -> Unit = {
         if (on(StatusItem.Saver) && reading.saver) Said(R.string.a11y_sb_saver) { SaverPlus(color) }
+        // As on Windows Phone 8.1 the clock is to the left of the battery.
+        if (on(StatusItem.Time)) MetroText(
+            ClockFormat.time(clock, is24, java.util.Locale.getDefault()), size = 13.sp, color = color, maxLines = 1,
+            modifier = Modifier.testTag("statusbar:time"),
+        )
         if (on(StatusItem.BatteryPercent)) battery?.let {
             val said = stringResource(R.string.a11y_sb_battery, it.percent)
             MetroText("${it.percent}%", size = MetroType.Caption, color = color, maxLines = 1, modifier = Modifier.testTag("statusbar:battery").semantics { contentDescription = said })
@@ -265,10 +270,6 @@ fun MetroStatusBar(
             if (charging) Said(R.string.a11y_sb_charging) { Bolt(color, alpha = { 1f - 0.55f * sin(PI.toFloat() * sweep.value) }) }
             BatteryCell(it, color, sweep = { sweep.value })
         }
-        if (on(StatusItem.Time)) MetroText(
-            ClockFormat.time(clock, is24, java.util.Locale.getDefault()), size = 13.sp, color = color, maxLines = 1,
-            modifier = Modifier.testTag("statusbar:time"),
-        )
     }
     val gap = Arrangement.spacedBy(7.dp)
     val openLabel = stringResource(R.string.gact_action_center)
@@ -336,21 +337,21 @@ private fun SecondSimLines(level: Int, color: Color) {
     }
 }
 
-/** The Wi-Fi: four arcs and a dot, as many of the arcs lit as the signal has bars (0 to 4, as the bar of Android counts them). */
+/** The Wi-Fi: a fan of four solid sectors one inside the other, as many of them lit as the signal has bars (0 to 4, as the bar of Android counts them). */
 @Composable
 private fun WifiFan(level: Int, color: Color) {
     Canvas(Modifier.size(width = 15.dp, height = 12.dp)) {
-        val stroke = 1.4.dp.toPx()
         val base = Offset(size.width / 2, size.height)
-        drawCircle(color, radius = stroke, center = base)
-        for (arc in 1..4) {
-            val r = size.height * arc / 4f
-            drawArc(
-                color = if (arc <= level) color else color.copy(alpha = 0.3f),
-                startAngle = 225f, sweepAngle = 90f, useCenter = false,
-                topLeft = Offset(base.x - r, base.y - r), size = Size(r * 2, r * 2),
-                style = Stroke(stroke, cap = StrokeCap.Butt),
-            )
+        val pitch = size.height / 4f
+        val thick = pitch - 1.dp.toPx()
+        for (sector in 1..4) {
+            val c = if (sector <= level) color else color.copy(alpha = 0.3f)
+            if (sector == 1) {
+                drawArc(c, 225f, 90f, true, Offset(base.x - pitch, base.y - pitch), Size(pitch * 2, pitch * 2))
+            } else {
+                val r = sector * pitch - thick / 2
+                drawArc(c, 225f, 90f, false, Offset(base.x - r, base.y - r), Size(r * 2, r * 2), style = Stroke(thick, cap = StrokeCap.Butt))
+            }
         }
     }
 }
@@ -438,16 +439,22 @@ internal fun BatteryCell(
         drawRoundRect(color, size = Size(body, size.height), cornerRadius = CornerRadius(1.dp.toPx()), style = Stroke(stroke))
         drawRect(color, topLeft = Offset(body, size.height * 0.3f), size = Size(nub, size.height * 0.4f))
         val inner = body - stroke * 4
-        val fill = inner * battery.percent / 100f
+        // Five segments with a hair between them, as many lit as the charge fills (at least one while there is any charge).
+        val segments = 5
+        val gap = 0.8.dp.toPx()
+        val width = (inner - gap * (segments - 1)) / segments
+        val lit = if (battery.percent <= 0) 0 else ((battery.percent * segments + 50) / 100).coerceIn(1, segments)
         val low = battery.percent <= 15 && battery.state == BatteryState.Discharging
-        drawRect(
-            if (low) Danger else color,
-            topLeft = Offset(stroke * 2, stroke * 2), size = Size(fill, size.height - stroke * 4),
-        )
         val s = sweep()
-        if (s > 0f) {
-            val reach = (inner - fill) * s
-            drawRect(color.copy(alpha = 0.55f * (1f - s * s)), topLeft = Offset(stroke * 2 + fill, stroke * 2), size = Size(reach, size.height - stroke * 4))
+        // While charging the segments above the charge fade in as the sweep goes by.
+        val reach = (segments - lit) * s
+        for (i in 0 until segments) {
+            val shade = when {
+                i < lit -> if (low) Danger else color
+                s > 0f && i - lit < reach -> color.copy(alpha = 0.55f * (1f - s * s))
+                else -> continue
+            }
+            drawRect(shade, topLeft = Offset(stroke * 2 + i * (width + gap), stroke * 2), size = Size(width, size.height - stroke * 4))
         }
     }
 }

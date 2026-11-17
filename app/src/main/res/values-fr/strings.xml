@@ -129,7 +129,7 @@
     <string name="stepper_minus">moins</string>
     <string name="stepper_plus">plus</string>
     <string name="theme_auto_accent">accentuation d’après la photo de Start</string>
-    <string name="theme_auto_accent_hint">La couleur d’accentuation reprend la couleur principale de la photo, en choisissant la plus proche parmi les 20 couleurs de Windows Phone.</string>
+    <string name="theme_auto_accent_hint">La couleur d’accentuation reprend la couleur principale de la photo, en choisissant la plus proche parmi les 21 couleurs de Windows Phone.</string>
 
     <!-- barre d’édition et horloge de Start -->
     <string name="edit_size_small">petite tuile</string>
@@ -747,12 +747,12 @@
     <string name="accent_hue">teinte</string>
     <string name="accent_saturation">intensité</string>
     <string name="accent_brightness">luminosité</string>
-    <string name="accent_use_preset">retour aux 20 couleurs</string>
+    <string name="accent_use_preset">retour aux 21 couleurs</string>
     <string name="tut_look_label">APPARENCE</string>
     <string name="tut_look_title">à votre image</string>
     <string name="tut_look_intro">Trois thèmes et toutes les couleurs. Ouvrez réglages → apparence et thèmes pour choisir.</string>
     <string name="tut_look_tip1">Classique est l’apparence plate de Windows Phone. Modern Glass est du verre dépoli sur un arrière-plan lumineux. Modern Droid suit Material You.</string>
-    <string name="tut_look_tip2">Choisissez l’une des 20 couleurs d’accentuation, ou créez la vôtre avec les trois curseurs. Sombre, clair ou selon l’heure, dans chaque thème.</string>
+    <string name="tut_look_tip2">Choisissez l’une des 21 couleurs d’accentuation, ou créez la vôtre avec les trois curseurs. Sombre, clair ou selon l’heure, dans chaque thème.</string>
 
     <!-- batterie -->
     <string name="sec_battery">batterie</string>

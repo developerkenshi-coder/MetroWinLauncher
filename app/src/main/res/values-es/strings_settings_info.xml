@@ -5,9 +5,9 @@
     <string name="info_theme_hours">Las horas del tema oscuro cuando el tema sigue la hora. El final puede ser antes que el inicio: la noche pasa de medianoche.</string>
     <string name="info_theme_oled">Fondos negro puro en el tema oscuro: en pantallas OLED esos píxeles están apagados, así que más contraste y menos batería. Sin efecto en el tema claro ni en pantallas LCD.</string>
     <string name="info_theme_dynamic">Construye el tema con los colores del fondo de Android (Android 12 y posteriores). Apagado, el tema usa el color de acento que elijas abajo.</string>
-    <string name="info_theme_accent">El color de mosaicos, botones y resaltados: uno de los 20 colores de Windows Phone, o uno tuyo con tres controles.</string>
+    <string name="info_theme_accent">El color de mosaicos, botones y resaltados: uno de los 21 colores de Windows Phone, o uno tuyo con tres controles.</string>
     <string name="info_theme_night_accent">Un segundo color de acento que se usa solo con el tema oscuro, por ejemplo uno más suave de noche.</string>
-    <string name="info_theme_auto_accent">El acento sigue la foto de Start: el más cercano de los 20 colores de Windows Phone a su color principal. Necesita una foto; elegir un color a mano lo detiene.</string>
+    <string name="info_theme_auto_accent">El acento sigue la foto de Start: el más cercano de los 21 colores de Windows Phone a su color principal. Necesita una foto; elegir un color a mano lo detiene.</string>
     <string name="info_theme_background">Una foto detrás de Start, elegida de tu galería. Los mosaicos de las apps integradas la dejan ver. La foto se queda en el teléfono.</string>
     <string name="info_theme_syswallpaper">Mientras MetroWin es tu app de inicio, el fondo de Android es la foto de Start (o su color), lo que muestra la pantalla de apps recientes detrás de las tarjetas. Apagado, Android conserva su fondo.</string>
     <string name="info_theme_pagebackgrounds">Cada pantalla Start puede tener su propia foto. Una pantalla sin foto muestra la elegida para todas.</string>

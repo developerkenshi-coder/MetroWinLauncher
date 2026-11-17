@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +46,8 @@ fun MenuPanel(modifier: Modifier = Modifier, tag: String? = null, content: @Comp
     val shown = remember { Animatable(if (reduce) 1f else 0f) }
     val timing = MotionTable.timing(Surface.Menu, LocalStyle.current.kind, reduce)
     LaunchedEffect(Unit) { if (!reduce) shown.animateTo(1f, metroTween(durationMillis = timing.inMs, easing = Motion.Decelerate)) }
+    val order = remember { IntArray(1) }
+    CompositionLocalProvider(LocalMenuOrder provides order) {
     Column(
         modifier
             .then(if (tag != null) Modifier.testTag(tag) else Modifier)
@@ -60,7 +64,11 @@ fun MenuPanel(modifier: Modifier = Modifier, tag: String? = null, content: @Comp
             .padding(vertical = Spacing.Medium),
         content = content,
     )
+    }
 }
+
+/** Counts the entries of the [MenuPanel] as they are first composed, so that each one knows its place in the cascade. Null outside a panel. */
+private val LocalMenuOrder = staticCompositionLocalOf<IntArray?> { null }
 
 /** An entry of a [MenuPanel]: at least 48 dp high, so that a finger finds it, and growing with the text when this is made bigger. */
 @Composable
@@ -68,8 +76,18 @@ fun MenuItem(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, c
     // Windows Phone: the entry that is touched fills with the accent.
     var pressed by remember { mutableStateOf(false) }
     val lit = pressed && LocalStyle.current.isClassic
+    // In a panel the entries come in one after the other, not all together.
+    val order = LocalMenuOrder.current
+    val reduce = LocalReduceMotion.current
+    val cascade = remember { Animatable(if (order == null || reduce) 1f else 0f) }
+    LaunchedEffect(Unit) {
+        if (cascade.value < 1f) {
+            kotlinx.coroutines.delay(CASCADE_STEP_MS * (order!![0]++).coerceAtMost(CASCADE_MAX).toLong())
+            cascade.animateTo(1f, metroTween(durationMillis = CASCADE_MS, easing = Motion.Decelerate))
+        }
+    }
     Box(
-        modifier.fillMaxWidth().heightIn(min = 48.dp).then(if (lit) Modifier.background(LocalAccent.current) else Modifier)
+        modifier.graphicsLayer { alpha = cascade.value; translationY = (1f - cascade.value) * 10.dp.toPx() }.fillMaxWidth().heightIn(min = 48.dp).then(if (lit) Modifier.background(LocalAccent.current) else Modifier)
             .metroPress(onClick = onClick, onPressedChange = { pressed = it }).padding(horizontal = Spacing.Page, vertical = Spacing.Large),
         contentAlignment = Alignment.CenterStart,
     ) {
@@ -78,4 +96,7 @@ fun MenuItem(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, c
 }
 
 private const val POP_FROM = 0.94f
+private const val CASCADE_STEP_MS = 35
+private const val CASCADE_MAX = 8
+private const val CASCADE_MS = 180
 private val MENU_MAX_HEIGHT = 440.dp
