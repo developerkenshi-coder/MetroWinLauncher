@@ -60,6 +60,27 @@ class AppearanceUiTest : ScreenshotBase() {
     }
 
     @Test
+    fun theTextNeverGrowsBeyondTheCapWhateverThePhoneAndTheSettingAsk() {
+        var capped = 0f
+        var within = 0f
+        show {
+            androidx.compose.runtime.CompositionLocalProvider(
+                androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(2f, 2f),
+            ) {
+                MetroTheme(textScale = 1.3f) { capped = androidx.compose.ui.platform.LocalDensity.current.fontScale }
+            }
+            androidx.compose.runtime.CompositionLocalProvider(
+                androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(2f, 1.2f),
+            ) {
+                MetroTheme(textScale = 1f) { within = androidx.compose.ui.platform.LocalDensity.current.fontScale }
+            }
+        }
+        advance(300)
+        assertEquals(com.metrowin.launcher.ui.theme.MAX_FONT_SCALE, capped, 1e-4f)
+        assertEquals(1.2f, within, 1e-4f)
+    }
+
+    @Test
     fun theDensityOfTheScreenStaysTheSameWhenOnlyTheTextGrows() {
         var before = 0f
         var after = 0f

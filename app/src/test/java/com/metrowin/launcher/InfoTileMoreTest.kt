@@ -95,11 +95,11 @@ class InfoTileMoreTest {
     }
 
     @Test
-    fun anEventWithinTheHourStaysAlone() {
+    fun anEventWithinTheHourComesFirstAndNothingIsLeftOut() {
         val now = ms("2026-11-15T10:00:00")
-        assertEquals(listOf(InfoPart.Calendar), InfoPriority.order(faces, true, now, 10, now + 30 * 60_000, 0L))
+        assertEquals(listOf(InfoPart.Calendar, InfoPart.Time, InfoPart.Alarm, InfoPart.Photos), InfoPriority.order(faces, true, now, 10, now + 30 * 60_000, 0L))
         // An event just begun still counts; one far away does not.
-        assertEquals(listOf(InfoPart.Calendar), InfoPriority.order(faces, true, now, 10, now - 5 * 60_000, 0L))
+        assertEquals(listOf(InfoPart.Calendar, InfoPart.Time, InfoPart.Alarm, InfoPart.Photos), InfoPriority.order(faces, true, now, 10, now - 5 * 60_000, 0L))
         assertEquals(faces, InfoPriority.order(faces, true, now, 10, now + 3 * 3_600_000, 0L))
     }
 
@@ -107,14 +107,14 @@ class InfoTileMoreTest {
     fun whatCountsAsSoonIsTheTilesChoice() {
         val now = ms("2026-11-15T10:00:00")
         assertEquals(faces, InfoPriority.order(faces, true, now, 10, now + 30 * 60_000, 0L, soonMs = 15 * 60_000L))
-        assertEquals(listOf(InfoPart.Calendar), InfoPriority.order(faces, true, now, 10, now + 100 * 60_000, 0L, soonMs = 120 * 60_000L))
+        assertEquals(listOf(InfoPart.Calendar, InfoPart.Time, InfoPart.Alarm, InfoPart.Photos), InfoPriority.order(faces, true, now, 10, now + 100 * 60_000, 0L, soonMs = 120 * 60_000L))
     }
 
     @Test
-    fun anAlarmWithinTheHourStaysAloneAndTheNearerOfTwoComesFirst() {
+    fun anAlarmWithinTheHourComesFirstAndTheNearerOfTwoGoesFirst() {
         val now = ms("2026-11-15T07:00:00")
-        assertEquals(listOf(InfoPart.Alarm), InfoPriority.order(faces, true, now, 7, null, now + 20 * 60_000))
-        assertEquals(listOf(InfoPart.Alarm, InfoPart.Calendar), InfoPriority.order(faces, true, now, 7, now + 40 * 60_000, now + 10 * 60_000))
+        assertEquals(listOf(InfoPart.Alarm, InfoPart.Time, InfoPart.Calendar, InfoPart.Photos), InfoPriority.order(faces, true, now, 7, null, now + 20 * 60_000))
+        assertEquals(listOf(InfoPart.Alarm, InfoPart.Calendar, InfoPart.Time, InfoPart.Photos), InfoPriority.order(faces, true, now, 7, now + 40 * 60_000, now + 10 * 60_000))
     }
 
     @Test
@@ -126,22 +126,22 @@ class InfoTileMoreTest {
     }
 
     @Test
-    fun theBatteryComesOnlyWhenItMatters() {
+    fun theBatteryComesFirstWhenLowAndLastWhenItDoesNotMatter() {
         val now = ms("2026-11-15T10:00:00")
         val all = listOf(InfoPart.Time, InfoPart.Battery, InfoPart.Photos)
-        // Fine and not charging: left out. Low: alone. Charging: in the turn. Switched off: as it was.
-        assertEquals(listOf(InfoPart.Time, InfoPart.Photos), InfoPriority.order(all, true, now, 10, null, 0L, battery = battery(80)))
-        assertEquals(listOf(InfoPart.Battery), InfoPriority.order(all, true, now, 10, null, 0L, battery = battery(15)))
+        // Fine and not charging: last, never left out. Low: first. Charging: where the user put it. Switched off: as it was.
+        assertEquals(listOf(InfoPart.Time, InfoPart.Photos, InfoPart.Battery), InfoPriority.order(all, true, now, 10, null, 0L, battery = battery(80)))
+        assertEquals(listOf(InfoPart.Battery, InfoPart.Time, InfoPart.Photos), InfoPriority.order(all, true, now, 10, null, 0L, battery = battery(15)))
         assertEquals(all, InfoPriority.order(all, true, now, 10, null, 0L, battery = battery(80, BatteryState.Charging)))
         assertEquals(all, InfoPriority.order(all, true, now, 10, null, 0L, battery = battery(15), smartBattery = false))
         assertEquals(listOf(InfoPart.Battery), InfoPriority.order(listOf(InfoPart.Battery), true, now, 10, null, 0L, battery = battery(80)))
     }
 
     @Test
-    fun rainAboutToFallComesFirstAndAlone() {
+    fun rainAboutToFallComesFirstWithTheOthersAfterIt() {
         val now = ms("2026-11-15T10:00:00")
         val all = listOf(InfoPart.Time, InfoPart.Weather, InfoPart.Photos)
-        assertEquals(listOf(InfoPart.Weather), InfoPriority.order(all, true, now, 10, null, 0L, rainSoon = true))
+        assertEquals(listOf(InfoPart.Weather, InfoPart.Time, InfoPart.Photos), InfoPriority.order(all, true, now, 10, null, 0L, rainSoon = true))
         assertEquals(all, InfoPriority.order(all, true, now, 10, null, 0L, rainSoon = true, smartRain = false))
         assertEquals(all, InfoPriority.order(all, true, now, 10, null, 0L, rainSoon = false))
     }
@@ -221,5 +221,17 @@ class InfoTileMoreTest {
         assertEquals(listOf(InfoPart.Calendar), InfoPlan.parts(config, moment(eventStart = now + 20 * 60_000), saving = true))
         assertEquals(listOf(InfoPart.Time, InfoPart.Calendar, InfoPart.Alarm, InfoPart.Photos), InfoPlan.parts(config, moment(), saving = false))
         assertEquals(listOf(InfoPart.Time), InfoPlan.parts(config.copy(saver = true), moment(eventStart = now + 20 * 60_000), saving = true))
+    }
+
+    @Test
+    fun aTileComingBackGoesOnFromTheFaceItWasOn() {
+        val faces = listOf(InfoPart.Time to 0, InfoPart.Weather to 0, InfoPart.Note to 0)
+        assertEquals(0, InfoTileState.resume("r", faces))
+        InfoTileState.rest("r", faces, 2)
+        assertEquals(2, InfoTileState.resume("r", faces))
+        // Other faces (the data is not there yet): from the first.
+        assertEquals(0, InfoTileState.resume("r", listOf(InfoPart.Time to 0)))
+        InfoTileState.forget("r")
+        assertEquals(0, InfoTileState.resume("r", faces))
     }
 }

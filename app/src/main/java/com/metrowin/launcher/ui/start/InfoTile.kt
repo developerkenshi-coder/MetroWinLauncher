@@ -167,8 +167,8 @@ internal fun InfoFace(item: AppItem, size: TileSize, width: Dp, height: Dp, conf
     )
     val parts = remember(config, live, now, saving, timers) { InfoPlan.parts(config, moment, saving) }
     val dashboard = config.layout == InfoLayout.Dashboard && size != TileSize.Small && size != TileSize.Medium
-    val steps = parts.flatMap { part -> expand(part, config, live, events, weather, size) }
-    val weatherCount = weather?.let { weatherFaceCount(it, size) } ?: 1
+    val steps = parts.flatMap { part -> expand(part, config, live, events, weather, size, crowded = parts.size > 1) }
+    val keys = steps.map { it.part to it.sub }
     // Only a tile that follows what it says paints its colour; the summary and the controls are for the screen reader and the dots.
     SideEffect { InfoTileState.setTint(item.id, tintOf(config, live, hour)) }
     val summary = infoSummary(config, live, events, weather)
@@ -177,7 +177,7 @@ internal fun InfoFace(item: AppItem, size: TileSize, width: Dp, height: Dp, conf
     SideEffect { InfoControls.set(item.id, control) }
     DisposableEffect(item.id) { onDispose { InfoControls.forget(item.id) } }
     val touch = rememberTouchExploration()
-    var shownIndex by remember { mutableIntStateOf(0) }
+    var shownIndex by remember { mutableIntStateOf(InfoTileState.resume(item.id, keys)) }
     // What a touch opens in each turn, said by the face when it is drawn.
     val targets = remember { HashMap<InfoStep, String?>() }
     // Each time the photos come round they start somewhere else.
@@ -254,11 +254,12 @@ internal fun InfoFace(item: AppItem, size: TileSize, width: Dp, height: Dp, conf
             SideEffect { InfoTileState.show(item.id, only.part, targets[only]) }
         } else {
             FlipContainer(
-                steps.size, seed, resetKey = steps.map { it.part to it.sub }, pace = config.pace.scale, calm = true, auto = !touch, control = control,
+                steps.size, seed, startFace = InfoTileState.resume(item.id, keys), resetKey = keys, pace = config.pace.scale, calm = true, auto = !touch, control = control,
                 dwell = { i -> dwellOf(steps[i % steps.size], config, events) },
                 onFace = { i ->
                     val on = steps[i % steps.size]
                     shownIndex = i
+                    InfoTileState.rest(item.id, keys, i % steps.size)
                     InfoTileState.show(item.id, on.part, targets[on])
                 },
             ) { index ->
@@ -271,9 +272,10 @@ internal fun InfoFace(item: AppItem, size: TileSize, width: Dp, height: Dp, conf
 
 /** The faces a part takes in the turn: some have several (an event after the other, the parts of the weather, the photos). */
 @Composable
-private fun expand(part: InfoPart, config: InfoConfig, live: LiveTileData, events: List<LiveEvent>, weather: WeatherData?, size: TileSize): List<InfoStep> = when (part) {
+private fun expand(part: InfoPart, config: InfoConfig, live: LiveTileData, events: List<LiveEvent>, weather: WeatherData?, size: TileSize, crowded: Boolean): List<InfoStep> = when (part) {
     InfoPart.Calendar -> (0 until events.size.coerceAtMost(if (size == TileSize.Small) 1 else 2)).map { InfoStep(part, it) }
-    InfoPart.Weather -> (0 until (weather?.let { weatherFaceCount(it, size) } ?: 1)).map { InfoStep(part, it) }
+    // With other faces to turn through the weather gives two of its own at most, so it does not crowd them out.
+    InfoPart.Weather -> (0 until (weather?.let { weatherFaceCount(it, size) } ?: 1).coerceAtMost(if (crowded) 2 else Int.MAX_VALUE)).map { InfoStep(part, it) }
     InfoPart.Battery -> (0 until if (size == TileSize.Small) 1 else 2).map { InfoStep(part, it) }
     InfoPart.Photos -> (0 until infoPhotos(config, live).size.coerceIn(1, 3)).map { InfoStep(part, it) }
     InfoPart.Memories -> (0 until infoMemories(config, live).size.coerceIn(1, 3)).map { InfoStep(part, it) }
@@ -308,8 +310,8 @@ private fun ClockPane(item: AppItem, size: TileSize, width: Dp, height: Dp, conf
 }
 
 /**
- * What a touch on an info tile opens: the calendar, the clock, the photo itself, the forecast, the phone, the mini app of the face on show. False for
- * what has nothing of its own to open. [target] is what the face says it is about (the address of a photo, the day of an event).
+ * What a touch on an info tile opens: the calendar, the clock, the photo itself, the forecast, the phone, the mini app of the face on show. False when the app it names
+ * is not there or does not start; true, doing nothing, for a face with no app of its own. [target] is what the face says it is about (the address of a photo, the day of an event).
  */
 fun openInfoPart(context: Context, part: InfoPart?, config: InfoConfig = InfoConfig(), target: String? = null, openWeather: () -> Unit = {}): Boolean {
     fun mini(id: String): Intent? = MiniApps.activities[id]?.let { Intent(context, it) }
@@ -331,7 +333,8 @@ fun openInfoPart(context: Context, part: InfoPart?, config: InfoConfig = InfoCon
             openWeather()
             return true
         }
-        else -> null
+        // A face with no app of its own (the steps, the toggles, a note of the tile) has nothing to open: the touch does nothing, quietly.
+        else -> return part != null
     } ?: return false
     return runCatching { context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess
 }

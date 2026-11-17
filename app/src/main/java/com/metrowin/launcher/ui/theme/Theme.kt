@@ -207,7 +207,8 @@ fun MetroTheme(
         LocalPagePadding provides pagePadding,
         LocalActionBar provides actionBar,
         LocalHubHeadings provides hubHeadings,
-        LocalDensity provides density.let { Density(it.density, it.fontScale * textScale) },
+        // The text of the phone times the launcher's own, never beyond what the screens can hold without cutting a word (the one fix for every page).
+        LocalDensity provides density.let { Density(it.density, (it.fontScale * textScale).coerceAtMost(MAX_FONT_SCALE)) },
         content = content,
     )
 }
@@ -229,6 +230,9 @@ private fun MetroColors.eased(reduceMotion: Boolean): MetroColors {
         tileContent = animateColorAsState(tileContent, fade, label = "tileContent").value,
     )
 }
+
+/** The biggest text, as a multiple of the size asked for, that every page draws; more is cut to this. */
+const val MAX_FONT_SCALE = 1.6f
 
 private const val THEME_FADE_MS = 400
 

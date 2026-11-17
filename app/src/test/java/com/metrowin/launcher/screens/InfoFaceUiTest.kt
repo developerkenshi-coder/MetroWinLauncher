@@ -121,7 +121,8 @@ class InfoFaceUiTest : ScreenshotBase() {
         var forecast = 0
         assertTrue(openInfoPart(context, InfoPart.Weather, openWeather = { forecast++ }))
         assertEquals(1, forecast)
-        assertFalse(openInfoPart(context, InfoPart.Steps))
+        // A face with no app of its own opens nothing, and says so with true: no "no app" message for it.
+        assertTrue(openInfoPart(context, InfoPart.Steps))
         assertFalse(openInfoPart(context, null))
         assertFalse(openInfoPart(context, InfoPart.Published, InfoConfig(published = "no.such.app")))
     }

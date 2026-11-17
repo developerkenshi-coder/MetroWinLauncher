@@ -45,9 +45,10 @@ object InfoPriority {
     }
 
     /**
-     * [faces] are the faces that have something to say, in the order of the tile. Smart: at night only the time; what is urgent (an event or an
-     * alarm within [soonMs], a low battery, rain about to fall) stays alone (all of them: the nearer event or alarm first, then the others), the
-     * battery that is neither low nor charging is left out; otherwise all of them, as they are. Never empty when [faces] is not.
+     * [faces] are the faces that have something to say, in the order of the tile. Smart only puts in order, it never takes a face out: at night
+     * only the time (the hours are the tile's own); otherwise what is urgent (an event or an alarm within [soonMs], a low battery, rain about to
+     * fall) comes first (the nearer event or alarm first), then the others as they are, with the battery that is neither low nor charging last.
+     * Never empty when [faces] is not.
      */
     fun order(
         faces: List<InfoPart>,
@@ -73,12 +74,10 @@ object InfoPriority {
         val urgent = timed +
             (if (smartBattery && InfoPart.Battery in faces && lowBattery(battery)) listOf(InfoPart.Battery) else emptyList()) +
             (if (smartRain && InfoPart.Weather in faces && rainSoon) listOf(InfoPart.Weather) else emptyList())
-        if (urgent.isNotEmpty()) return urgent
-        // Charging or full shows the battery (that is what the user wants to see then); at any other charge it is only noise.
-        if (smartBattery && InfoPart.Battery in faces && battery != null && battery.state == BatteryState.Discharging) {
-            return faces.filter { it != InfoPart.Battery }.ifEmpty { faces }
-        }
-        return faces
+        val rest = faces.filter { it !in urgent }
+        // Charging or full shows the battery where the user put it; at any other charge it is only noise, so it goes last.
+        val quiet = smartBattery && battery != null && battery.state == BatteryState.Discharging && InfoPart.Battery in rest
+        return urgent + if (quiet) rest.filter { it != InfoPart.Battery } + InfoPart.Battery else rest
     }
 }
 
@@ -133,11 +132,12 @@ object InfoPlan {
         if (config.saver && saving) return listOf(InfoPart.Time)
         // In the saving mode nothing turns: the face on show is the one that matters most now.
         val smart = config.smart || saving
-        return InfoPriority.order(
+        val ordered = InfoPriority.order(
             available, smart, moment.nowMs, moment.hour, moment.eventStartMs, moment.alarmMs,
             soonMs = config.soonMinutes * 60_000L, nightFrom = config.nightFrom, nightTo = config.nightTo,
             battery = moment.battery, rainSoon = InfoPriority.rainSoon(moment.weather), smartBattery = config.smartBattery, smartRain = config.smartRain,
         )
+        return if (saving) ordered.take(1) else ordered
     }
 }
 
@@ -147,6 +147,13 @@ object InfoTileState {
     private val tints = mutableStateMapOf<String, Int>()
     private val summaries = mutableStateMapOf<String, String>()
     private val targets = java.util.concurrent.ConcurrentHashMap<String, String>()
+    private val resumes = java.util.concurrent.ConcurrentHashMap<String, Pair<List<Pair<InfoPart, Int>>, Int>>()
+
+    /** The face a tile turned to, with the faces it was turning through: coming back to Start (from an app) the tile goes on from there, not from the first. */
+    fun rest(id: String, faces: List<Pair<InfoPart, Int>>, index: Int) { resumes[id] = faces to index }
+
+    /** Where the tile [id] was among exactly these [faces], or 0 when it was turning through others. */
+    fun resume(id: String, faces: List<Pair<InfoPart, Int>>): Int = resumes[id]?.takeIf { it.first == faces }?.second ?: 0
 
     /** The face now on show; [target] is what a touch opens in it when it is more than the app (the address of a photo, the day of an event). */
     fun show(id: String, part: InfoPart, target: String? = null) {
@@ -178,5 +185,6 @@ object InfoTileState {
         tints.remove(id)
         summaries.remove(id)
         targets.remove(id)
+        resumes.remove(id)
     }
 }

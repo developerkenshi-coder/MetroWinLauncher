@@ -199,7 +199,6 @@
     <string name="info_about_tutorial">The tour of the launcher, page by page, with a link to the settings of each feature and the permissions it can ask for, one at a time.</string>
     <string name="info_about_credits">The people and the free software this launcher is built on, with their licenses.</string>
     <string name="info_projects">Other apps by the same author. Touch a picture to enlarge it. Free ones have open source, no ads and no trackers; the others do not publish their code.</string>
-    <string name="info_mini_option">A switch of this mini app. It reads and writes the same option as the options menu inside the app, so the two never disagree. A change applies the next time the app is opened.</string>
     <string name="info_kids_start">Starts a Start screen with only the apps you chose, for a child: the rest of the phone stays out of reach. To leave, you confirm with your screen lock, so a child cannot go back to the normal Start.</string>
     <string name="info_profile_pause">Pauses the work profile or the private space: a paused profile runs nothing and its apps cannot be opened until you resume it. Your data stays. Android asks for your authentication to unlock the private space.</string>
     <string name="info_live_finance">The Finance tile: the currency its values are shown in, and up to four things to follow. Currencies come from the European Central Bank (api.frankfurter.dev), coins from CoinGecko; there are no stock prices. Only the rates are fetched, nothing you own is sent.</string>

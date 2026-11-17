@@ -34,7 +34,7 @@ import com.metrowin.launcher.ui.theme.frame
 object SettingsInfo {
     /** The text of the setting [id], or null when it has none (a test says every setting of the index has one). */
     @StringRes
-    fun of(id: String): Int? = byId[id] ?: SettingsInfoTable.byPrefix.entries.firstOrNull { id.startsWith(it.key) }?.value ?: com.metrowin.launcher.ui.start.InfoIndex.infoOf(id)
+    fun of(id: String): Int? = byId[id] ?: MiniInfoTable.of(id) ?: SettingsInfoTable.byPrefix.entries.firstOrNull { id.startsWith(it.key) }?.value ?: com.metrowin.launcher.ui.start.InfoIndex.infoOf(id)
 
     internal val byId: Map<String, Int> = SettingsInfoTable.byId
 }

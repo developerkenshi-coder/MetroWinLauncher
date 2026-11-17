@@ -102,4 +102,16 @@ class SettingsInfoTest {
         val english = infoFile("values")
         newPages.forEach { assertTrue("$it is in the info file", it in english) }
     }
+
+    @Test
+    fun everyMiniAppSwitchHasItsOwnInfoTextInEveryLanguage() {
+        val options = com.metrowin.launcher.ui.settings.MiniOptions.all
+        val ids = options.map { SettingsInfo.of(it.id) }
+        assertTrue("a switch of a mini app has no info", ids.none { it == null })
+        assertEquals("two switches share one info text", ids.size, ids.toSet().size)
+        dirs.forEach { (tag, _) ->
+            val texts = ids.map { localized(tag).getString(it!!) }
+            assertEquals("$tag: a text repeats", texts.size, texts.toSet().size)
+        }
+    }
 }

@@ -253,7 +253,6 @@ internal object SettingsInfoTable {
 
     /** The text of the settings that are made from a list (the switches of a mini app, the blocks of the weather tile), by the start of their id. */
     val byPrefix: Map<String, Int> = mapOf(
-        "mini." to R.string.info_mini_option,
         "live.wx." to R.string.info_live_weather_block,
     )
 }

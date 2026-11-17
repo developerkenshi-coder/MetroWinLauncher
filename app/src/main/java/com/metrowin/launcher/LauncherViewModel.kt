@@ -1734,6 +1734,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         val list = withContext(Dispatchers.Default) { apps.load() }
         loadedLocale = Locale.getDefault()
         icons.clear()
+        // An app came or went: a pack among them that is gone puts the icons of the apps back at once (a soft restart of the icons), not at the next throttled look.
+        refreshIconPacks()
         appItems = list
         rebuildItems()
         syncTiles(_items.value)

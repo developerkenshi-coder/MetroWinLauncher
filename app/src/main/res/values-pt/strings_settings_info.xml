@@ -199,7 +199,6 @@
     <string name="info_about_tutorial">A visita ao launcher, página a página, com uma ligação às definições de cada função e às permissões que pode pedir, uma de cada vez.</string>
     <string name="info_about_credits">As pessoas e o software livre em que este launcher se apoia, com as suas licenças.</string>
     <string name="info_projects">Outros apps do mesmo autor. Toque numa imagem para a ampliar. Os livres têm código aberto, sem anúncios nem rastreadores; os outros não publicam o código.</string>
-    <string name="info_mini_option">Um interruptor desta mini app. Lê e escreve a mesma opção do menu de opções dentro do app, por isso nunca discordam. Uma alteração aplica-se na próxima abertura do app.</string>
     <string name="info_kids_start">Inicia um ecrã Start só com os apps que escolheu, para uma criança: o resto do telefone fica fora de alcance. Para sair confirma-se com o bloqueio do ecrã, para que uma criança não possa voltar ao Start normal.</string>
     <string name="info_profile_pause">Põe em pausa o perfil de trabalho ou o espaço privado: um perfil em pausa não executa nada e os seus apps não podem ser abertos até o retomar. Os seus dados ficam. O Android pede a sua autenticação para desbloquear o espaço privado.</string>
     <string name="info_live_finance">O bloco Finanças: a moeda em que mostra os valores, e até quatro coisas a seguir. As moedas vêm do Banco Central Europeu (api.frankfurter.dev), as criptomoedas do CoinGecko; não há cotações de ações. Só as taxas são obtidas, nada do que possui é enviado.</string>
