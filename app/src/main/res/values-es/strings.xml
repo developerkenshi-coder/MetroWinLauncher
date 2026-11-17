@@ -139,6 +139,7 @@
     <string name="edit_size_wide">mosaico ancho</string>
     <string name="edit_page_previous">pasar a la pantalla Start anterior</string>
     <string name="edit_page_next">pasar a la pantalla Start siguiente</string>
+    <string name="edit_pin_here">Fijar aquí</string>
     <string name="edit_page">pantalla %1$d</string>
     <string name="edit_done">listo</string>
     <string name="theme_show_clock">reloj y fecha en Start</string>

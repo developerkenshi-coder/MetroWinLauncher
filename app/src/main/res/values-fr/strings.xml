@@ -139,6 +139,7 @@
     <string name="edit_size_wide">tuile large</string>
     <string name="edit_page_previous">déplacer vers l’écran Start précédent</string>
     <string name="edit_page_next">déplacer vers l’écran Start suivant</string>
+    <string name="edit_pin_here">Épingler ici</string>
     <string name="edit_page">écran %1$d</string>
     <string name="edit_done">terminé</string>
     <string name="theme_show_clock">horloge et date sur Start</string>

@@ -139,6 +139,7 @@
     <string name="edit_size_wide">wide tile</string>
     <string name="edit_page_previous">move to the previous Start screen</string>
     <string name="edit_page_next">move to the next Start screen</string>
+    <string name="edit_pin_here">Pin here</string>
     <string name="edit_page">screen %1$d</string>
     <string name="edit_done">done</string>
     <string name="theme_show_clock">clock and date on Start</string>

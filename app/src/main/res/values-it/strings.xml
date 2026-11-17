@@ -132,6 +132,7 @@
     <string name="edit_size_wide">riquadro largo</string>
     <string name="edit_page_previous">sposta nella schermata Start precedente</string>
     <string name="edit_page_next">sposta nella schermata Start successiva</string>
+    <string name="edit_pin_here">Fissa qui</string>
     <string name="edit_page">schermata %1$d</string>
     <string name="edit_done">fatto</string>
     <string name="theme_show_clock">orologio e data su Start</string>

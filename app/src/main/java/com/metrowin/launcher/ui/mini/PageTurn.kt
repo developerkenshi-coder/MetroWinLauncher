@@ -16,6 +16,7 @@ import com.metrowin.launcher.ui.apps.RowMenuState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
@@ -103,6 +104,8 @@ fun TurnPage(turn: PageTurn, onBack: () -> Unit = {}, content: @Composable () ->
             },
         ) {
             content()
+            // The shadow of the turning page: it darkens as it turns away (the modern and the original turn alike); no input goes through it.
+            if (!reduced) Box(Modifier.matchParentSize().graphicsLayer { alpha = 0.55f * turn.away.value }.background(androidx.compose.ui.graphics.Color.Black))
             RowMenuHost(rowMenu)
             MetroToastHost(Modifier.align(Alignment.TopCenter))
         }

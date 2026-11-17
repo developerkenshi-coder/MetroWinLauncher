@@ -92,6 +92,12 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.metrowin.launcher.R
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.isSpecified
+import com.metrowin.launcher.ui.components.MetroType
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
@@ -345,6 +351,9 @@ internal fun PhotoFit.contentScale(): ContentScale = when (this) {
 /** State of the tile being dragged. The position is its top left corner in grid coordinates. */
 @Stable
 private class TileDragState {
+    /** The tile whose remove button was just pressed: when it leaves it shrinks away instead of vanishing. */
+    var removing: String? = null
+
     var draggedKey by mutableStateOf<String?>(null)
     var position by mutableStateOf(Offset.Zero)
 
@@ -641,8 +650,15 @@ private fun TileGridView(
                         .offset { IntOffset(r.left.roundToInt(), r.top.roundToInt()) }
                         .size(with(density) { r.width.toDp() }, with(density) { r.height.toDp() })
                         .testTag("drop:${t.col}:${t.row}")
-                        .border(2.dp, outline, if (t.cols == 1) dropStyle.smallTileShape else dropStyle.tileShape),
-                )
+                        // A dashed line and "Pin here" where the tile can land (the smallest places have room for the line only).
+                        .drawBehind {
+                            val shape = if (t.cols == 1) dropStyle.smallTileShape else dropStyle.tileShape
+                            drawOutline(shape.createOutline(size, layoutDirection, this), outline, style = Stroke(2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(8.dp.toPx(), 6.dp.toPx()))))
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (t.cols >= 2) MetroText(stringResource(R.string.edit_pin_here), size = MetroType.Note, color = outline, maxLines = 1)
+                }
             }
             // Free mode: where the tile lands if it is let go now.
             val landing = drag.freeCell
@@ -695,13 +711,17 @@ private fun TileGridView(
                         topRow = { (scrollState.value / (unitPx + gapPx)).toInt() },
                         press = press,
                         fresh = newTop in 1..2 && cell.isTopLevel && cell.key !in known,
+                        onRemoved = { ghost -> ghosts = ghosts + ghost },
                     )
                 }
             }
             ghosts.forEach { ghost ->
                 key(ghost.id) {
                     val folder = cells.indexOfFirst { it is FolderCell && it.folder.id == ghost.folderId }
-                    if (folder < 0) {
+                    if (ghost.folderId.isEmpty()) {
+                        // A removed tile: it shrinks away in place.
+                        FolderGhostTile(ghost, ghost.from) { ghosts = ghosts - ghost }
+                    } else if (folder < 0) {
                         SideEffect { ghosts = ghosts - ghost }
                     } else {
                         FolderGhostTile(ghost, slotOf(layout.placements[folder])) { ghosts = ghosts - ghost }
@@ -714,7 +734,7 @@ private fun TileGridView(
 
 /** An app of a folder that just left, at [from] and of [size], on its way back into the folder [folderId]. */
 @Immutable
-data class FolderGhost(val id: String, val folderId: String, val from: IntOffset, val size: IntSize)
+data class FolderGhost(val id: String, val folderId: String, val from: IntOffset, val size: IntSize, val color: Color = Color.Unspecified, val shape: androidx.compose.ui.graphics.Shape = androidx.compose.ui.graphics.RectangleShape)
 
 /** The square of an app folding back into its folder: it shrinks and fades as it slides to the place of the folder, then calls [onDone]. */
 @Composable
@@ -738,7 +758,7 @@ private fun FolderGhostTile(ghost: FolderGhost, to: IntOffset, onDone: () -> Uni
                 scaleY = scale
                 alpha = (1f - 1.6f * progress.value).coerceAtLeast(0f)
             }
-            .background(LocalMetroColors.current.tileColor(0, LocalAccent.current)),
+            .background(if (ghost.color.isSpecified) ghost.color.copy(alpha = ghost.color.alpha * 0.5f) else LocalMetroColors.current.tileColor(0, LocalAccent.current), ghost.shape),
     )
 }
 
@@ -835,6 +855,8 @@ private fun PositionedTile(
     press: PressGroup? = null,
     /** The tile was just pinned: it drops in from above. */
     fresh: Boolean = false,
+    /** Called when the tile leaves because its remove button was pressed, to shrink it away where it stood. */
+    onRemoved: (FolderGhost) -> Unit = {},
 ) {
     val density = LocalDensity.current
     val reduced = LocalReduceMotion.current
@@ -978,6 +1000,17 @@ private fun PositionedTile(
         else -> colors.tileColor(index, LocalAccent.current)
     }.let { if (hasBackground && !transparent) it.copy(alpha = it.alpha * LocalTileFeatures.current.tileOpacity / 100f) else it }
     val shape = style.tileShapeFor(cell.size)
+    // Removed with its button: a ghost of it shrinks and fades where it stood while the others slide into the gap.
+    val currentRemoved by rememberUpdatedState(onRemoved)
+    val lastColor by rememberUpdatedState(tileColor)
+    DisposableEffect(Unit) {
+        onDispose {
+            if (!reduced && origin == null && drag.removing == cell.key) {
+                drag.removing = null
+                currentRemoved(FolderGhost(cell.key, "", position.value, with(density) { IntSize(width.roundToPx(), height.roundToPx()) }, lastColor, shape))
+            }
+        }
+    }
 
     Box(
         Modifier
@@ -1087,7 +1120,7 @@ private fun PositionedTile(
             val corners = shortSide >= TINY_TILE
             EditButton(
                 EditButtonKind.Remove, diameter,
-                onClick = { currentActions.onUnpin(currentCell) },
+                onClick = { drag.removing = cell.key; currentActions.onUnpin(currentCell) },
                 modifier = Modifier.align(Alignment.TopEnd).padding(edgePad),
             )
             if (cell.isTopLevel) {

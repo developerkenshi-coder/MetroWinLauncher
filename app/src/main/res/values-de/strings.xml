@@ -139,6 +139,7 @@
     <string name="edit_size_wide">Breite Kachel</string>
     <string name="edit_page_previous">In den vorherigen Start-Bildschirm verschieben</string>
     <string name="edit_page_next">In den nächsten Start-Bildschirm verschieben</string>
+    <string name="edit_pin_here">Hier anheften</string>
     <string name="edit_page">Bildschirm %1$d</string>
     <string name="edit_done">Fertig</string>
     <string name="theme_show_clock">Uhr und Datum auf Start</string>

@@ -277,7 +277,7 @@ fun MetroStatusBar(
         if (on(StatusItem.Saver) && reading.saver) Said(R.string.a11y_sb_saver) { SaverPlus(color) }
         // As on Windows Phone 8.1 the clock is to the left of the battery.
         if (on(StatusItem.Time)) MetroText(
-            ClockFormat.time(clock, is24, java.util.Locale.getDefault()), size = 13.sp, color = color, maxLines = 1,
+            ClockFormat.time(clock, is24, java.util.Locale.getDefault()), size = MetroType.Caption, color = color, maxLines = 1,
             modifier = Modifier.testTag("statusbar:time"),
         )
         if (on(StatusItem.BatteryPercent)) battery?.let {

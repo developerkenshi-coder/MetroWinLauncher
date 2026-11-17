@@ -67,14 +67,17 @@ fun ToastBanner(
     val scope = rememberCoroutineScope()
     val offset = remember(entry.key) { Animatable(0f) }
     var height by remember { mutableIntStateOf(1) }
+    var width by remember { mutableIntStateOf(1) }
     val reduced = LocalReduceMotion.current
     val currentDismiss by rememberUpdatedState(onDismiss)
-    // In from the top, a while on screen, out again; a swipe up takes it out at once.
+    // In from the top, a while on screen, then out sideways as on Windows Phone; a swipe up takes it out at once.
     val shown = remember(entry.key) { Animatable(0f) }
+    val aside = remember(entry.key) { Animatable(0f) }
     LaunchedEffect(entry.key) {
         shown.animateTo(1f, metroTween(durationMillis = if (reduced) 80 else 260, easing = Motion.Decelerate))
         delay(BANNER_MS)
-        shown.animateTo(0f, metroTween(durationMillis = if (reduced) 80 else 200, easing = Motion.Accelerate))
+        if (reduced) shown.animateTo(0f, metroTween(durationMillis = 80, easing = Motion.Accelerate))
+        else aside.animateTo(1f, metroTween(durationMillis = 220, easing = Motion.Accelerate))
         currentDismiss()
     }
     val colors = LocalMetroColors.current
@@ -83,8 +86,8 @@ fun ToastBanner(
             .then(if (topInset != null) Modifier.padding(top = topInset) else Modifier.topBarsPadding())
             .padding(horizontal = 12.dp, vertical = 8.dp)
             .fillMaxWidth()
-            .onSizeChanged { height = it.height.coerceAtLeast(1) }
-            .graphicsLayer { translationY = -(1f - shown.value) * (height + 80.dp.toPx()) + offset.value }
+            .onSizeChanged { height = it.height.coerceAtLeast(1); width = it.width.coerceAtLeast(1) }
+            .graphicsLayer { translationY = -(1f - shown.value) * (height + 80.dp.toPx()) + offset.value; translationX = aside.value * (width + 24.dp.toPx()) }
             .draggable(
                 orientation = Orientation.Vertical,
                 state = rememberDraggableState { delta -> scope.launch { offset.snapTo((offset.value + delta).coerceAtMost(0f)) } },

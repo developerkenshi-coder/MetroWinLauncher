@@ -139,6 +139,7 @@
     <string name="edit_size_wide">bloco largo</string>
     <string name="edit_page_previous">mover para a tela anterior do Start</string>
     <string name="edit_page_next">mover para a próxima tela do Start</string>
+    <string name="edit_pin_here">Fixar aqui</string>
     <string name="edit_page">tela %1$d</string>
     <string name="edit_done">pronto</string>
     <string name="theme_show_clock">relógio e data no Start</string>

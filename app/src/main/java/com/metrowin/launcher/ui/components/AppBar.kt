@@ -87,7 +87,7 @@ private fun SuperBar(items: List<AppBarItem>, modifier: Modifier) {
         FontScaleAtMost(TextScaleCap.BAR) { items.forEach { item ->
             // Each button takes an equal share of the width, so a long label shrinks inside it instead of being cut.
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f).metroPress(onClick = item.onClick)) {
-                Box(Modifier.size(48.dp).border(2.dp, colors.foreground, CircleShape).clip(CircleShape), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(40.dp).border(2.dp, colors.foreground, CircleShape).clip(CircleShape), contentAlignment = Alignment.Center) {
                     item.icon?.let { MarkIcon(it, 20.dp) } ?: MetroText(item.symbol, size = MetroType.Subtitle, weight = FontWeight.Normal)
                 }
                 MetroText(item.label.sentenceCase(), size = MetroType.Micro, color = colors.subtle, modifier = Modifier.padding(top = 2.dp))
