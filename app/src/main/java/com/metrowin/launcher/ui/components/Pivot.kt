@@ -89,7 +89,7 @@ fun PivotHeader(
             ) {
                 titles.forEachIndexed { index, title ->
                     MetroText(
-                        text = title,
+                        text = if (classic) title.lowercase(Locale.getDefault()) else title,
                         size = size,
                         maxLines = 1,
                         color = if (color == null) {
@@ -114,5 +114,5 @@ fun PivotHeader(
 /** The name of the app in small capitals over a page title ([LocalAppTitle]); nothing when the app has none. */
 @Composable
 fun AppTitleLine() {
-    LocalAppTitle.current?.let { MetroText(it.uppercase(Locale.getDefault()), size = if (LocalStyle.current.isClassic) MetroType.AppTitleClassic else MetroType.Note, weight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(bottom = 2.dp)) }
+    LocalAppTitle.current?.let { MetroText(it.uppercase(Locale.getDefault()), size = if (LocalStyle.current.isClassic) MetroType.AppTitleClassic else MetroType.Note, weight = FontWeight.SemiBold, maxLines = 1, letterSpacing = if (LocalStyle.current.isClassic) 1.sp else androidx.compose.ui.unit.TextUnit.Unspecified, modifier = Modifier.padding(bottom = 2.dp)) }
 }

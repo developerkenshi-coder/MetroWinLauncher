@@ -47,9 +47,15 @@ enum class Mark {
 fun MarkIcon(mark: Mark, size: Dp, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.foreground) =
     SpecIcon(remember(mark) { markSpec(mark) }, size, modifier, color)
 
+/** On: the lines of a glyph keep one width (2.5 dp) at any size, with square ends and sharp corners, as on a Windows Phone tile. */
+val LocalSharpGlyphs = androidx.compose.runtime.staticCompositionLocalOf { false }
+
+private val SHARP_STROKE = 2.5.dp
+
 @Composable
 private fun SpecIcon(spec: Spec, size: Dp, modifier: Modifier, color: Color) {
     val density = LocalDensity.current
+    val sharp = LocalSharpGlyphs.current
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             spec.parts.forEach { part ->
@@ -59,9 +65,9 @@ private fun SpecIcon(spec: Spec, size: Dp, modifier: Modifier, color: Color) {
                         path = part.path,
                         color = color,
                         style = if (part.fill) Fill else Stroke(
-                            width = STROKE * part.grid / 100f,
-                            cap = StrokeCap.Round,
-                            join = StrokeJoin.Round,
+                            width = if (sharp) SHARP_STROKE.toPx() / unit else STROKE * part.grid / 100f,
+                            cap = if (sharp) StrokeCap.Butt else StrokeCap.Round,
+                            join = if (sharp) StrokeJoin.Miter else StrokeJoin.Round,
                         ),
                     )
                 }

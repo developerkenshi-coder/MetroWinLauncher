@@ -126,6 +126,8 @@ fun TileFace(
     CompositionLocalProvider(
         LocalMetroColors provides LocalMetroColors.current.onTile(),
         LocalDensity provides Density(density.density, minOf(density.fontScale, MAX_TILE_FONT_SCALE)),
+        // Windows Phone's tile icons: a line of one width and sharp corners (Classic only).
+        com.metrowin.launcher.ui.components.LocalSharpGlyphs provides com.metrowin.launcher.ui.theme.LocalStyle.current.isClassic,
     ) {
         Box(modifier.fillMaxSize()) {
             val widget = item.launch as? Launch.Widget
@@ -532,7 +534,8 @@ internal fun StaticFace(item: AppItem, size: TileSize, width: Dp, height: Dp, la
         return
     }
     Box(Modifier.fillMaxSize()) {
-        val art = minOf(width, height) * if (size == TileSize.Small) 0.5f else 0.42f
+        // A glyph is 30% of the tile (a wide one has the size of a medium one); the icon of another app keeps its larger share.
+        val art = minOf(width, height) * if (size == TileSize.Small) 0.5f else if (item.glyph != null) 0.3f else 0.42f
         AppArt(item, art, Modifier.align(Alignment.Center))
         if (label && size != TileSize.Small) TileLabel(item.label, Modifier.align(Alignment.BottomStart))
     }
@@ -545,8 +548,8 @@ internal fun TileLabel(label: String, modifier: Modifier = Modifier, color: Colo
     FontScaleAtMost(TextScaleCap.TILE_LABEL) {
         MetroText(
             text = label,
-            size = 13.sp,
-            weight = FontWeight.Normal,
+            size = 12.sp,
+            weight = FontWeight.Light,
             color = color,
             // The name of an app: one line (smaller if it must be, then cut: it may be any length).
             maxLines = 1,

@@ -411,8 +411,10 @@ private fun TileGridView(
     bottomRoom: Dp,
 ) {
     val density = LocalDensity.current
-    val TileGap = LocalStyle.current.tileGap * LocalTileSpacing.current
+    val style = LocalStyle.current
+    val spacing = LocalTileSpacing.current
     BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val TileGap = gridGap(style, spacing, maxWidth)
         val unit = (maxWidth - TileGap * (columns - 1)) / columns
         val unitPx = with(density) { unit.toPx() }
         val gapPx = with(density) { TileGap.toPx() }
@@ -647,7 +649,8 @@ private fun TileGridView(
                     val row = layout.placements[index].row
                     val top = (unitPx + gapPx) * row + shiftOf(row) - headerPx
                     MetroText(
-                        title, size = 18.sp, maxLines = 1, color = LocalMetroColors.current.foreground.copy(alpha = 0.9f),
+                        // Windows Phone writes the name of a group in lower case.
+                        if (LocalStyle.current.isClassic) title.lowercase() else title, size = 18.sp, maxLines = 1, color = LocalMetroColors.current.foreground.copy(alpha = 0.9f),
                         modifier = Modifier
                             .offset { IntOffset(0, top.roundToInt()) }
                             .height(GROUP_HEADER)
@@ -667,7 +670,7 @@ private fun TileGridView(
                     val at = topLevel.indexOf(cell.entryId).takeIf { cell.isTopLevel } ?: -1
                     val folderIndex = (cell as? AppCell)?.folderId?.let { id -> cells.indexOfFirst { it is FolderCell && it.folder.id == id } } ?: -1
                     PositionedTile(
-                        cell, index, layout.placements[index], unit, live, badges, peeks, hasBackground,
+                        cell, index, layout.placements[index], unit, TileGap, live, badges, peeks, hasBackground,
                         enterToken, exitRequest, editingKey, drag, actions,
                         onDragStart, onDragBy, onDragEnd, readOnly, pickedKeys,
                         previousId = topLevel.getOrNull(at - 1).takeIf { at > 0 },
@@ -775,6 +778,10 @@ private const val MERGE_HOVER_MS = 320L
 /** How long the dragged tile rests on another one, or on a free place, before it takes it. */
 private const val REORDER_DWELL_MS = 140L
 
+/** The space between tiles: Windows Phone's 6 px at 480 px wide, in proportion to the width in Classic; the other looks keep theirs. */
+private fun gridGap(style: com.metrowin.launcher.ui.theme.MetroStyle, spacing: Float, width: Dp): Dp =
+    (if (style.isClassic) width * 0.0125f else style.tileGap) * spacing
+
 /** Slides to its place in the grid when tiles are resized, pinned, unpinned or moved around it. */
 @Composable
 private fun PositionedTile(
@@ -782,6 +789,7 @@ private fun PositionedTile(
     index: Int,
     placement: Placement,
     unit: Dp,
+    gap: Dp,
     live: LiveTileData,
     badges: Map<String, Int>,
     peeks: Map<String, List<LiveCard>>,
@@ -813,7 +821,7 @@ private fun PositionedTile(
     val reduced = LocalReduceMotion.current
     val highContrast = LocalHighContrast.current
     val style = LocalStyle.current
-    val TileGap = style.tileGap * LocalTileSpacing.current
+    val TileGap = gap
     val colors = LocalMetroColors.current
     val currentActions by rememberUpdatedState(actions)
     val currentCell by rememberUpdatedState(cell)
@@ -941,7 +949,8 @@ private fun PositionedTile(
                 val scale = editScale * lift * grow * (if (armedForFolder) 1.06f else 1f)
                 scaleX = scale
                 scaleY = scale
-                alpha *= bloom.value.coerceIn(0f, 1f)
+                // A tile in the hand is a little see-through (it grows with [lift]).
+                alpha *= bloom.value.coerceIn(0f, 1f) * (if (dragging) 0.85f else 1f)
             }
             .metroPress(
                 onClick = {

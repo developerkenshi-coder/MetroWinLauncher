@@ -377,6 +377,8 @@ fun FlipContainer(
         if (slide && angle.value >= 90f) index = (index + 1) % faces
         angle.snapTo(0f)
         if (auto) wait(((1_500L + (seed.mod(6)) * 800L) * pace).toLong()) else control?.requests?.receive() ?: return@LaunchedWhileStarted
+        // Neighbouring tiles must not turn together: every stay is cut short by a little chance (up to 0.56 s), and never the same as the one before.
+        var lastJitter = -1L
         while (true) {
             if (slide) {
                 angle.animateTo(180f, metroTween(durationMillis = Motion.SLIDE_MS, easing = Motion.Decelerate))
@@ -390,7 +392,12 @@ fun FlipContainer(
                 angle.snapTo(-90f)
                 angle.animateTo(0f, metroTween(durationMillis = Motion.FLIP_HALF_MS, easing = Motion.FlipIn))
             }
-            val stay = dwell?.invoke(index % faces) ?: (5_000L + (seed.mod(4)) * 900L)
+            val stay = dwell?.invoke(index % faces) ?: run {
+                var jitter: Long
+                do { jitter = kotlin.random.Random.nextLong(0L, 8L) * 80L } while (jitter == lastJitter)
+                lastJitter = jitter
+                5_000L + (seed.mod(4)) * 900L - jitter
+            }
             if (auto) wait((stay * pace).toLong()) else control?.requests?.receive() ?: return@LaunchedWhileStarted
         }
     }
