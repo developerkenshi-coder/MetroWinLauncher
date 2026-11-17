@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sec_tip">mancia</string>
+    <string name="sec_tip_desc">Un grazie all\'autore e alla sua gatta</string>
+    <string name="kw_tip">mancia, offerta, donazione, supporto, ko-fi, kofi, caffè, croccantini, gatta, maty, kenshi, grazie</string>
+    <string name="tip_title">croccantini per Maty</string>
+    <string name="tip_p1">Ciao! Spero che tu stia apprezzando MetroWin Launcher! Il progetto che stai usando è stato creato per passione e con amore per i vecchi WindowsPhone, MetroWin è e sarà per sempre un progetto FOSS. Se ti va di comprare qualche croccantino alla mia gatta, questo è il link che ti serve:</string>
+    <string name="tip_button">ko-fi.com/kenshi1299</string>
+    <string name="tip_p2">Sono sicuro che apprezzerebbe il vostro gesto e vi darebbe qualche testata o leccata di ringraziamento!</string>
+    <string name="tip_p3">Se sei entrato qua solo per curiosità, ti ringrazio ugualmente perché stai usando il mio launcher, se trovi problemi o hai suggerimenti per migliorare la qualità del launcher, sentiti libero di usare la sezione via ticket nella sezione \"Segnala un bug\".</string>
+    <string name="tip_credits">grazie a</string>
+    <string name="tip_kenshi">L\'autore di MetroWin Launcher. Fatto con passione, gratis, per tutti.</string>
+    <string name="tip_maty">La gatta. Assaggiatrice capo di croccantini e responsabile qualità, a colpi di testata.</string>
+</resources>

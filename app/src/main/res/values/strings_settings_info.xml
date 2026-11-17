@@ -369,4 +369,5 @@
     <string name="tut_backup_tip3">Keep two phones in sync through the same folder: the file is encrypted with a passphrase that only you know and that never goes in the folder.</string>
     <string name="tut_backup_tip4">Pause or hide the work profile and the private space, and save the list of your apps to find them again on a new phone.</string>
     <string name="info_theme_wplook">Switches on together: the Classic look, the Retro application bar, the original turnstile and the narrow page margin (18 dp, as on Windows Phone). The accent, light or dark, and the tiles stay as they are.</string>
+    <string name="info_tip">A thank-you page: where to leave a tip, if you wish, for the author\'s cat (a link to Ko-fi, it opens in the browser), and who made the launcher. Nothing here is needed to use the app.</string>
 </resources>

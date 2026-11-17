@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sec_tip">tip</string>
+    <string name="sec_tip_desc">A thank-you to the author, and to his cat</string>
+    <string name="kw_tip">tip, donate, support, ko-fi, kofi, coffee, cat, maty, kenshi, thanks</string>
+    <string name="tip_title">a treat for Maty</string>
+    <string name="tip_p1">Hi! I hope you are enjoying MetroWin Launcher! The project you are using was made out of passion and love for the old Windows Phones. MetroWin is, and always will be, a FOSS project. If you feel like buying a few treats for my cat, this is the link you need:</string>
+    <string name="tip_button">ko-fi.com/kenshi1299</string>
+    <string name="tip_p2">I am sure she would appreciate your gesture and would thank you with a few head bumps or licks!</string>
+    <string name="tip_p3">If you came in here only out of curiosity, thank you all the same, because you are using my launcher. If you find problems or have suggestions to make the launcher better, feel free to open a ticket in the \"bug ticket report\" section.</string>
+    <string name="tip_credits">thanks to</string>
+    <string name="tip_kenshi">The author of MetroWin Launcher. Made with passion, for free, for everyone.</string>
+    <string name="tip_maty">The cat. Chief treat tester and head of quality, with head bumps.</string>
+</resources>

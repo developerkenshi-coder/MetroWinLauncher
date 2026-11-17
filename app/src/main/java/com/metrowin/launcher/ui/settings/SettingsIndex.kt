@@ -14,6 +14,7 @@ import com.metrowin.launcher.ui.settings.SettingsSection.Battery
 import com.metrowin.launcher.ui.settings.SettingsSection.Gestures
 import com.metrowin.launcher.ui.settings.SettingsSection.Notifications
 import com.metrowin.launcher.ui.settings.SettingsSection.OtherProjects
+import com.metrowin.launcher.ui.settings.SettingsSection.Tip
 import com.metrowin.launcher.ui.settings.SettingsSection.StartBars
 import com.metrowin.launcher.ui.settings.SettingsSection.StatusBar
 import com.metrowin.launcher.ui.settings.SettingsSection.StartBehaviour
@@ -340,6 +341,7 @@ object SettingsIndex {
         e("about.tutorial", About, R.string.tut_replay, "tour", "help", "guide", "intro", "aiuto", "guida", "tutorial"),
         e("projects.foss", OtherProjects, R.string.prj_foss, "foss", "open source", "keyboard", "tastiera", "launcher", "github", "software libero"),
         e("projects.nonfoss", OtherProjects, R.string.prj_nonfoss, "spesatracker", "play store", "google play", "spese", "budget", "non foss"),
+        e("tip.kofi", Tip, R.string.tip_title, "tip", "donate", "donation", "support", "ko-fi", "kofi", "cat", "maty", "kenshi", "mancia", "offerta", "donazione", "gatta", "croccantini", "grazie"),
         e("about.credits", About, R.string.about_credits, "licenses", "thanks", "open source", "licenze", "ringraziamenti"),
     ) + MiniOptions.all.map { SettingEntry(it.id, MiniApps, it.label, listOf(it.app, "mini app", "app")) }
 

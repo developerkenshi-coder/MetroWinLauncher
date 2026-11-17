@@ -382,5 +382,6 @@ private fun PageContent(section: SettingsSection, env: SettingsEnv) {
         SettingsSection.About -> AboutPage(env)
         SettingsSection.BugReport -> BugReportPage(env)
         SettingsSection.OtherProjects -> OtherProjectsPage()
+        SettingsSection.Tip -> TipPage()
     }
 }

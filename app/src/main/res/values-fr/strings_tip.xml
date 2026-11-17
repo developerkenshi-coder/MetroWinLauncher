@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sec_tip">pourboire</string>
+    <string name="sec_tip_desc">Un merci à l’auteur et à sa chatte</string>
+    <string name="kw_tip">pourboire, don, soutien, ko-fi, kofi, café, chatte, maty, kenshi, merci</string>
+    <string name="tip_title">des croquettes pour Maty</string>
+    <string name="tip_p1">Salut ! J’espère que MetroWin Launcher te plaît ! Le projet que tu utilises est né par passion et avec amour pour les vieux Windows Phone. MetroWin est et restera toujours un projet FOSS. Si tu as envie d’offrir quelques croquettes à ma chatte, voici le lien qu’il te faut :</string>
+    <string name="tip_button">ko-fi.com/kenshi1299</string>
+    <string name="tip_p2">Je suis sûr qu’elle apprécierait ton geste et te remercierait avec quelques coups de tête ou coups de langue !</string>
+    <string name="tip_p3">Si tu es venu ici par simple curiosité, merci quand même, car tu utilises mon lanceur. Si tu trouves des problèmes ou si tu as des idées pour améliorer le lanceur, n’hésite pas à ouvrir un ticket dans la section « signalement de bug ».</string>
+    <string name="tip_credits">merci à</string>
+    <string name="tip_kenshi">L’auteur de MetroWin Launcher. Fait avec passion, gratuitement, pour tous.</string>
+    <string name="tip_maty">La chatte. Chef dégustatrice de croquettes et responsable qualité, à coups de tête.</string>
+</resources>

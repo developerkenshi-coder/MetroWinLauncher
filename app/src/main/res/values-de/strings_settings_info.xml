@@ -369,4 +369,5 @@
     <string name="tut_backup_tip3">Halte zwei Handys über denselben Ordner abgeglichen: die Datei wird mit einer Passphrase verschlüsselt, die nur du kennst und die nie in den Ordner kommt.</string>
     <string name="tut_backup_tip4">Pausiere oder verberge das Arbeitsprofil und den privaten Bereich und sichere die Liste deiner Apps, um sie auf einem neuen Handy wiederzufinden.</string>
     <string name="info_theme_wplook">Schaltet gemeinsam ein: den klassischen Look, die Retro-Aktionsleiste, das originale Drehkreuz und den schmalen Seitenrand (18 dp, wie bei Windows Phone). Akzentfarbe, hell oder dunkel und die Kacheln bleiben unverändert.</string>
+    <string name="info_tip">Eine Dankesseite: wo du, wenn du magst, ein Trinkgeld für die Katze des Autors hinterlassen kannst (ein Link zu Ko-fi, er öffnet sich im Browser), und wer den Launcher gemacht hat. Nichts davon wird zum Benutzen der App gebraucht.</string>
 </resources>

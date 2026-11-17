@@ -242,6 +242,7 @@ internal object SettingsInfoTable {
         "about.credits" to R.string.info_about_credits,
         "projects.foss" to R.string.info_projects,
         "projects.nonfoss" to R.string.info_projects,
+        "tip.kofi" to R.string.info_tip,
         "kids.start" to R.string.info_kids_start,
         "profile.pause" to R.string.info_profile_pause,
         "live.financebase" to R.string.info_live_finance,
