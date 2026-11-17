@@ -114,6 +114,8 @@
     <string name="theme_dark_to">fino alle</string>
     <string name="theme_hours_hint">Il launcher è scuro tra questi orari e chiaro per il resto della giornata.</string>
     <string name="theme_parallax">la foto scorre più piano dei riquadri</string>
+    <string name="theme_parallax_speed">velocità della foto dietro i riquadri</string>
+    <string name="theme_parallax_still">ferma</string>
     <string name="theme_tile_opacity">i riquadri lasciano vedere la foto</string>
     <string name="theme_tile_opaque">opachi</string>
     <string name="theme_tile_see_through">%1$d%% del colore</string>

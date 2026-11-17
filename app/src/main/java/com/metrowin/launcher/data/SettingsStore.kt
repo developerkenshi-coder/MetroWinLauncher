@@ -283,6 +283,8 @@ data class LauncherSettings(
     val systemWallpaperFollows: Boolean = true,
     /** The photo moves slower than the tiles when Start scrolls. */
     val parallax: Boolean = true,
+    /** How fast the Start photo moves as Start scrolls, in percent of the speed of the tiles (0: it stays still, the tiles slide over it). */
+    val parallaxSpeed: Int = 20,
     /** How much of the colour of a tile is left over the Start photo, in percent: below 100 the photo shows through the tiles (only with a photo). */
     val tileOpacity: Int = 100,
     /** How many Start screens there are, 1 to [MAX_START_PAGES]. */

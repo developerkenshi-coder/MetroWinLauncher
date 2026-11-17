@@ -71,8 +71,8 @@ object Motion {
     const val FADE_IN_MS = 220
     const val FADE_OUT_MS = 150
 
-    /** A live tile turning over: each half of the turn, and how each eases (quadratic, in and then out). The slide takes [SLIDE_MS]. */
-    const val FLIP_HALF_MS = 330
+    /** A live tile turning over, as on Windows Phone 8.1: 0.6 s for the face to turn away (speeding up) and 0.6 s for the next to settle (slowing down), each easing quadratically. The slide takes [SLIDE_MS]. */
+    const val FLIP_HALF_MS = 600
     const val SLIDE_MS = 600
     val FlipAway = CubicBezierEasing(0.55f, 0.085f, 0.68f, 0.53f)
     val FlipIn = CubicBezierEasing(0.25f, 0.46f, 0.45f, 0.94f)
@@ -193,6 +193,9 @@ fun <T> metroTween(durationMillis: Int = 300, delayMillis: Int = 0, easing: Easi
 /** How far the tiles and buttons tilt when pressed, as a multiple of the design (see the settings). */
 val LocalTiltStrength = staticCompositionLocalOf { 1f }
 
+/** How fast the Start photo moves under the tiles when Start scrolls, as a share of the tiles' own speed (0 keeps it still). */
+val LocalParallaxSpeed = staticCompositionLocalOf { 0.2f }
+
 /**
  * Windows Phone press feedback: the element sinks and tilts away from the finger, then springs back.
  * Tapping near the right edge pushes the right edge down, and so on.
@@ -208,6 +211,12 @@ fun Modifier.metroPress(
     longClickLabel: String? = null,
     /** Told when the finger goes down (true) and when it is up or the touch is lost (false): for a control that changes colour while pressed. */
     onPressedChange: ((Boolean) -> Unit)? = null,
+    /**
+     * Told where the finger lands (in the element, with the element's size) and null when it is up: for elements that tilt together with others (see [PressGroup]).
+     * With [grouped] the element does not tilt or sink by itself: the group does it.
+     */
+    onPressAt: ((Offset?, androidx.compose.ui.unit.IntSize) -> Unit)? = null,
+    grouped: Boolean = false,
 ): Modifier {
     val scope = rememberCoroutineScope()
     val currentPressed by rememberUpdatedState(onPressedChange)
@@ -259,21 +268,27 @@ fun Modifier.metroPress(
             scaleY = scale.value
             cameraDistance = Motion.CAMERA * density
         }
-        .pointerInput(enabled, hasLongClick, tilt) {
+        .pointerInput(enabled, hasLongClick, tilt, grouped) {
             if (!enabled) return@pointerInput
             detectTapGestures(
                 onPress = { point ->
                     val dx = (point.x / size.width * 2f - 1f).coerceIn(-1f, 1f)
                     val dy = (point.y / size.height * 2f - 1f).coerceIn(-1f, 1f)
-                    scope.launch { tiltY.animateTo(TILT_Y_SIGN * dx * tilt, PressSpring) }
-                    scope.launch { tiltX.animateTo(TILT_X_SIGN * dy * tilt, PressSpring) }
-                    scope.launch { scale.animateTo(pressedScale, PressSpring) }
+                    if (!grouped) {
+                        scope.launch { tiltY.animateTo(TILT_Y_SIGN * dx * tilt, PressSpring) }
+                        scope.launch { tiltX.animateTo(TILT_X_SIGN * dy * tilt, PressSpring) }
+                        scope.launch { scale.animateTo(pressedScale, PressSpring) }
+                    }
                     currentPressed?.invoke(true)
+                    onPressAt?.invoke(point, size)
                     tryAwaitRelease()
                     currentPressed?.invoke(false)
-                    scope.launch { tiltY.animateTo(0f, ReleaseSpring) }
-                    scope.launch { tiltX.animateTo(0f, ReleaseSpring) }
-                    scope.launch { scale.animateTo(1f, ReleaseSpring) }
+                    onPressAt?.invoke(null, size)
+                    if (!grouped) {
+                        scope.launch { tiltY.animateTo(0f, ReleaseSpring) }
+                        scope.launch { tiltX.animateTo(0f, ReleaseSpring) }
+                        scope.launch { scale.animateTo(1f, ReleaseSpring) }
+                    }
                 },
                 onTap = {
                     currentFeedback()
@@ -299,6 +314,50 @@ private const val TILT_X_SIGN = -1f
 
 private val PressSpring = spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium)
 private val ReleaseSpring = spring<Float>(dampingRatio = 0.55f, stiffness = Spring.StiffnessMediumLow)
+
+/**
+ * The press of a block of four small tiles, which tilt together around the middle of the block as one tile would: the tile touched tells where
+ * the finger is ([press]) and lets go ([release]); every tile of the block draws [block]'s tilt (see [Modifier.groupTilt]).
+ */
+class PressGroup {
+    /** The block that is tilted now (or going back), -1 for none. */
+    var block by mutableIntStateOf(-1)
+        private set
+    internal val tiltX = Animatable(0f)
+    internal val tiltY = Animatable(0f)
+    internal val scale = Animatable(1f)
+
+    /** [dx] and [dy] are where the finger is across the whole block, -1 to 1; [tilt] the greatest tilt in degrees. */
+    suspend fun press(block: Int, dx: Float, dy: Float, tilt: Float, pressedScale: Float) = kotlinx.coroutines.coroutineScope {
+        this@PressGroup.block = block
+        launch { tiltY.animateTo(TILT_Y_SIGN * dx * tilt, PressSpring) }
+        launch { tiltX.animateTo(TILT_X_SIGN * dy * tilt, PressSpring) }
+        launch { scale.animateTo(pressedScale, PressSpring) }
+    }
+
+    suspend fun release() = kotlinx.coroutines.coroutineScope {
+        launch { tiltY.animateTo(0f, ReleaseSpring) }
+        launch { tiltX.animateTo(0f, ReleaseSpring) }
+        launch { scale.animateTo(1f, ReleaseSpring) }
+    }.also { block = -1 }
+}
+
+/**
+ * A small tile of the block [block] (a block is the two by two cells; [cellX] and [cellY] say which of the four this is, [gap] the space between
+ * tiles in pixels) tilts and sinks with the group, around the middle of the block.
+ */
+fun Modifier.groupTilt(group: PressGroup, block: Int, cellX: Int, cellY: Int, gap: Float): Modifier = graphicsLayer {
+    if (group.block != block) return@graphicsLayer
+    transformOrigin = TransformOrigin(
+        if (cellX == 0) (size.width + gap / 2) / size.width else -(gap / 2) / size.width,
+        if (cellY == 0) (size.height + gap / 2) / size.height else -(gap / 2) / size.height,
+    )
+    rotationX = group.tiltX.value
+    rotationY = group.tiltY.value
+    scaleX = group.scale.value
+    scaleY = group.scale.value
+    cameraDistance = Motion.CAMERA * density
+}
 
 /** How the faces of a live tile follow one another (see [TileTransition]); the same for every tile of Start. */
 val LocalTileTransition = staticCompositionLocalOf { TileTransition.Flip }

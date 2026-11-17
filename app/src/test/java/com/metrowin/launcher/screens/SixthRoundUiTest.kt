@@ -168,7 +168,9 @@ class SixthRoundUiTest : ScreenshotBase() {
     @Test
     fun theAirFaceNeedsItsSwitchAndTheAirIndex() {
         showTile(weatherItem, LiveTileData(weather = weather(wetFrom = null, air = air)), blocks = WeatherBlock.DEFAULT + WeatherBlock.Air.code)
-        advance(20_000)
+        // The tile turns through its faces one after the other (each turn takes 1.2 s): wait for the air one to be on.
+        var waited = 0
+        while (compose.onAllNodesWithTag("weather:air-face").fetchSemanticsNodes().isEmpty() && waited < 60_000) { advance(500); waited += 500 }
         compose.onAllNodesWithTag("weather:air-face").assertCountEquals(1)
     }
 

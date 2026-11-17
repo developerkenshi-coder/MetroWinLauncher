@@ -2,6 +2,10 @@ package com.metrowin.launcher.ui.start
 
 import android.graphics.BitmapFactory
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -62,7 +66,7 @@ internal fun CycleFace(item: AppItem, photos: List<ImageBitmap>, seed: Int) {
     }
     Box(Modifier.fillMaxSize()) {
         Crossfade(targetState = index % photos.size, animationSpec = metroTween(durationMillis = 900), label = "cycle") { shown ->
-            Image(bitmap = photos[shown], contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.Low, modifier = Modifier.fillMaxSize())
+            Image(bitmap = photos[shown], contentDescription = null, contentScale = ContentScale.Crop, filterQuality = FilterQuality.Low, modifier = Modifier.fillMaxSize().kenBurns(shown))
         }
         PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
     }
@@ -70,6 +74,22 @@ internal fun CycleFace(item: AppItem, photos: List<ImageBitmap>, seed: Int) {
 
 
 internal const val CYCLE_MS = 4_500L
+
+/** The slow zoom of a photo on a tile while it stays (the Ken Burns effect): it starts again whenever [key] (the photo) changes. Still with reduced motion or while saving battery. */
+@Composable
+internal fun Modifier.kenBurns(key: Any): Modifier {
+    val still = LocalReduceMotion.current || LocalPowerSaving.current
+    val zoom = remember(key) { Animatable(1f) }
+    LaunchedWhileStarted(key to still) {
+        if (still) return@LaunchedWhileStarted
+        zoom.snapTo(1f)
+        zoom.animateTo(KEN_BURNS_ZOOM, tween(KEN_BURNS_MS, easing = LinearEasing))
+    }
+    return graphicsLayer { scaleX = zoom.value; scaleY = zoom.value }
+}
+
+private const val KEN_BURNS_ZOOM = 1.08f
+private const val KEN_BURNS_MS = 9_000
 
 
 /** The tile of a contact: the person's photo over the whole tile, the name on it. Until the photo is read, the glyph. */
@@ -104,7 +124,7 @@ internal fun PhotosFace(item: AppItem, size: TileSize, width: Dp, height: Dp, li
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     filterQuality = FilterQuality.High,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().kenBurns(face),
                 )
                 PhotoLabel(item.label, Modifier.align(Alignment.BottomStart))
             }

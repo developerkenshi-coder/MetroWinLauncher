@@ -121,6 +121,8 @@
     <string name="theme_dark_to">bis</string>
     <string name="theme_hours_hint">Der Launcher ist zwischen diesen Uhrzeiten dunkel und den Rest des Tages hell.</string>
     <string name="theme_parallax">Foto bewegt sich langsamer als die Kacheln</string>
+    <string name="theme_parallax_speed">Geschwindigkeit des Fotos hinter den Kacheln</string>
+    <string name="theme_parallax_still">still</string>
     <string name="theme_tile_opacity">Kacheln lassen das Foto durchscheinen</string>
     <string name="theme_tile_opaque">deckend</string>
     <string name="theme_tile_see_through">%1$d%% der Farbe</string>

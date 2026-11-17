@@ -121,6 +121,8 @@
     <string name="theme_dark_to">hasta</string>
     <string name="theme_hours_hint">El launcher es oscuro entre estas horas y claro el resto del día.</string>
     <string name="theme_parallax">la foto se mueve más despacio que los mosaicos</string>
+    <string name="theme_parallax_speed">velocidad de la foto detrás de los mosaicos</string>
+    <string name="theme_parallax_still">quieta</string>
     <string name="theme_tile_opacity">los mosaicos dejan ver la foto</string>
     <string name="theme_tile_opaque">opacos</string>
     <string name="theme_tile_see_through">%1$d%% del color</string>

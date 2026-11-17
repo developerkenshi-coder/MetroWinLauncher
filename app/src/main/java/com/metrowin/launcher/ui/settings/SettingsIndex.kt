@@ -83,6 +83,7 @@ object SettingsIndex {
         e("theme.tileopacity", StartTheme, R.string.theme_tile_opacity, "transparent", "translucent", "see through", "photo", "tiles", "trasparenza", "trasparente", "riquadri", "foto", "sfondo"),
         e("theme.photoinside", StartTheme, R.string.theme_photo_inside, "photo", "background", "inside", "tiles", "window", "foto", "sfondo", "dentro", "riquadri", "finestra"),
         e("theme.parallax", StartTheme, R.string.theme_parallax, "parallax", "parallasse", "scroll", "depth", "motion", "scorrimento", "profondita", "movimento"),
+        e("theme.parallaxspeed", StartTheme, R.string.theme_parallax_speed, "parallax", "parallasse", "photo", "speed", "still", "foto", "velocita", "ferma", "background", "sfondo"),
         e("theme.panorama", StartTheme, R.string.theme_panorama, "panorama", "title", "big title", "parallax", "titolo", "titoli", "parallasse", "pagine"),
         e("theme.hubheadings", StartTheme, R.string.theme_hub_headings, "hub", "headings", "section", "photos", "people", "news", "intestazioni", "sezioni", "foto", "persone", "notizie"),
 

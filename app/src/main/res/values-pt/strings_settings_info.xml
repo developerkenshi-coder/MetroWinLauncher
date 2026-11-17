@@ -17,6 +17,7 @@
     <string name="info_theme_tileopacity">Quanto da foto do Start se vê através dos blocos: blocos mais transparentes mostram mais foto e menos cor.</string>
     <string name="info_theme_photoinside">Cada bloco torna-se uma janela para a foto, sem espaço entre eles, como no Windows Phone. Precisa de uma foto do Start.</string>
     <string name="info_theme_parallax">A foto move-se mais devagar do que os blocos ao deslizar, para dar profundidade. Precisa de uma foto do Start e fica desligado com menos movimento.</string>
+    <string name="info_theme_parallax_speed">A foto atrás dos blocos se move com esta parte da velocidade dos blocos ao rolar. Parada a deixa no lugar e os blocos deslizam por cima; quanto maior, mais perto os segue. Precisa de uma foto do Início e do paralaxe acima.</string>
     <string name="info_theme_panorama">Um título grande (start, apps) atrás das páginas, que se move mais devagar do que a página ao deslizar, como no panorama do Windows Phone.</string>
     <string name="info_theme_hubheadings">Os cabeçalhos das secções dos hubs (Fotos, Pessoas, Notícias) tão grandes como no Windows Phone, 49,5 dp em vez de 27. Só no aspeto Clássico.</string>
     <string name="info_theme_files">Um ficheiro de tema contém cores, modo escuro ou claro, relógio, tamanho dos blocos e pacote de ícones, não os seus blocos. Exporte-o para guardar ou partilhar o aspeto; importe um para o aplicar. Os seus blocos e outras definições não mudam.</string>

@@ -18,8 +18,11 @@ import androidx.compose.ui.test.down
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
+import com.metrowin.launcher.ui.anim.PressGroup
+import com.metrowin.launcher.ui.anim.groupTilt
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.theme.DefaultAccent
+import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -61,6 +64,40 @@ class MetroPressTest : ScreenshotBase() {
         val leftHeight = heightAt(pressed, pressedLeft + 10)
         val rightHeight = heightAt(pressed, pressedRight - 10)
         assertTrue("right edge ($rightHeight) should be shorter than left edge ($leftHeight)", rightHeight < leftHeight - 4)
+    }
+
+    @Test
+    fun smallTilesOfABlockTiltTogether() {
+        val group = PressGroup()
+        val gap = 24f
+        show {
+            Box(Modifier.padding(40.dp)) {
+                androidx.compose.foundation.layout.Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                    for (cell in 0..1) {
+                        val scope = androidx.compose.runtime.rememberCoroutineScope()
+                        Box(
+                            Modifier.size(100.dp).testTag("small$cell")
+                                .groupTilt(group, 0, cell, 0, gap)
+                                .metroPress(
+                                    onClick = {}, grouped = true,
+                                    onPressAt = { at, tile ->
+                                        if (at != null) scope.launch { group.press(0, (cell * (tile.width + gap) + at.x) / (tile.width * 2 + gap) * 2f - 1f, 0f, 9f, 0.95f) }
+                                        else scope.launch { group.release() }
+                                    },
+                                )
+                                .background(DefaultAccent),
+                        )
+                    }
+                }
+            }
+        }
+        advance(50)
+        // Finger on the left edge of the first tile: the whole block turns, so the second tile (not touched) is no longer flat.
+        compose.onNodeWithTag("small0").performTouchInput { down(Offset(4f, height / 2f)) }
+        advance(500)
+        val pressed = capture("press_group")
+        // The second tile spans about x 444..730 px (padding 40 dp, 100 dp tiles, 8 dp gap, 3 px per dp).
+        assertTrue("the far tile should tilt with the block", heightAt(pressed, 452) < heightAt(pressed, 715) - 2)
     }
 
     @OptIn(androidx.compose.ui.test.ExperimentalTestApi::class)

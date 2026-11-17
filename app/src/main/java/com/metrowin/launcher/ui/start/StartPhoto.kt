@@ -126,7 +126,9 @@ internal fun StartBackdrop(
 /** The photo, drawn taller than the screen and moved up slower than the tiles. */
 @Composable
 internal fun ParallaxBackground(image: ImageBitmap, scroll: () -> Int, parallax: Boolean, framing: PhotoFrame, fit: PhotoFit) {
-    val travel = if (parallax) 120.dp else 0.dp
+    // 20 percent (the default) is 120 dp of travel; a faster photo needs more of it, a still one (0) none.
+    val speed = com.metrowin.launcher.ui.anim.LocalParallaxSpeed.current
+    val travel = if (parallax) (speed * TRAVEL_PER_SPEED).dp else 0.dp
     BoxWithConstraints(Modifier.fillMaxSize().clipToBounds()) {
         val travelPx = with(LocalDensity.current) { travel.toPx() }
         val moving = Modifier
@@ -136,7 +138,7 @@ internal fun ParallaxBackground(image: ImageBitmap, scroll: () -> Int, parallax:
             .wrapContentHeight(Alignment.Top, unbounded = true)
             .requiredHeight(maxHeight + travel)
             .graphicsLayer {
-                translationY = -(scroll() * PARALLAX).coerceAtMost(travelPx)
+                translationY = -(scroll() * speed).coerceAtMost(travelPx)
                 // Zoomed in around the point the user chose, so that point stays where it is (only when the photo covers the screen).
                 val zoom = if (fit == PhotoFit.Fill) framing.zoom / 100f else 1f
                 scaleX = zoom
@@ -159,4 +161,4 @@ internal fun ParallaxBackground(image: ImageBitmap, scroll: () -> Int, parallax:
     }
 }
 
-private const val PARALLAX = 0.2f
+private const val TRAVEL_PER_SPEED = 600f

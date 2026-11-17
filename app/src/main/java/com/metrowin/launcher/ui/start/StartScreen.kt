@@ -17,7 +17,9 @@ import com.metrowin.launcher.ui.theme.tileColor
 import com.metrowin.launcher.data.ThemeStyle
 import com.metrowin.launcher.ui.theme.LocalStyle
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -119,6 +121,11 @@ import com.metrowin.launcher.ui.anim.LocalTapFeedback
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.anim.MotionStyle
 import com.metrowin.launcher.ui.anim.turnstile
+import com.metrowin.launcher.ui.anim.PressGroup
+import com.metrowin.launcher.ui.anim.LocalTiltStrength
+import com.metrowin.launcher.ui.anim.groupTilt
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import com.metrowin.launcher.data.LaunchPlans
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors
@@ -433,6 +440,12 @@ private fun TileGridView(
         val gridHeight = if (layout.rows == 0) 0.dp else unit * layout.rows + TileGap * (layout.rows - 1) + GROUP_HEADER * startRows.size
 
         val drag = remember { TileDragState() }
+        // Small tiles in the same block of four tilt together when one is pressed.
+        val press = remember { PressGroup() }
+        // A tile pinned now (one or two new ones among those already there) drops in from above; Start that fills all at once does not.
+        val known = remember { cells.map { it.key }.toMutableSet() }
+        val newTop = cells.count { it.isTopLevel && it.key !in known }
+        SideEffect { known.addAll(cells.map { it.key }) }
         var gridTop by remember { mutableFloatStateOf(0f) }
         val screenHeightPx = with(density) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
 
@@ -680,6 +693,8 @@ private fun TileGridView(
                         childOrder = if (folderIndex >= 0) index - folderIndex else 0,
                         onChildGone = { ghost -> if (cell is AppCell) ghosts = ghosts + ghost.copy(folderId = cell.folderId.orEmpty()) },
                         topRow = { (scrollState.value / (unitPx + gapPx)).toInt() },
+                        press = press,
+                        fresh = newTop in 1..2 && cell.isTopLevel && cell.key !in known,
                     )
                 }
             }
@@ -816,6 +831,10 @@ private fun PositionedTile(
     onChildGone: (FolderGhost) -> Unit = {},
     /** The first row in view, so that coming back to a scrolled Start the tiles turn in from the top of the screen, not from the top of the page. */
     topRow: () -> Int = { 0 },
+    /** The press shared by the small tiles of one block of four. */
+    press: PressGroup? = null,
+    /** The tile was just pinned: it drops in from above. */
+    fresh: Boolean = false,
 ) {
     val density = LocalDensity.current
     val reduced = LocalReduceMotion.current
@@ -859,16 +878,23 @@ private fun PositionedTile(
                 wasDragging = false
                 position.snapTo(drag.position.round())
             }
-            position.animateTo(slot, spring(dampingRatio = if (origin != null) 0.8f else 0.85f, stiffness = if (origin != null) Spring.StiffnessMediumLow else Spring.StiffnessLow))
+            // While another tile is carried the ones that make room give way with a soft bounce.
+            val aside = !reduced && drag.draggedKey != null
+            position.animateTo(slot, spring(dampingRatio = if (origin != null) 0.8f else if (aside) 0.6f else 0.85f, stiffness = if (origin != null || aside) Spring.StiffnessMediumLow else Spring.StiffnessLow))
         }
     }
 
     // 1 = turned away, 0 = facing the screen. A new token makes a new Animatable that starts turned away:
     // resetting an existing one from an effect would only happen after the frame that shows the tiles in place.
-    val away = remember(enterToken) { Animatable(if (origin != null) 0f else 1f) }
+    val drop = remember { Animatable(if (fresh && !reduced && origin == null) 1f else 0f) }
+    LaunchedEffect(drop) {
+        if (drop.value > 0f) drop.animateTo(0f, spring(dampingRatio = 0.62f, stiffness = Spring.StiffnessLow))
+    }
+    // A tile just pinned skips the turn-in: it drops in instead.
+    val away = remember(enterToken) { Animatable(if (origin != null || drop.value > 0f) 0f else 1f) }
     val leaving by rememberUpdatedState(exitRequest != null)
     LaunchedEffect(away) {
-        if (origin != null) return@LaunchedEffect
+        if (origin != null || away.value == 0f && drop.value > 0f) return@LaunchedEffect
         // Reduced motion: every tile fades in at once, quickly.
         val original = MotionStyle.original
         val inView = placement.copy(row = (placement.row - topRow()).coerceAtLeast(0))
@@ -906,6 +932,25 @@ private fun PositionedTile(
     val pull by animateOffsetAsState(if (dragging) drag.pull else Offset.Zero, spring(stiffness = Spring.StiffnessMedium), label = "pull")
     val lift by animateFloatAsState(if (dragging) 1.07f else 1f, spring(stiffness = Spring.StiffnessMedium), label = "lift")
     val armedForFolder = drag.mergeTarget == cell.key
+    // Edit mode: the tiles that stepped back breathe, a little.
+    val breath = remember { Animatable(0f) }
+    val breathing = editingKey != null && !selected && !reduced
+    LaunchedEffect(breathing) {
+        if (!breathing) {
+            breath.snapTo(0f)
+            return@LaunchedEffect
+        }
+        delay(index * 90L % 700L)
+        while (true) {
+            breath.animateTo(1f, tween(1500, easing = FastOutSlowInEasing))
+            breath.animateTo(0f, tween(1500, easing = FastOutSlowInEasing))
+        }
+    }
+    // Small tiles of a block of four tilt together: which block, and which of the four this is.
+    val grouped = press != null && cell.size == TileSize.Small && cell.isTopLevel
+    val block = placement.row / 2 * 16 + placement.col / 2
+    val scope = rememberCoroutineScope()
+    val tiltMax = if (reduced || !style.isClassic) 0f else 9f * LocalTiltStrength.current
 
     // The built-in apps are transparent over a Start background photo, the others keep the accent.
     // A tile the user gave a color keeps it, with white ink, over the photo too.
@@ -946,12 +991,18 @@ private fun PositionedTile(
             .graphicsLayer {
                 turnstile(away.value, reduced)
                 val grow = BLOOM_FROM + (1f - BLOOM_FROM) * bloom.value.coerceIn(0f, 1f)
-                val scale = editScale * lift * grow * (if (armedForFolder) 1.06f else 1f)
+                val scale = editScale * lift * grow * (if (armedForFolder) 1.06f else 1f) * (1f + 0.02f * breath.value)
                 scaleX = scale
                 scaleY = scale
                 // A tile in the hand is a little see-through (it grows with [lift]).
                 alpha *= bloom.value.coerceIn(0f, 1f) * (if (dragging) 0.85f else 1f)
+                // A tile just pinned falls from above, fading in as it comes.
+                if (drop.value != 0f) {
+                    translationY = -drop.value * size.height * 2f
+                    alpha *= (1f - 1.5f * drop.value).coerceIn(0f, 1f)
+                }
             }
+            .then(if (grouped) Modifier.groupTilt(press!!, block, placement.col % 2, placement.row % 2, with(density) { TileGap.toPx() }) else Modifier)
             .metroPress(
                 onClick = {
                     coordinates?.takeIf { it.isAttached }?.let { currentActions.onTileBounds(it.boundsInWindow()) }
@@ -959,6 +1010,20 @@ private fun PositionedTile(
                 },
                 onLongClick = if (readOnly) null else ({ currentActions.onLongClick(currentCell) }),
                 enabled = exitRequest == null,
+                grouped = grouped,
+                onPressAt = if (grouped) { at, tileSize ->
+                    if (at != null) {
+                        // Where the finger is across the whole block of four: this tile is one of its quarters.
+                        val gapPx = with(density) { TileGap.toPx() }
+                        val blockW = tileSize.width * 2 + gapPx
+                        val blockH = tileSize.height * 2 + gapPx
+                        val dx = (((placement.col % 2) * (tileSize.width + gapPx) + at.x) / blockW * 2f - 1f).coerceIn(-1f, 1f)
+                        val dy = (((placement.row % 2) * (tileSize.height + gapPx) + at.y) / blockH * 2f - 1f).coerceIn(-1f, 1f)
+                        scope.launch { press!!.press(block, dx, dy, tiltMax, 0.95f) }
+                    } else {
+                        scope.launch { press!!.release() }
+                    }
+                } else null,
             )
             .then(
                 if (cell.isTopLevel && !readOnly && pickedKeys == null) {

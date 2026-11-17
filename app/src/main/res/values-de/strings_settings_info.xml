@@ -17,6 +17,7 @@
     <string name="info_theme_tileopacity">Wie viel vom Start-Foto durch die Kacheln scheint: durchsichtigere Kacheln zeigen mehr Foto und weniger Farbe.</string>
     <string name="info_theme_photoinside">Jede Kachel wird zum Fenster auf das Foto, ohne Abstand dazwischen, wie bei Windows Phone. Es braucht ein Start-Foto.</string>
     <string name="info_theme_parallax">Das Foto bewegt sich beim Scrollen langsamer als die Kacheln, für Tiefe. Es braucht ein Start-Foto und ist bei reduzierter Bewegung aus.</string>
+    <string name="info_theme_parallax_speed">Das Foto hinter den Kacheln bewegt sich beim Scrollen mit diesem Anteil der Kachelgeschwindigkeit. „Still“ hält es fest, die Kacheln gleiten darüber; je höher der Wert, desto näher folgt es ihnen. Es braucht ein Startfoto und die Parallaxe darüber.</string>
     <string name="info_theme_panorama">Ein großer Titel (Start, Apps) hinter den Seiten, der sich beim Wischen langsamer bewegt als die Seite, wie beim Windows-Phone-Panorama.</string>
     <string name="info_theme_hubheadings">Die Überschriften der Hub-Abschnitte (Fotos, Personen, Nachrichten) so groß wie in Windows Phone, 49,5 dp statt 27. Nur im klassischen Look.</string>
     <string name="info_theme_files">Eine Design-Datei enthält Farben, dunklen oder hellen Modus, Uhr, Kachelgröße und Icon-Paket, nicht deine Kacheln. Exportiere sie, um den Look zu behalten oder zu teilen; importiere eine, um sie anzuwenden. Deine Kacheln und übrigen Einstellungen bleiben.</string>

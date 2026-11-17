@@ -12,7 +12,7 @@ object SectionReset {
     val keys: Map<String, Set<String>> = mapOf(
         "StartTheme" to setOf(
             "accentApps", "accentIndex", "accentNightIndex", "accentPanel", "accentStart", "autoAccent", "customAccent", "miniAccents", "darkFromHour", "darkToHour",
-            "dynamicColor", "oledMode", "pageBackgrounds", "panoramaTitles", "hubHeadings", "parallax", "tileOpacity", "startPhotoFit", "startPhotoInside", "startPhotoX", "startPhotoY", "startPhotoZoom",
+            "dynamicColor", "oledMode", "pageBackgrounds", "panoramaTitles", "hubHeadings", "parallax", "parallaxSpeed", "tileOpacity", "startPhotoFit", "startPhotoInside", "startPhotoX", "startPhotoY", "startPhotoZoom",
             "systemWallpaperFollows", "themeMode", "themeStyle",
         ),
         "Icons" to setOf("iconPack", "iconPicks", "iconShape", "iconTileColors", "largeTileIcons", "glassIcons"),

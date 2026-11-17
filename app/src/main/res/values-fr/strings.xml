@@ -121,6 +121,8 @@
     <string name="theme_dark_to">jusqu’à</string>
     <string name="theme_hours_hint">Le launcher est sombre entre ces heures et clair le reste de la journée.</string>
     <string name="theme_parallax">la photo défile plus lentement que les tuiles</string>
+    <string name="theme_parallax_speed">vitesse de la photo derrière les tuiles</string>
+    <string name="theme_parallax_still">fixe</string>
     <string name="theme_tile_opacity">les tuiles laissent voir la photo</string>
     <string name="theme_tile_opaque">opaques</string>
     <string name="theme_tile_see_through">%1$d%% de la couleur</string>

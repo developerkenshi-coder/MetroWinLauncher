@@ -38,6 +38,7 @@ object SettingsCodec {
         put("tileColumns", s.tileColumns)
         put("freeLayout", s.freeLayout)
         put("parallax", s.parallax)
+        put("parallaxSpeed", s.parallaxSpeed)
         put("tileOpacity", s.tileOpacity)
         put("startPages", s.startPages)
         put("homePage", s.homePage)
@@ -297,6 +298,7 @@ object SettingsCodec {
             freeLayout = o.optBoolean("freeLayout", base.freeLayout),
             backgroundRevision = o.optInt("backgroundRevision", base.backgroundRevision).coerceAtLeast(0),
             parallax = o.optBoolean("parallax", base.parallax),
+            parallaxSpeed = o.optInt("parallaxSpeed", base.parallaxSpeed).coerceIn(0, 50),
             tileOpacity = o.optInt("tileOpacity", base.tileOpacity).coerceIn(30, 100),
             startPages = pageCount,
             homePage = o.optInt("homePage", base.homePage).coerceIn(0, pageCount - 1),

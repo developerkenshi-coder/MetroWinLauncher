@@ -17,6 +17,7 @@
     <string name="info_theme_tileopacity">Cuánto de la foto de Start se ve a través de los mosaicos: mosaicos más transparentes muestran más foto y menos color.</string>
     <string name="info_theme_photoinside">Cada mosaico se convierte en una ventana a la foto, sin espacio entre ellos, como en Windows Phone. Necesita una foto de Start.</string>
     <string name="info_theme_parallax">La foto se mueve más despacio que los mosaicos al desplazarte, para dar profundidad. Necesita una foto de Start y se apaga con menos movimiento.</string>
+    <string name="info_theme_parallax_speed">La foto detrás de los mosaicos se mueve con esta parte de la velocidad de los mosaicos al desplazarte. Quieta la deja en su sitio y los mosaicos pasan por encima; cuanto más alto, más los sigue. Necesita una foto de Inicio y el efecto de paralaje de arriba.</string>
     <string name="info_theme_panorama">Un título grande (start, apps) detrás de las páginas, que se mueve más despacio que la página al deslizar, como en el panorama de Windows Phone.</string>
     <string name="info_theme_hubheadings">Los encabezados de las secciones de los hubs (Fotos, Contactos, Noticias) tan grandes como en Windows Phone, 49,5 dp en lugar de 27. Solo en el aspecto Clásico.</string>
     <string name="info_theme_files">Un archivo de tema contiene colores, modo oscuro o claro, reloj, tamaño de mosaicos y paquete de iconos, no tus mosaicos. Expórtalo para guardar o compartir el aspecto; importa uno para aplicarlo. Tus mosaicos y demás ajustes no cambian.</string>

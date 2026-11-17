@@ -121,6 +121,8 @@
     <string name="theme_dark_to">until</string>
     <string name="theme_hours_hint">The launcher is dark between these hours and light the rest of the day.</string>
     <string name="theme_parallax">photo moves slower than the tiles</string>
+    <string name="theme_parallax_speed">speed of the photo behind the tiles</string>
+    <string name="theme_parallax_still">still</string>
     <string name="theme_tile_opacity">tiles show the photo through them</string>
     <string name="theme_tile_opaque">opaque</string>
     <string name="theme_tile_see_through">%1$d%% of the colour</string>

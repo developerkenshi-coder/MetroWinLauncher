@@ -25,6 +25,7 @@ internal object SettingsInfoTable {
         "theme.tileopacity" to R.string.info_theme_tileopacity,
         "theme.photoinside" to R.string.info_theme_photoinside,
         "theme.parallax" to R.string.info_theme_parallax,
+        "theme.parallaxspeed" to R.string.info_theme_parallax_speed,
         "theme.panorama" to R.string.info_theme_panorama,
         "theme.hubheadings" to R.string.info_theme_hubheadings,
         "theme.export" to R.string.info_theme_files,

@@ -17,6 +17,7 @@
     <string name="info_theme_tileopacity">Quanta parte della foto di Start si vede attraverso i tile: tile più trasparenti mostrano più foto e meno colore.</string>
     <string name="info_theme_photoinside">Ogni tile diventa una finestra sulla foto, senza spazio tra i tile, come su Windows Phone. Serve una foto di Start.</string>
     <string name="info_theme_parallax">La foto si muove più lentamente dei tile quando scorri, per dare profondità. Serve una foto di Start ed è spento con meno movimento.</string>
+    <string name="info_theme_parallax_speed">La foto dietro i tile si muove di questa parte della velocità dei tile quando scorri. Ferma la lascia al suo posto e i tile le scorrono sopra; più sale, più li segue. Serve una foto di Start e l\'effetto parallasse qui sopra.</string>
     <string name="info_theme_panorama">Un grande titolo (start, app) dietro le pagine, che si muove più lento della pagina quando scorre, come nel panorama di Windows Phone.</string>
     <string name="info_theme_hubheadings">Le intestazioni delle sezioni dei hub (Foto, Persone, Notizie) grandi come in Windows Phone, 49,5 dp invece di 27. Solo nel look Classico.</string>
     <string name="info_theme_files">Un file tema contiene colori, modo scuro o chiaro, orologio, dimensione dei tile e icon pack, non i tuoi tile. Esportalo per conservare o condividere l’aspetto; importane uno per applicarlo. I tuoi tile e le altre impostazioni non cambiano.</string>

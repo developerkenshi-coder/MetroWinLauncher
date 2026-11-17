@@ -6,6 +6,7 @@ import com.metrowin.launcher.data.ActionBarStyle
 import com.metrowin.launcher.ui.components.LocalActionBar
 import com.metrowin.launcher.ui.components.LocalHubHeadings
 import com.metrowin.launcher.ui.components.LocalPagePadding
+import com.metrowin.launcher.ui.anim.LocalParallaxSpeed
 import com.metrowin.launcher.ui.anim.LocalTiltStrength
 import android.app.Activity
 import android.content.Context
@@ -177,6 +178,8 @@ fun MetroTheme(
     fontRevision: Int = 0,
     /** How far a press tilts the tiles and buttons (1 as designed, 0 not at all) and how fast the animations go (2 is twice as fast). */
     tilt: Float = 1f,
+    /** How fast the Start photo moves when Start scrolls, as a share of the speed of the tiles. */
+    parallaxSpeed: Float = 0.2f,
     speed: Float = 1f,
     /** How much room the pages leave at the sides. */
     pagePadding: PagePadding = PagePadding.Normal,
@@ -205,6 +208,7 @@ fun MetroTheme(
         LocalReduceMotion provides reduceMotion,
         LocalHighContrast provides highContrast,
         LocalTiltStrength provides tilt,
+        LocalParallaxSpeed provides parallaxSpeed,
         LocalPagePadding provides pagePadding,
         LocalActionBar provides actionBar,
         LocalHubHeadings provides hubHeadings,

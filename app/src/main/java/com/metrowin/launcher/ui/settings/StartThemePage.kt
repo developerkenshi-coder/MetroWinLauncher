@@ -249,6 +249,15 @@ fun ColumnScope.StartThemeSettings(env: SettingsEnv) {
         tag = "theme:parallax",
         id = "theme.parallax",
     )
+    val parallaxSpeeds = listOf(0, 10, 20, 30, 40, 50)
+    DropdownSetting(
+        label = stringResource(R.string.theme_parallax_speed),
+        options = parallaxSpeeds.map { if (it == 0) stringResource(R.string.theme_parallax_still) else stringResource(R.string.feel_percent, it) },
+        selected = parallaxSpeeds.indexOf(parallaxSpeeds.minBy { kotlin.math.abs(it - settings.parallaxSpeed) }),
+        onSelect = { i -> env.onChange { it.copy(parallaxSpeed = parallaxSpeeds[i]) } },
+        tag = "theme:parallaxspeed",
+        id = "theme.parallaxspeed",
+    )
     val opacities = listOf(100, 80, 60, 40)
     DropdownSetting(
         label = stringResource(R.string.theme_tile_opacity),
