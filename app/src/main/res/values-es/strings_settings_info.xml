@@ -370,4 +370,8 @@
     <string name="tut_backup_tip4">Pausa u oculta el perfil de trabajo y el espacio privado, y guarda la lista de tus apps para encontrarlas de nuevo en un teléfono nuevo.</string>
     <string name="info_theme_wplook">Activa a la vez: el aspecto Clásico, la barra de aplicación Retro, el torniquete original y el margen estrecho de las páginas (18 dp, como en Windows Phone). El acento, el tema claro u oscuro y los mosaicos no cambian.</string>
     <string name="info_tip">Una página de agradecimiento: dónde dejar una propina, si quieres, para la gata del autor (un enlace a Ko-fi, se abre en el navegador) y quién hizo el launcher. Nada de esto hace falta para usar la app.</string>
+    <string name="cat_tip">propina</string>
+    <string name="cat_tip_desc">Un gracias al autor y a su gata</string>
+    <string name="cat_tip_kw">propina, donación, apoyo, ko-fi, kofi, café, gata, maty, kenshi, gracias</string>
+    <string name="info_cat_tip">Una página de agradecimiento: dónde dejar una propina, si quieres, para la gata del autor (un enlace a Ko-fi, se abre en el navegador) y quién hizo el launcher. Nada de esto hace falta para usar la app.</string>
 </resources>

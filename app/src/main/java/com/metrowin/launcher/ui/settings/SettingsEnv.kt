@@ -44,7 +44,8 @@ enum class SettingsCategory(
     Battery(R.string.cat_battery, R.string.cat_battery_desc, Glyph.Battery, R.string.cat_battery_kw, R.string.info_cat_battery),
     Access(R.string.cat_access, R.string.cat_access_desc, Glyph.Brightness, R.string.cat_access_kw, R.string.info_cat_access),
     Backup(R.string.cat_backup, R.string.cat_backup_desc, Glyph.Storage, R.string.cat_backup_kw, R.string.info_cat_backup),
-    About(R.string.cat_about, R.string.cat_about_desc, Glyph.Launcher, R.string.cat_about_kw, R.string.info_cat_about);
+    About(R.string.cat_about, R.string.cat_about_desc, Glyph.Launcher, R.string.cat_about_kw, R.string.info_cat_about),
+    Tip(R.string.cat_tip, R.string.cat_tip_desc, Glyph.Star, R.string.cat_tip_kw, R.string.info_cat_tip);
 
     /** The pages of the category, in order: the pivot it opens as. */
     val pages: List<SettingsSection> get() = SettingsSection.entries.filter { it.category == this }
@@ -111,9 +112,11 @@ enum class SettingsSection(
 
     // about
     About(SettingsCategory.About, R.string.sec_about, R.string.sec_about_desc, R.string.kw_about),
-    Tip(SettingsCategory.About, R.string.sec_tip, R.string.sec_tip_desc, R.string.kw_tip),
     BugReport(SettingsCategory.About, R.string.sec_bug, R.string.sec_bug_desc, R.string.kw_bug),
     OtherProjects(SettingsCategory.About, R.string.sec_projects, R.string.sec_projects_desc, R.string.kw_projects),
+
+    // tip
+    Tip(SettingsCategory.Tip, R.string.sec_tip, R.string.sec_tip_desc, R.string.kw_tip),
 }
 
 /**

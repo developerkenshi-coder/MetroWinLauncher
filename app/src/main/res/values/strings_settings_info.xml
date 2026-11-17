@@ -370,4 +370,8 @@
     <string name="tut_backup_tip4">Pause or hide the work profile and the private space, and save the list of your apps to find them again on a new phone.</string>
     <string name="info_theme_wplook">Switches on together: the Classic look, the Retro application bar, the original turnstile and the narrow page margin (18 dp, as on Windows Phone). The accent, light or dark, and the tiles stay as they are.</string>
     <string name="info_tip">A thank-you page: where to leave a tip, if you wish, for the author\'s cat (a link to Ko-fi, it opens in the browser), and who made the launcher. Nothing here is needed to use the app.</string>
+    <string name="cat_tip">tip</string>
+    <string name="cat_tip_desc">A thank-you to the author, and to his cat</string>
+    <string name="cat_tip_kw">tip, donate, support, ko-fi, kofi, coffee, cat, maty, kenshi, thanks</string>
+    <string name="info_cat_tip">A thank-you page: where to leave a tip, if you wish, for the author\'s cat (a link to Ko-fi, it opens in the browser), and who made the launcher. Nothing here is needed to use the app.</string>
 </resources>

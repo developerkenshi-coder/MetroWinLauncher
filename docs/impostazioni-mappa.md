@@ -22,7 +22,8 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | batteria | batteria | Risparmio energetico e cosa fa il launcher quando non è sullo schermo |
 | accessibilità | accessibilità | Dimensione e spessore del testo, carattere, meno movimento, più contrasto, TalkBack |
 | backup e profili | backup+sync, profili | Salva e ripristina la disposizione, sincronizza i telefoni, profilo di lavoro e spazio privato |
-| informazioni | informazioni, mancia, segnalazione bug, altri progetti | Versione e aggiornamenti, il tutorial, segnalazione di problemi, crediti, altri progetti e la mancia |
+| informazioni | informazioni, segnalazione bug, altri progetti | Versione e aggiornamenti, il tutorial, segnalazione di problemi, crediti e altri progetti |
+| mancia | mancia | Un grazie dell’autore, il link per offrire un croccantino alla sua gatta e chi ha fatto il launcher |
 
 ## Impostazioni, una per una
 
@@ -335,8 +336,13 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | rivedi il tutorial | `about.tutorial` | strumenti › informazioni | informazioni › informazioni |
 | Software libero (FOSS) | `projects.foss` | strumenti › altri progetti | informazioni › altri progetti |
 | Non FOSS | `projects.nonfoss` | strumenti › altri progetti | informazioni › altri progetti |
-| croccantini per Maty | `tip.kofi` | nuova | informazioni › mancia |
 | crediti | `about.credits` | strumenti › informazioni | informazioni › informazioni |
+
+### mancia
+
+| impostazione | id | pagina vecchia | pagina nuova |
+|---|---|---|---|
+| croccantini per Maty | `tip.kofi` | nuova | mancia › mancia |
 
 ## Spostamenti
 

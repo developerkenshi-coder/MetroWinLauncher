@@ -370,4 +370,8 @@
     <string name="tut_backup_tip4">Mettez en pause ou masquez le profil professionnel et l’espace privé, et enregistrez la liste de vos applications pour les retrouver sur un nouveau téléphone.</string>
     <string name="info_theme_wplook">Active ensemble : l’aspect Classique, la barre d’application Retro, le tourniquet d’origine et la marge étroite des pages (18 dp, comme sur Windows Phone). La couleur d’accentuation, le thème clair ou sombre et les tuiles ne changent pas.</string>
     <string name="info_tip">Une page de remerciement : où laisser un pourboire, si tu veux, pour la chatte de l’auteur (un lien vers Ko-fi, il s’ouvre dans le navigateur) et qui a fait le lanceur. Rien ici n’est nécessaire pour utiliser l’appli.</string>
+    <string name="cat_tip">pourboire</string>
+    <string name="cat_tip_desc">Un merci à l’auteur et à sa chatte</string>
+    <string name="cat_tip_kw">pourboire, don, soutien, ko-fi, kofi, café, chatte, maty, kenshi, merci</string>
+    <string name="info_cat_tip">Une page de remerciement : où laisser un pourboire, si tu veux, pour la chatte de l’auteur (un lien vers Ko-fi, il s’ouvre dans le navigateur) et qui a fait le lanceur. Rien ici n’est nécessaire pour utiliser l’appli.</string>
 </resources>
