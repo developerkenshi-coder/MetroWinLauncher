@@ -50,12 +50,12 @@ object SectionReset {
             "liveHideText", "liveMessages", "liveNowPlaying", "liveOffApps", "livePictures", "liveProgress", "thirdPartyTiles",
             "galleryAlbums", "galleryApp", "gallerySource", "galleryPhotos", "weatherBlocks", "weatherFahrenheit",
         ),
-        "Apps" to setOf("appLabels", "compactList", "showCategories", "showFrequentApps", "showNewApps", "showRecentApps"),
+        "Apps" to setOf("appLabels", "compactList", "showCategories", "showFrequentApps", "showNewApps", "showRecentApps", "hiddenAppsLock"),
         "Screen" to setOf("highRefreshRate", "launchAnimation", "orientation", "pagePadding"),
         "Battery" to setOf("batterySaving"),
         "Accessibility" to setOf("appFont", "boldText", "fontRevision", "highContrast", "reduceMotion", "systemFont", "textScale"),
         "Lock" to setOf("lockShowAlarm", "lockShowBattery", "lockOverlay", "lockShowEvent", "lockShowNotifications", "lockIconsOneRow", "lockShowWeather", "lockSensorUnderScreen", "lockSensorY", "lockSensorOwnIcon"),
-        "Voice" to setOf("assistantIcon", "voiceButton", "voiceCallDirect", "voiceOffline"),
+        "Voice" to setOf("assistantIcon", "voiceButton", "voiceCallDirect", "voiceOffline", "voicePreview"),
     )
 
     fun canReset(section: String) = section in keys

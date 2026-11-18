@@ -50,8 +50,8 @@
     <string name="nws_unsave">Remover das salvas</string>
     <string name="nws_mark_read">Marcar como lido</string>
     <string name="nws_mark_unread">Marcar como não lido</string>
-    <string name="nws_empty">Nenhum título aqui.</string>
-    <string name="nws_empty_search">Nenhum título corresponde.</string>
+    <string name="nws_empty">Sem títulos aqui. Toque em ↻ para ler de novo as fontes.</string>
+    <string name="nws_empty_search">Nenhum título corresponde. Experimente outras palavras.</string>
     <string name="nws_opml_done">%1$d feeds adicionados.</string>
     <string name="nws_opml_none">Nesse arquivo não há nenhum feed novo.</string>
     <string name="nws_opml_saved">A lista de feeds foi salva.</string>

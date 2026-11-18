@@ -1,6 +1,8 @@
 package com.metrowin.launcher.ui.voice
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -19,6 +21,9 @@ import com.metrowin.launcher.data.VoiceRecognizer
 sealed interface VoiceUiState {
     /** The microphone is open. [heard] is what has been understood so far, [level] how loud the voice is (0..1). */
     data class Listening(val heard: String = "", val level: Float = 0f) : VoiceUiState
+
+    /** A phrase came in and waits [waitMs] for the user to read it, edit it or go on, before it is carried out. */
+    data class Confirm(val heard: String, val waitMs: Long) : VoiceUiState
 
     /** A phrase came in and is being carried out. */
     data class Understood(val heard: String) : VoiceUiState
@@ -52,6 +57,36 @@ class VoiceSession(context: Context) {
     /** Set by the host, which knows how to carry out a phrase. */
     var onHeard: (List<String>) -> Unit = {}
 
+    /** How long what was understood is shown before it is carried out; 0 carries it out at once. */
+    var previewMs: Long = 0L
+
+    /** The user chose to edit what was understood: the host puts the text in the search box. */
+    var onEdit: (String) -> Unit = {}
+
+    private val handler = Handler(Looper.getMainLooper())
+    private var waiting: Runnable? = null
+    private var alternatives: List<String> = emptyList()
+
+    private fun cancelWait() {
+        waiting?.let(handler::removeCallbacks)
+        waiting = null
+    }
+
+    /** The preview is over (the time ran out, or the user said go): the phrase is carried out. */
+    fun go() {
+        val heard = alternatives.takeIf { it.isNotEmpty() && state is VoiceUiState.Confirm } ?: return
+        cancelWait()
+        state = VoiceUiState.Understood(heard.first())
+        onHeard(heard)
+    }
+
+    /** The user wants to change what was understood before it is used. */
+    fun edit() {
+        val text = (state as? VoiceUiState.Confirm)?.heard ?: return
+        close()
+        onEdit(text)
+    }
+
     private val recognizer = VoiceRecognizer(
         context,
         object : VoiceListener {
@@ -65,6 +100,13 @@ class VoiceSession(context: Context) {
 
             override fun onResult(alternatives: List<String>) {
                 failures = 0
+                if (previewMs > 0) {
+                    this@VoiceSession.alternatives = alternatives
+                    state = VoiceUiState.Confirm(alternatives.first(), previewMs)
+                    cancelWait()
+                    waiting = Runnable { go() }.also { handler.postDelayed(it, previewMs) }
+                    return
+                }
                 state = VoiceUiState.Understood(alternatives.first())
                 onHeard(alternatives)
             }
@@ -89,6 +131,7 @@ class VoiceSession(context: Context) {
 
     /** Opens the screen and starts listening. */
     fun open() {
+        cancelWait()
         // A retry from the problem screen goes on counting; anything else starts afresh.
         if (state !is VoiceUiState.Problem) failures = 0
         state = VoiceUiState.Listening()
@@ -98,6 +141,7 @@ class VoiceSession(context: Context) {
     /** A phrase the user touched instead of speaking it: carried out as if it had been heard. */
     fun say(text: String) {
         recognizer.release()
+        cancelWait()
         failures = 0
         state = VoiceUiState.Understood(text)
         onHeard(listOf(text))
@@ -110,6 +154,7 @@ class VoiceSession(context: Context) {
     }
 
     fun close() {
+        cancelWait()
         failures = 0
         recognizer.release()
         state = null

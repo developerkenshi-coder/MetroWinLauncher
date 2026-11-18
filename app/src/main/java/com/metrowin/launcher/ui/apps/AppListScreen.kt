@@ -124,6 +124,7 @@ import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import com.metrowin.launcher.ui.components.ReorderSpring
 import com.metrowin.launcher.ui.anim.turnstile
 import com.metrowin.launcher.ui.components.AppSquare
+import com.metrowin.launcher.ui.components.MetroToggle
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.sectionHeader
 import com.metrowin.launcher.ui.theme.LocalAccent
@@ -214,6 +215,11 @@ sealed interface ListRow {
     /** A setting of the launcher itself (or a whole section of them): touching it opens the settings where it is. */
     data class LauncherSetting(val match: LauncherSettingMatch) : ListRow {
         override val key = "lsetting:${match.key}"
+    }
+
+    /** The line at the end of the plain list that shows (or puts away again) the apps the user hid; [open] says which. */
+    data class HiddenToggle(val count: Int, val open: Boolean) : ListRow {
+        override val key = "hidden:toggle"
     }
 
     /** A note, a list, a countdown or a site pinned to Start. */
@@ -356,6 +362,14 @@ fun AppListScreen(
     picked: Set<String>? = null,
     /** A double tap on an empty spot of the list (a row that takes the touch does not count); null leaves it out. */
     onDoubleTap: (() -> Unit)? = null,
+    /** The apps the user hid, and whether they are shown now; null (or none hidden) leaves the line that shows them out. A touch on the line calls [onToggleHidden]. */
+    hiddenApps: List<AppItem> = emptyList(),
+    hiddenOpen: Boolean = false,
+    onToggleHidden: () -> Unit = {},
+    /** The state of an on/off setting of the launcher found by the search (by its id), or null when it is not one that can be flipped there. */
+    settingState: (String) -> Boolean? = { null },
+    /** Flips such a setting without opening its page. */
+    onFlipSetting: (String, Boolean) -> Unit = { _, _ -> },
 ) {
     // The camera hole counts at the top too: with the status bar turned off the bar leaves no room, the hole is still there.
     val insets = WindowInsets.systemBars.union(WindowInsets.displayCutout.only(WindowInsetsSides.Top)).asPaddingValues()
@@ -364,13 +378,15 @@ fun AppListScreen(
     val direction = LocalLayoutDirection.current
     // While searching the list is just the matches, without letter headers, followed by what else was found.
     var searchFocused by remember { mutableStateOf(false) }
-    val rows = remember(model, query, results, global, answers, recentSearches, searchFocused) {
+    val rows = remember(model, query, results, global, answers, recentSearches, searchFocused, hiddenApps, hiddenOpen) {
         if (query.isBlank()) {
             if (searchFocused && recentSearches.isNotEmpty()) {
                 // The chips come right under the box, the searches made before under them; the list stays below.
                 model.withRecents(recentSearches)
-            } else {
+            } else if (hiddenApps.isEmpty()) {
                 model.rows
+            } else {
+                model.rows + ListRow.HiddenToggle(hiddenApps.size, hiddenOpen) + if (hiddenOpen) hiddenApps.map { ListRow.App(it, "h") } else emptyList()
             }
         } else {
             buildList {
@@ -452,6 +468,7 @@ fun AppListScreen(
             is ListRow.NoteResult -> onLaunch(AppItem("search:note", row.match.title, Launch.Link(MiniLink.note(row.match.id))))
             is ListRow.TodoResult -> onLaunch(AppItem("search:todo", row.match.text, Launch.Link(MiniLink.todo(row.match.id))))
             is ListRow.Event -> onLaunch(AppItem("search:event", row.match.title, Launch.Link(CalendarSearch.uri(row.match.eventId))))
+            is ListRow.HiddenToggle -> onToggleHidden()
             ListRow.Search, ListRow.Today, ListRow.Categories, is ListRow.Header, is ListRow.Section -> Unit
         }
     }
@@ -494,6 +511,10 @@ fun AppListScreen(
                     Glyph.Search, row.query, null, index, listState, openedAt, exiting, tag = "recent:${row.query}",
                 ) { activate(row) }
                 ListRow.Categories -> ListChips(lists, selectedList, onList, onNewList, onListLongPress)
+                is ListRow.HiddenToggle -> ResultRow(
+                    Glyph.Lock, stringResource(if (row.open) R.string.apps_hidden_put_away else R.string.apps_hidden_show, row.count), null,
+                    index, listState, openedAt, exiting, tag = "hidden:toggle",
+                ) { activate(row) }
                 is ListRow.Header -> Unit
                 is ListRow.App -> AppRow(
                     row.item, index, listState, openedAt, exiting, onLaunch, onLongPress,
@@ -514,10 +535,25 @@ fun AppListScreen(
                     Glyph.Globe, stringResource(R.string.search_web_for, row.query, engine.label), null, index, listState, openedAt, exiting,
                     tag = "result:web", accent = true,
                 ) { activate(row) }
-                is ListRow.LauncherSetting -> ResultRow(
-                    Glyph.Settings, row.match.title, row.match.where, index, listState, openedAt, exiting,
-                    tag = "result:lsetting:${row.match.key}", accent = true,
-                ) { activate(row) }
+                is ListRow.LauncherSetting -> {
+                    val settingId = row.match.id
+                    val state = settingId?.let(settingState)
+                    ResultRow(
+                        Glyph.Settings, row.match.title, row.match.where, index, listState, openedAt, exiting,
+                        tag = "result:lsetting:${row.match.key}", accent = true,
+                        trailing = if (settingId != null && state != null) {
+                            {
+                                // The switch is flipped here; a touch on the rest of the row opens the page.
+                                MetroToggle(
+                                    "", state, { on -> onFlipSetting(settingId, on) },
+                                    Modifier.width(TOGGLE_ROOM).testTag("result:lsetting:toggle:$settingId").semantics { contentDescription = row.match.title },
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                    ) { activate(row) }
+                }
                 is ListRow.Tile -> ResultRow(
                     row.match.item.glyph ?: Glyph.Star, row.match.item.label, row.match.snippet ?: stringResource(R.string.search_tile_subtitle),
                     index, listState, openedAt, exiting, tag = "result:tile:${row.match.item.id}",
@@ -558,7 +594,7 @@ fun AppListScreen(
         }
     }
     // Where the list is, as a letter at the edge that can be dragged; only for the plain list, whose rows are the model's.
-    if (rows === model.rows) {
+    if (query.isBlank() && !(searchFocused && recentSearches.isNotEmpty())) {
         val headers = remember(model) { model.headerIndex.entries.map { it.value to it.key }.sortedBy { it.first } }
         AlphaScroller(
             listState, headers, rows.size,
@@ -577,7 +613,7 @@ fun AppListScreen(
 private fun ListRow.isActionable(): Boolean = when (this) {
     is ListRow.App, is ListRow.Answer, is ListRow.Contact, is ListRow.Setting, is ListRow.Web,
     is ListRow.LauncherSetting, is ListRow.Tile, is ListRow.Notification, is ListRow.File, is ListRow.Event, is ListRow.NoteResult, is ListRow.TodoResult -> true
-    ListRow.Search, ListRow.Today, ListRow.Categories, is ListRow.Header, is ListRow.Section, is ListRow.Recent -> false
+    ListRow.Search, ListRow.Today, ListRow.Categories, is ListRow.Header, is ListRow.Section, is ListRow.Recent, is ListRow.HiddenToggle -> false
 }
 
 /** "Thu 12 November, 15:30" (or without the time for an event of the whole day), in the language and clock of the phone. */
@@ -940,6 +976,8 @@ private fun ResultRow(
     exiting: Boolean,
     tag: String,
     accent: Boolean = false,
+    /** Something at the end of the row (a switch) that takes its touch for itself. */
+    trailing: (@Composable () -> Unit)? = null,
     onClick: () -> Unit,
 ) {
     val reduced = LocalReduceMotion.current
@@ -968,8 +1006,12 @@ private fun ResultRow(
             MetroText(title, size = 22.sp, highlight = LocalSearchQuery.current)
             if (subtitle != null) MetroText(subtitle, size = 13.sp, weight = FontWeight.Normal, color = colors.subtle)
         }
+        trailing?.invoke()
     }
 }
+
+/** The room of the on/off switch at the end of a setting found by the search. */
+private val TOGGLE_ROOM = 112.dp
 
 /** One app: its square, then its name. Also drawn over the dimmed list by the context menu. */
 @Composable

@@ -224,7 +224,7 @@
     <string name="mail_subject">subject</string>
     <string name="mail_body">message</string>
     <string name="mail_send">send</string>
-    <string name="mail_empty_inbox">No messages</string>
+    <string name="mail_empty_inbox">No messages. Tap ↻ to check again, or add an account in the accounts tab.</string>
     <string name="mail_setup_title">Set up your email</string>
     <string name="mail_setup_subtitle">Enter your address to auto-detect your mail provider.</string>
     <string name="mail_detected_service">Detected service: %1$s</string>
@@ -1300,7 +1300,7 @@
     <string name="place_note">A touch starts the navigation in Google Maps.</string>
     <string name="album_picker_title">Pick a photo album</string>
     <string name="album_loading">Looking for albums…</string>
-    <string name="album_empty">No album found.</string>
+    <string name="album_empty">No album found. Allow the launcher to read photos first.</string>
     <string name="album_needs_photos">To show the photos of an album the launcher needs to read the photos.</string>
     <string name="group_picker_title">Pick a group of contacts</string>
     <string name="group_loading">Looking for groups…</string>
@@ -2698,7 +2698,7 @@ in front %3$s · in the background %4$s
 
     <!-- Recent apps cards and power screen -->
     <string name="rc_title">recent apps</string>
-    <string name="rc_empty">No recent apps.</string>
+    <string name="rc_empty">No recent apps. Open an app and it shows up here.</string>
     <string name="rc_close_all">Close all</string>
     <string name="rc_android">Android</string>
     <string name="pw_swipe">swipe down to power off</string>
@@ -2789,7 +2789,7 @@ in front %3$s · in the background %4$s
     <string name="photos_date">date</string>
     <string name="photos_favorites">favorites</string>
     <string name="photos_other">Other</string>
-    <string name="photos_empty">No photos here yet.</string>
+    <string name="photos_empty">No photos here yet. Take a picture and it shows up here.</string>
     <string name="photos_allow_why">Allow access to your photos to see them here. They never leave the phone.</string>
     <string name="photos_allow">Allow</string>
     <string name="voice_say">Say something, or touch one of these:</string>
@@ -2846,4 +2846,24 @@ in front %3$s · in the background %4$s
     <string name="prj_play">Google Play</string>
     <string name="wp_look">Windows Phone look</string>
     <string name="wp_look_hint">Sets the Classic look, the Retro application bar, the original turnstile and narrow page margins in one go. Each can be changed again afterwards.</string>
+    <string name="voice_set_preview">Show what was understood first</string>
+    <string name="voice_set_preview_hint">What the microphone understood stays on screen for a moment, with Go and Edit, before it is carried out.</string>
+    <string name="voice_go">go</string>
+    <string name="voice_edit">edit</string>
+    <string name="apps_hidden_lock">Ask for the screen lock to see them</string>
+    <string name="apps_hidden_lock_hint">The line at the end of the app list that shows the hidden apps asks for your fingerprint or the screen lock first.</string>
+    <string name="apps_hidden_lock_title">Unlock to see the hidden apps</string>
+    <string name="apps_hidden_show">Hidden apps (%1$d)</string>
+    <string name="apps_hidden_put_away">Put away the hidden apps (%1$d)</string>
+    <string name="restore_preview_settings">%1$d settings are different from now</string>
+    <string name="profiles_heading">quick profiles</string>
+    <string name="profiles_hint">Keep all the settings as they are now as Home, Work or Night. Each one saved appears as a button in the Action Center: one touch and those settings are on.</string>
+    <string name="profile_home">Home</string>
+    <string name="profile_work_quick">Work</string>
+    <string name="profile_night">Night</string>
+    <string name="profile_save_home">save these settings as Home</string>
+    <string name="profile_save_work">save these settings as Work</string>
+    <string name="profile_save_night">save these settings as Night</string>
+    <string name="profile_forget">forget the profile %1$s</string>
+    <string name="profile_applied">Settings of the profile %1$s are on</string>
 </resources>

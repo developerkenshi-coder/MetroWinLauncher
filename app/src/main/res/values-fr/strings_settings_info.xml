@@ -379,4 +379,7 @@
     <string name="cat_tip_desc">Un merci à l’auteur et à sa chatte</string>
     <string name="cat_tip_kw">pourboire, don, soutien, ko-fi, kofi, café, chatte, maty, kenshi, merci</string>
     <string name="info_cat_tip">Une page de remerciement : où laisser un pourboire, si tu veux, pour la chatte de l’auteur (un lien vers Ko-fi, il s’ouvre dans le navigateur) et qui a fait le lanceur. Rien ici n’est nécessaire pour utiliser l’appli.</string>
+    <string name="info_apps_hiddenlock">La ligne «apps masquées» en bas de la liste montre les apps que vous avez masquées. Activé, elle demande d’abord l’empreinte, le visage ou le verrouillage de l’écran. Sans verrouillage d’écran sur le téléphone, rien n’est demandé. Désactivé par défaut.</string>
+    <string name="info_voice_preview">Après avoir parlé, ce qui a été compris reste environ deux secondes à l’écran, avec une ligne qui s’épuise, un bouton «aller» pour l’exécuter tout de suite et un bouton «modifier» qui met les mots dans la zone de recherche. Désactivé : exécuté dès que compris. Activé par défaut.</string>
+    <string name="info_profiles">Garde chaque réglage du lanceur tel qu’il est sous Maison, Travail ou Nuit (ce qui est propre à ce téléphone, comme le dossier de sauvegarde, reste de côté). Un profil gardé apparaît comme un bouton dans l’Action Center ; le toucher active ces réglages. La disposition de Start a ses propres dispositions gardées. Garder à nouveau remplace le profil.</string>
 </resources>

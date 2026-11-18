@@ -73,7 +73,7 @@
     <string name="cal_read_only">sola lettura</string>
     <string name="cal_search">cerca</string>
     <string name="cal_search_hint">Cerca eventi</string>
-    <string name="cal_search_none">Nessun risultato.</string>
+    <string name="cal_search_none">Nessun risultato. Prova con il titolo, il luogo o parte di una parola.</string>
     <string name="cal_free_time">tempo libero</string>
     <string name="cal_free_none">Nessuno spazio libero di 30 minuti o più tra le 8:00 e le 20:00.</string>
     <string name="cal_minutes_n">%1$d min</string>

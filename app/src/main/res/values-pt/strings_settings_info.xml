@@ -379,4 +379,7 @@
     <string name="cat_tip_desc">Um obrigado ao autor e à sua gata</string>
     <string name="cat_tip_kw">gorjeta, doação, apoio, ko-fi, kofi, café, gata, maty, kenshi, obrigado</string>
     <string name="info_cat_tip">Uma página de agradecimento: onde deixar uma gorjeta, se quiseres, para a gata do autor (um link para o Ko-fi, abre no navegador) e quem fez o launcher. Nada disto é preciso para usar a app.</string>
+    <string name="info_apps_hiddenlock">A linha «apps ocultas» no fim da lista mostra as apps que ocultou. Ativado, pede primeiro a impressão digital, o rosto ou o bloqueio do ecrã. Sem bloqueio de ecrã no telemóvel não pede nada. Desligado por defeito.</string>
+    <string name="info_voice_preview">Depois de falar, o que foi entendido fica cerca de dois segundos no ecrã, com uma linha que se esgota, um botão «ir» que o executa logo e um botão «editar» que põe as palavras na caixa de pesquisa. Desligado: é executado assim que entendido. Ligado por defeito.</string>
+    <string name="info_profiles">Guarda cada definição do launcher como está agora sob Casa, Trabalho ou Noite (o que é só deste telemóvel, como a pasta das cópias, fica de fora). Um perfil guardado aparece como botão no Action Center; tocar ativa essas definições. O esquema do Start tem os seus próprios esquemas guardados. Guardar de novo substitui o perfil.</string>
 </resources>

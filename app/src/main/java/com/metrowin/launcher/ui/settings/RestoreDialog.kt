@@ -18,6 +18,7 @@ import com.metrowin.launcher.R
 import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.data.LayoutBackup
 import com.metrowin.launcher.data.RestorePart
+import com.metrowin.launcher.data.SettingsCodec
 import com.metrowin.launcher.data.ThemeCodec
 import com.metrowin.launcher.ui.components.DialogFrame
 import com.metrowin.launcher.ui.components.MetroButton
@@ -30,6 +31,13 @@ internal object RestorePreview {
 
     /** The look of the backup is the one the phone has already (a part that would change nothing). */
     fun sameLook(backup: LayoutBackup, current: LauncherSettings): Boolean = ThemeCodec.encode(backup.settings) == ThemeCodec.encode(current)
+
+    /** How many settings of the backup are not what this phone has now (the ones that belong to this phone alone are left out of the count). */
+    fun settingsChanged(backup: LayoutBackup, current: LauncherSettings): Int {
+        val a = org.json.JSONObject(SettingsCodec.encode(backup.settings, portable = true))
+        val b = org.json.JSONObject(SettingsCodec.encode(current, portable = true))
+        return a.keys().asSequence().count { a.get(it).toString() != b.opt(it)?.toString() }
+    }
 
     /** Things to do, reminders and named layouts in the file; null when the file carries none of the extras at all. */
     fun data(backup: LayoutBackup): Triple<Int, Int, Int>? = backup.extras?.let { Triple(it.todos.size, it.reminders.size, it.layouts.size) }
@@ -80,5 +88,5 @@ private fun preview(part: RestorePart, backup: LayoutBackup, current: LauncherSe
     RestorePart.Theme -> stringResource(if (RestorePreview.sameLook(backup, current)) R.string.restore_preview_look_same else R.string.restore_preview_look_differs)
     RestorePart.Data -> RestorePreview.data(backup)?.let { (todos, reminders, layouts) -> stringResource(R.string.restore_preview_data, todos, reminders, layouts) }
         ?: stringResource(R.string.restore_preview_data_none)
-    RestorePart.Settings -> null
+    RestorePart.Settings -> stringResource(R.string.restore_preview_settings, RestorePreview.settingsChanged(backup, current))
 }

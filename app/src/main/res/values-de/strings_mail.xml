@@ -15,9 +15,9 @@
     <string name="mail_spam">Spam</string>
     <string name="mail_move">verschieben</string>
     <string name="mail_select_all">alle wählen</string>
-    <string name="mail_empty_unread">Keine ungelesenen Nachrichten</string>
-    <string name="mail_empty_flagged">Keine markierten Nachrichten</string>
-    <string name="mail_empty_search">Nichts gefunden</string>
+    <string name="mail_empty_unread">Keine ungelesenen Nachrichten. Öffne den Reiter «alle», um jede Nachricht zu sehen.</string>
+    <string name="mail_empty_flagged">Keine markierten Nachrichten. Markiere eine Nachricht, dann erscheint sie hier.</string>
+    <string name="mail_empty_search">Nichts gefunden. Versuche weniger oder andere Wörter.</string>
     <string name="mail_bcc_hint">Bcc</string>
     <string name="mail_bcc_add">Blindkopie (Bcc) hinzufügen</string>
     <string name="mail_servers_manual">Server von Hand einstellen</string>

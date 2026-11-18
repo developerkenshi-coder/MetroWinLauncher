@@ -11,6 +11,7 @@ import com.metrowin.launcher.ui.components.MetroStatusBar
 import com.metrowin.launcher.ui.components.metroStatusBarHeight
 import com.metrowin.launcher.data.StatusItem
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import com.metrowin.launcher.ui.settings.SettingToggles
 import com.metrowin.launcher.ui.settings.RestoreDialog
 import com.metrowin.launcher.ui.start.StartBackdrop
 import com.metrowin.launcher.ui.start.TileFeatures
@@ -80,6 +81,7 @@ import com.metrowin.launcher.data.AboutInfo
 import com.metrowin.launcher.data.AppFilter
 import com.metrowin.launcher.data.AppLists
 import com.metrowin.launcher.data.AppLock
+import com.metrowin.launcher.data.DeviceAuth
 import com.metrowin.launcher.data.AppUsage
 import com.metrowin.launcher.data.NewApps
 import com.metrowin.launcher.data.AppSections
@@ -250,6 +252,9 @@ private val TWO_FINGER_SWIPE = 96.dp
 
 private const val HOME_DOUBLE_DELAY_MS = 350L
 
+/** What the voice understood stays on screen this long, with a way to edit it, before it is carried out. */
+private const val VOICE_PREVIEW_MS = 1800L
+
 /** How many apps the "recent" group of the list holds. */
 private const val RECENT_GROUP = 4
 
@@ -272,6 +277,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val backupCopies by vm.backupCopies.collectAsStateWithLifecycle()
     val syncOthers by vm.syncOthers.collectAsStateWithLifecycle()
     val pendingRestore by vm.pendingRestore.collectAsStateWithLifecycle()
+    val profileState by vm.quickProfiles.collectAsStateWithLifecycle()
     val lockPhoto by vm.lockPhoto.collectAsStateWithLifecycle()
     val tutorialDone by vm.tutorialDone.collectAsStateWithLifecycle()
     // The tour shows on the first run, and again whenever it is asked for in the settings.
@@ -954,6 +960,30 @@ fun LauncherApp(vm: LauncherViewModel) {
         if (waiting != null && result.resultCode == Activity.RESULT_OK) openNow(waiting.first, waiting.second)
     }
 
+    // The apps the user hid show at the end of the list when asked, and go away again when the list is left. With the lock on, the owner proves it first.
+    var hiddenOpen by remember { mutableStateOf(false) }
+    val hiddenApps = remember(items, settings.hiddenApps) { AppFilter.hidden(items, settings) }
+    LaunchedEffect(pagerState.currentPage) { if (pagerState.currentPage != appsPage) hiddenOpen = false }
+    val hiddenTitle = stringResource(R.string.apps_hidden_lock_title)
+    val confirmHidden = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) hiddenOpen = true
+    }
+    fun toggleHidden() {
+        if (hiddenOpen || !settings.hiddenAppsLock) {
+            hiddenOpen = !hiddenOpen
+            return
+        }
+        val keyguard = context.getSystemService(KeyguardManager::class.java)
+        if (keyguard?.isDeviceSecure != true) {
+            hiddenOpen = true
+        } else if (DeviceAuth.canPrompt) {
+            DeviceAuth.prompt(context, hiddenTitle) { hiddenOpen = true }
+        } else {
+            @Suppress("DEPRECATION") // as for the locked apps: the simple way to ask for the screen lock
+            keyguard.createConfirmDeviceCredentialIntent(hiddenTitle, null)?.let { confirmHidden.launch(it) } ?: run { hiddenOpen = true }
+        }
+    }
+
     /** Opens an app, or one of the launcher's own pages. An app the user locked asks for the screen lock first. */
     fun open(item: AppItem, startKey: String?) {
         if (launching) return
@@ -1177,7 +1207,13 @@ fun LauncherApp(vm: LauncherViewModel) {
     }
     SideEffect {
         voice.preferOffline = settings.voiceOffline
+        voice.previewMs = if (settings.voicePreview) VOICE_PREVIEW_MS else 0L
         voice.onHeard = ::carryOut
+        voice.onEdit = { text ->
+            query = text
+            scope.launch { pagerState.animateScrollToPage(appsPage) }
+            searchFocus++
+        }
     }
 
     val micPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -1520,6 +1556,9 @@ fun LauncherApp(vm: LauncherViewModel) {
                             }
                         }
                         AppListScreen(
+                            hiddenApps = hiddenApps, hiddenOpen = hiddenOpen, onToggleHidden = ::toggleHidden,
+                            settingState = { id -> SettingToggles.of(id)?.read?.invoke(settings) },
+                            onFlipSetting = { id, on -> SettingToggles.of(id)?.let { toggle -> vm.updateSettings { toggle.write(it, on) } } },
                             onDoubleTap = if (settings.doubleTapSleep) ({ perform(GestureAction.LockScreen) }) else null,
                             model = appList,
                             listState = listState,
@@ -1969,6 +2008,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                         },
                         onClearAll = vm::clearNotifications,
                         onNotificationAction = vm::runNotificationAction,
+                        quickProfiles = profileState,
+                        onProfile = { profile -> vm.applyProfile(profile); MetroToast.show(appContext, appContext.getString(R.string.profile_applied, appContext.getString(profile.label))) },
                         history = notificationHistory,
                         onClearHistory = vm::clearNotificationHistory,
                         onTurnOnNotificationAccess = vm::openNotificationAccessSettings,
@@ -2051,6 +2092,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onExportApps = vm::exportApps,
                             onImportApps = vm::importApps,
                             layouts = layouts,
+                            quickProfiles = profileState, onSaveProfile = vm::saveProfile, onForgetProfile = vm::forgetProfile,
                             onSaveLayout = vm::saveLayout,
                             onApplyLayout = vm::applyLayout,
                             onResaveLayout = vm::resaveLayout,
@@ -2221,6 +2263,8 @@ fun LauncherApp(vm: LauncherViewModel) {
                         onRetry = { voiceRequest++ },
                         onCancel = voice::close,
                         onSuggest = voice::say,
+                        onGo = voice::go,
+                        onEdit = voice::edit,
                         onSearchWeb = { query ->
                             voice.close()
                             vm.launch(AppItem("search:web", query, Launch.Link(GlobalSearch.webUrl(query, settings.searchEngine))))

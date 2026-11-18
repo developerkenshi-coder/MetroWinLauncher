@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import com.metrowin.launcher.ui.components.pullToRefresh
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -409,6 +410,7 @@ fun MailScreen(modifier: Modifier = Modifier) {
             onRead = ::read,
             onPick = { message -> picked = if (message.id in picked) picked - message.id else picked + message.id },
             onMore = ::loadMore,
+            onRefresh = { reload++ },
             onFolder = { path -> folder = path; resetLists(); scope.launch { pager.animateScrollToPage(0) } },
             onSelectAccount = { id -> accountId = id; resetLists(); folder = INBOX; error = null; scope.launch { pager.animateScrollToPage(0) } },
             onAddAccount = { added, password ->
@@ -571,7 +573,7 @@ private fun MailListScreen(
     modifier: Modifier, account: MailAccount, accounts: List<MailAccount>, folderTitle: String?, titles: List<String>, pager: PagerState,
     lists: Map<MailFilter, List<MailMessage>>, limits: Map<MailFilter, Int>, listStates: Map<MailFilter, LazyListState>, look: MailLook, threads: Boolean,
     picked: Set<String>, syncing: Boolean, error: String?, searching: Boolean, query: String, onQuery: (String) -> Unit, folders: List<MailFolder>?, current: String,
-    selectedId: String?, onRead: (MailMessage) -> Unit, onPick: (MailMessage) -> Unit, onMore: () -> Unit, onFolder: (String) -> Unit,
+    selectedId: String?, onRead: (MailMessage) -> Unit, onPick: (MailMessage) -> Unit, onMore: () -> Unit, onFolder: (String) -> Unit, onRefresh: () -> Unit,
     onSelectAccount: (String) -> Unit, onAddAccount: (MailAccount, String) -> Unit, onRemoveAccount: (String) -> Unit,
 ) {
     MiniFrame(modifier) {
@@ -593,7 +595,7 @@ private fun MailListScreen(
                         // Marking a message read or unflagging it takes it out of its tab at once, before the server is asked again.
                         val shown = lists[tab]?.let { all -> when (tab) { MailFilter.Unseen -> all.filter { it.isUnread }; MailFilter.Flagged -> all.filter { it.isFlagged }; else -> all } }
                         InboxPage(
-                            shown, tab, onRead, (lists[tab]?.size ?: 0) >= (limits[tab] ?: MailClient.LIMIT), threads, picked, onPick, onMore, listStates.getValue(tab), look, selectedId, query.isNotBlank(),
+                            shown, tab, onRead, (lists[tab]?.size ?: 0) >= (limits[tab] ?: MailClient.LIMIT), threads, picked, onPick, onMore, listStates.getValue(tab), look, selectedId, query.isNotBlank(), onRefresh,
                         )
                     }
                     page == 3 -> FoldersPage(folders, current, onFolder)
@@ -607,7 +609,7 @@ private fun MailListScreen(
 @Composable
 private fun InboxPage(
     messages: List<MailMessage>?, tab: MailFilter, onSelectMessage: (MailMessage) -> Unit, hasMore: Boolean, grouped: Boolean,
-    picked: Set<String>, onPick: (MailMessage) -> Unit, onMore: () -> Unit, listState: LazyListState, look: MailLook, selectedId: String?, searchingNow: Boolean,
+    picked: Set<String>, onPick: (MailMessage) -> Unit, onMore: () -> Unit, listState: LazyListState, look: MailLook, selectedId: String?, searchingNow: Boolean, onRefresh: () -> Unit,
 ) {
     if (messages == null) {
         Column(Modifier.padding(top = 16.dp)) {
@@ -639,7 +641,7 @@ private fun InboxPage(
     val selecting = picked.isNotEmpty()
     // A touch opens the message, with the swivel of the row; while some are ticked it ticks instead.
     fun openOrPick(key: Any, message: MailMessage) { if (selecting) onPick(message) else swivel.open(key) { onSelectMessage(message) } }
-    LazyColumn(Modifier.fillMaxSize().scrollIndicator(listState).testTag("mail:inbox"), state = listState) {
+    LazyColumn(Modifier.fillMaxSize().pullToRefresh(onRefresh).scrollIndicator(listState).testTag("mail:inbox"), state = listState) {
         threads.forEachIndexed { index, thread ->
             val head = thread.first()
             val expanded = thread.size > 1 && head.id in open

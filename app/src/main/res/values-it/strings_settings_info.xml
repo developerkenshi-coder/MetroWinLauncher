@@ -379,4 +379,7 @@
     <string name="cat_tip_desc">Un grazie all\'autore e alla sua gatta</string>
     <string name="cat_tip_kw">mancia, offerta, donazione, supporto, ko-fi, kofi, caffè, croccantini, gatta, maty, kenshi, grazie</string>
     <string name="info_cat_tip">Una pagina di ringraziamento: dove lasciare una mancia, se ti va, per la gatta dell\'autore (un link a Ko-fi, si apre nel browser) e chi ha fatto il launcher. Niente qui serve per usare l\'app.</string>
+    <string name="info_apps_hiddenlock">La riga «app nascoste» in fondo alla lista mostra le app che hai nascosto. Se è attivo chiede prima l’impronta, il volto o lo sblocco dello schermo. Senza blocco schermo sul telefono non chiede nulla. Spento di base.</string>
+    <string name="info_voice_preview">Dopo che hai parlato, ciò che è stato capito resta sullo schermo per circa due secondi, con una linea che si consuma, un pulsante «vai» per eseguirlo subito e un pulsante «modifica» che mette le parole nella casella di ricerca. Spento: viene eseguito appena capito. Acceso di base.</string>
+    <string name="info_profiles">Salva ogni impostazione del launcher com’è ora sotto Casa, Lavoro o Notte (ciò che è solo di questo telefono, come la cartella dei backup, resta fuori). Un profilo salvato compare come pulsante nell’Action Center; toccarlo attiva quelle impostazioni. Il layout di Start ha i suoi layout salvati. Salvare di nuovo sostituisce il profilo.</string>
 </resources>

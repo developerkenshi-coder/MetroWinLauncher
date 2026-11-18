@@ -379,4 +379,7 @@
     <string name="cat_tip_desc">A thank-you to the author, and to his cat</string>
     <string name="cat_tip_kw">tip, donate, support, ko-fi, kofi, coffee, cat, maty, kenshi, thanks</string>
     <string name="info_cat_tip">A thank-you page: where to leave a tip, if you wish, for the author\'s cat (a link to Ko-fi, it opens in the browser), and who made the launcher. Nothing here is needed to use the app.</string>
+    <string name="info_apps_hiddenlock">The line «hidden apps» at the end of the app list shows the apps you hid. With this on it asks for your fingerprint, your face or the screen lock first. Without a screen lock on the phone nothing is asked. Off by default.</string>
+    <string name="info_voice_preview">After you speak, what was understood stays on screen for about two seconds, with a line that runs out, a «go» button to carry it out at once and an «edit» button that puts the words in the search box. Off: it is carried out as soon as it is understood. On by default.</string>
+    <string name="info_profiles">Keeps every setting of the launcher as it is now under Home, Work or Night (what belongs to this phone alone, like the backup folder, is left out). A saved profile shows as a button in the Action Center; touching it puts those settings on. The layout of Start has its own saved layouts. Saving again replaces the profile.</string>
 </resources>

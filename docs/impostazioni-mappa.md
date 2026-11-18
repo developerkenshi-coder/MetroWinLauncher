@@ -207,6 +207,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | Icona assistente su Start | `voice.icon` | uso › voce | gesti e scorciatoie › voce |
 | microfono nella casella di ricerca | `voice.button` | uso › voce | gesti e scorciatoie › voce |
 | preferisci il riconoscimento sul telefono | `voice.offline` | uso › voce | gesti e scorciatoie › voce |
+| anteprima di ciò che ha capito | `voice.preview` | uso › voce | gesti e scorciatoie › voce |
 | chiama subito | `voice.call` | uso › voce | gesti e scorciatoie › voce |
 | provalo ora | `voice.try` | uso › voce | gesti e scorciatoie › voce |
 
@@ -226,6 +227,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | app nuove | `apps.new` | app › lista app | app e icone › lista app |
 | elenco compatto | `apps.compact` | app › lista app | app e icone › lista app |
 | filtro per categoria | `apps.categories` | app › lista app | app e icone › lista app |
+| blocco per vedere le app nascoste | `apps.hiddenlock` | app › lista app | app e icone › lista app |
 | app nascoste | `apps.hidden` | app › lista app | app e icone › lista app |
 | app rinominate | `apps.renamed` | app › lista app | app e icone › lista app |
 | cerca tra i contatti | `search.contacts` | app › ricerca | app e icone › ricerca |
@@ -319,6 +321,9 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | App installate | `backup.apps` | strumenti › backup+sync | backup e profili › backup+sync |
 | Backup conservati | `backup.copies` | strumenti › backup+sync | backup e profili › backup+sync |
 | Invia il layout | `backup.share` | strumenti › backup+sync | backup e profili › backup+sync |
+| profilo rapido: casa | `profiles.home` | strumenti › backup+sync | backup e profili › backup+sync |
+| profilo rapido: lavoro | `profiles.work` | strumenti › backup+sync | backup e profili › backup+sync |
+| profilo rapido: notte | `profiles.night` | strumenti › backup+sync | backup e profili › backup+sync |
 | salva il backup ora | `backup.now` | strumenti › backup+sync | backup e profili › backup+sync |
 | ripristina dal backup | `backup.restore` | strumenti › backup+sync | backup e profili › backup+sync |
 | non usare più questa cartella | `backup.forget` | strumenti › backup+sync | backup e profili › backup+sync |
@@ -399,11 +404,11 @@ Il pulsante "ripristina questa pagina" (`SectionReset`) rimette ai valori di par
 - **barre e action center › action center** (`Actions`): `actionCenterEnabled`, `actionSliders`, `edgeActionCenter`, `quickActions`, `torchAutoOffMin`, `torchStrength`, `useShizuku`, `volumePanel`, `volumeProfilesShow`, `vpnApp`
 - **notifiche › notifiche** (`Notifications`): `clearOnOpen`, `dndMinutes`, `groupConversations`, `hideSystemNotifications`, `inlineReply`, `metroSounds`, `muteFromPanel`, `notifFilterOn`, `notifFilterWords`, `notifPriority`, `notificationPeek`, `overlayBanner`, `panelSounds`, `toastBanner`
 - **start e tile › live tile** (`LiveTiles`): `galleryAlbums`, `galleryApp`, `galleryPhotos`, `gallerySource`, `liveHideText`, `liveMessages`, `liveNowPlaying`, `liveOffApps`, `livePictures`, `liveProgress`, `thirdPartyTiles`, `weatherBlocks`, `weatherFahrenheit`
-- **app e icone › lista app** (`Apps`): `appLabels`, `compactList`, `showCategories`, `showFrequentApps`, `showNewApps`, `showRecentApps`
+- **app e icone › lista app** (`Apps`): `appLabels`, `compactList`, `showCategories`, `showFrequentApps`, `showNewApps`, `showRecentApps`, `hiddenAppsLock`
 - **aspetto e temi › schermo+lingua** (`Screen`): `highRefreshRate`, `launchAnimation`, `orientation`, `pagePadding`
 - **batteria › batteria** (`Battery`): `batterySaving`
 - **accessibilità › accessibilità** (`Accessibility`): `appFont`, `boldText`, `fontRevision`, `highContrast`, `reduceMotion`, `systemFont`, `textScale`
 - **schermata di blocco › blocco schermo** (`Lock`): `lockIconsOneRow`, `lockOverlay`, `lockSensorOwnIcon`, `lockSensorUnderScreen`, `lockSensorY`, `lockShowAlarm`, `lockShowBattery`, `lockShowEvent`, `lockShowNotifications`, `lockShowWeather`
-- **gesti e scorciatoie › voce** (`Voice`): `assistantIcon`, `voiceButton`, `voiceCallDirect`, `voiceOffline`
+- **gesti e scorciatoie › voce** (`Voice`): `assistantIcon`, `voiceButton`, `voiceCallDirect`, `voiceOffline`, `voicePreview`
 
 I campi che nessuna pagina ripristina sono dati dell'utente (liste, app nascoste e bloccate, città del meteo, disposizioni salvate, stato di backup e sync) e impostazioni senza un pulsante di ripristino: l'elenco è `KEPT` in `SettingsCoverageTest`.

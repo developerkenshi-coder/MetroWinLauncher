@@ -31,6 +31,11 @@ fun VoicePage(env: SettingsEnv) {
                 hint = stringResource(R.string.voice_set_offline_hint), tag = "voice:offline", id = "voice.offline",
             )
             ToggleSetting(
+                stringResource(R.string.voice_set_preview), settings.voicePreview,
+                onChange = { value -> env.onChange { it.copy(voicePreview = value) } },
+                hint = stringResource(R.string.voice_set_preview_hint), tag = "voice:preview", id = "voice.preview",
+            )
+            ToggleSetting(
                 stringResource(R.string.voice_set_call), settings.voiceCallDirect,
                 onChange = { value -> env.onChange { it.copy(voiceCallDirect = value) } },
                 hint = stringResource(R.string.voice_set_call_hint), tag = "voice:calldirect", id = "voice.call",

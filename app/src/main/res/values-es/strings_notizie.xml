@@ -50,8 +50,8 @@
     <string name="nws_unsave">Quitar de guardadas</string>
     <string name="nws_mark_read">Marcar como leído</string>
     <string name="nws_mark_unread">Marcar como no leído</string>
-    <string name="nws_empty">No hay titulares aquí.</string>
-    <string name="nws_empty_search">Ningún titular coincide.</string>
+    <string name="nws_empty">Sin titulares aquí. Toca ↻ para leer de nuevo las fuentes.</string>
+    <string name="nws_empty_search">Ningún titular coincide. Prueba con otras palabras.</string>
     <string name="nws_opml_done">%1$d feeds añadidos.</string>
     <string name="nws_opml_none">En ese archivo no hay ningún feed nuevo que añadir.</string>
     <string name="nws_opml_saved">La lista de feeds está guardada.</string>

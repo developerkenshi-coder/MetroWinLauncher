@@ -43,6 +43,7 @@ import com.metrowin.launcher.data.NewsSources
 import com.metrowin.launcher.data.SettingsStore
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.components.AppBar
+import com.metrowin.launcher.ui.components.pullToRefresh
 import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.HubPager
 import com.metrowin.launcher.ui.components.MetroButton
@@ -289,7 +290,7 @@ private fun SourcePage(
             }
         }
     }
-    Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
+    Column(Modifier.fillMaxSize().pullToRefresh(onRetry).padding(horizontal = 24.dp)) {
         if (loading) MetroProgressBar(Modifier.padding(vertical = 6.dp).testTag("nws:loading"))
         NewsBody(shown?.items.orEmpty(), shown != null, loading, failure, env, onRetry, fresh)
     }

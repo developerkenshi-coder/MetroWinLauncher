@@ -50,8 +50,8 @@
     <string name="nws_unsave">Remove from saved</string>
     <string name="nws_mark_read">Mark as read</string>
     <string name="nws_mark_unread">Mark as unread</string>
-    <string name="nws_empty">No headlines here.</string>
-    <string name="nws_empty_search">No headline matches.</string>
+    <string name="nws_empty">No headlines here. Tap ↻ to read the feeds again.</string>
+    <string name="nws_empty_search">No headline matches. Try other words.</string>
     <string name="nws_opml_done">%1$d feeds added.</string>
     <string name="nws_opml_none">There is no new feed to add in that file.</string>
     <string name="nws_opml_saved">The list of feeds is saved.</string>

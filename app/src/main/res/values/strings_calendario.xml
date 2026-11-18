@@ -73,7 +73,7 @@
     <string name="cal_read_only">read only</string>
     <string name="cal_search">search</string>
     <string name="cal_search_hint">Search events</string>
-    <string name="cal_search_none">Nothing found.</string>
+    <string name="cal_search_none">Nothing found. Try the title, the place or part of a word.</string>
     <string name="cal_free_time">free time</string>
     <string name="cal_free_none">No free time of 30 minutes or more between 8:00 and 20:00.</string>
     <string name="cal_minutes_n">%1$d min</string>

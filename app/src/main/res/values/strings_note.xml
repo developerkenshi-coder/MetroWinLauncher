@@ -30,7 +30,7 @@
     <string name="notes_lock_none">This note is locked, but the phone has no screen lock. Set one in the settings of Android.</string>
     <string name="notes_locked">Locked</string>
     <string name="notes_locked_title">Locked note</string>
-    <string name="notes_none_found">No note matches.</string>
+    <string name="notes_none_found">No note matches. Try other words, or tap + to write it.</string>
     <string name="notes_options">Options</string>
     <string name="notes_opt_auto_list">Enter continues a list</string>
     <string name="notes_opt_bin">Bin: deleted notes can come back for 30 days</string>

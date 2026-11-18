@@ -595,6 +595,8 @@ data class LauncherSettings(
     val showNewApps: Boolean = true,
     /** The apps opened last, in a group at the top of the list (off until it is turned on). */
     val showRecentApps: Boolean = false,
+    /** The button that shows the hidden apps in the app list asks for the screen lock (or the fingerprint) first. */
+    val hiddenAppsLock: Boolean = false,
     /** Chips under the search box that filter the list by what the apps say they are. */
     val showCategories: Boolean = true,
     /** Names the user gave to apps, by [com.metrowin.launcher.model.AppItem.id]. */
@@ -636,6 +638,8 @@ data class LauncherSettings(
 
     // --- voice
     val voiceOffline: Boolean = true,
+    /** What was understood is shown for a moment, with a way to edit it, before it is carried out. */
+    val voicePreview: Boolean = true,
     /** A microphone next to the search box of the app list. */
     val voiceButton: Boolean = true,
     /** "Call Anna" places the call at once (needs the phone permission) instead of opening the dialer with the number. */

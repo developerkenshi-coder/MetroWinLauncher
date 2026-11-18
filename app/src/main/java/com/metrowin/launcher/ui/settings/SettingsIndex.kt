@@ -256,6 +256,11 @@ object SettingsIndex {
 
         // --- apps: the list
         e("apps.frequent", Apps, R.string.apps_frequent, "most used", "top", "favorites", "piu usate", "preferite"),
+        e("apps.hiddenlock", Apps, R.string.apps_hidden_lock, "hidden", "lock", "fingerprint", "biometric", "nascoste", "blocco", "impronta", "biometria"),
+        e("voice.preview", Voice, R.string.voice_set_preview, "preview", "confirm", "heard", "edit", "anteprima", "conferma", "modifica"),
+        e("profiles.home", Backup, R.string.profile_save_home, "profile", "home", "scene", "quick", "profilo", "casa", "scena", "rapido"),
+        e("profiles.work", Backup, R.string.profile_save_work, "profile", "work", "office", "quick", "profilo", "lavoro", "ufficio", "rapido"),
+        e("profiles.night", Backup, R.string.profile_save_night, "profile", "night", "sleep", "quick", "profilo", "notte", "sonno", "rapido"),
         e("apps.recent", Apps, R.string.apps_recent, "recent", "last opened", "history", "recenti", "ultime aperte", "cronologia"),
         e("apps.new", Apps, R.string.apps_new, "recent", "installed", "recenti", "installate", "nuove"),
         e("apps.compact", Apps, R.string.apps_compact, "small", "tight", "dense", "compatta", "piccola", "stretta"),

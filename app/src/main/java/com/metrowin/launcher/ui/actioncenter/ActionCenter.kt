@@ -131,6 +131,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.platform.LocalContext
 import com.metrowin.launcher.data.ClockFormat
 import com.metrowin.launcher.data.ClockHours
+import com.metrowin.launcher.data.ProfileState
+import com.metrowin.launcher.data.QuickProfile
 import com.metrowin.launcher.notifications.MediaInfo
 import com.metrowin.launcher.notifications.rememberMediaInfo
 import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
@@ -198,6 +200,9 @@ fun ActionCenter(
     clockHours: ClockHours = ClockHours.System,
     /** The messages of the conversations that have more than one, by the key of their notification: the earlier ones are under the newest, one touch away. */
     messageLines: Map<String, List<MessageLine>> = emptyMap(),
+    /** The quick profiles of the settings (home, work, night) that hold something, with the one on now; null or none saved leaves the row out. */
+    quickProfiles: ProfileState? = null,
+    onProfile: ((QuickProfile) -> Unit)? = null,
 ) {
     // The music that plays in any app, with its buttons, while the panel is up.
     val media = rememberMediaInfo(true)
@@ -320,6 +325,7 @@ fun ActionCenter(
                         }
                         if (controls != null) ControlsBlock(controls, expanded)
                         if (media != null) MediaCard(media)
+                        if (quickProfiles != null && quickProfiles.saved.isNotEmpty() && onProfile != null) ProfileChips(quickProfiles, onProfile)
                         Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                             // As on the phone: the link to all the settings on the left, the arrow that opens the rest of the buttons on the right.
                             Row(
@@ -1123,3 +1129,25 @@ private const val LONG_TEXT = 90
 
 private const val SWIPE_FRACTION = 0.35f
 private const val SWIPE_VELOCITY = 1_500f
+
+/** One chip for each quick profile that was saved; the one on now is lit, a touch on another puts its settings on. */
+@Composable
+private fun ProfileChips(state: ProfileState, onPick: (QuickProfile) -> Unit) {
+    val colors = LocalMetroColors.current
+    Row(Modifier.fillMaxWidth().padding(top = 6.dp).testTag("ac:profiles"), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        QuickProfile.entries.filter { it in state.saved }.forEach { profile ->
+            val on = profile == state.active
+            Box(
+                Modifier
+                    .weight(1f)
+                    .testTag("ac:profile:${profile.id}")
+                    .litFill(on)
+                    .metroPress(onClick = { onPick(profile) })
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                MetroText(stringResource(profile.label), size = 16.sp, weight = FontWeight.Normal, color = if (on) onAccent() else colors.foreground, maxLines = 1)
+            }
+        }
+    }
+}

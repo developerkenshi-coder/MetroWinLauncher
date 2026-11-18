@@ -379,4 +379,7 @@
     <string name="cat_tip_desc">Ein Dankeschön an den Autor und seine Katze</string>
     <string name="cat_tip_kw">trinkgeld, spende, unterstützung, ko-fi, kofi, kaffee, katze, maty, kenshi, danke</string>
     <string name="info_cat_tip">Eine Dankesseite: wo du, wenn du magst, ein Trinkgeld für die Katze des Autors hinterlassen kannst (ein Link zu Ko-fi, er öffnet sich im Browser), und wer den Launcher gemacht hat. Nichts davon wird zum Benutzen der App gebraucht.</string>
+    <string name="info_apps_hiddenlock">Die Zeile «Ausgeblendete Apps» am Ende der App-Liste zeigt die Apps, die du ausgeblendet hast. Ist das an, verlangt sie zuerst Fingerabdruck, Gesicht oder Bildschirmsperre. Ohne Bildschirmsperre am Telefon wird nichts verlangt. Standardmäßig aus.</string>
+    <string name="info_voice_preview">Nach dem Sprechen bleibt das Verstandene etwa zwei Sekunden auf dem Bildschirm, mit einer ablaufenden Linie, einer Taste «Los», die es sofort ausführt, und einer Taste «Ändern», die die Worte in das Suchfeld setzt. Aus: Es wird sofort ausgeführt. Standardmäßig an.</string>
+    <string name="info_profiles">Speichert jede Einstellung des Launchers, wie sie jetzt ist, unter Zuhause, Arbeit oder Nacht (was nur zu diesem Telefon gehört, etwa der Sicherungsordner, bleibt draußen). Ein gespeichertes Profil erscheint als Taste im Action Center; ein Tippen aktiviert diese Einstellungen. Das Layout von Start hat eigene gespeicherte Layouts. Erneutes Speichern ersetzt das Profil.</string>
 </resources>

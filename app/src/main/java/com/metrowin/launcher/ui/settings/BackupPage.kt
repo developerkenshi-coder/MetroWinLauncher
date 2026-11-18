@@ -162,6 +162,29 @@ fun BackupPage(env: SettingsEnv) {
             hint = stringResource(R.string.backup_share_hint), tag = "backup:share:layout", id = "backup.share",
         )
         ActionSetting(text = stringResource(R.string.backup_share_theme), onClick = env.onShareTheme, tag = "backup:share:theme")
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
+            SettingHeading(stringResource(R.string.profiles_heading))
+            SettingHint(stringResource(R.string.profiles_hint))
+            com.metrowin.launcher.data.QuickProfile.entries.forEach { profile ->
+                ActionSetting(
+                    text = stringResource(
+                        when (profile) {
+                            com.metrowin.launcher.data.QuickProfile.Home -> R.string.profile_save_home
+                            com.metrowin.launcher.data.QuickProfile.Work -> R.string.profile_save_work
+                            com.metrowin.launcher.data.QuickProfile.Night -> R.string.profile_save_night
+                        },
+                    ),
+                    onClick = { env.onSaveProfile(profile) },
+                    tag = "profiles:save:${profile.id}", id = "profiles.${profile.id}",
+                )
+                if (profile in env.quickProfiles.saved) {
+                    ActionSetting(
+                        text = stringResource(R.string.profile_forget, stringResource(profile.label)),
+                        onClick = { env.onForgetProfile(profile) }, tag = "profiles:forget:${profile.id}",
+                    )
+                }
+            }
+        }
         SettingHeading(stringResource(R.string.apps_backup_heading))
         ActionSetting(
             text = stringResource(R.string.apps_backup_save),

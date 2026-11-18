@@ -15,9 +15,9 @@
     <string name="mail_spam">spam</string>
     <string name="mail_move">sposta</string>
     <string name="mail_select_all">seleziona tutto</string>
-    <string name="mail_empty_unread">Nessun messaggio non letto</string>
-    <string name="mail_empty_flagged">Nessun messaggio con la stella</string>
-    <string name="mail_empty_search">Nessun risultato</string>
+    <string name="mail_empty_unread">Nessun messaggio da leggere. Apri la scheda «tutti» per vederli tutti.</string>
+    <string name="mail_empty_flagged">Nessun messaggio contrassegnato. Contrassegna un messaggio e compare qui.</string>
+    <string name="mail_empty_search">Nessun risultato. Prova con meno parole, o con altre.</string>
     <string name="mail_bcc_hint">ccn</string>
     <string name="mail_bcc_add">Aggiungi copia nascosta (ccn)</string>
     <string name="mail_servers_manual">Imposta i server a mano</string>

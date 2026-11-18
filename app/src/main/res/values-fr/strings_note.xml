@@ -30,7 +30,7 @@
     <string name="notes_lock_none">Cette note est verrouillée, mais le téléphone n\'a pas de verrouillage d\'écran. Configurez-en un dans les réglages d\'Android.</string>
     <string name="notes_locked">Verrouillée</string>
     <string name="notes_locked_title">Note verrouillée</string>
-    <string name="notes_none_found">Aucune note ne correspond.</string>
+    <string name="notes_none_found">Aucune note ne correspond. Essayez d’autres mots, ou touchez + pour l’écrire.</string>
     <string name="notes_options">Options</string>
     <string name="notes_opt_auto_list">Entrée continue la liste</string>
     <string name="notes_opt_bin">Corbeille : les notes supprimées reviennent pendant 30 jours</string>

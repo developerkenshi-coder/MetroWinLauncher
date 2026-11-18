@@ -28,12 +28,14 @@ object AppSearch {
         usage: Map<String, Int> = emptyMap(),
         categoryLabel: (AppCategory) -> String? = { null },
         profileWords: ProfileWords = ProfileWords(),
+        /** The names of the shortcuts each app offers on a long press ("scan", "new message"), by app id: they find the app too, like the words of its package. */
+        shortcutNames: Map<String, List<String>> = emptyMap(),
     ): SearchIndex<AppItem> = SearchIndex(
         items.map { item ->
             SearchEntry(
                 value = item,
                 title = item.label,
-                keywords = keywords(item, categoryLabel, profileWords),
+                keywords = keywords(item, categoryLabel, profileWords) + shortcutNames[item.id].orEmpty(),
                 boost = boost(usage[item.id] ?: 0),
             )
         },
@@ -108,7 +110,7 @@ object SearchAliases {
         Glyph.Storage -> listOf("storage", "space", "memory", "disk", "memoria", "spazio")
         Glyph.Store -> listOf("store", "shop", "apps", "download", "negozio", "scarica")
         Glyph.Video -> listOf("video", "movies", "films", "film", "filmati")
-        Glyph.Wallet -> listOf("wallet", "pay", "cards", "portafoglio", "pagamenti", "carte")
+        Glyph.Wallet -> listOf("wallet", "pay", "cards", "scan", "barcode", "tickets", "portafoglio", "pagamenti", "carte", "scansiona", "biglietti")
         Glyph.Weather -> listOf("weather", "forecast", "temperature", "rain", "meteo", "previsioni", "pioggia")
         Glyph.Word -> listOf("word", "documents", "text", "documenti", "testo", "scrivere")
         Glyph.Xbox -> listOf("xbox", "games", "gaming", "giochi")

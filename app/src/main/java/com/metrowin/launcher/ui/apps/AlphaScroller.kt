@@ -22,7 +22,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
@@ -90,6 +92,13 @@ fun AlphaScroller(
     }
     val fraction = dragging ?: scrolled
     val letter = AlphaIndex.letterAt(headers, if (dragging != null) AlphaIndex.indexAt(fraction, count) else listState.firstVisibleItemIndex) ?: return
+    // A light tick for every new letter the finger passes, not for the first one it lands on.
+    val haptics = LocalHapticFeedback.current
+    var lastLetter by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(letter, dragging != null) {
+        if (dragging != null && lastLetter != null && lastLetter != letter) haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        lastLetter = if (dragging != null) letter else null
+    }
     // Out of the tree while it is away: nothing of it takes a touch or counts as a part of the screen.
     if (shown <= 0f && dragging == null) return
     val density = LocalDensity.current

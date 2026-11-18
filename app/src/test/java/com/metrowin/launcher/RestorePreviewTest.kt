@@ -31,4 +31,10 @@ class RestorePreviewTest {
         assertNull(RestorePreview.data(backup()))
         assertEquals(Triple(0, 0, 0), RestorePreview.data(backup(extras = BackupExtras(emptyList(), emptyList(), emptyList(), null))))
     }
+
+    @Test
+    fun settingsThatDifferAreCounted() {
+        assertEquals(0, RestorePreview.settingsChanged(backup(), LauncherSettings()))
+        assertEquals(2, RestorePreview.settingsChanged(backup(LauncherSettings(compactList = true, voicePreview = false)), LauncherSettings()))
+    }
 }

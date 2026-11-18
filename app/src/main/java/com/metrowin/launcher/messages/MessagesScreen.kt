@@ -1,5 +1,6 @@
 package com.metrowin.launcher.messages
 
+import com.metrowin.launcher.ui.components.pullToRefresh
 import com.metrowin.launcher.ui.components.PageSwitch
 import com.metrowin.launcher.ui.components.isWide
 import com.metrowin.launcher.ui.theme.Danger
@@ -306,7 +307,7 @@ private fun ListPage(
                     else -> shown.orEmpty()
                 }
                 val listState = rememberLazyListState()
-                LazyColumn(Modifier.fillMaxSize().padding(horizontal = 24.dp).scrollIndicator(listState).testTag("messages:list"), state = listState) {
+                LazyColumn(Modifier.fillMaxSize().pullToRefresh(onRefresh).padding(horizontal = 24.dp).scrollIndicator(listState).testTag("messages:list"), state = listState) {
                     // While the first read is on its way the lines are drawn empty, so the page does not jump.
                     if (shown == null) items(SKELETON_ROWS) { SkeletonRow() }
                     itemsIndexed(rows, key = { _, it -> it.threadId }) { index, item ->

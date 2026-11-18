@@ -15,9 +15,9 @@
     <string name="mail_spam">spam</string>
     <string name="mail_move">mover</string>
     <string name="mail_select_all">seleccionar todo</string>
-    <string name="mail_empty_unread">No hay mensajes sin leer</string>
-    <string name="mail_empty_flagged">No hay mensajes destacados</string>
-    <string name="mail_empty_search">No se encontró nada</string>
+    <string name="mail_empty_unread">Sin mensajes sin leer. Abre la pestaña «todos» para ver todos los mensajes.</string>
+    <string name="mail_empty_flagged">Sin mensajes marcados. Marca un mensaje y aparece aquí.</string>
+    <string name="mail_empty_search">No se encontró nada. Prueba con menos palabras, o con otras.</string>
     <string name="mail_bcc_hint">cco</string>
     <string name="mail_bcc_add">Añadir copia oculta (cco)</string>
     <string name="mail_servers_manual">Configurar los servidores a mano</string>

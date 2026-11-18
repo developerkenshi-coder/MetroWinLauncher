@@ -199,6 +199,7 @@ object SettingsCodec {
         put("showFrequentApps", s.showFrequentApps)
         put("showNewApps", s.showNewApps)
         put("showRecentApps", s.showRecentApps)
+        put("hiddenAppsLock", s.hiddenAppsLock)
         put("showCategories", s.showCategories)
         put("appLabels", AppLabels.encode(s.appLabels))
         put("lockedApps", JSONArray(s.lockedApps.sorted()))
@@ -220,6 +221,7 @@ object SettingsCodec {
         put("lockSensorY", s.lockSensorY.toDouble())
         put("lockSensorOwnIcon", s.lockSensorOwnIcon)
         put("voiceOffline", s.voiceOffline)
+        put("voicePreview", s.voicePreview)
         put("voiceButton", s.voiceButton)
         put("voiceCallDirect", s.voiceCallDirect)
         put("searchAssistant", s.searchAssistant)
@@ -469,6 +471,7 @@ object SettingsCodec {
             showFrequentApps = o.optBoolean("showFrequentApps", base.showFrequentApps),
             showNewApps = o.optBoolean("showNewApps", base.showNewApps),
             showRecentApps = o.optBoolean("showRecentApps", base.showRecentApps),
+            hiddenAppsLock = o.optBoolean("hiddenAppsLock", base.hiddenAppsLock),
             showCategories = o.optBoolean("showCategories", base.showCategories),
             appLabels = if (o.has("appLabels")) AppLabels.decode(o.optJSONObject("appLabels")) else base.appLabels,
             lockedApps = strings("lockedApps", base.lockedApps).toSet(),
@@ -492,6 +495,7 @@ object SettingsCodec {
             lockSensorOwnIcon = o.optBoolean("lockSensorOwnIcon", base.lockSensorOwnIcon),
             lockSensorY = o.optDouble("lockSensorY", base.lockSensorY.toDouble()).toFloat().coerceIn(0.3f, 0.95f),
             voiceOffline = o.optBoolean("voiceOffline", base.voiceOffline),
+            voicePreview = o.optBoolean("voicePreview", base.voicePreview),
             voiceButton = o.optBoolean("voiceButton", base.voiceButton),
             voiceCallDirect = o.optBoolean("voiceCallDirect", base.voiceCallDirect),
             searchAssistant = o.optBoolean("searchAssistant", base.searchAssistant),

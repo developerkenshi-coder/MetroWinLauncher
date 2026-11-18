@@ -21,7 +21,11 @@ import com.metrowin.launcher.notifications.Mute
 import com.metrowin.launcher.data.ShortcutCodec
 import com.metrowin.launcher.data.TileCodec
 import com.metrowin.launcher.data.MiniAppMigration
+import com.metrowin.launcher.data.ProfileState
+import com.metrowin.launcher.data.QuickProfile
 import com.metrowin.launcher.data.SavedLayout
+import com.metrowin.launcher.data.SettingProfileStore
+import com.metrowin.launcher.data.SettingsCodec
 import com.metrowin.launcher.data.Layouts
 import com.metrowin.launcher.data.LayoutStore
 import com.metrowin.launcher.data.FileType
@@ -1765,6 +1769,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** The shortcuts [item] offers on a long press, up to [AppShortcuts.SHOWN]; none while another launcher is the home app. */
     fun shortcutsOf(item: AppItem): List<AppShortcut> = appShortcuts.of(item)
 
+    /** Blocking (one call to the system for each app): the names of the shortcuts of every app that has some, by app id, to find the app by them. */
+    fun shortcutNames(items: List<AppItem>): Map<String, List<String>> =
+        items.mapNotNull { item -> appShortcuts.of(item, limit = SHORTCUT_NAMES).map { it.label }.takeIf { it.isNotEmpty() }?.let { item.id to it } }.toMap()
+
     fun startShortcut(shortcut: AppShortcut) {
         if (!appShortcuts.start(shortcut)) tell(R.string.launch_failed)
     }
@@ -2486,6 +2494,31 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    // --- quick profiles of the settings
+
+    private val profileStore = SettingProfileStore(application)
+    private val _quickProfiles = MutableStateFlow(profileStore.state())
+    val quickProfiles: StateFlow<ProfileState> = _quickProfiles.asStateFlow()
+
+    /** Keeps the settings as they are now under [profile]. */
+    fun saveProfile(profile: QuickProfile) {
+        profileStore.save(profile, _settings.value)
+        _quickProfiles.value = profileStore.state()
+    }
+
+    fun forgetProfile(profile: QuickProfile) {
+        profileStore.forget(profile)
+        _quickProfiles.value = profileStore.state()
+    }
+
+    /** Puts the settings of [profile] on, over the ones of now; what belongs to this phone alone stays as it is. */
+    fun applyProfile(profile: QuickProfile) {
+        val restored = profileStore.read(profile)?.let { SettingsCodec.decode(it, _settings.value) } ?: return
+        updateSettings { restored }
+        profileStore.setActive(profile)
+        _quickProfiles.value = profileStore.state()
+    }
+
     // --- named layouts of Start
 
     private val layoutStore = LayoutStore(application)
@@ -2724,6 +2757,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         /** After the launcher comes on screen, this long nothing is announced: the service is reading what is up. */
         const val BANNER_SETTLE_MS = 1_500L
         const val NOTIFICATION_RESULTS = 4
+
+        /** The shortcuts of an app that find it in the search: more than the four of its menu. */
+        const val SHORTCUT_NAMES = 12
 
         /** How long a switch of Android takes to show its new state, before the tile reads it again. */
         const val TOGGLE_SETTLE_MS = 700L

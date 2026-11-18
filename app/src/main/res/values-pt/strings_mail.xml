@@ -15,9 +15,9 @@
     <string name="mail_spam">spam</string>
     <string name="mail_move">mover</string>
     <string name="mail_select_all">selecionar tudo</string>
-    <string name="mail_empty_unread">Nenhuma mensagem não lida</string>
-    <string name="mail_empty_flagged">Nenhuma mensagem com estrela</string>
-    <string name="mail_empty_search">Nada encontrado</string>
+    <string name="mail_empty_unread">Sem mensagens por ler. Abra o separador «todos» para ver todas as mensagens.</string>
+    <string name="mail_empty_flagged">Sem mensagens marcadas. Marque uma mensagem e ela aparece aqui.</string>
+    <string name="mail_empty_search">Nada encontrado. Experimente menos palavras, ou outras.</string>
     <string name="mail_bcc_hint">cco</string>
     <string name="mail_bcc_add">Adicionar cópia oculta (cco)</string>
     <string name="mail_servers_manual">Definir os servidores à mão</string>

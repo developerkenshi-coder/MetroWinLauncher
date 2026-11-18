@@ -224,7 +224,7 @@
     <string name="mail_subject">objet</string>
     <string name="mail_body">message</string>
     <string name="mail_send">envoyer</string>
-    <string name="mail_empty_inbox">Aucun message</string>
+    <string name="mail_empty_inbox">Aucun message. Touchez ↻ pour vérifier à nouveau, ou ajoutez un compte dans l’onglet des comptes.</string>
     <string name="mail_setup_title">Configurer votre e-mail</string>
     <string name="mail_setup_subtitle">Saisissez votre adresse pour détecter automatiquement votre fournisseur de messagerie.</string>
     <string name="mail_detected_service">Service détecté : %1$s</string>
@@ -1312,7 +1312,7 @@
     <string name="place_note">Un appui lance la navigation dans Google Maps.</string>
     <string name="album_picker_title">Choisir un album photo</string>
     <string name="album_loading">Recherche des albums…</string>
-    <string name="album_empty">Aucun album trouvé.</string>
+    <string name="album_empty">Aucun album trouvé. Autorisez d’abord le lanceur à lire les photos.</string>
     <string name="album_needs_photos">Pour afficher les photos d’un album, le launcher doit pouvoir lire les photos.</string>
     <string name="group_picker_title">Choisir un groupe de contacts</string>
     <string name="group_loading">Recherche des groupes…</string>
@@ -2715,7 +2715,7 @@ au premier plan %3$s · en arrière-plan %4$s
 
     <!-- Recent apps cards and power screen -->
     <string name="rc_title">apps récentes</string>
-    <string name="rc_empty">Aucune app récente.</string>
+    <string name="rc_empty">Aucune app récente. Ouvrez une app et elle apparaît ici.</string>
     <string name="rc_close_all">Tout fermer</string>
     <string name="rc_android">Android</string>
     <string name="pw_swipe">glisse vers le bas pour éteindre</string>
@@ -2823,7 +2823,7 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="photos_date">date</string>
     <string name="photos_favorites">favoris</string>
     <string name="photos_other">Autres</string>
-    <string name="photos_empty">Aucune photo pour le moment.</string>
+    <string name="photos_empty">Pas encore de photos. Prenez une photo et elle apparaît ici.</string>
     <string name="photos_allow_why">Autorisez l’accès à vos photos pour les voir ici. Elles ne quittent jamais le téléphone.</string>
     <string name="photos_allow">Autoriser</string>
     <string name="voice_say">Dites quelque chose ou touchez l\'une d\'elles :</string>
@@ -2880,4 +2880,24 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="prj_play">Google Play</string>
     <string name="wp_look">Look Windows Phone</string>
     <string name="wp_look_hint">Règle d’un coup l’aspect Classique, la barre d’application Retro, le tourniquet d’origine et les marges étroites. Chaque réglage reste modifiable ensuite.</string>
+    <string name="voice_set_preview">Montrer d’abord ce qui a été compris</string>
+    <string name="voice_set_preview_hint">Ce que le micro a compris reste un instant à l’écran, avec Aller et Modifier, avant d’être exécuté.</string>
+    <string name="voice_go">aller</string>
+    <string name="voice_edit">modifier</string>
+    <string name="apps_hidden_lock">Demander le déverrouillage pour les voir</string>
+    <string name="apps_hidden_lock_hint">La ligne en bas de la liste qui montre les apps masquées demande d’abord l’empreinte ou le verrouillage de l’écran.</string>
+    <string name="apps_hidden_lock_title">Déverrouillez pour voir les apps masquées</string>
+    <string name="apps_hidden_show">Apps masquées (%1$d)</string>
+    <string name="apps_hidden_put_away">Recacher les apps masquées (%1$d)</string>
+    <string name="restore_preview_settings">%1$d réglages sont différents de ceux d’aujourd’hui</string>
+    <string name="profiles_heading">profils rapides</string>
+    <string name="profiles_hint">Garde tous les réglages tels qu’ils sont comme Maison, Travail ou Nuit. Chaque profil gardé apparaît comme un bouton dans l’Action Center : un toucher et ces réglages sont actifs.</string>
+    <string name="profile_home">Maison</string>
+    <string name="profile_work_quick">Travail</string>
+    <string name="profile_night">Nuit</string>
+    <string name="profile_save_home">garder ces réglages comme Maison</string>
+    <string name="profile_save_work">garder ces réglages comme Travail</string>
+    <string name="profile_save_night">garder ces réglages comme Nuit</string>
+    <string name="profile_forget">oublier le profil %1$s</string>
+    <string name="profile_applied">Réglages du profil %1$s actifs</string>
 </resources>

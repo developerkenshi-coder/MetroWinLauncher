@@ -73,7 +73,7 @@
     <string name="cal_read_only">nur Lesen</string>
     <string name="cal_search">suche</string>
     <string name="cal_search_hint">Termine suchen</string>
-    <string name="cal_search_none">Nichts gefunden.</string>
+    <string name="cal_search_none">Nichts gefunden. Versuche den Titel, den Ort oder einen Wortteil.</string>
     <string name="cal_free_time">freie Zeit</string>
     <string name="cal_free_none">Keine freie Zeit von 30 Minuten oder mehr zwischen 8:00 und 20:00.</string>
     <string name="cal_minutes_n">%1$d Min.</string>

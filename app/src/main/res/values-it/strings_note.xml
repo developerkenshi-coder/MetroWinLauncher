@@ -30,7 +30,7 @@
     <string name="notes_lock_none">Questa nota è protetta, ma il telefono non ha un blocco schermo. Impostalo nelle impostazioni di Android.</string>
     <string name="notes_locked">Protetta</string>
     <string name="notes_locked_title">Nota protetta</string>
-    <string name="notes_none_found">Nessuna nota corrisponde.</string>
+    <string name="notes_none_found">Nessuna nota corrisponde. Prova con altre parole, o tocca + per scriverla.</string>
     <string name="notes_options">Opzioni</string>
     <string name="notes_opt_auto_list">Invio continua l\'elenco</string>
     <string name="notes_opt_bin">Cestino: le note eliminate tornano per 30 giorni</string>

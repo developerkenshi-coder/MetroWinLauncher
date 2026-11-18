@@ -30,7 +30,7 @@
     <string name="notes_lock_none">Esta nota está bloqueada, mas o telefone não tem bloqueio de tela. Configure um nas configurações do Android.</string>
     <string name="notes_locked">Bloqueada</string>
     <string name="notes_locked_title">Nota bloqueada</string>
-    <string name="notes_none_found">Nenhuma nota corresponde.</string>
+    <string name="notes_none_found">Nenhuma nota corresponde. Experimente outras palavras, ou toque em + para a escrever.</string>
     <string name="notes_options">Opções</string>
     <string name="notes_opt_auto_list">Enter continua a lista</string>
     <string name="notes_opt_bin">Lixeira: notas excluídas voltam por 30 dias</string>

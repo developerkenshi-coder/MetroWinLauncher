@@ -1,7 +1,10 @@
 package com.metrowin.launcher.ui.voice
 
 import com.metrowin.launcher.ui.anim.metroTween
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
@@ -62,6 +65,9 @@ fun VoiceScreen(
     modifier: Modifier = Modifier,
     /** A suggestion was touched: the phrase, to be carried out as if it had been said. */
     onSuggest: (String) -> Unit = {},
+    /** The preview of what was understood: go on at once, or edit it. */
+    onGo: () -> Unit = {},
+    onEdit: () -> Unit = {},
 ) {
     val colors = LocalMetroColors.current
     val accent = LocalAccent.current
@@ -90,6 +96,20 @@ fun VoiceScreen(
                         Suggestions(onSuggest, Modifier.weight(1f))
                     } else {
                         MetroText(state.heard, size = 30.sp, color = accent, modifier = Modifier.testTag("voice:heard"))
+                    }
+                }
+                is VoiceUiState.Confirm -> {
+                    MetroText(stringResource(R.string.voice_heard), size = 18.sp, color = colors.subtle)
+                    MetroText(state.heard, size = 30.sp, color = accent, maxLines = 4, modifier = Modifier.testTag("voice:heard"))
+                    // A thin line runs out while the phrase waits: when it is gone the phrase is carried out.
+                    val left = remember(state) { Animatable(1f) }
+                    LaunchedEffect(state) { left.animateTo(0f, tween(state.waitMs.toInt(), easing = LinearEasing)) }
+                    Box(Modifier.fillMaxWidth().height(3.dp).testTag("voice:countdown")) {
+                        Box(Modifier.fillMaxWidth(left.value).height(3.dp).background(accent))
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        MetroButton(stringResource(R.string.voice_go), Modifier.testTag("voice:go"), onClick = onGo)
+                        MetroButton(stringResource(R.string.voice_edit), Modifier.testTag("voice:edit"), onClick = onEdit)
                     }
                 }
                 is VoiceUiState.Understood -> {

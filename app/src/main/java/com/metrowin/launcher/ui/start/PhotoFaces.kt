@@ -99,7 +99,7 @@ internal fun PhotoShortcutFace(item: AppItem, size: TileSize, width: Dp, height:
     // Read at the width of the screen or a little more (never over twice of it), not at the size of the file.
     val side = androidx.compose.ui.platform.LocalContext.current.resources.displayMetrics.widthPixels
     val photo by produceState<ImageBitmap?>(null, path, side) {
-        value = path?.let { withContext(Dispatchers.IO) { PeopleRepo.decodeSampled({ java.io.File(it).inputStream() }, side)?.asImageBitmap() } }
+        value = path?.let { withContext(Dispatchers.IO) { runCatching { PeopleRepo.decodeSampled({ java.io.File(it).inputStream() }, side)?.asImageBitmap() }.getOrNull() } }
     }
     val bitmap = photo
     if (bitmap == null) {

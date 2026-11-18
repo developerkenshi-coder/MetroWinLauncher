@@ -61,6 +61,11 @@ fun AppsPage(env: SettingsEnv) {
         }
         Column(Modifier.settingAnchor("apps.hidden"), verticalArrangement = Arrangement.spacedBy(Spacing.Small)) {
             SettingHeading(stringResource(R.string.apps_hidden))
+            ToggleSetting(
+                stringResource(R.string.apps_hidden_lock), env.settings.hiddenAppsLock,
+                onChange = { value -> env.onChange { it.copy(hiddenAppsLock = value) } },
+                hint = stringResource(R.string.apps_hidden_lock_hint), tag = "apps:hiddenlock", id = "apps.hiddenlock",
+            )
             if (hidden.isEmpty()) {
                 SettingHint(stringResource(R.string.apps_hidden_none), Modifier.testTag("apps:hidden:none"))
             } else {

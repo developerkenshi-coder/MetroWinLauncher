@@ -379,4 +379,7 @@
     <string name="cat_tip_desc">Un gracias al autor y a su gata</string>
     <string name="cat_tip_kw">propina, donación, apoyo, ko-fi, kofi, café, gata, maty, kenshi, gracias</string>
     <string name="info_cat_tip">Una página de agradecimiento: dónde dejar una propina, si quieres, para la gata del autor (un enlace a Ko-fi, se abre en el navegador) y quién hizo el launcher. Nada de esto hace falta para usar la app.</string>
+    <string name="info_apps_hiddenlock">La línea «apps ocultas» al final de la lista muestra las apps que ocultaste. Con esto activado pide antes la huella, la cara o el bloqueo de pantalla. Sin bloqueo de pantalla en el teléfono no pide nada. Apagado por defecto.</string>
+    <string name="info_voice_preview">Tras hablar, lo entendido queda en pantalla unos dos segundos, con una línea que se acaba, un botón «ir» que lo ejecuta al instante y un botón «editar» que pone las palabras en el cuadro de búsqueda. Apagado: se ejecuta en cuanto se entiende. Encendido por defecto.</string>
+    <string name="info_profiles">Guarda cada ajuste del launcher como está ahora bajo Casa, Trabajo o Noche (lo que es solo de este teléfono, como la carpeta de copias, queda fuera). Un perfil guardado aparece como botón en el Action Center; tocarlo activa esos ajustes. El diseño de Start tiene sus propios diseños guardados. Guardar de nuevo sustituye el perfil.</string>
 </resources>

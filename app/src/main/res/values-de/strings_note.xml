@@ -30,7 +30,7 @@
     <string name="notes_lock_none">Diese Notiz ist gesperrt, aber das Telefon hat keine Bildschirmsperre. Richte eine in den Android-Einstellungen ein.</string>
     <string name="notes_locked">Gesperrt</string>
     <string name="notes_locked_title">Gesperrte Notiz</string>
-    <string name="notes_none_found">Keine Notiz passt.</string>
+    <string name="notes_none_found">Keine Notiz passt. Versuche andere Wörter oder tippe auf +, um sie zu schreiben.</string>
     <string name="notes_options">Optionen</string>
     <string name="notes_opt_auto_list">Eingabe setzt die Liste fort</string>
     <string name="notes_opt_bin">Papierkorb: gelöschte Notizen 30 Tage wiederherstellbar</string>

@@ -50,8 +50,8 @@
     <string name="nws_unsave">Retirer des enregistrées</string>
     <string name="nws_mark_read">Marquer comme lu</string>
     <string name="nws_mark_unread">Marquer comme non lu</string>
-    <string name="nws_empty">Aucun titre ici.</string>
-    <string name="nws_empty_search">Aucun titre ne correspond.</string>
+    <string name="nws_empty">Aucun titre ici. Touchez ↻ pour relire les sources.</string>
+    <string name="nws_empty_search">Aucun titre ne correspond. Essayez d’autres mots.</string>
     <string name="nws_opml_done">%1$d flux ajoutés.</string>
     <string name="nws_opml_none">Ce fichier ne contient aucun nouveau flux.</string>
     <string name="nws_opml_saved">La liste des flux est enregistrée.</string>

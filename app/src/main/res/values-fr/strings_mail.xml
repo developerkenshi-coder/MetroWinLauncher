@@ -15,9 +15,9 @@
     <string name="mail_spam">indésirable</string>
     <string name="mail_move">déplacer</string>
     <string name="mail_select_all">tout sélectionner</string>
-    <string name="mail_empty_unread">Aucun message non lu</string>
-    <string name="mail_empty_flagged">Aucun message suivi</string>
-    <string name="mail_empty_search">Rien trouvé</string>
+    <string name="mail_empty_unread">Aucun message non lu. Ouvrez l’onglet «tous» pour voir tous les messages.</string>
+    <string name="mail_empty_flagged">Aucun message marqué. Marquez un message et il apparaît ici.</string>
+    <string name="mail_empty_search">Rien trouvé. Essayez avec moins de mots, ou d’autres.</string>
     <string name="mail_bcc_hint">cci</string>
     <string name="mail_bcc_add">Ajouter une copie cachée (cci)</string>
     <string name="mail_servers_manual">Régler les serveurs à la main</string>

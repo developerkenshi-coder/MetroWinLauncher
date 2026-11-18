@@ -5,7 +5,10 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -23,6 +26,7 @@ import com.metrowin.launcher.data.LauncherSettingMatch
 import com.metrowin.launcher.data.QuickAnswer
 import com.metrowin.launcher.data.QuickAnswers
 import com.metrowin.launcher.data.SearchOperators
+import com.metrowin.launcher.data.StableOrder
 import com.metrowin.launcher.data.SystemCommands
 import com.metrowin.launcher.data.TileMatch
 import com.metrowin.launcher.data.TileSearch
@@ -43,22 +47,31 @@ class SearchState(
 fun rememberSearch(vm: LauncherViewModel, query: String, listItems: List<AppItem>, items: List<AppItem>, usage: Map<String, Int>, settings: LauncherSettings): SearchState {
     val appContext = LocalContext.current
     // The apps are indexed once (and again when they or the counts of the opens change), not read again for every key.
-    val appIndex = remember(listItems, usage) {
+    // The names of the shortcuts the apps offer come from the system, off the main thread; the index is built again once they are there.
+    val shortcutNames by produceState(emptyMap<String, List<String>>(), listItems) {
+        value = withContext(Dispatchers.Default) { vm.shortcutNames(listItems) }
+    }
+    val appIndex = remember(listItems, usage, shortcutNames) {
         AppSearch.index(
             listItems, usage,
             categoryLabel = { appContext.getString(it.label) },
             profileWords = AppSearch.ProfileWords(appContext.getString(R.string.profile_work), appContext.getString(R.string.profile_private)),
+            shortcutNames = shortcutNames,
         )
     }
     // A word and a colon in front (`app:`, `contact:`, `file:`...) narrows the search to one kind of result.
     val scoped = remember(query, settings.searchOperators) { if (settings.searchOperators) SearchOperators.parse(query) else SearchOperators.Parsed(null, query) }
+    // Typing on keeps the apps already shown where they are; the new ones come after.
+    val lastApps = remember { arrayOf<Pair<String, List<AppItem>>?>(null) }
     val searchResults = remember(scoped, appIndex, listItems) {
-        when {
+        val found = when {
             query.isBlank() -> listItems
             !scoped.allows(SearchOperators.Scope.Apps) -> emptyList()
             scoped.text.isBlank() -> listItems
-            else -> appIndex.search(scoped.text)
+            else -> appIndex.search(scoped.text).let { hits -> lastApps[0]?.let { (was, shown) -> StableOrder.keep(was, shown, scoped.text, hits) } ?: hits }
         }
+        lastApps[0] = scoped.text to found
+        found
     }
     val launcherSettingsIndex = remember { SettingsIndex.searchIndex(appContext) }
     val tileIndex = remember(items) { TileSearch.index(items) }
@@ -91,6 +104,7 @@ fun rememberSearch(vm: LauncherViewModel, query: String, listItems: List<AppItem
     // What the search finds besides apps. The settings and the web offer are known at once; the contacts follow
     // when the typing pauses, so each key does not query the contacts.
     var globalResults by remember { mutableStateOf(GlobalResults.Empty) }
+    var globalFor by remember { mutableStateOf("") }
     LaunchedEffect(
         scoped, settings.searchContacts, settings.searchSettings, settings.searchWeb, settings.searchCalendar,
         settings.searchLauncherSettings, settings.searchTiles, settings.searchMiniApps, tileIndex, settings.searchFileTypes, settings.searchNotifications,
@@ -101,7 +115,21 @@ fun rememberSearch(vm: LauncherViewModel, query: String, listItems: List<AppItem
             globalResults = GlobalResults.Empty
             return@LaunchedEffect
         }
+        val contacts = settings.searchContacts && scoped.allows(SearchOperators.Scope.Contacts)
+        val events = settings.searchCalendar && scoped.allows(SearchOperators.Scope.Events)
+        val files = settings.searchFileTypes.isNotEmpty() && scoped.allows(SearchOperators.Scope.Files)
+        val notes = settings.searchMiniApps && scoped.allows(SearchOperators.Scope.Notes)
+        val todos = settings.searchMiniApps && scoped.allows(SearchOperators.Scope.Todos)
+        // What comes later (contacts, events, files, notes) stays on screen while the typing goes on, until the new answer replaces it:
+        // it does not vanish with every key and come back.
+        val before = globalResults.takeIf { StableOrder.extends(globalFor, query) }
+        globalFor = query
         globalResults = GlobalResults(
+            contacts = if (contacts) before?.contacts.orEmpty() else emptyList(),
+            events = if (events) before?.events.orEmpty() else emptyList(),
+            files = if (files) before?.files.orEmpty() else emptyList(),
+            notes = if (notes) before?.notes.orEmpty() else emptyList(),
+            todos = if (todos) before?.todos.orEmpty() else emptyList(),
             settings = if (settings.searchSettings && scoped.allows(SearchOperators.Scope.Settings)) {
                 GlobalSearch.matchSettings(query) { def -> appContext.getString(def.label) }.take(MAX_SETTING_RESULTS)
             } else {
@@ -135,9 +163,6 @@ fun rememberSearch(vm: LauncherViewModel, query: String, listItems: List<AppItem
             webQuery = query.trim().takeIf { settings.searchWeb && scoped.allows(SearchOperators.Scope.Web) },
             notifications = if (settings.searchNotifications && scoped.allows(SearchOperators.Scope.Notifications)) vm.searchNotifications(query) else emptyList(),
         )
-        val contacts = settings.searchContacts && scoped.allows(SearchOperators.Scope.Contacts)
-        val events = settings.searchCalendar && scoped.allows(SearchOperators.Scope.Events)
-        val files = settings.searchFileTypes.isNotEmpty() && scoped.allows(SearchOperators.Scope.Files)
         if (contacts) {
             delay(CONTACT_SEARCH_DELAY_MS)
             globalResults = globalResults.copy(contacts = vm.searchContacts(query))
@@ -150,8 +175,6 @@ fun rememberSearch(vm: LauncherViewModel, query: String, listItems: List<AppItem
             if (!contacts && !events) delay(CONTACT_SEARCH_DELAY_MS)
             globalResults = globalResults.copy(files = vm.searchFiles(query))
         }
-        val notes = settings.searchMiniApps && scoped.allows(SearchOperators.Scope.Notes)
-        val todos = settings.searchMiniApps && scoped.allows(SearchOperators.Scope.Todos)
         if (notes || todos) {
             if (!contacts && !events && !files) delay(CONTACT_SEARCH_DELAY_MS)
             globalResults = globalResults.copy(

@@ -178,6 +178,10 @@ class SettingsEnv(
     val onImportApps: (Uri) -> Unit = {},
     /** The Start screens kept under a name: saved from what is on Start now, put back, brought up to date, deleted, given an hour. */
     val layouts: List<SavedLayout> = emptyList(),
+    /** The quick profiles of the settings: which hold something, saved from the settings of now and forgotten. */
+    val quickProfiles: com.metrowin.launcher.data.ProfileState = com.metrowin.launcher.data.ProfileState(),
+    val onSaveProfile: (com.metrowin.launcher.data.QuickProfile) -> Unit = {},
+    val onForgetProfile: (com.metrowin.launcher.data.QuickProfile) -> Unit = {},
     val onSaveLayout: (String) -> Boolean = { false },
     val onApplyLayout: (String) -> Unit = {},
     val onResaveLayout: (String) -> Unit = {},

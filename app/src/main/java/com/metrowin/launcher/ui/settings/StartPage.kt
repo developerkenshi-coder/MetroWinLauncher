@@ -6,6 +6,24 @@ import com.metrowin.launcher.data.City
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
+import com.metrowin.launcher.ui.theme.LocalAccent
+import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.LocalStyle
+import com.metrowin.launcher.ui.theme.pageBackground
+import com.metrowin.launcher.ui.theme.tileColor
+import com.metrowin.launcher.ui.theme.tileSurface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +52,12 @@ fun StartPage(env: SettingsEnv) {
             // What this screen takes: a count the screen cannot hold is not offered, and a saved one it no longer holds is shown as the nearest.
             val choices = com.metrowin.launcher.data.TileGrid.customChoices(widthDp, com.metrowin.launcher.data.TileGrid.sidesFor(settings.pagePadding, widthDp))
             val at = choices.indexOfLast { it <= settings.tileColumns }.coerceAtLeast(0)
+            val shownColumns = com.metrowin.launcher.data.TileGrid.columnsFor(
+                widthDp, settings.moreTiles, com.metrowin.launcher.data.TileGrid.sidesFor(settings.pagePadding, widthDp), settings.tileColumns,
+                androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp.toFloat(),
+            )
+            // What the choices above do to Start, drawn small: the count of columns, the gap between tiles and how solid they are.
+            TileGridPreview(shownColumns, settings.tileSpacing.factor, settings.tileOpacity)
             StepperSetting(
                 label = stringResource(R.string.start_columns),
                 value = if (choices[at] == 0) stringResource(R.string.start_columns_auto) else choices[at].toString(),
@@ -244,3 +268,30 @@ fun StartBehaviourPage(env: SettingsEnv) {
         )
     }
 }
+
+/** A miniature Start with [columns] columns: a wide tile, a row of small ones and two medium ones, with the gap and the opacity of the settings. */
+@Composable
+private fun TileGridPreview(columns: Int, spacing: Float, opacity: Int) {
+    val style = LocalStyle.current
+    val colors = LocalMetroColors.current
+    val accent = LocalAccent.current
+    val gap = (3f * spacing).coerceIn(1f, 8f).dp
+    val alpha = (opacity / 100f).coerceIn(0.2f, 1f)
+    Box(Modifier.fillMaxWidth().testTag("start:preview"), contentAlignment = Alignment.Center) {
+        Column(Modifier.width(PREVIEW_WIDTH).clip(style.squareShape).pageBackground().padding(6.dp), verticalArrangement = Arrangement.spacedBy(gap)) {
+            val cell = (PREVIEW_WIDTH - 12.dp - gap * (columns - 1)) / columns
+            fun span(n: Int) = cell * n + gap * (n - 1)
+            Box(Modifier.width(span(columns)).height(span(2)).alpha(alpha).tileSurface(colors.tileColor(0, accent), style.smallTileShape))
+            Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
+                repeat(columns) { Box(Modifier.size(cell).alpha(alpha).tileSurface(colors.tileColor(it + 1, accent), style.smallTileShape)) }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
+                val half = columns / 2
+                Box(Modifier.size(span(half), span(half)).alpha(alpha).tileSurface(colors.tileColor(3, accent), style.smallTileShape))
+                Box(Modifier.size(span(columns - half), span(half)).alpha(alpha).tileSurface(colors.tileColor(4, accent), style.smallTileShape))
+            }
+        }
+    }
+}
+
+private val PREVIEW_WIDTH = 200.dp

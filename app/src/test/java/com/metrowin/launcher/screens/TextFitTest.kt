@@ -406,6 +406,7 @@ abstract class TextFitBase(private val scale: Float, private val style: ThemeSty
 
     @Test fun voiceListening() = fit("voice_listening", fixedHeight = true) { VoiceScreen(VoiceUiState.Listening(), {}, {}, {}) }
     @Test fun voiceHeard() = fit("voice_heard", fixedHeight = true) { VoiceScreen(VoiceUiState.Understood("apri la fotocamera"), {}, {}, {}) }
+    @Test fun voiceConfirm() = fit("voice_confirm", fixedHeight = true) { VoiceScreen(VoiceUiState.Confirm("apri la fotocamera", 1800L), {}, {}, {}) }
     @Test fun voiceNotFound() = fit("voice_not_found", fixedHeight = true) { VoiceScreen(VoiceUiState.Problem(R.string.voice_not_found, "Xyz", "Xyz"), {}, {}, {}) }
     @Test fun voiceNoContact() = fit("voice_no_contact", fixedHeight = true) { VoiceScreen(VoiceUiState.Problem(R.string.voice_no_contact, "Marco"), {}, {}, {}) }
     @Test fun voiceBrightness() = fit("voice_brightness", fixedHeight = true) { VoiceScreen(VoiceUiState.Problem(R.string.voice_brightness_denied), {}, {}, {}) }

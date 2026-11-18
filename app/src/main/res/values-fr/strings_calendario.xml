@@ -73,7 +73,7 @@
     <string name="cal_read_only">lecture seule</string>
     <string name="cal_search">chercher</string>
     <string name="cal_search_hint">Chercher des événements</string>
-    <string name="cal_search_none">Aucun résultat.</string>
+    <string name="cal_search_none">Rien trouvé. Essayez le titre, le lieu ou une partie de mot.</string>
     <string name="cal_free_time">temps libre</string>
     <string name="cal_free_none">Aucun créneau libre de 30 minutes ou plus entre 8 h et 20 h.</string>
     <string name="cal_minutes_n">%1$d min</string>
