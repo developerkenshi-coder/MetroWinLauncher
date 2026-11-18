@@ -48,6 +48,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -150,7 +151,7 @@ internal fun NoteEditor(
     val style = LocalStyle.current
     var title by remember(note.id) { mutableStateOf(note.title) }
     var body by remember(note.id) { mutableStateOf(TextFieldValue(note.text)) }
-    var reading by remember(note.id) { mutableStateOf(note.text.isNotBlank()) }
+    var reading by rememberSaveable(note.id) { mutableStateOf(note.text.isNotBlank()) }
     var more by remember { mutableStateOf(false) }
     var present by remember { mutableStateOf(false) }
     var viewing by remember { mutableIntStateOf(-1) }

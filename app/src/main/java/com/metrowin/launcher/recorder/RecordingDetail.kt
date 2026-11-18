@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -89,7 +90,7 @@ internal fun RecordingDetail(
     val player = env.player
     val stamp = rec.stamp
 
-    var part by remember(file.name) { mutableStateOf(Part.Listen) }
+    var part by rememberSaveable(file.name) { mutableStateOf(Part.Listen) }
     var meta by remember(file.name) { mutableStateOf(rec.meta) }
     fun saveMeta(next: RecMeta) {
         meta = next
@@ -102,9 +103,9 @@ internal fun RecordingDetail(
         value = null
         if (spectro) value = withContext(Dispatchers.IO) { AudioEdit.spectrogram(file)?.let { spectrumImage(it, 320, 72, accent) } }
     }
-    var from by remember(file.name) { mutableFloatStateOf(0f) }
-    var to by remember(file.name) { mutableFloatStateOf(1f) }
-    var zoom by remember(file.name) { mutableIntStateOf(1) }
+    var from by rememberSaveable(file.name) { mutableFloatStateOf(0f) }
+    var to by rememberSaveable(file.name) { mutableFloatStateOf(1f) }
+    var zoom by rememberSaveable(file.name) { mutableIntStateOf(1) }
 
     LaunchedEffect(file.path) { player.load(file) }
     val here = player.file?.path == file.path
@@ -116,8 +117,8 @@ internal fun RecordingDetail(
     val cutAny = !cuttable && opts.on(Opt.CUT_ANY) && duration > 0
     val canCut = cuttable || cutAny
 
-    var naming by remember { mutableStateOf<String?>(null) }   // "cut", "rename" or "label"
-    var name by remember { mutableStateOf("") }
+    var naming by rememberSaveable { mutableStateOf<String?>(null) }   // "cut", "rename" or "label"
+    var name by rememberSaveable { mutableStateOf("") }
     var confirm by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     var cancelEdit by remember { mutableStateOf<(() -> Unit)?>(null) }

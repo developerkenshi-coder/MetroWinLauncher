@@ -25,6 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.metrowin.launcher.ui.kids.CheckSquare
 import com.metrowin.launcher.ui.theme.LocalStyle
@@ -62,18 +64,24 @@ import java.time.ZoneId
 import java.time.format.TextStyle
 import java.util.Locale
 
+/** The steps of an item as text ("1" or "0" for done, then the words), to be kept while the screen is recreated. */
+private val SubsSaver = Saver<List<Sub>, List<String>>(
+    save = { subs -> subs.map { (if (it.done) "1" else "0") + it.text } },
+    restore = { saved -> saved.map { Sub(it.drop(1), it.startsWith("1")) } },
+)
+
 /** The fields of one item. It draws its parts one under the other and leaves the frame (a page or a dialog) to its caller. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun EditForm(item: TodoItem, names: List<String>, now: Long, onSave: (TodoItem) -> Unit, onDelete: () -> Unit) {
-    var text by remember(item.id) { mutableStateOf(item.text) }
-    var due by remember(item.id) { mutableStateOf(item.due) }
-    var star by remember(item.id) { mutableStateOf(item.starred) }
-    var listName by remember(item.id) { mutableStateOf(item.list) }
-    var note by remember(item.id) { mutableStateOf(item.note) }
-    var repeat by remember(item.id) { mutableStateOf(item.repeat) }
-    var subs by remember(item.id) { mutableStateOf(item.subs) }
-    var newSub by remember(item.id) { mutableStateOf("") }
+    var text by rememberSaveable(item.id) { mutableStateOf(item.text) }
+    var due by rememberSaveable(item.id) { mutableStateOf(item.due) }
+    var star by rememberSaveable(item.id) { mutableStateOf(item.starred) }
+    var listName by rememberSaveable(item.id) { mutableStateOf(item.list) }
+    var note by rememberSaveable(item.id) { mutableStateOf(item.note) }
+    var repeat by rememberSaveable(item.id) { mutableStateOf(item.repeat) }
+    var subs by rememberSaveable(item.id, stateSaver = SubsSaver) { mutableStateOf(item.subs) }
+    var newSub by rememberSaveable(item.id) { mutableStateOf("") }
     val addLabel = stringResource(R.string.todo_cd_add)
     var picking by remember { mutableStateOf(false) }
     var confirm by remember { mutableStateOf(false) }

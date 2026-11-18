@@ -142,9 +142,14 @@ fun TodoScreen(openId: Long = 0L) {
     val optionStore = remember { TodoOptionStore(context) }
     var items by remember { mutableStateOf<List<TodoItem>?>(null) }
     var options by remember { mutableStateOf(optionStore.load()) }
-    var list by remember { mutableStateOf<String?>(null) }
+    var list by rememberSaveable { mutableStateOf<String?>(null) }
     var editing by remember { mutableStateOf<TodoItem?>(null) }
-    var panel by remember { mutableStateOf<Panel?>(null) }
+    var panel by rememberSaveable { mutableStateOf<Panel?>(null) }
+    // The item open in the editor is kept by its id and found again when the items are read; the fields typed in it are kept by the form.
+    var editId by rememberSaveable { mutableLongStateOf(0L) }
+    var openDone by rememberSaveable { mutableStateOf(false) }
+    val restoreId = remember { editId }
+    LaunchedEffect(editing?.id) { editId = editing?.id ?: 0L }
     var searching by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
     var completing by remember { mutableStateOf(emptySet<Long>()) }
@@ -281,7 +286,10 @@ fun TodoScreen(openId: Long = 0L) {
         val loaded = withContext(Dispatchers.IO) { store.load() }
         items = loaded
         // A result of the search opens its item at once.
-        if (openId != 0L) loaded.firstOrNull { it.id == openId }?.let { editing = it }
+        // Once: after the screen was recreated, the item that was open is the one to give back, not the one of the search again.
+        val wanted = if (openId != 0L && !openDone) openId else restoreId
+        openDone = true
+        if (wanted != 0L) loaded.firstOrNull { it.id == wanted }?.let { editing = it }
         pullNow()
         withContext(Dispatchers.IO) { TodoReminders.verify(context, loaded) }
         health = TodoReminders.health(context)
@@ -500,8 +508,8 @@ private fun OpenPage(
 ) {
     val colors = LocalMetroColors.current
     val now = env.now
-    var text by remember { mutableStateOf("") }
-    var due by remember { mutableLongStateOf(0L) }
+    var text by rememberSaveable { mutableStateOf("") }
+    var due by rememberSaveable { mutableLongStateOf(0L) }
     var picking by remember { mutableStateOf(false) }
     val quick = remember { Reminders.QuickTime.entries }
     val listState = rememberLazyListState()

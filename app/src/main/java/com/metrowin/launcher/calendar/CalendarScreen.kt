@@ -69,7 +69,24 @@ private class Loaded(val events: List<CalEvent>, val truncated: Boolean)
 
 private fun firstDayOfWeek(): DayOfWeek = DayOfWeek.of((Calendar.getInstance().firstDayOfWeek - 2 + 7) % 7 + 1)
 
-private val DaySaver = Saver<LocalDate, Long>(save = { it.toEpochDay() }, restore = { LocalDate.ofEpochDay(it) })
+/** The event open in the form, as the plain values it is made of, to be given back after the screen was recreated (nothing when no event is open). */
+private val EventSaver = Saver<CalEvent?, List<Any>>(
+    save = { e ->
+        if (e == null) emptyList() else listOf(
+            e.id, e.calendarId, e.title, e.start, e.end, e.allDay, e.location, e.description, e.calendarName, e.color, e.recurring,
+            e.reminders.joinToString(","), e.readOnly, e.status, e.selfStatus, e.timeZone, e.ownColor, e.birthday, e.rule,
+        )
+    },
+    restore = { v ->
+        if (v.isEmpty()) null else CalEvent(
+            v[0] as Long, v[1] as Long, v[2] as String, v[3] as Long, v[4] as Long, v[5] as Boolean, v[6] as String, v[7] as String, v[8] as String,
+            v[9] as Int, v[10] as Boolean, (v[11] as String).split(",").mapNotNull { it.toIntOrNull() }, v[12] as Boolean, v[13] as Int, v[14] as Int,
+            v[15] as String, v[16] as Int, v[17] as Boolean, v[18] as String,
+        )
+    },
+)
+
+internal val DaySaver = Saver<LocalDate, Long>(save = { it.toEpochDay() }, restore = { LocalDate.ofEpochDay(it) })
 private val MonthSaver = Saver<YearMonth, String>(save = { it.toString() }, restore = { YearMonth.parse(it) })
 
 @Composable
@@ -88,7 +105,7 @@ fun CalendarScreen(initialDay: LocalDate? = null, draft: Pair<String, String>? =
     var selected by rememberSaveable(stateSaver = DaySaver) { mutableStateOf(initialDay ?: LocalDate.now()) }
     var month by rememberSaveable(stateSaver = MonthSaver) { mutableStateOf(YearMonth.now()) }
     var version by remember { mutableIntStateOf(0) }
-    var editing by remember { mutableStateOf<CalEvent?>(null) }
+    var editing by rememberSaveable(stateSaver = EventSaver) { mutableStateOf<CalEvent?>(null) }
     var searching by rememberSaveable { mutableStateOf(false) }
     var dialog by remember { mutableStateOf<String?>(null) }
     var imported by remember { mutableStateOf<List<IcsEvent>?>(null) }

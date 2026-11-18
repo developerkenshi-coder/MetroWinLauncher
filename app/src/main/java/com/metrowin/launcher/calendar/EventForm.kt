@@ -25,6 +25,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,6 +80,9 @@ fun reminderText(minutes: Int): String = when {
     else -> stringResource(R.string.cal_rem_minutes, minutes)
 }
 
+/** The reminders chosen in the form (nothing chosen yet is null, which keeps those that were read), kept while the screen is recreated. */
+private val RemindersSaver = Saver<List<Int>?, IntArray>(save = { it?.toIntArray() ?: intArrayOf(-1) }, restore = { if (it.contentEquals(intArrayOf(-1))) null else it.toList() })
+
 /**
  * The page of one event (a whole page, not a small window: it is long): title, times, place, notes, calendar, colour, reminders, how it repeats
  * (a new one), and who is invited. A calendar that cannot be changed gets [EventView] instead. The reminders are read first: until they are,
@@ -96,24 +101,23 @@ fun EventForm(event: CalEvent, repository: CalendarRepository, onSave: (Saved) -
     }
     val loadedReminders = reminders.second
     val readFailed = reminders.first && loadedReminders == null
-    val key = event.id to event.start
-    var title by remember(key) { mutableStateOf(event.title) }
-    var location by remember(key) { mutableStateOf(event.location) }
-    var notes by remember(key) { mutableStateOf(event.description) }
-    var allDay by remember(key) { mutableStateOf(event.allDay) }
+    var title by rememberSaveable(event.id, event.start) { mutableStateOf(event.title) }
+    var location by rememberSaveable(event.id, event.start) { mutableStateOf(event.location) }
+    var notes by rememberSaveable(event.id, event.start) { mutableStateOf(event.description) }
+    var allDay by rememberSaveable(event.id, event.start) { mutableStateOf(event.allDay) }
     val span = CalendarLogic.days(event, zone)
-    var startMs by remember(key) { mutableStateOf(if (event.allDay) CalendarLogic.timeAt(span.start, CalendarDefaults.START_HOUR * 60, zone) else event.start) }
-    var endMs by remember(key) { mutableStateOf(if (event.allDay) startMs + CalendarDefaults.DURATION_MS else event.end) }
-    var firstDay by remember(key) { mutableStateOf(span.start) }
-    var lastDay by remember(key) { mutableStateOf(span.endInclusive) }
-    var calendarId by remember(event.id) { mutableStateOf(event.calendarId) }
-    var color by remember(event.id) { mutableIntStateOf(event.ownColor) }
-    var reminder by remember(event.id) { mutableStateOf<List<Int>?>(null) }
-    var repeat by remember(event.id) { mutableStateOf(Repeat.None) }
+    var startMs by rememberSaveable(event.id, event.start) { mutableStateOf(if (event.allDay) CalendarLogic.timeAt(span.start, CalendarDefaults.START_HOUR * 60, zone) else event.start) }
+    var endMs by rememberSaveable(event.id, event.start) { mutableStateOf(if (event.allDay) startMs + CalendarDefaults.DURATION_MS else event.end) }
+    var firstDay by rememberSaveable(event.id, event.start, stateSaver = DaySaver) { mutableStateOf(span.start) }
+    var lastDay by rememberSaveable(event.id, event.start, stateSaver = DaySaver) { mutableStateOf(span.endInclusive) }
+    var calendarId by rememberSaveable(event.id) { mutableStateOf(event.calendarId) }
+    var color by rememberSaveable(event.id) { mutableIntStateOf(event.ownColor) }
+    var reminder by rememberSaveable(event.id, stateSaver = RemindersSaver) { mutableStateOf<List<Int>?>(null) }
+    var repeat by rememberSaveable(event.id) { mutableStateOf(Repeat.None) }
     // Of a repeating event only the time that was opened is changed, unless the user says all of them.
-    var all by remember(event.id) { mutableStateOf(false) }
-    var picking by remember { mutableStateOf<String?>(null) }
-    var custom by remember { mutableStateOf(false) }
+    var all by rememberSaveable(event.id) { mutableStateOf(false) }
+    var picking by rememberSaveable { mutableStateOf<String?>(null) }
+    var custom by rememberSaveable { mutableStateOf(false) }
     var confirm by remember { mutableStateOf(false) }
     val chosenCalendar = calendarId.takeIf { it != 0L } ?: writable.firstOrNull()?.id ?: 0L
     val chosenReminders = reminder ?: loadedReminders ?: emptyList()

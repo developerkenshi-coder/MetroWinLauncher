@@ -14,6 +14,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -43,6 +45,12 @@ private sealed interface Page {
     data class Sketch(val id: String) : Page
 }
 
+/** The page is kept as text ("", "E<id>", "S<id>") across a restart of the screen or of the process; the note itself is on disk. */
+private val PageSaver = Saver<Page, String>(
+    save = { when (it) { Page.List -> ""; is Page.Edit -> "E" + it.id; is Page.Sketch -> "S" + it.id } },
+    restore = { when { it.startsWith("E") -> Page.Edit(it.drop(1)); it.startsWith("S") -> Page.Sketch(it.drop(1)); else -> Page.List } },
+)
+
 /** What the password dialog is for: a backup about to be written, or one that is sealed and about to be read. */
 private sealed interface Ask {
     data object Backup : Ask
@@ -64,7 +72,7 @@ fun NotesScreen(openId: String? = null) {
     // A file of notes that the key of the phone no longer opens is kept aside; the list says so, and says what can be done.
     var lost by remember { mutableStateOf(false) }
     var saveFailed by remember { mutableStateOf(false) }
-    var page by remember { mutableStateOf<Page>(Page.List) }
+    var page by rememberSaveable(stateSaver = PageSaver) { mutableStateOf<Page>(Page.List) }
     var ask by remember { mutableStateOf<Ask?>(null) }
     var password by remember { mutableStateOf("") }
     // The notes that asked for the lock of the phone and got it, until the app is closed.
@@ -181,15 +189,24 @@ fun NotesScreen(openId: String? = null) {
         waiting = note.id
         credential.launch(intent)
     }
-    // A result of the search opens its note as soon as the notes are read (a locked one asks for the lock first, as in the list).
+    // A page given back after the screen was recreated is shown once the notes are read: a locked note stays locked (the unlock is not kept) and goes back to the list.
+    var vetted by remember { mutableStateOf(page is Page.List) }
+    LaunchedEffect(notes != null) {
+        val all = notes ?: return@LaunchedEffect
+        val id = (page as? Page.Edit)?.id ?: (page as? Page.Sketch)?.id
+        if (id != null && !vetted && all.firstOrNull { it.id == id }?.let { it.locked && id !in unlocked } != false) page = Page.List
+        vetted = true
+    }
+    // A result of the search opens its note as soon as the notes are read (a locked one asks for the lock first, as in the list), once: not again after the screen is recreated.
+    var openDone by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(openId, notes != null) {
-        if (openId != null) notes?.firstOrNull { it.id == openId && it.deleted == 0L }?.let(::open)
+        if (openId != null && !openDone && notes != null) { openDone = true; notes?.firstOrNull { it.id == openId && it.deleted == 0L }?.let(::open) }
     }
 
     // What a page shows is kept while it turns away: the note may be gone from the list by then.
     val shownNote = remember { arrayOfNulls<Note>(1) }
     PageSwitch(
-        page = page.takeIf { it !is Page.List },
+        page = page.takeIf { it !is Page.List && vetted },
         onBack = { page = Page.List },
         list = {
             NoteList(
@@ -219,7 +236,7 @@ fun NotesScreen(openId: String? = null) {
             val id = (open as? Page.Edit)?.id ?: (open as Page.Sketch).id
             val found = notes?.firstOrNull { it.id == id }
             if (found != null) shownNote[0] = found
-            if (page !is Page.List && (found == null || found.deleted > 0)) page = Page.List
+            if (page !is Page.List && notes != null && (found == null || found.deleted > 0)) page = Page.List
             val note = found ?: shownNote[0]
             if (note != null) PageSwitch(
                 page = open as? Page.Sketch,

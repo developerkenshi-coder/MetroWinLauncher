@@ -109,7 +109,7 @@ fun RecorderScreen() {
         val tree = opts.backupTree
         if (opts.on(Opt.BACKUP) && tree != null) withContext(Dispatchers.IO) { RecorderBackup.sync(context, Uri.parse(tree), recs.map { it.file }) }
     }
-    var selected by remember { mutableStateOf<String?>(null) }
+    var selected by rememberSaveable { mutableStateOf<String?>(null) }
     var picked by remember { mutableStateOf(setOf<String>()) }
     var query by rememberSaveable { mutableStateOf("") }
     var label by remember { mutableStateOf("") }
