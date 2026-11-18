@@ -95,7 +95,10 @@ import com.metrowin.launcher.data.AppSections
 import com.metrowin.launcher.data.DefaultStart
 import com.metrowin.launcher.data.DominantColor
 import com.metrowin.launcher.data.StartEntries
+import com.metrowin.launcher.data.StartCache
+import com.metrowin.launcher.data.StartLive
 import com.metrowin.launcher.data.StartPages
+import com.metrowin.launcher.data.StartSnapshot
 import com.metrowin.launcher.data.IconLoader
 import com.metrowin.launcher.data.LiveTileData
 import kotlinx.coroutines.flow.update
@@ -224,6 +227,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
@@ -752,6 +756,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     )
 
     private var tilesReady = false
+
+    /** The version code of the app, for [StartCache]. */
+    private val versionCode: Long by lazy {
+        runCatching { getApplication<Application>().let { it.packageManager.getPackageInfo(it.packageName, 0).longVersionCode } }.getOrDefault(0L)
+    }
+
+    /** The real list of apps was read in this run: only then the cache is written, never from what the cache itself gave. */
+    private var appsLoaded = false
     private var loadedLocale: Locale? = null
 
     /** The packages that came, went or changed since the list was last read: only the icons of these are dropped, not all of them. */
@@ -769,7 +781,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         UpdateCheckJob.schedule(application, _settings.value.updateAuto)
         kotlin.concurrent.thread(name = "mail-schedule") { com.metrowin.launcher.mail.MailSync.schedule(application); com.metrowin.launcher.datasense.DataLimitWatch.schedule(application); com.metrowin.launcher.data.ShizukuWatch.schedule(application) }
         updates.checkIfDue(_settings.value.updateAuto)
+        restoreStart()
         reloadApps()
+        keepStartCache()
         if (_settings.value.hasStartBackground) loadBackground()
         if (_settings.value.hasLockPhoto) loadLockPhoto()
         stopObservingPackages = apps.observe { scheduleReload(it) }
@@ -1788,6 +1802,45 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         appItems = list
         rebuildItems()
         syncTiles(_items.value)
+        appsLoaded = true
+    }
+
+    /**
+     * The first frame of Start from [StartCache]: the apps of the last load and the live values, in place of the wait for the list of apps. The tiles
+     * come from the settings, as ever. With no cache, an old one, a damaged one, or a pinned app that it does not know, nothing is done and the first
+     * frame waits for the load as before. Nothing is pruned or saved here: the load that follows does it, against the real list.
+     */
+    private fun restoreStart() {
+        val saved = store.loadPages()?.takeIf { store.miniAppsMigrated } ?: return
+        val cache = StartCache.read(getApplication<Application>().cacheDir, versionCode, Locale.getDefault().toLanguageTag(), android.os.Process.myUserHandle()) ?: return
+        val pages = StartPages.resize(saved, _settings.value.startPages)
+        val known = (cache.apps + _shortcuts.value.map { it.toItem(shortcutStore.photoPath(it.photoFile)) }).mapTo(HashSet()) { it.id }
+        if (StartPages.prune(pages, known) != pages) return
+        appItems = cache.apps
+        loadedLocale = Locale.getDefault()
+        rebuildItems()
+        _pages.value = pages
+        val now = System.currentTimeMillis()
+        _live.update {
+            it.copy(
+                nextEvent = cache.live.nextEvent?.takeUnless { e -> e.isOver(now) },
+                events = cache.live.events.filterNot { e -> e.isOver(now) },
+                missedCalls = cache.live.missedCalls, unreadMail = cache.live.unreadMail, todo = cache.live.todo, nextAlarm = cache.live.nextAlarm,
+            )
+        }
+    }
+
+    /** Writes the cache a few seconds after the apps or the live values changed (not at every change), once the real list is known. */
+    private fun keepStartCache() {
+        viewModelScope.launch {
+            combine(_items, _live.map { StartLive(it.nextEvent, it.events, it.missedCalls, it.unreadMail, it.todo, it.nextAlarm) }.distinctUntilChanged()) { _, live -> live }
+                .collectLatest { live ->
+                    delay(START_CACHE_DELAY_MS)
+                    if (!appsLoaded) return@collectLatest
+                    val snapshot = StartSnapshot(appItems, live)
+                    withContext(Dispatchers.IO) { StartCache.write(getApplication<Application>().cacheDir, snapshot, versionCode, Locale.getDefault().toLanguageTag()) }
+                }
+        }
     }
 
     /** Apps first, then the shortcuts: the list every screen reads. */
@@ -2806,6 +2859,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
         /** The shortcuts of an app that find it in the search: more than the four of its menu. */
         const val SHORTCUT_NAMES = 12
+        const val START_CACHE_DELAY_MS = 3_000L
 
         /** How long a switch of Android takes to show its new state, before the tile reads it again. */
         const val TOGGLE_SETTLE_MS = 700L
