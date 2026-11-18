@@ -592,6 +592,7 @@
     <string name="a11y_move_later">Sposta dopo</string>
     <string name="a11y_rename">Rinomina cartella</string>
     <string name="a11y_release">Scomponi la cartella</string>
+    <string name="a11y_remove_from_folder">Togli dalla cartella</string>
     <string name="a11y_more_options">Altre opzioni</string>
 
     <!-- quantities -->

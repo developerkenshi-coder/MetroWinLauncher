@@ -599,6 +599,7 @@
     <string name="a11y_move_later">Mover para depois</string>
     <string name="a11y_rename">Renomear pasta</string>
     <string name="a11y_release">Desfazer a pasta</string>
+    <string name="a11y_remove_from_folder">Tirar da pasta</string>
     <string name="a11y_more_options">Mais opções</string>
 
     <!-- quantities -->

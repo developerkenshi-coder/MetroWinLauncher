@@ -599,6 +599,7 @@
     <string name="a11y_move_later">Reculer d’une place</string>
     <string name="a11y_rename">Renommer le dossier</string>
     <string name="a11y_release">Défaire le dossier</string>
+    <string name="a11y_remove_from_folder">Sortir du dossier</string>
     <string name="a11y_more_options">Plus d’options</string>
 
     <!-- quantités -->

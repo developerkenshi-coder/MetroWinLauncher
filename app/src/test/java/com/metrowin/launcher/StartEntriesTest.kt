@@ -2,7 +2,12 @@ package com.metrowin.launcher
 
 import com.metrowin.launcher.data.StartEntries
 import com.metrowin.launcher.data.TileCodec
+import com.metrowin.launcher.model.AppItem
 import com.metrowin.launcher.model.Folder
+import com.metrowin.launcher.model.Launch
+import com.metrowin.launcher.ui.start.FolderCell
+import com.metrowin.launcher.ui.start.buildStartCells
+import com.metrowin.launcher.ui.start.isTopLevel
 import com.metrowin.launcher.model.StartEntry
 import com.metrowin.launcher.model.Tile
 import com.metrowin.launcher.model.TileSize
@@ -131,6 +136,55 @@ class StartEntriesTest {
         assertEquals(entries, TileCodec.decode(TileCodec.encode(entries)))
         val old = """[{"id":"stock:phone","size":"m"},{"id":"stock:photos","size":"w"}]"""
         assertEquals(listOf(tile("stock:phone"), tile("stock:photos", TileSize.Wide)), TileCodec.decode(old))
+    }
+
+    @Test
+    fun codecKeepsTheColorNameAndPlaceOfAFolder() {
+        val coloured = Folder("f", "Work", TileSize.Wide, listOf("x", "y"), color = 0xFF0050EF.toInt(), group = "g", col = 1, row = 2)
+        assertEquals(listOf(coloured), TileCodec.decode(TileCodec.encode(listOf(coloured))))
+        assertEquals(listOf(coloured), TileCodec.decodePages(TileCodec.encodePages(listOf(listOf(coloured))))?.single())
+    }
+
+    @Test
+    fun aFileWithAnEmptyOrLoneFolderIsTidiedWhenRead() {
+        val json = """[{"id":"e","size":"m","type":"folder","name":"","children":[]},
+            {"id":"l","size":"m","type":"folder","name":"Lone","children":["one"],"color":-16776961,"group":"G"},
+            {"id":"a","size":"m"}]"""
+        val read = TileCodec.decode(json)!!
+        assertEquals(listOf("one", "a"), ids(read))
+        assertEquals("G", read[0].group)
+        assertEquals(0xFF0000FF.toInt(), read[0].color)
+    }
+
+    @Test
+    fun aFileCannotNestFoldersOrHoldAnAppTwice() {
+        val entries = listOf(tile("a"), folder("f", "a", "b", "c"), folder("g", "f", "b", "d", "e"))
+        val read = TileCodec.decode(TileCodec.encode(entries))!!
+        assertEquals(listOf("a", "f", "g"), ids(read))
+        assertEquals(listOf("b", "c"), (read[1] as Folder).children)
+        // "f" is a folder on Start: a folder cannot hold it; "b" is already held by the first folder.
+        assertEquals(listOf("d", "e"), (read[2] as Folder).children)
+    }
+
+    @Test
+    fun aFolderTakesAColorAndKeepsItWhenAnAppLeaves() {
+        val entries = StartEntries.setColor(listOf(tile("a"), folder("f", "x", "y", "z")), "f", 0xFFE51400.toInt())
+        val after = StartEntries.removeFromFolder(entries, "f", "x")
+        assertEquals(0xFFE51400.toInt(), after.first { it.id == "f" }.color)
+        assertEquals(listOf("a", "f", "x"), ids(after))
+    }
+
+    @Test
+    fun anOpenFolderShowsItsAppsRightAfterItAndAClosedOneShowsNone() {
+        val apps = listOf("a", "x", "y").map { AppItem(it, "App $it", Launch.Action("x"), packageName = "pkg.$it") }
+        val entries = listOf(tile("a"), folder("f", "x", "y"))
+        val closed = buildStartCells(entries, apps, openFolderId = null)
+        assertEquals(listOf("a", "f"), closed.map { it.key })
+        assertFalse((closed[1] as FolderCell).expanded)
+        val open = buildStartCells(entries, apps, openFolderId = "f")
+        assertEquals(listOf("a", "f", "f/x", "f/y"), open.map { it.key })
+        assertTrue((open[1] as FolderCell).expanded)
+        assertFalse(open[2].isTopLevel)
     }
 
     // --- several tiles into one folder

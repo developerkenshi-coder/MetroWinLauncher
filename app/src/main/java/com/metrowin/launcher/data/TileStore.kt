@@ -39,7 +39,7 @@ object TileCodec {
     /** Null when [json] is not something [encode] wrote. Entries without a type are tiles, as in version 1. */
     fun decode(json: String): List<StartEntry>? = runCatching {
         val array = JSONArray(json)
-        List(array.length()) { i ->
+        val entries = List(array.length()) { i ->
             val obj = array.getJSONObject(i)
             val size = TileSize.fromCode(obj.optString("size"))
             if (obj.optString("type") == "folder") {
@@ -49,7 +49,27 @@ object TileCodec {
                 Tile(obj.getString("id"), size, TileStyle.fromCode(obj.optString("style")), colorOf(obj), obj.optString("group"), obj.optInt("col", -1), obj.optInt("row", -1))
             }
         }
+        tidy(entries)
     }.getOrNull()
+
+    /**
+     * A file edited by hand or written by a bug must not break Start: an app is kept once (a tile wins over a folder, the
+     * first folder over the later ones, so a folder never holds a folder or a tile that is also on Start), and a folder with
+     * fewer than two apps is gone or becomes its app's tile.
+     */
+    private fun tidy(entries: List<StartEntry>): List<StartEntry> {
+        val seen = HashSet<String>()
+        entries.forEach { seen += it.id }
+        return entries.flatMap { entry ->
+            if (entry !is Folder) return@flatMap listOf(entry)
+            val children = entry.children.filter { seen.add(it) }
+            when (children.size) {
+                0 -> emptyList()
+                1 -> listOf(Tile(children.single(), TileSize.Medium, color = entry.color, group = entry.group, col = entry.col, row = entry.row))
+                else -> listOf(entry.copy(children = children))
+            }
+        }
+    }
 
     /** The color kept for an entry, made opaque: a color saved with any transparency would show the page through the tile. */
     private fun colorOf(obj: JSONObject): Int = obj.optInt("color", 0).let { if (it == 0) 0 else it or (0xFF shl 24) }

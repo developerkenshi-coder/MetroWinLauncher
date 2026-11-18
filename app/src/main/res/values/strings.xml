@@ -599,6 +599,7 @@
     <string name="a11y_move_later">Move later</string>
     <string name="a11y_rename">Rename folder</string>
     <string name="a11y_release">Take the folder apart</string>
+    <string name="a11y_remove_from_folder">Take out of the folder</string>
     <string name="a11y_more_options">More options</string>
 
     <!-- quantities -->

@@ -599,6 +599,7 @@
     <string name="a11y_move_later">Nach hinten verschieben</string>
     <string name="a11y_rename">Ordner umbenennen</string>
     <string name="a11y_release">Ordner auflösen</string>
+    <string name="a11y_remove_from_folder">Aus dem Ordner nehmen</string>
     <string name="a11y_more_options">Weitere Optionen</string>
 
     <!-- quantities -->

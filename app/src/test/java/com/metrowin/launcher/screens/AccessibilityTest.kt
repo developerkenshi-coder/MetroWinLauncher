@@ -166,6 +166,16 @@ class AccessibilityTest : ScreenshotBase() {
     }
 
     @Test
+    fun anAppOfAnOpenFolderOffersToTakeItOutOfTheFolderNotToUnpinIt() {
+        val folder = FolderCell(Folder("f1", "Games", TileSize.Medium, listOf("A", "B")), apps.take(2), expanded = true)
+        showTiles(listOf(folder, AppCell(Tile("A", TileSize.Medium), apps[0], folderId = "f1"), AppCell(Tile("B", TileSize.Medium), apps[1], folderId = "f1")))
+        advance(2_500)
+        assertTrue("Take out of the folder" in labelsOf("tile:f1/A"))
+        assertFalse("Unpin from Start" in labelsOf("tile:f1/A"))
+        assertFalse("Change size" in labelsOf("tile:f1/A"))
+    }
+
+    @Test
     fun theKidsCornerOffersNoEditingActions() {
         showTiles(three, readOnly = true)
         advance(2_500)

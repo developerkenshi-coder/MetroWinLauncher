@@ -48,6 +48,16 @@ class LayoutBackupTest {
     }
 
     @Test
+    fun aVersion1BackupWithAFolderOfTheOldFormatStillRestores() {
+        val old = """{"format": "metrowin-layout", "version": 1, "pages": [[{"id":"a","size":"m"},
+            {"id":"f","size":"m","type":"folder","name":"Games","color":-1743872,"children":["b","c"]}], []]}"""
+        val restored = LayoutBackupCodec.decode(old, mine)!!
+        val folder = restored.pages[0][1] as Folder
+        assertEquals(listOf("b", "c"), folder.children)
+        assertEquals(0xFFE56400.toInt(), folder.color)
+    }
+
+    @Test
     fun aWidgetIsNotCarriedBecauseItsIdBelongsToThisPhone() {
         val restored = LayoutBackupCodec.decode(encode(LayoutBackup(pages, listOf(site, widget), mine)), LauncherSettings())!!
         assertEquals(listOf(site), restored.shortcuts)

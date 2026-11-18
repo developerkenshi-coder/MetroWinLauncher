@@ -1297,7 +1297,10 @@ fun LauncherApp(vm: LauncherViewModel) {
             vm.merge(dragged, onto)
             editingKey = null
         },
-        onBackgroundTap = { if (folderPick == null) editingKey = null },
+        onBackgroundTap = {
+            if (folderPick == null) editingKey = null
+            openFolderId = null
+        },
         onEditContent = { cell ->
             val item = (cell as? AppCell)?.item
             when {

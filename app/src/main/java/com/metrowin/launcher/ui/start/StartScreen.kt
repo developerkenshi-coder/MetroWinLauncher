@@ -1261,7 +1261,13 @@ private fun Modifier.tileSemantics(
             infoSummary,
         ).joinToString(". ").ifEmpty { null }
     }
-    val unpin = stringResource(if (cell is FolderCell) R.string.a11y_release else R.string.a11y_unpin)
+    val unpin = stringResource(
+        when {
+            cell is FolderCell -> R.string.a11y_release
+            cell is AppCell && cell.folderId != null -> R.string.a11y_remove_from_folder
+            else -> R.string.a11y_unpin
+        },
+    )
     val resize = stringResource(R.string.a11y_resize)
     val earlier = stringResource(R.string.a11y_move_earlier)
     val later = stringResource(R.string.a11y_move_later)
