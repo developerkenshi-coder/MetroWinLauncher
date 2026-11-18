@@ -1,5 +1,7 @@
 package com.metrowin.launcher.notes
 
+import com.metrowin.launcher.ui.components.Mark
+import com.metrowin.launcher.ui.components.MarkIcon
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -93,7 +95,7 @@ private fun ToolButton(pencil: Pencil, selected: Boolean, label: String, onClick
             // The marker: a wide bar, as it draws.
             Box(Modifier.size(width = 22.dp, height = 10.dp).background(ink.copy(alpha = 0.75f)))
         } else {
-            MetroText(pencil.symbol, size = 20.sp, weight = FontWeight.Normal, color = ink)
+            (Mark.of(pencil.symbol)?.let { MarkIcon(it, 20.dp, color = ink) } ?: MetroText(pencil.symbol, size = 20.sp, weight = FontWeight.Normal, color = ink))
         }
     }
 }

@@ -41,11 +41,29 @@ enum class Mark {
 
     // For `AppBarItem.icon`: the Unicode signs that apps put in the bar (＋ ✕ ✎ ⇪ ⇩ ↻ ⚙ ← ↗ 🗑 ⚑ ↩ ↪) are missing in many fonts or drawn as color emoji.
     Add, Close, Edit, Upload, Download, Refresh, Gear, Back, Open, Trash, Flag, Undo, Redo,
+
+    // The rest of the signs of the bars and of the lists (see [Mark.of]): thin line, square ends, sharp corners.
+    Search, Menu, Star, StarFill, Folder, Archive, Mail, Swap, Sort, Clock, Timer, Home, Calendar, Moon, Copy, Backspace,
+    Window, ReplyAll, FlagFill, Circle, Reading, Pin, Gift, Share, CallIn, CallMissed, Heart, HeartFill, Stop, Box, Line, Ellipse, Move;
+
+    companion object {
+        private val bySymbol = mapOf(
+            "＋" to Add, "✕" to Close, "✎" to Edit, "⇪" to Upload, "⇧" to Upload, "⇩" to Download, "↻" to Refresh, "↺" to Refresh,
+            "⚙" to Gear, "←" to Back, "→" to Arrow, "➜" to Arrow, "↗" to Open, "🗑" to Trash, "⚑" to FlagFill, "⚐" to Flag,
+            "↩" to Undo, "↶" to Undo, "↪" to Redo, "↷" to Redo, "↩↩" to ReplyAll, "✓" to Check, "☑" to Checked, "▶" to Play,
+            "⌕" to Search, "☰" to Menu, "★" to StarFill, "☆" to Star, "▣" to Folder, "▤" to Archive, "✉" to Mail, "⇄" to Swap,
+            "↕" to Sort, "◷" to Clock, "⏱" to Timer, "⌂" to Home, "▦" to Calendar, "☾" to Moon, "⎘" to Copy, "⌫" to Backspace,
+            "▭" to Window, "○" to Circle, "◉" to Reading, "♥" to HeartFill, "♡" to Heart, "■" to Stop, "☐" to Box, "╱" to Line, "◯" to Ellipse, "↔" to Move,
+        )
+
+        /** The drawn mark for a Unicode sign that apps put in a bar, or null when there is none. */
+        fun of(symbol: String): Mark? = bySymbol[symbol]
+    }
 }
 
 @Composable
 fun MarkIcon(mark: Mark, size: Dp, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.foreground) =
-    SpecIcon(remember(mark) { markSpec(mark) }, size, modifier, color)
+    SpecIcon(remember(mark) { markSpec(mark) }, size, modifier, color, mark = true)
 
 /** On: the lines of a glyph keep one width (2.5 dp) at any size, with square ends and sharp corners, as on a Windows Phone tile. */
 val LocalSharpGlyphs = androidx.compose.runtime.staticCompositionLocalOf { false }
@@ -53,9 +71,11 @@ val LocalSharpGlyphs = androidx.compose.runtime.staticCompositionLocalOf { false
 private val SHARP_STROKE = 2.5.dp
 
 @Composable
-private fun SpecIcon(spec: Spec, size: Dp, modifier: Modifier, color: Color) {
+private fun SpecIcon(spec: Spec, size: Dp, modifier: Modifier, color: Color, mark: Boolean = false) {
     val density = LocalDensity.current
-    val sharp = LocalSharpGlyphs.current
+    // The marks of the bars are always thin, with square ends and sharp corners, a line of 2 dp at the size of a bar button.
+    val sharp = LocalSharpGlyphs.current || mark
+    val line = if (LocalSharpGlyphs.current || !mark) SHARP_STROKE else (size * 0.085f).coerceIn(1.5.dp, SHARP_STROKE)
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             spec.parts.forEach { part ->
@@ -65,7 +85,7 @@ private fun SpecIcon(spec: Spec, size: Dp, modifier: Modifier, color: Color) {
                         path = part.path,
                         color = color,
                         style = if (part.fill) Fill else Stroke(
-                            width = if (sharp) SHARP_STROKE.toPx() / unit else STROKE * part.grid / 100f,
+                            width = if (sharp) line.toPx() / unit else STROKE * part.grid / 100f,
                             cap = if (sharp) StrokeCap.Butt else StrokeCap.Round,
                             join = if (sharp) StrokeJoin.Miter else StrokeJoin.Round,
                         ),
@@ -87,11 +107,11 @@ private fun SpecIcon(spec: Spec, size: Dp, modifier: Modifier, color: Color) {
 
 private const val STROKE = 5.5f
 
-private class Part(data: String, val fill: Boolean, val grid: Float = 100f) {
+internal class Part(data: String, val fill: Boolean, val grid: Float = 100f) {
     val path: Path = PathParser().parsePathString(data).toPath()
 }
 
-private class Spec(
+internal class Spec(
     val parts: List<Part>,
     val letter: String? = null,
     val letterScale: Float = 0.5f,
@@ -101,7 +121,7 @@ private class Spec(
 
 private val specs = HashMap<Glyph, Spec>()
 
-private fun specOf(glyph: Glyph): Spec = specs.getOrPut(glyph) { build(glyph) }
+internal fun specOf(glyph: Glyph): Spec = specs.getOrPut(glyph) { build(glyph) }
 
 private fun stroke(vararg data: String) = data.map { Part(it, fill = false) }
 private fun fill(vararg data: String) = data.map { Part(it, fill = true) }
@@ -144,7 +164,7 @@ private const val PHONE =
         ".55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 " +
         "0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"
 
-private fun markSpec(mark: Mark): Spec = when (mark) {
+internal fun markSpec(mark: Mark): Spec = when (mark) {
     Mark.Check -> spec(stroke("M20 54L42 76L82 28"))
     Mark.Checked -> spec(stroke(rect(18f, 18f, 64f, 64f), "M32 50L45 63L70 36"))
     Mark.Up -> spec(fill("M50 24L84 78H16Z"))
@@ -165,7 +185,43 @@ private fun markSpec(mark: Mark): Spec = when (mark) {
     Mark.Flag -> spec(stroke("M26 90V12", "M26 14H78L66 34L78 54H26"))
     Mark.Undo -> spec(stroke("M32 28L14 46L32 64", "M14 46H58A22 22 0 0 1 58 90H34"))
     Mark.Redo -> spec(stroke("M68 28L86 46L68 64", "M86 46H42A22 22 0 0 0 42 90H66"))
+    Mark.Search -> spec(stroke(circle(42f, 42f, 26f), "M62 62L88 88"))
+    Mark.Menu -> spec(stroke("M14 28H86", "M14 50H86", "M14 72H86"))
+    Mark.Star -> spec(stroke(STAR))
+    Mark.StarFill -> spec(fill(STAR), stroke(STAR))
+    Mark.Folder -> spec(stroke("M10 24H38L46 34H90V80H10Z"))
+    Mark.Archive -> spec(stroke(rect(12f, 18f, 76f, 22f), "M18 40V84H82V40", "M40 56H60"))
+    Mark.Mail -> spec(stroke(rect(10f, 22f, 80f, 56f), "M12 26L50 56L88 26"))
+    Mark.Swap -> spec(stroke("M14 32H86", "M68 14L86 32L68 50", "M86 68H14", "M32 50L14 68L32 86"))
+    Mark.Sort -> spec(stroke("M30 86V14", "M12 32L30 14L48 32", "M70 14V86", "M52 68L70 86L88 68"))
+    Mark.Clock -> spec(stroke(circle(50f, 50f, 38f), "M50 24V50H70"))
+    Mark.Timer -> spec(stroke(circle(50f, 56f, 32f), "M40 10H60", "M50 10V24", "M50 56V36"))
+    Mark.Home -> spec(stroke("M10 48L50 14L90 48", "M22 42V86H78V42"))
+    Mark.Calendar -> spec(stroke(rect(14f, 20f, 72f, 66f), "M14 40H86", "M34 12V28", "M66 12V28"))
+    Mark.Moon -> spec(stroke("M62 12A40 40 0 1 0 88 62A32 32 0 0 1 62 12Z"))
+    Mark.Copy -> spec(stroke(rect(32f, 32f, 54f, 54f), "M68 32V14H14V68H32"))
+    Mark.Backspace -> spec(stroke("M34 24H90V76H34L10 50Z", "M52 38L74 62", "M74 38L52 62"))
+    Mark.Window -> spec(stroke(rect(14f, 24f, 72f, 52f)))
+    Mark.ReplyAll -> spec(stroke("M28 26L10 44L28 62", "M48 26L30 44L48 62", "M30 44H62A22 22 0 0 1 62 88H46"))
+    Mark.FlagFill -> spec(stroke("M26 90V12"), fill("M26 14H78L66 34L78 54H26Z"))
+    Mark.Circle -> spec(stroke(circle(50f, 50f, 32f)))
+    Mark.Reading -> spec(stroke(circle(50f, 50f, 38f)), fill(circle(50f, 50f, 16f)))
+    Mark.Pin -> spec(stroke("M36 14H64", "M42 14V44L30 58H70L58 44V14", "M50 58V90"))
+    Mark.Gift -> spec(stroke(rect(14f, 36f, 72f, 18f), "M20 54V88H80V54", "M50 36V88", "M50 36C40 16 22 20 30 34", "M50 36C60 16 78 20 70 34"))
+    Mark.Share -> spec(stroke(circle(24f, 50f, 10f), circle(76f, 22f, 10f), circle(76f, 78f, 10f), "M33 45L67 27", "M33 55L67 73"))
+    Mark.CallIn -> spec(stroke("M80 20L20 80", "M20 34V80H66"))
+    Mark.CallMissed -> spec(stroke("M80 80L20 20", "M20 66V20H66"))
+    Mark.Heart -> spec(stroke(HEART))
+    Mark.HeartFill -> spec(fill(HEART), stroke(HEART))
+    Mark.Stop -> spec(fill(rect(24f, 24f, 52f, 52f)))
+    Mark.Line -> spec(stroke("M16 84L84 16"))
+    Mark.Ellipse -> spec(stroke("M10 50A40 28 0 1 0 90 50A40 28 0 1 0 10 50Z"))
+    Mark.Move -> spec(stroke("M10 50H90", "M28 32L10 50L28 68", "M72 32L90 50L72 68"))
+    Mark.Box -> spec(stroke(rect(18f, 18f, 64f, 64f)))
 }
+
+private const val STAR = "M50 10L61 38L91 40L68 59L76 88L50 72L24 88L32 59L9 40L39 38Z"
+private const val HEART = "M50 88L12 48V32L26 18H42L50 30L58 18H74L88 32V48Z"
 
 private fun document() = stroke("M26 10H62L78 26V90H26Z", "M62 10V26H78")
 
@@ -270,7 +326,7 @@ private fun build(glyph: Glyph): Spec = when (glyph) {
     Glyph.Globe -> spec(stroke(circle(50f, 50f, 38f), "M12 50H88", "M50 12C30 30 30 70 50 88", "M50 12C70 30 70 70 50 88"))
     Glyph.Widget -> spec(stroke(rect(14f, 14f, 32f, 32f, 3f), rect(54f, 14f, 32f, 32f, 3f), rect(14f, 54f, 32f, 32f, 3f), rect(54f, 54f, 32f, 32f, 3f)))
     Glyph.Lock -> spec(stroke(rect(22f, 44f, 56f, 44f, 4f), "M34 44V32A16 16 0 0 1 66 32V44"), fill(circle(50f, 66f, 5f)))
-    Glyph.Star -> spec(stroke("M50 10L61 38L91 40L68 59L76 88L50 72L24 88L32 59L9 40L39 38Z"))
+    Glyph.Star -> spec(stroke(STAR))
     Glyph.Folder -> spec(stroke("M10 26H40L48 36H90V80H10Z"), fill(rect(10f, 44f, 80f, 6f, 0f)))
     Glyph.Home -> spec(stroke("M10 48L50 14L90 48", "M22 42V86H78V42", "M42 86V60H58V86"))
     Glyph.Recents -> spec(stroke(rect(18f, 18f, 64f, 64f, 10f)), fill(rect(36f, 36f, 28f, 28f, 5f)))

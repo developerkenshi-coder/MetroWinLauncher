@@ -1,5 +1,7 @@
 package com.metrowin.launcher.ui.pages
 
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.components.Spacing
 import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.start.TrendText
@@ -391,14 +393,9 @@ fun PeopleHubPage(
             else -> Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 calls.take(8).forEachIndexed { index, call ->
                     Row(Modifier.fillMaxWidth().testTag("peoplehub:call:$index").metroPress(onClick = { onCall(call.number) }).padding(vertical = Spacing.Small), verticalAlignment = Alignment.CenterVertically) {
-                        MetroText(
-                            when {
-                                call.missed -> "✕"
-                                call.outgoing -> "↗"
-                                else -> "↙"
-                            },
-                            size = MetroType.Subtitle, weight = FontWeight.Normal, color = if (call.missed) LocalAccent.current else colors.subtle, modifier = Modifier.width(30.dp),
-                        )
+                        Box(Modifier.width(30.dp)) {
+                            MarkIcon(if (call.missed) Mark.Close else if (call.outgoing) Mark.Open else Mark.CallIn, 18.dp, color = if (call.missed) LocalAccent.current else colors.subtle)
+                        }
                         Column(Modifier.weight(1f)) {
                             MetroText(call.name, size = MetroType.Subtitle)
                             MetroText(whenText(call.date), size = 13.sp, weight = FontWeight.Normal, color = colors.subtle)

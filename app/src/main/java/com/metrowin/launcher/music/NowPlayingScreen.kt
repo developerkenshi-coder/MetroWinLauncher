@@ -1,5 +1,7 @@
 package com.metrowin.launcher.music
 
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.components.PageSwitch
 import android.content.Context
 import android.content.Intent
@@ -411,7 +413,7 @@ private fun Controls(media: MediaInfo, snap: Snap, look: Look, players: List<Med
     val icon = remember(media.packageName) { runCatching { context.packageManager.getApplicationIcon(media.packageName).toBitmap(96, 96).asImageBitmap() }.getOrNull() }
     Row(verticalAlignment = Alignment.CenterVertically) {
         if (icon != null) Image(icon, null, Modifier.padding(end = 8.dp).size(20.dp))
-        if (media.playing) MetroText("●", size = 14.sp, color = look.accent, modifier = Modifier.padding(end = 6.dp))
+        if (media.playing) MarkIcon(Mark.Dot, 10.dp, color = look.accent, modifier = Modifier.padding(end = 6.dp))
         MetroText("${stringResource(R.string.np_now).uppercase()} · $label", size = 14.sp, weight = FontWeight.SemiBold, color = look.faint, maxLines = 1)
     }
     if (players.size > 1) {

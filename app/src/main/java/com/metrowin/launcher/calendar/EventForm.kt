@@ -1,5 +1,7 @@
 package com.metrowin.launcher.calendar
 
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -172,7 +174,7 @@ fun EventForm(event: CalEvent, repository: CalendarRepository, onSave: (Saved) -
                 itemsIndexed(EVENT_COLORS) { i, c ->
                     val name = stringResource(R.string.cal_color_n, i + 1)
                     Box(Modifier.testTag("cal:edit:color:$c").size(44.dp).background(Color(c)).metroPress(onClick = { color = c }).semantics { contentDescription = name; selected = color == c }, contentAlignment = Alignment.Center) {
-                        if (color == c) MetroText("✓", size = 20.sp, color = com.metrowin.launcher.ui.theme.ColorMath.inkOn(Color(c)), modifier = Modifier.clearAndSetSemantics { })
+                        if (color == c) MarkIcon(Mark.Check, 20.dp, color = com.metrowin.launcher.ui.theme.ColorMath.inkOn(Color(c)), modifier = Modifier.clearAndSetSemantics { })
                     }
                 }
             }

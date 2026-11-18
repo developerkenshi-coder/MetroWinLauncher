@@ -1,5 +1,7 @@
 package com.metrowin.launcher.dialer
 
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.components.scrollIndicator
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.ui.components.WindowClass
@@ -721,7 +723,7 @@ private fun HistoryRow(
     ) {
         Box(Modifier.padding(end = 12.dp)) {
             ContactAvatar(item.name, photoUri = null, number = item.number, size = 44.dp)
-            if (selected) MetroText("✓", size = 18.sp, color = Color.White, modifier = Modifier.align(Alignment.Center))
+            if (selected) MarkIcon(Mark.Check, 18.dp, color = Color.White, modifier = Modifier.align(Alignment.Center))
         }
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {

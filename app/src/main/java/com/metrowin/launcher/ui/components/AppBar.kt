@@ -43,7 +43,7 @@ class AppBarItem(val symbol: String, val label: String, val onClick: () -> Unit)
     fun marked(on: Boolean) = apply { marked = on }
 
     /** A drawn mark in place of the [symbol] text, for the signs the font of the launcher does not have. */
-    var icon: Mark? = null
+    var icon: Mark? = Mark.of(symbol)
         private set
 
     fun icon(mark: Mark) = apply { icon = mark }

@@ -1,5 +1,7 @@
 package com.metrowin.launcher.notes
 
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
 import androidx.compose.runtime.saveable.rememberSaveable
 import android.text.format.DateUtils
 import androidx.activity.compose.BackHandler
@@ -313,8 +315,8 @@ private fun NoteRow(note: Note, query: String, relative: Boolean, compact: Boole
         Box(Modifier.width(if (compact) 4.dp else 6.dp).fillMaxHeight().background(noteColor(note.color) ?: colors.subtle.copy(alpha = 0.25f)))
         Column(Modifier.weight(1f).padding(start = 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (picked) MetroText("✓ ", size = if (compact) 18.sp else 22.sp, color = accent)
-                if (note.pinned) MetroText("★ ", size = if (compact) 18.sp else 22.sp, color = accent)
+                if (picked) MarkIcon(Mark.Check, if (compact) 16.dp else 20.dp, color = accent, modifier = Modifier.padding(end = 6.dp))
+                if (note.pinned) MarkIcon(Mark.StarFill, if (compact) 16.dp else 20.dp, color = accent, modifier = Modifier.padding(end = 6.dp))
                 MetroText(title, size = if (compact) 18.sp else 22.sp, highlight = query, maxLines = if (compact) 1 else 2, modifier = Modifier.weight(1f))
                 if (compact) MetroText(noteDate(note.updated, relative), size = 12.sp, weight = FontWeight.Normal, color = colors.subtle, maxLines = 1, modifier = Modifier.padding(start = 8.dp, end = 4.dp))
             }
@@ -353,8 +355,8 @@ private fun NoteTile(
         Column(Modifier.fillMaxSize().padding(12.dp)) {
             val title = note.title.ifBlank { snippet(note).ifBlank { stringResource(R.string.notes_untitled) } }
             Row {
-                if (picked) MetroText("✓ ", size = 19.sp, color = ink)
-                if (note.pinned) MetroText("★ ", size = 19.sp, color = ink)
+                if (picked) MarkIcon(Mark.Check, 17.dp, color = ink, modifier = Modifier.padding(end = 6.dp))
+                if (note.pinned) MarkIcon(Mark.StarFill, 17.dp, color = ink, modifier = Modifier.padding(end = 6.dp))
                 MetroText(title, size = 19.sp, weight = FontWeight.SemiBold, color = ink, maxLines = 2, modifier = Modifier.weight(1f))
             }
             val line = if (note.title.isBlank()) "" else snippet(note)

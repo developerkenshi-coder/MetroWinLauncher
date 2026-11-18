@@ -1,5 +1,7 @@
 package com.metrowin.launcher.todo
 
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -137,7 +139,7 @@ fun TodoRow(item: TodoItem, env: RowEnv, modifier: Modifier = Modifier) {
         ) {
             Box(Modifier.padding(top = 2.dp)) {
                 if (style.isClassic) CheckSquare(shownDone)
-                else MetroText(if (shownDone) "☑" else "☐", size = 28.sp, color = accent)
+                else MarkIcon(if (shownDone) Mark.Checked else Mark.Box, 26.dp, color = accent)
             }
             if (completing && o.burst && !LocalReduceMotion.current) Burst(accent, Modifier.graphicsLayer { translationY = -10.dp.toPx() })
         }

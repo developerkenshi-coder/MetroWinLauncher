@@ -1,5 +1,7 @@
 package com.metrowin.launcher.dialer
 
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.theme.onAccent
 import com.metrowin.launcher.ui.theme.LocalStyle
 import androidx.compose.runtime.remember
@@ -88,7 +90,7 @@ fun DialPad(onKey: (Char) -> Unit, modifier: Modifier = Modifier, keyHeight: and
                             ),
                         contentAlignment = Alignment.Center,
                     ) {
-                        if (key in marked) MetroText("●", size = 8.sp, color = LocalAccent.current, modifier = Modifier.align(Alignment.TopEnd).padding(6.dp))
+                        if (key in marked) MarkIcon(Mark.Dot, 6.dp, color = LocalAccent.current, modifier = Modifier.align(Alignment.TopEnd).padding(6.dp))
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             // The digits are large and light, the letters small, as on Windows Phone.
                             MetroText(key.toString(), size = (if (classic) 36 else 30).let { if (big) it + 6 else it }.sp, weight = if (classic) FontWeight.Light else FontWeight.Normal, color = if (classic && pressed) onAccent() else colors.foreground)

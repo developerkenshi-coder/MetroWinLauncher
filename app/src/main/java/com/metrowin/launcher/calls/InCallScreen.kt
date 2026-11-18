@@ -1,5 +1,7 @@
 package com.metrowin.launcher.calls
 
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.ContactsContract
@@ -202,7 +204,7 @@ fun InCallScreen(lines: List<CallLine>, audio: CallAudio, actions: CallActions, 
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             MetroText(outputLabel(output), size = 20.sp, color = if (output.active) accent else LocalMetroColors.current.foreground, modifier = Modifier.weight(1f))
-                            if (output.active) MetroText("●", size = 14.sp, color = accent)
+                            if (output.active) MarkIcon(Mark.Dot, 10.dp, color = accent)
                         }
                     }
                 }

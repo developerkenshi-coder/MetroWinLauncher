@@ -1,5 +1,8 @@
 package com.metrowin.launcher.notes
 
+import androidx.compose.ui.platform.LocalDensity
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.components.windowClass
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
@@ -463,7 +466,7 @@ private fun Attachment(
             }
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().metroPress(onClick = onPlay).padding(vertical = 8.dp)) {
-                    MetroText(if (playing) "■" else "▶", size = 22.sp, color = LocalAccent.current, modifier = Modifier.width(34.dp))
+                    Box(Modifier.width(34.dp)) { MarkIcon(if (playing) Mark.Stop else Mark.Play, 18.dp, color = LocalAccent.current) }
                     MetroText(name.substringAfterLast('.').uppercase(), size = 19.sp, modifier = Modifier.weight(1f))
                     if (length > 0) MetroText((if (playing) clock(position) + " / " else "") + clock(length), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle)
                 }
@@ -479,7 +482,7 @@ private fun Attachment(
         }
         val remove = stringResource(R.string.notes_remove_file)
         Box(Modifier.size(48.dp).semantics { contentDescription = remove }.metroPress(onClick = onRemove), contentAlignment = Alignment.Center) {
-            MetroText("✕", size = 22.sp, color = colors.subtle)
+            MarkIcon(Mark.Close, 18.dp, color = colors.subtle)
         }
     }
 }
@@ -533,7 +536,7 @@ private fun NoteBody(text: String, onToggle: (Int) -> Unit, scale: Float = 1f) {
                             .metroPress(onClick = { onToggle(line.index) })
                         // Classic: the box of Windows Phone, drawn; the other looks keep the sign of the font.
                         if (style.isClassic) Box(box, contentAlignment = Alignment.CenterStart) { CheckSquare(done) }
-                        else MetroText(if (done) "☑" else "☐", size = size, color = LocalAccent.current, modifier = box)
+                        else Box(box, contentAlignment = Alignment.CenterStart) { MarkIcon(if (done) Mark.Checked else Mark.Box, with(LocalDensity.current) { size.toDp() } * 0.95f, color = LocalAccent.current) }
                     }
                     else -> {}
                 }

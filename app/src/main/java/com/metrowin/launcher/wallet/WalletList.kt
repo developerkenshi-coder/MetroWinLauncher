@@ -1,5 +1,6 @@
 package com.metrowin.launcher.wallet
 
+import com.metrowin.launcher.ui.components.MarkIcon
 import com.metrowin.launcher.ui.mini.miniPageSide
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
@@ -218,7 +219,7 @@ internal fun WalletTile(
             }
             MetroText(sub, size = 14.sp, weight = if (state == ExpiryState.Soon) FontWeight.SemiBold else FontWeight.Normal, color = ink.copy(alpha = if (state == ExpiryState.Soon) 1f else 0.85f), maxLines = 1)
         }
-        if (card.favorite) MetroText("★", size = 18.sp, color = ink, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp))
+        if (card.favorite) MarkIcon(Mark.StarFill, 16.dp, color = ink, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp))
         // A dot on a card used in the last week, when the wallet is asked to remember.
         if (prefs.history.on && card.lastUsed > 0 && System.currentTimeMillis() - card.lastUsed < RECENT_MS) {
             Box(Modifier.align(Alignment.BottomEnd).padding(10.dp).size(8.dp).clip(CircleShape).background(ink.copy(alpha = 0.85f)))

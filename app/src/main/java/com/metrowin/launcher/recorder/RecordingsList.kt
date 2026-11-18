@@ -1,5 +1,7 @@
 package com.metrowin.launcher.recorder
 
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -172,7 +174,7 @@ private fun RecRowBody(rec: Rec, chosen: Boolean, playing: Boolean, pretty: Bool
             if (labels && rec.meta.label.isNotEmpty()) Chip(rec.meta.label, filled = true)
             AnimatedVisibility(chosen && !classic, enter = scaleIn() + fadeIn(), exit = scaleOut() + fadeOut()) {
                 Box(Modifier.size(26.dp).background(accent, CircleShape).semantics { contentDescription = "✓" }, contentAlignment = Alignment.Center) {
-                    MetroText("✓", size = 16.sp, color = androidx.compose.ui.graphics.Color.White)
+                    MarkIcon(Mark.Check, 16.dp, color = androidx.compose.ui.graphics.Color.White)
                 }
             }
         }
@@ -220,6 +222,6 @@ internal fun MiniPlayer(player: RecorderPlayer, pretty: Boolean, onOpen: () -> U
         if (player.hasPrevious()) GlyphButton(Glyph.Previous, stringResource(R.string.rec_previous), size = 44.dp, onClick = { player.previous() })
         GlyphButton(if (player.playing) Glyph.Pause else Glyph.Play, stringResource(if (player.playing) R.string.rec_pause else R.string.rec_play), Modifier.testTag("rec:mini:play"), size = 44.dp) { player.toggle() }
         if (player.hasNext()) GlyphButton(Glyph.Next, stringResource(R.string.rec_next), size = 44.dp, onClick = { player.next() })
-        MetroText("✕", size = 22.sp, modifier = Modifier.metroPress(onClick = { player.release() }).padding(8.dp).semantics { contentDescription = "close" })
+        Box(Modifier.metroPress(onClick = { player.release() }).padding(8.dp).semantics { contentDescription = "close" }) { MarkIcon(Mark.Close, 18.dp) }
     }
 }

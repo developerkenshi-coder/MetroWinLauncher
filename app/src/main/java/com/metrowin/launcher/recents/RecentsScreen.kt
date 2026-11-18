@@ -1,5 +1,7 @@
 package com.metrowin.launcher.recents
 
+import com.metrowin.launcher.ui.components.MarkIcon
+import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.content.Context
 import androidx.compose.foundation.background
@@ -76,7 +78,7 @@ fun RecentsScreen(finish: () -> Unit) {
                     MetroText(label(context, pkg), size = 16.sp, weight = FontWeight.Normal, maxLines = 1, modifier = Modifier.align(Alignment.BottomStart).padding(10.dp))
                     Box(
                         Modifier.align(Alignment.TopEnd).padding(4.dp).testTag("recents:close:$pkg").metroPress(onClick = { RecentTasks.close(context, pkg); cards.remove(pkg) }).padding(10.dp),
-                    ) { MetroText("✕", size = 18.sp, weight = FontWeight.Normal) }
+                    ) { MarkIcon(Mark.Close, 16.dp) }
                 }
             }
         }
