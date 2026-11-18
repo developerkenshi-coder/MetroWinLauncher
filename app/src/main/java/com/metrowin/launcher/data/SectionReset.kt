@@ -17,7 +17,7 @@ object SectionReset {
         ),
         "Icons" to setOf("iconPack", "iconPicks", "iconShape", "iconTileColors", "largeTileIcons", "glassIcons"),
         "Start" to setOf(
-            "batteryEstimate", "calendarAgenda", "favoritePage", "collectionTiles", "groupTitles", "twoPanels", "largeTiles", "freeLayout", "layoutSchedule", "moreTiles", "appsHint", "showTileNames", "tileColumns",
+            "batteryEstimate", "calendarAgenda", "favoritePage", "startAutoOrder", "collectionTiles", "groupTitles", "twoPanels", "largeTiles", "freeLayout", "layoutSchedule", "moreTiles", "appsHint", "showTileNames", "tileColumns",
             "tileMusicControls", "tileSpacing",
         ),
         "StartBars" to setOf(
@@ -27,7 +27,7 @@ object SectionReset {
         "StartBehaviour" to setOf("antiBurnIn", "lockStart", "startLowerPercent", "startTopAfterMin", "stepGoal", "undoSteps"),
         "Search" to setOf(
             "rememberSearches", "searchAnswers", "searchAssistant", "searchCalendar", "searchCommands", "searchContacts", "searchCurrency", "searchEngine",
-            "searchFileTypes", "searchLauncherSettings", "searchMiniApps", "searchNotifications", "searchOperators", "searchSettings", "searchSmartDial", "searchTiles",
+            "searchFileTypes", "searchLauncherSettings", "searchMiniApps", "searchMessages", "searchNotifications", "searchOperators", "searchSettings", "searchSmartDial", "searchTiles",
             "searchToday", "searchWeb", "tipOfDay", "todayAlarm", "todayDate", "todayNear", "todayWeather",
         ),
         "Gestures" to setOf(

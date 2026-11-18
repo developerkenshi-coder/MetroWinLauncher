@@ -42,9 +42,10 @@ data class GlobalResults(
     val notifications: List<com.metrowin.launcher.notifications.NotificationEntry> = emptyList(),
     val notes: List<NoteMatch> = emptyList(),
     val todos: List<TodoMatch> = emptyList(),
+    val messages: List<com.metrowin.launcher.messages.Conversation> = emptyList(),
 ) {
     val isEmpty: Boolean
-        get() = contacts.isEmpty() && settings.isEmpty() && webQuery == null && events.isEmpty() && launcherSettings.isEmpty() && tiles.isEmpty() && files.isEmpty() && notifications.isEmpty() && notes.isEmpty() && todos.isEmpty()
+        get() = contacts.isEmpty() && settings.isEmpty() && webQuery == null && events.isEmpty() && launcherSettings.isEmpty() && tiles.isEmpty() && files.isEmpty() && notifications.isEmpty() && notes.isEmpty() && todos.isEmpty() && messages.isEmpty()
 
     companion object {
         val Empty = GlobalResults()

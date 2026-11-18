@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_section_messages">messages</string>
+    <string name="search_messages">Rechercher dans les SMS</string>
+    <string name="search_messages_hint">Cherche aussi les mots dans vos SMS. Ils sont lus sur le téléphone, seulement pendant la recherche. Demande l’autorisation de lire les messages.</string>
+    <string name="start_autoorder">Les plus récents d’abord</string>
+    <string name="start_autoorder_hint">La tuile que vous ouvrez passe en tête de son groupe, ainsi celles que vous utilisez restent en premier. Les tuiles placées sur une cellule à vous ne bougent pas.</string>
+    <string name="first_look_title">Choisir un look</string>
+    <string name="first_look_text">Choisissez le look de départ. Chaque choix peut être changé plus tard dans les réglages.</string>
+    <string name="first_look_wp">Windows Phone 8.1</string>
+    <string name="first_look_wp_hint">Tuiles plates, barre rétro et animation d’ouverture d’origine : au plus près du téléphone dont il vient.</string>
+    <string name="first_look_glass">Glass</string>
+    <string name="first_look_glass_hint">Verre dépoli et arrondi sur un fond lumineux.</string>
+    <string name="first_look_droid">Droid</string>
+    <string name="first_look_droid_hint">Couleurs du fond d’écran, grandes formes arrondies.</string>
+    <string name="first_look_later">La visite du lanceur vient ensuite.</string>
+    <string name="first_look_keep">Laisser tel quel</string>
+    <string name="whatsnew_title">Nouveautés de la version %1$s</string>
+    <string name="whatsnew_body">• Look Windows Phone partout : grands titres de pivot, boutons qui se remplissent quand on appuie, pages qui tournent comme un tourniquet, la barre d’état Metro dans chaque app.\n• La super tuile a 32 faces qui tournent, un éditeur par catégories, des modèles prêts et peut se partager comme un code.\n• Réglages en 13 catégories, un « i » sur chaque réglage et une recherche qui les trouve avec des mots des six langues.\n• La recherche trouve les messages, notes, tâches et notifications, groupe par source, pardonne les fautes de frappe et calcule.\n• Icônes pour chaque app, double SIM, heures de silence, un démarrage sûr après deux plantages et une liste « qu’est-ce qui ne va pas ? » dans À propos.\n• Les apps intégrées ont beaucoup grandi : Calculatrice, Notes, Tâches, Dictaphone, Agenda, Data Sense, Wallet, Actualités, Fichiers, Photos, Mail et d’autres.</string>
+    <string name="whatsnew_close">Fermer</string>
+    <string name="whatsnew_open">Nouveautés de cette version</string>
+    <string name="whatsnew_open_hint">Les changements de cette version, dans votre langue.</string>
+    <string name="fix_title">Qu’est-ce qui ne va pas ?</string>
+    <string name="fix_none">Tout est en ordre : les autorisations et les services que le lanceur utilise sont activés.</string>
+    <string name="fix_notif_access">Les tuiles et l’Action Center ne peuvent pas afficher les notifications. Touchez pour autoriser l’accès aux notifications.</string>
+    <string name="fix_accessibility">Le geste de verrouillage, les barres au-dessus des autres apps et le balayage à deux doigts ne marchent pas. Touchez pour activer le service (seulement si vous les utilisez).</string>
+    <string name="fix_overlay">Les bannières et les barres au-dessus des autres apps ne peuvent pas être dessinées. Touchez pour l’autoriser (seulement si vous les utilisez).</string>
+    <string name="fix_shizuku">Les commandes qui demandent des droits système restent désactivées. Démarrez Shizuku, puis autorisez le lanceur (seulement si vous les utilisez).</string>
+    <string name="fix_notifications">Le lanceur ne peut pas publier ses propres notifications (minuteurs, alarmes, enregistrements). Touchez pour les autoriser.</string>
+    <string name="fix_phone_state">Le type de réseau et les noms des SIM ne sont pas affichés. Touchez pour ouvrir les autorisations du lanceur.</string>
+    <string name="fix_contacts">Les tuiles de contacts, Personnes et la recherche de contacts restent vides. Touchez pour ouvrir les autorisations.</string>
+    <string name="fix_calendar">Les tuiles d’événements, l’agenda et la recherche d’événements restent vides. Touchez pour ouvrir les autorisations.</string>
+    <string name="fix_battery">Android peut arrêter le lanceur en arrière-plan : tuiles dynamiques et alarmes arrivent en retard. Touchez pour lever la limite.</string>
+    <string name="reset_one_on">Remettre la valeur de départ : activé</string>
+    <string name="reset_one_off">Remettre la valeur de départ : désactivé</string>
+    <string name="infoe_share_code">Partager cette tuile comme code</string>
+    <string name="infoe_use_code">Utiliser un code copié</string>
+    <string name="infoe_code_used">Tuile réglée d’après le code</string>
+    <string name="infoe_code_bad">Le texte copié n’est pas un code de tuile</string>
+</resources>

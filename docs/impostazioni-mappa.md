@@ -68,6 +68,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 |---|---|---|---|
 | mostra più riquadri | `start.moretiles` | aspetto › schermata start | start e tile › schermata start |
 | Riquadri per riga | `start.columns` | aspetto › schermata start | start e tile › schermata start |
+| Ordine per uso recente | `start.autoorder` | aspetto › schermata start | start e tile › schermata start |
 | Modalità libero | `start.free` | aspetto › schermata start | start e tile › schermata start |
 | nomi sui riquadri | `start.tilenames` | aspetto › schermata start | start e tile › schermata start |
 | spazio tra i riquadri | `start.spacing` | aspetto › schermata start | start e tile › schermata start |
@@ -248,6 +249,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | Data | `search.todaydate` | app › ricerca | app e icone › ricerca |
 | Prossima sveglia | `search.todayalarm` | app › ricerca | app e icone › ricerca |
 | conversioni di valuta | `search.currency` | app › ricerca | app e icone › ricerca |
+| Cerca nei messaggi | `search.messages` | app › ricerca | app e icone › ricerca |
 | Cerca nelle notifiche | `search.notifications` | app › ricerca | app e icone › ricerca |
 | Operatori nella ricerca | `search.operators` | app › ricerca | app e icone › ricerca |
 | File nella ricerca | `search.files` | app › ricerca | app e icone › ricerca |
@@ -350,6 +352,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | Cerca aggiornamenti ogni 12 ore | `about.updateauto` | strumenti › informazioni | informazioni › informazioni |
 | Racconta del telefono | `about.phoneinfo` | strumenti › informazioni | informazioni › informazioni |
 | Questo telefono | `about.phone` | strumenti › informazioni | informazioni › informazioni |
+| novità di questa versione | `about.whatsnew` | strumenti › informazioni | informazioni › informazioni |
 | rivedi il tutorial | `about.tutorial` | strumenti › informazioni | informazioni › informazioni |
 | Software libero (FOSS) | `projects.foss` | strumenti › altri progetti | informazioni › altri progetti |
 | Non FOSS | `projects.nonfoss` | strumenti › altri progetti | informazioni › altri progetti |

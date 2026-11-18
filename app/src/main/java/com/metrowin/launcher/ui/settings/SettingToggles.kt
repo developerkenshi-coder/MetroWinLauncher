@@ -61,6 +61,7 @@ object SettingToggles {
         "search.dial" to Toggle({ it.searchSmartDial }, { s, on -> s.copy(searchSmartDial = on) }),
         "search.launcher" to Toggle({ it.searchLauncherSettings }, { s, on -> s.copy(searchLauncherSettings = on) }),
         "search.mini" to Toggle({ it.searchMiniApps }, { s, on -> s.copy(searchMiniApps = on) }),
+        "search.messages" to Toggle({ it.searchMessages }, { s, on -> s.copy(searchMessages = on) }),
         "search.notifications" to Toggle({ it.searchNotifications }, { s, on -> s.copy(searchNotifications = on) }),
         "search.operators" to Toggle({ it.searchOperators }, { s, on -> s.copy(searchOperators = on) }),
         "search.remember" to Toggle({ it.rememberSearches }, { s, on -> s.copy(rememberSearches = on) }),
@@ -76,6 +77,7 @@ object SettingToggles {
         "start.batteryleft" to Toggle({ it.batteryEstimate }, { s, on -> s.copy(batteryEstimate = on) }),
         "start.clock" to Toggle({ it.showClock }, { s, on -> s.copy(showClock = on) }),
         "start.collection" to Toggle({ it.collectionTiles }, { s, on -> s.copy(collectionTiles = on) }),
+        "start.autoorder" to Toggle({ it.startAutoOrder }, { s, on -> s.copy(startAutoOrder = on) }),
         "start.free" to Toggle({ it.freeLayout }, { s, on -> s.copy(freeLayout = on) }),
         "start.groups" to Toggle({ it.groupTitles }, { s, on -> s.copy(groupTitles = on) }),
         "start.large" to Toggle({ it.largeTiles }, { s, on -> s.copy(largeTiles = on) }),
@@ -106,4 +108,13 @@ object SettingToggles {
     fun of(id: String?): Toggle? = id?.let(all::get)
 
     val ids: Set<String> get() = all.keys
+
+    /** The value the switch [id] has in a fresh install, or null when [id] is not here. */
+    fun factory(id: String): Boolean? = all[id]?.read?.invoke(LauncherSettings())
+
+    /** [settings] with the switch [id] put back to its fresh install value; the other settings are as they are. */
+    fun reset(id: String, settings: LauncherSettings): LauncherSettings = all[id]?.let { it.write(settings, it.read(LauncherSettings())) } ?: settings
+
+    /** Whether the switch [id] is not what it is in a fresh install. */
+    fun changed(id: String, settings: LauncherSettings): Boolean = all[id]?.let { it.read(settings) != it.read(LauncherSettings()) } ?: false
 }

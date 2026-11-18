@@ -284,7 +284,11 @@ fun LauncherApp(vm: LauncherViewModel) {
     var tutorialReplay by remember { mutableStateOf(false) }
     // The tour steps aside while the settings it opened are up, and comes back on the same page when they close.
     var tutorialAside by rememberSaveable { mutableStateOf(false) }
-    val tutorialVisible = (!tutorialDone || tutorialReplay) && !tutorialAside
+    // The first run offers the three looks before the tour starts.
+    var lookOpen by rememberSaveable { mutableStateOf(vm.lookDue()) }
+    // The news of this version: once after an update, and again from the About page.
+    var whatsNew by rememberSaveable { mutableStateOf(false) }
+    val tutorialVisible = (!tutorialDone || tutorialReplay) && !tutorialAside && !lookOpen
     val tutorialPager = rememberPagerState { Tutorial.steps.size }
     val homePress by vm.homePresses.collectAsStateWithLifecycle()
     val notifications by vm.notifications.collectAsStateWithLifecycle()
@@ -382,6 +386,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     val sideBySide = !settings.kidsMode && StartPanels.active(settings.twoPanels, screenWidthDp, screenHeightDp)
     val startWidthDp = StartPanels.startWidthDp(sideBySide, screenWidthDp)
     val about = remember(appContext) { AboutInfo.of(appContext) }
+    androidx.compose.runtime.LaunchedEffect(Unit) { if (vm.whatsNewDue(about.versionCode)) whatsNew = true }
     val kidsMode = settings.kidsMode
     val kidsCells = remember(settings.kidsApps, items) {
         items.filter { it.id in settings.kidsApps }.map { AppCell(Tile(it.id, TileSize.Medium), it) }
@@ -2114,6 +2119,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             onSetProfilePaused = vm::setProfilePaused,
                             onTryVoice = { voiceRequest++ },
                             onSendBugReport = { vm.sendBugReport(it, about) },
+                            onShowNews = { whatsNew = true },
                             onShowTutorial = {
                                 scope.launch { tutorialPager.scrollToPage(0) }
                                 tutorialReplay = true
@@ -2244,6 +2250,8 @@ fun LauncherApp(vm: LauncherViewModel) {
 
                 var safeNotice by rememberSaveable { mutableStateOf(com.metrowin.launcher.data.SafeStart.on) }
                 if (safeNotice) SafeStartDialog { safeNotice = false }
+                if (lookOpen && !safeNotice) com.metrowin.launcher.ui.FirstLookDialog { look -> vm.chooseLook(look); lookOpen = false }
+                if (whatsNew && !safeNotice && !tutorialVisible && !lookOpen) com.metrowin.launcher.ui.WhatsNewDialog(about.versionName) { whatsNew = false }
 
                 pendingRestore?.let { backup ->
                     RestoreDialog(backup, settings, pages.sumOf { it.size }, onDone = vm::applyRestore, onCancel = vm::cancelRestore)

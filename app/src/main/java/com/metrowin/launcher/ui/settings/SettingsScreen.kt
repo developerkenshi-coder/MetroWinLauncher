@@ -382,7 +382,7 @@ private fun CategoryPage(
                     val page = pages[index]
                     CompositionLocalProvider(LocalSettingsTarget provides target?.takeIf { SettingsIndex.get(it)?.section == page }) {
                         // The page can be put back to the start when it allows it (see SectionReset).
-                        CompositionLocalProvider(LocalPageReset provides PageReset(page.name, env.settings) { env.onChange { SectionReset.reset(it, page.name) } }) {
+                        CompositionLocalProvider(LocalPageReset provides PageReset(page.name, env.settings, change = { change -> env.onChange(change) }) { env.onChange { SectionReset.reset(it, page.name) } }) {
                             PageContent(page, env)
                         }
                     }

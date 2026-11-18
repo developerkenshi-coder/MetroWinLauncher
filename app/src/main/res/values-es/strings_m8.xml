@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_section_messages">mensajes</string>
+    <string name="search_messages">Buscar en los mensajes de texto</string>
+    <string name="search_messages_hint">Busca las palabras también en tus mensajes de texto. Se leen en el teléfono, solo mientras buscas. Necesita el permiso para leer mensajes.</string>
+    <string name="start_autoorder">Los más recientes primero</string>
+    <string name="start_autoorder_hint">El mosaico que abres pasa al principio de su grupo, así los que usas quedan primero. Los mosaicos que pusiste en una celda propia no se mueven.</string>
+    <string name="first_look_title">Elige un aspecto</string>
+    <string name="first_look_text">Elige el aspecto del que partir. Cada elección se puede cambiar después en los ajustes.</string>
+    <string name="first_look_wp">Windows Phone 8.1</string>
+    <string name="first_look_wp_hint">Mosaicos planos, la barra retro y la animación de apertura original: lo más cerca posible del teléfono del que viene.</string>
+    <string name="first_look_glass">Glass</string>
+    <string name="first_look_glass_hint">Cristal esmerilado y redondeado sobre un fondo luminoso.</string>
+    <string name="first_look_droid">Droid</string>
+    <string name="first_look_droid_hint">Colores del fondo de pantalla, formas grandes y redondeadas.</string>
+    <string name="first_look_later">Después viene el recorrido por el launcher.</string>
+    <string name="first_look_keep">Dejarlo así</string>
+    <string name="whatsnew_title">Novedades de la versión %1$s</string>
+    <string name="whatsnew_body">• Aspecto Windows Phone en todas partes: títulos de pivote grandes, botones que se rellenan al pulsar, páginas que giran como un torniquete, la barra de estado Metro en cada app.\n• El supermosaico tiene 32 caras que giran, un editor por categorías, modelos listos y se puede compartir como código.\n• Ajustes en 13 categorías, una “i” en cada ajuste y una búsqueda que los encuentra con palabras de los seis idiomas.\n• La búsqueda encuentra mensajes, notas, tareas y notificaciones, agrupa por fuente, perdona los errores de escritura y calcula.\n• Iconos para cada app, doble SIM, horas de silencio, un inicio seguro tras dos cierres y una lista “¿qué falla?” en Información.\n• Las apps integradas han crecido mucho: Calculadora, Notas, Tareas, Grabadora, Calendario, Data Sense, Wallet, Noticias, Archivos, Fotos, Correo y más.</string>
+    <string name="whatsnew_close">Cerrar</string>
+    <string name="whatsnew_open">Novedades de esta versión</string>
+    <string name="whatsnew_open_hint">Los cambios de esta versión, en tu idioma.</string>
+    <string name="fix_title">¿Qué falla?</string>
+    <string name="fix_none">Todo en orden: los permisos y servicios que usa el launcher están activos.</string>
+    <string name="fix_notif_access">Los mosaicos y el Action Center no pueden mostrar notificaciones. Toca para dar acceso a las notificaciones.</string>
+    <string name="fix_accessibility">El gesto de bloqueo, las barras sobre otras apps y el deslizamiento con dos dedos no funcionan. Toca para activar el servicio (solo si los usas).</string>
+    <string name="fix_overlay">No se pueden dibujar avisos ni barras sobre otras apps. Toca para permitirlo (solo si los usas).</string>
+    <string name="fix_shizuku">Los comandos que necesitan derechos de sistema siguen apagados. Inicia Shizuku y luego autoriza el launcher (solo si los usas).</string>
+    <string name="fix_notifications">El launcher no puede publicar sus propias notificaciones (temporizadores, alarmas, grabaciones). Toca para permitirlas.</string>
+    <string name="fix_phone_state">No se muestran el tipo de red ni los nombres de las SIM. Toca para abrir los permisos del launcher.</string>
+    <string name="fix_contacts">Los mosaicos de contactos, Personas y la búsqueda de contactos quedan vacíos. Toca para abrir los permisos.</string>
+    <string name="fix_calendar">Los mosaicos de eventos, la agenda y la búsqueda de eventos quedan vacíos. Toca para abrir los permisos.</string>
+    <string name="fix_battery">Android puede detener el launcher en segundo plano, y los mosaicos en vivo y las alarmas llegan tarde. Toca para quitar el límite.</string>
+    <string name="reset_one_on">Volver al valor inicial: activado</string>
+    <string name="reset_one_off">Volver al valor inicial: desactivado</string>
+    <string name="infoe_share_code">Compartir este mosaico como código</string>
+    <string name="infoe_use_code">Usar un código copiado</string>
+    <string name="infoe_code_used">Mosaico ajustado con el código</string>
+    <string name="infoe_code_bad">El texto copiado no es un código de mosaico</string>
+</resources>

@@ -204,6 +204,10 @@ sealed interface ListRow {
         override val key = "note:${match.id}"
     }
 
+    data class Message(val match: com.metrowin.launcher.messages.Conversation) : ListRow {
+        override val key = "message:${match.threadId}"
+    }
+
     data class TodoResult(val match: TodoMatch) : ListRow {
         override val key = "todo:${match.id}"
     }
@@ -421,6 +425,10 @@ fun AppListScreen(
                     add(ListRow.Section(R.string.search_section_todos))
                     global.todos.forEach { add(ListRow.TodoResult(it)) }
                 }
+                if (global.messages.isNotEmpty()) {
+                    add(ListRow.Section(R.string.search_section_messages))
+                    global.messages.forEach { add(ListRow.Message(it)) }
+                }
                 if (global.notifications.isNotEmpty()) {
                     add(ListRow.Section(R.string.search_section_notifications))
                     global.notifications.forEach { add(ListRow.Notification(it)) }
@@ -466,6 +474,7 @@ fun AppListScreen(
             is ListRow.Notification -> onOpenNotification(row.entry)
             is ListRow.File -> onLaunch(AppItem("search:file", row.match.name, Launch.Link(row.match.uri)))
             is ListRow.NoteResult -> onLaunch(AppItem("search:note", row.match.title, Launch.Link(MiniLink.note(row.match.id))))
+            is ListRow.Message -> onLaunch(AppItem("search:message", row.match.title, Launch.Link(MiniLink.sms(row.match.address))))
             is ListRow.TodoResult -> onLaunch(AppItem("search:todo", row.match.text, Launch.Link(MiniLink.todo(row.match.id))))
             is ListRow.Event -> onLaunch(AppItem("search:event", row.match.title, Launch.Link(CalendarSearch.uri(row.match.eventId))))
             is ListRow.HiddenToggle -> onToggleHidden()
@@ -576,6 +585,10 @@ fun AppListScreen(
                     Glyph.Notes, row.match.title, row.match.snippet.takeIf { it.isNotBlank() }, index, listState, openedAt, exiting,
                     tag = "result:note:${row.match.id}", accent = true,
                 ) { activate(row) }
+                is ListRow.Message -> ResultRow(
+                    Glyph.Messaging, row.match.title, row.match.snippet.takeIf { it.isNotBlank() }, index, listState, openedAt, exiting,
+                    tag = "result:message:${row.match.threadId}", accent = true,
+                ) { activate(row) }
                 is ListRow.TodoResult -> ResultRow(
                     Glyph.Todo, row.match.text, row.match.list.takeIf { it.isNotBlank() }, index, listState, openedAt, exiting,
                     tag = "result:todo:${row.match.id}", accent = true,
@@ -612,7 +625,7 @@ fun AppListScreen(
  */
 private fun ListRow.isActionable(): Boolean = when (this) {
     is ListRow.App, is ListRow.Answer, is ListRow.Contact, is ListRow.Setting, is ListRow.Web,
-    is ListRow.LauncherSetting, is ListRow.Tile, is ListRow.Notification, is ListRow.File, is ListRow.Event, is ListRow.NoteResult, is ListRow.TodoResult -> true
+    is ListRow.LauncherSetting, is ListRow.Tile, is ListRow.Notification, is ListRow.File, is ListRow.Event, is ListRow.NoteResult, is ListRow.TodoResult, is ListRow.Message -> true
     ListRow.Search, ListRow.Today, ListRow.Categories, is ListRow.Header, is ListRow.Section, is ListRow.Recent, is ListRow.HiddenToggle -> false
 }
 

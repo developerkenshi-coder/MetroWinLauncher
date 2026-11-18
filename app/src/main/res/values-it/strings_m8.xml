@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_section_messages">messaggi</string>
+    <string name="search_messages">Cerca nei messaggi</string>
+    <string name="search_messages_hint">Cerca le parole anche nei messaggi di testo. Sono letti sul telefono, solo mentre cerchi. Serve il permesso di leggere i messaggi.</string>
+    <string name="start_autoorder">Prima i più recenti</string>
+    <string name="start_autoorder_hint">Il riquadro che apri va in testa al suo gruppo, così quelli che usi restano per primi. I riquadri messi su una cella tua non si muovono.</string>
+    <string name="first_look_title">Scegli un aspetto</string>
+    <string name="first_look_text">Scegli l’aspetto da cui partire. Ogni scelta si può cambiare dopo nelle impostazioni.</string>
+    <string name="first_look_wp">Windows Phone 8.1</string>
+    <string name="first_look_wp_hint">Riquadri piatti, barra retrò e animazione di apertura originale: il più vicino possibile al telefono da cui viene.</string>
+    <string name="first_look_glass">Glass</string>
+    <string name="first_look_glass_hint">Vetro smerigliato e arrotondato su uno sfondo luminoso.</string>
+    <string name="first_look_droid">Droid</string>
+    <string name="first_look_droid_hint">Colori dallo sfondo del telefono, forme grandi e arrotondate.</string>
+    <string name="first_look_later">Dopo c’è il tour del launcher.</string>
+    <string name="first_look_keep">Lascia così</string>
+    <string name="whatsnew_title">Novità della versione %1$s</string>
+    <string name="whatsnew_body">• Aspetto Windows Phone ovunque: titoli pivot grandi, pulsanti che si riempiono quando li premi, pagine che girano come un tornello, la barra di stato Metro in ogni app.\n• Il super riquadro ha 32 facce che girano, un editor a categorie, modelli pronti, e si può condividere come codice.\n• Impostazioni in 13 categorie, una “i” su ogni impostazione e una ricerca che le trova con parole delle sei lingue.\n• La ricerca trova messaggi, note, cose da fare e notifiche, raggruppa i risultati per fonte, perdona gli errori di battitura e calcola.\n• Icone per ogni app, doppia SIM, ore silenziose, avvio sicuro dopo due arresti e un elenco “cosa non va?” in Informazioni.\n• Le app integrate sono cresciute molto: Calcolatrice, Note, Da fare, Registratore, Calendario, Data Sense, Wallet, Notizie, File, Foto, Posta e altre.</string>
+    <string name="whatsnew_close">Chiudi</string>
+    <string name="whatsnew_open">Novità di questa versione</string>
+    <string name="whatsnew_open_hint">Le novità di questa versione, nella tua lingua.</string>
+    <string name="fix_title">Cosa non va?</string>
+    <string name="fix_none">Tutto a posto: i permessi e i servizi che il launcher usa sono attivi.</string>
+    <string name="fix_notif_access">I riquadri e l’Action Center non possono mostrare le notifiche. Tocca per dare l’accesso alle notifiche.</string>
+    <string name="fix_accessibility">Il gesto di blocco, le barre sopra le altre app e lo swipe a due dita non funzionano. Tocca per attivare il servizio (solo se li usi).</string>
+    <string name="fix_overlay">Banner e barre sopra le altre app non possono essere disegnati. Tocca per permetterlo (solo se li usi).</string>
+    <string name="fix_shizuku">I comandi che richiedono diritti di sistema restano spenti. Avvia Shizuku, poi autorizza il launcher (solo se li usi).</string>
+    <string name="fix_notifications">Il launcher non può inviare le sue notifiche (timer, sveglie, registrazioni). Tocca per permetterle.</string>
+    <string name="fix_phone_state">Il tipo di rete e i nomi delle SIM non sono mostrati. Tocca per aprire i permessi del launcher.</string>
+    <string name="fix_contacts">I riquadri dei contatti, Persone e la ricerca dei contatti restano vuoti. Tocca per aprire i permessi.</string>
+    <string name="fix_calendar">I riquadri degli eventi, l’agenda e la ricerca degli eventi restano vuoti. Tocca per aprire i permessi.</string>
+    <string name="fix_battery">Android può fermare il launcher in background, così riquadri dal vivo e sveglie arrivano in ritardo. Tocca per togliere il limite.</string>
+    <string name="reset_one_on">Rimetti al valore iniziale: acceso</string>
+    <string name="reset_one_off">Rimetti al valore iniziale: spento</string>
+    <string name="infoe_share_code">Condividi questo riquadro come codice</string>
+    <string name="infoe_use_code">Usa un codice copiato</string>
+    <string name="infoe_code_used">Riquadro impostato dal codice</string>
+    <string name="infoe_code_bad">Il testo copiato non è un codice di riquadro</string>
+</resources>

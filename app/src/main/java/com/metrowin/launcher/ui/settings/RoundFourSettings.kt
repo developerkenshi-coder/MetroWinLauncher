@@ -177,7 +177,7 @@ fun ActionCenterExtrasSettings(env: SettingsEnv) {
 }
 
 /** What the page on screen needs to be put back to the start: its section, the settings now, and how. */
-class PageReset(val section: String, val settings: LauncherSettings, val reset: () -> Unit)
+class PageReset(val section: String, val settings: LauncherSettings, val change: ((LauncherSettings) -> LauncherSettings) -> Unit = {}, val reset: () -> Unit)
 
 val LocalPageReset = androidx.compose.runtime.compositionLocalOf<PageReset?> { null }
 

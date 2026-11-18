@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_section_messages">mensagens</string>
+    <string name="search_messages">Pesquisar nas mensagens de texto</string>
+    <string name="search_messages_hint">Procura as palavras também nas suas mensagens de texto. São lidas no telefone, só enquanto você pesquisa. Precisa da permissão para ler mensagens.</string>
+    <string name="start_autoorder">Mais recentes primeiro</string>
+    <string name="start_autoorder_hint">O bloco que você abre vai para o início do seu grupo, assim os que você usa ficam primeiro. Blocos que você pôs numa célula própria não se mexem.</string>
+    <string name="first_look_title">Escolha um visual</string>
+    <string name="first_look_text">Escolha o visual de partida. Cada escolha pode ser mudada depois nas configurações.</string>
+    <string name="first_look_wp">Windows Phone 8.1</string>
+    <string name="first_look_wp_hint">Blocos planos, a barra retrô e a animação de abertura original: o mais perto possível do telefone de onde vem.</string>
+    <string name="first_look_glass">Glass</string>
+    <string name="first_look_glass_hint">Vidro fosco e arredondado sobre um fundo luminoso.</string>
+    <string name="first_look_droid">Droid</string>
+    <string name="first_look_droid_hint">Cores do papel de parede, formas grandes e arredondadas.</string>
+    <string name="first_look_later">Depois vem o tour do launcher.</string>
+    <string name="first_look_keep">Deixar como está</string>
+    <string name="whatsnew_title">Novidades da versão %1$s</string>
+    <string name="whatsnew_body">• Visual Windows Phone em toda parte: títulos de pivô grandes, botões que se preenchem ao toque, páginas que giram como uma catraca, a barra de status Metro em cada app.\n• O super bloco tem 32 faces que giram, um editor por categorias, modelos prontos e pode ser compartilhado como código.\n• Configurações em 13 categorias, um “i” em cada configuração e uma pesquisa que as encontra com palavras das seis línguas.\n• A pesquisa encontra mensagens, notas, tarefas e notificações, agrupa por fonte, perdoa erros de digitação e calcula.\n• Ícones para cada app, dupla SIM, horas de silêncio, um início seguro após dois travamentos e uma lista “o que há de errado?” em Informações.\n• Os apps integrados cresceram muito: Calculadora, Notas, Tarefas, Gravador, Calendário, Data Sense, Wallet, Notícias, Arquivos, Fotos, E-mail e outros.</string>
+    <string name="whatsnew_close">Fechar</string>
+    <string name="whatsnew_open">Novidades desta versão</string>
+    <string name="whatsnew_open_hint">As mudanças desta versão, na sua língua.</string>
+    <string name="fix_title">O que há de errado?</string>
+    <string name="fix_none">Tudo certo: as permissões e os serviços que o launcher usa estão ligados.</string>
+    <string name="fix_notif_access">Os blocos e o Action Center não podem mostrar notificações. Toque para permitir o acesso às notificações.</string>
+    <string name="fix_accessibility">O gesto de bloqueio, as barras sobre outros apps e o deslize com dois dedos não funcionam. Toque para ligar o serviço (só se você os usa).</string>
+    <string name="fix_overlay">Avisos e barras sobre outros apps não podem ser desenhados. Toque para permitir (só se você os usa).</string>
+    <string name="fix_shizuku">Os comandos que precisam de direitos de sistema continuam desligados. Inicie o Shizuku e depois autorize o launcher (só se você os usa).</string>
+    <string name="fix_notifications">O launcher não pode publicar as próprias notificações (temporizadores, alarmes, gravações). Toque para permitir.</string>
+    <string name="fix_phone_state">O tipo de rede e os nomes dos SIMs não são mostrados. Toque para abrir as permissões do launcher.</string>
+    <string name="fix_contacts">Os blocos de contatos, Pessoas e a pesquisa de contatos ficam vazios. Toque para abrir as permissões.</string>
+    <string name="fix_calendar">Os blocos de eventos, a agenda e a pesquisa de eventos ficam vazios. Toque para abrir as permissões.</string>
+    <string name="fix_battery">O Android pode parar o launcher em segundo plano, e blocos ao vivo e alarmes chegam tarde. Toque para tirar o limite.</string>
+    <string name="reset_one_on">Voltar ao valor inicial: ligado</string>
+    <string name="reset_one_off">Voltar ao valor inicial: desligado</string>
+    <string name="infoe_share_code">Compartilhar este bloco como código</string>
+    <string name="infoe_use_code">Usar um código copiado</string>
+    <string name="infoe_code_used">Bloco ajustado pelo código</string>
+    <string name="infoe_code_bad">O texto copiado não é um código de bloco</string>
+</resources>

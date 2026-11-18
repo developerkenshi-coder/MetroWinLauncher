@@ -329,6 +329,10 @@ data class LauncherSettings(
     val pageBackgrounds: Boolean = false,
     /** The search also looks in the notifications that wait in the Action Center. */
     val searchNotifications: Boolean = true,
+    /** The search also looks in the text messages (needs the messages permission; the texts are read only while you search). */
+    val searchMessages: Boolean = false,
+    /** The tile that is opened goes to the front of its group of Start, so the ones used lately stay first. */
+    val startAutoOrder: Boolean = false,
     /** A long press on a notification offers to silence its app for a while. */
     val muteFromPanel: Boolean = true,
     /** The apps silenced for a while: package to the moment (epoch milliseconds) the silence ends. */

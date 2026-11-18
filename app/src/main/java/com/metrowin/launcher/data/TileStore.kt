@@ -140,6 +140,16 @@ class TileStore(context: Context) {
         get() = prefs.getBoolean(KEY_TUTORIAL_DONE, false)
         set(value) = prefs.edit { putBoolean(KEY_TUTORIAL_DONE, value) }
 
+    /** Whether the first run already offered the three looks. */
+    var lookChosen: Boolean
+        get() = prefs.getBoolean(KEY_LOOK_CHOSEN, false)
+        set(value) = prefs.edit { putBoolean(KEY_LOOK_CHOSEN, value) }
+
+    /** The version code whose news the user has seen (0: none yet); see [LauncherViewModel.whatsNewDue]. */
+    var whatsNewSeen: Long
+        get() = prefs.getLong(KEY_WHATS_NEW, 0L)
+        set(value) = prefs.edit { putLong(KEY_WHATS_NEW, value) }
+
     /** Whether the pinned phone, contacts, messages and mail apps already became the mini apps (see [MiniAppMigration]). */
     var miniAppsMigrated: Boolean
         get() = prefs.getBoolean(KEY_MINI_APPS_MIGRATED, false)
@@ -153,5 +163,7 @@ class TileStore(context: Context) {
         const val KEY_USAGE = "app_usage"
         const val KEY_SEARCHES = "recent_searches"
         const val KEY_TUTORIAL_DONE = "permissions_handled"
+        const val KEY_LOOK_CHOSEN = "look_chosen"
+        const val KEY_WHATS_NEW = "whats_new_seen"
     }
 }

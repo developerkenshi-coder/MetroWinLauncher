@@ -194,7 +194,15 @@ class AppRepository(private val context: Context) {
                 is Launch.Link -> {
                     val shortcut = ShortcutDef.appShortcutParts(target.uri)
                     val number = PhoneCalls.numberOf(target.uri)
-                    if (inside != null) {
+                    val textTo = target.uri.takeIf { it.startsWith(MiniLink.SMS) }?.removePrefix(MiniLink.SMS)?.let(android.net.Uri::decode)
+                    if (textTo != null) {
+                        // A text found by the search: its conversation, in the messages of the launcher.
+                        context.startActivity(
+                            Intent(context, com.metrowin.launcher.messages.MessagesActivity::class.java)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra(com.metrowin.launcher.messages.MessagesActivity.EXTRA_ADDRESS, textTo),
+                            options,
+                        )
+                    } else if (inside != null) {
                         val (kind, id) = inside
                         val intent = Intent(context, if (kind == MiniLink.NOTE) NotesActivity::class.java else TodoActivity::class.java)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

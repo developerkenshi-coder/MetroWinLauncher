@@ -62,6 +62,8 @@ object SettingsCodec {
         put("tileMusicControls", s.tileMusicControls)
         put("pageBackgrounds", s.pageBackgrounds)
         put("searchNotifications", s.searchNotifications)
+        put("searchMessages", s.searchMessages)
+        put("startAutoOrder", s.startAutoOrder)
         put("muteFromPanel", s.muteFromPanel)
         put("notifFilterOn", s.notifFilterOn)
         put("notifFilterWords", JSONArray(s.notifFilterWords))
@@ -328,6 +330,8 @@ object SettingsCodec {
             tileMusicControls = o.optBoolean("tileMusicControls", base.tileMusicControls),
             pageBackgrounds = o.optBoolean("pageBackgrounds", base.pageBackgrounds),
             searchNotifications = o.optBoolean("searchNotifications", base.searchNotifications),
+            searchMessages = o.optBoolean("searchMessages", base.searchMessages),
+            startAutoOrder = o.optBoolean("startAutoOrder", base.startAutoOrder),
             muteFromPanel = o.optBoolean("muteFromPanel", base.muteFromPanel),
             mutedUntil = o.optJSONObject("mutedUntil")?.let { m -> m.keys().asSequence().associateWith { m.optLong(it) }.filterValues { it > 0L } } ?: base.mutedUntil,
             notifFilterOn = o.optBoolean("notifFilterOn", base.notifFilterOn),

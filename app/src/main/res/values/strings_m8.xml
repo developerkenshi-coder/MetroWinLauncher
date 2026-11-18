@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_section_messages">messages</string>
+    <string name="search_messages">Search the text messages</string>
+    <string name="search_messages_hint">Also looks in your text messages for the words you type. They are read on the phone, only while you search. Needs the permission to read messages.</string>
+    <string name="start_autoorder">Most recent first</string>
+    <string name="start_autoorder_hint">The tile you open goes to the front of its group, so the ones you use stay first. Tiles you placed on a cell of your own do not move.</string>
+    <string name="first_look_title">Choose a look</string>
+    <string name="first_look_text">Pick the look to start from. Every choice can be changed later in the settings.</string>
+    <string name="first_look_wp">Windows Phone 8.1</string>
+    <string name="first_look_wp_hint">Flat tiles, the retro bar and the original launch animation: as close to the phone it comes from as it gets.</string>
+    <string name="first_look_glass">Glass</string>
+    <string name="first_look_glass_hint">Frosted, rounded glass over a glowing backdrop.</string>
+    <string name="first_look_droid">Droid</string>
+    <string name="first_look_droid_hint">Colours from your wallpaper, large rounded shapes.</string>
+    <string name="first_look_later">The tour of the launcher comes next.</string>
+    <string name="first_look_keep">Keep as it is</string>
+    <string name="whatsnew_title">What’s new in %1$s</string>
+    <string name="whatsnew_body">• Windows Phone look everywhere: big pivot titles, buttons that fill when pressed, pages that turn like a turnstile, the Metro status bar in every app.\n• The super tile has 32 faces that turn, an editor by category, ready-made models, and it can be shared as a code.\n• Settings in 13 categories, an “i” on every setting, and a search that finds them by words of the six languages.\n• Search finds texts, notes, things to do and notifications, groups what it finds by source, forgives typing mistakes and calculates.\n• Icons for each app, dual SIM, quiet hours, a safe start after two crashes, and a “what is wrong?” list in About.\n• The built-in apps grew a lot: Calculator, Notes, To do, Recorder, Calendar, Data Sense, Wallet, News, Files, Photos, Mail and more.</string>
+    <string name="whatsnew_close">Close</string>
+    <string name="whatsnew_open">What’s new in this version</string>
+    <string name="whatsnew_open_hint">The changes of this version, in your language.</string>
+    <string name="fix_title">What is wrong?</string>
+    <string name="fix_none">Nothing is wrong: the permissions and services the launcher uses are on.</string>
+    <string name="fix_notif_access">The tiles and the Action Center cannot show notifications. Touch to allow notification access.</string>
+    <string name="fix_accessibility">The lock gesture, the bars over other apps and the two-finger swipe do not work. Touch to turn the service on (only if you use them).</string>
+    <string name="fix_overlay">Banners and bars over other apps cannot be drawn. Touch to allow it (only if you use them).</string>
+    <string name="fix_shizuku">The commands that need system rights stay off. Start Shizuku, then allow the launcher (only if you use them).</string>
+    <string name="fix_notifications">The launcher cannot post its own notifications (timers, alarms, recordings). Touch to allow them.</string>
+    <string name="fix_phone_state">The network type and the names of the SIMs are not shown. Touch to open the permissions of the launcher.</string>
+    <string name="fix_contacts">Contact tiles, People and the search of contacts stay empty. Touch to open the permissions.</string>
+    <string name="fix_calendar">Event tiles, the agenda and the search of events stay empty. Touch to open the permissions.</string>
+    <string name="fix_battery">Android may stop the launcher in the background, so live tiles and alarms come late. Touch to remove the limit.</string>
+    <string name="reset_one_on">Put back to the start value: on</string>
+    <string name="reset_one_off">Put back to the start value: off</string>
+    <string name="infoe_share_code">Share this tile as a code</string>
+    <string name="infoe_use_code">Use a code that was copied</string>
+    <string name="infoe_code_used">Tile set from the code</string>
+    <string name="infoe_code_bad">The copied text is not a tile code</string>
+</resources>

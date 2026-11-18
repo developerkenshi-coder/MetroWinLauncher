@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_section_messages">Nachrichten</string>
+    <string name="search_messages">Textnachrichten durchsuchen</string>
+    <string name="search_messages_hint">Sucht die Wörter auch in deinen Textnachrichten. Sie werden auf dem Handy gelesen, nur während du suchst. Dafür braucht es die Berechtigung zum Lesen von Nachrichten.</string>
+    <string name="start_autoorder">Zuletzt benutzte zuerst</string>
+    <string name="start_autoorder_hint">Die Kachel, die du öffnest, rückt an den Anfang ihrer Gruppe, so bleiben die benutzten vorn. Kacheln, die du auf eine eigene Zelle gelegt hast, bewegen sich nicht.</string>
+    <string name="first_look_title">Look wählen</string>
+    <string name="first_look_text">Wähle den Look, mit dem du anfängst. Jede Wahl lässt sich später in den Einstellungen ändern.</string>
+    <string name="first_look_wp">Windows Phone 8.1</string>
+    <string name="first_look_wp_hint">Flache Kacheln, die Retro-Leiste und die ursprüngliche Startanimation: so nah am Original-Handy wie möglich.</string>
+    <string name="first_look_glass">Glass</string>
+    <string name="first_look_glass_hint">Mattes, abgerundetes Glas vor einem leuchtenden Hintergrund.</string>
+    <string name="first_look_droid">Droid</string>
+    <string name="first_look_droid_hint">Farben aus deinem Hintergrundbild, große runde Formen.</string>
+    <string name="first_look_later">Danach folgt die Tour durch den Launcher.</string>
+    <string name="first_look_keep">So lassen</string>
+    <string name="whatsnew_title">Neu in %1$s</string>
+    <string name="whatsnew_body">• Windows-Phone-Look überall: große Pivot-Titel, Schaltflächen, die sich beim Drücken füllen, Seiten, die wie ein Drehkreuz wenden, die Metro-Statusleiste in jeder App.\n• Die Super-Kachel hat 32 Seiten, die wechseln, einen Editor nach Kategorien, fertige Vorlagen und lässt sich als Code teilen.\n• Einstellungen in 13 Kategorien, ein „i“ bei jeder Einstellung und eine Suche, die sie mit Wörtern der sechs Sprachen findet.\n• Die Suche findet Nachrichten, Notizen, Aufgaben und Benachrichtigungen, gruppiert nach Quelle, verzeiht Tippfehler und rechnet.\n• Symbole für jede App, Dual-SIM, Ruhezeiten, ein sicherer Start nach zwei Abstürzen und eine Liste „Was stimmt nicht?“ unter Info.\n• Die eingebauten Apps sind stark gewachsen: Rechner, Notizen, Aufgaben, Recorder, Kalender, Data Sense, Wallet, News, Dateien, Fotos, Mail und mehr.</string>
+    <string name="whatsnew_close">Schließen</string>
+    <string name="whatsnew_open">Neu in dieser Version</string>
+    <string name="whatsnew_open_hint">Die Änderungen dieser Version, in deiner Sprache.</string>
+    <string name="fix_title">Was stimmt nicht?</string>
+    <string name="fix_none">Alles in Ordnung: die Berechtigungen und Dienste, die der Launcher nutzt, sind an.</string>
+    <string name="fix_notif_access">Die Kacheln und das Action Center können keine Benachrichtigungen zeigen. Tippen, um den Zugriff auf Benachrichtigungen zu erlauben.</string>
+    <string name="fix_accessibility">Die Sperrgeste, die Leisten über anderen Apps und das Zwei-Finger-Wischen funktionieren nicht. Tippen, um den Dienst einzuschalten (nur wenn du sie nutzt).</string>
+    <string name="fix_overlay">Banner und Leisten über anderen Apps können nicht gezeichnet werden. Tippen, um es zu erlauben (nur wenn du sie nutzt).</string>
+    <string name="fix_shizuku">Befehle, die Systemrechte brauchen, bleiben aus. Starte Shizuku und erlaube dann den Launcher (nur wenn du sie nutzt).</string>
+    <string name="fix_notifications">Der Launcher kann keine eigenen Benachrichtigungen senden (Timer, Wecker, Aufnahmen). Tippen, um sie zu erlauben.</string>
+    <string name="fix_phone_state">Der Netztyp und die Namen der SIMs werden nicht angezeigt. Tippen, um die Berechtigungen des Launchers zu öffnen.</string>
+    <string name="fix_contacts">Kontaktkacheln, Personen und die Kontaktsuche bleiben leer. Tippen, um die Berechtigungen zu öffnen.</string>
+    <string name="fix_calendar">Terminkacheln, die Agenda und die Terminsuche bleiben leer. Tippen, um die Berechtigungen zu öffnen.</string>
+    <string name="fix_battery">Android kann den Launcher im Hintergrund anhalten, sodass Live-Kacheln und Wecker zu spät kommen. Tippen, um die Beschränkung aufzuheben.</string>
+    <string name="reset_one_on">Auf den Anfangswert zurück: ein</string>
+    <string name="reset_one_off">Auf den Anfangswert zurück: aus</string>
+    <string name="infoe_share_code">Diese Kachel als Code teilen</string>
+    <string name="infoe_use_code">Kopierten Code verwenden</string>
+    <string name="infoe_code_used">Kachel aus dem Code eingestellt</string>
+    <string name="infoe_code_bad">Der kopierte Text ist kein Kachel-Code</string>
+</resources>

@@ -1234,6 +1234,25 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    /** Whether the first run still has to offer the three looks (only before the tour is done). */
+    fun lookDue(): Boolean = !store.tutorialDone && !store.lookChosen
+
+    /** The first run's choice (null: keep what there is); asked once. */
+    fun chooseLook(look: com.metrowin.launcher.data.FirstLook?) {
+        store.lookChosen = true
+        if (look != null) updateSettings(look::apply)
+    }
+
+    /**
+     * Whether the news of this version are to be shown now: after an update (or the first start of a version that has them), not on a fresh install.
+     * Asking marks them seen, so it is asked once at the start of the launcher.
+     */
+    fun whatsNewDue(versionCode: Long): Boolean {
+        val seen = store.whatsNewSeen
+        store.whatsNewSeen = versionCode
+        return store.tutorialDone && seen < versionCode
+    }
+
     fun onTutorialFinished() {
         store.tutorialDone = true
         _tutorialDone.value = true
@@ -1393,6 +1412,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             val text = AppSections.fold(listOf(entry.title, entry.text, entry.longText.orEmpty()).joinToString(" "))
             words.all { it in text }
         }.take(NOTIFICATION_RESULTS)
+    }
+
+    /** The conversations that have a text with [query] (needs the permission to read the messages). */
+    suspend fun searchMessages(query: String): List<com.metrowin.launcher.messages.Conversation> = withContext(Dispatchers.IO) {
+        if (query.trim().length < 2 || !LivePermissions.isGranted(getApplication(), android.Manifest.permission.READ_SMS)) emptyList()
+        else com.metrowin.launcher.messages.SmsRepository(getApplication()).search(query).take(MESSAGE_RESULTS)
     }
 
     /** The notes and the things to do of the launcher that match [query]; read from their files off the main thread. */
@@ -1710,6 +1735,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 store.recentApps = _recents.value
                 _usage.value = AppUsage.record(_usage.value, item.id)
                 store.appUsage = _usage.value
+                if (_settings.value.startAutoOrder && !_settings.value.freeLayout) updatePages { StartPages.update(it, item.id) { page -> StartEntries.toFront(page, item.id) } }
                 // Opening the app clears its notifications, and the number on its tile with them.
                 val target = item.launch
                 val opened = (target as? Launch.Activity)?.component?.packageName ?: item.packageName
@@ -2760,6 +2786,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         /** After the launcher comes on screen, this long nothing is announced: the service is reading what is up. */
         const val BANNER_SETTLE_MS = 1_500L
         const val NOTIFICATION_RESULTS = 4
+        const val MESSAGE_RESULTS = 4
 
         /** The shortcuts of an app that find it in the search: more than the four of its menu. */
         const val SHORTCUT_NAMES = 12

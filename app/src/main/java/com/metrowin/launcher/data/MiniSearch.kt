@@ -20,6 +20,11 @@ object MiniLink {
     const val NOTE = "note"
     const val TODO = "todo"
 
+    /** The start of a link to the conversation with a number (see [sms]). */
+    const val SMS = "${SCHEME}sms/"
+
+    fun sms(address: String) = SMS + android.net.Uri.encode(address)
+
     fun note(id: String) = "$SCHEME$NOTE/$id"
     fun todo(id: Long) = "$SCHEME$TODO/$id"
 

@@ -222,6 +222,30 @@ object StartEntries {
 
     const val MAX_GROUP = 32
 
+    /**
+     * Puts [id] first in its group (the tiles from one group title to the next), so the tile opened last leads. The title stays at the head of the group,
+     * so it moves to the tile now first. Nothing changes for a tile that is first, one in a folder, or a tile the user placed on a cell of its own (free mode).
+     */
+    fun toFront(entries: List<StartEntry>, id: String): List<StartEntry> {
+        val at = entries.indexOfFirst { it.id == id }
+        if (at < 0 || entries[at].col >= 0) return entries
+        val start = (at downTo 0).firstOrNull { entries[it].group.isNotBlank() } ?: 0
+        if (at == start) return entries
+        val title = entries[start].group
+        val moved = withGroup(entries[at], title)
+        val old = withGroup(entries[start], "")
+        return entries.toMutableList().apply {
+            removeAt(at)
+            set(start, old)
+            add(start, moved)
+        }
+    }
+
+    private fun withGroup(entry: StartEntry, group: String): StartEntry = when (entry) {
+        is Tile -> entry.copy(group = group)
+        is Folder -> entry.copy(group = group)
+    }
+
     fun rename(entries: List<StartEntry>, folderId: String, name: String): List<StartEntry> =
         entries.map { if (it is Folder && it.id == folderId) it.copy(name = name.trim()) else it }
 

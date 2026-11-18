@@ -3,6 +3,8 @@ package com.metrowin.launcher.ui.settings
 import com.metrowin.launcher.ui.components.Spacing
 import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.theme.LocalMetroColors
+import com.metrowin.launcher.ui.theme.LocalAccent
+import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.MetroText
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +46,10 @@ fun AboutPage(env: SettingsEnv) {
         ActionSetting(
             stringResource(R.string.tut_replay), onClick = env.onShowTutorial,
             hint = stringResource(R.string.tut_replay_hint), tag = "about:tutorial", id = "about.tutorial",
+        )
+        ActionSetting(
+            stringResource(R.string.whatsnew_open), onClick = env.onShowNews,
+            hint = stringResource(R.string.whatsnew_open_hint), tag = "about:whatsnew", id = "about.whatsnew",
         )
         StatusBlock(env)
         Column(Modifier.settingAnchor("about.credits"), verticalArrangement = Arrangement.spacedBy(Spacing.Large)) {
@@ -139,6 +145,21 @@ private fun StatusBlock(env: SettingsEnv) {
     val no = stringResource(R.string.status_no)
     val about = env.about
     Column(Modifier.settingAnchor("about.status").testTag("about:status"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        // What is wrong, with how to put it right: only the lines that are off and have something to say; each opens the screen of Android where it is fixed.
+        val problems = lines.filter { it.problem }
+        SettingHeading(stringResource(R.string.fix_title))
+        if (problems.isEmpty()) SettingHint(stringResource(R.string.fix_none), Modifier.testTag("about:fix:none"))
+        problems.forEach { line ->
+            val intent = LauncherStatus.fixIntent(context, line.fix)
+            Column(
+                Modifier.testTag("about:fix:${line.fix.name}").then(
+                    if (intent != null) Modifier.metroPress(onClick = { runCatching { context.startActivity(intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) } }) else Modifier,
+                ),
+            ) {
+                MetroText(stringResource(line.label), size = MetroType.Subtitle, color = LocalAccent.current)
+                SettingHint(stringResource(line.hint))
+            }
+        }
         SettingHeading(stringResource(R.string.status_title))
         lines.forEach { line -> InfoSetting(stringResource(line.label), if (line.ok == true) yes else no) }
         InfoSetting(stringResource(R.string.status_last_error), error ?: stringResource(R.string.status_no_error))

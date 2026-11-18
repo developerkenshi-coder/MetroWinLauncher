@@ -63,6 +63,11 @@ fun SearchPage(env: SettingsEnv) {
                 hint = stringResource(R.string.search_notifications_hint), tag = "search:notifications", id = "search.notifications",
             )
             ToggleSetting(
+                stringResource(R.string.search_messages), env.settings.searchMessages,
+                onChange = { value -> env.onChange { it.copy(searchMessages = value) } },
+                hint = stringResource(R.string.search_messages_hint), tag = "search:messages", id = "search.messages",
+            )
+            ToggleSetting(
                 stringResource(R.string.search_operators), env.settings.searchOperators,
                 onChange = { value -> env.onChange { it.copy(searchOperators = value) } },
                 hint = stringResource(R.string.search_operators_hint), tag = "search:operators", id = "search.operators",

@@ -78,7 +78,7 @@ fun ColumnScope.StartThemeSettings(env: SettingsEnv) {
     // The look of Windows Phone 8.1 in one touch: the settings that make the pages and the apps resemble it most.
     ActionSetting(
         text = stringResource(R.string.wp_look),
-        onClick = { env.onChange { it.copy(themeStyle = ThemeStyle.Classic, actionBar = ActionBarStyle.Retro, launchAnimation = LaunchAnimation.Original, pagePadding = PagePadding.Compact) } },
+        onClick = { env.onChange(com.metrowin.launcher.data.FirstLook::wpLook) },
         hint = stringResource(R.string.wp_look_hint),
         tag = "theme:wplook",
         id = "theme.wplook",

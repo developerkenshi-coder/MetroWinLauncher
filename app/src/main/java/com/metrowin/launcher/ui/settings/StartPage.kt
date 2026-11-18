@@ -70,6 +70,14 @@ fun StartPage(env: SettingsEnv) {
                 id = "start.columns",
             )
             ToggleSetting(
+                label = stringResource(R.string.start_autoorder),
+                checked = settings.startAutoOrder,
+                onChange = { value -> env.onChange { it.copy(startAutoOrder = value) } },
+                hint = stringResource(R.string.start_autoorder_hint),
+                tag = "start:autoorder",
+                id = "start.autoorder",
+            )
+            ToggleSetting(
                 label = stringResource(R.string.start_free),
                 checked = settings.freeLayout,
                 onChange = { value -> env.onChange { it.copy(freeLayout = value) } },

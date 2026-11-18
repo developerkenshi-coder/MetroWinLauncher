@@ -90,6 +90,7 @@ object SettingsIndex {
         // --- start: tiles and screens (clock, bars and behaviour are listed with their own sections below)
         e("start.moretiles", Start, R.string.theme_more_tiles, "columns", "smaller", "bigger", "colonne", "piu riquadri", "piccoli"),
         e("start.columns", Start, R.string.start_columns, "columns", "tiles per row", "across", "grid", "colonne", "riquadri per riga", "griglia", "quantita"),
+        e("start.autoorder", Start, R.string.start_autoorder, "order", "recent", "sort", "front", "ordine", "recenti", "ordina", "davanti"),
         e("start.free", Start, R.string.start_free, "free", "free mode", "anywhere", "position", "gaps", "libero", "modalita libero", "ovunque", "posizione", "spazi"),
         e("start.tilenames", Start, R.string.theme_tile_names, "labels", "titles", "etichette", "titoli", "nomi"),
         e("start.spacing", Start, R.string.theme_tile_spacing, "gap", "margin", "narrow", "wide", "margine", "stretta", "larga", "spaziatura"),
@@ -294,6 +295,7 @@ object SettingsIndex {
         e("search.todaydate", Search, R.string.today_show_date, "card", "today", "date", "day", "scheda", "oggi", "data", "giorno"),
         e("search.todayalarm", Search, R.string.today_show_alarm, "card", "today", "alarm", "clock", "scheda", "oggi", "sveglia", "allarme"),
         e("search.currency", Search, R.string.apps_currency, "money", "exchange", "euro", "dollar", "valute", "cambio", "soldi"),
+        e("search.messages", Search, R.string.search_messages, "messages", "sms", "texts", "messaggi", "testi"),
         e("search.notifications", Search, R.string.search_notifications, "notifications", "messages", "notifiche", "messaggi"),
         e("search.operators", Search, R.string.search_operators, "operator", "prefix", "app:", "contact:", "operatori", "prefisso", "scorciatoie"),
         e("search.files", Search, R.string.search_files_title, "files", "documents", "pdf", "photos", "videos", "music", "file", "documenti", "foto", "musica", "cerca file"),
@@ -355,6 +357,7 @@ object SettingsIndex {
         e("about.status", About, R.string.status_title, "status", "permissions", "services", "last error", "crash", "report", "stato", "permessi", "servizi", "ultimo errore", "segnalazione"),
         e("about.phoneinfo", About, R.string.about_phone_toggle, "phone", "model", "memory", "storage", "uptime", "telefono", "modello", "memoria", "spazio"),
         e("about.phone", About, R.string.about_phone_title, "phone", "model", "ram", "patch", "telefono", "modello", "informazioni"),
+        e("about.whatsnew", About, R.string.whatsnew_open, "news", "changes", "release notes", "what is new", "novita", "cambiamenti", "note di rilascio"),
         e("about.tutorial", About, R.string.tut_replay, "tour", "help", "guide", "intro", "aiuto", "guida", "tutorial"),
         e("projects.foss", OtherProjects, R.string.prj_foss, "foss", "open source", "keyboard", "tastiera", "launcher", "github", "software libero"),
         e("projects.nonfoss", OtherProjects, R.string.prj_nonfoss, "spesatracker", "play store", "google play", "spese", "budget", "non foss"),

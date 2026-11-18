@@ -218,6 +218,8 @@ class SettingsEnv(
     val onTryVoice: () -> Unit = {},
     /** Shows the tutorial again. */
     val onShowTutorial: () -> Unit = {},
+    /** Shows the news of this version (a dialog of the launcher, not of the page: the page scrolls). */
+    val onShowNews: () -> Unit = {},
     /** Prepares the bug ticket mail with the text of the user and the log of the app. */
     val onSendBugReport: (String) -> Unit = {},
     /** The tiles apps have published, and a way to clear one. */

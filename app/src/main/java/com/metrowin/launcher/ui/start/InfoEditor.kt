@@ -50,6 +50,7 @@ import com.metrowin.launcher.ui.components.AppTitleLine
 import com.metrowin.launcher.ui.components.GlyphIcon
 import com.metrowin.launcher.ui.components.LocalAppTitle
 import com.metrowin.launcher.ui.components.MetroButton
+import com.metrowin.launcher.model.InfoShare
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroType
 import com.metrowin.launcher.ui.components.PivotHeader
@@ -147,6 +148,23 @@ fun InfoEditor(
                             InfoMark(category.info, stringResource(category.title), tag = "info:cat:${category.name}")
                         }
                     }
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    MetroButton(
+                        stringResource(R.string.infoe_share_code), Modifier.fillMaxWidth().padding(horizontal = Spacing.Page, vertical = 4.dp).testTag("info:share"),
+                        onClick = {
+                            val send = android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain").putExtra(android.content.Intent.EXTRA_TEXT, InfoShare.toCode(config))
+                            runCatching { context.startActivity(android.content.Intent.createChooser(send, null).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                        },
+                    )
+                    MetroButton(
+                        stringResource(R.string.infoe_use_code), Modifier.fillMaxWidth().padding(horizontal = Spacing.Page, vertical = 4.dp).testTag("info:usecode"),
+                        onClick = {
+                            val text = context.getSystemService(android.content.ClipboardManager::class.java)?.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty()
+                            val shared = InfoShare.fromCode(text)
+                            if (shared != null) change(shared)
+                            com.metrowin.launcher.ui.actioncenter.MetroToast.show(context, if (shared != null) R.string.infoe_code_used else R.string.infoe_code_bad)
+                        },
+                    )
                     MetroButton(stringResource(R.string.info_done), Modifier.fillMaxWidth().padding(horizontal = Spacing.Page, vertical = 16.dp).testTag("info:done"), onClick = onClose)
                 }
             }

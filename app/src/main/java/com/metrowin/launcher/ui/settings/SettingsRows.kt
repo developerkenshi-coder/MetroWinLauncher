@@ -152,6 +152,15 @@ fun ToggleSetting(
                 modifier = if (tag != null) Modifier.testTag(tag) else Modifier,
             )
             if (hint != null) SettingHint(hint, Modifier.padding(top = 2.dp))
+            // A switch that is not as it is in a fresh install offers to go back to that, with the value said (the page keeps its own "back to the start" at its end).
+            val page = LocalPageReset.current
+            if (id != null && page != null && SettingToggles.changed(id, page.settings)) {
+                MetroText(
+                    stringResource(if (SettingToggles.factory(id) == true) R.string.reset_one_on else R.string.reset_one_off), size = MetroType.Note, weight = FontWeight.Normal,
+                    color = com.metrowin.launcher.ui.theme.LocalAccent.current,
+                    modifier = Modifier.testTag("reset:$id").metroPress(onClick = { page.change { SettingToggles.reset(id, it) } }).padding(top = 2.dp, bottom = 2.dp),
+                )
+            }
         }
     }
 }

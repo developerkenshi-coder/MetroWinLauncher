@@ -26,6 +26,7 @@ import com.metrowin.launcher.data.LauncherSettingMatch
 import com.metrowin.launcher.data.QuickAnswer
 import com.metrowin.launcher.data.QuickAnswers
 import com.metrowin.launcher.data.SearchOperators
+import com.metrowin.launcher.data.SettingSynonyms
 import com.metrowin.launcher.data.StableOrder
 import com.metrowin.launcher.data.SystemCommands
 import com.metrowin.launcher.data.TileMatch
@@ -107,7 +108,7 @@ fun rememberSearch(vm: LauncherViewModel, query: String, listItems: List<AppItem
     var globalFor by remember { mutableStateOf("") }
     LaunchedEffect(
         scoped, settings.searchContacts, settings.searchSettings, settings.searchWeb, settings.searchCalendar,
-        settings.searchLauncherSettings, settings.searchTiles, settings.searchMiniApps, tileIndex, settings.searchFileTypes, settings.searchNotifications,
+        settings.searchLauncherSettings, settings.searchTiles, settings.searchMiniApps, tileIndex, settings.searchFileTypes, settings.searchNotifications, settings.searchMessages,
     ) {
         // What is looked for, without the operator in front of it.
         val query = scoped.text
@@ -115,11 +116,13 @@ fun rememberSearch(vm: LauncherViewModel, query: String, listItems: List<AppItem
             globalResults = GlobalResults.Empty
             return@LaunchedEffect
         }
+        val queries = SettingSynonyms.expand(query)
         val contacts = settings.searchContacts && scoped.allows(SearchOperators.Scope.Contacts)
         val events = settings.searchCalendar && scoped.allows(SearchOperators.Scope.Events)
         val files = settings.searchFileTypes.isNotEmpty() && scoped.allows(SearchOperators.Scope.Files)
         val notes = settings.searchMiniApps && scoped.allows(SearchOperators.Scope.Notes)
         val todos = settings.searchMiniApps && scoped.allows(SearchOperators.Scope.Todos)
+        val messages = settings.searchMessages && scoped.allows(SearchOperators.Scope.Messages)
         // What comes later (contacts, events, files, notes) stays on screen while the typing goes on, until the new answer replaces it:
         // it does not vanish with every key and come back.
         val before = globalResults.takeIf { StableOrder.extends(globalFor, query) }
@@ -130,13 +133,15 @@ fun rememberSearch(vm: LauncherViewModel, query: String, listItems: List<AppItem
             files = if (files) before?.files.orEmpty() else emptyList(),
             notes = if (notes) before?.notes.orEmpty() else emptyList(),
             todos = if (todos) before?.todos.orEmpty() else emptyList(),
+            messages = if (messages) before?.messages.orEmpty() else emptyList(),
             settings = if (settings.searchSettings && scoped.allows(SearchOperators.Scope.Settings)) {
-                GlobalSearch.matchSettings(query) { def -> appContext.getString(def.label) }.take(MAX_SETTING_RESULTS)
+                // A word of another language, or another name for the same thing, finds the setting as well (see [SettingSynonyms]).
+                queries.flatMap { GlobalSearch.matchSettings(it) { def -> appContext.getString(def.label) } }.distinctBy { it.id }.take(MAX_SETTING_RESULTS)
             } else {
                 emptyList()
             },
             launcherSettings = if (settings.searchLauncherSettings && scoped.allows(SearchOperators.Scope.Settings)) {
-                launcherSettingsIndex.search(query).take(MAX_SETTING_RESULTS).map { hit ->
+                queries.flatMap { launcherSettingsIndex.search(it) }.distinct().take(MAX_SETTING_RESULTS).map { hit ->
                     // "category › page" (the category alone when it has one page): where the setting is, as the settings say it.
                     val place = if (hit.section.category.pages.size == 1) appContext.getString(hit.section.category.title)
                     else appContext.getString(R.string.settings_where, appContext.getString(hit.section.category.title), appContext.getString(hit.section.title))
@@ -181,6 +186,10 @@ fun rememberSearch(vm: LauncherViewModel, query: String, listItems: List<AppItem
                 notes = if (notes) vm.searchNotes(query) else emptyList(),
                 todos = if (todos) vm.searchTodos(query) else emptyList(),
             )
+        }
+        if (messages) {
+            if (!contacts && !events && !files && !notes && !todos) delay(CONTACT_SEARCH_DELAY_MS)
+            globalResults = globalResults.copy(messages = vm.searchMessages(query))
         }
     }
     return SearchState(searchResults, answers, globalResults, recentSearches, roll = { rollSeed++ })

@@ -15,6 +15,7 @@ object SearchOperators {
         Tiles("tile", "riquadro", "t"),
         Notes("note", "notes", "nota"),
         Todos("todo", "todos", "task", "tasks", "fare"),
+        Messages("message", "messages", "sms", "messaggio", "messaggi", "m"),
         Web("web", "w"),
     }
 
