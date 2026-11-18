@@ -60,4 +60,7 @@
     <string name="nws_found">Flux trouvé : l’adresse est dans le champ.</string>
     <string name="nws_not_found">Aucun flux à cette adresse.</string>
     <string name="nws_tile_source">vignette de Démarrer</string>
+    <string name="nws_o_read">Page de lecture sans publicité, au texte réglable</string>
+    <string name="nws_read_empty">Cet article ne peut pas être affiché ici. Ouvrez-le dans le navigateur.</string>
+    <string name="nws_read_browser">Ouvrir dans le navigateur</string>
 </resources>

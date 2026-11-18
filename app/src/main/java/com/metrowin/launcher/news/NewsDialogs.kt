@@ -158,6 +158,7 @@ internal fun NewsOptionsDialog(opts: NewsOpts, onChange: (NewsOpts) -> Unit, onC
             MetroToggle(stringResource(R.string.nws_o_days), opts.days, { onChange(opts.copy(days = it)) }, Modifier.testTag("nws:opt:days"))
             MetroToggle(stringResource(R.string.nws_o_compact), opts.compact, { onChange(opts.copy(compact = it)) }, Modifier.testTag("nws:opt:compact"))
             MetroToggle(stringResource(R.string.nws_o_dim), opts.dimImages, { onChange(opts.copy(dimImages = it)) }, Modifier.testTag("nws:opt:dim"))
+            MetroToggle(stringResource(R.string.nws_o_read), opts.readMode, { onChange(opts.copy(readMode = it)) }, Modifier.testTag("nws:opt:read"))
             MetroToggle(stringResource(R.string.nws_o_all), opts.allPage, { onChange(opts.copy(allPage = it)) }, Modifier.testTag("nws:opt:all"))
             MetroText(stringResource(R.string.nws_o_text), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.padding(top = 6.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {

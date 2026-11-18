@@ -50,6 +50,7 @@ internal object MiniInfoTable {
         "mini.messaging.otp_copy" to R.string.infom_msg_otp_copy,
         "mini.messaging.spam_block" to R.string.infom_msg_spam_block,
         "mini.messaging.lock_text" to R.string.infom_msg_lock_text,
+        "mini.news.read_mode" to R.string.infom_news_read_mode,
         "mini.voicerecorder.pause" to R.string.infom_rec_pause,
         "mini.voicerecorder.marks" to R.string.infom_rec_marks,
         "mini.voicerecorder.focus" to R.string.infom_rec_focus,

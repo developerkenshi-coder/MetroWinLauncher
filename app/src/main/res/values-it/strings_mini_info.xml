@@ -68,4 +68,5 @@
     <string name="infom_rec_high_contrast">Un disegno dell\'onda più marcato, per leggerlo meglio.</string>
     <string name="infom_rec_start_on_open">Aprire il registratore (anche dal suo tile) avvia subito una registrazione, con un solo tocco. La notifica della registrazione compare come sempre. Spento di base.</string>
     <string name="infom_rec_volume_mark">Mentre registra, i tasti del volume mettono un segnalibro in quel momento e non cambiano il volume (servono i segnalibri attivi). Spento di base.</string>
+    <string name="infom_news_read_mode">Un tocco su un titolo apre l\'articolo in una pagina di lettura dell\'app: solo il testo e le immagini principali, senza pubblicità, con la dimensione del testo che scegli. La pagina viene letta solo quando apri il titolo. Le immagini seguono l\'opzione immagini dell\'app. Spento: il titolo si apre nel browser.</string>
 </resources>

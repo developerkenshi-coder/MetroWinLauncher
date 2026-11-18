@@ -68,4 +68,5 @@
     <string name="infom_rec_high_contrast">Un dibujo más marcado de la onda, para leerlo mejor.</string>
     <string name="infom_rec_start_on_open">Abrir la grabadora (también desde su mosaico) inicia una grabación al instante, con un solo toque. La notificación de la grabación aparece como siempre. Apagado de base.</string>
     <string name="infom_rec_volume_mark">Mientras graba, las teclas de volumen ponen un marcador en ese momento y no cambian el volumen (requiere marcadores activados). Apagado de base.</string>
+    <string name="infom_news_read_mode">Un toque en un titular abre el artículo en una página de lectura de la app: solo el texto y las imágenes principales, sin publicidad, con el tamaño de texto que elijas. La página se lee solo cuando abres el titular. Las imágenes siguen la opción de imágenes de la app. Apagado: el titular se abre en el navegador.</string>
 </resources>

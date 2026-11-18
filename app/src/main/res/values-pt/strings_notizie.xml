@@ -60,4 +60,7 @@
     <string name="nws_found">Feed encontrado: o endereço está no campo.</string>
     <string name="nws_not_found">Nenhum feed nesse endereço.</string>
     <string name="nws_tile_source">bloco do Início</string>
+    <string name="nws_o_read">Página de leitura sem publicidade, com texto ajustável</string>
+    <string name="nws_read_empty">Este artigo não pode ser mostrado aqui. Abra-o no navegador.</string>
+    <string name="nws_read_browser">Abrir no navegador</string>
 </resources>

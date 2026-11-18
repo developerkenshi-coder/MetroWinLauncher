@@ -1,6 +1,7 @@
 package com.metrowin.launcher.data
 
 import androidx.compose.runtime.Immutable
+import com.metrowin.launcher.news.ReadableText
 import java.io.StringReader
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -13,9 +14,9 @@ import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.xml.sax.InputSource
 
-/** One headline: what it says, who published it, where to read it, and when (epoch milliseconds, 0 when the feed does not say). */
+/** One headline: what it says, who published it, where to read it, and when (epoch milliseconds, 0 when the feed does not say). [body] is the article the feed itself carries, for reading mode (see `ReadableText.encode`), "" when it carries none. */
 @Immutable
-data class NewsItem(val title: String, val source: String, val link: String, val publishedAt: Long, val image: String = "")
+data class NewsItem(val title: String, val source: String, val link: String, val publishedAt: Long, val image: String = "", val body: String = "")
 
 /** The headlines of a source, as they were when [fetchedAt]. [title] is what the feed calls itself ("Top stories - Google News"). */
 @Immutable
@@ -121,12 +122,12 @@ object Feeds {
      * The feed in [xml] (RSS, Atom or JSON Feed) with at most [max] headlines, or null when it is not one (or has a document type, which a
      * feed has no use for).
      */
-    fun parse(xml: String, max: Int = MAX_ITEMS): Parsed? {
-        if (xml.trimStart().startsWith("{")) return jsonFeed(xml, max)
+    fun parse(xml: String, max: Int = MAX_ITEMS, withBody: Boolean = false): Parsed? {
+        if (xml.trimStart().startsWith("{")) return jsonFeed(xml, max, withBody)
         val root = document(xml)?.documentElement ?: return null
         return when (root.tagName.lowercase(Locale.ROOT)) {
-            "rss", "rdf:rdf" -> rss(root, max)
-            "feed" -> atom(root, max)
+            "rss", "rdf:rdf" -> rss(root, max, withBody)
+            "feed" -> atom(root, max, withBody)
             else -> null
         }
     }
@@ -138,7 +139,7 @@ object Feeds {
     }
 
     /** A JSON Feed (jsonfeed.org): the items with a title (or, failing that, the start of their text) and a good link. */
-    private fun jsonFeed(text: String, max: Int): Parsed? = runCatching {
+    private fun jsonFeed(text: String, max: Int, withBody: Boolean): Parsed? = runCatching {
         if (text.length > MAX_CHARS) return null
         val root = JSONObject(text)
         if (!root.optString("version").contains("jsonfeed.org")) return null
@@ -149,7 +150,7 @@ object Feeds {
             val title = clean(o.optString("title").ifEmpty { o.optString("content_text").ifEmpty { o.optString("summary") } }, MAX_TITLE)
             if (title.isEmpty()) return@mapNotNull null
             val author = o.optJSONArray("authors")?.optJSONObject(0)?.optString("name") ?: o.optJSONObject("author")?.optString("name").orEmpty()
-            NewsItem(title, clean(author, 60), link, date(o.optString("date_published")), safeImage(o.optString("image").ifEmpty { o.optString("banner_image") }).orEmpty())
+            NewsItem(title, clean(author, 60), link, date(o.optString("date_published")), safeImage(o.optString("image").ifEmpty { o.optString("banner_image") }).orEmpty(), if (withBody) body(o.optString("content_html")) else "")
         }
         finish(clean(root.optString("title"), 80), items, max)
     }.getOrNull()
@@ -176,7 +177,7 @@ object Feeds {
         runCatching { setFeature("http://xml.org/sax/features/external-parameter-entities", false) }
     }
 
-    private fun rss(root: Element, max: Int): Parsed? {
+    private fun rss(root: Element, max: Int, withBody: Boolean): Parsed? {
         val channel = root.children("channel").firstOrNull() ?: root
         val feedTitle = clean(channel.children("title").firstOrNull()?.textContent.orEmpty(), 80)
         val elements = channel.children("item").ifEmpty { root.children("item") }
@@ -189,12 +190,13 @@ object Feeds {
             NewsItem(
                 title, source, link, date(item.children("pubDate").firstOrNull()?.textContent ?: item.children("dc:date").firstOrNull()?.textContent),
                 image = rssImage(item),
+                body = if (withBody) body(item.children("content:encoded").firstOrNull()?.textContent.orEmpty()) else "",
             )
         }
         return finish(feedTitle, items, max)
     }
 
-    private fun atom(root: Element, max: Int): Parsed? {
+    private fun atom(root: Element, max: Int, withBody: Boolean): Parsed? {
         val feedTitle = clean(root.children("title").firstOrNull()?.textContent.orEmpty(), 80)
         val items = root.children("entry").mapNotNull { entry ->
             val title = clean(entry.children("title").firstOrNull()?.textContent.orEmpty(), MAX_TITLE)
@@ -206,10 +208,14 @@ object Feeds {
             NewsItem(
                 title, source, link, date(entry.children("updated").firstOrNull()?.textContent ?: entry.children("published").firstOrNull()?.textContent),
                 image = atomImage(entry),
+                body = if (withBody) body(entry.children("content").firstOrNull()?.takeIf { it.getAttribute("type") != "text" }?.textContent.orEmpty()) else "",
             )
         }
         return finish(feedTitle, items, max)
     }
+
+    /** The article a feed carries in [html] (its full-text element, not the summary), ready to keep; "" when it is only a summary. */
+    private fun body(html: String): String = if (html.length < ReadableText.MIN_TEXT) "" else ReadableText.forFeed(html)
 
     /** The picture of an RSS item: what the feed names for it (media:content, media:thumbnail, enclosure), or the first picture in its text. */
     private fun rssImage(item: Element): String {
@@ -326,7 +332,7 @@ object NewsCodec {
             "items",
             JSONArray().also { array ->
                 data.items.forEach { item ->
-                    array.put(JSONObject().put("t", item.title).put("s", item.source).put("l", item.link).put("p", item.publishedAt).put("i", item.image))
+                    array.put(JSONObject().put("t", item.title).put("s", item.source).put("l", item.link).put("p", item.publishedAt).put("i", item.image).also { if (item.body.isNotEmpty()) it.put("b", item.body) })
                 }
             },
         )
@@ -339,7 +345,7 @@ object NewsCodec {
             val item = array.getJSONObject(i)
             NewsItem(
                 item.getString("t"), item.optString("s"), Feeds.safeLink(item.getString("l")) ?: error("link"), item.optLong("p"),
-                Feeds.safeImage(item.optString("i")).orEmpty(),
+                Feeds.safeImage(item.optString("i")).orEmpty(), item.optString("b"),
             )
         }
         NewsData(o.optString("title"), items.take(Feeds.KEPT), o.getLong("fetchedAt"), o.optString("key"))

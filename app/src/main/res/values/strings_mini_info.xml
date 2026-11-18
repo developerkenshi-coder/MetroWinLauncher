@@ -68,4 +68,5 @@
     <string name="infom_rec_high_contrast">A stronger picture of the wave, for easier reading.</string>
     <string name="infom_rec_start_on_open">Opening the recorder (from its tile too) starts a recording at once, with one touch. The notification of the recording shows as always. Off by default.</string>
     <string name="infom_rec_volume_mark">While a recording runs, the volume keys put a marker at that moment and do not change the volume (needs markers on). Off by default.</string>
+    <string name="infom_news_read_mode">A touch on a headline opens the article in a reading page of the app: only the text and the main pictures, no ads, at the text size you choose. The page is read only when you open the headline. Pictures follow the pictures option of the app. Off: the headline opens in the browser.</string>
 </resources>

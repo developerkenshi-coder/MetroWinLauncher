@@ -111,6 +111,7 @@ fun NewsScreen() {
     val handled = remember { HashSet<Pair<String, Int>>() }
     var refresh by remember { mutableIntStateOf(0) }
     var dialog by remember { mutableStateOf<NewsDialog?>(null) }
+    var reading by remember { mutableStateOf<NewsItem?>(null) }
     val images = remember { NewsImages(context) }
     var opts by remember { mutableStateOf(hub.options) }
     var read by remember { mutableStateOf<Set<String>>(emptySet()) }
@@ -137,7 +138,7 @@ fun NewsScreen() {
         if (saved.isNotEmpty()) NewsSourceDef(SAVED, savedName, "local") else null,
     )
     val pager = rememberPagerState { maxOf(pages.size, 1) }
-    BackHandler(enabled = dialog != null || query != null) { if (dialog != null) dialog = null else query = null }
+    BackHandler(enabled = dialog != null || reading != null || query != null) { if (dialog != null) dialog = null else if (reading != null) reading = null else query = null }
 
     // The headlines of every source together, for the last page: what is kept, no new request.
     val stamp = data.values.sumOf { it.fetchedAt }
@@ -147,8 +148,15 @@ fun NewsScreen() {
         }
     }
 
-    fun open(item: NewsItem) {
+    fun browse(item: NewsItem) {
         openLink(context, item.link)
+        if (opts.trackRead) scope.launch { read = withContext(Dispatchers.IO) { hub.setRead(item.link, true) } }
+    }
+
+    /** A touch on a headline: the reading page of the app when that is on, else the browser. */
+    fun open(item: NewsItem) {
+        if (!opts.readMode) return browse(item)
+        reading = item
         if (opts.trackRead) scope.launch { read = withContext(Dispatchers.IO) { hub.setRead(item.link, true) } }
     }
 
@@ -183,6 +191,15 @@ fun NewsScreen() {
     }
 
     MiniFrame {
+        reading?.let { item ->
+            NewsReader(
+                item, images, opts, now, load = hub::article,
+                onSize = { size -> opts = opts.copy(readPercent = size).also { hub.options = it } },
+                onBrowser = { browse(item) },
+                onShare = { share(context, item) },
+            )
+            return@MiniFrame
+        }
         HubPager(
             stringResource(R.string.stock_news),
             pages.map { (if (it.id == tile) "★ " else "") + it.name }.ifEmpty { listOf(stringResource(R.string.stock_news)) },
@@ -247,7 +264,7 @@ fun NewsScreen() {
         NewsDialog.Options -> NewsOptionsDialog(opts, onChange = { next -> opts = next; hub.options = next }, onClose = { dialog = null })
         is NewsDialog.Actions -> NewsActionsDialog(
             d.item, images, opts.images, saved = saved.any { it.link == d.item.link }, read = d.item.link in read, trackRead = opts.trackRead, now = now,
-            onOpen = { dialog = null; open(d.item) },
+            onOpen = { dialog = null; browse(d.item) },
             onShare = { dialog = null; share(context, d.item) },
             onSave = { scope.launch { saved = withContext(Dispatchers.IO) { hub.toggleSaved(d.item) } }; dialog = null },
             onRead = { scope.launch { read = withContext(Dispatchers.IO) { hub.setRead(d.item.link, d.item.link !in read) } }; dialog = null },
@@ -323,17 +340,19 @@ private fun NewsBody(
 }
 
 @Composable
+internal fun failureText(why: NewsFailure, code: Int): String = when (why) {
+    NewsFailure.Offline -> stringResource(R.string.nws_offline)
+    NewsFailure.Http -> stringResource(R.string.nws_err_http, code)
+    NewsFailure.Parse -> stringResource(R.string.nws_err_parse)
+    NewsFailure.Blocked -> stringResource(R.string.nws_err_blocked)
+    NewsFailure.TooBig -> stringResource(R.string.nws_err_toobig)
+    NewsFailure.Metered -> stringResource(R.string.nws_err_metered)
+    NewsFailure.Address -> stringResource(R.string.nws_err_address)
+}
+
+@Composable
 private fun Problem(failure: NewsResult.Failed, onRetry: () -> Unit, modifier: Modifier, big: Boolean) {
-    val code = failure.code
-    val text = when (failure.why) {
-        NewsFailure.Offline -> stringResource(R.string.nws_offline)
-        NewsFailure.Http -> stringResource(R.string.nws_err_http, code)
-        NewsFailure.Parse -> stringResource(R.string.nws_err_parse)
-        NewsFailure.Blocked -> stringResource(R.string.nws_err_blocked)
-        NewsFailure.TooBig -> stringResource(R.string.nws_err_toobig)
-        NewsFailure.Metered -> stringResource(R.string.nws_err_metered)
-        NewsFailure.Address -> stringResource(R.string.nws_err_address)
-    }
+    val text = failureText(failure.why, failure.code)
     if (big) {
         Column(modifier.fillMaxWidth().padding(top = 24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(14.dp)) {
             val ink = LocalMetroColors.current.subtle

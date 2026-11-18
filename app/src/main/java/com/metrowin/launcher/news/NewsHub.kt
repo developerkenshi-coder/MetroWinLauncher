@@ -154,6 +154,10 @@ data class NewsOpts(
     val dimImages: Boolean = false,
     /** A last page with the headlines of every source together. */
     val allPage: Boolean = false,
+    /** A touch on a headline opens the article in a reading page of the app (text and main pictures, no ads) instead of the browser. */
+    val readMode: Boolean = true,
+    /** The size of the text of the reading page in percent; one of [READ_SIZES]. */
+    val readPercent: Int = 100,
     /** The size of the text in percent of the usual one. */
     val textPercent: Int = 100,
     /** How long a source is considered up to date, in minutes. */
@@ -163,10 +167,23 @@ data class NewsOpts(
     val freshMs get() = freshMinutes * 60_000L
     val scale get() = textPercent / 100f
 
+    /** The reading size [by] steps further (negative: smaller) along [READ_SIZES], stopping at the ends. */
+    fun readStep(by: Int): Int = READ_SIZES[(READ_SIZES.indexOf(readPercent).takeIf { it >= 0 } ?: READ_SIZES.indexOf(100)).plus(by).coerceIn(0, READ_SIZES.lastIndex)]
+
     companion object {
         val TEXT_SIZES = listOf(90, 100, 120, 140)
+        val READ_SIZES = listOf(80, 90, 100, 110, 120, 140, 160, 180, 200)
         val FRESH_MINUTES = listOf(5, 15, 30, 60)
     }
+}
+
+/** What a [NewsHub.article] came to: the text to show, a page with no article that can be shown (open it in the browser), or no answer ([Failed]: offline or an HTTP error, worth a retry). */
+sealed interface ReadResult {
+    class Ok(val blocks: List<ReadBlock>) : ReadResult
+
+    data object Empty : ReadResult
+
+    class Failed(val why: NewsFailure, val code: Int = 0) : ReadResult
 }
 
 /** What a [NewsHub.load] came to. */
@@ -244,7 +261,7 @@ class NewsHub(private val context: Context, private val open: (java.net.URL) -> 
             NewsReply.TooBig -> NewsResult.Failed(NewsFailure.TooBig)
             is NewsReply.Http -> NewsResult.Failed(NewsFailure.Http, reply.code)
             is NewsReply.Body -> {
-                val feed = Feeds.parse(reply.text, opts.max) ?: return NewsResult.Failed(NewsFailure.Parse)
+                val feed = Feeds.parse(reply.text, opts.max, opts.readMode) ?: return NewsResult.Failed(NewsFailure.Parse)
                 val data = NewsData(feed.title, feed.items, now, key)
                 val before = kept?.items?.map { it.link }?.toSet()
                 prefs.edit {
@@ -255,6 +272,26 @@ class NewsHub(private val context: Context, private val open: (java.net.URL) -> 
                 write(file(source.id), NewsCodec.encode(data))
                 NewsResult.Ok(data)
             }
+        }
+    }
+
+    /**
+     * Blocking, call it off the main thread. The article of [item] for the reading page: what the feed carried, else the page itself, read
+     * once, only because the user chose this headline, over the same safe network as the feeds (https only, a small answer, redirects with rules).
+     * Nothing in the page is run, and its pictures are not fetched here.
+     */
+    fun article(item: NewsItem): ReadResult {
+        if (item.body.isNotEmpty()) ReadableText.decodeStored(item.body).takeIf { it.isNotEmpty() }?.let { return ReadResult.Ok(it) }
+        val link = (if (item.link.startsWith("http://", true)) "https://" + item.link.substring(7) else item.link)
+        // A feed decides this address, not the user: only a public host (never a number or a name of the local network).
+        if (!NewsHttp.isPublicHost(runCatching { java.net.URI(link).host }.getOrNull().orEmpty())) return ReadResult.Empty
+        val reply = NewsHttp.get(link, NewsSources.hosts(link), options.anySite, maxBytes = ARTICLE_BYTES, open = open)
+        return when (reply) {
+            is NewsReply.Body -> ReadableText.extract(reply.text, link)?.let { ReadResult.Ok(it) } ?: ReadResult.Empty
+            NewsReply.Offline -> ReadResult.Failed(NewsFailure.Offline)
+            // A redirect to somewhere else, or a page too big: not readable here, the browser can open it.
+            NewsReply.Blocked, NewsReply.NotModified, NewsReply.TooBig -> ReadResult.Empty
+            is NewsReply.Http -> ReadResult.Failed(NewsFailure.Http, reply.code)
         }
     }
 
@@ -322,6 +359,7 @@ class NewsHub(private val context: Context, private val open: (java.net.URL) -> 
         private const val KEY_ANSA = "ansa_offered"
         private const val KEY_TILE = "tile_source"
         private const val MAX_READ = 500
+        private const val ARTICLE_BYTES = 2_000_000
 
         /** The code and address that the News tile reads, for the source the user chose in the app; null until they choose. */
         fun tileChoice(context: Context): Pair<String, String>? {
@@ -348,6 +386,8 @@ object NewsOptionsStore {
             compact = prefs.getBoolean("compact", d.compact),
             dimImages = prefs.getBoolean("dim_images", d.dimImages),
             allPage = prefs.getBoolean("all_page", d.allPage),
+            readMode = prefs.getBoolean("read_mode", d.readMode),
+            readPercent = prefs.getInt("read_percent", d.readPercent).takeIf { it in NewsOpts.READ_SIZES } ?: d.readPercent,
             textPercent = prefs.getInt("text_percent", d.textPercent).takeIf { it in NewsOpts.TEXT_SIZES } ?: d.textPercent,
             freshMinutes = prefs.getInt("fresh_minutes", d.freshMinutes).takeIf { it in NewsOpts.FRESH_MINUTES } ?: d.freshMinutes,
         )
@@ -357,7 +397,7 @@ object NewsOptionsStore {
         putBoolean("images", o.images).putBoolean("any_site", o.anySite).putBoolean("unmetered_only", o.unmeteredOnly)
         putBoolean("more_headlines", o.moreHeadlines).putBoolean("discover", o.discover).putBoolean("track_read", o.trackRead)
         putBoolean("mark_new", o.markNew).putBoolean("days", o.days).putBoolean("compact", o.compact)
-        putBoolean("dim_images", o.dimImages).putBoolean("all_page", o.allPage)
+        putBoolean("dim_images", o.dimImages).putBoolean("all_page", o.allPage).putBoolean("read_mode", o.readMode).putInt("read_percent", o.readPercent)
         putInt("text_percent", o.textPercent).putInt("fresh_minutes", o.freshMinutes)
     }
 }

@@ -14,6 +14,7 @@ import com.metrowin.launcher.datasense.Opt as DataOpt
 import com.metrowin.launcher.mail.MailOption
 import com.metrowin.launcher.mail.MailOptions
 import com.metrowin.launcher.messages.MessagesOptions
+import com.metrowin.launcher.news.NewsHub
 import com.metrowin.launcher.recorder.Opt as RecorderOpt
 import com.metrowin.launcher.recorder.RecorderOptions
 import com.metrowin.launcher.recorder.RecorderPrefs
@@ -59,6 +60,7 @@ object MiniOptions {
         DataOpt.entries.forEach { o ->
             add(MiniOption("datasense", o.key, o.label, null, { DsOptions.read(Prefs.open(it, Prefs.DATA_SENSE), o) }, { c, v -> DsOptions(Prefs.open(c, Prefs.DATA_SENSE)).set(o, v) }))
         }
+        add(MiniOption("news", "read_mode", R.string.nws_o_read, null, { NewsHub(it).options.readMode }, { c, v -> NewsHub(c).let { h -> h.options = h.options.copy(readMode = v) } }))
         RecorderOpt.entries.filter { it.max == 1 }.forEach { o ->
             add(MiniOption("voicerecorder", o.key, recorderLabel(o), null, { RecorderPrefs.on(it, o) }, { c, v -> RecorderOptions(c)[o] = if (v) 1 else 0 }))
         }
