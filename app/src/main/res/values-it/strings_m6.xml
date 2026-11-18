@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notif_history_search">cerca tra le scartate</string>
+    <string name="notif_history_none">nessuna corrisponde</string>
+    <string name="ac_quiet_schedule">Non disturbare a orario</string>
+    <string name="ac_quiet_schedule_hint">Ogni giorno il telefono tace all’ora di inizio e torna normale a quella di fine. Le sveglie suonano sempre.</string>
+    <string name="ac_quiet_needs">Serve l’accesso «non disturbare» di Android: attivalo per aprire la schermata che lo dà.</string>
+    <string name="ac_quiet_from">Silenzioso dalle</string>
+    <string name="ac_quiet_to">Silenzioso fino alle</string>
+    <string name="ac_quiet_people">Fai passare i preferiti</string>
+    <string name="ac_quiet_people_hint">Chiamate e messaggi dei contatti con la stella suonano lo stesso, e anche una seconda chiamata entro un quarto d’ora. Spento: solo le sveglie.</string>
+    <string name="quiet_rule_name">Ore silenziose MetroWin</string>
+    <string name="dsx_bar_left">restano %1$s</string>
+    <string name="dsx_bar_full">%1$s alla carica</string>
+    <string name="saving_ultra">ultra</string>
+    <string name="saving_ultra_desc">Risparmia sempre e in più toglie le animazioni e il contenuto dal vivo dei tile: nulla si muove da solo.</string>
+    <string name="mail_opt_swipe">Scorri un messaggio per toglierlo</string>
+    <string name="mail_opt_swipe_hint">Nella lista un messaggio trascinato a destra va in archivio e a sinistra nel cestino, con un annulla per qualche secondo. Sui messaggi questo prende lo scorrimento laterale tra le schede; i titoli cambiano scheda lo stesso.</string>
+    <string name="mail_swiped_archive">Messaggio archiviato</string>
+    <string name="mail_swiped_delete">Messaggio eliminato</string>
+</resources>

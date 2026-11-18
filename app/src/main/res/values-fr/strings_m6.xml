@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notif_history_search">chercher parmi les ignorées</string>
+    <string name="notif_history_none">aucune ne correspond</string>
+    <string name="ac_quiet_schedule">Ne pas déranger à heures fixes</string>
+    <string name="ac_quiet_schedule_hint">Chaque jour le téléphone se tait à la première heure et revient à la seconde. Les alarmes sonnent toujours.</string>
+    <string name="ac_quiet_needs">Il faut l’accès « Ne pas déranger » d’Android : activez-le pour ouvrir l’écran qui le donne.</string>
+    <string name="ac_quiet_from">Silence dès</string>
+    <string name="ac_quiet_to">Silence jusqu’à</string>
+    <string name="ac_quiet_people">Laisser passer les favoris</string>
+    <string name="ac_quiet_people_hint">Les appels et messages des contacts favoris sonnent quand même, ainsi qu’un second appel dans le quart d’heure. Éteint : seulement les alarmes.</string>
+    <string name="quiet_rule_name">Heures calmes MetroWin</string>
+    <string name="dsx_bar_left">reste %1$s</string>
+    <string name="dsx_bar_full">%1$s avant la charge</string>
+    <string name="saving_ultra">ultra</string>
+    <string name="saving_ultra_desc">Économise toujours et retire en plus les animations et le contenu en direct des tuiles : rien ne bouge seul.</string>
+    <string name="mail_opt_swipe">Glisser un message pour l’écarter</string>
+    <string name="mail_opt_swipe_hint">Dans la liste, un message glissé à droite va aux archives et à gauche à la corbeille, avec quelques secondes pour annuler. Sur un message cela remplace le balayage latéral entre les onglets ; les titres changent toujours d’onglet.</string>
+    <string name="mail_swiped_archive">Message archivé</string>
+    <string name="mail_swiped_delete">Message supprimé</string>
+</resources>

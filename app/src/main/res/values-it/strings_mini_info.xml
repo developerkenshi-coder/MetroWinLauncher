@@ -66,4 +66,6 @@
     <string name="infom_rec_wave_theme">Il disegno dell\'onda prende l\'aspetto del launcher. Spento: un aspetto fisso.</string>
     <string name="infom_rec_two_pane">Su uno schermo largo l\'elenco e la registrazione aperta stanno affiancati.</string>
     <string name="infom_rec_high_contrast">Un disegno dell\'onda più marcato, per leggerlo meglio.</string>
+    <string name="infom_rec_start_on_open">Aprire il registratore (anche dal suo tile) avvia subito una registrazione, con un solo tocco. La notifica della registrazione compare come sempre. Spento di base.</string>
+    <string name="infom_rec_volume_mark">Mentre registra, i tasti del volume mettono un segnalibro in quel momento e non cambiano il volume (servono i segnalibri attivi). Spento di base.</string>
 </resources>

@@ -1465,6 +1465,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 }
             }
             weatherCtl.onSettingsChanged(previous, updated)
+            if (updated.quietSchedule != previous.quietSchedule || updated.quietFromHour != previous.quietFromHour || updated.quietToHour != previous.quietToHour || updated.quietPeople != previous.quietPeople) {
+                com.metrowin.launcher.notifications.QuietSchedule.sync(getApplication())
+            }
             if (updated.iconPack != previous.iconPack || updated.iconPicks != previous.iconPicks) applyIconPack(updated.iconPack, updated.iconPicks)
             icons.useGlass(updated.glassIcons)
             if (updated.updateAuto != previous.updateAuto) UpdateCheckJob.schedule(getApplication(), updated.updateAuto)

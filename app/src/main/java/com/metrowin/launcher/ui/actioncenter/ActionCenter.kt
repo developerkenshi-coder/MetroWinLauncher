@@ -96,6 +96,7 @@ import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.notifications.NotificationGroups
 import com.metrowin.launcher.notifications.NotificationItem
 import com.metrowin.launcher.ui.components.FontScaleAtMost
+import com.metrowin.launcher.notifications.HistoryFilter
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.cutoutSidesPadding
 import com.metrowin.launcher.R
@@ -1000,6 +1001,8 @@ private fun HistoryBlock(
 ) {
     val colors = LocalMetroColors.current
     var open by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    var only by remember { mutableStateOf<String?>(null) }
     Column(Modifier.padding(top = 10.dp).testTag("ac:history")) {
         Row(
             Modifier.fillMaxWidth().testTag("ac:history:toggle").metroPress(onClick = { open = !open }).padding(start = 24.dp, end = 12.dp),
@@ -1014,7 +1017,26 @@ private fun HistoryBlock(
             exit = shrinkVertically(metroTween(durationMillis = 200, easing = Motion.Accelerate)) + fadeOut(metroTween(140)),
         ) {
             Column {
-                history.forEachIndexed { index, entry ->
+                // Many entries are hard to scan: a search box, and one chip for each app that is in the list.
+                val labelOf = { pkg: String -> appsByPackage[pkg]?.label ?: pkg }
+                if (history.size > 4) {
+                    MetroTextField(
+                        query, { query = it }, stringResource(R.string.notif_history_search),
+                        Modifier.padding(horizontal = 12.dp, vertical = 6.dp).testTag("ac:history:search"),
+                    )
+                    Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                        history.map { it.packageName }.distinct().forEach { pkg ->
+                            Box(Modifier.testTag("ac:history:app:$pkg").metroPress(onClick = { only = if (only == pkg) null else pkg }).padding(vertical = 8.dp)) {
+                                MetroText(labelOf(pkg), size = 15.sp, weight = FontWeight.Normal, color = if (only == pkg) LocalAccent.current else colors.subtle, maxLines = 1)
+                            }
+                        }
+                    }
+                }
+                val shown = HistoryFilter.apply(history, query, only, labelOf)
+                if (shown.isEmpty()) {
+                    MetroText(stringResource(R.string.notif_history_none), size = 15.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp).testTag("ac:history:none"))
+                }
+                shown.forEachIndexed { index, entry ->
                     Row(
                         Modifier
                             .fillMaxWidth()

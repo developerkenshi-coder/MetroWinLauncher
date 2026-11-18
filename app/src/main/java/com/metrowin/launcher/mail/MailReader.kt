@@ -80,7 +80,7 @@ class ReaderActions(
 /** How the reader looks by the choices of the user (see [MailOption]). */
 class MailLook(
     val rows: Boolean = true, val compact: Boolean = false, val bigText: Boolean = false, val darkPages: Boolean = true,
-    val transitions: Boolean = true, val move: Boolean = true, val twoPanes: Boolean = true, val contacts: Boolean = false,
+    val transitions: Boolean = true, val move: Boolean = true, val twoPanes: Boolean = true, val contacts: Boolean = false, val swipe: Boolean = true,
 ) {
     /** Text of the messages and of the list, a quarter bigger for the user who asked for large text. */
     val scale get() = if (bigText) 1.25f else 1f
@@ -89,7 +89,7 @@ class MailLook(
         fun load(context: Context) = MailLook(
             MailOptions.on(context, MailOption.Rows), MailOptions.on(context, MailOption.Compact), MailOptions.on(context, MailOption.BigText),
             MailOptions.on(context, MailOption.DarkPages), MailOptions.on(context, MailOption.Transitions), MailOptions.on(context, MailOption.Move),
-            MailOptions.on(context, MailOption.TwoPanes), MailOptions.on(context, MailOption.Contacts),
+            MailOptions.on(context, MailOption.TwoPanes), MailOptions.on(context, MailOption.Contacts), MailOptions.on(context, MailOption.Swipe),
         )
     }
 }

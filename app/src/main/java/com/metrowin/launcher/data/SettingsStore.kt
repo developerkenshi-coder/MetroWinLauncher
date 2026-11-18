@@ -340,6 +340,11 @@ data class LauncherSettings(
     val notifPriority: Boolean = false,
     /** How long the timed quiet mode lasts, in minutes. */
     val dndMinutes: Int = 60,
+    /** Do not disturb every day from [quietFromHour] to [quietToHour], with alarms (and, if [quietPeople], starred contacts) let through. */
+    val quietSchedule: Boolean = false,
+    val quietFromHour: Int = 22,
+    val quietToHour: Int = 7,
+    val quietPeople: Boolean = true,
     /** How fast the animations go, in percent: 100 as designed, 200 twice as fast. */
     val animationSpeed: Int = 100,
     /** How far the tiles tilt when pressed, in percent of the design (0 is not at all). */

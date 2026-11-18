@@ -12,7 +12,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import android.app.NotificationManager
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -42,6 +48,7 @@ fun NotificationExtrasSettings(env: SettingsEnv) {
             onChange = { v -> env.onChange { it.copy(notifPriority = v) } },
             hint = stringResource(R.string.ac_priority_hint), enabled = env.notificationAccess, tag = "notifications:priority", id = "ac.priority",
         )
+        QuietScheduleSettings(env)
         AdvancedGroup(listOf("ac.filter", "ac.filterwords", "ac.dndminutes")) {
         ToggleSetting(
             label = stringResource(R.string.ac_filter), checked = s.notifFilterOn,
@@ -57,6 +64,47 @@ fun NotificationExtrasSettings(env: SettingsEnv) {
             onSelect = { i -> env.onChange { it.copy(dndMinutes = lengths[i]) } },
             tag = "notifications:dnd", id = "ac.dndminutes",
         )
+        }
+    }
+}
+
+/** Do not disturb at fixed hours: it needs the "do not disturb" access of Android, so turning it on without that opens the screen that gives it. */
+@Composable
+private fun QuietScheduleSettings(env: SettingsEnv) {
+    val context = LocalContext.current
+    val s = env.settings
+    fun granted() = context.getSystemService(NotificationManager::class.java)?.isNotificationPolicyAccessGranted == true
+    var allowed by remember { mutableStateOf(granted()) }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { allowed = granted() }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        ToggleSetting(
+            label = stringResource(R.string.ac_quiet_schedule), checked = s.quietSchedule && allowed,
+            onChange = { v ->
+                env.onChange { it.copy(quietSchedule = v) }
+                if (v && !allowed) runCatching { context.startActivity(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            },
+            hint = stringResource(if (allowed) R.string.ac_quiet_schedule_hint else R.string.ac_quiet_needs), tag = "notifications:quiet", id = "ac.quietschedule",
+        )
+        // Always listed (the page and the index must agree), but only live while the schedule is on.
+        val live = s.quietSchedule && allowed
+        run {
+            StepperSetting(
+                label = stringResource(R.string.ac_quiet_from), value = hourLabel(s.quietFromHour), canDecrement = live, canIncrement = live,
+                onDecrement = { env.onChange { it.copy(quietFromHour = (it.quietFromHour + 23) % 24) } },
+                onIncrement = { env.onChange { it.copy(quietFromHour = (it.quietFromHour + 1) % 24) } },
+                tag = "notifications:quietfrom", id = "ac.quietfrom",
+            )
+            StepperSetting(
+                label = stringResource(R.string.ac_quiet_to), value = hourLabel(s.quietToHour), canDecrement = live, canIncrement = live,
+                onDecrement = { env.onChange { it.copy(quietToHour = (it.quietToHour + 23) % 24) } },
+                onIncrement = { env.onChange { it.copy(quietToHour = (it.quietToHour + 1) % 24) } },
+                tag = "notifications:quietto", id = "ac.quietto",
+            )
+            ToggleSetting(
+                label = stringResource(R.string.ac_quiet_people), checked = s.quietPeople,
+                onChange = { v -> env.onChange { it.copy(quietPeople = v) } },
+                hint = stringResource(R.string.ac_quiet_people_hint), enabled = live, tag = "notifications:quietpeople", id = "ac.quietpeople",
+            )
         }
     }
 }

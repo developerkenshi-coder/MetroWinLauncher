@@ -141,4 +141,6 @@
         <item>2 h</item>
         <item>4 h</item>
     </string-array>
+    <string name="rec_opt_start_open">Gravar assim que abre</string>
+    <string name="rec_opt_volume_mark">Tecla de volume põe um marcador</string>
 </resources>

@@ -74,6 +74,8 @@ internal object MiniInfoTable {
         "mini.voicerecorder.wave_theme" to R.string.infom_rec_wave_theme,
         "mini.voicerecorder.two_pane" to R.string.infom_rec_two_pane,
         "mini.voicerecorder.high_contrast" to R.string.infom_rec_high_contrast,
+        "mini.voicerecorder.start_on_open" to R.string.infom_rec_start_on_open,
+        "mini.voicerecorder.volume_mark" to R.string.infom_rec_volume_mark,
     )
 
     private val hints: Map<String, Int> =

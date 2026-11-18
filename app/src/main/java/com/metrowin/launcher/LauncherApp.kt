@@ -370,8 +370,10 @@ fun LauncherApp(vm: LauncherViewModel) {
     val nowPlaying by vm.nowPlaying.collectAsStateWithLifecycle()
     val cityWeather by vm.cityWeather.collectAsStateWithLifecycle()
     val infoContext by vm.infoContext.collectAsStateWithLifecycle()
-    val liveNow = remember(live, torchOn, weather, battery, nowPlaying, cityWeather, infoContext, settings.weatherCity) {
-        live.copy(torchOn = torchOn, weather = weather, battery = battery, nowPlaying = nowPlaying, cityWeather = cityWeather.mapKeys { it.key }, context = infoContext, place = settings.weatherCity)
+    val ultraSaving = settings.batterySaving == com.metrowin.launcher.data.BatterySaving.Ultra
+    val liveNow = remember(live, torchOn, weather, battery, nowPlaying, cityWeather, infoContext, settings.weatherCity, ultraSaving) {
+        // Ultra saving: the tiles show no live content, only what the tile itself is.
+        if (ultraSaving) LiveTileData(torchOn = torchOn) else live.copy(torchOn = torchOn, weather = weather, battery = battery, nowPlaying = nowPlaying, cityWeather = cityWeather.mapKeys { it.key }, context = infoContext, place = settings.weatherCity)
     }
     val appContext = LocalContext.current
     val screenWidthDp = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp().value }
@@ -451,7 +453,7 @@ fun LauncherApp(vm: LauncherViewModel) {
     // The setting, or Android's own "remove animations": read again whenever the launcher comes back.
     var animatorScale by remember { mutableFloatStateOf(AccessibilityPolicy.systemAnimatorScale(appContext)) }
     LifecycleEventEffect(Lifecycle.Event.ON_START) { animatorScale = AccessibilityPolicy.systemAnimatorScale(appContext) }
-    val reduceMotion = AccessibilityPolicy.reduceMotion(settings.reduceMotion, animatorScale)
+    val reduceMotion = AccessibilityPolicy.reduceMotion(settings.reduceMotion || ultraSaving, animatorScale)
     SideEffect { MotionStyle.original = settings.launchAnimation == LaunchAnimation.Original && !reduceMotion }
     val voice = rememberVoiceSession()
     var lockServiceEnabled by remember { mutableStateOf(false) }
@@ -2167,6 +2169,7 @@ fun LauncherApp(vm: LauncherViewModel) {
                             },
                             onDismiss = { if (banner?.key == entry.key) banner = null },
                             modifier = Modifier.align(Alignment.TopCenter).padding(top = callBarHeight()),
+                            onReply = if (settings.inlineReply) { text -> vm.replyToNotification(entry, text) } else null,
                         ) }
                     }
                 }

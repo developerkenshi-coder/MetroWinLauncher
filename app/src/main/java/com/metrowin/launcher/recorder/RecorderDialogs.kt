@@ -63,6 +63,8 @@ internal fun recorderLabel(opt: Opt): Int = when (opt) {
     Opt.WAVE_THEME -> R.string.rec_opt_wave_theme
     Opt.TWO_PANE -> R.string.rec_opt_two_pane
     Opt.CONTRAST -> R.string.rec_opt_contrast
+    Opt.START_OPEN -> R.string.rec_opt_start_open
+    Opt.VOLUME_MARK -> R.string.rec_opt_volume_mark
     Opt.QUALITY, Opt.MAX_MIN, Opt.SORT -> R.string.rec_options
 }
 
@@ -80,7 +82,7 @@ internal fun OptionsDialog(opts: RecorderOptions, onClose: () -> Unit) {
     DialogFrame(onCancel = onClose, title = stringResource(R.string.rec_options)) {
         Column(Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Group(R.string.rec_group_record)
-            Toggles(opts, Opt.PAUSE, Opt.MARKS, Opt.FOCUS, Opt.LEVEL, Opt.SAFE)
+            Toggles(opts, Opt.PAUSE, Opt.MARKS, Opt.FOCUS, Opt.LEVEL, Opt.SAFE, Opt.START_OPEN, Opt.VOLUME_MARK)
             SettingLabel(stringResource(R.string.rec_opt_quality), Modifier.padding(top = 8.dp))
             ChoiceRow(context.resources.getStringArray(R.array.rec_qualities).toList(), opts[Opt.QUALITY], { opts[Opt.QUALITY] = it })
             SettingLabel(stringResource(R.string.rec_opt_max), Modifier.padding(top = 8.dp))

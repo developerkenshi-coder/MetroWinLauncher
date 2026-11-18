@@ -179,12 +179,16 @@ fun RecorderScreen() {
             askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else startRecording()
     }
+    // Once for each time the app is opened (not when it turns): the first time the permission is there, the recording starts if the user asked for that, or the intent said so.
+    var fresh by rememberSaveable { mutableStateOf(true) }
     LaunchedEffect(allowed) {
         val intent = activity?.intent
-        if (allowed && intent?.getBooleanExtra(EXTRA_RECORD_NOW, false) == true && !VoiceRecorder.active) {
-            intent.removeExtra(EXTRA_RECORD_NOW)
+        val now = intent?.getBooleanExtra(EXTRA_RECORD_NOW, false) == true
+        if (allowed && (now || (fresh && opts.on(Opt.START_OPEN))) && !VoiceRecorder.active) {
+            intent?.removeExtra(EXTRA_RECORD_NOW)
             begin()
         }
+        if (allowed) fresh = false
     }
 
     // ---- what is done to the recordings

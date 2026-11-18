@@ -66,4 +66,6 @@
     <string name="infom_rec_wave_theme">Le dessin de l\'onde prend l\'aspect du lanceur. Désactivé : un aspect fixe.</string>
     <string name="infom_rec_two_pane">Sur un écran large, la liste et l\'enregistrement ouvert sont côte à côte.</string>
     <string name="infom_rec_high_contrast">Un dessin de l\'onde plus marqué, pour mieux le lire.</string>
+    <string name="infom_rec_start_on_open">Ouvrir l’enregistreur (aussi depuis sa tuile) lance tout de suite un enregistrement, d’un seul toucher. La notification de l’enregistrement s’affiche comme toujours. Éteint par défaut.</string>
+    <string name="infom_rec_volume_mark">Pendant un enregistrement, les touches volume posent un repère à cet instant et ne changent pas le volume (repères activés requis). Éteint par défaut.</string>
 </resources>

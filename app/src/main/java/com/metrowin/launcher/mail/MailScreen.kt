@@ -60,6 +60,7 @@ import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroProgressBar
 import com.metrowin.launcher.ui.components.MetroText
+import com.metrowin.launcher.ui.components.SwipeRow
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.components.SelectableRow
@@ -76,12 +77,16 @@ import com.metrowin.launcher.ui.components.PageSwitch
 import com.metrowin.launcher.ui.theme.pageBackground
 import com.metrowin.launcher.ui.theme.panel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.mail.Flags
 
 private const val INBOX = "INBOX"
+
+/** How long a swiped message can still be taken back: as long as the banner with "undo" stays. */
+private const val SWIPE_UNDO_MS = 5_000L
 
 /** The files already fetched from the server, so that the little picture of an attachment and the touch that opens it share one download. */
 private object AttachmentCache {
@@ -106,7 +111,7 @@ private val MessageSaver = listSaver<MailMessage?, Any>(
 )
 
 @Composable
-fun MailScreen(modifier: Modifier = Modifier) {
+fun MailScreen(modifier: Modifier = Modifier, link: MailLink? = null, onLinkUsed: () -> Unit = {}) {
     val context = LocalContext.current
     val repository = remember { MailRepository(context.applicationContext) }
     val scope = rememberCoroutineScope()
@@ -209,6 +214,36 @@ fun MailScreen(modifier: Modifier = Modifier) {
         onServer(ids) { c, id -> c.move(folder, id, target, role) }
     }
 
+    /** A message swiped away: it leaves the list at once, the server is asked after the time to take it back ("undo") has passed; leaving Mail meanwhile does not lose the swipe. */
+    fun swipeAway(message: MailMessage, archive: Boolean) {
+        val c = client ?: return
+        val from = folder
+        scope.launch {
+            // A folder with no trash would delete for good: that is asked as always, with the row still in place.
+            if (!archive && !io { c.hasTrash(from) }.getOrDefault(true)) {
+                confirmDelete = listOf(message.id)
+                return@launch
+            }
+            mutate { all -> all.filter { it.id != message.id } }
+            var undone = false
+            MetroToast.show(context, context.getString(if (archive) R.string.mail_swiped_archive else R.string.mail_swiped_delete), context.getString(R.string.undo)) {
+                undone = true
+                reload++
+            }
+            try {
+                delay(SWIPE_UNDO_MS)
+            } finally {
+                if (!undone) {
+                    withContext(NonCancellable) {
+                        val done = io { if (archive) c.move(from, message.id.toLong(), null, "\\Archive") else c.delete(from, message.id.toLong(), false) }
+                        done.onFailure { tellFailure(it) }
+                        recount()
+                    }
+                }
+            }
+        }
+    }
+
     fun setFlagged(ids: List<String>, on: Boolean) {
         mutate { all -> all.map { if (it.id in ids) it.copy(isFlagged = on) else it } }
         selected = selected?.takeIf { it.id in ids }?.copy(isFlagged = on) ?: selected
@@ -245,6 +280,18 @@ fun MailScreen(modifier: Modifier = Modifier) {
             }
             .onFailure { error = MailErrors.text(context, it); if (lists[filter] == null) lists[filter] = emptyList(); c.close() }
         syncing = false
+    }
+
+    // A notification opened the mail: its account first, then its message as soon as the list has it.
+    LaunchedEffect(link) { link?.account?.takeIf { id -> accounts.any { it.id == id } }?.let { accountId = it; folder = INBOX; picked = emptySet() } }
+    val inbox = lists[MailFilter.All]
+    LaunchedEffect(link, inbox, account?.id) {
+        val wanted = link ?: return@LaunchedEffect
+        if (wanted.account != null && wanted.account != account?.id) return@LaunchedEffect
+        if (wanted.uid == null) { onLinkUsed(); return@LaunchedEffect }
+        val found = inbox?.firstOrNull { it.id == wanted.uid } ?: return@LaunchedEffect
+        selected = found
+        onLinkUsed()
     }
 
     // An open message is fetched when it is chosen, and again when the screen comes back to it after being recreated.
@@ -411,6 +458,7 @@ fun MailScreen(modifier: Modifier = Modifier) {
             onPick = { message -> picked = if (message.id in picked) picked - message.id else picked + message.id },
             onMore = ::loadMore,
             onRefresh = { reload++ },
+            onSwipe = if (look.swipe) ::swipeAway else null, canArchive = look.move && hasArchive,
             onFolder = { path -> folder = path; resetLists(); scope.launch { pager.animateScrollToPage(0) } },
             onSelectAccount = { id -> accountId = id; resetLists(); folder = INBOX; error = null; scope.launch { pager.animateScrollToPage(0) } },
             onAddAccount = { added, password ->
@@ -575,6 +623,7 @@ private fun MailListScreen(
     picked: Set<String>, syncing: Boolean, error: String?, searching: Boolean, query: String, onQuery: (String) -> Unit, folders: List<MailFolder>?, current: String,
     selectedId: String?, onRead: (MailMessage) -> Unit, onPick: (MailMessage) -> Unit, onMore: () -> Unit, onFolder: (String) -> Unit, onRefresh: () -> Unit,
     onSelectAccount: (String) -> Unit, onAddAccount: (MailAccount, String) -> Unit, onRemoveAccount: (String) -> Unit,
+    onSwipe: ((MailMessage, Boolean) -> Unit)? = null, canArchive: Boolean = false,
 ) {
     MiniFrame(modifier) {
         Column(Modifier.padding(start = 24.dp, top = 20.dp, bottom = 4.dp)) {
@@ -596,6 +645,7 @@ private fun MailListScreen(
                         val shown = lists[tab]?.let { all -> when (tab) { MailFilter.Unseen -> all.filter { it.isUnread }; MailFilter.Flagged -> all.filter { it.isFlagged }; else -> all } }
                         InboxPage(
                             shown, tab, onRead, (lists[tab]?.size ?: 0) >= (limits[tab] ?: MailClient.LIMIT), threads, picked, onPick, onMore, listStates.getValue(tab), look, selectedId, query.isNotBlank(), onRefresh,
+                            onSwipe, canArchive,
                         )
                     }
                     page == 3 -> FoldersPage(folders, current, onFolder)
@@ -610,6 +660,7 @@ private fun MailListScreen(
 private fun InboxPage(
     messages: List<MailMessage>?, tab: MailFilter, onSelectMessage: (MailMessage) -> Unit, hasMore: Boolean, grouped: Boolean,
     picked: Set<String>, onPick: (MailMessage) -> Unit, onMore: () -> Unit, listState: LazyListState, look: MailLook, selectedId: String?, searchingNow: Boolean, onRefresh: () -> Unit,
+    onSwipe: ((MailMessage, Boolean) -> Unit)?, canArchive: Boolean,
 ) {
     if (messages == null) {
         Column(Modifier.padding(top = 16.dp)) {
@@ -646,11 +697,23 @@ private fun InboxPage(
             val head = thread.first()
             val expanded = thread.size > 1 && head.id in open
             item(key = head.id) {
-                MessageRow(
-                    head, if (thread.size > 1) thread.size else 0, Modifier.featherRow(index).animateItem().swivel(swivel, head.id), look, selecting, head.id in picked, head.id == selectedId,
-                    onLongClick = { onPick(head) },
-                    onClick = { if (thread.size == 1) openOrPick(head.id, head) else if (selecting) onPick(head) else open = if (expanded) open - head.id else open + head.id },
-                )
+                val row: @Composable () -> Unit = {
+                    MessageRow(
+                        head, if (thread.size > 1) thread.size else 0, Modifier.featherRow(index).swivel(swivel, head.id), look, selecting, head.id in picked, head.id == selectedId,
+                        onLongClick = { onPick(head) },
+                        onClick = { if (thread.size == 1) openOrPick(head.id, head) else if (selecting) onPick(head) else open = if (expanded) open - head.id else open + head.id },
+                    )
+                }
+                // A message on its own goes away sideways: to the right to the archive, to the left to the trash, with a way back. A conversation or a ticked message does not.
+                if (onSwipe != null && thread.size == 1 && !selecting) {
+                    SwipeRow(
+                        Modifier.animateItem(),
+                        onRight = if (canArchive) ({ onSwipe(head, true) }) else null, rightLabel = stringResource(R.string.mail_archive), rightColor = LocalAccent.current,
+                        onLeft = { onSwipe(head, false) }, leftLabel = stringResource(R.string.mail_delete), leftColor = Color(0xFFE51400),
+                    ) { row() }
+                } else {
+                    Box(Modifier.animateItem()) { row() }
+                }
             }
             if (expanded) items(thread, key = { "${head.id}/${it.id}" }) {
                 val key = "${head.id}/${it.id}"

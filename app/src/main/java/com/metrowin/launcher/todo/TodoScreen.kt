@@ -575,7 +575,11 @@ private fun OpenPage(
     }
 
     fun submit() {
-        if (text.isNotBlank() && onAdd(text, due, listName)) { text = ""; due = 0L }
+        if (text.isBlank()) return
+        // "call Anna tomorrow at 9" typed: the words of the day and the hour become the due time, unless one was chosen with the chips.
+        val said = if (due == 0L) SpokenDate.parse(text, System.currentTimeMillis()) else null
+        val (what, at) = if (said != null && said.due != 0L) said.text to said.due else text to due
+        if (what.isNotBlank() && onAdd(what, at, listName)) { text = ""; due = 0L }
     }
 
     Column(Modifier.fillMaxSize().miniPageSide()) {

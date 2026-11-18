@@ -286,6 +286,7 @@ class AlertReceiver : BroadcastReceiver() {
             Alerts.ACTION_TIMER -> Alerts.onTimerDone(context, id, intent.getStringExtra(Alerts.EXTRA_TEXT).orEmpty())
             com.metrowin.launcher.data.InfoBrief.ACTION -> com.metrowin.launcher.data.InfoBrief.fire(context, id)
             Alerts.ACTION_QUIET_END -> Alerts.onQuietEnd(context)
+            QuietSchedule.ACTION -> QuietSchedule.sync(context)
             Alerts.ACTION_TORCH_OFF -> com.metrowin.launcher.data.switchTorchOff(context)
             Alerts.ACTION_TIMER_STOP -> androidx.core.app.NotificationManagerCompat.from(context).cancel(0x7100_0000 + (id.hashCode() and 0xFFFF))
             Alerts.ACTION_REMINDER -> id.toLongOrNull()?.let { Alerts.onReminderDue(context, it) }
@@ -293,6 +294,7 @@ class AlertReceiver : BroadcastReceiver() {
             Alerts.ACTION_REMINDER_SNOOZE -> id.toLongOrNull()?.let { Alerts.onReminderSnooze(context, it) }
             Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED -> {
                 Alerts.rescheduleAll(context)
+                QuietSchedule.sync(context)
                 com.metrowin.launcher.data.InfoBrief.rescheduleAll(context)
                 com.metrowin.launcher.mail.MailIdle.sync(context)
             }

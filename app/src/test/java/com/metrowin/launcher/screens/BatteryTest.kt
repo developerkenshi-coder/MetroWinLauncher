@@ -175,7 +175,7 @@ class BatteryTest : ScreenshotBase() {
     private var settings by mutableStateOf(LauncherSettings())
 
     @Test
-    fun theBatteryPageOffersTheThreeModesAndSaysWhetherItIsSavingNow() {
+    fun theBatteryPageOffersTheFourModesAndSaysWhetherItIsSavingNow() {
         settings = LauncherSettings()
         var saving by mutableStateOf(false)
         show {
@@ -187,9 +187,12 @@ class BatteryTest : ScreenshotBase() {
         advance(500)
         capture("settings_battery")
         compose.onNodeWithTag("battery:saving:0").assertExists()
-        compose.onNodeWithTag("battery:saving:2").performClick()
+        compose.onNodeWithTag("battery:saving:3").performClick()
         compose.waitForIdle()
         assertEquals(BatterySaving.Never, settings.batterySaving)
+        compose.onNodeWithTag("battery:saving:2").performClick()
+        compose.waitForIdle()
+        assertEquals(BatterySaving.Ultra, settings.batterySaving)
         compose.onNodeWithTag("battery:saving:1").performClick()
         compose.waitForIdle()
         assertEquals(BatterySaving.Always, settings.batterySaving)

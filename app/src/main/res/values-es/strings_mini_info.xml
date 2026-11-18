@@ -66,4 +66,6 @@
     <string name="infom_rec_wave_theme">El dibujo de la onda toma el aspecto del launcher. Apagado: un aspecto fijo.</string>
     <string name="infom_rec_two_pane">En una pantalla ancha la lista y la grabación abierta van una junto a otra.</string>
     <string name="infom_rec_high_contrast">Un dibujo más marcado de la onda, para leerlo mejor.</string>
+    <string name="infom_rec_start_on_open">Abrir la grabadora (también desde su mosaico) inicia una grabación al instante, con un solo toque. La notificación de la grabación aparece como siempre. Apagado de base.</string>
+    <string name="infom_rec_volume_mark">Mientras graba, las teclas de volumen ponen un marcador en ese momento y no cambian el volumen (requiere marcadores activados). Apagado de base.</string>
 </resources>

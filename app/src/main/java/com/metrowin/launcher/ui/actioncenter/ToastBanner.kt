@@ -18,6 +18,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.stringResource
+import com.metrowin.launcher.R
+import com.metrowin.launcher.ui.components.MetroTextField
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -66,6 +72,8 @@ fun ToastBanner(
     /** A word on the right of the banner that does something (Undo); null for none. */
     action: String? = null,
     onAction: () -> Unit = {},
+    /** Answers the notification from the banner: true when it was sent. Null where the banner cannot take the keyboard (a window over other apps) or the answer is off. */
+    onReply: ((String) -> Boolean)? = null,
 ) {
     val scope = rememberCoroutineScope()
     val offset = remember(entry.key) { Animatable(0f) }
@@ -76,12 +84,23 @@ fun ToastBanner(
     var width by remember { mutableIntStateOf(1) }
     val reduced = LocalReduceMotion.current
     val currentDismiss by rememberUpdatedState(onDismiss)
+    var replying by remember(entry.key) { mutableStateOf(false) }
+    var answer by remember(entry.key) { mutableStateOf("") }
+    var failed by remember(entry.key) { mutableStateOf(false) }
+    val typing = remember { FocusRequester() }
+    LaunchedEffect(replying) { if (replying) runCatching { typing.requestFocus() } }
+    fun send() {
+        if (answer.isBlank()) return
+        if (onReply?.invoke(answer) == true) { replying = false; currentDismiss() } else failed = true
+    }
     // In from the top, a while on screen, then out sideways as on Windows Phone; a swipe up takes it out at once.
     val shown = remember(entry.key) { Animatable(0f) }
     val aside = remember(entry.key) { Animatable(0f) }
     LaunchedEffect(entry.key) {
         shown.animateTo(1f, metroTween(durationMillis = if (reduced) 80 else 260, easing = Motion.Decelerate))
         delay(BANNER_MS)
+        // While an answer is being written the banner stays.
+        while (replying) delay(250)
         if (reduced) shown.animateTo(0f, metroTween(durationMillis = 80, easing = Motion.Accelerate))
         else aside.animateTo(1f, metroTween(durationMillis = 220, easing = Motion.Accelerate))
         currentDismiss()
@@ -130,6 +149,16 @@ fun ToastBanner(
             if (!hideText && entry.text.isNotBlank()) {
                 MetroText(entry.text, size = 15.sp, weight = FontWeight.Normal, maxLines = 2, color = colors.subtle, modifier = Modifier.testTag("banner:text"))
             }
+            if (replying) {
+                MetroTextField(answer, { answer = it; failed = false }, stringResource(R.string.notif_reply_hint), Modifier.padding(top = 8.dp).focusRequester(typing).testTag("banner:replyfield"), onSearch = ::send)
+                if (failed) MetroText(stringResource(R.string.notif_reply_failed), size = 14.sp, weight = FontWeight.Normal, color = colors.subtle, modifier = Modifier.testTag("banner:replyfailed"))
+            }
+        }
+        if (onReply != null && entry.reply != null && action == null) {
+            MetroText(
+                stringResource(if (replying) R.string.notif_send else R.string.notif_reply), size = 19.sp, weight = FontWeight.SemiBold, color = LocalAccent.current,
+                modifier = Modifier.testTag("banner:reply").metroPress(onClick = { if (replying) send() else replying = true }).padding(start = 14.dp, top = 8.dp, bottom = 8.dp),
+            )
         }
         if (action != null) {
             MetroText(

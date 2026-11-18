@@ -53,6 +53,7 @@ enum class MailOption(val key: String, val default: Boolean, @StringRes val labe
     TwoPanes("two_panes", true, R.string.mail_opt_two_panes, R.string.mail_opt_two_panes_hint),
     Contacts("contacts", false, R.string.mail_opt_contacts, R.string.mail_opt_contacts_hint),
     NotifActions("notif_actions", false, R.string.mail_opt_notif_actions, R.string.mail_opt_notif_actions_hint),
+    Swipe("swipe", true, R.string.mail_opt_swipe, R.string.mail_opt_swipe_hint),
     Autoconfig("autoconfig", false, R.string.mail_opt_autoconfig, R.string.mail_opt_autoconfig_hint),
 }
 

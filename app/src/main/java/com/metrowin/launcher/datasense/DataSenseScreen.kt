@@ -138,8 +138,19 @@ private fun DataSenseContent(prefs: android.content.SharedPreferences) {
                 }
             }
         }
+        // On the battery page the bar says how long the charge lasts, or how long until it is full; touching it reads again.
+        val onBattery = pages.getOrNull(pager.currentPage) == Page.Battery
+        val estimate by produceState<Pair<Boolean, Int>?>(null, onBattery, refresh, tick) {
+            value = if (!onBattery) null else withContext(Dispatchers.IO) { reader.battery() }?.let { b ->
+                (if (b.charging) b.minutesToFull?.let { true to it } else b.minutesLeft?.let { false to it })
+            }
+        }
+        val estimateLabel = estimate?.let { (charging, minutes) ->
+            stringResource(if (charging) R.string.dsx_bar_full else R.string.dsx_bar_left, com.metrowin.launcher.data.BatteryInfo.duration(minutes))
+        }
         AppBar(
-            listOf(
+            listOfNotNull(
+                estimateLabel?.let { AppBarItem("⏱", it) { refresh++ } },
                 AppBarItem("↻", stringResource(R.string.dsx_refresh)) { refresh++ },
                 AppBarItem("⚙", stringResource(R.string.ds_limit)) { editingLimit = true },
             ),

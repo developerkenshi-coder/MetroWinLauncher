@@ -67,6 +67,10 @@ object SettingsCodec {
         put("notifFilterWords", JSONArray(s.notifFilterWords))
         put("notifPriority", s.notifPriority)
         put("dndMinutes", s.dndMinutes)
+        put("quietSchedule", s.quietSchedule)
+        put("quietFromHour", s.quietFromHour)
+        put("quietToHour", s.quietToHour)
+        put("quietPeople", s.quietPeople)
         put("animationSpeed", s.animationSpeed)
         put("tiltStrength", s.tiltStrength)
         put("vibrationStrength", s.vibrationStrength)
@@ -330,6 +334,10 @@ object SettingsCodec {
             notifFilterWords = strings("notifFilterWords", base.notifFilterWords).map { it.trim() }.filter { it.isNotEmpty() }.distinct().take(NOTIF_WORDS_MAX),
             notifPriority = o.optBoolean("notifPriority", base.notifPriority),
             dndMinutes = o.optInt("dndMinutes", base.dndMinutes).coerceIn(5, 480),
+            quietSchedule = o.optBoolean("quietSchedule", base.quietSchedule),
+            quietFromHour = o.optInt("quietFromHour", base.quietFromHour).coerceIn(0, 23),
+            quietToHour = o.optInt("quietToHour", base.quietToHour).coerceIn(0, 23),
+            quietPeople = o.optBoolean("quietPeople", base.quietPeople),
             animationSpeed = o.optInt("animationSpeed", base.animationSpeed).coerceIn(50, 200),
             tiltStrength = o.optInt("tiltStrength", base.tiltStrength).coerceIn(0, 150),
             vibrationStrength = o.optInt("vibrationStrength", base.vibrationStrength).coerceIn(0, 200),

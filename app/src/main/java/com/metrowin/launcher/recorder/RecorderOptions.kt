@@ -39,6 +39,12 @@ enum class Opt(val key: String, val default: Int, val max: Int = 1) {
     TWO_PANE("two_pane", 1),
     CONTRAST("high_contrast", 0),
     SORT("sort", 0, 3),
+
+    /** The recorder starts recording as soon as it opens. */
+    START_OPEN("start_on_open", 0),
+
+    /** While recording, a volume key puts a marker instead of changing the volume. */
+    VOLUME_MARK("volume_mark", 0),
 }
 
 /** The numbers that were scattered in the code: the sound the recorder makes, and what it will not take. */

@@ -141,4 +141,6 @@
         <item>2 h</item>
         <item>4 h</item>
     </string-array>
+    <string name="rec_opt_start_open">Start recording as soon as it opens</string>
+    <string name="rec_opt_volume_mark">Volume key puts a marker</string>
 </resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notif_history_search">buscar entre las descartadas</string>
+    <string name="notif_history_none">ninguna coincide</string>
+    <string name="ac_quiet_schedule">No molestar con horario</string>
+    <string name="ac_quiet_schedule_hint">Cada día el teléfono se silencia a la primera hora y vuelve a la segunda. Las alarmas suenan siempre.</string>
+    <string name="ac_quiet_needs">Necesita el acceso a «No molestar» de Android: actívalo para abrir la pantalla que lo da.</string>
+    <string name="ac_quiet_from">Silencio desde</string>
+    <string name="ac_quiet_to">Silencio hasta</string>
+    <string name="ac_quiet_people">Dejar pasar a los favoritos</string>
+    <string name="ac_quiet_people_hint">Llamadas y mensajes de contactos con estrella suenan igual, y también una segunda llamada en un cuarto de hora. Apagado: solo alarmas.</string>
+    <string name="quiet_rule_name">Horas de silencio MetroWin</string>
+    <string name="dsx_bar_left">quedan %1$s</string>
+    <string name="dsx_bar_full">%1$s hasta llenar</string>
+    <string name="saving_ultra">ultra</string>
+    <string name="saving_ultra_desc">Ahorra siempre y además quita las animaciones y el contenido en vivo de los mosaicos: nada se mueve solo.</string>
+    <string name="mail_opt_swipe">Deslizar un mensaje para quitarlo</string>
+    <string name="mail_opt_swipe_hint">En la lista, un mensaje arrastrado a la derecha va al archivo y a la izquierda a la papelera, con unos segundos para deshacer. Sobre un mensaje esto ocupa el deslizamiento lateral entre pestañas; los títulos siguen cambiando de pestaña.</string>
+    <string name="mail_swiped_archive">Mensaje archivado</string>
+    <string name="mail_swiped_delete">Mensaje eliminado</string>
+</resources>

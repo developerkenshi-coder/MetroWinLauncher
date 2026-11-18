@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notif_history_search">Verworfene durchsuchen</string>
+    <string name="notif_history_none">nichts gefunden</string>
+    <string name="ac_quiet_schedule">Nicht stören nach Zeitplan</string>
+    <string name="ac_quiet_schedule_hint">Jeden Tag wird das Telefon zur ersten Uhrzeit still und zur zweiten wieder normal. Wecker klingeln immer.</string>
+    <string name="ac_quiet_needs">Braucht den Zugriff auf „Nicht stören“ von Android: Einschalten öffnet den Bildschirm dafür.</string>
+    <string name="ac_quiet_from">Still ab</string>
+    <string name="ac_quiet_to">Still bis</string>
+    <string name="ac_quiet_people">Favoriten durchlassen</string>
+    <string name="ac_quiet_people_hint">Anrufe und Nachrichten von Kontakten mit Stern kommen durch, ebenso ein zweiter Anruf innerhalb einer Viertelstunde. Aus: nur Wecker.</string>
+    <string name="quiet_rule_name">MetroWin Ruhezeiten</string>
+    <string name="dsx_bar_left">noch %1$s</string>
+    <string name="dsx_bar_full">%1$s bis voll</string>
+    <string name="saving_ultra">Ultra</string>
+    <string name="saving_ultra_desc">Spart immer und entfernt zusätzlich Animationen und Live-Inhalt der Kacheln: nichts bewegt sich von selbst.</string>
+    <string name="mail_opt_swipe">Nachricht wegwischen</string>
+    <string name="mail_opt_swipe_hint">In der Liste kommt eine nach rechts gezogene Nachricht ins Archiv und nach links in den Papierkorb, mit einigen Sekunden zum Rückgängigmachen. Auf einer Nachricht ersetzt das das seitliche Wischen zwischen den Tabs; die Titel wechseln den Tab weiterhin.</string>
+    <string name="mail_swiped_archive">Nachricht archiviert</string>
+    <string name="mail_swiped_delete">Nachricht gelöscht</string>
+</resources>

@@ -277,6 +277,10 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | Escludi notifiche con certe parole | `ac.filter` | uso › notifiche | notifiche › notifiche |
 | Parole da escludere | `ac.filterwords` | uso › notifiche | notifiche › notifiche |
 | Durata del silenzioso a tempo | `ac.dndminutes` | uso › notifiche | notifiche › notifiche |
+| Non disturbare a orario | `ac.quietschedule` | (nuova) | notifiche › notifiche |
+| Silenzioso dalle | `ac.quietfrom` | (nuova) | notifiche › notifiche |
+| Silenzioso fino alle | `ac.quietto` | (nuova) | notifiche › notifiche |
+| Fai passare i preferiti | `ac.quietpeople` | (nuova) | notifiche › notifiche |
 | Suono del pannello | `ac.panelsounds` | uso › notifiche | notifiche › notifiche |
 | Suoni Metro | `ac.sounds` | uso › notifiche | notifiche › notifiche |
 | Nascondi la notifica di Android | `ac.hide` | uso › notifiche | notifiche › notifiche |
@@ -402,7 +406,7 @@ Il pulsante "ripristina questa pagina" (`SectionReset`) rimette ai valori di par
 - **barre e action center › barra di navigazione** (`NavBar`): `gameAdd`, `gameSkip`, `hideBarsInGames`, `metroNavBar`, `navHoldMs`, `navSpacing`
 - **privacy e sicurezza › protezione** (`Privacy`): `bankSafe`, `bankSafeAdd`, `bankSafeSkip`
 - **barre e action center › action center** (`Actions`): `actionCenterEnabled`, `actionSliders`, `edgeActionCenter`, `quickActions`, `torchAutoOffMin`, `torchStrength`, `useShizuku`, `volumePanel`, `volumeProfilesShow`, `vpnApp`
-- **notifiche › notifiche** (`Notifications`): `clearOnOpen`, `dndMinutes`, `groupConversations`, `hideSystemNotifications`, `inlineReply`, `metroSounds`, `muteFromPanel`, `notifFilterOn`, `notifFilterWords`, `notifPriority`, `notificationPeek`, `overlayBanner`, `panelSounds`, `toastBanner`
+- **notifiche › notifiche** (`Notifications`): `clearOnOpen`, `dndMinutes`, `groupConversations`, `hideSystemNotifications`, `inlineReply`, `metroSounds`, `muteFromPanel`, `notifFilterOn`, `notifFilterWords`, `notifPriority`, `notificationPeek`, `overlayBanner`, `panelSounds`, `quietFromHour`, `quietPeople`, `quietSchedule`, `quietToHour`, `toastBanner`
 - **start e tile › live tile** (`LiveTiles`): `galleryAlbums`, `galleryApp`, `galleryPhotos`, `gallerySource`, `liveHideText`, `liveMessages`, `liveNowPlaying`, `liveOffApps`, `livePictures`, `liveProgress`, `thirdPartyTiles`, `weatherBlocks`, `weatherFahrenheit`
 - **app e icone › lista app** (`Apps`): `appLabels`, `compactList`, `showCategories`, `showFrequentApps`, `showNewApps`, `showRecentApps`, `hiddenAppsLock`
 - **aspetto e temi › schermo+lingua** (`Screen`): `highRefreshRate`, `launchAnimation`, `orientation`, `pagePadding`

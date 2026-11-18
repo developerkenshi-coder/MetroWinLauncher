@@ -12,6 +12,9 @@ import com.metrowin.launcher.model.TileData
 enum class BatterySaving(val code: String, @param:StringRes val label: Int, @param:StringRes val description: Int) {
     Auto("auto", R.string.saving_auto, R.string.saving_auto_desc),
     Always("always", R.string.saving_always, R.string.saving_always_desc),
+
+    /** Saves always, and Start shows no live content while the animations are off (see [LauncherSettings.batterySaving]). */
+    Ultra("ultra", R.string.saving_ultra, R.string.saving_ultra_desc),
     Never("never", R.string.saving_never, R.string.saving_never_desc);
 
     companion object {
@@ -30,7 +33,7 @@ object PowerPolicy {
 
     fun saving(mode: BatterySaving, androidBatterySaver: Boolean, battery: BatteryInfo?): Boolean = when (mode) {
         BatterySaving.Never -> false
-        BatterySaving.Always -> true
+        BatterySaving.Always, BatterySaving.Ultra -> true
         BatterySaving.Auto ->
             androidBatterySaver || (battery != null && battery.state == BatteryState.Discharging && battery.percent <= LOW_BATTERY_PERCENT)
     }

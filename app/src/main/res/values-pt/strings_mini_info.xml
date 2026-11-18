@@ -66,4 +66,6 @@
     <string name="infom_rec_wave_theme">O desenho da onda toma o aspeto do launcher. Desligado: um aspeto fixo.</string>
     <string name="infom_rec_two_pane">Num ecrã largo, a lista e a gravação aberta ficam lado a lado.</string>
     <string name="infom_rec_high_contrast">Um desenho da onda mais forte, para ler melhor.</string>
+    <string name="infom_rec_start_on_open">Abrir o gravador (também pelo seu bloco) inicia logo uma gravação, com um só toque. A notificação da gravação aparece como sempre. Desligado por predefinição.</string>
+    <string name="infom_rec_volume_mark">Durante uma gravação, as teclas de volume põem um marcador nesse momento e não mudam o volume (precisa dos marcadores ligados). Desligado por predefinição.</string>
 </resources>

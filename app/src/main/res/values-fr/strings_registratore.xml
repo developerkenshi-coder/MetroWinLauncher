@@ -141,4 +141,6 @@
         <item>2 h</item>
         <item>4 h</item>
     </string-array>
+    <string name="rec_opt_start_open">Enregistrer dès l’ouverture</string>
+    <string name="rec_opt_volume_mark">La touche volume pose un repère</string>
 </resources>

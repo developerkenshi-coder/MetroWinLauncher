@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notif_history_search">search the dismissed</string>
+    <string name="notif_history_none">nothing matches</string>
+    <string name="ac_quiet_schedule">Do not disturb on a schedule</string>
+    <string name="ac_quiet_schedule_hint">Every day the phone goes quiet at the first hour and comes back at the second. Alarms always ring.</string>
+    <string name="ac_quiet_needs">Needs the do not disturb access of Android: turn it on to open the screen that gives it.</string>
+    <string name="ac_quiet_from">Quiet from</string>
+    <string name="ac_quiet_to">Quiet until</string>
+    <string name="ac_quiet_people">Let starred contacts through</string>
+    <string name="ac_quiet_people_hint">Calls and messages from contacts you starred still ring, and so does a second call within a quarter of an hour. Off: only alarms.</string>
+    <string name="quiet_rule_name">MetroWin quiet hours</string>
+    <string name="dsx_bar_left">%1$s left</string>
+    <string name="dsx_bar_full">%1$s to full</string>
+    <string name="saving_ultra">ultra</string>
+    <string name="saving_ultra_desc">Always saves, and also removes the animations and the live content of the tiles: nothing moves by itself.</string>
+    <string name="mail_opt_swipe">Swipe a message away</string>
+    <string name="mail_opt_swipe_hint">In the list, a message dragged to the right goes to the archive and to the left to the trash, with an undo for a few seconds. On a message that this takes the sideways swipe between the tabs; the titles still change tab.</string>
+    <string name="mail_swiped_archive">Message archived</string>
+    <string name="mail_swiped_delete">Message deleted</string>
+</resources>

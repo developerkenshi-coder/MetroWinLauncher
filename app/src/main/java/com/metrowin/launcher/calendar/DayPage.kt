@@ -32,6 +32,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -94,6 +96,8 @@ fun DayPage(
     onEdit: (CalEvent) -> Unit,
     onCreate: (LocalDate, Int) -> Unit,
     onMove: (CalEvent, Long, Long) -> Unit,
+    /** A press that stays and is dragged over the free hours: the new event from the first minute to the last (in minutes of the day). */
+    onCreateRange: (LocalDate, Int, Int) -> Unit = { _, _, _ -> },
 ) {
     val env = LocalCal.current
     val zone = env.zone
@@ -114,6 +118,8 @@ fun DayPage(
     val gutter = GUTTER * LocalDensity.current.fontScale.coerceIn(1f, 2f)
     val scroll = rememberScrollState()
     val hourPx = with(LocalDensity.current) { hour.toPx() }
+    // The span being drawn with a long press and a drag on the free hours: (first minute, minute the finger is at).
+    var drawing by remember(day) { mutableStateOf<Pair<Int, Int>?>(null) }
     LaunchedEffect(day, today) {
         scroll.scrollTo(((focusMinute(blocks, nowMin) / 60 - 1).coerceAtLeast(0)) * hourPx.toInt())
     }
@@ -172,6 +178,18 @@ fun DayPage(
             Box(
                 Modifier.fillMaxWidth().height(hour * 24).then(
                     if (options[Option.TapToCreate]) Modifier.pointerInput(day, hourPx) { detectTapGestures { o -> onCreate(day, (o.y / hourPx).toInt().coerceIn(0, 23)) } } else Modifier,
+                ).then(
+                    if (options[Option.TapToCreate]) Modifier.pointerInput(day, hourPx) {
+                        var at = 0f
+                        detectDragGesturesAfterLongPress(
+                            onDragStart = { o -> at = o.y; val m = DayRange.snap(at / hourPx * 60f, SNAP_MIN); drawing = m to m },
+                            onDragEnd = {
+                                drawing?.let { (a, b) -> DayRange.span(a, b, SNAP_MIN).let { (s, e) -> onCreateRange(day, s, e) } }
+                                drawing = null
+                            },
+                            onDragCancel = { drawing = null },
+                        ) { c, d -> c.consume(); at += d.y; drawing = drawing?.let { (a, _) -> a to DayRange.snap(at / hourPx * 60f, SNAP_MIN) } }
+                    } else Modifier,
                 ),
             ) {
                 // The hours: a label and a thin line each, and the label of the second zone when there is one.
@@ -182,6 +200,12 @@ fun DayPage(
                             MetroText(f.format(java.time.Instant.ofEpochMilli(CalendarLogic.timeAt(day, h * 60, zone))), size = 10.sp, weight = FontWeight.Normal, color = colors.subtle.copy(alpha = 0.7f), maxLines = 1, modifier = Modifier.width(gutter).padding(top = 18.dp))
                         }
                         Box(Modifier.padding(start = gutter).fillMaxWidth().height(1.dp).background(colors.subtle.copy(alpha = 0.3f)))
+                    }
+                }
+                drawing?.let { (a, b) ->
+                    val (s, e) = DayRange.span(a, b, SNAP_MIN)
+                    Box(Modifier.offset(y = hour * (s / 60f)).padding(start = gutter).fillMaxWidth().height(hour * ((e - s) / 60f)).background(accent.copy(alpha = 0.45f)).testTag("cal:day:draw")) {
+                        MetroText(timeOf(s) + " – " + timeOf(e.coerceAtMost(DayLayout.MINUTES_IN_DAY - 1)), size = 12.sp, weight = FontWeight.SemiBold, color = Color.White, maxLines = 1, modifier = Modifier.padding(4.dp))
                     }
                 }
                 BoxWithConstraints(Modifier.padding(start = gutter).fillMaxSize()) {
@@ -255,5 +279,20 @@ fun DayPage(
                 }
             }
         }
+    }
+}
+
+/** The span a long press and a drag on the free hours draws, in minutes of the day. Pure, so it is tested. */
+internal object DayRange {
+    /** [minute] rounded to the nearest [step], inside the day. */
+    fun snap(minute: Float, step: Int): Int = ((minute / step).roundToInt() * step).coerceIn(0, DayLayout.MINUTES_IN_DAY)
+
+    /** The two ends in order, at least one [step] long and inside the day (a press with no drag is one step). */
+    fun span(a: Int, b: Int, step: Int): Pair<Int, Int> {
+        var start = minOf(a, b)
+        var end = maxOf(a, b)
+        if (end - start < step) end = start + step
+        if (end > DayLayout.MINUTES_IN_DAY) { end = DayLayout.MINUTES_IN_DAY; start = end - step }
+        return start to end
     }
 }

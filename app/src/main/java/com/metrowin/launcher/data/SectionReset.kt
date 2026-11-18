@@ -43,7 +43,7 @@ object SectionReset {
         ),
         "Notifications" to setOf(
             "metroSounds", "panelSounds",
-            "clearOnOpen", "dndMinutes", "groupConversations", "hideSystemNotifications", "inlineReply", "muteFromPanel", "notifFilterOn", "notifFilterWords",
+            "clearOnOpen", "dndMinutes", "quietSchedule", "quietFromHour", "quietToHour", "quietPeople", "groupConversations", "hideSystemNotifications", "inlineReply", "muteFromPanel", "notifFilterOn", "notifFilterWords",
             "notifPriority", "notificationPeek", "overlayBanner", "toastBanner",
         ),
         "LiveTiles" to setOf(

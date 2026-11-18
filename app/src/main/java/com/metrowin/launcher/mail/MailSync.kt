@@ -159,11 +159,11 @@ object MailSync {
 
     private fun notify(context: Context, account: MailAccount, news: List<MailMessage>) {
         val manager = canNotify(context) ?: return
-        val open = PendingIntent.getActivity(
-            context, account.id.hashCode(), Intent(context, MailActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
         val first = news.first()
+        // One new message opens that message; several open the inbox of the account.
+        val target = Intent(context, MailActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra(MailLink.ACCOUNT, account.id)
+        if (news.size == 1) target.putExtra(MailLink.UID, first.id)
+        val open = PendingIntent.getActivity(context, account.id.hashCode(), target, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val count = context.resources.getQuantityString(R.plurals.mail_new_count, news.size, news.size)
         val text = if (news.size == 1) "${first.senderName.ifBlank { first.senderAddress }}: ${first.subject}" else count
         // On the lock screen who wrote and what about stay hidden (unless the user chose to show everything): only that mail came.

@@ -66,4 +66,6 @@
     <string name="infom_rec_wave_theme">The picture of the wave takes the look of the launcher. Off: a fixed look.</string>
     <string name="infom_rec_two_pane">On a wide screen the list and the open recording sit side by side.</string>
     <string name="infom_rec_high_contrast">A stronger picture of the wave, for easier reading.</string>
+    <string name="infom_rec_start_on_open">Opening the recorder (from its tile too) starts a recording at once, with one touch. The notification of the recording shows as always. Off by default.</string>
+    <string name="infom_rec_volume_mark">While a recording runs, the volume keys put a marker at that moment and do not change the volume (needs markers on). Off by default.</string>
 </resources>

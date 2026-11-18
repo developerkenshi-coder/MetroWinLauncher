@@ -237,6 +237,7 @@ fun CalendarScreen(initialDay: LocalDate? = null) {
                                         Page.Week -> WeekPage(shown, selected, onShift = { selected = selected.plusDays(it * 7L); month = YearMonth.from(selected) }, onOpenDay = { open(it) }, onEdit = { editing = it }, onCreate = { d, h -> startNew(newEvent(d, h)) })
                                         Page.Day -> DayPage(
                                             shown, selected, onShift = { selected = selected.plusDays(it.toLong()); month = YearMonth.from(selected) }, onEdit = { editing = it }, onCreate = { d, h -> startNew(newEvent(d, h)) },
+                                            onCreateRange = { d, a, b -> startNew(CalEvent(0L, 0L, "", CalendarLogic.timeAt(d, a, zone), CalendarLogic.timeAt(d, b, zone), false)) },
                                             onMove = { e, s, en -> scope.launch { val ok = withContext(Dispatchers.IO) { repository.move(e, s, en) }; if (!ok) MetroToast.show(context, failure()); version++ } },
                                         )
                                         Page.Year -> YearPage(shown, month.year, onShift = { month = month.plusYears(it.toLong()); selected = selected.plusYears(it.toLong()) }, onPick = { m -> month = m; selected = if (m == YearMonth.from(today)) today else m.atDay(1); if (!wide) scope.launch { pager.animateScrollToPage(pages.indexOf(Page.Month)) } })
