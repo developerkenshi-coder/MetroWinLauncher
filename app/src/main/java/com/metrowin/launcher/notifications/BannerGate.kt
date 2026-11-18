@@ -24,4 +24,19 @@ object BannerGate {
     fun isNew(seen: Map<String, String>, entry: NotificationEntry): Boolean = !same(seen[entry.key], entry)
 
     fun seen(entries: List<NotificationEntry>): Map<String, String> = entries.associate { it.key to signature(it) }
+
+    /** The same words from the same app, under another key (a group's heading, a copy an app posts as well), are not announced twice in this time. */
+    const val ANNOUNCE_MS = 3_000L
+
+    private val announced = HashMap<String, Long>()
+
+    /** True when [entry] may get a banner now, and then remembers it: the launcher's own banner and the one over other apps share this. */
+    @Synchronized
+    fun announce(entry: NotificationEntry, now: Long, recent: MutableMap<String, Long> = announced): Boolean {
+        recent.values.removeAll { now - it >= ANNOUNCE_MS }
+        val words = "${entry.packageName}\u0000${entry.title}\u0000${entry.text}"
+        if (words in recent) return false
+        recent[words] = now
+        return true
+    }
 }

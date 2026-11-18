@@ -1,0 +1,1 @@
+One Metro banner per notification: messages from apps that group their notifications (a heading plus one per chat) no longer show the banner twice, and the same words from the same app are not announced again within three seconds.

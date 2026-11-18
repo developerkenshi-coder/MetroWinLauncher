@@ -842,10 +842,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                     val settled = android.os.SystemClock.elapsedRealtime() >= bannersFrom
                     entries
                         .filter {
-                            (settled || it.postTime >= listeningSince) && BannerGate.isNew(seenNotifications, it) && wall - it.postTime < BANNER_MAX_AGE_MS && it.packageName != application.packageName &&
+                            (settled || it.postTime >= listeningSince) && BannerGate.isNew(seenNotifications, it) && wall - it.postTime < BANNER_MAX_AGE_MS && it.packageName != application.packageName && !it.summary &&
                                 NotificationControl.showsBanner(it.packageName, s, wall) && !NotificationControl.filtered(it, s)
                         }
                         .maxByOrNull { it.postTime }
+                        ?.takeIf { BannerGate.announce(it, wall) }
                         ?.let {
                             _banners.tryEmit(it)
                             if (s.hideSystemNotifications) NotificationHub.hold(it)

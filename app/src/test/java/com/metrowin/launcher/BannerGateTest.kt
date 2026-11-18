@@ -25,4 +25,13 @@ class BannerGateTest {
         assertTrue(BannerGate.isNew(seen, entry("hi", 1_200, key = "other")))
         assertTrue(BannerGate.same(null, entry("hi", 1_000)).not())
     }
+
+    @Test
+    fun theSameWordsUnderAnotherKeyAreAnnouncedOnceAtATime() {
+        val recent = HashMap<String, Long>()
+        assertTrue(BannerGate.announce(entry("hi", 1_000), 1_000, recent))
+        assertFalse(BannerGate.announce(entry("hi", 1_100, key = "summary"), 1_100, recent))
+        assertTrue(BannerGate.announce(entry("again", 1_200), 1_200, recent))
+        assertTrue(BannerGate.announce(entry("hi", 1_000), 1_000 + BannerGate.ANNOUNCE_MS, recent))
+    }
 }

@@ -1,0 +1,1 @@
+Un solo banner Metro per notifica: i messaggi delle app che raggruppano le notifiche (un'intestazione più una per ogni chat) non mostrano più il banner due volte, e le stesse parole della stessa app non vengono annunciate di nuovo entro tre secondi.

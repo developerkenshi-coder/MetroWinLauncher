@@ -3,6 +3,16 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
+## 26.10.2S: 2026-11-18
+
+The complete list is in the notes of the release / L'elenco completo è nelle note della versione.
+
+**English:**
+- **One banner per notification**: a message from an app that groups its notifications (a heading plus one for each chat) no longer shows the Metro banner twice, and the same words from the same app are not announced again within three seconds.
+
+**Italiano:**
+- **Un solo banner per notifica**: un messaggio di un'app che raggruppa le notifiche (un'intestazione più una per ogni chat) non mostra più due volte il banner Metro, e le stesse parole della stessa app non vengono annunciate di nuovo entro tre secondi.
+
 ## 26.10S: 2026-11-18
 
 The complete list is in the notes of the release / L'elenco completo è nelle note della versione.

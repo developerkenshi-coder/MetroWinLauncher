@@ -248,6 +248,7 @@ class NotificationService : NotificationListenerService() {
             passesDoNotDisturb = !known || ranking.matchesInterruptionFilter(),
         )
         if (!allowed) return true.also { skipped(sbn, "rules: importance=${if (known) ranking.importance else -1} interactive/locked/DnD") }
+        if (!BannerGate.announce(entry, System.currentTimeMillis())) return true.also { skipped(sbn, "the same words were just announced") }
         if (!overlay.show(entry, settings)) return false.also { skipped(sbn, "the window of the banner could not be added") }
         if (overlaySeen.size >= MAX_OVERLAY_KEYS) overlaySeen.clear()
         overlaySeen[sbn.key] = BannerGate.signature(entry)
