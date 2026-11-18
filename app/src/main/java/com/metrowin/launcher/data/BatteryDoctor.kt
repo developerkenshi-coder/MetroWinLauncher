@@ -161,7 +161,13 @@ object BatteryDoctor {
             listOfNotNull(if (deep == null) context.s(R.string.bd_session) to needs else null)
 
         val pm = context.packageManager
-        val apps = BatteryDumps.uids(deep?.stats.orEmpty()).map { (id, mah) ->
+        // This launcher first, even when it is not among the biggest: its own share (Shizuku) and the CPU time of its process (always).
+        val mine = BatteryDumps.uids(deep?.stats.orEmpty(), limit = Int.MAX_VALUE).firstOrNull { BatteryDumps.uidNumber(it.first) == android.os.Process.myUid() }
+        val own = listOfNotNull(
+            mine?.let { context.s(R.string.bd_launcher_mah) to "${num(it.second, 2)} mAh" },
+            context.s(R.string.bd_launcher_cpu) to "${android.os.Process.getElapsedCpuTime() / 1000} s",
+        )
+        val apps = own + BatteryDumps.uids(deep?.stats.orEmpty()).map { (id, mah) ->
             val uid = BatteryDumps.uidNumber(id)
             val name = uid?.let { runCatching { pm.getPackagesForUid(it)?.firstOrNull()?.let { pkg -> pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() } }.getOrNull() }
             (name ?: id) to "${num(mah, 2)} mAh"

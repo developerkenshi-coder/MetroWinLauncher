@@ -89,6 +89,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.data.MiniLink
+import com.metrowin.launcher.data.StartPin
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.ButtonRole
@@ -395,6 +397,11 @@ internal fun NoteEditor(
             }
             if (prefs.on(NotePrefs.LOCK) || note.locked) {
                 MetroToggle(stringResource(R.string.notes_lock), note.locked, { on -> onChange(snapshot().copy(locked = on)) }, Modifier.testTag("notes:lock"))
+            }
+            MetroButton(stringResource(R.string.pin_to_start), Modifier.fillMaxWidth().testTag("notes:pinstart")) {
+                val shot = snapshot()
+                val label = shot.title.ifBlank { shot.text.lineSequence().firstOrNull { it.isNotBlank() }.orEmpty() }.ifBlank { context.getString(R.string.note_default_label) }.take(40)
+                runCatching { context.startActivity(StartPin.intent(context, MiniLink.note(shot.id), label)) }
             }
             MetroButton(stringResource(R.string.notes_share), Modifier.fillMaxWidth()) {
                 val send = android.content.Intent(android.content.Intent.ACTION_SEND).setType("text/plain").putExtra(android.content.Intent.EXTRA_TEXT, NoteBackup.plain(snapshot()))

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bd_launcher_mah">This launcher, battery use</string>
+    <string name="bd_launcher_cpu">This launcher, CPU time since it started</string>
+    <string name="pin_to_start">Pin to Start</string>
+    <string name="pin_done">Pinned to Start</string>
+    <string name="pin_already">Already on Start</string>
+    <string name="share_in_label">MetroWin: note, to-do or card</string>
+    <string name="share_in_title">Add to MetroWin</string>
+    <string name="share_in_pictures">%d pictures</string>
+    <string name="share_in_nothing">There is nothing here to keep.</string>
+    <string name="share_in_note">Make a note</string>
+    <string name="share_in_todo">Make a to-do</string>
+    <string name="share_in_card">Make a wallet card</string>
+    <string name="share_in_done_note">Saved as a note</string>
+    <string name="share_in_done_todo">Added to your to-dos</string>
+    <string name="share_in_done_card">Card added to the wallet</string>
+    <string name="share_in_failed">It could not be saved</string>
+    <string name="share_in_no_code">No code found in it</string>
+    <string name="cal_to_todo">Make a to-do from this event</string>
+    <string name="cal_todo_done">Added to your to-dos</string>
+    <string name="messages_to_event">Make an event</string>
+</resources>

@@ -128,7 +128,10 @@ enum class ShortcutKind(val code: String) {
     MemoryUse("memoryuse"),
 
     /** The power, the heat, the memory and the signal of the phone, live. */
-    SystemMonitor("systemmonitor");
+    SystemMonitor("systemmonitor"),
+
+    /** One note of the launcher kept on Start: a touch opens it; [ShortcutDef.uri] is its [MiniLink]. */
+    NoteLink("notelink");
 
     companion object {
         fun fromCode(code: String?) = entries.firstOrNull { it.code == code }
@@ -233,6 +236,7 @@ data class ShortcutDef(
             ShortcutKind.DataUse -> Glyph.Data
             ShortcutKind.MemoryUse -> Glyph.Storage
             ShortcutKind.SystemMonitor -> Glyph.Terminal
+            ShortcutKind.NoteLink -> Glyph.OneNote
         },
         pinOnly = true,
         photoPath = photoPath,

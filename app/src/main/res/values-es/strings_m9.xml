@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="bd_launcher_mah">Este launcher, consumo de batería</string>
+    <string name="bd_launcher_cpu">Este launcher, tiempo de CPU desde que arrancó</string>
+    <string name="pin_to_start">Anclar a Inicio</string>
+    <string name="pin_done">Anclado a Inicio</string>
+    <string name="pin_already">Ya está en Inicio</string>
+    <string name="share_in_label">MetroWin: nota, tarea o tarjeta</string>
+    <string name="share_in_title">Añadir a MetroWin</string>
+    <string name="share_in_pictures">%d imágenes</string>
+    <string name="share_in_nothing">Aquí no hay nada que guardar.</string>
+    <string name="share_in_note">Crear una nota</string>
+    <string name="share_in_todo">Crear una tarea</string>
+    <string name="share_in_card">Crear una tarjeta de la cartera</string>
+    <string name="share_in_done_note">Guardado como nota</string>
+    <string name="share_in_done_todo">Añadido a tus tareas</string>
+    <string name="share_in_done_card">Tarjeta añadida a la cartera</string>
+    <string name="share_in_failed">No se pudo guardar</string>
+    <string name="share_in_no_code">No se encontró ningún código</string>
+    <string name="cal_to_todo">Crear una tarea con este evento</string>
+    <string name="cal_todo_done">Añadido a tus tareas</string>
+    <string name="messages_to_event">Crear un evento</string>
+</resources>

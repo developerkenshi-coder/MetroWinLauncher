@@ -151,6 +151,7 @@ import com.metrowin.launcher.data.ContactReader
 import com.metrowin.launcher.data.ContactPick
 import com.metrowin.launcher.data.ContactSearch
 import com.metrowin.launcher.data.ShortcutDef
+import com.metrowin.launcher.data.MiniLink
 import com.metrowin.launcher.data.ShortcutKind
 import com.metrowin.launcher.data.SiteInput
 import com.metrowin.launcher.data.SystemSettingDef
@@ -1891,6 +1892,21 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             val id = ShortcutDef.newId(ShortcutKind.Contact, picked.lookupUri)
             val photo = picked.photoJpeg?.let { shortcutStore.savePhoto(id, it) }
             addShortcut(ShortcutDef(id, ShortcutKind.Contact, picked.name, picked.lookupUri, photoFile = photo), page)
+        }
+    }
+
+    /**
+     * Keeps on Start what a mini app asked for: a note ([MiniLink] address) or a contact (its lookup address, read for the name and the photo).
+     * A note already there is not pinned twice.
+     */
+    fun pinFromApp(uri: String, label: String) {
+        if (MiniLink.parse(uri)?.first == MiniLink.NOTE) {
+            val done = _shortcuts.value.none { it.kind == ShortcutKind.NoteLink && it.uri == uri }
+            if (done) addShortcut(ShortcutDef(ShortcutDef.newId(ShortcutKind.NoteLink, uri), ShortcutKind.NoteLink, label, uri), 0)
+            tell(if (done) R.string.pin_done else R.string.pin_already)
+        } else if (uri.startsWith("content://")) {
+            if (_shortcuts.value.any { it.kind == ShortcutKind.Contact && it.uri == uri }) tell(R.string.pin_already)
+            else { pinContact(uri.toUri(), 0); tell(R.string.pin_done) }
         }
     }
 

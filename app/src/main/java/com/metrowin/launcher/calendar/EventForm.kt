@@ -37,6 +37,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
+import com.metrowin.launcher.todo.TodoQuick
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.components.AppBar
@@ -202,7 +203,10 @@ fun EventForm(event: CalEvent, repository: CalendarRepository, onSave: (Saved) -
                 AppBarItem("✓", stringResource(R.string.todo_save)) { save() },
                 AppBarItem("✕", stringResource(R.string.cal_cancel)) { onCancel() },
             ),
-            menu = if (event.id != 0L) listOf(AppBarItem("−", stringResource(if (confirm) R.string.notes_delete_confirm else R.string.todo_delete)) { if (confirm) onDelete(all) else confirm = true }) else emptyList(),
+            menu = if (event.id != 0L) listOf(
+                AppBarItem("☑", stringResource(R.string.cal_to_todo)) { toTodo(context, event) },
+                AppBarItem("−", stringResource(if (confirm) R.string.notes_delete_confirm else R.string.todo_delete)) { if (confirm) onDelete(all) else confirm = true },
+            ) else emptyList(),
         )
     }
     if (custom) CustomReminder(onChoose = { m -> reminder = (chosenReminders + m).distinct().sorted(); custom = false }, onCancel = { custom = false })
@@ -288,6 +292,7 @@ private fun CustomReminder(onChoose: (Int) -> Unit, onCancel: () -> Unit) {
 /** The page of an event that cannot be changed (a subscribed calendar, a birthday): what it says, and the way to answer an invitation or join a call. */
 @Composable
 fun EventView(event: CalEvent, repository: CalendarRepository, onCancel: () -> Unit, onJoin: (String) -> Unit) {
+    val context = LocalContext.current
     val env = LocalCal.current
     val colors = LocalMetroColors.current
     val link = CalendarLogic.conferenceLink(event.location, event.description)
@@ -308,6 +313,13 @@ fun EventView(event: CalEvent, repository: CalendarRepository, onCancel: () -> U
             if (event.calendarName.isNotBlank()) PageNote(event.calendarName)
             if (!event.birthday && env.options[Option.Attendees]) Attendees(event, repository, account)
         }
-        AppBar(listOf(AppBarItem("✕", stringResource(R.string.cal_close)) { onCancel() }))
+        AppBar(listOf(AppBarItem("✕", stringResource(R.string.cal_close)) { onCancel() }), menu = listOf(AppBarItem("☑", stringResource(R.string.cal_to_todo)) { toTodo(context, event) }))
     }
+}
+
+/** A thing to do for [event]: its title, on the day it starts, with its place and notes. */
+private fun toTodo(context: android.content.Context, event: CalEvent) {
+    val note = listOf(event.location, event.description).filter { it.isNotBlank() }.joinToString("\n")
+    val ok = TodoQuick.add(context, event.title.ifBlank { context.getString(R.string.cal_untitled) }, event.start, note)
+    MetroToast.show(context, if (ok) R.string.cal_todo_done else R.string.todo_full)
 }

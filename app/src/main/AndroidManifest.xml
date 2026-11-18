@@ -334,6 +334,26 @@
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize|stateHidden" />
 
+        <!-- "Share" in any app: the words or the pictures become a note, a thing to do or a card of the wallet. -->
+        <activity
+            android:name=".sharein.ShareInActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:label="@string/share_in_label"
+            android:windowSoftInputMode="adjustResize|stateHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".todo.TodoActivity"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"

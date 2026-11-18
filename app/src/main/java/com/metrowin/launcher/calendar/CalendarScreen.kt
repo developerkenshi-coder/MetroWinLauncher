@@ -77,7 +77,7 @@ private val DaySaver = Saver<LocalDate, Long>(save = { it.toEpochDay() }, restor
 private val MonthSaver = Saver<YearMonth, String>(save = { it.toString() }, restore = { YearMonth.parse(it) })
 
 @Composable
-fun CalendarScreen(initialDay: LocalDate? = null) {
+fun CalendarScreen(initialDay: LocalDate? = null, draft: Pair<String, String>? = null) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val repository = remember { CalendarRepository(context) }
@@ -164,6 +164,14 @@ fun CalendarScreen(initialDay: LocalDate? = null) {
     }
     fun startNew(event: CalEvent) {
         if (!canRead) askRead.launch(Manifest.permission.READ_CALENDAR) else if (!canWrite) askWrite.launch(Manifest.permission.WRITE_CALENDAR) else editing = event
+    }
+    // A new event with the words of a message: the form opens on it as soon as the calendar can be written (the permissions are asked first).
+    var pendingDraft by remember { mutableStateOf(draft) }
+    LaunchedEffect(canRead, canWrite) {
+        pendingDraft?.let { (title, note) ->
+            if (canRead && canWrite) pendingDraft = null
+            startNew(newEvent(today).copy(title = title, description = note))
+        }
     }
     fun open(day: LocalDate) {
         selected = day; month = YearMonth.from(day)

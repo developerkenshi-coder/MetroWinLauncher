@@ -65,6 +65,8 @@ class MainActivity : ComponentActivity() {
         if (intent.getBooleanExtra(EXTRA_SETTINGS, false)) viewModel.requestSettings()
         if (intent.getBooleanExtra(EXTRA_VPN_CHOICE, false)) viewModel.requestVpnChoice()
         if (intent.getBooleanExtra(EXTRA_SEARCH, false)) viewModel.requestSearch()
+        // A note or a contact of a mini app asks to be kept on Start (see [StartPin]).
+        intent.getStringExtra(EXTRA_PIN_URI)?.let { viewModel.pinFromApp(it, intent.getStringExtra(EXTRA_PIN_LABEL).orEmpty()) }
         // "Share" in any browser lists the launcher: the page is pinned to Start.
         if (intent.action == Intent.ACTION_SEND && intent.type == "text/plain") {
             val shared = intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
@@ -205,6 +207,10 @@ class MainActivity : ComponentActivity() {
 
         /** Boolean extra of the intent that starts the launcher: ask which VPN app the VPN button opens. */
         const val EXTRA_VPN_CHOICE = "vpn_choice"
+
+        /** String extras of the intent that starts the launcher to keep something on Start: its address (a note link or a contact) and its name. */
+        const val EXTRA_PIN_URI = "pin_uri"
+        const val EXTRA_PIN_LABEL = "pin_label"
 
         /** The check for an idle screen comes a moment after the rate would run out. */
         private const val IDLE_SLACK_MS = 100L

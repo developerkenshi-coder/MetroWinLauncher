@@ -58,6 +58,7 @@ import com.metrowin.launcher.messages.MessagesActivity
 import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.ui.anim.featherIn
 import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.data.StartPin
 import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.pageSide
@@ -146,6 +147,7 @@ fun ContactCard(target: Target, snapshot: PeopleSnapshot, prefs: PeoplePrefs, mo
                 if (target.key != null) {
                     Round(if (starred) PeopleGlyph.Star else PeopleGlyph.StarOutline, stringResource(R.string.pp_favourite), on = starred, modifier = Modifier.testTag("people:star")) { prefs.toggleFavourite(target.key) }
                     Round(PeopleGlyph.Edit, stringResource(R.string.pp_edit)) { open(PeopleActions.edit(target.key)) }
+                    Round(PeopleGlyph.Pin, stringResource(R.string.pin_to_start), modifier = Modifier.testTag("people:pinstart")) { open(StartPin.intent(context, target.key, target.name)) }
                     Round(PeopleGlyph.Share, stringResource(R.string.pp_share)) { open(PeopleActions.share(target.key)?.let { Intent.createChooser(it, null) }) }
                 }
                 if (main != null) {

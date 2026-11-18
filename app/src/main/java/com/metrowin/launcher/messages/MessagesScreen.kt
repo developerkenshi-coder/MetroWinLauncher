@@ -449,6 +449,7 @@ private fun ThreadPage(
     val retryText = stringResource(R.string.messages_retry)
     val copyText = stringResource(R.string.messages_copy)
     val forwardText = stringResource(R.string.messages_forward)
+    val eventText = stringResource(R.string.messages_to_event)
     val deleteText = stringResource(R.string.messages_delete_message)
     val isDefault = remember { SmsRole.isDefault(context) }
     val unread = thread?.unread ?: 0
@@ -495,6 +496,17 @@ private fun ThreadPage(
                             if (sms.body.isNotEmpty()) {
                                 add(MenuAction(copyText) { context.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("sms", sms.body)) })
                                 add(MenuAction(forwardText) { onForward(sms.body) })
+                                add(MenuAction(eventText) {
+                                    // The first line is the title of the event, the whole text its notes.
+                                    val title = sms.body.lineSequence().firstOrNull { it.isNotBlank() }.orEmpty().trim().take(80)
+                                    runCatching {
+                                        context.startActivity(
+                                            Intent(context, com.metrowin.launcher.calendar.CalendarActivity::class.java)
+                                                .putExtra(com.metrowin.launcher.calendar.CalendarActivity.EXTRA_NEW_TITLE, title)
+                                                .putExtra(com.metrowin.launcher.calendar.CalendarActivity.EXTRA_NEW_NOTE, sms.body.trim()),
+                                        )
+                                    }
+                                })
                             }
                             if (isDefault && sms.id > 0) add(MenuAction(deleteText) { deleting = sms })
                         }

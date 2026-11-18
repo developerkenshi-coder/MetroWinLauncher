@@ -63,6 +63,9 @@ rilascia una versione piccola (per esempio 26.1.1S).
 1. In `app/build.gradle.kts` alza `versionCode` (sempre di più, mai uguale o minore) e cambia `versionName`.
 2. Scrivi `changelogs/<nuovo versionCode>.txt` in ogni lingua, massimo 500 caratteri.
 3. Se serve, aggiorna testi e screenshot.
+   Il test `FdroidMetadataTest` controlla nomi e lunghezze (titolo 30, riassunto 80, descrizione 4000, changelog 500 caratteri, nessun
+   changelog di un `versionCode` che non esiste ancora). Prima di un tag: `tools/check-reproducible.sh` compila due volte da zero e
+   confronta il contenuto degli APK (come si è provato in `docs/progetti/build-riproducibile.md`).
 4. Fai il commit su `main` e il push.
 5. **Solo dopo** crea e pubblica il tag, col nome della versione preceduto da `v`:
 
