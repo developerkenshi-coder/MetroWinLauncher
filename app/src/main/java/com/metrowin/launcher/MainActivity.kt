@@ -237,6 +237,11 @@ class MainActivity : ComponentActivity() {
         return super.dispatchKeyEvent(event)
     }
 
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        viewModel.icons.trim(level)
+    }
+
     /**
      * Home pressed while the launcher is already running (the activity is singleTask). When another app was
      * on screen we are still stopped at this point: onStart comes right after.

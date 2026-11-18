@@ -54,6 +54,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.SideEffect
@@ -107,6 +108,7 @@ import com.metrowin.launcher.ui.theme.LocalReduceMotion
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import kotlin.math.ceil
 import kotlin.math.roundToInt
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
@@ -124,6 +126,7 @@ import com.metrowin.launcher.notifications.LiveCard
 import com.metrowin.launcher.notifications.NotificationHub
 import com.metrowin.launcher.ui.anim.Motion
 import com.metrowin.launcher.ui.anim.LocalTapFeedback
+import com.metrowin.launcher.ui.anim.LocalTileNear
 import com.metrowin.launcher.ui.anim.metroPress
 import com.metrowin.launcher.ui.anim.MotionStyle
 import com.metrowin.launcher.ui.anim.turnstile
@@ -699,7 +702,13 @@ private fun TileGridView(
                     val at = topLevel.indexOf(cell.entryId).takeIf { cell.isTopLevel } ?: -1
                     val folderIndex = (cell as? AppCell)?.folderId?.let { id -> cells.indexOfFirst { it is FolderCell && it.folder.id == id } } ?: -1
                     PositionedTile(
-                        cell, index, layout.placements[index], unit, TileGap, live, badges, peeks, hasBackground,
+                        cell, index, layout.placements[index], unit, TileGap, live,
+                        badge = when (cell) {
+                            is AppCell -> NotificationHub.badgeOf(badges, cell.item.packageName, cell.item.id)
+                            is FolderCell -> cell.items.sumOf { NotificationHub.badgeOf(badges, it.packageName, it.id) }
+                        },
+                        cards = (cell as? AppCell)?.let { peeks[it.item.packageName] }.orEmpty(),
+                        hasBackground = hasBackground,
                         enterToken, exitRequest, editingKey, drag, actions,
                         onDragStart, onDragBy, onDragEnd, readOnly, pickedKeys,
                         previousId = topLevel.getOrNull(at - 1).takeIf { at > 0 },
@@ -826,8 +835,9 @@ private fun PositionedTile(
     unit: Dp,
     gap: Dp,
     live: LiveTileData,
-    badges: Map<String, Int>,
-    peeks: Map<String, List<LiveCard>>,
+    /** The notifications of this tile (of a folder, of its apps) and its cards: only what this tile shows, so the others do not recompose when one badge changes. */
+    badge: Int,
+    cards: List<LiveCard>,
     hasBackground: Boolean,
     enterToken: Int,
     exitRequest: ExitRequest?,
@@ -874,6 +884,11 @@ private fun PositionedTile(
     val height by animateDpAsState(unit * placement.rows + TileGap * (placement.rows - 1), spring(stiffness = Spring.StiffnessLow), label = "tileHeight")
 
     val dragging = drag.draggedKey == cell.key
+    // A tile more than a screenful away from the view does nothing by itself (no turning, no photo cycle) until it is near again.
+    val rowsInView = ceil(LocalConfiguration.current.screenHeightDp / step.value).toInt() + 1
+    val near by remember(placement, rowsInView) {
+        derivedStateOf { val top = topRow(); placement.row + placement.rows > top - rowsInView && placement.row < top + 2 * rowsInView }
+    }
     var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val position = remember { Animatable(origin ?: slot, IntOffset.VectorConverter) }
     // An app of a folder grows out of the folder, one after the other; the others have nothing of this.
@@ -1019,7 +1034,7 @@ private fun PositionedTile(
             .size(width, height)
             // After the offset: the semantics (and so TalkBack and the tests) must be where the tile really is.
             .testTag("tile:${cell.key}")
-            .tileSemantics(cell, badges, live, actions, previousId, nextId, readOnly, if (picking) picked else null)
+            .tileSemantics(cell, badge, live, actions, previousId, nextId, readOnly, if (picking) picked else null)
             .onGloballyPositioned { coordinates = it }
             .graphicsLayer {
                 turnstile(away.value, reduced)
@@ -1087,6 +1102,7 @@ private fun PositionedTile(
         if (photoWindow != null && !highContrast && ownColor == 0) PhotoSlice(photoWindow) { coordinates }
         // In Modern Droid the tiles take the containers in turn, each with its own ink.
         CompositionLocalProvider(
+            LocalTileNear provides near,
             LocalMetroColors provides colors.onTile(
                 when {
                     // Modern Droid is a solid tile that can be pale (a color of the user, an icon color): its ink follows it.
@@ -1099,14 +1115,14 @@ private fun PositionedTile(
             when (cell) {
                 is AppCell -> TileFace(
                     cell.item, cell.size, width, height, live,
-                    seed = cell.key.hashCode(), notifications = NotificationHub.badgeOf(badges, cell.item.packageName, cell.item.id),
-                    style = cell.tile.style, cards = peeks[cell.item.packageName].orEmpty(),
+                    seed = cell.key.hashCode(), notifications = badge,
+                    style = cell.tile.style, cards = cards,
                     interactive = editingKey == null, onLongClick = { currentActions.onLongClick(currentCell) },
                     onCounterStep = { delta -> currentActions.onCounterStep(cell.item.id, delta) },
                 )
                 is FolderCell -> FolderFace(
                     cell.folder, cell.items, cell.expanded, cell.size, width, height,
-                    notifications = cell.items.sumOf { NotificationHub.badgeOf(badges, it.packageName, it.id) },
+                    notifications = badge,
                 )
             }
         }
@@ -1197,7 +1213,7 @@ private val HIGH_CONTRAST_FRAME = 2.dp
 @Composable
 private fun Modifier.tileSemantics(
     cell: StartCell,
-    badges: Map<String, Int>,
+    badge: Int,
     live: LiveTileData,
     actions: StartActions,
     previousId: String?,
@@ -1209,7 +1225,7 @@ private fun Modifier.tileSemantics(
     val currentActions by rememberUpdatedState(actions)
     val currentCell by rememberUpdatedState(cell)
     val app = (cell as? AppCell)?.item
-    val notifications = app?.let { tileCount(it, live, NotificationHub.badgeOf(badges, it.packageName, it.id)) } ?: 0
+    val notifications = app?.let { tileCount(it, live, badge) } ?: 0
     // What the tile says beside the number: the next event, the first thing to do.
     val next = when (app?.live) {
         LiveKind.Calendar -> live.nextEvent?.title

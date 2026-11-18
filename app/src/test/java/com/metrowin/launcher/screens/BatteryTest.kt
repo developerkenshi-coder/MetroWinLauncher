@@ -26,6 +26,7 @@ import com.metrowin.launcher.data.LauncherSettings
 import com.metrowin.launcher.ui.anim.FlipContainer
 import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
 import com.metrowin.launcher.ui.anim.LocalPowerSaving
+import com.metrowin.launcher.ui.anim.LocalTileNear
 import com.metrowin.launcher.ui.settings.SettingsEnv
 import com.metrowin.launcher.ui.settings.SettingsScreen
 import com.metrowin.launcher.ui.settings.SettingsSection
@@ -72,6 +73,18 @@ class BatteryTest : ScreenshotBase() {
         show { CompositionLocalProvider(LocalPowerSaving provides true) { Tile() } }
         advance(60_000)
         assertEquals(0, faceShown)
+    }
+
+    @Test
+    fun aTileFarFromTheScreenDoesNotFlipUntilItIsNear() {
+        var near by mutableStateOf(false)
+        show { CompositionLocalProvider(LocalTileNear provides near) { Tile() } }
+        advance(60_000)
+        assertEquals("a tile far away stays on its face", 0, faceShown)
+        // The test clock does not apply a state written from outside by itself.
+        compose.runOnIdle { near = true; androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications() }
+        advance(7_000)
+        assertEquals("and turns once it is near", 1, faceShown)
     }
 
     @Test

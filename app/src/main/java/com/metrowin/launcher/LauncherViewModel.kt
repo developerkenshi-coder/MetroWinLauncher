@@ -754,6 +754,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     private var tilesReady = false
     private var loadedLocale: Locale? = null
+
+    /** The packages that came, went or changed since the list was last read: only the icons of these are dropped, not all of them. */
+    private val changedPackages = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     private var reloadJob: Job? = null
     private val stopObservingPackages: () -> Unit
 
@@ -770,7 +773,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         reloadApps()
         if (_settings.value.hasStartBackground) loadBackground()
         if (_settings.value.hasLockPhoto) loadLockPhoto()
-        stopObservingPackages = apps.observe(::scheduleReload)
+        stopObservingPackages = apps.observe { scheduleReload(it) }
         // The notification service reads the notifications in detail only while the live tiles use them.
         viewModelScope.launch {
             _settings.map { it.notificationPeek to it.livePictures }.distinctUntilChanged()
@@ -1715,6 +1718,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         apps.uninstall(item)
     }
 
+    private fun scheduleReload(packages: List<String>) {
+        changedPackages += packages
+        scheduleReload()
+    }
+
     private fun scheduleReload() {
         // Apps update all day, each with a handful of events; the whole list is not read again at every one of them
         // with another app in front or the screen off, only once when the launcher is back.
@@ -1732,9 +1740,15 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     private suspend fun reload() {
+        val changed = changedPackages.toSet().also { changedPackages.removeAll(it) }
         val list = withContext(Dispatchers.Default) { apps.load() }
+        // Package events say which apps changed: only their icons are read again. A reload for another reason (the language, the gallery app) drops them all.
+        if (changed.isEmpty() || Locale.getDefault() != loadedLocale) {
+            icons.clear()
+        } else {
+            icons.evict((appItems + list).filter { it.packageName in changed }.mapTo(HashSet()) { it.id })
+        }
         loadedLocale = Locale.getDefault()
-        icons.clear()
         // An app came or went: a pack among them that is gone puts the icons of the apps back at once (a soft restart of the icons), not at the next throttled look.
         refreshIconPacks()
         appItems = list

@@ -1,6 +1,9 @@
 package com.metrowin.launcher.data
 
+import android.content.ComponentCallbacks2
 import android.content.Context
+import android.graphics.BitmapFactory
+import java.io.File
 import android.graphics.Bitmap
 import android.content.pm.LauncherApps
 import android.graphics.Canvas
@@ -23,6 +26,7 @@ import kotlin.math.roundToInt
 
 /** Loads app icons as flat squares, the shape of every Metro tile and app list entry. */
 class IconLoader(context: Context) {
+    private val appContext = context.applicationContext
     private val pm = context.packageManager
     private val launcherApps = context.getSystemService(LauncherApps::class.java)
     private val owner = Process.myUserHandle()
@@ -87,6 +91,53 @@ class IconLoader(context: Context) {
         revision++
     }
 
+    /** The phone is short of memory: half of the icons go, or all of them at the worst levels (they are read again from the disk copy). */
+    fun trim(level: Int) {
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_COMPLETE) cache.evictAll()
+        else if (level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND || level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL) cache.trimToSize(cache.size() / 2)
+    }
+
+    /** Forgets the icons of [ids] only (an app was updated, added or removed), and makes what shows them load them again. */
+    fun evict(ids: Set<String>) {
+        if (ids.isEmpty()) return
+        cache.snapshot().keys.filter { it.substringBeforeLast('@') in ids }.forEach(cache::remove)
+        ids.forEach(tileColors::remove)
+        revision++
+    }
+
+    /**
+     * The disk copy of the icon of [item] at [sizePx], or null when it is not kept: only the plain icon of the app is (no icon pack, no glass,
+     * no icon of the user's choice), as it changes with nothing but the app. The name has the time the app was updated, so an update makes a new file.
+     */
+    private fun diskFile(item: AppItem, sizePx: Int, packageName: String): File? {
+        if (pack != null || glass || picks[item.id] != null) return null
+        val updated = runCatching { pm.getPackageInfo(packageName, 0).lastUpdateTime }.getOrNull() ?: return null
+        return File(diskDir, "${item.id.replace(Regex("[^A-Za-z0-9.]"), "-")}_${updated}_$sizePx.png")
+    }
+
+    /** Where the copies are: one folder for each version of the launcher, so the icons of an older one (drawn another way) are not used. */
+    private val diskDir: File by lazy {
+        val version = runCatching { pm.getPackageInfo(appContext.packageName, 0).longVersionCode }.getOrDefault(0L)
+        File(appContext.cacheDir, "icons-$version").also { dir ->
+            appContext.cacheDir.listFiles { f -> f.name.startsWith("icons-") && f != dir }?.forEach { it.deleteRecursively() }
+            dir.mkdirs()
+        }
+    }
+
+    private fun readDisk(file: File?): Bitmap? = file?.takeIf { it.exists() }?.let { runCatching { BitmapFactory.decodeFile(it.path) }.getOrNull() }
+
+    private fun writeDisk(file: File?, bitmap: Bitmap) {
+        if (file == null) return
+        runCatching {
+            val (id, updated) = file.name.split('_').let { it[0] to it[1] }
+            // An older copy of the same app (before an update) is not wanted any more.
+            file.parentFile?.listFiles { f -> f.name.startsWith("${id}_") && f.name.split('_').getOrNull(1) != updated }?.forEach { it.delete() }
+            val part = File(file.path + ".part")
+            part.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            part.renameTo(file)
+        }
+    }
+
     /** The icon if it is already in memory, so a list can draw it in its first frame. */
     fun peek(item: AppItem, sizePx: Int): Bitmap? = cache.get(key(item, sizePx))
 
@@ -95,15 +146,16 @@ class IconLoader(context: Context) {
         val activity = item.launch as? Launch.Activity ?: return loadPackageIcon(item, sizePx)
         val key = key(item, sizePx)
         cache.get(key)?.let { return it }
+        val file = activity.component.packageName.let { diskFile(item, sizePx, it) }
         val bitmap = withContext(Dispatchers.IO) {
-            runCatching {
+            readDisk(file) ?: runCatching {
                 val pick = IconPick.parse(picks[item.id])
                 val current = IconPicks.packFor(pick, pack, others)
                 val own = (pick?.drawable?.let { current?.drawable(it) } ?: current?.iconFor(activity.component))?.let { render(it, sizePx) }
                 val icon = own ?: render(iconOf(activity), sizePx).let { original -> current?.dress(original, sizePx, activity.component.packageName) ?: original }
                 val shown = if (glass) glassOf(icon) else icon
                 shown.also { if (item.isWork) drawWorkBadge(it) else if (item.isPrivate) drawPrivateBadge(it) }
-            }.getOrNull()
+            }.getOrNull()?.also { if (pack == null && !glass && picks[item.id] == null) writeDisk(file, it) }
         }
         if (bitmap != null) cache.put(key, bitmap)
         return bitmap

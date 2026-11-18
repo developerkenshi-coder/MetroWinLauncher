@@ -2,6 +2,7 @@ package com.metrowin.launcher.ui.anim
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -19,5 +20,12 @@ val LocalPowerSaving = staticCompositionLocalOf { false }
 @Composable
 fun LaunchedWhileStarted(key: Any?, block: suspend CoroutineScope.() -> Unit) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
-    LaunchedEffect(key, lifecycle) { lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED, block) }
+    val near = LocalTileNear.current
+    LaunchedEffect(key, lifecycle, near) { if (near) lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED, block) }
 }
+
+/**
+ * False for a tile of Start that is far from the screen (more than a screenful above or below): what it does by itself
+ * (turning its faces, the cycle of its photos) waits until the tile is near again. True everywhere else.
+ */
+val LocalTileNear = compositionLocalOf { true }

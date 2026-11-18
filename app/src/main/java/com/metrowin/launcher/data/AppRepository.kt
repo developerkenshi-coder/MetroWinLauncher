@@ -260,16 +260,16 @@ class AppRepository(private val context: Context) {
     }
 
     /** Calls [onChange] whenever apps are installed, updated or removed. Returns the stop function. */
-    fun observe(onChange: () -> Unit): () -> Unit {
+    fun observe(onChange: (packages: List<String>) -> Unit): () -> Unit {
         val callback = object : LauncherApps.Callback() {
-            override fun onPackageRemoved(packageName: String, user: UserHandle) = onChange()
-            override fun onPackageAdded(packageName: String, user: UserHandle) = onChange()
-            override fun onPackageChanged(packageName: String, user: UserHandle) = onChange()
+            override fun onPackageRemoved(packageName: String, user: UserHandle) = onChange(listOf(packageName))
+            override fun onPackageAdded(packageName: String, user: UserHandle) = onChange(listOf(packageName))
+            override fun onPackageChanged(packageName: String, user: UserHandle) = onChange(listOf(packageName))
             override fun onPackagesAvailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) =
-                onChange()
+                onChange(packageNames.toList())
 
             override fun onPackagesUnavailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) =
-                onChange()
+                onChange(packageNames.toList())
         }
         launcherApps.registerCallback(callback, Handler(Looper.getMainLooper()))
         return { launcherApps.unregisterCallback(callback) }

@@ -1,6 +1,5 @@
 package com.metrowin.launcher.ui.start
 
-import android.graphics.BitmapFactory
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -33,6 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.data.LiveTileData
 import com.metrowin.launcher.model.AppItem
+import com.metrowin.launcher.people.PeopleRepo
 import com.metrowin.launcher.model.TileSize
 import com.metrowin.launcher.ui.anim.FlipContainer
 import com.metrowin.launcher.ui.anim.LaunchedWhileStarted
@@ -96,8 +96,10 @@ private const val KEN_BURNS_MS = 9_000
 @Composable
 internal fun PhotoShortcutFace(item: AppItem, size: TileSize, width: Dp, height: Dp) {
     val path = item.photoPath
-    val photo by produceState<ImageBitmap?>(null, path) {
-        value = path?.let { withContext(Dispatchers.IO) { BitmapFactory.decodeFile(it)?.asImageBitmap() } }
+    // Read at the width of the screen or a little more (never over twice of it), not at the size of the file.
+    val side = androidx.compose.ui.platform.LocalContext.current.resources.displayMetrics.widthPixels
+    val photo by produceState<ImageBitmap?>(null, path, side) {
+        value = path?.let { withContext(Dispatchers.IO) { PeopleRepo.decodeSampled({ java.io.File(it).inputStream() }, side)?.asImageBitmap() } }
     }
     val bitmap = photo
     if (bitmap == null) {
