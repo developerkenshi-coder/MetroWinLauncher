@@ -60,10 +60,10 @@ private fun exifExposure(exif: ExifInterface): String = exposureText(
 )
 
 internal fun exposureText(fNumber: Double, seconds: Double, iso: Int, focalMm: Double): String = listOfNotNull(
-    fNumber.takeIf { it > 0 }?.let { "f/%.1f".format(java.util.Locale.ROOT, it) },
-    seconds.takeIf { it > 0 }?.let { if (it >= 1) "%.1f s".format(java.util.Locale.ROOT, it) else "1/${(1 / it).roundToInt()} s" },
+    fNumber.takeIf { it > 0 }?.let { "f/%.1f".format(java.util.Locale.getDefault(), it) },
+    seconds.takeIf { it > 0 }?.let { if (it >= 1) "%.1f s".format(java.util.Locale.getDefault(), it) else "1/${(1 / it).roundToInt()} s" },
     iso.takeIf { it > 0 }?.let { "ISO $it" },
-    focalMm.takeIf { it > 0 }?.let { "%.1f mm".format(java.util.Locale.ROOT, it) },
+    focalMm.takeIf { it > 0 }?.let { "%.1f mm".format(java.util.Locale.getDefault(), it) },
 ).joinToString(" · ")
 
 /**

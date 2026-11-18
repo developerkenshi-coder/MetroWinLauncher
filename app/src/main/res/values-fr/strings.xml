@@ -177,7 +177,7 @@
     <string name="backup_import_hint">Remplace les écrans Start et les paramètres par ceux d’un fichier. Les applications absentes de ce téléphone sont ignorées.</string>
     <string name="backup_exported">Disposition enregistrée</string>
     <string name="backup_imported">Disposition restaurée</string>
-    <string name="backup_failed">L’opération a échoué</string>
+    <string name="backup_failed">L’opération a échoué. Vérifiez que le dossier existe encore et qu’il a de la place, puis réessayez.</string>
     <string name="backup_not_layout">Ce n’est pas un fichier de disposition MetroWin</string>
     <string name="sec_bug">signalement de bug</string>
     <string name="sec_bug_desc">Envoyer à l’auteur un rapport de problème, avec le journal de l’application</string>
@@ -317,7 +317,7 @@
     <string name="weather_search_failed">Recherche impossible. Y a-t-il une connexion ?</string>
     <string name="weather_my_location">Ma position</string>
     <string name="weather_use_location">utiliser ma position</string>
-    <string name="weather_no_location">Impossible de vous localiser</string>
+    <string name="weather_no_location">Impossible de vous localiser. Activez la position ou cherchez une ville.</string>
     <string name="weather_fahrenheit">températures en Fahrenheit</string>
     <string name="weather_hint">La météo provient d’Open-Meteo et est récupérée à l’ouverture du launcher, au plus toutes les demi-heures. La ville est la seule donnée envoyée.</string>
     <string name="weather_page_header">PRÉVISIONS</string>
@@ -334,7 +334,7 @@
     <string name="site_title_hint">nom</string>
     <string name="site_address_hint">adresse web</string>
     <string name="site_invalid">Cela ne ressemble pas à une adresse web.</string>
-    <string name="contact_failed">Impossible de lire ce contact</string>
+    <string name="contact_failed">Impossible de lire ce contact. Autorisez « Contacts » dans les autorisations et réessayez.</string>
 
     <!-- widgets -->
     <string name="widgets_header">WIDGETS</string>
@@ -506,7 +506,7 @@
     <string name="theme_import_hint">Applique un fichier de thème. Vos tuiles et vos autres paramètres restent inchangés.</string>
     <string name="theme_exported">Thème enregistré</string>
     <string name="theme_imported">Thème appliqué</string>
-    <string name="theme_failed">Impossible d’enregistrer le thème</string>
+    <string name="theme_failed">Impossible d’enregistrer le thème. Libérez de l’espace sur le téléphone et réessayez.</string>
     <string name="theme_not_theme">Ce fichier n’est pas un thème de ce launcher</string>
 
     <!-- écran de verrouillage -->
@@ -524,7 +524,7 @@
     <string name="lock_apply">utiliser la photo sur l’écran de verrouillage du téléphone</string>
     <string name="lock_apply_hint">Photo (ou noir) en fond de l\'écran de verrouillage d\'Android.</string>
     <string name="lock_applied">Photo de l’écran de verrouillage définie</string>
-    <string name="lock_apply_failed">Impossible de définir la photo de l’écran de verrouillage</string>
+    <string name="lock_apply_failed">Impossible de définir la photo de l’écran de verrouillage. Choisissez une autre photo.</string>
     <string name="lock_dream">économiseur d’écran</string>
     <string name="lock_dream_button">ouvrir les paramètres de l’économiseur d’écran</string>
     <string name="lock_dream_hint">Android ne permet pas à un launcher de remplacer son écran de verrouillage. L’écran de verrouillage Metro fonctionne donc comme économiseur d’écran : sélectionnez-y « Écran de verrouillage Metro », et il s’affiche pendant la charge ou sur une station d’accueil. Balayez vers le haut pour quitter.</string>
@@ -559,7 +559,7 @@
     <string name="sync_conflict_merged">Les deux téléphones ont changé la même chose. Celui-ci a été conservé ; l’autre version est enregistrée dans le dossier sous le nom %1$s</string>
     <string name="sync_wrong_passphrase">Phrase secrète incorrecte pour le fichier du dossier</string>
     <string name="sync_not_file">Le fichier de synchronisation du dossier est endommagé ou n’est pas celui de MetroWin</string>
-    <string name="sync_failed">Impossible d’accéder au dossier</string>
+    <string name="sync_failed">Impossible d’accéder au dossier. Choisissez à nouveau le dossier dans les réglages de la sauvegarde.</string>
     <string name="sync_hint">La première synchronisation d’un téléphone qui trouve un fichier dans le dossier le reprend et conserve ce qu’il avait comme fichier de sauvegarde dans le dossier. Ensuite, ce qui a changé depuis la dernière synchronisation est transmis ; si les deux téléphones ont changé, celui-ci l’emporte et l’autre est conservé dans un fichier séparé.</string>
     <string name="sync_others_list">Dispositions gardées après un conflit de synchronisation : touchez-en une pour la remettre</string>
     <string name="sync_others_clear">Supprimer ces copies</string>
@@ -568,7 +568,7 @@
     <string name="notif_reply">répondre</string>
     <string name="notif_reply_hint">votre réponse</string>
     <string name="notif_send">envoyer</string>
-    <string name="notif_reply_failed">Impossible d’envoyer la réponse</string>
+    <string name="notif_reply_failed">Impossible d’envoyer la réponse. Ouvrez l’appli et répondez depuis là.</string>
     <string name="notif_inline_reply">répondre depuis l’Action Center</string>
     <string name="notif_inline_reply_hint">Affiche un lien « répondre » sur les messages auxquels on peut répondre, et envoie votre réponse à l’application qui l’a publié.</string>
     <string name="notif_group">regrouper les notifications par application</string>
@@ -1850,7 +1850,7 @@
     <string name="update_auto_hint">Demande à GitHub la dernière version quand il y a une connexion, et vous prévient par une notification. Rien n’est installé sans votre appui.</string>
     <string name="update_notification_title">Mise à jour de MetroWin</string>
     <string name="update_notification_text">La version %1$s est disponible. Ouvrez les paramètres, À propos, pour l’installer.</string>
-    <string name="update_install_failed">La mise à jour n’a pas pu être installée.</string>
+    <string name="update_install_failed">La mise à jour n’a pas pu être installée. Réessayez ; si cela échoue encore, téléchargez l’APK depuis la page des versions.</string>
     <string name="channel_update">Mises à jour</string>
     <string name="channel_mail">Courrier</string>
     <string name="update_notes_title">Nouveautés de %1$s</string>
@@ -1881,9 +1881,9 @@
     <string name="messages_forward">Transférer</string>
     <string name="messages_retry">Réessayer</string>
     <string name="mail_signing_in">Connexion…</string>
-    <string name="mail_login_failed">Connexion impossible : %1$s</string>
+    <string name="mail_login_failed">Connexion impossible : %1$s. Vérifiez l’adresse et le mot de passe.</string>
     <string name="mail_loading">Chargement…</string>
-    <string name="mail_error">Serveur injoignable : %1$s</string>
+    <string name="mail_error">Serveur injoignable : %1$s. Vérifiez la connexion et réessayez.</string>
     <string name="mail_send_failed">Le message n’a pas été envoyé : %1$s</string>
     <string name="mail_sending">Envoi…</string>
     <string name="theme_home_page">Écran Start secondaire</string>
@@ -1918,7 +1918,7 @@
     <string name="mail_cc">Cc :</string>
     <string name="mail_attach">Joindre un fichier</string>
     <string name="mail_saved">Enregistré dans Téléchargements : %1$s</string>
-    <string name="mail_download_failed">Le fichier n’a pas pu être enregistré</string>
+    <string name="mail_download_failed">Le fichier n’a pas pu être enregistré. Libérez de l’espace sur le téléphone et réessayez.</string>
     <string name="mail_to_hint">à</string>
     <string name="mail_cc_hint">cc</string>
     <string name="mail_too_big">Les fichiers sont trop gros : un message peut contenir jusqu’à 20 Mo.</string>
@@ -2038,9 +2038,9 @@
     <string name="notes_delete">Supprimer la note</string>
     <string name="notes_delete_confirm">Touchez à nouveau pour supprimer</string>
     <string name="notes_deleted">Note supprimée</string>
-    <string name="notes_backup_failed">La sauvegarde n’a pas pu être enregistrée</string>
+    <string name="notes_backup_failed">La sauvegarde n’a pas pu être enregistrée. Libérez de l’espace sur le téléphone et réessayez.</string>
     <string name="notes_restore_failed">Ce fichier n’est pas une sauvegarde des notes</string>
-    <string name="notes_save_failed">Les notes n’ont pas pu être enregistrées</string>
+    <string name="notes_save_failed">Les notes n’ont pas pu être enregistrées. Libérez de l’espace sur le téléphone et réessayez.</string>
     <string name="sketch_undo">annuler</string>
     <string name="sketch_redo">rétablir</string>
     <string name="sketch_clear">effacer</string>
@@ -2077,7 +2077,7 @@
     <string name="rec_pause">Pause</string>
     <string name="rec_cut">Enregistrer l’extrait</string>
     <string name="rec_cut_done">L’extrait a été enregistré comme nouvel enregistrement</string>
-    <string name="rec_cut_failed">L’extrait n’a pas pu être enregistré</string>
+    <string name="rec_cut_failed">L’extrait n’a pas pu être enregistré. Libérez de l’espace sur le téléphone et réessayez.</string>
     <string name="rec_working">Un instant…</string>
     <string name="rec_transcript">Transcription</string>
     <string name="rec_transcribe">Transcrire ce qui est dit</string>
@@ -2191,7 +2191,7 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="wal_no_expiry">sans date d’expiration</string>
     <string name="wal_expires">valable jusqu’au %1$s</string>
     <string name="wal_expired">expirée</string>
-    <string name="wal_save_failed">Les cartes n’ont pas pu être enregistrées</string>
+    <string name="wal_save_failed">Les cartes n’ont pas pu être enregistrées. Libérez de l’espace sur le téléphone et réessayez.</string>
     <string name="wal_import_failed">Ce fichier ne contient aucune carte du portefeuille</string>
 
     <!-- News app -->
@@ -2267,7 +2267,7 @@ au premier plan %3$s · en arrière-plan %4$s
     <string name="fm_contains">Contient</string>
     <string name="fm_edit_text">Modifier comme texte</string>
     <string name="fm_saved">Enregistré</string>
-    <string name="fm_save_failed">Le fichier n’a pas pu être enregistré</string>
+    <string name="fm_save_failed">Le fichier n’a pas pu être enregistré. Libérez de l’espace sur le téléphone et réessayez.</string>
     <string name="fm_too_big">Ce fichier est trop gros pour être modifié ici.</string>
     <string name="fm_save">Enregistrer</string>
     <string name="fm_back">retour</string>

@@ -37,7 +37,7 @@
     <string name="dialer_onboard_steps">1. Tocca il pulsante qui sotto.\n2. Scegli MetroWin Launcher nella finestra di Android.\n3. Le chiamate si apriranno sulle sue schermate, anche sul blocco schermo.</string>
     <string name="dialer_export">esporta</string>
     <string name="dialer_export_done">Cronologia salvata</string>
-    <string name="dialer_export_failed">Impossibile salvare la cronologia</string>
+    <string name="dialer_export_failed">Impossibile salvare la cronologia. Libera spazio sul telefono e riprova.</string>
     <string name="dialer_stats_title">statistiche</string>
     <string name="dialer_stats_period">Ultimi %1$d giorni</string>
     <string name="dialer_stats_total">chiamate</string>

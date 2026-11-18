@@ -37,7 +37,7 @@
     <string name="dialer_onboard_steps">1. Toca el botón de abajo.\n2. Elige MetroWin Launcher en la ventana de Android.\n3. Las llamadas se abrirán en sus pantallas, también sobre el bloqueo.</string>
     <string name="dialer_export">exportar</string>
     <string name="dialer_export_done">Historial guardado</string>
-    <string name="dialer_export_failed">No se pudo guardar el historial</string>
+    <string name="dialer_export_failed">No se pudo guardar el historial. Libera espacio en el teléfono e inténtalo de nuevo.</string>
     <string name="dialer_stats_title">estadísticas</string>
     <string name="dialer_stats_period">Últimos %1$d días</string>
     <string name="dialer_stats_total">llamadas</string>

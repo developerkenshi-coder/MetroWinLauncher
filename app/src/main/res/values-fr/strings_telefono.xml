@@ -37,7 +37,7 @@
     <string name="dialer_onboard_steps">1. Touchez le bouton ci-dessous.\n2. Choisissez MetroWin Launcher dans la fenêtre d\'Android.\n3. Les appels s\'ouvrent alors sur ses écrans, même verrouillé.</string>
     <string name="dialer_export">exporter</string>
     <string name="dialer_export_done">Historique enregistré</string>
-    <string name="dialer_export_failed">Impossible d\'enregistrer l\'historique</string>
+    <string name="dialer_export_failed">Impossible d\'enregistrer l\'historique. Libérez de l’espace sur le téléphone et réessayez.</string>
     <string name="dialer_stats_title">statistiques</string>
     <string name="dialer_stats_period">Les %1$d derniers jours</string>
     <string name="dialer_stats_total">appels</string>

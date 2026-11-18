@@ -352,6 +352,7 @@ object SettingsIndex {
         e("about.update", About, R.string.update_title, "update", "github", "download", "install", "version", "aggiorna", "aggiornamento", "scarica", "installa", "versione"),
         e("about.updatecheck", About, R.string.update_check, "update", "check", "new version", "controlla", "aggiornamenti", "nuova versione"),
         e("about.updateauto", About, R.string.update_auto, "update", "automatic", "12 hours", "aggiornamenti", "automatico", "12 ore"),
+        e("about.status", About, R.string.status_title, "status", "permissions", "services", "last error", "crash", "report", "stato", "permessi", "servizi", "ultimo errore", "segnalazione"),
         e("about.phoneinfo", About, R.string.about_phone_toggle, "phone", "model", "memory", "storage", "uptime", "telefono", "modello", "memoria", "spazio"),
         e("about.phone", About, R.string.about_phone_title, "phone", "model", "ram", "patch", "telefono", "modello", "informazioni"),
         e("about.tutorial", About, R.string.tut_replay, "tour", "help", "guide", "intro", "aiuto", "guida", "tutorial"),

@@ -83,6 +83,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.anim.metroPress
+import com.metrowin.launcher.ui.anim.keyboardControl
+import com.metrowin.launcher.ui.anim.isActivateKey
+import androidx.compose.ui.input.key.Key
 import com.metrowin.launcher.ui.theme.Danger
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.onAccent
@@ -241,6 +244,7 @@ fun MetroToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, mo
                     currentChange(!checked)
                 }
             }
+            .keyboardControl { key -> isActivateKey(key).also { if (it) currentChange(!checked) } }
             .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -336,6 +340,9 @@ private fun ToggleWord(@StringRes text: Int, visible: Boolean) {
     )
 }
 
+/** What an arrow key moves a slider by: a twentieth of its run. */
+private const val SLIDER_KEY_STEP = 0.05f
+
 /**
  * A slider from 0 to 1 that is dragged or tapped. The [track] is a gradient (the hues, say) that shows what the thumb
  * chooses; without one the track is a bar in the accent color up to the thumb. Screen readers get it as a range.
@@ -363,6 +370,11 @@ fun MetroSlider(
                 contentDescription = description
                 progressBarRangeInfo = ProgressBarRangeInfo(value.coerceIn(0f, 1f), 0f..1f)
                 setProgress { target -> currentChange(target.coerceIn(0f, 1f)); true }
+            }
+            .keyboardControl { key ->
+                val step = when (key) { Key.DirectionLeft, Key.DirectionDown -> -SLIDER_KEY_STEP; Key.DirectionRight, Key.DirectionUp -> SLIDER_KEY_STEP; else -> return@keyboardControl false }
+                currentChange((value + step).coerceIn(0f, 1f))
+                true
             }
             .pointerInput(Unit) { detectTapGestures { at -> currentChange((at.x / width).coerceIn(0f, 1f)) } }
             .pointerInput(Unit) { detectHorizontalDragGestures { change, _ -> change.consume(); currentChange((change.position.x / width).coerceIn(0f, 1f)) } },

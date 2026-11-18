@@ -69,7 +69,7 @@
     <string name="fmx_unsaved">Le modifiche non sono salvate.</string>
     <string name="fmx_why_denied">Non permesso (il file è protetto o in uso).</string>
     <string name="fmx_why_missing">Il file non c\'è più.</string>
-    <string name="fmx_why_other">Non è riuscito.</string>
+    <string name="fmx_why_other">Non è riuscito. Controlla che la cartella ci sia ancora e abbia spazio, poi riprova.</string>
     <string name="fmx_why_outside">Una cartella non può andare dentro se stessa.</string>
     <string name="fmx_why_space">Non c\'è più spazio.</string>
 </resources>

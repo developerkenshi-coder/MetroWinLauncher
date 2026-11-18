@@ -270,7 +270,7 @@ private fun Manager() {
 
     /** Runs [work] away from the screen (and from the life of the screen) with a bar that shows how far it is and a button to stop it. */
     fun startJob(title: String, total: Long, kind: JobKind = JobKind.Other, conflict: Conflict? = null, byCount: Boolean = false, work: (Progress) -> Unit): Boolean {
-        val started = FilesJobs.start(title, total, byCount, kind, conflict, work)
+        val started = FilesJobs.start(title, total, byCount, kind, conflict, context, work)
         if (!started) toast(context.getString(R.string.fmx_busy))
         return started
     }

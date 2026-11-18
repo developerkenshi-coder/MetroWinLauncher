@@ -7,7 +7,7 @@
     <string name="mail_err_network">Keine Verbindung zum Server. Prüfe das Netz.</string>
     <string name="mail_err_tls">Das Zertifikat des Servers ist ungültig: Verbindung zu deiner Sicherheit abgelehnt.</string>
     <string name="mail_err_no_trash">Dieser Ordner hat keinen Papierkorb: die Nachricht wurde nicht gelöscht.</string>
-    <string name="mail_err_other">Etwas ist schiefgelaufen</string>
+    <string name="mail_err_other">Etwas ist schiefgelaufen. Prüfe die Verbindung und versuche es erneut.</string>
     <string name="mail_yesterday">Gestern</string>
     <string name="mail_not_sent">Nachricht nicht gesendet</string>
     <string name="mail_mark_read">Als gelesen markieren</string>

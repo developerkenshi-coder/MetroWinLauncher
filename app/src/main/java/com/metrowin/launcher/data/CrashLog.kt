@@ -25,10 +25,11 @@ object CrashLog {
     fun read(dir: File): String? = runCatching { File(dir, NAME).takeIf { it.isFile }?.readText()?.takeIf { it.isNotBlank() } }.getOrNull()
 
     /** Puts the saving in front of the handler the system already has, which then does what it always did (the dialog, the process ending). */
-    fun install(dir: File, version: String) {
+    fun install(dir: File, version: String, onCrash: () -> Unit = {}) {
         val previous = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, error ->
             save(dir, text(System.currentTimeMillis(), version, thread.name, error))
+            onCrash()
             previous?.uncaughtException(thread, error)
         }
     }

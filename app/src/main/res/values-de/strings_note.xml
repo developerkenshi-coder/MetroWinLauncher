@@ -13,7 +13,7 @@
     <string name="notes_select_cancel">abbrechen</string>
     <string name="notes_select">Auswählen</string>
     <string name="notes_export_done">Datei gespeichert</string>
-    <string name="notes_export_failed">Die Datei konnte nicht gespeichert werden</string>
+    <string name="notes_export_failed">Die Datei konnte nicht gespeichert werden. Schaffe Speicherplatz auf dem Telefon und versuche es erneut.</string>
     <string name="notes_fmt_h1">Ü1</string>
     <string name="notes_fmt_h2">Ü2</string>
     <string name="notes_fmt_bold">F</string>

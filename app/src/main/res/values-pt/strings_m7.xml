@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="safe_title">Arranque seguro</string>
+    <string name="safe_text">O launcher fechou duas vezes logo após arrancar, por isso iniciou com o tema e o Início básicos. As suas definições e mosaicos estão seguros: enquanto durar, nada é alterado nem guardado. Inicie normalmente para os recuperar.</string>
+    <string name="safe_leave">Iniciar normalmente</string>
+    <string name="safe_stay">Ficar em modo seguro</string>
+    <string name="wal_sort_most">Mais usados</string>
+    <string name="wal_opt_direct">Abrir logo o cartão mais usado (precisa do histórico)</string>
+    <string name="tm_name_button">Nome</string>
+    <string name="tm_name_title">Dê um nome a este comando</string>
+    <string name="tm_name_field">Nome (vazio para o remover)</string>
+    <string name="files_work_channel">Operações com ficheiros</string>
+    <string name="retry_button">Tentar de novo</string>
+    <string name="status_title">Estado do launcher</string>
+    <string name="status_safe">Arranque normal (não seguro)</string>
+    <string name="status_notif_access">Acesso às notificações</string>
+    <string name="status_accessibility">Serviço de acessibilidade ativo</string>
+    <string name="status_overlay">Sobrepor a outras apps</string>
+    <string name="status_shizuku">Shizuku pronto</string>
+    <string name="status_notifications">Mostrar notificações</string>
+    <string name="status_phone_state">Estado do telefone (tipo de rede)</string>
+    <string name="status_contacts">Contactos</string>
+    <string name="status_calendar">Calendário</string>
+    <string name="status_battery">Sem limite da poupança de bateria</string>
+    <string name="status_last_error">Último erro</string>
+    <string name="status_no_error">nenhum</string>
+    <string name="status_yes">sim</string>
+    <string name="status_no">não</string>
+    <string name="status_copy">Copiar para um relatório de erro</string>
+    <string name="status_copied">Estado copiado</string>
+</resources>

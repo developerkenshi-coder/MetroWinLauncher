@@ -238,15 +238,46 @@ class CellWatcher(private val context: Context, private val onChange: (CellState
     /** What [readSims] found, written into [base]. */
     private fun withSims(base: CellState, sims: Sims) = base.copy(second = sims.second, slot = sims.slot, roaming = sims.roaming, data = sims.data)
 
-    private class Sims(val second: SecondSim?, val slot: Int, val roaming: Boolean, val data: Boolean)
+    private class Sims(val second: SecondSim?, val slot: Int, val roaming: Boolean, val data: Boolean, val subId: Int = -1)
+
+    // The display info of the second SIM (Android 12+): it tells the 5G that rides on 4G, which the data type of that SIM does not.
+    private var secondCallback: Any? = null
+    private var secondSub = -1
+    private var secondLabel: String? = null
+
+    private fun watchSecond(subId: Int) {
+        if (subId == secondSub) return
+        unwatchSecond()
+        if (subId < 0 || Build.VERSION.SDK_INT < 31 || !StatusIcons.hasPhoneState(context)) return
+        val sim = telephony?.createForSubscriptionId(subId) ?: return
+        val callback = object : TelephonyCallback(), TelephonyCallback.DisplayInfoListener {
+            override fun onDisplayInfoChanged(telephonyDisplayInfo: TelephonyDisplayInfo) {
+                secondLabel = StatusIcons.networkLabel(telephonyDisplayInfo.networkType, telephonyDisplayInfo.overrideNetworkType)
+                state.second?.let { update(state.copy(second = it.copy(label = secondLabel))) }
+            }
+        }
+        if (runCatching { sim.registerTelephonyCallback(ContextCompat.getMainExecutor(context), callback) }.isSuccess) {
+            secondCallback = callback
+            secondSub = subId
+        }
+    }
+
+    private fun unwatchSecond() {
+        if (Build.VERSION.SDK_INT >= 31) (secondCallback as? TelephonyCallback)?.let { cb -> runCatching { telephony?.createForSubscriptionId(secondSub)?.unregisterTelephonyCallback(cb) } }
+        secondCallback = null
+        secondSub = -1
+        secondLabel = null
+    }
 
     /**
      * The SIM that is not the default one, read now (the signal level of the phone and the kind of network of its data connection), with the slot of
      * the default one and which of them roams and carries the data. No second SIM with one SIM or without the phone permission.
-     * shortcut: polled with the rest of the bar, and without the 5G that rides on 4G (that needs a callback for each SIM); add the callbacks if it is missed.
+     * Polled with the rest of the bar; the 5G that rides on 4G comes from the callback of that SIM ([watchSecond]).
      */
+    private fun readSims(): Sims = readSimsNow().also { watchSecond(it.subId) }
+
     @SuppressLint("MissingPermission") // hasPhoneState checked first
-    private fun readSims(): Sims {
+    private fun readSimsNow(): Sims {
         val roaming = runCatching { telephony?.isNetworkRoaming == true }.getOrDefault(false)
         return runCatching {
             if (!StatusIcons.hasPhoneState(context)) return@runCatching Sims(null, 0, roaming, false)
@@ -259,10 +290,10 @@ class CellWatcher(private val context: Context, private val onChange: (CellState
             val sim = telephony?.createForSubscriptionId(other.subscriptionId)?.takeIf { it.simState == TelephonyManager.SIM_STATE_READY }
                 ?: return@runCatching Sims(null, slot, roaming, false)
             val second = SecondSim(
-                (if (Build.VERSION.SDK_INT >= 28) sim.signalStrength?.level else null) ?: 0, StatusIcons.networkLabel(sim.dataNetworkType),
+                (if (Build.VERSION.SDK_INT >= 28) sim.signalStrength?.level else null) ?: 0, secondLabel ?: StatusIcons.networkLabel(sim.dataNetworkType),
                 other.simSlotIndex, sim.isNetworkRoaming, data == other.subscriptionId,
             )
-            Sims(second, slot, roaming, data == main)
+            Sims(second, slot, roaming, data == main, other.subscriptionId)
         }.getOrDefault(Sims(null, 0, roaming, false))
     }
 
@@ -277,5 +308,6 @@ class CellWatcher(private val context: Context, private val onChange: (CellState
         signalCallback = null
         displayCallback = null
         legacy = null
+        unwatchSecond()
     }
 }

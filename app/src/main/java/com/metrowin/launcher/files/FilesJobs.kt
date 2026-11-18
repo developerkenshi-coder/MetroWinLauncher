@@ -24,7 +24,7 @@ class JobResult(val id: Int, val job: FileJob)
 /**
  * The long work of the file manager (copying, moving, deleting, compressing, extracting) runs here, not in the screen: leaving the screen or
  * turning the phone does not stop it, and the screen that comes back finds it and its result. One work at a time.
- * shortcut: no foreground service, so Android may still stop it when the whole app is killed in the background; a service needs its own manifest line.
+ * With a context the work also has a foreground service ([FilesWorkService]): a notification with the progress, and the processor awake.
  */
 object FilesJobs {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -38,11 +38,13 @@ object FilesJobs {
         private set
 
     /** Starts [work]; false (and nothing started) when another is going on. */
-    fun start(title: String, total: Long, byCount: Boolean, kind: JobKind, conflict: Conflict?, work: (Progress) -> Unit): Boolean {
+    fun start(title: String, total: Long, byCount: Boolean, kind: JobKind, conflict: Conflict?, context: android.content.Context? = null, work: (Progress) -> Unit): Boolean {
         if (current != null) return false
         val progress = Progress().also { it.totalBytes = total; it.byCount = byCount }
         val job = FileJob(title, progress, kind, conflict)
         current = job
+        // The service keeps the work alive with the screen off and shows how far it is.
+        context?.let(FilesWorkService::begin)
         scope.launch {
             runCatching { work(progress) }
             counter++

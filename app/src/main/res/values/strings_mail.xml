@@ -7,7 +7,7 @@
     <string name="mail_err_network">No connection to the server. Check the network.</string>
     <string name="mail_err_tls">The certificate of the server is not valid: the connection was refused for your safety.</string>
     <string name="mail_err_no_trash">This folder has no trash: the message was not deleted.</string>
-    <string name="mail_err_other">Something went wrong</string>
+    <string name="mail_err_other">Something went wrong. Check the connection and try again.</string>
     <string name="mail_yesterday">Yesterday</string>
     <string name="mail_not_sent">Message not sent</string>
     <string name="mail_mark_read">Mark as read</string>

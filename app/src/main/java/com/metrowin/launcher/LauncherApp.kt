@@ -2242,6 +2242,9 @@ fun LauncherApp(vm: LauncherViewModel) {
                 }
 
 
+                var safeNotice by rememberSaveable { mutableStateOf(com.metrowin.launcher.data.SafeStart.on) }
+                if (safeNotice) SafeStartDialog { safeNotice = false }
+
                 pendingRestore?.let { backup ->
                     RestoreDialog(backup, settings, pages.sumOf { it.size }, onDone = vm::applyRestore, onCancel = vm::cancelRestore)
                 }

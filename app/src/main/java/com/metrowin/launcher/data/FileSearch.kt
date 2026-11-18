@@ -87,8 +87,8 @@ class FileSearch(private val context: Context) {
 
         /** "2.4 MB", "310 KB": the size as a person reads it. */
         fun sizeText(bytes: Long): String = when {
-            bytes >= 1_000_000_000L -> "%.1f GB".format(java.util.Locale.ROOT, bytes / 1e9)
-            bytes >= 1_000_000L -> "%.1f MB".format(java.util.Locale.ROOT, bytes / 1e6)
+            bytes >= 1_000_000_000L -> "%.1f GB".format(java.util.Locale.getDefault(), bytes / 1e9)
+            bytes >= 1_000_000L -> "%.1f MB".format(java.util.Locale.getDefault(), bytes / 1e6)
             bytes >= 1_000L -> "${bytes / 1_000L} KB"
             else -> "$bytes B"
         }

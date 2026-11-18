@@ -18,7 +18,7 @@
     <string name="todo_dictation_missing">Este telefone não tem ditado por voz.</string>
     <string name="todo_edit_save">Salvar</string>
     <string name="todo_export_csv">Salvar como CSV</string>
-    <string name="todo_export_failed">Não foi possível salvar o arquivo.</string>
+    <string name="todo_export_failed">Não foi possível salvar o arquivo. Liberte espaço no telefone e tente de novo.</string>
     <string name="todo_export_md">Salvar como Markdown</string>
     <string name="todo_export_txt">Salvar como todo.txt</string>
     <string name="todo_exported">Salvo.</string>
@@ -39,7 +39,7 @@
     <string name="todo_health_exact">Os lembretes podem atrasar: o Android não permite alarmes exatos.</string>
     <string name="todo_health_notif">As notificações estão desativadas: um lembrete não aparecerá.</string>
     <string name="todo_import">Importar (Markdown ou todo.txt)</string>
-    <string name="todo_import_failed">Não foi possível ler o arquivo.</string>
+    <string name="todo_import_failed">Não foi possível ler o arquivo. Verifique se o ficheiro é válido e tente de novo.</string>
     <string name="todo_imported">%d adicionadas</string>
     <string name="todo_lists_count">%d pendentes</string>
     <string name="todo_lists_none">Ainda não há listas. Dê uma lista a um item ao editá-lo.</string>

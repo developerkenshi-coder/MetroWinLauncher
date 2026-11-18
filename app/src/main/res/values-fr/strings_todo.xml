@@ -18,7 +18,7 @@
     <string name="todo_dictation_missing">Ce téléphone n’a pas de saisie vocale.</string>
     <string name="todo_edit_save">Enregistrer</string>
     <string name="todo_export_csv">Enregistrer en CSV</string>
-    <string name="todo_export_failed">Le fichier n’a pas pu être enregistré.</string>
+    <string name="todo_export_failed">Le fichier n’a pas pu être enregistré. Libérez de l’espace sur le téléphone et réessayez.</string>
     <string name="todo_export_md">Enregistrer en Markdown</string>
     <string name="todo_export_txt">Enregistrer en todo.txt</string>
     <string name="todo_exported">Enregistré.</string>
@@ -39,7 +39,7 @@
     <string name="todo_health_exact">Les rappels peuvent arriver en retard : Android n’autorise pas les alarmes exactes.</string>
     <string name="todo_health_notif">Les notifications sont désactivées : un rappel ne s’affichera pas.</string>
     <string name="todo_import">Importer (Markdown ou todo.txt)</string>
-    <string name="todo_import_failed">Le fichier n’a pas pu être lu.</string>
+    <string name="todo_import_failed">Le fichier n’a pas pu être lu. Vérifiez que le fichier est valide et réessayez.</string>
     <string name="todo_imported">%d ajoutées</string>
     <string name="todo_lists_count">%d à faire</string>
     <string name="todo_lists_none">Pas encore de listes. Donnez une liste à un élément en le modifiant.</string>

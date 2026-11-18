@@ -1,6 +1,7 @@
 package com.metrowin.launcher.shizukuterminal
 
 import org.json.JSONArray
+import org.json.JSONObject
 
 /** The pure rules of the Terminal (what needs a question, what a read-only run lets through, how the lists are kept), apart from the screens so they can be tested. */
 
@@ -89,11 +90,27 @@ internal object SavedCommands {
     }
 }
 
-/** What to offer under the line the user is typing: the kept commands that start with it first, then the ones that only contain it. */
-internal fun suggestions(saved: List<String>, typed: String): List<String> {
+/** The names the user gave to kept commands (command to name), as one JSON object; a command with no name is shown as it is. */
+internal object SavedNames {
+    const val MAX_NAME = 30
+
+    fun encode(names: Map<String, String>): String = JSONObject(names).toString()
+
+    fun decode(text: String?): Map<String, String> = runCatching {
+        val o = JSONObject(text ?: return emptyMap())
+        o.keys().asSequence().associateWith { o.optString(it).trim().take(MAX_NAME) }.filterValues { it.isNotEmpty() }
+    }.getOrDefault(emptyMap())
+}
+
+/**
+ * What to offer under the line the user is typing: the kept commands that start with it first, then the ones that only contain it;
+ * a command is also found by its name ([names]).
+ */
+internal fun suggestions(saved: List<String>, typed: String, names: Map<String, String> = emptyMap()): List<String> {
     val q = typed.trim()
     if (q.isEmpty()) return saved
-    return saved.filter { it.startsWith(q, true) && !it.equals(q, true) } + saved.filter { !it.startsWith(q, true) && it.contains(q, true) }
+    return saved.filter { it.startsWith(q, true) && !it.equals(q, true) } +
+        saved.filter { !it.startsWith(q, true) && (it.contains(q, true) || names[it]?.contains(q, true) == true) }
 }
 
 /** How a run ended, apart from the number. */

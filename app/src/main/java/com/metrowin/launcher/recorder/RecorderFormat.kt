@@ -37,9 +37,9 @@ object RecorderFormat {
 
     /** "412 KB", "3.4 MB". */
     fun size(bytes: Long): String = when {
-        bytes < 1024 * 1024 -> "%d KB".format(Locale.ROOT, maxOf(1L, bytes / 1024))
-        bytes < 1024L * 1024 * 1024 -> "%.1f MB".format(Locale.ROOT, bytes / 1048576.0)
-        else -> "%.2f GB".format(Locale.ROOT, bytes / 1073741824.0)
+        bytes < 1024 * 1024 -> "%d KB".format(Locale.getDefault(), maxOf(1L, bytes / 1024))
+        bytes < 1024L * 1024 * 1024 -> "%.1f MB".format(Locale.getDefault(), bytes / 1048576.0)
+        else -> "%.2f GB".format(Locale.getDefault(), bytes / 1073741824.0)
     }
 
     /** The day a recording belongs to, as a stamp of the day ("20261026"), for the groups of the list; "" when the name has no date. */

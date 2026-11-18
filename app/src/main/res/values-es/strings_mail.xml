@@ -7,7 +7,7 @@
     <string name="mail_err_network">Sin conexión con el servidor. Revisa la red.</string>
     <string name="mail_err_tls">El certificado del servidor no es válido: conexión rechazada por tu seguridad.</string>
     <string name="mail_err_no_trash">Esta carpeta no tiene papelera: el mensaje no se eliminó.</string>
-    <string name="mail_err_other">Algo salió mal</string>
+    <string name="mail_err_other">Algo salió mal. Comprueba la conexión e inténtalo de nuevo.</string>
     <string name="mail_yesterday">Ayer</string>
     <string name="mail_not_sent">Mensaje no enviado</string>
     <string name="mail_mark_read">Marcar como leído</string>

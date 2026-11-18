@@ -13,7 +13,7 @@
     <string name="notes_select_cancel">cancel</string>
     <string name="notes_select">Select</string>
     <string name="notes_export_done">File saved</string>
-    <string name="notes_export_failed">The file could not be saved</string>
+    <string name="notes_export_failed">The file could not be saved. Free some space on the phone and try again.</string>
     <string name="notes_fmt_h1">H1</string>
     <string name="notes_fmt_h2">H2</string>
     <string name="notes_fmt_bold">B</string>

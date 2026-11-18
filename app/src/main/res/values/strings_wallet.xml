@@ -19,9 +19,9 @@
     <string name="wal_opt_group">Group the cards by kind</string>
     <string name="wal_opt_scan">Camera extras: torch, tap to focus, pinch to zoom, vibration</string>
     <string name="wal_export_ok">Backup saved</string>
-    <string name="wal_export_failed">The backup could not be saved</string>
+    <string name="wal_export_failed">The backup could not be saved. Free some space on the phone and try again.</string>
     <string name="wal_import_too_big">This file is too big to be a backup of the wallet</string>
-    <string name="wal_import_unreadable">This file could not be read</string>
+    <string name="wal_import_unreadable">This file could not be read. Check that the file is a valid one and try again.</string>
     <string name="wal_import_wrong_pass">Wrong passphrase, or the file was changed</string>
     <string name="wal_pass_title">Passphrase</string>
     <string name="wal_pass_hint">Passphrase</string>

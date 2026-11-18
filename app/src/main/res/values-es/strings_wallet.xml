@@ -19,9 +19,9 @@
     <string name="wal_opt_group">Agrupar las tarjetas por tipo</string>
     <string name="wal_opt_scan">Extras de la cámara: linterna, tocar para enfocar, pellizcar para ampliar, vibración</string>
     <string name="wal_export_ok">Copia guardada</string>
-    <string name="wal_export_failed">No se pudo guardar la copia</string>
+    <string name="wal_export_failed">No se pudo guardar la copia. Libera espacio en el teléfono e inténtalo de nuevo.</string>
     <string name="wal_import_too_big">Este archivo es demasiado grande para ser una copia de la cartera</string>
-    <string name="wal_import_unreadable">No se pudo leer este archivo</string>
+    <string name="wal_import_unreadable">No se pudo leer este archivo. Comprueba que el archivo sea válido e inténtalo de nuevo.</string>
     <string name="wal_import_wrong_pass">Frase de contraseña incorrecta, o el archivo fue modificado</string>
     <string name="wal_pass_title">Frase de contraseña</string>
     <string name="wal_pass_hint">Frase de contraseña</string>

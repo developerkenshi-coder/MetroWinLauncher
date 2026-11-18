@@ -19,9 +19,9 @@
     <string name="wal_opt_group">Karten nach Art gruppieren</string>
     <string name="wal_opt_scan">Kamera-Extras: Taschenlampe, Tippen zum Fokussieren, Zoomen mit zwei Fingern, Vibration</string>
     <string name="wal_export_ok">Sicherung gespeichert</string>
-    <string name="wal_export_failed">Die Sicherung konnte nicht gespeichert werden</string>
+    <string name="wal_export_failed">Die Sicherung konnte nicht gespeichert werden. Schaffe Speicherplatz auf dem Telefon und versuche es erneut.</string>
     <string name="wal_import_too_big">Diese Datei ist zu groß für eine Sicherung der Wallet</string>
-    <string name="wal_import_unreadable">Diese Datei konnte nicht gelesen werden</string>
+    <string name="wal_import_unreadable">Diese Datei konnte nicht gelesen werden. Prüfe, ob die Datei gültig ist, und versuche es erneut.</string>
     <string name="wal_import_wrong_pass">Falsche Passphrase, oder die Datei wurde verändert</string>
     <string name="wal_pass_title">Passphrase</string>
     <string name="wal_pass_hint">Passphrase</string>

@@ -69,7 +69,7 @@
     <string name="fmx_unsaved">Die Änderungen sind nicht gespeichert.</string>
     <string name="fmx_why_denied">Nicht erlaubt (Datei geschützt oder in Gebrauch).</string>
     <string name="fmx_why_missing">Die Datei ist nicht mehr da.</string>
-    <string name="fmx_why_other">Es hat nicht geklappt.</string>
+    <string name="fmx_why_other">Es hat nicht geklappt. Prüfe, ob der Ordner noch da ist und Platz hat, und versuche es dann erneut.</string>
     <string name="fmx_why_outside">Ein Ordner kann nicht in sich selbst.</string>
     <string name="fmx_why_space">Es ist kein Platz mehr da.</string>
 </resources>

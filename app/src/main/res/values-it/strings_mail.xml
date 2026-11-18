@@ -7,7 +7,7 @@
     <string name="mail_err_network">Nessuna connessione al server. Controlla la rete.</string>
     <string name="mail_err_tls">Il certificato del server non è valido: connessione rifiutata per la tua sicurezza.</string>
     <string name="mail_err_no_trash">Questa cartella non ha un cestino: il messaggio non è stato eliminato.</string>
-    <string name="mail_err_other">Qualcosa è andato storto</string>
+    <string name="mail_err_other">Qualcosa è andato storto. Controlla la connessione e riprova.</string>
     <string name="mail_yesterday">Ieri</string>
     <string name="mail_not_sent">Messaggio non inviato</string>
     <string name="mail_mark_read">Segna come letto</string>

@@ -16,6 +16,11 @@ import com.metrowin.launcher.ui.components.topBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import com.metrowin.launcher.notifications.rememberMediaInfo
+import com.metrowin.launcher.ui.start.Transport
+import com.metrowin.launcher.ui.start.TransportButton
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
@@ -74,7 +79,8 @@ fun VolumeHudPanel(
     val currentDismiss by rememberUpdatedState(onDismiss)
     LaunchedEffect(Unit) { shown.animateTo(1f, metroTween(durationMillis = if (reduced) 60 else 200, easing = Motion.Decelerate)) }
     // Every key press (a new token) and every touch of a slider starts the wait again.
-    LaunchedEffect(hud.token, hud.expanded) {
+    var touches by remember { mutableIntStateOf(0) }
+    LaunchedEffect(hud.token, hud.expanded, touches) {
         delay(if (hud.expanded) VOLUME_HUD_EXPANDED_MS else VOLUME_HUD_MS)
         currentDismiss()
     }
@@ -93,6 +99,8 @@ fun VolumeHudPanel(
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             VolumeLine(hud.main, hud.app, main = true, expanded = hud.expanded, onSet = onSet, onToggle = onToggle, onRinger = onRinger)
+            // Music that an app plays: skip and pause from here, without leaving what is on the screen.
+            if (hud.main.stream == com.metrowin.launcher.data.VolumeStream.Music && hud.app != null) MediaKeys { touches++ }
             if (hud.expanded) {
                 hud.others.forEach { row -> VolumeLine(row, null, main = false, expanded = true, onSet = onSet, onToggle = {}, onRinger = onRinger) }
                 if (hud.main.stream == com.metrowin.launcher.data.VolumeStream.Music && hud.app != null) {
@@ -103,6 +111,20 @@ fun VolumeHudPanel(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MediaKeys(onTouch: () -> Unit) {
+    val media = rememberMediaInfo(true) ?: return
+    val ink = LocalMetroColors.current.foreground
+    Row(Modifier.fillMaxWidth().testTag("volume:media"), horizontalArrangement = Arrangement.Center) {
+        TransportButton(Transport.Previous, "volume:prev", ink, stringResource(R.string.lock_music_previous)) { media.previous(); onTouch() }
+        TransportButton(
+            if (media.playing) Transport.Pause else Transport.Play, "volume:toggle", ink,
+            stringResource(if (media.playing) R.string.lock_music_pause else R.string.lock_music_play),
+        ) { media.playPause(); onTouch() }
+        TransportButton(Transport.Next, "volume:next", ink, stringResource(R.string.lock_music_next)) { media.next(); onTouch() }
     }
 }
 

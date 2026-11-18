@@ -177,7 +177,7 @@
     <string name="backup_import_hint">Substitui as telas do Start e as configurações pelas de um arquivo. Os apps que este telefone não tem ficam de fora.</string>
     <string name="backup_exported">Layout salvo</string>
     <string name="backup_imported">Layout restaurado</string>
-    <string name="backup_failed">Não funcionou</string>
+    <string name="backup_failed">Não funcionou. Verifique se a pasta ainda existe e tem espaço, e tente de novo.</string>
     <string name="backup_not_layout">Este não é um arquivo de layout do MetroWin</string>
     <string name="sec_bug">relatório de bug</string>
     <string name="sec_bug_desc">Enviar ao autor um relatório de problema, com o registro do app</string>
@@ -317,7 +317,7 @@
     <string name="weather_search_failed">Não foi possível pesquisar. Há conexão?</string>
     <string name="weather_my_location">Minha localização</string>
     <string name="weather_use_location">usar minha localização</string>
-    <string name="weather_no_location">Não foi possível descobrir onde você está</string>
+    <string name="weather_no_location">Não foi possível descobrir onde você está. Ative a localização ou procure uma cidade.</string>
     <string name="weather_fahrenheit">temperaturas em Fahrenheit</string>
     <string name="weather_hint">O clima vem do Open-Meteo e é buscado quando o launcher abre, no máximo a cada meia hora. A cidade é a única coisa enviada.</string>
     <string name="weather_page_header">PREVISÃO</string>
@@ -334,7 +334,7 @@
     <string name="site_title_hint">nome</string>
     <string name="site_address_hint">endereço web</string>
     <string name="site_invalid">Isso não parece um endereço web.</string>
-    <string name="contact_failed">Não foi possível ler esse contato</string>
+    <string name="contact_failed">Não foi possível ler esse contato. Permita «Contactos» nas permissões e tente de novo.</string>
 
     <!-- widgets -->
     <string name="widgets_header">WIDGETS</string>
@@ -506,7 +506,7 @@
     <string name="theme_import_hint">Aplica um arquivo de tema. Seus blocos e as outras configurações ficam como estão.</string>
     <string name="theme_exported">Tema salvo</string>
     <string name="theme_imported">Tema aplicado</string>
-    <string name="theme_failed">Não foi possível salvar o tema</string>
+    <string name="theme_failed">Não foi possível salvar o tema. Liberte espaço no telefone e tente de novo.</string>
     <string name="theme_not_theme">Esse arquivo não é um tema deste launcher</string>
 
     <!-- lock screen -->
@@ -524,7 +524,7 @@
     <string name="lock_apply">usar a foto na tela de bloqueio do telefone</string>
     <string name="lock_apply_hint">Foto (ou preto) como fundo do bloqueio do Android.</string>
     <string name="lock_applied">Foto da tela de bloqueio definida</string>
-    <string name="lock_apply_failed">Não foi possível definir a foto da tela de bloqueio</string>
+    <string name="lock_apply_failed">Não foi possível definir a foto da tela de bloqueio. Escolha outra foto.</string>
     <string name="lock_dream">protetor de tela</string>
     <string name="lock_dream_button">abrir as configurações do protetor de tela</string>
     <string name="lock_dream_hint">O Android não deixa um launcher substituir a tela de bloqueio dele. A tela de bloqueio Metro funciona como protetor de tela: escolha ali “Tela de bloqueio Metro”, e ela aparece enquanto o telefone carrega ou repousa em uma base. Deslize-a para cima para sair.</string>
@@ -559,7 +559,7 @@
     <string name="sync_conflict_merged">Os dois telefones mudaram a mesma coisa. Este foi mantido; a outra versão foi salva na pasta como %1$s</string>
     <string name="sync_wrong_passphrase">Frase secreta incorreta para o arquivo da pasta</string>
     <string name="sync_not_file">O arquivo de sincronização da pasta está danificado ou não é nosso</string>
-    <string name="sync_failed">Não foi possível acessar a pasta</string>
+    <string name="sync_failed">Não foi possível acessar a pasta. Escolha de novo a pasta nas definições da cópia de segurança.</string>
     <string name="sync_hint">A primeira sincronização de um telefone que encontra um arquivo na pasta adota esse arquivo e guarda o que tinha como arquivo de backup na pasta. Depois disso, o que mudou desde a última sincronização é transferido; se os dois telefones mudaram, este vence e o outro é mantido como um arquivo separado.</string>
     <string name="sync_others_list">Layouts guardados após um conflito de sincronização: toque num para o repor</string>
     <string name="sync_others_clear">Apagar estas cópias</string>
@@ -568,7 +568,7 @@
     <string name="notif_reply">responder</string>
     <string name="notif_reply_hint">sua resposta</string>
     <string name="notif_send">enviar</string>
-    <string name="notif_reply_failed">Não foi possível enviar a resposta</string>
+    <string name="notif_reply_failed">Não foi possível enviar a resposta. Abra a app e responda de lá.</string>
     <string name="notif_inline_reply">responder pelo Action Center</string>
     <string name="notif_inline_reply_hint">Mostra um link “responder” nas mensagens que podem ser respondidas e envia a sua resposta ao app que a publicou.</string>
     <string name="notif_group">agrupar notificações por app</string>
@@ -1850,7 +1850,7 @@
     <string name="update_auto_hint">Pergunta ao GitHub pela versão mais recente quando há conexão e avisa você com uma notificação. Nada é instalado sem o seu toque.</string>
     <string name="update_notification_title">Atualização do MetroWin</string>
     <string name="update_notification_text">A versão %1$s está disponível. Abra as configurações, Sobre, para instalá-la.</string>
-    <string name="update_install_failed">Não foi possível instalar a atualização.</string>
+    <string name="update_install_failed">Não foi possível instalar a atualização. Tente de novo; se continuar a falhar, transfira o APK da página das versões.</string>
     <string name="channel_update">Atualizações</string>
     <string name="channel_mail">E-mail</string>
     <string name="update_notes_title">Novidades em %1$s</string>
@@ -1881,9 +1881,9 @@
     <string name="messages_forward">Encaminhar</string>
     <string name="messages_retry">Tentar de novo</string>
     <string name="mail_signing_in">Entrando…</string>
-    <string name="mail_login_failed">Não foi possível entrar: %1$s</string>
+    <string name="mail_login_failed">Não foi possível entrar: %1$s. Verifique o endereço e a palavra-passe.</string>
     <string name="mail_loading">Carregando…</string>
-    <string name="mail_error">Servidor inacessível: %1$s</string>
+    <string name="mail_error">Servidor inacessível: %1$s. Verifique a ligação e tente de novo.</string>
     <string name="mail_send_failed">A mensagem não foi enviada: %1$s</string>
     <string name="mail_sending">Enviando…</string>
     <string name="theme_home_page">Tela Start secundária</string>
@@ -1918,7 +1918,7 @@
     <string name="mail_cc">Cc:</string>
     <string name="mail_attach">Anexar um arquivo</string>
     <string name="mail_saved">Salvo em Downloads: %1$s</string>
-    <string name="mail_download_failed">Não foi possível salvar o arquivo</string>
+    <string name="mail_download_failed">Não foi possível salvar o arquivo. Liberte espaço no telefone e tente de novo.</string>
     <string name="mail_to_hint">para</string>
     <string name="mail_cc_hint">cc</string>
     <string name="mail_too_big">Os arquivos são grandes demais: uma mensagem comporta até 20 MB.</string>
@@ -2038,9 +2038,9 @@
     <string name="notes_delete">Eliminar a nota</string>
     <string name="notes_delete_confirm">Toque de novo para eliminar</string>
     <string name="notes_deleted">Nota eliminada</string>
-    <string name="notes_backup_failed">Não foi possível guardar a cópia</string>
+    <string name="notes_backup_failed">Não foi possível guardar a cópia. Liberte espaço no telefone e tente de novo.</string>
     <string name="notes_restore_failed">Este ficheiro não é uma cópia das notas</string>
-    <string name="notes_save_failed">Não foi possível guardar as notas</string>
+    <string name="notes_save_failed">Não foi possível guardar as notas. Liberte espaço no telefone e tente de novo.</string>
     <string name="sketch_undo">desfazer</string>
     <string name="sketch_redo">refazer</string>
     <string name="sketch_clear">limpar</string>
@@ -2077,7 +2077,7 @@
     <string name="rec_pause">Pausa</string>
     <string name="rec_cut">Guardar o trecho</string>
     <string name="rec_cut_done">O trecho foi guardado como nova gravação</string>
-    <string name="rec_cut_failed">Não foi possível guardar o trecho</string>
+    <string name="rec_cut_failed">Não foi possível guardar o trecho. Liberte espaço no telefone e tente de novo.</string>
     <string name="rec_working">Um momento…</string>
     <string name="rec_transcript">Transcrição</string>
     <string name="rec_transcribe">Transcrever o que é dito</string>
@@ -2191,7 +2191,7 @@ em primeiro plano %3$s · em segundo plano %4$s
     <string name="wal_no_expiry">sem validade</string>
     <string name="wal_expires">válido até %1$s</string>
     <string name="wal_expired">expirado</string>
-    <string name="wal_save_failed">Não foi possível guardar os cartões</string>
+    <string name="wal_save_failed">Não foi possível guardar os cartões. Liberte espaço no telefone e tente de novo.</string>
     <string name="wal_import_failed">Este ficheiro não tem cartões da carteira</string>
 
     <!-- News app -->
@@ -2267,7 +2267,7 @@ em primeiro plano %3$s · em segundo plano %4$s
     <string name="fm_contains">Contém</string>
     <string name="fm_edit_text">Editar como texto</string>
     <string name="fm_saved">Guardado</string>
-    <string name="fm_save_failed">Não foi possível guardar o ficheiro</string>
+    <string name="fm_save_failed">Não foi possível guardar o ficheiro. Liberte espaço no telefone e tente de novo.</string>
     <string name="fm_too_big">Este ficheiro é demasiado grande para ser editado aqui.</string>
     <string name="fm_save">Guardar</string>
     <string name="fm_back">voltar</string>

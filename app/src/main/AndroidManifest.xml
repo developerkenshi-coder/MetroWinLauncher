@@ -31,6 +31,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <!-- "Real-time mail": the connection that waits for new mail (IMAP IDLE), with a notification that can be stopped. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- A long copy, move or archive of the file manager goes on with the screen off, with a notification that shows how far it is. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
     <!-- Only to ask, in the tutorial, that Android does not close the launcher to save battery. -->
@@ -486,6 +488,7 @@
                 android:value="Keeps an IMAP IDLE connection open to the user's mail servers so that new mail is told at once; off by default, stopped from its notification." />
         </service>
         <service android:name=".recorder.RecorderService" android:exported="false" android:foregroundServiceType="microphone" />
+        <service android:name=".files.FilesWorkService" android:exported="false" android:foregroundServiceType="dataSync" />
         <service
             android:name=".messages.RespondViaMessageService"
             android:exported="true"

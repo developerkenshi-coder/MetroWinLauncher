@@ -57,7 +57,7 @@
     <string name="ph_zoom_in">zoom in</string>
     <string name="ph_zoom_out">zoom out</string>
     <string name="ph_strip_failed">Could not prepare the copies without metadata. Nothing was shared.</string>
-    <string name="ph_delete_failed">Could not delete</string>
+    <string name="ph_delete_failed">Could not delete. Allow the change when Android asks, then try again.</string>
     <string name="ph_undo">undo</string>
     <plurals name="ph_count">
         <item quantity="one">%d photo</item>

@@ -100,6 +100,14 @@ fun WalletScreen() {
     fun open(card: Card) {
         if (needsUnlock()) { pendingOpen = card.id; unlock.launch(unlockIntent!!) } else openNow(card.id)
     }
+    // Straight to the card used most (it needs the history, which counts the uses); once per opening, so Back still reaches the list.
+    var directDone by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(cards) {
+        val loaded = cards ?: return@LaunchedEffect
+        if (directDone) return@LaunchedEffect
+        directDone = true
+        if (prefs.direct.on && pageKey == LIST) loaded.maxByOrNull { it.uses }?.takeIf { it.uses > 0 }?.let(::open)
+    }
     // A card restored by the system after the lock ran out is not shown without it.
     LaunchedEffect(pageKey, prefs.lock.on) { if (pageKey.startsWith("v:") && needsUnlock() && pendingOpen == null) pageKey = LIST }
 
@@ -225,7 +233,7 @@ private fun OptionsDialog(prefs: WalletPrefs, onClose: () -> Unit) {
             R.string.wal_opt_secure to prefs.secure, R.string.wal_opt_enc_export to prefs.encryptedExport, R.string.wal_opt_lock to prefs.lock,
             R.string.wal_opt_history to prefs.history, R.string.wal_opt_motion to prefs.motion, R.string.wal_opt_expiry to prefs.expiry,
             R.string.wal_opt_preview to prefs.preview, R.string.wal_opt_rich to prefs.rich, R.string.wal_opt_grid to prefs.grid,
-            R.string.wal_opt_group to prefs.group, R.string.wal_opt_scan to prefs.scanExtras,
+            R.string.wal_opt_group to prefs.group, R.string.wal_opt_scan to prefs.scanExtras, R.string.wal_opt_direct to prefs.direct,
         ).forEach { (label, flag) -> MetroToggle(stringResource(label), flag.on, flag::set) }
         MetroButton(stringResource(android.R.string.ok), Modifier.fillMaxWidth().testTag("wal:options:ok"), onClick = onClose)
     }

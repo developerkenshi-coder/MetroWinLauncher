@@ -57,7 +57,7 @@
     <string name="ph_zoom_in">agrandir</string>
     <string name="ph_zoom_out">réduire</string>
     <string name="ph_strip_failed">Impossible de préparer les copies sans métadonnées. Rien n’a été partagé.</string>
-    <string name="ph_delete_failed">Suppression impossible</string>
+    <string name="ph_delete_failed">Suppression impossible. Autorisez la modification quand Android la demande, puis réessayez.</string>
     <string name="ph_undo">annuler</string>
     <plurals name="ph_count">
         <item quantity="one">%d photo</item>

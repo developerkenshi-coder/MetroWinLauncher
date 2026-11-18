@@ -177,7 +177,7 @@
     <string name="backup_import_hint">Ersetzt die Start-Bildschirme und die Einstellungen durch die einer Datei. Apps, die dieses Handy nicht hat, werden ausgelassen.</string>
     <string name="backup_exported">Layout gespeichert</string>
     <string name="backup_imported">Layout wiederhergestellt</string>
-    <string name="backup_failed">Das hat nicht geklappt</string>
+    <string name="backup_failed">Das hat nicht geklappt. Prüfe, ob der Ordner noch da ist und Platz hat, und versuche es dann erneut.</string>
     <string name="backup_not_layout">Das ist keine MetroWin-Layoutdatei</string>
     <string name="sec_bug">Fehlerbericht</string>
     <string name="sec_bug_desc">Dem Autor einen Problembericht senden, mit dem Protokoll der App</string>
@@ -317,7 +317,7 @@
     <string name="weather_search_failed">Suche fehlgeschlagen. Besteht eine Verbindung?</string>
     <string name="weather_my_location">Mein Standort</string>
     <string name="weather_use_location">Meinen Standort verwenden</string>
-    <string name="weather_no_location">Dein Standort konnte nicht ermittelt werden</string>
+    <string name="weather_no_location">Dein Standort konnte nicht ermittelt werden. Schalte den Standort ein oder suche eine Stadt.</string>
     <string name="weather_fahrenheit">Temperaturen in Fahrenheit</string>
     <string name="weather_hint">Das Wetter stammt von Open-Meteo und wird beim Öffnen des Launchers abgerufen, höchstens alle 30 Minuten. Gesendet wird nur die Stadt.</string>
     <string name="weather_page_header">VORHERSAGE</string>
@@ -334,7 +334,7 @@
     <string name="site_title_hint">Name</string>
     <string name="site_address_hint">Webadresse</string>
     <string name="site_invalid">Das sieht nicht nach einer Webadresse aus.</string>
-    <string name="contact_failed">Dieser Kontakt konnte nicht gelesen werden</string>
+    <string name="contact_failed">Dieser Kontakt konnte nicht gelesen werden. Erlaube „Kontakte“ in den Berechtigungen und versuche es erneut.</string>
 
     <!-- widgets -->
     <string name="widgets_header">WIDGETS</string>
@@ -506,7 +506,7 @@
     <string name="theme_import_hint">Wendet eine Designdatei an. Deine Kacheln und die übrigen Einstellungen bleiben, wie sie sind.</string>
     <string name="theme_exported">Design gespeichert</string>
     <string name="theme_imported">Design angewendet</string>
-    <string name="theme_failed">Das Design konnte nicht gespeichert werden</string>
+    <string name="theme_failed">Das Design konnte nicht gespeichert werden. Schaffe Speicherplatz auf dem Telefon und versuche es erneut.</string>
     <string name="theme_not_theme">Diese Datei ist kein Design dieses Launchers</string>
 
     <!-- lock screen -->
@@ -524,7 +524,7 @@
     <string name="lock_apply">Foto auf dem Sperrbildschirm des Handys verwenden</string>
     <string name="lock_apply_hint">Foto (oder Schwarz) als Hintergrund des Android-Sperrbildschirms.</string>
     <string name="lock_applied">Sperrbildschirm-Foto festgelegt</string>
-    <string name="lock_apply_failed">Das Sperrbildschirm-Foto konnte nicht festgelegt werden</string>
+    <string name="lock_apply_failed">Das Sperrbildschirm-Foto konnte nicht festgelegt werden. Wähle ein anderes Foto.</string>
     <string name="lock_dream">Bildschirmschoner</string>
     <string name="lock_dream_button">Bildschirmschoner Einstellungen öffnen</string>
     <string name="lock_dream_hint">Android erlaubt es einem Launcher nicht, seinen Sperrbildschirm zu ersetzen. Der Metro-Sperrbildschirm läuft stattdessen als Bildschirmschoner: Wähle dort „Metro-Sperrbildschirm“, dann erscheint er, während das Handy lädt oder in einer Dockingstation steht. Zum Verlassen nach oben wischen.</string>
@@ -559,7 +559,7 @@
     <string name="sync_conflict_merged">Beide Handys haben dasselbe geändert. Dieses wurde beibehalten; die andere Version ist im Ordner als %1$s gespeichert</string>
     <string name="sync_wrong_passphrase">Falsche Passphrase für die Datei im Ordner</string>
     <string name="sync_not_file">Die Sync-Datei im Ordner ist beschädigt oder stammt nicht von dieser App</string>
-    <string name="sync_failed">Der Ordner ist nicht erreichbar</string>
+    <string name="sync_failed">Der Ordner ist nicht erreichbar. Wähle den Ordner in den Backup-Einstellungen erneut aus.</string>
     <string name="sync_hint">Beim ersten Sync eines Handys, das im Ordner eine Datei findet, übernimmt es diese und behält das, was es hatte, als Backup-Datei im Ordner. Danach wird übertragen, was sich seit dem letzten Sync geändert hat; wurden beide Handys geändert, gewinnt dieses, und das andere bleibt als eigene Datei erhalten.</string>
     <string name="sync_others_list">Nach einem Sync-Konflikt behaltene Layouts: Antippen, um eines zurückzuholen</string>
     <string name="sync_others_clear">Diese Kopien löschen</string>
@@ -568,7 +568,7 @@
     <string name="notif_reply">Antworten</string>
     <string name="notif_reply_hint">Deine Antwort</string>
     <string name="notif_send">Senden</string>
-    <string name="notif_reply_failed">Die Antwort konnte nicht gesendet werden</string>
+    <string name="notif_reply_failed">Die Antwort konnte nicht gesendet werden. Öffne die App und antworte dort.</string>
     <string name="notif_inline_reply">Im Action Center antworten</string>
     <string name="notif_inline_reply_hint">Zeigt bei beantwortbaren Nachrichten einen Link „Antworten“ und sendet deine Antwort an die App, die sie angezeigt hat.</string>
     <string name="notif_group">Benachrichtigungen nach App gruppieren</string>
@@ -1833,7 +1833,7 @@
     <string name="update_auto_hint">Fragt GitHub nach dem neuesten Release, wenn eine Verbindung besteht, und benachrichtigt dich darüber. Ohne dein Tippen wird nichts installiert.</string>
     <string name="update_notification_title">MetroWin-Update</string>
     <string name="update_notification_text">Version %1$s ist erschienen. Öffne die Einstellungen, Info, um sie zu installieren.</string>
-    <string name="update_install_failed">Das Update konnte nicht installiert werden.</string>
+    <string name="update_install_failed">Das Update konnte nicht installiert werden. Versuche es erneut; schlägt es weiter fehl, lade die APK von der Release-Seite.</string>
     <string name="channel_update">Updates</string>
     <string name="channel_mail">E-Mail</string>
     <string name="update_notes_title">Neu in %1$s</string>
@@ -1864,9 +1864,9 @@
     <string name="messages_forward">Weiterleiten</string>
     <string name="messages_retry">Erneut senden</string>
     <string name="mail_signing_in">Anmeldung…</string>
-    <string name="mail_login_failed">Anmeldung fehlgeschlagen: %1$s</string>
+    <string name="mail_login_failed">Anmeldung fehlgeschlagen: %1$s. Prüfe Adresse und Passwort.</string>
     <string name="mail_loading">Wird geladen…</string>
-    <string name="mail_error">Server nicht erreichbar: %1$s</string>
+    <string name="mail_error">Server nicht erreichbar: %1$s. Prüfe die Verbindung und versuche es erneut.</string>
     <string name="mail_send_failed">Die Nachricht wurde nicht gesendet: %1$s</string>
     <string name="mail_sending">Wird gesendet…</string>
     <string name="theme_home_page">Zweiter Start-Bildschirm</string>
@@ -1901,7 +1901,7 @@
     <string name="mail_cc">Cc:</string>
     <string name="mail_attach">Datei anhängen</string>
     <string name="mail_saved">In Downloads gespeichert: %1$s</string>
-    <string name="mail_download_failed">Die Datei konnte nicht gespeichert werden</string>
+    <string name="mail_download_failed">Die Datei konnte nicht gespeichert werden. Schaffe Speicherplatz auf dem Telefon und versuche es erneut.</string>
     <string name="mail_to_hint">an</string>
     <string name="mail_cc_hint">cc</string>
     <string name="mail_too_big">Die Dateien sind zu groß: Eine Nachricht fasst bis zu 20 MB.</string>
@@ -2021,9 +2021,9 @@
     <string name="notes_delete">Notiz löschen</string>
     <string name="notes_delete_confirm">Zum Löschen erneut tippen</string>
     <string name="notes_deleted">Notiz gelöscht</string>
-    <string name="notes_backup_failed">Die Sicherung konnte nicht gespeichert werden</string>
+    <string name="notes_backup_failed">Die Sicherung konnte nicht gespeichert werden. Schaffe Speicherplatz auf dem Telefon und versuche es erneut.</string>
     <string name="notes_restore_failed">Diese Datei ist keine Sicherung der Notizen</string>
-    <string name="notes_save_failed">Die Notizen konnten nicht gespeichert werden</string>
+    <string name="notes_save_failed">Die Notizen konnten nicht gespeichert werden. Schaffe Speicherplatz auf dem Telefon und versuche es erneut.</string>
     <string name="sketch_undo">zurück</string>
     <string name="sketch_redo">vor</string>
     <string name="sketch_clear">leeren</string>
@@ -2060,7 +2060,7 @@
     <string name="rec_pause">Pause</string>
     <string name="rec_cut">Ausschnitt speichern</string>
     <string name="rec_cut_done">Der Ausschnitt wurde als neue Aufnahme gespeichert</string>
-    <string name="rec_cut_failed">Der Ausschnitt konnte nicht gespeichert werden</string>
+    <string name="rec_cut_failed">Der Ausschnitt konnte nicht gespeichert werden. Schaffe Speicherplatz auf dem Telefon und versuche es erneut.</string>
     <string name="rec_working">Einen Moment…</string>
     <string name="rec_transcript">Abschrift</string>
     <string name="rec_transcribe">Gesprochenes aufschreiben</string>
@@ -2174,7 +2174,7 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="wal_no_expiry">kein Ablaufdatum</string>
     <string name="wal_expires">gültig bis %1$s</string>
     <string name="wal_expired">abgelaufen</string>
-    <string name="wal_save_failed">Die Karten konnten nicht gespeichert werden</string>
+    <string name="wal_save_failed">Die Karten konnten nicht gespeichert werden. Schaffe Speicherplatz auf dem Telefon und versuche es erneut.</string>
     <string name="wal_import_failed">Diese Datei enthält keine Karten</string>
 
     <!-- News app -->
@@ -2250,7 +2250,7 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="fm_contains">Enthält</string>
     <string name="fm_edit_text">Als Text bearbeiten</string>
     <string name="fm_saved">Gespeichert</string>
-    <string name="fm_save_failed">Die Datei konnte nicht gespeichert werden</string>
+    <string name="fm_save_failed">Die Datei konnte nicht gespeichert werden. Schaffe Speicherplatz auf dem Telefon und versuche es erneut.</string>
     <string name="fm_too_big">Diese Datei ist zu groß, um hier bearbeitet zu werden.</string>
     <string name="fm_save">Speichern</string>
     <string name="fm_back">zurück</string>

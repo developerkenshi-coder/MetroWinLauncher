@@ -177,7 +177,7 @@
     <string name="backup_import_hint">Replaces the Start screens and the settings with those of a file. Apps this phone does not have are left out.</string>
     <string name="backup_exported">Layout saved</string>
     <string name="backup_imported">Layout restored</string>
-    <string name="backup_failed">That did not work</string>
+    <string name="backup_failed">That did not work. Check that the folder is still there and has room, then try again.</string>
     <string name="backup_not_layout">This is not a MetroWin layout file</string>
     <string name="sec_bug">bug ticket report</string>
     <string name="sec_bug_desc">Send the author a report of a problem, with the log of the app</string>
@@ -317,7 +317,7 @@
     <string name="weather_search_failed">Could not search. Is there a connection?</string>
     <string name="weather_my_location">My location</string>
     <string name="weather_use_location">use my location</string>
-    <string name="weather_no_location">Could not find where you are</string>
+    <string name="weather_no_location">Could not find where you are. Turn on the location or search for a city.</string>
     <string name="weather_fahrenheit">temperatures in Fahrenheit</string>
     <string name="weather_hint">Weather comes from Open-Meteo and is fetched when the launcher opens, at most every half hour. The city is the only thing sent.</string>
     <string name="weather_page_header">FORECAST</string>
@@ -334,7 +334,7 @@
     <string name="site_title_hint">name</string>
     <string name="site_address_hint">web address</string>
     <string name="site_invalid">That does not look like a web address.</string>
-    <string name="contact_failed">Could not read that contact</string>
+    <string name="contact_failed">Could not read that contact. Allow Contacts in the permissions and try again.</string>
 
     <!-- widgets -->
     <string name="widgets_header">WIDGETS</string>
@@ -506,7 +506,7 @@
     <string name="theme_import_hint">Applies a theme file. Your tiles and your other settings stay as they are.</string>
     <string name="theme_exported">Theme saved</string>
     <string name="theme_imported">Theme applied</string>
-    <string name="theme_failed">Could not save the theme</string>
+    <string name="theme_failed">Could not save the theme. Free some space on the phone and try again.</string>
     <string name="theme_not_theme">That file is not a theme of this launcher</string>
 
     <!-- lock screen -->
@@ -524,7 +524,7 @@
     <string name="lock_apply">use the photo on the phone\'s lock screen</string>
     <string name="lock_apply_hint">Photo (or black) as the wallpaper of the Android lock screen.</string>
     <string name="lock_applied">Lock screen photo set</string>
-    <string name="lock_apply_failed">Could not set the lock screen photo</string>
+    <string name="lock_apply_failed">Could not set the lock screen photo. Pick another photo.</string>
     <string name="lock_dream">screen saver</string>
     <string name="lock_dream_button">open the screen saver settings</string>
     <string name="lock_dream_hint">Android does not let a launcher replace its lock screen. The Metro lock screen runs as the screen saver instead: pick “Metro lock screen” there, and it shows while the phone charges or rests on a dock. Swipe it up to leave.</string>
@@ -559,7 +559,7 @@
     <string name="sync_conflict_merged">Both phones changed the same thing. This one was kept; the other version is saved in the folder as %1$s</string>
     <string name="sync_wrong_passphrase">Wrong passphrase for the file in the folder</string>
     <string name="sync_not_file">The sync file in the folder is damaged or is not ours</string>
-    <string name="sync_failed">Could not reach the folder</string>
+    <string name="sync_failed">Could not reach the folder. Pick the folder again in the backup settings.</string>
     <string name="sync_hint">The first sync of a phone that finds a file in the folder takes it, and keeps what it had as the backup file in the folder. After that, whatever changed since the last sync goes across; if both phones changed, this one wins and the other is kept as a separate file.</string>
     <string name="sync_others_list">Layouts kept after a sync conflict: tap one to put it back</string>
     <string name="sync_others_clear">Delete these copies</string>
@@ -568,7 +568,7 @@
     <string name="notif_reply">reply</string>
     <string name="notif_reply_hint">your reply</string>
     <string name="notif_send">send</string>
-    <string name="notif_reply_failed">Could not send the reply</string>
+    <string name="notif_reply_failed">Could not send the reply. Open the app and answer there.</string>
     <string name="notif_inline_reply">reply from the Action Center</string>
     <string name="notif_inline_reply_hint">Shows a “reply” link on messages that can be answered, and sends your answer to the app that posted it.</string>
     <string name="notif_group">group notifications by app</string>
@@ -1833,7 +1833,7 @@
     <string name="update_auto_hint">Asks GitHub for the latest release when there is a connection, and tells you with a notification. Nothing is installed without your touch.</string>
     <string name="update_notification_title">MetroWin update</string>
     <string name="update_notification_text">Version %1$s is out. Open the settings, About, to install it.</string>
-    <string name="update_install_failed">The update could not be installed.</string>
+    <string name="update_install_failed">The update could not be installed. Try again; if it keeps failing, download the APK from the releases page.</string>
     <string name="channel_update">Updates</string>
     <string name="channel_mail">Mail</string>
     <string name="update_notes_title">What is new in %1$s</string>
@@ -1864,9 +1864,9 @@
     <string name="messages_forward">Forward</string>
     <string name="messages_retry">Try again</string>
     <string name="mail_signing_in">Signing in…</string>
-    <string name="mail_login_failed">Could not sign in: %1$s</string>
+    <string name="mail_login_failed">Could not sign in: %1$s. Check the address and the password.</string>
     <string name="mail_loading">Loading…</string>
-    <string name="mail_error">Could not reach the server: %1$s</string>
+    <string name="mail_error">Could not reach the server: %1$s. Check the connection and try again.</string>
     <string name="mail_send_failed">The message was not sent: %1$s</string>
     <string name="mail_sending">Sending…</string>
     <string name="theme_home_page">secondary Start screen</string>
@@ -1901,7 +1901,7 @@
     <string name="mail_cc">Cc:</string>
     <string name="mail_attach">Attach a file</string>
     <string name="mail_saved">Saved in Downloads: %1$s</string>
-    <string name="mail_download_failed">The file could not be saved</string>
+    <string name="mail_download_failed">The file could not be saved. Free some space on the phone and try again.</string>
     <string name="mail_to_hint">to</string>
     <string name="mail_cc_hint">cc</string>
     <string name="mail_too_big">The files are too big: a message can hold up to 20 MB.</string>
@@ -2021,9 +2021,9 @@
     <string name="notes_delete">Delete the note</string>
     <string name="notes_delete_confirm">Tap again to delete</string>
     <string name="notes_deleted">Note deleted</string>
-    <string name="notes_backup_failed">The backup could not be saved</string>
+    <string name="notes_backup_failed">The backup could not be saved. Free some space on the phone and try again.</string>
     <string name="notes_restore_failed">This file is not a backup of the notes</string>
-    <string name="notes_save_failed">The notes could not be saved</string>
+    <string name="notes_save_failed">The notes could not be saved. Free some space on the phone and try again.</string>
     <string name="sketch_undo">undo</string>
     <string name="sketch_redo">redo</string>
     <string name="sketch_clear">clear</string>
@@ -2060,7 +2060,7 @@
     <string name="rec_pause">Pause</string>
     <string name="rec_cut">Save the piece</string>
     <string name="rec_cut_done">The piece was saved as a new recording</string>
-    <string name="rec_cut_failed">The piece could not be saved</string>
+    <string name="rec_cut_failed">The piece could not be saved. Free some space on the phone and try again.</string>
     <string name="rec_working">Working…</string>
     <string name="rec_transcript">Transcript</string>
     <string name="rec_transcribe">Write down what is said</string>
@@ -2174,7 +2174,7 @@ in front %3$s · in the background %4$s
     <string name="wal_no_expiry">no expiry date</string>
     <string name="wal_expires">good until %1$s</string>
     <string name="wal_expired">expired</string>
-    <string name="wal_save_failed">The cards could not be saved</string>
+    <string name="wal_save_failed">The cards could not be saved. Free some space on the phone and try again.</string>
     <string name="wal_import_failed">This file has no cards of the wallet</string>
 
     <!-- News app -->
@@ -2250,7 +2250,7 @@ in front %3$s · in the background %4$s
     <string name="fm_contains">Contains</string>
     <string name="fm_edit_text">Edit as text</string>
     <string name="fm_saved">Saved</string>
-    <string name="fm_save_failed">The file could not be saved</string>
+    <string name="fm_save_failed">The file could not be saved. Free some space on the phone and try again.</string>
     <string name="fm_too_big">This file is too big to be edited here.</string>
     <string name="fm_save">Save</string>
     <string name="fm_back">back</string>

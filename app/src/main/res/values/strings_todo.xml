@@ -18,7 +18,7 @@
     <string name="todo_dictation_missing">This phone has no speech input.</string>
     <string name="todo_edit_save">Save</string>
     <string name="todo_export_csv">Save as CSV</string>
-    <string name="todo_export_failed">The file could not be saved.</string>
+    <string name="todo_export_failed">The file could not be saved. Free some space on the phone and try again.</string>
     <string name="todo_export_md">Save as Markdown</string>
     <string name="todo_export_txt">Save as todo.txt</string>
     <string name="todo_exported">Saved.</string>
@@ -39,7 +39,7 @@
     <string name="todo_health_exact">Reminders may be late: Android does not let this app set exact alarms.</string>
     <string name="todo_health_notif">Notifications are off: a reminder will not show.</string>
     <string name="todo_import">Import (Markdown or todo.txt)</string>
-    <string name="todo_import_failed">The file could not be read.</string>
+    <string name="todo_import_failed">The file could not be read. Check that the file is a valid one and try again.</string>
     <string name="todo_imported">%d added</string>
     <string name="todo_lists_count">%d open</string>
     <string name="todo_lists_none">No lists yet. Give an item a list in its edit page.</string>

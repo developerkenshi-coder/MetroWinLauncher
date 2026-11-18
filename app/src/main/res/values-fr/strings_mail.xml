@@ -7,7 +7,7 @@
     <string name="mail_err_network">Pas de connexion au serveur. Vérifie le réseau.</string>
     <string name="mail_err_tls">Le certificat du serveur n\'est pas valide : connexion refusée pour ta sécurité.</string>
     <string name="mail_err_no_trash">Ce dossier n\'a pas de corbeille : le message n\'a pas été supprimé.</string>
-    <string name="mail_err_other">Une erreur est survenue</string>
+    <string name="mail_err_other">Une erreur est survenue. Vérifiez la connexion et réessayez.</string>
     <string name="mail_yesterday">Hier</string>
     <string name="mail_not_sent">Message non envoyé</string>
     <string name="mail_mark_read">Marquer comme lu</string>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="safe_title">Avvio provvisorio</string>
+    <string name="safe_text">Il launcher si è chiuso due volte subito dopo l’avvio, quindi è partito con il tema e lo Start di base. Impostazioni e tile sono al sicuro: finché dura non si cambia e non si salva nulla. Avvia normalmente per riaverli.</string>
+    <string name="safe_leave">Avvia normalmente</string>
+    <string name="safe_stay">Resta in modalità provvisoria</string>
+    <string name="wal_sort_most">Più usate</string>
+    <string name="wal_opt_direct">Apri subito la carta più usata (serve la cronologia)</string>
+    <string name="tm_name_button">Nome</string>
+    <string name="tm_name_title">Dai un nome a questo comando</string>
+    <string name="tm_name_field">Nome (vuoto per toglierlo)</string>
+    <string name="files_work_channel">Operazioni sui file</string>
+    <string name="retry_button">Riprova</string>
+    <string name="status_title">Stato del launcher</string>
+    <string name="status_safe">Avvio normale (non provvisorio)</string>
+    <string name="status_notif_access">Accesso alle notifiche</string>
+    <string name="status_accessibility">Servizio di accessibilità attivo</string>
+    <string name="status_overlay">Sovrapposizione ad altre app</string>
+    <string name="status_shizuku">Shizuku pronto</string>
+    <string name="status_notifications">Mostrare notifiche</string>
+    <string name="status_phone_state">Stato del telefono (tipo di rete)</string>
+    <string name="status_contacts">Contatti</string>
+    <string name="status_calendar">Calendario</string>
+    <string name="status_battery">Non limitato dal risparmio batteria</string>
+    <string name="status_last_error">Ultimo errore</string>
+    <string name="status_no_error">nessuno</string>
+    <string name="status_yes">sì</string>
+    <string name="status_no">no</string>
+    <string name="status_copy">Copia per una segnalazione</string>
+    <string name="status_copied">Stato copiato</string>
+</resources>

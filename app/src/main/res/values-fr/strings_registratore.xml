@@ -20,7 +20,7 @@
     <string name="rec_deleted">Enregistrement supprimé.</string>
     <string name="rec_denied">Le micro n\'est pas autorisé et le téléphone ne redemandera pas. Autorisez-le dans les réglages de l\'appli.</string>
     <string name="rec_edit_done">Un nouvel enregistrement a été créé</string>
-    <string name="rec_edit_failed">L\'enregistrement n\'a pas pu être modifié</string>
+    <string name="rec_edit_failed">L\'enregistrement n\'a pas pu être modifié. Libérez de l’espace sur le téléphone et réessayez.</string>
     <string name="rec_empty_guide">Aucun enregistrement. Appuyez sur Enregistrer, ou utilisez + pour importer un son d\'ailleurs.</string>
     <string name="rec_end_minus">Fin −1 s</string>
     <string name="rec_end_plus">Fin +1 s</string>

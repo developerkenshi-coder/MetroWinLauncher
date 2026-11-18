@@ -344,6 +344,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | descrivi qui il problema | `bugreport.describe` | strumenti › segnalazione bug | informazioni › segnalazione bug |
 | prepara la mail | `bugreport.send` | strumenti › segnalazione bug | informazioni › segnalazione bug |
 | versione | `about.version` | strumenti › informazioni | informazioni › informazioni |
+| Stato del launcher | `about.status` | strumenti › informazioni | informazioni › informazioni |
 | Aggiornamenti | `about.update` | strumenti › informazioni | informazioni › informazioni |
 | Cerca aggiornamenti adesso | `about.updatecheck` | strumenti › informazioni | informazioni › informazioni |
 | Cerca aggiornamenti ogni 12 ore | `about.updateauto` | strumenti › informazioni | informazioni › informazioni |

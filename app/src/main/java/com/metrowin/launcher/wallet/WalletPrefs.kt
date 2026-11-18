@@ -37,6 +37,9 @@ class WalletPrefs(private val prefs: SharedPreferences) {
     val group = Flag("group", false)
     val scanExtras = Flag("scan_extras", true)
 
+    /** Opening the wallet (the tile too) goes straight to the card used most, when the history says which. */
+    val direct = Flag("direct", false)
+
     var sort by mutableStateOf(runCatching { SortMode.valueOf(prefs.getString("sort", null) ?: "") }.getOrDefault(SortMode.Name))
         private set
 

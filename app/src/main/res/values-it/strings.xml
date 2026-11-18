@@ -170,7 +170,7 @@
     <string name="backup_import_hint">Sostituisce le schermate Start e le impostazioni con quelle di un file. Le app che questo telefono non ha vengono lasciate fuori.</string>
     <string name="backup_exported">Layout salvato</string>
     <string name="backup_imported">Layout ripristinato</string>
-    <string name="backup_failed">Non è andata a buon fine</string>
+    <string name="backup_failed">Non è andata a buon fine. Controlla che la cartella ci sia ancora e abbia spazio, poi riprova.</string>
     <string name="backup_not_layout">Questo non è un file di layout di MetroWin</string>
     <string name="sec_bug">segnalazione bug</string>
     <string name="sec_bug_desc">Invia all\'autore la segnalazione di un problema, con il log dell\'app</string>
@@ -310,7 +310,7 @@
     <string name="weather_search_failed">Ricerca non riuscita. C\'è connessione?</string>
     <string name="weather_my_location">La mia posizione</string>
     <string name="weather_use_location">usa la mia posizione</string>
-    <string name="weather_no_location">Non riesco a trovare dove sei</string>
+    <string name="weather_no_location">Non riesco a trovare dove sei. Attiva la posizione o cerca una città.</string>
     <string name="weather_fahrenheit">temperature in Fahrenheit</string>
     <string name="weather_hint">Il meteo arriva da Open-Meteo e viene scaricato quando si apre il launcher, al massimo ogni mezz\'ora. La città è l\'unica cosa che viene inviata.</string>
     <string name="weather_page_header">PREVISIONI</string>
@@ -327,7 +327,7 @@
     <string name="site_title_hint">nome</string>
     <string name="site_address_hint">indirizzo web</string>
     <string name="site_invalid">Questo non sembra un indirizzo web.</string>
-    <string name="contact_failed">Non riesco a leggere questo contatto</string>
+    <string name="contact_failed">Non riesco a leggere questo contatto. Consenti «Contatti» nei permessi e riprova.</string>
 
     <!-- widgets -->
     <string name="widgets_header">WIDGET</string>
@@ -499,7 +499,7 @@
     <string name="theme_import_hint">Applica un file tema. I tuoi tile e le altre impostazioni restano come sono.</string>
     <string name="theme_exported">Tema salvato</string>
     <string name="theme_imported">Tema applicato</string>
-    <string name="theme_failed">Impossibile salvare il tema</string>
+    <string name="theme_failed">Impossibile salvare il tema. Libera spazio sul telefono e riprova.</string>
     <string name="theme_not_theme">Quel file non è un tema di questo launcher</string>
 
     <!-- lock screen -->
@@ -517,7 +517,7 @@
     <string name="lock_apply">usa la foto nel blocco schermo del telefono</string>
     <string name="lock_apply_hint">Foto (o nero) come sfondo del blocco schermo di Android.</string>
     <string name="lock_applied">Foto del blocco schermo impostata</string>
-    <string name="lock_apply_failed">Impossibile impostare la foto del blocco schermo</string>
+    <string name="lock_apply_failed">Impossibile impostare la foto del blocco schermo. Scegli un’altra foto.</string>
     <string name="lock_dream">salvaschermo</string>
     <string name="lock_dream_button">apri le impostazioni del salvaschermo</string>
     <string name="lock_dream_hint">Android non permette a un launcher di sostituire il suo blocco schermo. Il blocco schermo Metro funziona invece come salvaschermo: scegli “Blocco schermo Metro” lì, e compare mentre il telefono si ricarica o sta su un dock. Scorri verso l\'alto per uscire.</string>
@@ -552,7 +552,7 @@
     <string name="sync_conflict_merged">Entrambi i telefoni hanno cambiato la stessa cosa. Questo è stato mantenuto; l\'altra versione è salvata nella cartella come %1$s</string>
     <string name="sync_wrong_passphrase">Passphrase sbagliata per il file nella cartella</string>
     <string name="sync_not_file">Il file di sync nella cartella è danneggiato o non è nostro</string>
-    <string name="sync_failed">Impossibile raggiungere la cartella</string>
+    <string name="sync_failed">Impossibile raggiungere la cartella. Scegli di nuovo la cartella nelle impostazioni del backup.</string>
     <string name="sync_hint">La prima sincronizzazione di un telefono che trova un file nella cartella lo prende, e salva ciò che aveva come file di backup nella cartella. Dopo, passa ciò che è cambiato dall\'ultima sincronizzazione; se sono cambiati entrambi, vince questo e l\'altro resta come file separato.</string>
     <string name="sync_others_list">Layout tenuti dopo un conflitto di sincronizzazione: tocca per rimetterne uno</string>
     <string name="sync_others_clear">Elimina queste copie</string>
@@ -561,7 +561,7 @@
     <string name="notif_reply">rispondi</string>
     <string name="notif_reply_hint">la tua risposta</string>
     <string name="notif_send">invia</string>
-    <string name="notif_reply_failed">Impossibile inviare la risposta</string>
+    <string name="notif_reply_failed">Impossibile inviare la risposta. Apri l’app e rispondi da lì.</string>
     <string name="notif_inline_reply">rispondi dall\'Action Center</string>
     <string name="notif_inline_reply_hint">Mostra un link “rispondi” sui messaggi a cui si può rispondere, e manda la risposta all\'app che l\'ha pubblicato.</string>
     <string name="notif_group">raggruppa le notifiche per app</string>
@@ -1843,7 +1843,7 @@
     <string name="update_auto_hint">Chiede a GitHub l’ultima release quando c’è connessione e te lo dice con una notifica. Non si installa niente senza il tuo tocco.</string>
     <string name="update_notification_title">Aggiornamento di MetroWin</string>
     <string name="update_notification_text">È uscita la versione %1$s. Apri le impostazioni, informazioni, per installarla.</string>
-    <string name="update_install_failed">Non è stato possibile installare l’aggiornamento.</string>
+    <string name="update_install_failed">Non è stato possibile installare l’aggiornamento. Riprova; se continua a fallire, scarica l’APK dalla pagina delle release.</string>
     <string name="channel_update">Aggiornamenti</string>
     <string name="channel_mail">Posta</string>
     <string name="update_notes_title">Cosa cambia nella %1$s</string>
@@ -1874,9 +1874,9 @@
     <string name="messages_forward">Inoltra</string>
     <string name="messages_retry">Riprova</string>
     <string name="mail_signing_in">Accesso in corso…</string>
-    <string name="mail_login_failed">Accesso non riuscito: %1$s</string>
+    <string name="mail_login_failed">Accesso non riuscito: %1$s. Controlla l’indirizzo e la password.</string>
     <string name="mail_loading">Caricamento…</string>
-    <string name="mail_error">Server non raggiungibile: %1$s</string>
+    <string name="mail_error">Server non raggiungibile: %1$s. Controlla la connessione e riprova.</string>
     <string name="mail_send_failed">Messaggio non inviato: %1$s</string>
     <string name="mail_sending">Invio in corso…</string>
     <string name="theme_home_page">Start secondario</string>
@@ -1911,7 +1911,7 @@
     <string name="mail_cc">Cc:</string>
     <string name="mail_attach">Allega un file</string>
     <string name="mail_saved">Salvato in Download: %1$s</string>
-    <string name="mail_download_failed">Impossibile salvare il file</string>
+    <string name="mail_download_failed">Impossibile salvare il file. Libera spazio sul telefono e riprova.</string>
     <string name="mail_to_hint">a</string>
     <string name="mail_cc_hint">cc</string>
     <string name="mail_too_big">I file sono troppo grandi: un messaggio può contenere fino a 20 MB.</string>
@@ -2031,9 +2031,9 @@
     <string name="notes_delete">Elimina la nota</string>
     <string name="notes_delete_confirm">Tocca di nuovo per eliminare</string>
     <string name="notes_deleted">Nota eliminata</string>
-    <string name="notes_backup_failed">Non è stato possibile salvare il backup</string>
+    <string name="notes_backup_failed">Non è stato possibile salvare il backup. Libera spazio sul telefono e riprova.</string>
     <string name="notes_restore_failed">Questo file non è un backup delle note</string>
-    <string name="notes_save_failed">Non è stato possibile salvare le note</string>
+    <string name="notes_save_failed">Non è stato possibile salvare le note. Libera spazio sul telefono e riprova.</string>
     <string name="sketch_undo">annulla</string>
     <string name="sketch_redo">ripeti</string>
     <string name="sketch_clear">cancella</string>
@@ -2070,7 +2070,7 @@
     <string name="rec_pause">Pausa</string>
     <string name="rec_cut">Salva il tratto</string>
     <string name="rec_cut_done">Il tratto è stato salvato come nuova registrazione</string>
-    <string name="rec_cut_failed">Non è stato possibile salvare il tratto</string>
+    <string name="rec_cut_failed">Non è stato possibile salvare il tratto. Libera spazio sul telefono e riprova.</string>
     <string name="rec_working">Un momento…</string>
     <string name="rec_transcript">Trascrizione</string>
     <string name="rec_transcribe">Trascrivi quello che si dice</string>
@@ -2184,7 +2184,7 @@ in primo piano %3$s · in background %4$s
     <string name="wal_no_expiry">nessuna scadenza</string>
     <string name="wal_expires">valida fino al %1$s</string>
     <string name="wal_expired">scaduta</string>
-    <string name="wal_save_failed">Non è stato possibile salvare le carte</string>
+    <string name="wal_save_failed">Non è stato possibile salvare le carte. Libera spazio sul telefono e riprova.</string>
     <string name="wal_import_failed">Questo file non contiene carte del portafoglio</string>
 
     <!-- News app -->
@@ -2260,7 +2260,7 @@ in primo piano %3$s · in background %4$s
     <string name="fm_contains">Contiene</string>
     <string name="fm_edit_text">Modifica come testo</string>
     <string name="fm_saved">Salvato</string>
-    <string name="fm_save_failed">Non è stato possibile salvare il file</string>
+    <string name="fm_save_failed">Non è stato possibile salvare il file. Libera spazio sul telefono e riprova.</string>
     <string name="fm_too_big">Questo file è troppo grande per essere modificato qui.</string>
     <string name="fm_save">Salva</string>
     <string name="fm_back">indietro</string>

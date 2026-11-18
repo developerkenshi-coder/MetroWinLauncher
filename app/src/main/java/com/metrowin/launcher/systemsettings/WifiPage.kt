@@ -38,7 +38,6 @@ import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.pages.PageChip
 import com.metrowin.launcher.ui.pages.PageNote
-import com.metrowin.launcher.ui.settings.ToggleSetting
 import com.metrowin.launcher.ui.components.DialogFrame
 import com.metrowin.launcher.ui.theme.LocalAccent
 import com.metrowin.launcher.ui.theme.LocalMetroColors

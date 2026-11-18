@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -70,6 +71,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private const val SAVED = "saved"
+private const val SAVED_NAMES = "saved_names"
 private const val MAX_OUTPUT = 60_000
 
 /** The colours of the Terminal: the ones of the look in use, or one of the themes of its own. */
@@ -137,6 +139,8 @@ internal fun TerminalPage(state: ShizukuState, session: TerminalSession, opts: T
     val context = LocalContext.current
     val prefs = remember { Prefs.open(context, Prefs.SHIZUKU) }
     var saved by remember { mutableStateOf(SavedCommands.decode(prefs.getString(SAVED, null))) }
+    var names by remember { mutableStateOf(SavedNames.decode(prefs.getString(SAVED_NAMES, null))) }
+    var naming by remember { mutableStateOf<String?>(null) }
     val tab = session.tab
     var pending by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
@@ -150,6 +154,10 @@ internal fun TerminalPage(state: ShizukuState, session: TerminalSession, opts: T
     fun keep(list: List<String>) {
         saved = list
         prefs.edit { putString(SAVED, SavedCommands.encode(list)) }
+    }
+    fun name(command: String, name: String) {
+        names = if (name.isBlank()) names - command else names + (command to name.trim().take(SavedNames.MAX_NAME))
+        prefs.edit { putString(SAVED_NAMES, SavedNames.encode(names)) }
     }
     val blockedText = stringResource(R.string.tm_blocked_readonly)
     fun exec(command: String) {
@@ -216,9 +224,9 @@ internal fun TerminalPage(state: ShizukuState, session: TerminalSession, opts: T
         }
         if (tab.busy) BusyBar(p.prompt)
         if (!compact) {
-            val shown = suggestions(saved, tab.line)
+            val shown = suggestions(saved, tab.line, names)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(shown) { command -> PageChip(command, selected = command == tab.line.trim(), tag = "st:cmd") { tab.line = command } }
+                items(shown) { command -> PageChip(names[command] ?: command, selected = command == tab.line.trim(), tag = "st:cmd") { tab.line = command } }
             }
         }
         if (opts.quickKeys.on) LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -235,7 +243,8 @@ internal fun TerminalPage(state: ShizukuState, session: TerminalSession, opts: T
         }
         if (!compact) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 12.dp)) {
             MetroButton("★ " + stringResource(R.string.st_save), Modifier.weight(1f)) { tab.line.trim().takeIf { it.isNotEmpty() && it !in saved }?.let { keep(saved + it) } }
-            MetroButton("− " + stringResource(R.string.st_remove), Modifier.weight(1f)) { keep(saved - tab.line.trim()) }
+            MetroButton("✎ " + stringResource(R.string.tm_name_button), Modifier.weight(1f)) { tab.line.trim().takeIf { it.isNotEmpty() }?.let { naming = it } }
+            MetroButton("− " + stringResource(R.string.st_remove), Modifier.weight(1f)) { tab.line.trim().let { c -> keep(saved - c); name(c, "") } }
         }
     }
     pending?.let { command ->
@@ -244,6 +253,14 @@ internal fun TerminalPage(state: ShizukuState, session: TerminalSession, opts: T
             MetroText(stringResource(R.string.tm_confirm_body), size = 16.sp, weight = FontWeight.SemiBold, color = palette(0).err)
             MetroButton(stringResource(R.string.tm_run_anyway), Modifier.fillMaxWidth()) { pending = null; exec(command) }
             MetroButton(stringResource(R.string.tm_cancel), Modifier.fillMaxWidth()) { pending = null }
+        }
+    }
+    naming?.let { command ->
+        var draft by remember(command) { mutableStateOf(names[command].orEmpty()) }
+        DialogFrame(onCancel = { naming = null }, title = stringResource(R.string.tm_name_title)) {
+            BasicText(command, style = TextStyle(color = LocalMetroColors.current.foreground, fontSize = 15.sp, fontFamily = FontFamily.Monospace))
+            MetroTextField(draft, { draft = it.take(SavedNames.MAX_NAME) }, stringResource(R.string.tm_name_field), Modifier.fillMaxWidth().testTag("tm:name"))
+            MetroButton(stringResource(android.R.string.ok), Modifier.fillMaxWidth()) { name(command, draft); if (command !in saved) keep(saved + command); naming = null }
         }
     }
     if (session.historyOpen) HistoryDialog(session) { tab.line = it; session.historyOpen = false }

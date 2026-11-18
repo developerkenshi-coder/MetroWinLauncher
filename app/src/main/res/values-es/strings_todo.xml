@@ -18,7 +18,7 @@
     <string name="todo_dictation_missing">Este teléfono no tiene dictado por voz.</string>
     <string name="todo_edit_save">Guardar</string>
     <string name="todo_export_csv">Guardar como CSV</string>
-    <string name="todo_export_failed">No se pudo guardar el archivo.</string>
+    <string name="todo_export_failed">No se pudo guardar el archivo. Libera espacio en el teléfono e inténtalo de nuevo.</string>
     <string name="todo_export_md">Guardar como Markdown</string>
     <string name="todo_export_txt">Guardar como todo.txt</string>
     <string name="todo_exported">Guardado.</string>
@@ -39,7 +39,7 @@
     <string name="todo_health_exact">Los recordatorios pueden llegar tarde: Android no permite las alarmas exactas.</string>
     <string name="todo_health_notif">Las notificaciones están desactivadas: un recordatorio no se verá.</string>
     <string name="todo_import">Importar (Markdown o todo.txt)</string>
-    <string name="todo_import_failed">No se pudo leer el archivo.</string>
+    <string name="todo_import_failed">No se pudo leer el archivo. Comprueba que el archivo sea válido e inténtalo de nuevo.</string>
     <string name="todo_imported">%d añadidas</string>
     <string name="todo_lists_count">%d pendientes</string>
     <string name="todo_lists_none">Aún no hay listas. Pon una lista a un elemento al editarlo.</string>

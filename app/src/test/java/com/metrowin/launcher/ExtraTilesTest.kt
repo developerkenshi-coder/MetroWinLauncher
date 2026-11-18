@@ -97,7 +97,7 @@ class ExtraTilesTest {
     // --- files and the list of apps
 
     @Test
-    fun theWildcardsOfALikeAreLetters() {
+    fun theWildcardsOfALikeAreLetters() = withLocale {
         assertEquals("100\\%\\_a\\\\b", FileSearch.like("100%_a\\b"))
         assertEquals("2.4 MB", FileSearch.sizeText(2_400_000))
         assertEquals("310 KB", FileSearch.sizeText(310_000))

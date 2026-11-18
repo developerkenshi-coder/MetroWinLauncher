@@ -85,6 +85,8 @@ android {
             isReturnDefaultValues = true
             // Robolectric needs the merged resources and manifest for the screenshot tests.
             isIncludeAndroidResources = true
+            // The screenshot tests of six languages in one process need more than the 512 MB a test process gets by default.
+            all { it.maxHeapSize = "2g" }
         }
     }
 }

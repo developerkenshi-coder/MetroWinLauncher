@@ -13,13 +13,15 @@ object BugReport {
     const val LOG_NAME = "metrowin-log.txt"
 
     /** What goes in the body of the mail: the words of the user, then the facts about the app and the phone. */
-    fun body(description: String, about: AboutInfo): String = buildString {
+    fun body(description: String, about: AboutInfo, status: String = ""): String = buildString {
         appendLine(description.trim())
         appendLine()
         appendLine("---")
         appendLine("MetroWin Launcher ${about.versionName} (${about.versionCode})")
         appendLine("Android ${about.androidRelease} (API ${about.sdk})")
         appendLine(about.device)
+        // The permissions and services the launcher works with, so the first question of a ticket is already answered.
+        if (status.isNotBlank()) appendLine(status)
     }
 
     /** Blocking. Writes the last [LOG_LINES] lines of the log of the app (and the [crash] saved last, when there is one) in [dir] and returns the file, or null when it cannot be read. */

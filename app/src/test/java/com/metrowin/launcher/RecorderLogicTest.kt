@@ -75,10 +75,11 @@ class RecorderLogicTest {
     }
 
     @Test
-    fun sizesAreRoundedForReading() {
+    fun sizesAreRoundedForReading() = withLocale {
         assertEquals("1 KB", RecorderFormat.size(10))
         assertEquals("412 KB", RecorderFormat.size(412 * 1024L))
         assertEquals("3.4 MB", RecorderFormat.size((3.4 * 1048576).toLong()))
+        assertEquals("3,4 MB", withLocale(java.util.Locale.ITALY) { RecorderFormat.size((3.4 * 1048576).toLong()) })
     }
 
     @Test

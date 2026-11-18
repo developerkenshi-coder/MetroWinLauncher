@@ -37,7 +37,7 @@
     <string name="dialer_onboard_steps">1. Unten auf die Taste tippen.\n2. Im Android-Fenster MetroWin Launcher wählen.\n3. Anrufe öffnen dann auf dessen Bildschirmen, auch über dem Sperrbildschirm.</string>
     <string name="dialer_export">exportieren</string>
     <string name="dialer_export_done">Anrufverlauf gespeichert</string>
-    <string name="dialer_export_failed">Verlauf konnte nicht gespeichert werden</string>
+    <string name="dialer_export_failed">Verlauf konnte nicht gespeichert werden. Schaffe Speicherplatz auf dem Telefon und versuche es erneut.</string>
     <string name="dialer_stats_title">Statistik</string>
     <string name="dialer_stats_period">Die letzten %1$d Tage</string>
     <string name="dialer_stats_total">Anrufe</string>

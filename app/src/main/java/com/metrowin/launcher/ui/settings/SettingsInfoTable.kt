@@ -252,6 +252,7 @@ internal object SettingsInfoTable {
         "about.update" to R.string.info_about_update,
         "about.updatecheck" to R.string.info_about_update,
         "about.updateauto" to R.string.info_about_updateauto,
+        "about.status" to R.string.info_about_status,
         "about.phoneinfo" to R.string.info_about_phone,
         "about.phone" to R.string.info_about_phone,
         "about.tutorial" to R.string.info_about_tutorial,

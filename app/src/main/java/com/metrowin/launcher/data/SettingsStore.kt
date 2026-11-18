@@ -740,6 +740,7 @@ class SettingsStore(context: Context) {
      * settings are kept against that string: 31 callers do not decode the JSON each. [LauncherSettings] is immutable.
      */
     fun load(): LauncherSettings {
+        if (SafeStart.on) return LauncherSettings()
         val json = prefs.getString(KEY_JSON, null) ?: return legacy()
         decoded?.let { if (it.first === json) return it.second }
         val settings = SettingsCodec.decode(json) ?: return legacy()
@@ -747,7 +748,7 @@ class SettingsStore(context: Context) {
         return settings
     }
 
-    fun save(settings: LauncherSettings) = prefs.edit { putString(KEY_JSON, SettingsCodec.encode(settings)) }
+    fun save(settings: LauncherSettings) { if (!SafeStart.on) prefs.edit { putString(KEY_JSON, SettingsCodec.encode(settings)) } }
 
     /** Only the switch of the tiles that apps publish: other apps call the provider that asks, and the whole settings are not decoded for each call. */
     fun thirdPartyTilesOn(): Boolean = switchOn("thirdPartyTiles", LauncherSettings().thirdPartyTiles)

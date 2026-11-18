@@ -2485,7 +2485,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             val send = Intent(Intent.ACTION_SEND).setType("message/rfc822")
                 .putExtra(Intent.EXTRA_EMAIL, arrayOf(BugReport.TO))
                 .putExtra(Intent.EXTRA_SUBJECT, BugReport.SUBJECT)
-                .putExtra(Intent.EXTRA_TEXT, BugReport.body(description, about))
+                .putExtra(Intent.EXTRA_TEXT, BugReport.body(description, about, com.metrowin.launcher.data.LauncherStatus.read(app).joinToString("\n") { "${app.getString(it.label)}: ${if (it.ok == true) "yes" else "no"}" }))
             if (uri != null) {
                 send.putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 send.clipData = android.content.ClipData.newRawUri("", uri)

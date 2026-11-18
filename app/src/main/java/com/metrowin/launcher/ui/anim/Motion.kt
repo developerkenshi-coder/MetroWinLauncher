@@ -303,6 +303,30 @@ fun Modifier.metroPress(
         }
 }
 
+/**
+ * A control with no press of its own (a switch, a slider) that a hardware keyboard reaches: Tab brings the focus, a ring shows where it is, and the
+ * keys go to [onKey] (true when it used one). The ring is the one of [metroPress].
+ */
+@Composable
+fun Modifier.keyboardControl(onKey: (Key) -> Boolean): Modifier {
+    var focused by remember { mutableStateOf(false) }
+    val ring = LocalMetroColors.current.foreground
+    val ringWidth = with(androidx.compose.ui.platform.LocalDensity.current) { FOCUS_RING.toPx() }
+    val current by rememberUpdatedState(onKey)
+    return this
+        // A key held down repeats: one flip of a switch per press.
+        .onKeyEvent { event -> event.type == KeyEventType.KeyDown && event.nativeKeyEvent.repeatCount == 0 && current(event.key) }
+        .onFocusChanged { focused = it.isFocused }
+        .focusable()
+        .drawWithContent {
+            drawContent()
+            if (focused) drawRect(ring, topLeft = Offset(ringWidth / 2, ringWidth / 2), size = Size(size.width - ringWidth, size.height - ringWidth), style = Stroke(ringWidth))
+        }
+}
+
+/** The keys that press a button: the same for every control. */
+fun isActivateKey(key: Key): Boolean = key in ACTIVATE_KEYS
+
 private val FOCUS_RING = 2.dp
 private val ACTIVATE_KEYS = setOf(Key.Enter, Key.NumPadEnter, Key.Spacebar, Key.DirectionCenter)
 

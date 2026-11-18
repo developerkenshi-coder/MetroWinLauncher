@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="safe_title">Sicherer Start</string>
+    <string name="safe_text">Der Launcher hat sich zweimal gleich nach dem Start beendet und startet deshalb mit dem Basis-Design und dem Basis-Startbildschirm. Einstellungen und Kacheln sind sicher: Solange das dauert, wird nichts geändert oder gespeichert. Starte normal, um sie zurückzubekommen.</string>
+    <string name="safe_leave">Normal starten</string>
+    <string name="safe_stay">Im sicheren Modus bleiben</string>
+    <string name="wal_sort_most">Meist genutzt</string>
+    <string name="wal_opt_direct">Direkt die meistgenutzte Karte öffnen (braucht den Verlauf)</string>
+    <string name="tm_name_button">Name</string>
+    <string name="tm_name_title">Diesem Befehl einen Namen geben</string>
+    <string name="tm_name_field">Name (leer zum Entfernen)</string>
+    <string name="files_work_channel">Dateivorgänge</string>
+    <string name="retry_button">Erneut versuchen</string>
+    <string name="status_title">Launcher-Status</string>
+    <string name="status_safe">Normaler Start (nicht sicher)</string>
+    <string name="status_notif_access">Zugriff auf Benachrichtigungen</string>
+    <string name="status_accessibility">Bedienungshilfe aktiv</string>
+    <string name="status_overlay">Über anderen Apps anzeigen</string>
+    <string name="status_shizuku">Shizuku bereit</string>
+    <string name="status_notifications">Benachrichtigungen anzeigen</string>
+    <string name="status_phone_state">Telefonstatus (Netztyp)</string>
+    <string name="status_contacts">Kontakte</string>
+    <string name="status_calendar">Kalender</string>
+    <string name="status_battery">Nicht durch Akkusparen begrenzt</string>
+    <string name="status_last_error">Letzter Fehler</string>
+    <string name="status_no_error">keiner</string>
+    <string name="status_yes">ja</string>
+    <string name="status_no">nein</string>
+    <string name="status_copy">Für eine Fehlermeldung kopieren</string>
+    <string name="status_copied">Status kopiert</string>
+</resources>

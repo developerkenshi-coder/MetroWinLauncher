@@ -18,7 +18,7 @@
     <string name="todo_dictation_missing">Questo telefono non ha la dettatura.</string>
     <string name="todo_edit_save">Salva</string>
     <string name="todo_export_csv">Salva come CSV</string>
-    <string name="todo_export_failed">Non è stato possibile salvare il file.</string>
+    <string name="todo_export_failed">Non è stato possibile salvare il file. Libera spazio sul telefono e riprova.</string>
     <string name="todo_export_md">Salva come Markdown</string>
     <string name="todo_export_txt">Salva come todo.txt</string>
     <string name="todo_exported">Salvato.</string>
@@ -39,7 +39,7 @@
     <string name="todo_health_exact">I promemoria possono arrivare in ritardo: Android non lascia impostare le sveglie esatte.</string>
     <string name="todo_health_notif">Le notifiche sono spente: un promemoria non si vedrà.</string>
     <string name="todo_import">Importa (Markdown o todo.txt)</string>
-    <string name="todo_import_failed">Non è stato possibile leggere il file.</string>
+    <string name="todo_import_failed">Non è stato possibile leggere il file. Controlla che il file sia valido e riprova.</string>
     <string name="todo_imported">%d aggiunte</string>
     <string name="todo_lists_count">%d da fare</string>
     <string name="todo_lists_none">Ancora nessuna lista. Dai una lista a una voce quando la modifichi.</string>

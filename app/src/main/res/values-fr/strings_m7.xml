@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="safe_title">Démarrage sécurisé</string>
+    <string name="safe_text">Le lanceur s’est fermé deux fois juste après le démarrage ; il a donc démarré avec le thème et l’écran Démarrer de base. Vos réglages et vos tuiles sont à l’abri : rien n’est modifié ni enregistré tant que cela dure. Démarrez normalement pour les retrouver.</string>
+    <string name="safe_leave">Démarrer normalement</string>
+    <string name="safe_stay">Rester en mode sécurisé</string>
+    <string name="wal_sort_most">Plus utilisées</string>
+    <string name="wal_opt_direct">Ouvrir directement la carte la plus utilisée (nécessite l’historique)</string>
+    <string name="tm_name_button">Nom</string>
+    <string name="tm_name_title">Nommer cette commande</string>
+    <string name="tm_name_field">Nom (vide pour le retirer)</string>
+    <string name="files_work_channel">Opérations sur les fichiers</string>
+    <string name="retry_button">Réessayer</string>
+    <string name="status_title">État du lanceur</string>
+    <string name="status_safe">Démarrage normal (pas sécurisé)</string>
+    <string name="status_notif_access">Accès aux notifications</string>
+    <string name="status_accessibility">Service d’accessibilité actif</string>
+    <string name="status_overlay">Affichage par-dessus les autres applis</string>
+    <string name="status_shizuku">Shizuku prêt</string>
+    <string name="status_notifications">Afficher les notifications</string>
+    <string name="status_phone_state">État du téléphone (type de réseau)</string>
+    <string name="status_contacts">Contacts</string>
+    <string name="status_calendar">Agenda</string>
+    <string name="status_battery">Non limité par l’économie de batterie</string>
+    <string name="status_last_error">Dernière erreur</string>
+    <string name="status_no_error">aucune</string>
+    <string name="status_yes">oui</string>
+    <string name="status_no">non</string>
+    <string name="status_copy">Copier pour un rapport de bogue</string>
+    <string name="status_copied">État copié</string>
+</resources>

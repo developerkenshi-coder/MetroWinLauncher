@@ -69,7 +69,7 @@
     <string name="fmx_unsaved">Los cambios no están guardados.</string>
     <string name="fmx_why_denied">No permitido (el archivo está protegido o en uso).</string>
     <string name="fmx_why_missing">El archivo ya no está.</string>
-    <string name="fmx_why_other">No funcionó.</string>
+    <string name="fmx_why_other">No funcionó. Comprueba que la carpeta sigue ahí y tiene espacio, e inténtalo de nuevo.</string>
     <string name="fmx_why_outside">Una carpeta no puede ir dentro de sí misma.</string>
     <string name="fmx_why_space">No queda espacio.</string>
 </resources>

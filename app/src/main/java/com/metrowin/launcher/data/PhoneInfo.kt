@@ -43,7 +43,7 @@ data class PhoneInfo(
         /** "7.6 GB", "512 MB": a size as a person reads it (powers of 1000, like the storage of the phone says). */
         fun size(bytes: Long): String = when {
             bytes <= 0L -> "—"
-            bytes >= 1_000_000_000L -> String.format(Locale.ROOT, "%.1f GB", bytes / 1e9)
+            bytes >= 1_000_000_000L -> String.format(Locale.getDefault(), "%.1f GB", bytes / 1e9)
             else -> "${bytes / 1_000_000L} MB"
         }
 

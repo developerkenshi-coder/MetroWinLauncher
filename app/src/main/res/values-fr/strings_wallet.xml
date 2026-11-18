@@ -19,9 +19,9 @@
     <string name="wal_opt_group">Grouper les cartes par type</string>
     <string name="wal_opt_scan">Extras de l’appareil photo : lampe, toucher pour la mise au point, pincer pour zoomer, vibration</string>
     <string name="wal_export_ok">Sauvegarde enregistrée</string>
-    <string name="wal_export_failed">La sauvegarde n’a pas pu être enregistrée</string>
+    <string name="wal_export_failed">La sauvegarde n’a pas pu être enregistrée. Libérez de l’espace sur le téléphone et réessayez.</string>
     <string name="wal_import_too_big">Ce fichier est trop gros pour être une sauvegarde du portefeuille</string>
-    <string name="wal_import_unreadable">Ce fichier n’a pas pu être lu</string>
+    <string name="wal_import_unreadable">Ce fichier n’a pas pu être lu. Vérifiez que le fichier est valide et réessayez.</string>
     <string name="wal_import_wrong_pass">Phrase secrète incorrecte, ou fichier modifié</string>
     <string name="wal_pass_title">Phrase secrète</string>
     <string name="wal_pass_hint">Phrase secrète</string>

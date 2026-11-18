@@ -20,7 +20,7 @@
     <string name="rec_deleted">Recording deleted.</string>
     <string name="rec_denied">The microphone is not allowed and the phone will not ask again. Allow it in the settings of the app.</string>
     <string name="rec_edit_done">A new recording was made</string>
-    <string name="rec_edit_failed">The recording could not be changed</string>
+    <string name="rec_edit_failed">The recording could not be changed. Free some space on the phone and try again.</string>
     <string name="rec_empty_guide">No recordings yet. Press Record, or use + to bring sound in from another place.</string>
     <string name="rec_end_minus">End −1 s</string>
     <string name="rec_end_plus">End +1 s</string>

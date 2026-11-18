@@ -105,6 +105,7 @@ internal fun CardList(
             SortMode.Name -> R.string.wal_sort_name
             SortMode.Expiry -> R.string.wal_sort_expiry
             SortMode.LastUsed -> R.string.wal_sort_used
+            SortMode.MostUsed -> R.string.wal_sort_most
         },
     )
     MiniFrame {

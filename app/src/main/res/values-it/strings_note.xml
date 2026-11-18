@@ -13,7 +13,7 @@
     <string name="notes_select_cancel">annulla</string>
     <string name="notes_select">Seleziona</string>
     <string name="notes_export_done">File salvato</string>
-    <string name="notes_export_failed">Non è stato possibile salvare il file</string>
+    <string name="notes_export_failed">Non è stato possibile salvare il file. Libera spazio sul telefono e riprova.</string>
     <string name="notes_fmt_h1">T1</string>
     <string name="notes_fmt_h2">T2</string>
     <string name="notes_fmt_bold">G</string>

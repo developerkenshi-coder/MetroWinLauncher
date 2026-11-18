@@ -69,7 +69,7 @@
     <string name="fmx_unsaved">Les modifications ne sont pas enregistrées.</string>
     <string name="fmx_why_denied">Refusé (fichier protégé ou en cours d\'utilisation).</string>
     <string name="fmx_why_missing">Le fichier n\'existe plus.</string>
-    <string name="fmx_why_other">Cela n\'a pas fonctionné.</string>
+    <string name="fmx_why_other">Cela n\'a pas fonctionné. Vérifiez que le dossier existe encore et qu’il a de la place, puis réessayez.</string>
     <string name="fmx_why_outside">Un dossier ne peut pas aller dans lui-même.</string>
     <string name="fmx_why_space">Il n\'y a plus de place.</string>
 </resources>

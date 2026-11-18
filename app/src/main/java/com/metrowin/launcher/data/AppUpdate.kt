@@ -118,10 +118,10 @@ object AppUpdate {
      */
     fun download(release: UpdateRelease, target: File, onProgress: (Int) -> Unit): Boolean {
         val ok = runCatching {
-            val expected = release.sumsUrl?.let { url ->
-                val sums = SafeHttp.get(url, DOWNLOAD_HOSTS, maxBytes = 16 * 1024) ?: return@runCatching false
-                checksumFor(sums, release.apkUrl.substringAfterLast('/')) ?: return@runCatching false
-            }
+            // A release with no SHA256SUMS is not installed: the hash is the only check of what was downloaded.
+            val sumsUrl = release.sumsUrl ?: return@runCatching false
+            val sums = SafeHttp.get(sumsUrl, DOWNLOAD_HOSTS, maxBytes = 16 * 1024) ?: return@runCatching false
+            val expected = checksumFor(sums, release.apkUrl.substringAfterLast('/')) ?: return@runCatching false
             target.parentFile?.mkdirs()
             val digest = MessageDigest.getInstance("SHA-256")
             var url = URL(release.apkUrl)
@@ -164,7 +164,7 @@ object AppUpdate {
                     }
                     if (total > 0 && done != total) return@runCatching false
                     val actual = digest.digest().joinToString("") { "%02x".format(it) }
-                    return@runCatching expected == null || expected == actual
+                    return@runCatching expected == actual
                 } finally {
                     connection.disconnect()
                 }

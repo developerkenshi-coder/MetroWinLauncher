@@ -57,7 +57,7 @@
     <string name="ph_zoom_in">vergrößern</string>
     <string name="ph_zoom_out">verkleinern</string>
     <string name="ph_strip_failed">Die Kopien ohne Metadaten konnten nicht erstellt werden. Es wurde nichts geteilt.</string>
-    <string name="ph_delete_failed">Löschen nicht möglich</string>
+    <string name="ph_delete_failed">Löschen nicht möglich. Erlaube die Änderung, wenn Android fragt, und versuche es erneut.</string>
     <string name="ph_undo">rückgängig</string>
     <plurals name="ph_count">
         <item quantity="one">%d Foto</item>

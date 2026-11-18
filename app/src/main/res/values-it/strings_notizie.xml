@@ -55,7 +55,7 @@
     <string name="nws_opml_done">%1$d feed aggiunti.</string>
     <string name="nws_opml_none">In quel file non c’è nessun feed nuovo da aggiungere.</string>
     <string name="nws_opml_saved">L’elenco dei feed è salvato.</string>
-    <string name="nws_opml_error">Il file non si è potuto leggere o scrivere.</string>
+    <string name="nws_opml_error">Il file non si è potuto leggere o scrivere. Controlla che il file sia valido e riprova.</string>
     <string name="nws_find">Trova il feed</string>
     <string name="nws_found">Feed trovato: l’indirizzo è nel campo.</string>
     <string name="nws_not_found">Nessun feed a quell’indirizzo.</string>

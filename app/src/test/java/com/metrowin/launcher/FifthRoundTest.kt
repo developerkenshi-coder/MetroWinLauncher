@@ -187,7 +187,7 @@ class FifthRoundTest {
     }
 
     @Test
-    fun thePhoneIsToldInPlainSizesAndTimes() {
+    fun thePhoneIsToldInPlainSizesAndTimes() = withLocale {
         assertEquals("7.6 GB", PhoneInfo.size(7_600_000_000L))
         assertEquals("512 MB", PhoneInfo.size(512_000_000L))
         assertEquals("—", PhoneInfo.size(0L))

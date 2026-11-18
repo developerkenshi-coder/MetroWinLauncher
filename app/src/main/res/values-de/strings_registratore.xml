@@ -20,7 +20,7 @@
     <string name="rec_deleted">Aufnahme gelöscht.</string>
     <string name="rec_denied">Das Mikrofon ist nicht erlaubt und das Telefon fragt nicht erneut. Erlaube es in den App-Einstellungen.</string>
     <string name="rec_edit_done">Eine neue Aufnahme wurde erstellt</string>
-    <string name="rec_edit_failed">Die Aufnahme konnte nicht geändert werden</string>
+    <string name="rec_edit_failed">Die Aufnahme konnte nicht geändert werden. Schaffe Speicherplatz auf dem Telefon und versuche es erneut.</string>
     <string name="rec_empty_guide">Noch keine Aufnahmen. Tippe auf Aufnehmen oder nutze +, um Ton von anderswo zu importieren.</string>
     <string name="rec_end_minus">Ende −1 s</string>
     <string name="rec_end_plus">Ende +1 s</string>

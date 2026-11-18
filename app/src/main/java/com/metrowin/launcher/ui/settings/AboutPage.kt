@@ -10,6 +10,8 @@ import com.metrowin.launcher.data.PhoneInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -19,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.R
 import com.metrowin.launcher.ui.components.SettingLabel
 import com.metrowin.launcher.data.UpdateState
+import com.metrowin.launcher.data.LauncherStatus
 
 /** The version of the app, the phone it runs on, and who made what it is built from. */
 @Composable
@@ -42,6 +45,7 @@ fun AboutPage(env: SettingsEnv) {
             stringResource(R.string.tut_replay), onClick = env.onShowTutorial,
             hint = stringResource(R.string.tut_replay_hint), tag = "about:tutorial", id = "about.tutorial",
         )
+        StatusBlock(env)
         Column(Modifier.settingAnchor("about.credits"), verticalArrangement = Arrangement.spacedBy(Spacing.Large)) {
             SettingHeading(stringResource(R.string.about_credits))
             SettingHint(stringResource(R.string.about_inspired))
@@ -119,5 +123,36 @@ private fun StackedInfo(label: String, value: String) {
     Column {
         MetroText(label, size = MetroType.Note, weight = FontWeight.Normal, color = LocalMetroColors.current.subtle)
         MetroText(value, size = MetroType.Subtitle, weight = FontWeight.Normal, maxLines = Int.MAX_VALUE)
+    }
+}
+
+/** What the launcher works with, as it is now: version, permissions, services and the last crash, with a button that copies it for a bug report. */
+@Composable
+private fun StatusBlock(env: SettingsEnv) {
+    val context = LocalContext.current
+    var tick by androidx.compose.runtime.mutableIntStateOf(0)
+    // The permissions are given on other screens: they are read again when this one comes back.
+    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { tick++ }
+    val lines = remember(tick) { LauncherStatus.read(context) }
+    val error = remember(tick) { LauncherStatus.lastError(context) }
+    val yes = stringResource(R.string.status_yes)
+    val no = stringResource(R.string.status_no)
+    val about = env.about
+    Column(Modifier.settingAnchor("about.status").testTag("about:status"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        SettingHeading(stringResource(R.string.status_title))
+        lines.forEach { line -> InfoSetting(stringResource(line.label), if (line.ok == true) yes else no) }
+        InfoSetting(stringResource(R.string.status_last_error), error ?: stringResource(R.string.status_no_error))
+        val copied = stringResource(R.string.status_copied)
+        val facts = lines.map { stringResource(it.label) to if (it.ok == true) yes else no }
+        val header = "MetroWin Launcher ${about.versionName} (${about.versionCode}), Android ${about.androidRelease} (API ${about.sdk}), ${about.device}"
+        val errorLabel = stringResource(R.string.status_last_error)
+        ActionSetting(
+            stringResource(R.string.status_copy), tag = "about:status:copy",
+            onClick = {
+                val text = LauncherStatus.report(header, facts, error, errorLabel)
+                context.getSystemService(android.content.ClipboardManager::class.java)?.setPrimaryClip(android.content.ClipData.newPlainText("MetroWin", text))
+                com.metrowin.launcher.ui.actioncenter.MetroToast.show(context, copied)
+            },
+        )
     }
 }

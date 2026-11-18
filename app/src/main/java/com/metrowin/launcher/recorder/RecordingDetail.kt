@@ -419,4 +419,4 @@ internal fun RecordingDetail(
     }
 }
 
-private fun speedText(v: Float) = if (v == v.toInt().toFloat()) "${v.toInt()}" else "%.2f".format(java.util.Locale.ROOT, v).trimEnd('0').trimEnd('.')
+private fun speedText(v: Float) = if (v == v.toInt().toFloat()) "${v.toInt()}" else "%.2f".format(java.util.Locale.getDefault(), v).trimEnd('0').trimEnd('.')

@@ -47,7 +47,6 @@ import com.metrowin.launcher.ui.components.MetroTextField
 import com.metrowin.launcher.ui.mini.DateTimeDialog
 import com.metrowin.launcher.ui.pages.PageChip
 import com.metrowin.launcher.ui.pages.PageNote
-import com.metrowin.launcher.ui.settings.ToggleSetting
 import com.metrowin.launcher.ui.theme.LocalMetroColors
 import kotlinx.coroutines.delay
 import java.util.TimeZone

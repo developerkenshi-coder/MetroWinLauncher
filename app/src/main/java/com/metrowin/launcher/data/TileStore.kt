@@ -112,11 +112,12 @@ class TileStore(context: Context) {
     private val prefs = Prefs.main(context)
 
     /** The Start screens, or null on a fresh install. Reads what version 1 saved (one list) as the first screen. */
-    fun loadPages(): List<List<StartEntry>>? =
+    fun loadPages(): List<List<StartEntry>>? = if (SafeStart.on) null else
         prefs.getString(KEY_PAGES, null)?.let(TileCodec::decodePages)
             ?: prefs.getString(KEY_TILES, null)?.let(TileCodec::decode)?.let { listOf(it) }
 
     fun savePages(pages: List<List<StartEntry>>) {
+        if (SafeStart.on) return
         prefs.edit { putString(KEY_PAGES, TileCodec.encodePages(pages)) }
     }
 

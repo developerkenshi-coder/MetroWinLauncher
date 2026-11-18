@@ -20,7 +20,7 @@
     <string name="rec_deleted">Gravação eliminada.</string>
     <string name="rec_denied">O microfone não está permitido e o telemóvel não voltará a perguntar. Permita-o nas definições da app.</string>
     <string name="rec_edit_done">Foi criada uma nova gravação</string>
-    <string name="rec_edit_failed">Não foi possível alterar a gravação</string>
+    <string name="rec_edit_failed">Não foi possível alterar a gravação. Liberte espaço no telefone e tente de novo.</string>
     <string name="rec_empty_guide">Ainda não há gravações. Prima Gravar ou use + para trazer som de outro lado.</string>
     <string name="rec_end_minus">Fim −1 s</string>
     <string name="rec_end_plus">Fim +1 s</string>

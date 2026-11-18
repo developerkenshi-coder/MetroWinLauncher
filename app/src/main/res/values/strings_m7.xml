@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="safe_title">Safe start</string>
+    <string name="safe_text">The launcher closed twice right after it started, so it came up with the base theme and the base Start screen. Your settings and tiles are safe: nothing is changed or saved while this lasts. Start normally to bring them back.</string>
+    <string name="safe_leave">Start normally</string>
+    <string name="safe_stay">Stay in safe mode</string>
+    <string name="wal_sort_most">Most used</string>
+    <string name="wal_opt_direct">Open straight to the most used card (needs the history)</string>
+    <string name="tm_name_button">Name</string>
+    <string name="tm_name_title">Name this command</string>
+    <string name="tm_name_field">Name (empty to remove it)</string>
+    <string name="files_work_channel">File operations</string>
+    <string name="retry_button">Try again</string>
+    <string name="status_title">Launcher status</string>
+    <string name="status_safe">Normal start (not in safe mode)</string>
+    <string name="status_notif_access">Notification access</string>
+    <string name="status_accessibility">Accessibility service on</string>
+    <string name="status_overlay">Draw over other apps</string>
+    <string name="status_shizuku">Shizuku ready</string>
+    <string name="status_notifications">Show notifications</string>
+    <string name="status_phone_state">Phone state (network type)</string>
+    <string name="status_contacts">Contacts</string>
+    <string name="status_calendar">Calendar</string>
+    <string name="status_battery">Not limited by battery saving</string>
+    <string name="status_last_error">Last error</string>
+    <string name="status_no_error">none</string>
+    <string name="status_yes">yes</string>
+    <string name="status_no">no</string>
+    <string name="status_copy">Copy for a bug report</string>
+    <string name="status_copied">Status copied</string>
+</resources>

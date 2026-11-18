@@ -20,7 +20,7 @@
     <string name="rec_deleted">Registrazione eliminata.</string>
     <string name="rec_denied">Il microfono non è consentito e il telefono non lo chiederà più. Consentilo nelle impostazioni dell\'app.</string>
     <string name="rec_edit_done">È stata creata una nuova registrazione</string>
-    <string name="rec_edit_failed">La registrazione non si è potuta modificare</string>
+    <string name="rec_edit_failed">La registrazione non si è potuta modificare. Libera spazio sul telefono e riprova.</string>
     <string name="rec_empty_guide">Ancora nessuna registrazione. Premi Registra, oppure usa + per portare qui un suono da un altro posto.</string>
     <string name="rec_end_minus">Fine −1 s</string>
     <string name="rec_end_plus">Fine +1 s</string>

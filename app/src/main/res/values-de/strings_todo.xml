@@ -18,7 +18,7 @@
     <string name="todo_dictation_missing">Dieses Telefon hat keine Spracheingabe.</string>
     <string name="todo_edit_save">Speichern</string>
     <string name="todo_export_csv">Als CSV speichern</string>
-    <string name="todo_export_failed">Die Datei konnte nicht gespeichert werden.</string>
+    <string name="todo_export_failed">Die Datei konnte nicht gespeichert werden. Schaffe Speicherplatz auf dem Telefon und versuche es erneut.</string>
     <string name="todo_export_md">Als Markdown speichern</string>
     <string name="todo_export_txt">Als todo.txt speichern</string>
     <string name="todo_exported">Gespeichert.</string>
@@ -39,7 +39,7 @@
     <string name="todo_health_exact">Erinnerungen können sich verspäten: Android erlaubt keine genauen Alarme.</string>
     <string name="todo_health_notif">Benachrichtigungen sind aus: Eine Erinnerung wird nicht angezeigt.</string>
     <string name="todo_import">Importieren (Markdown oder todo.txt)</string>
-    <string name="todo_import_failed">Die Datei konnte nicht gelesen werden.</string>
+    <string name="todo_import_failed">Die Datei konnte nicht gelesen werden. Prüfe, ob die Datei gültig ist, und versuche es erneut.</string>
     <string name="todo_imported">%d hinzugefügt</string>
     <string name="todo_lists_count">%d offen</string>
     <string name="todo_lists_none">Noch keine Listen. Gib einem Eintrag beim Bearbeiten eine Liste.</string>

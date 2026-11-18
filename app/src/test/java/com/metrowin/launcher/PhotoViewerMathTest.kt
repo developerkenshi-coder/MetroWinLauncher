@@ -69,7 +69,7 @@ class PhotoViewerMathTest {
     }
 
     @Test
-    fun exposureListsOnlyWhatThePictureHas() {
+    fun exposureListsOnlyWhatThePictureHas() = withLocale {
         assertEquals("f/1.8 · 1/120 s · ISO 100 · 5.4 mm", exposureText(1.8, 1 / 120.0, 100, 5.4))
         assertEquals("ISO 400", exposureText(0.0, 0.0, 400, 0.0))
         assertEquals("2.0 s", exposureText(0.0, 2.0, 0, 0.0))

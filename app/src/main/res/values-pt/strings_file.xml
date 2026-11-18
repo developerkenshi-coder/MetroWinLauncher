@@ -69,7 +69,7 @@
     <string name="fmx_unsaved">As alterações não estão guardadas.</string>
     <string name="fmx_why_denied">Não permitido (o ficheiro está protegido ou em uso).</string>
     <string name="fmx_why_missing">O ficheiro já não existe.</string>
-    <string name="fmx_why_other">Não funcionou.</string>
+    <string name="fmx_why_other">Não funcionou. Verifique se a pasta ainda existe e tem espaço, e tente de novo.</string>
     <string name="fmx_why_outside">Uma pasta não pode ir para dentro de si mesma.</string>
     <string name="fmx_why_space">Não há mais espaço.</string>
 </resources>

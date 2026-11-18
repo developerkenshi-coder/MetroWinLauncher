@@ -58,6 +58,7 @@ import com.metrowin.launcher.ui.anim.swivel
 import com.metrowin.launcher.ui.components.AppBar
 import com.metrowin.launcher.ui.components.AppBarItem
 import com.metrowin.launcher.ui.components.MetroButton
+import com.metrowin.launcher.ui.components.RetryNote
 import com.metrowin.launcher.ui.components.MetroProgressBar
 import com.metrowin.launcher.ui.components.MetroText
 import com.metrowin.launcher.ui.components.SwipeRow
@@ -635,7 +636,7 @@ private fun MailListScreen(
         }
         if (syncing) MetroProgressBar(Modifier.padding(horizontal = 24.dp, vertical = 4.dp).testTag("mail:syncing"), patient = false)
         if (searching) MetroTextField(query, onQuery, stringResource(R.string.mail_bar_search), Modifier.padding(horizontal = 24.dp, vertical = 4.dp).testTag("mail:search"))
-        error?.let { PageNote(stringResource(R.string.mail_error, it), Modifier.padding(horizontal = 24.dp, vertical = 4.dp)) }
+        error?.let { RetryNote(stringResource(R.string.mail_error, it), onRefresh, Modifier.padding(horizontal = 24.dp, vertical = 4.dp), tag = "mail:retry") }
         HorizontalPager(pager, Modifier.weight(1f), beyondViewportPageCount = 1) { page ->
             Box(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
                 val tab = when (page) { 0 -> MailFilter.All; 1 -> MailFilter.Unseen; 2 -> MailFilter.Flagged; else -> null }

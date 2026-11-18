@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="safe_title">Inicio seguro</string>
+    <string name="safe_text">El launcher se cerró dos veces nada más iniciar, así que arrancó con el tema y el Inicio básicos. Tus ajustes y mosaicos están a salvo: mientras dure no se cambia ni se guarda nada. Inicia con normalidad para recuperarlos.</string>
+    <string name="safe_leave">Iniciar con normalidad</string>
+    <string name="safe_stay">Seguir en modo seguro</string>
+    <string name="wal_sort_most">Más usadas</string>
+    <string name="wal_opt_direct">Abrir directamente la tarjeta más usada (necesita el historial)</string>
+    <string name="tm_name_button">Nombre</string>
+    <string name="tm_name_title">Dale un nombre a este comando</string>
+    <string name="tm_name_field">Nombre (vacío para quitarlo)</string>
+    <string name="files_work_channel">Operaciones con archivos</string>
+    <string name="retry_button">Reintentar</string>
+    <string name="status_title">Estado del launcher</string>
+    <string name="status_safe">Inicio normal (no seguro)</string>
+    <string name="status_notif_access">Acceso a las notificaciones</string>
+    <string name="status_accessibility">Servicio de accesibilidad activo</string>
+    <string name="status_overlay">Mostrar sobre otras apps</string>
+    <string name="status_shizuku">Shizuku listo</string>
+    <string name="status_notifications">Mostrar notificaciones</string>
+    <string name="status_phone_state">Estado del teléfono (tipo de red)</string>
+    <string name="status_contacts">Contactos</string>
+    <string name="status_calendar">Calendario</string>
+    <string name="status_battery">Sin límite del ahorro de batería</string>
+    <string name="status_last_error">Último error</string>
+    <string name="status_no_error">ninguno</string>
+    <string name="status_yes">sí</string>
+    <string name="status_no">no</string>
+    <string name="status_copy">Copiar para un informe de error</string>
+    <string name="status_copied">Estado copiado</string>
+</resources>

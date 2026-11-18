@@ -19,9 +19,9 @@
     <string name="wal_opt_group">Raggruppa le carte per tipo</string>
     <string name="wal_opt_scan">Extra della fotocamera: torcia, tocco per mettere a fuoco, pizzico per zoomare, vibrazione</string>
     <string name="wal_export_ok">Backup salvato</string>
-    <string name="wal_export_failed">Non è stato possibile salvare il backup</string>
+    <string name="wal_export_failed">Non è stato possibile salvare il backup. Libera spazio sul telefono e riprova.</string>
     <string name="wal_import_too_big">Questo file è troppo grande per essere un backup del portafoglio</string>
-    <string name="wal_import_unreadable">Questo file non si può leggere</string>
+    <string name="wal_import_unreadable">Questo file non si può leggere. Controlla che il file sia valido e riprova.</string>
     <string name="wal_import_wrong_pass">Frase segreta sbagliata, oppure il file è stato modificato</string>
     <string name="wal_pass_title">Frase segreta</string>
     <string name="wal_pass_hint">Frase segreta</string>

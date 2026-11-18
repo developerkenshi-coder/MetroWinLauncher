@@ -27,7 +27,7 @@ enum class CodeFormat(val zxing: BarcodeFormat, val twoDimensional: Boolean) {
 
 enum class CardKind { Loyalty, Ticket, Other }
 
-enum class SortMode { Name, Expiry, LastUsed }
+enum class SortMode { Name, Expiry, LastUsed, MostUsed }
 
 enum class ExpiryState { None, Valid, Soon, Expired }
 
@@ -133,6 +133,7 @@ object Wallet {
             // No date goes last, the nearest date first.
             SortMode.Expiry -> compareBy<Card> { if (it.expiry == 0L) Long.MAX_VALUE else it.expiry }.then(byName)
             SortMode.LastUsed -> compareByDescending<Card> { it.lastUsed }.then(byName)
+            SortMode.MostUsed -> compareByDescending<Card> { it.uses }.then(byName)
         }
         return cards.sortedWith(compareByDescending<Card> { it.favorite }.then(order))
     }
