@@ -707,7 +707,8 @@ private fun TileGridView(
                             is AppCell -> NotificationHub.badgeOf(badges, cell.item.packageName, cell.item.id)
                             is FolderCell -> cell.items.sumOf { NotificationHub.badgeOf(badges, it.packageName, it.id) }
                         },
-                        cards = (cell as? AppCell)?.let { peeks[it.item.packageName] }.orEmpty(),
+                        // The faces of a mini app (see MiniTiles) are under the id of its stock app: they come after what the notifications say.
+                        cards = (cell as? AppCell)?.let { peeks[it.item.packageName].orEmpty().ifEmpty { peeks[it.item.id].orEmpty() } }.orEmpty(),
                         hasBackground = hasBackground,
                         enterToken, exitRequest, editingKey, drag, actions,
                         onDragStart, onDragBy, onDragEnd, readOnly, pickedKeys,
@@ -1034,7 +1035,7 @@ private fun PositionedTile(
             .size(width, height)
             // After the offset: the semantics (and so TalkBack and the tests) must be where the tile really is.
             .testTag("tile:${cell.key}")
-            .tileSemantics(cell, badge, live, actions, previousId, nextId, readOnly, if (picking) picked else null)
+            .tileSemantics(cell, badge, live, cards, actions, previousId, nextId, readOnly, if (picking) picked else null)
             .onGloballyPositioned { coordinates = it }
             .graphicsLayer {
                 turnstile(away.value, reduced)
@@ -1215,6 +1216,7 @@ private fun Modifier.tileSemantics(
     cell: StartCell,
     badge: Int,
     live: LiveTileData,
+    cards: List<LiveCard>,
     actions: StartActions,
     previousId: String?,
     nextId: String?,
@@ -1233,6 +1235,14 @@ private fun Modifier.tileSemantics(
         else -> null
     }
     val nextState = next?.let { stringResource(R.string.a11y_tile_next, it) }
+    // What the face of an app says (unread mail, the last note), in words, for the tiles that have no line of their own above.
+    val faceText = if (next != null) null else cards.firstNotNullOfOrNull { card ->
+        when (card) {
+            is LiveCard.Digest -> listOf(card.title, card.text).filter { it.isNotBlank() }.joinToString(". ")
+            is LiveCard.Playing -> listOf(card.title, card.artist).filter { it.isNotBlank() }.joinToString(" - ")
+            else -> null
+        }?.ifEmpty { null }
+    }
     // An info tile says what it holds in words, whichever of its faces is on show.
     val infoId = app?.takeIf { it.data is TileData.Info }?.id
     val infoSummary = infoId?.let { InfoTileState.summary(it) }
@@ -1247,6 +1257,7 @@ private fun Modifier.tileSemantics(
         else -> listOfNotNull(
             if (notifications > 0) pluralStringResource(R.plurals.a11y_tile_notifications, notifications, (cell as AppCell).item.label, notifications) else null,
             nextState,
+            faceText,
             infoSummary,
         ).joinToString(". ").ifEmpty { null }
     }

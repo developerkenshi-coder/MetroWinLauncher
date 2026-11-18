@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mini_live_label">Live-Kachel</string>
+    <plurals name="minilive_mail">
+        <item quantity="one">%d ungelesene E-Mail</item>
+        <item quantity="other">%d ungelesene E-Mails</item>
+    </plurals>
+    <plurals name="minilive_texts">
+        <item quantity="one">%d ungelesene Nachricht</item>
+        <item quantity="other">%d ungelesene Nachrichten</item>
+    </plurals>
+    <plurals name="minilive_missed">
+        <item quantity="one">%d verpasster Anruf</item>
+        <item quantity="other">%d verpasste Anrufe</item>
+    </plurals>
+    <string name="minilive_note_locked">Gesperrte Notiz</string>
+    <string name="minilive_recording">Letzte Aufnahme</string>
+    <string name="minilive_card">Meistgenutzte Karte</string>
+    <string name="infom_live_mail">Die Mail-Kachel auf Start dreht sich und zeigt, wie viele Nachrichten ungelesen sind, wer die letzte geschrieben hat und worum es geht. Genutzt werden nur die Zahl und die letzte Nachricht, verschlüsselt auf dem Telefon gespeichert. Aus: Die Kachel bleibt ruhig.</string>
+    <string name="infom_live_messaging">Die Nachrichten-Kachel auf Start zeigt, wie viele Nachrichten ungelesen sind und wer die letzte geschrieben hat. Der Text selbst erscheint nur, wenn \"Geschriebenes ausblenden\" der Live-Kacheln aus ist. Braucht die Erlaubnis, Nachrichten zu lesen.</string>
+    <string name="infom_live_phone">Die Telefon-Kachel auf Start zeigt, wie viele Anrufe du verpasst hast und wer zuletzt angerufen hat. Braucht die Erlaubnis, die Anrufliste zu lesen.</string>
+    <string name="infom_live_notes">Die Notizen-Kachel auf Start zeigt Titel und erste Zeile der zuletzt geänderten Notiz. Eine gesperrte Notiz zeigt nur, dass sie gesperrt ist; Notizen im Papierkorb zählen nicht.</string>
+    <string name="infom_live_voicerecorder">Die Rekorder-Kachel auf Start zeigt Datum und Namen der letzten Aufnahme. Vom Ton wird nichts gelesen.</string>
+    <string name="infom_live_wallet">Die Wallet-Kachel auf Start zeigt den Namen der meistgenutzten Karte (oder des ersten Favoriten). Nie den Code, die Nummer oder die Notizen. Bei eingeschalteter Wallet-Sperre zeigt die Kachel nichts.</string>
+    <string name="infom_live_nowplaying">Die Kachel Wiedergabe auf Start zeigt den Titel, der in irgendeiner App läuft, mit dem Künstler. Sie nutzt die Benachrichtigungen, die der Launcher schon liest, und nur wenn Live-Inhalte an sind.</string>
+</resources>

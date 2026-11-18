@@ -9,6 +9,7 @@ import com.metrowin.launcher.gestures.LockAccessibilityService
 import com.metrowin.launcher.data.BugReport
 import com.metrowin.launcher.data.CrashLog
 import com.metrowin.launcher.data.DataChanges
+import com.metrowin.launcher.data.MiniTiles
 import com.metrowin.launcher.data.AppStats
 import com.metrowin.launcher.data.DataStats
 import com.metrowin.launcher.data.MemoryStats
@@ -672,18 +673,6 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private val _notificationAccess = MutableStateFlow(hasNotificationAccess())
     val notificationAccess: StateFlow<Boolean> = _notificationAccess.asStateFlow()
 
-    /** The faces of the tiles that flip to show what is going on in their app. Empty unless the setting is on. */
-    val peeks: StateFlow<Map<String, List<LiveCard>>> =
-        combine(liveInfo, TileFeed.tiles, _settings) { info, published, settings ->
-            val fromNotifications = info.mapValues { listOfNotNull(it.value.inbox) + it.value.cards }.filterValues { it.isNotEmpty() }
-            // What an app published for its own tile is what it wants the tile to say.
-            if (settings.thirdPartyTiles) {
-                fromNotifications + ThirdPartyTiles.peeks(published).mapValues { listOf(LiveCard.Digest(it.value.title, it.value.text)) }
-            } else {
-                fromNotifications
-            }
-        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
-
     /** The music playing in any app, for the Music tile; null when nothing plays or the setting is off. */
     val nowPlaying: StateFlow<NowPlaying?> =
         combine(NotificationHub.apps, _settings) { apps, settings ->
@@ -693,6 +682,29 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 null
             }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    /** The mini apps whose tile is on Start with its switch on, and the faces they have now (see [MiniTiles]); the music of the Now playing tile comes with it. */
+    private val miniIds = MutableStateFlow(emptySet<String>())
+    private val miniRead = MutableStateFlow(emptyMap<String, List<LiveCard>>())
+    private val miniFaces: StateFlow<Map<String, List<LiveCard>>> =
+        combine(miniIds, miniRead, nowPlaying) { ids, read, playing ->
+            val song = playing?.takeIf { "nowplaying" in ids }?.let { mapOf(MiniTiles.tileId("nowplaying") to listOf<LiveCard>(LiveCard.Playing(it.title, it.artist, it.art, it.playing))) }.orEmpty()
+            read + song
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+
+    /** The faces of the tiles that flip to show what is going on in their app. Empty unless the setting is on. */
+    val peeks: StateFlow<Map<String, List<LiveCard>>> =
+        combine(liveInfo, TileFeed.tiles, _settings, miniFaces) { info, published, settings, mini ->
+            val fromNotifications = info.mapValues { listOfNotNull(it.value.inbox) + it.value.cards }.filterValues { it.isNotEmpty() }
+            // What an app published for its own tile is what it wants the tile to say.
+            val others = if (settings.thirdPartyTiles) {
+                fromNotifications + ThirdPartyTiles.peeks(published).mapValues { listOf(LiveCard.Digest(it.value.title, it.value.text)) }
+            } else {
+                fromNotifications
+            }
+            // The faces of the mini apps are keyed by the id of the stock app, which no package name can be.
+            others + mini
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
     /** The tiles apps have published, most recent first, for the settings. */
     val publishedTiles: StateFlow<List<ThirdPartyTile>> =
@@ -928,6 +940,9 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         runCatching { app.unregisterReceiver(dndReceiver) }
         calendarWatch?.cancel()
         calendarWatch = null
+        miniWatch?.cancel()
+        miniWatch = null
+        miniWatched = null
         plugReceiver?.let { runCatching { app.unregisterReceiver(it) } }
         plugReceiver = null
         quickActions.stop()
@@ -1163,6 +1178,49 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     private fun galleryPhotos(s: LauncherSettings) =
         if (s.gallerySource == GallerySource.Chosen) s.galleryPhotos.map(Uri::parse) else null
 
+    private var miniKey: Pair<Set<String>, Int>? = null
+    private var miniJob: kotlinx.coroutines.Job? = null
+    private var miniWatch: kotlinx.coroutines.Job? = null
+    private var miniWatched: Set<String>? = null
+
+    /**
+     * Reads the faces of the mini apps that have a tile on Start with their switch on (see [MiniTiles]). Nothing is read for the others, and
+     * what is read is not read again for a minute unless a call or a text came in (the shared observers of [DataChanges]) or a permission changed.
+     */
+    private fun refreshMini(force: Boolean = false) {
+        val app = getApplication<Application>()
+        val ids = MiniTiles.wanted(app, StartPages.pinnedIds(_pages.value), _items.value)
+        miniIds.value = ids
+        watchMini(ids)
+        if (ids.isEmpty()) {
+            miniKey = null
+            miniRead.value = emptyMap()
+            return
+        }
+        val key = ids to MiniTiles.grants(app)
+        if (!force && key == miniKey && !throttle.due("live:mini", 60_000L)) return
+        miniKey = key
+        val hideText = _settings.value.liveHideText
+        miniJob?.cancel()
+        miniJob = viewModelScope.launch { miniRead.value = withContext(Dispatchers.IO) { MiniTiles.read(app, ids, hideText) } }
+    }
+
+    /** One watch on the observers of the sources the faces depend on, only while the launcher is on screen. */
+    private fun watchMini(ids: Set<String>) {
+        if (!listening) return
+        if (ids == miniWatched) return
+        miniWatched = ids
+        miniWatch?.cancel()
+        val app = getApplication<Application>()
+        val flows = MiniTiles.sources(ids).map { DataChanges.flow(app, it) }
+        miniWatch = if (flows.isEmpty()) null else viewModelScope.launch {
+            kotlinx.coroutines.flow.merge(*flows.toTypedArray()).collect {
+                throttle.reset("live:mini")
+                refreshMini()
+            }
+        }
+    }
+
     /**
      * Reads what the live tiles on Start show, unless that was read lately and Start asks for nothing new. Only the
      * data of the tiles that are pinned is read, and not at all while none of them is. [force] reads in any case.
@@ -1170,6 +1228,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun refreshLive(force: Boolean = false) {
         refreshFeeds(force)
         refreshExtras(force)
+        refreshMini(force)
         val wanted = LiveSources.wanted(_pages.value, _items.value)
         val albumIds = LiveSources.albumIds(_pages.value, _items.value)
         val groupIds = LiveSources.groupIds(_pages.value, _items.value)

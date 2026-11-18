@@ -77,6 +77,13 @@ internal object MiniInfoTable {
         "mini.voicerecorder.high_contrast" to R.string.infom_rec_high_contrast,
         "mini.voicerecorder.start_on_open" to R.string.infom_rec_start_on_open,
         "mini.voicerecorder.volume_mark" to R.string.infom_rec_volume_mark,
+        "mini.mail.live_tile" to R.string.infom_live_mail,
+        "mini.messaging.live_tile" to R.string.infom_live_messaging,
+        "mini.phone.live_tile" to R.string.infom_live_phone,
+        "mini.notes.live_tile" to R.string.infom_live_notes,
+        "mini.voicerecorder.live_tile" to R.string.infom_live_voicerecorder,
+        "mini.wallet.live_tile" to R.string.infom_live_wallet,
+        "mini.nowplaying.live_tile" to R.string.infom_live_nowplaying,
     )
 
     private val hints: Map<String, Int> =

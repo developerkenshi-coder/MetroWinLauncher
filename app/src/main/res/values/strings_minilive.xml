@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mini_live_label">Live tile</string>
+    <plurals name="minilive_mail">
+        <item quantity="one">%d unread email</item>
+        <item quantity="other">%d unread emails</item>
+    </plurals>
+    <plurals name="minilive_texts">
+        <item quantity="one">%d unread text</item>
+        <item quantity="other">%d unread texts</item>
+    </plurals>
+    <plurals name="minilive_missed">
+        <item quantity="one">%d missed call</item>
+        <item quantity="other">%d missed calls</item>
+    </plurals>
+    <string name="minilive_note_locked">Locked note</string>
+    <string name="minilive_recording">Last recording</string>
+    <string name="minilive_card">Card used most</string>
+    <string name="infom_live_mail">The Mail tile on Start turns over to say how many messages are unread, who wrote the last one and what it is about. Only the count and the last arrival are used, kept encrypted on the phone. Off: the tile stays plain.</string>
+    <string name="infom_live_messaging">The Messages tile on Start says how many texts are unread and who wrote the last one. The words of the text show only while \"hide what is written\" of the live tiles is off. Needs the permission to read texts.</string>
+    <string name="infom_live_phone">The Phone tile on Start says how many calls you missed and who called last. Needs the permission to read the call log.</string>
+    <string name="infom_live_notes">The Notes tile on Start shows the title and first line of the note you changed last. A locked note shows only that it is locked; notes in the bin are left out.</string>
+    <string name="infom_live_voicerecorder">The Recorder tile on Start shows the date and name of the last recording. Nothing of the sound is read.</string>
+    <string name="infom_live_wallet">The Wallet tile on Start shows the name of the card you use most (or the first favourite). Never the code, the number or the notes. With the lock of the wallet on, the tile says nothing.</string>
+    <string name="infom_live_nowplaying">The Now playing tile on Start shows the song that plays in any app, with its artist. It uses the notifications the launcher already reads, and only if live content is on.</string>
+</resources>

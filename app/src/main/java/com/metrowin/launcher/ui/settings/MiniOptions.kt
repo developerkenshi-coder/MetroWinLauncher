@@ -8,6 +8,7 @@ import com.metrowin.launcher.calculator.CalcOptions
 import com.metrowin.launcher.calendar.CalendarOptions
 import com.metrowin.launcher.calendar.Option as CalendarOption
 import com.metrowin.launcher.data.MetroCatalog
+import com.metrowin.launcher.data.MiniTiles
 import com.metrowin.launcher.data.Prefs
 import com.metrowin.launcher.datasense.DsOptions
 import com.metrowin.launcher.datasense.Opt as DataOpt
@@ -64,6 +65,8 @@ object MiniOptions {
         RecorderOpt.entries.filter { it.max == 1 }.forEach { o ->
             add(MiniOption("voicerecorder", o.key, recorderLabel(o), null, { RecorderPrefs.on(it, o) }, { c, v -> RecorderOptions(c)[o] = if (v) 1 else 0 }))
         }
+        // The live tile of the mini apps that do not have one of their own (see MiniTiles): off where the face says something personal.
+        MiniTiles.apps.forEach { app -> add(MiniOption(app, "live_tile", R.string.mini_live_label, null, { MiniTiles.on(it, app) }, { c, v -> MiniTiles.set(c, app, v) })) }
     }
 
     val byId: Map<String, MiniOption> = all.associateBy { it.id }

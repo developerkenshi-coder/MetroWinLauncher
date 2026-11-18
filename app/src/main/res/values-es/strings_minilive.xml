@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mini_live_label">Mosaico dinámico</string>
+    <plurals name="minilive_mail">
+        <item quantity="one">%d correo sin leer</item>
+        <item quantity="many">%d correos sin leer</item>
+        <item quantity="other">%d correos sin leer</item>
+    </plurals>
+    <plurals name="minilive_texts">
+        <item quantity="one">%d mensaje sin leer</item>
+        <item quantity="many">%d mensajes sin leer</item>
+        <item quantity="other">%d mensajes sin leer</item>
+    </plurals>
+    <plurals name="minilive_missed">
+        <item quantity="one">%d llamada perdida</item>
+        <item quantity="many">%d llamadas perdidas</item>
+        <item quantity="other">%d llamadas perdidas</item>
+    </plurals>
+    <string name="minilive_note_locked">Nota bloqueada</string>
+    <string name="minilive_recording">Última grabación</string>
+    <string name="minilive_card">Tarjeta más usada</string>
+    <string name="infom_live_mail">El mosaico de Correo en Inicio gira para decir cuántos mensajes no has leído, quién escribió el último y de qué trata. Solo se usan el recuento y la última llegada, guardada cifrada en el teléfono. Apagado: el mosaico queda quieto.</string>
+    <string name="infom_live_messaging">El mosaico de Mensajes en Inicio dice cuántos mensajes no has leído y quién escribió el último. Las palabras del mensaje solo se ven si \"ocultar lo escrito\" de los mosaicos dinámicos está apagado. Necesita el permiso para leer mensajes.</string>
+    <string name="infom_live_phone">El mosaico de Teléfono en Inicio dice cuántas llamadas has perdido y quién llamó la última vez. Necesita el permiso para leer el registro de llamadas.</string>
+    <string name="infom_live_notes">El mosaico de Notas en Inicio muestra el título y la primera línea de la última nota que cambiaste. Una nota bloqueada solo muestra que está bloqueada; las de la papelera no cuentan.</string>
+    <string name="infom_live_voicerecorder">El mosaico de la Grabadora en Inicio muestra la fecha y el nombre de la última grabación. Del sonido no se lee nada.</string>
+    <string name="infom_live_wallet">El mosaico de Cartera en Inicio muestra el nombre de la tarjeta que más usas (o el primer favorito). Nunca el código, el número ni las notas. Con el bloqueo de la cartera activado, el mosaico no dice nada.</string>
+    <string name="infom_live_nowplaying">El mosaico En reproducción en Inicio muestra la canción que suena en cualquier app, con su artista. Usa las notificaciones que el launcher ya lee, y solo si el contenido dinámico está activado.</string>
+</resources>

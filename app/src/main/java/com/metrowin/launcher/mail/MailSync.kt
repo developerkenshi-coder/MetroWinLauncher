@@ -18,6 +18,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import com.metrowin.launcher.data.Diagnostics
+import com.metrowin.launcher.notes.KeystoreCrypt
+import com.metrowin.launcher.notes.NoteCrypt
 import com.metrowin.launcher.R
 import kotlin.concurrent.thread
 
@@ -63,10 +65,21 @@ object MailSync {
     /** Keeps the unread count of an account (the Mail screen also does it, so the tile follows what the user reads). */
     fun setUnread(context: Context, accountId: String, count: Int) = writeUnread(prefs(context), accountId, count)
 
+    private const val LAST = "last_arrival"
+
+    /** Who wrote and the subject of the newest arrival, kept encrypted for the live tile of Mail (off by default there); null when none is kept. */
+    fun last(context: Context, crypt: NoteCrypt = KeystoreCrypt): Pair<String, String>? =
+        prefs(context).getString(LAST, null)?.let(crypt::decrypt)?.split('\n', limit = 2)?.takeIf { it.size == 2 }?.let { it[0] to it[1] }
+
+    internal fun remember(context: Context, message: MailMessage, crypt: NoteCrypt = KeystoreCrypt) {
+        val one = { text: String -> text.replace('\n', ' ').trim() }
+        prefs(context).edit { putString(LAST, crypt.encrypt(one(message.senderName.ifBlank { message.senderAddress }) + "\n" + one(message.subject))) }
+    }
+
     /** What is kept of an account that was removed. */
     fun forget(context: Context, accountId: String) {
         val p = prefs(context)
-        p.edit { remove("unread_$accountId"); remove("uid_$accountId") }
+        p.edit { remove("unread_$accountId"); remove("uid_$accountId"); remove(LAST) }
         p.edit { putInt(TOTAL, sum(p.all)) }
     }
 
@@ -127,7 +140,11 @@ object MailSync {
         val news = toNotify(known, found.fresh)
         store.edit { putLong("uid_${account.id}", found.lastUid) }
         writeUnread(store, account.id, found.unread)
-        if (news.isNotEmpty()) notify(context, account, news)
+        if (news.isNotEmpty()) {
+            // Only for the tile, and only when its switch is on: otherwise nothing of the mail is kept besides the count.
+            if (com.metrowin.launcher.data.MiniTiles.on(context, "mail")) remember(context, news.first())
+            notify(context, account, news)
+        }
     }
 
     private fun canNotify(context: Context): NotificationManager? {

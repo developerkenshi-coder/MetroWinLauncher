@@ -263,6 +263,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 |---|---|---|---|
 | Interruttori delle mini app (uno per opzione, vedi `MiniOptions`) | `mini.<app>.<opzione>` | app › mini app | mini app › mini app |
 | Notizie: pagina di lettura senza pubblicità, con dimensione testo regolabile | `mini.news.read_mode` | app › mini app | mini app › mini app |
+| Tile vivo delle mini app (Posta, Messaggi, Telefono, Note, Registratore, Wallet, In riproduzione): spento di default dove il contenuto è personale (Posta, Messaggi, Note, Registratore, Wallet) | `mini.<app>.live_tile` | app › mini app | mini app › mini app |
 
 ### notifiche
 

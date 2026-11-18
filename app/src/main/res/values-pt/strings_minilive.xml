@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mini_live_label">Bloco dinâmico</string>
+    <plurals name="minilive_mail">
+        <item quantity="one">%d e-mail não lido</item>
+        <item quantity="many">%d e-mails não lidos</item>
+        <item quantity="other">%d e-mails não lidos</item>
+    </plurals>
+    <plurals name="minilive_texts">
+        <item quantity="one">%d mensagem não lida</item>
+        <item quantity="many">%d mensagens não lidas</item>
+        <item quantity="other">%d mensagens não lidas</item>
+    </plurals>
+    <plurals name="minilive_missed">
+        <item quantity="one">%d chamada perdida</item>
+        <item quantity="many">%d chamadas perdidas</item>
+        <item quantity="other">%d chamadas perdidas</item>
+    </plurals>
+    <string name="minilive_note_locked">Nota bloqueada</string>
+    <string name="minilive_recording">Última gravação</string>
+    <string name="minilive_card">Cartão mais usado</string>
+    <string name="infom_live_mail">O bloco do Correio no Início vira para dizer quantas mensagens não leste, quem escreveu a última e sobre o quê. Só se usam a contagem e a última chegada, guardada cifrada no telefone. Desligado: o bloco fica parado.</string>
+    <string name="infom_live_messaging">O bloco das Mensagens no Início diz quantas mensagens não leste e quem escreveu a última. As palavras da mensagem só aparecem se \"ocultar o que está escrito\" dos blocos dinâmicos estiver desligado. Precisa da permissão para ler mensagens.</string>
+    <string name="infom_live_phone">O bloco do Telefone no Início diz quantas chamadas perdeste e quem ligou por último. Precisa da permissão para ler o registo de chamadas.</string>
+    <string name="infom_live_notes">O bloco das Notas no Início mostra o título e a primeira linha da última nota que mudaste. Uma nota bloqueada mostra só que está bloqueada; as notas do lixo não contam.</string>
+    <string name="infom_live_voicerecorder">O bloco do Gravador no Início mostra a data e o nome da última gravação. Do som não se lê nada.</string>
+    <string name="infom_live_wallet">O bloco da Carteira no Início mostra o nome do cartão que mais usas (ou o primeiro favorito). Nunca o código, o número nem as notas. Com o bloqueio da carteira ligado, o bloco não diz nada.</string>
+    <string name="infom_live_nowplaying">O bloco Em reprodução no Início mostra a música que toca em qualquer app, com o artista. Usa as notificações que o launcher já lê, e só se o conteúdo dinâmico estiver ligado.</string>
+</resources>

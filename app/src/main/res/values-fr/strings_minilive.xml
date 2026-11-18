@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mini_live_label">Tuile dynamique</string>
+    <plurals name="minilive_mail">
+        <item quantity="one">%d e-mail non lu</item>
+        <item quantity="many">%d e-mails non lus</item>
+        <item quantity="other">%d e-mails non lus</item>
+    </plurals>
+    <plurals name="minilive_texts">
+        <item quantity="one">%d message non lu</item>
+        <item quantity="many">%d messages non lus</item>
+        <item quantity="other">%d messages non lus</item>
+    </plurals>
+    <plurals name="minilive_missed">
+        <item quantity="one">%d appel manqué</item>
+        <item quantity="many">%d appels manqués</item>
+        <item quantity="other">%d appels manqués</item>
+    </plurals>
+    <string name="minilive_note_locked">Note verrouillée</string>
+    <string name="minilive_recording">Dernier enregistrement</string>
+    <string name="minilive_card">Carte la plus utilisée</string>
+    <string name="infom_live_mail">La tuile Courrier sur Accueil se retourne pour dire combien de messages ne sont pas lus, qui a écrit le dernier et de quoi il parle. Seuls le nombre et la dernière arrivée servent, gardés chiffrés sur le téléphone. Désactivé : la tuile reste fixe.</string>
+    <string name="infom_live_messaging">La tuile Messages sur Accueil dit combien de messages ne sont pas lus et qui a écrit le dernier. Les mots du message ne s\'affichent que si \"masquer ce qui est écrit\" des tuiles dynamiques est désactivé. Demande l\'autorisation de lire les messages.</string>
+    <string name="infom_live_phone">La tuile Téléphone sur Accueil dit combien d\'appels tu as manqués et qui a appelé en dernier. Demande l\'autorisation de lire le journal d\'appels.</string>
+    <string name="infom_live_notes">La tuile Notes sur Accueil montre le titre et la première ligne de la dernière note modifiée. Une note verrouillée indique seulement qu\'elle est verrouillée ; les notes de la corbeille ne comptent pas.</string>
+    <string name="infom_live_voicerecorder">La tuile Dictaphone sur Accueil montre la date et le nom du dernier enregistrement. Rien du son n\'est lu.</string>
+    <string name="infom_live_wallet">La tuile Portefeuille sur Accueil montre le nom de la carte la plus utilisée (ou du premier favori). Jamais le code, le numéro ni les notes. Avec le verrouillage du portefeuille activé, la tuile ne dit rien.</string>
+    <string name="infom_live_nowplaying">La tuile En lecture sur Accueil montre le morceau qui joue dans n\'importe quelle appli, avec l\'artiste. Elle utilise les notifications que le launcher lit déjà, et seulement si le contenu dynamique est activé.</string>
+</resources>

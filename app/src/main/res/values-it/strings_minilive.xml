@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mini_live_label">Tile vivo</string>
+    <plurals name="minilive_mail">
+        <item quantity="one">%d e-mail non letta</item>
+        <item quantity="other">%d e-mail non lette</item>
+    </plurals>
+    <plurals name="minilive_texts">
+        <item quantity="one">%d messaggio non letto</item>
+        <item quantity="other">%d messaggi non letti</item>
+    </plurals>
+    <plurals name="minilive_missed">
+        <item quantity="one">%d chiamata persa</item>
+        <item quantity="other">%d chiamate perse</item>
+    </plurals>
+    <string name="minilive_note_locked">Nota bloccata</string>
+    <string name="minilive_recording">Ultima registrazione</string>
+    <string name="minilive_card">Carta più usata</string>
+    <string name="infom_live_mail">Il tile di Posta in Start si gira per dire quanti messaggi non hai letto, chi ha scritto l\'ultimo e di cosa parla. Servono solo il conteggio e l\'ultimo arrivo, tenuto cifrato sul telefono. Spento: il tile resta fermo.</string>
+    <string name="infom_live_messaging">Il tile di Messaggi in Start dice quanti messaggi non hai letto e chi ha scritto l\'ultimo. Le parole del messaggio si vedono solo se \"nascondi cosa c\'è scritto\" dei tile vivi è spento. Serve il permesso di leggere i messaggi.</string>
+    <string name="infom_live_phone">Il tile di Telefono in Start dice quante chiamate hai perso e chi ha chiamato per ultimo. Serve il permesso di leggere il registro chiamate.</string>
+    <string name="infom_live_notes">Il tile di Note in Start mostra il titolo e la prima riga dell\'ultima nota che hai cambiato. Una nota bloccata mostra solo che è bloccata; le note nel cestino non contano.</string>
+    <string name="infom_live_voicerecorder">Il tile del Registratore in Start mostra data e nome dell\'ultima registrazione. Dell\'audio non si legge nulla.</string>
+    <string name="infom_live_wallet">Il tile di Wallet in Start mostra il nome della carta che usi di più (o la prima tra i preferiti). Mai il codice, il numero o le note. Con il blocco del wallet acceso il tile non dice nulla.</string>
+    <string name="infom_live_nowplaying">Il tile In riproduzione in Start mostra il brano che suona in qualsiasi app, con l\'artista. Usa le notifiche che il launcher già legge, e solo se i contenuti vivi sono attivi.</string>
+</resources>
