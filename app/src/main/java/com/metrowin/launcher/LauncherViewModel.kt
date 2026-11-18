@@ -8,6 +8,7 @@ import com.metrowin.launcher.data.GallerySource
 import com.metrowin.launcher.gestures.LockAccessibilityService
 import com.metrowin.launcher.data.BugReport
 import com.metrowin.launcher.data.CrashLog
+import com.metrowin.launcher.data.DataChanges
 import com.metrowin.launcher.data.AppStats
 import com.metrowin.launcher.data.DataStats
 import com.metrowin.launcher.data.MemoryStats
@@ -546,14 +547,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     val infoContext: StateFlow<InfoContext> = _infoContext.asStateFlow()
 
     /** An event added or changed while Start is on screen: the tiles of the calendar read it (at most once in a while). */
-    private val calendarObserver = object : android.database.ContentObserver(android.os.Handler(android.os.Looper.getMainLooper())) {
-        override fun onChange(selfChange: Boolean) {
-            if (loadedLive?.contains(LiveKind.Calendar) == true && throttle.due("calendar:observer", 20_000L)) {
-                throttle.reset("live:${LiveKind.Calendar.name}")
-                refreshLive()
-            }
-        }
-    }
+    private var calendarWatch: kotlinx.coroutines.Job? = null
 
     private val dndReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) = refreshInfoContext()
@@ -886,8 +880,13 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         ContextCompat.registerReceiver(app, powerSaveReceiver, IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(app, alarmReceiver, IntentFilter(android.app.AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
         ContextCompat.registerReceiver(app, dndReceiver, IntentFilter(android.app.NotificationManager.ACTION_INTERRUPTION_FILTER_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
-        if (LivePermissions.isGranted(app, LivePermissions.calendar)) {
-            runCatching { app.contentResolver.registerContentObserver(android.provider.CalendarContract.CONTENT_URI, true, calendarObserver) }
+        calendarWatch = viewModelScope.launch {
+            DataChanges.flow(app, DataChanges.Source.Calendar).collect {
+                if (loadedLive?.contains(LiveKind.Calendar) == true && throttle.due("calendar:observer", 20_000L)) {
+                    throttle.reset("live:${LiveKind.Calendar.name}")
+                    refreshLive()
+                }
+            }
         }
         plugReceiver = ChargeAnnounce.listen(app)
         syncAlarm()
@@ -913,7 +912,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         runCatching { app.unregisterReceiver(powerSaveReceiver) }
         runCatching { app.unregisterReceiver(alarmReceiver) }
         runCatching { app.unregisterReceiver(dndReceiver) }
-        runCatching { app.contentResolver.unregisterContentObserver(calendarObserver) }
+        calendarWatch?.cancel()
+        calendarWatch = null
         plugReceiver?.let { runCatching { app.unregisterReceiver(it) } }
         plugReceiver = null
         quickActions.stop()

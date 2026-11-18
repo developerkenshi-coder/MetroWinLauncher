@@ -18,10 +18,7 @@ import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
-import android.database.ContentObserver
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.text.format.DateFormat
 import android.text.format.DateUtils
 import androidx.activity.compose.BackHandler
@@ -92,6 +89,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.metrowin.launcher.R
+import com.metrowin.launcher.data.DataChanges
 import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.data.SimChoice
 import com.metrowin.launcher.data.SimInfo
@@ -168,16 +166,7 @@ fun MessagesScreen(address: String?, body: String, onAddress: (String?) -> Unit,
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { repository.forgetNames(); refresh++ }
     // The list follows the messages of the phone as they change, a moment after the last change.
     val live = options.on(MessagesOptions.Key.Live)
-    DisposableEffect(allowed, live) {
-        if (!allowed || !live) return@DisposableEffect onDispose { }
-        val handler = Handler(Looper.getMainLooper())
-        val bump = Runnable { refresh++ }
-        val observer = object : ContentObserver(handler) {
-            override fun onChange(selfChange: Boolean) { handler.removeCallbacks(bump); handler.postDelayed(bump, 400) }
-        }
-        context.contentResolver.registerContentObserver("content://mms-sms/".toUri(), true, observer)
-        onDispose { handler.removeCallbacks(bump); context.contentResolver.unregisterContentObserver(observer) }
-    }
+    LaunchedEffect(allowed, live) { if (allowed && live) DataChanges.flow(context, DataChanges.Source.Messages).collect { refresh++ } }
     // A message being forwarded waits here until a conversation is chosen for it.
     var forward by remember { mutableStateOf<String?>(null) }
     val menu = optionItems(options) { if (it) askPhone.launch(Manifest.permission.READ_PHONE_STATE) }

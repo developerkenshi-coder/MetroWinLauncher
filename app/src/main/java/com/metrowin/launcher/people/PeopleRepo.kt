@@ -3,24 +3,18 @@ package com.metrowin.launcher.people
 import android.Manifest
 import android.content.ContentUris
 import android.content.Context
-import android.database.ContentObserver
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import android.provider.CallLog
 import android.provider.ContactsContract
 import android.provider.ContactsContract.CommonDataKinds
 import android.provider.Telephony
 import androidx.compose.runtime.Immutable
 import com.metrowin.launcher.data.ContactSource
+import com.metrowin.launcher.data.DataChanges
 import com.metrowin.launcher.data.LivePermissions
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.debounce
 
 /** Every contact of the phone as the hub shows it, read in one go. */
 @Immutable
@@ -214,22 +208,10 @@ object PeopleRepo {
     }
 
     /** Fires when the contacts change (anywhere, the contacts app, a sync), after a short pause so a burst of writes is one. */
-    @OptIn(FlowPreview::class)
-    fun contactChanges(context: Context): Flow<Unit> = changes(context, ContactsContract.Contacts.CONTENT_URI, LivePermissions.contacts)
+    fun contactChanges(context: Context): Flow<Unit> = DataChanges.flow(context, DataChanges.Source.Contacts)
 
     /** Fires when the call log changes. */
-    @OptIn(FlowPreview::class)
-    fun callChanges(context: Context): Flow<Unit> = changes(context, CallLog.Calls.CONTENT_URI, LivePermissions.calls)
-
-    @OptIn(FlowPreview::class)
-    private fun changes(context: Context, uri: Uri, permission: String): Flow<Unit> = callbackFlow {
-        val resolver = context.applicationContext.contentResolver
-        val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
-            override fun onChange(selfChange: Boolean) { trySend(Unit) }
-        }
-        val watching = LivePermissions.isGranted(context, permission) && runCatching { resolver.registerContentObserver(uri, true, observer) }.isSuccess
-        awaitClose { if (watching) resolver.unregisterContentObserver(observer) }
-    }.debounce(CHANGE_PAUSE_MS)
+    fun callChanges(context: Context): Flow<Unit> = DataChanges.flow(context, DataChanges.Source.Calls)
 
     /** The photo of a contact at a size for the card (the big one when the contact has it), or null. */
     fun bigPhoto(context: Context, lookupUri: String): Bitmap? = runCatching {
@@ -292,7 +274,6 @@ object PeopleRepo {
         return out.sortedByDescending { it.date }
     }
 
-    private const val CHANGE_PAUSE_MS = 400L
     private const val EXTRA_MAX = 300
     private const val BIG_PX = 1024
     private const val LINES = 40

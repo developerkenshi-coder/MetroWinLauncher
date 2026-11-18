@@ -4,11 +4,7 @@ import com.metrowin.launcher.ui.components.PageSwitch
 import com.metrowin.launcher.ui.components.isWide
 import android.Manifest
 import android.content.Intent
-import android.database.ContentObserver
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
-import android.provider.CalendarContract
 import android.provider.Settings
 import android.text.format.DateFormat
 import androidx.activity.compose.BackHandler
@@ -24,7 +20,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -46,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.metrowin.launcher.R
+import com.metrowin.launcher.data.DataChanges
 import com.metrowin.launcher.data.LivePermissions
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import com.metrowin.launcher.ui.components.AppBar
@@ -120,13 +116,7 @@ fun CalendarScreen(initialDay: LocalDate? = null, draft: Pair<String, String>? =
     val askContacts = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> options.set(Option.Birthdays, granted); version++ }
 
     // The calendar app of the phone (or an account sync) changes events while this is open: the lists are read again, a moment after the last change.
-    var changes by remember { mutableIntStateOf(0) }
-    DisposableEffect(canRead) {
-        val observer = object : ContentObserver(Handler(Looper.getMainLooper())) { override fun onChange(selfChange: Boolean) { changes++ } }
-        if (canRead) runCatching { context.contentResolver.registerContentObserver(CalendarContract.CONTENT_URI, true, observer) }
-        onDispose { context.contentResolver.unregisterContentObserver(observer) }
-    }
-    LaunchedEffect(changes) { if (changes > 0) { delay(400); version++ } }
+    LaunchedEffect(canRead) { if (canRead) DataChanges.flow(context, DataChanges.Source.Calendar).collect { version++ } }
 
     val calendars by produceState(emptyList<CalendarInfo>(), canRead, version) { value = if (canRead) withContext(Dispatchers.IO) { repository.calendars() } else emptyList() }
 
