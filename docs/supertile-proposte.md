@@ -13,7 +13,7 @@ Peso: **L** meno di 1 h · **M** mezza giornata · **H** più giorni.
 Segni nella colonna «come»: **[difetto]** = visto leggendo il codice (riga indicata); **[perm. nuovo]**, **[rete]**, **[libreria]** = richiede qualcosa che oggi non c'è. Se non c'è segno, la proposta usa solo ciò che c'è già (permessi già nel manifest: calendario, contatti, registro chiamate, posizione, riconoscimento attività, accesso alle notifiche, accesso all'uso, Bluetooth, `INTERNET`).
 Colonna «opz.»: sì = interruttore spento di default (tocca privacy, rete, batteria o permessi).
 
-Non c'è nessun «verificato a schermo»: la sessione era di sola lettura, niente emulatore né test eseguiti. Ciò che riguarda tempi e aspetto è dedotto dal codice (vedi «non verificato» in fondo).
+Non c'è nessun «verificato a schermo»: lettura del codice soltanto, niente emulatore né test eseguiti. Ciò che riguarda tempi e aspetto è dedotto dal codice (vedi «non verificato» in fondo).
 
 ---
 
@@ -150,9 +150,9 @@ Criterio: quanto cambia l'uso di ogni giorno, rapportato al lavoro. Le prime sei
 
 ## Ordine di lavoro suggerito
 
-Una cosa alla volta (una sessione per volta, regola del progetto).
+Una cosa alla volta.
 
-1. **Difetti piccoli e sicuri (L, una sessione)**: A6, A7, A13, A24, A23, A3, A33, A8, A27, A26. Test: A46.
+1. **Difetti piccoli e sicuri (L)**: A6, A7, A13, A24, A23, A3, A33, A8, A27, A26. Test: A46.
 2. **Movimento (M)**: A1 → A2 → A4 → A5. Test: A45. Da qui in poi `InfoFace` ha una base solida su cui aggiungere facce.
 3. **Calendario (M)**: A14 → A15 → A18 → A16 → A17. Poi B26, B27, B19, B40.
 4. **Meteo (L/M)**: A19, A20, A21, A9, A10. Poi B20, B22, B41.
@@ -167,7 +167,7 @@ Dipendenze: A2 → tutte le nuove facce; A14 → B19, B26; A29 → A30, A37, B44
 
 ## Non verificato
 
-- Nessuna esecuzione: né app, né emulatore, né test (sessione di sola lettura). Il comportamento a schermo (i due giri annidati di A2, l'etichetta su Small di A34, l'effetto del `Crossfade` di A8) è dedotto dal codice, non visto.
+- Nessuna esecuzione: né app, né emulatore, né test (solo lettura del codice). Il comportamento a schermo (i due giri annidati di A2, l'etichetta su Small di A34, l'effetto del `Crossfade` di A8) è dedotto dal codice, non visto.
 - Se `InfoTile` esista davvero in formato Small: non controllato; A34 e A25 valgono per i formati in cui esiste.
 - `LocalReduceMotion` (A1): letta solo la provenienza in `Theme.kt:200`, non se si accende anche con l'impostazione di sistema «rimuovi animazioni».
 - Se un secondo ricevitore aggiorna `nextAlarm` in tempo reale: `LauncherViewModel.kt:840` registra `ACTION_NEXT_ALARM_CLOCK_CHANGED`, ma non ho letto cosa fa; per questo non c'è una voce sulla sveglia.

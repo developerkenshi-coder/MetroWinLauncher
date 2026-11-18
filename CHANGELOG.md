@@ -3,6 +3,28 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
+## 26.10S: 2026-11-18
+
+The complete list is in the notes of the release / L'elenco completo è nelle note della versione.
+
+**English:**
+- **Windows Phone look, everywhere**: thin line icons, bigger lowercase pivot titles, a 21st accent colour, and Start that moves like Windows Phone (tiles that tilt, breathe, drop in and shrink away); folders of tiles; the first frame of Start about six times sooner.
+- **Super tile**: a smart order that never hides a face, it goes on from the face you left, and it can be shared as a code. **A live tile for each mini app** (Mail, Messages, Phone, Notes, Recorder, Wallet, Now Playing).
+- **Settings in 14 categories**: a note on every switch of the mini apps, a search with synonyms, a "what is wrong?" list, quick profiles, and a new tip section.
+- **Dual SIM** in the status bar: the other SIM as five thin lines, its network small under the main one, a data dot, roaming and the operator names.
+- **Apps**: News has a reading page without ads, People a mosaic of photos, Mail swipe to archive with Undo, share to MetroWin to make a note, a to-do or a card.
+- **Safer**: screens keep your work after a rotation or when Android closes them, safe mode after two crashes at start, updates check their SHA-256 sum.
+- **Fixes**: Shizuku commands, big text never cut, the system icons come back when an icon pack is removed.
+
+**Italiano:**
+- **Aspetto Windows Phone, ovunque**: icone a linea sottile, titoli dei pivot più grandi in minuscolo, un 21° colore d'accento e uno Start che si muove come Windows Phone (riquadri che si inclinano, respirano, cadono e si rimpiccioliscono); cartelle di riquadri; il primo frame di Start circa sei volte prima.
+- **Super riquadro**: un ordine intelligente che non nasconde mai una faccia, riparte dalla faccia che hai lasciato e si condivide come codice. **Un tile vivo per ogni mini app** (Posta, Messaggi, Telefono, Note, Registratore, Wallet, In riproduzione).
+- **Impostazioni in 14 categorie**: una nota su ogni interruttore delle mini app, la ricerca con sinonimi, un elenco «cosa non va?», profili rapidi e una nuova sezione mancia.
+- **Doppia SIM** nella barra di stato: l'altra SIM come cinque lineette sottili, la sua rete piccola sotto quella principale, un puntino dei dati, il roaming e i nomi degli operatori.
+- **App**: Notizie ha una pagina di lettura senza pubblicità, Persone un mosaico di foto, la Posta scorri per archiviare con Annulla, condividi verso MetroWin per fare una nota, una cosa da fare o una carta.
+- **Più sicuro**: le schermate conservano il lavoro dopo una rotazione o quando Android le chiude, modalità provvisoria dopo due arresti all'avvio, gli aggiornamenti controllano la somma SHA-256.
+- **Correzioni**: i comandi Shizuku, il testo grande mai tagliato, le icone di sistema tornano quando si rimuove un icon pack.
+
 ## 26.9.2S: 2026-11-11
 
 The complete list is in the notes of the release / L'elenco completo è nelle note della versione.
