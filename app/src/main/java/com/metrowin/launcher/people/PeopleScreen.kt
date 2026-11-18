@@ -303,17 +303,10 @@ private fun NewPage(
     val birthdays = remember(snapshot, prefs.birthdays) { if (prefs.birthdays) PeopleBook.upcomingBirthdays(snapshot.people, today).take(5) else emptyList() }
     val callBack = prefs.callBack
     val toCall = remember(snapshot, callBack) { snapshot.people.filter { it.key in callBack }.sortedBy { callBack[it.key] } }
-    // The people of the latest calls, once each, as a mosaic of photos.
-    val faces = remember(snapshot, recent) { recent.mapNotNull { snapshot.personOf(it.number) }.distinctBy { it.key }.take(6) }
+    // The people with a photo (favourites and the latest calls first) as a mosaic whose tiles turn into other faces.
+    val pool = remember(snapshot, recent, prefs.favourites) { mosaicPool(snapshot.people, prefs.favourites, recent.mapNotNull { snapshot.personOf(it.number) }) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = side).testTag("people:new")) {
-        if (faces.size >= 2) {
-            faces.chunked(3).forEach { row ->
-                Row(Modifier.fillMaxWidth().padding(bottom = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    row.forEach { p -> PhotoTile(p.name, rememberPhoto(p.photoUri), Modifier.weight(1f).metroPress(onClick = { onOpen(Target(p.name, p.key, null, p.photoUri)) })) }
-                    repeat(3 - row.size) { Box(Modifier.weight(1f)) }
-                }
-            }
-        }
+        if (pool.size >= 2) PeopleMosaic(pool, { onOpen(Target(it.name, it.key, null, it.photoUri)) })
         if (birthdays.isNotEmpty()) {
             MetroText(stringResource(R.string.pp_birthdays), size = 18.sp, color = colors.subtle, modifier = Modifier.padding(top = 12.dp, bottom = 6.dp))
             birthdays.forEach { (p, days) ->

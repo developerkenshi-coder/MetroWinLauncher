@@ -78,16 +78,18 @@ private val photos = object : LruCache<String, Bitmap>(PHOTO_CACHE_BYTES) {
 private const val PHOTO_CACHE_BYTES = 12 * 1024 * 1024
 private const val THUMB_PX = 192
 
+/** The small photo at [uri] from the cache or, off the main thread, from the contact; null where there is none or it cannot be read. */
+internal suspend fun loadPhoto(context: android.content.Context, uri: String): Bitmap? =
+    photos.get(uri) ?: withContext(Dispatchers.IO) {
+        runCatching { PeopleRepo.decodeSampled({ context.contentResolver.openInputStream(android.net.Uri.parse(uri)) }, THUMB_PX) }.getOrNull()
+    }?.also { photos.put(uri, it) }
+
 /** The small photo of a contact at [uri], read off the main thread at the size of a tile, not of the file. */
 @Composable
 fun rememberPhoto(uri: String?): ImageBitmap? {
     val context = LocalContext.current.applicationContext
     val bitmap by produceState<ImageBitmap?>(uri?.let(photos::get)?.asImageBitmap(), uri) {
-        if (uri != null && value == null) {
-            value = withContext(Dispatchers.IO) {
-                runCatching { PeopleRepo.decodeSampled({ context.contentResolver.openInputStream(android.net.Uri.parse(uri)) }, THUMB_PX) }.getOrNull()
-            }?.also { photos.put(uri, it) }?.asImageBitmap()
-        }
+        if (uri != null && value == null) value = loadPhoto(context, uri)?.asImageBitmap()
     }
     return bitmap
 }

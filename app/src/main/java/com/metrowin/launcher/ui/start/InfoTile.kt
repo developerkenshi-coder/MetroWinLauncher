@@ -135,7 +135,7 @@ private fun tintOf(config: InfoConfig, live: LiveTileData, hour: Int): Int? = wh
 }
 
 @Composable
-private fun rememberTouchExploration(): Boolean {
+internal fun rememberTouchExploration(): Boolean {
     val context = LocalContext.current
     val manager = remember { context.getSystemService(AccessibilityManager::class.java) }
     var on by remember { mutableStateOf(manager?.isTouchExplorationEnabled == true) }
