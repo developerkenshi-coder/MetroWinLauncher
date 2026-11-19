@@ -3,6 +3,18 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
+## 26.10.3S: 2026-11-19
+
+The complete list is in the notes of the release / L'elenco completo è nelle note della versione.
+
+**English:**
+- **Order of the navigation buttons**: in Settings, Navigation bar, a bar in miniature lets you drag back, Start and search to the places you like (Start on the left and back on the right, for instance). The real bar follows at once, and holding Start still opens the recent apps.
+- **What's new**: the window after an update now tells the changes of the version you have, not those of 26.10S.
+
+**Italiano:**
+- **Ordine dei pulsanti di navigazione**: in Impostazioni, barra di navigazione, una barra in miniatura permette di trascinare indietro, Start e cerca dove si preferisce (Start a sinistra e indietro a destra, per esempio). La barra vera si adegua subito, e tenere premuto Start apre ancora le app recenti.
+- **Novità**: la finestra che compare dopo un aggiornamento mostra i cambiamenti della versione che hai, non più quelli della 26.10S.
+
 ## 26.10.2S: 2026-11-18
 
 The complete list is in the notes of the release / L'elenco completo è nelle note della versione.

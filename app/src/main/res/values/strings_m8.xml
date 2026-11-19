@@ -16,7 +16,7 @@
     <string name="first_look_later">The tour of the launcher comes next.</string>
     <string name="first_look_keep">Keep as it is</string>
     <string name="whatsnew_title">What’s new in %1$s</string>
-    <string name="whatsnew_body">• Windows Phone look everywhere: big pivot titles, buttons that fill when pressed, pages that turn like a turnstile, the Metro status bar in every app.\n• The super tile has 32 faces that turn, an editor by category, ready-made models, and it can be shared as a code.\n• Settings in 13 categories, an “i” on every setting, and a search that finds them by words of the six languages.\n• Search finds texts, notes, things to do and notifications, groups what it finds by source, forgives typing mistakes and calculates.\n• Icons for each app, dual SIM, quiet hours, a safe start after two crashes, and a “what is wrong?” list in About.\n• The built-in apps grew a lot: Calculator, Notes, To do, Recorder, Calendar, Data Sense, Wallet, News, Files, Photos, Mail and more.</string>
+    <string name="whatsnew_body">• You choose the order of the navigation buttons: in Settings, Navigation bar, drag back, Start and search where you want them.\n• One Metro banner for each notification, the same words are not announced twice.\n• What’s new now always shows the changes of the version you have.</string>
     <string name="whatsnew_close">Close</string>
     <string name="whatsnew_open">What’s new in this version</string>
     <string name="whatsnew_open_hint">The changes of this version, in your language.</string>

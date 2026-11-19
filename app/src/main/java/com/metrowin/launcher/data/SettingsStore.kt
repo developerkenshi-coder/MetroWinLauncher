@@ -786,6 +786,15 @@ class SettingsStore(context: Context) {
     fun navSpacing(): Int = prefs.getString(KEY_JSON, null)?.let { runCatching { parsed(it).optInt("navSpacing", LauncherSettings.NAV_SPACING_DEFAULT) }.getOrNull() }
         ?.coerceIn(LauncherSettings.NAV_SPACING_MIN, LauncherSettings.NAV_SPACING_MAX) ?: LauncherSettings.NAV_SPACING_DEFAULT
 
+    /**
+     * Which button sits in each place of the navigation bar, from the left (see [NavButtons.valid]). Kept in its own key, not in [LauncherSettings]:
+     * that class has no room for one more field (the limit of 255 words in a constructor).
+     * shortcut: so it is not in the backup file and the "put the page back" button leaves it; upgrade when the settings are split in two classes.
+     */
+    fun navOrder(): String = NavButtons.orDefault(prefs.getString(KEY_NAV_ORDER, null))
+
+    fun setNavOrder(order: String) = prefs.edit { putString(KEY_NAV_ORDER, NavButtons.orDefault(order)) }
+
     fun hideSystemOn(): Boolean = switchOn("hideSystemNotifications", false)
 
     fun filterOn(): Boolean = switchOn("notifFilterOn", false)
@@ -816,6 +825,7 @@ class SettingsStore(context: Context) {
 
     companion object {
         private const val KEY_JSON = "settings_json"
+        private const val KEY_NAV_ORDER = "nav_order"
 
         @Volatile
         private var last: Pair<String, org.json.JSONObject>? = null

@@ -2299,6 +2299,13 @@ in primo piano %3$s · in background %4$s
     <string name="start_free_hint">Un riquadro resta dove lo lasci, su qualsiasi cella della griglia, e gli altri non salgono a riempire il vuoto. Spegnendola i riquadri tornano a scorrere in ordine, come prima; niente di ciò che hai posizionato va perso.</string>
     <string name="gest_navbar_spacing">Distanza tra i tasti</string>
     <string name="gest_navbar_spacing_hint">Quanto sono distanti indietro, il logo Windows e la ricerca nella barra di navigazione, dal 50 al 110 per cento della distanza abituale.</string>
+    <string name="gest_navbar_order">Ordine dei pulsanti</string>
+    <string name="gest_navbar_order_hint">Trascina un pulsante su un altro posto per scambiarli. La barra si adegua subito.</string>
+    <string name="nav_btn_back">Indietro</string>
+    <string name="nav_btn_start">Start</string>
+    <string name="nav_btn_search">Cerca</string>
+    <string name="nav_move_left">Sposta a sinistra</string>
+    <string name="nav_move_right">Sposta a destra</string>
     <string name="launch_fade">dissolvenza: l\'app appare sfumando</string>
     <string name="launch_slide">scorrimento: l\'app entra da destra</string>
     <string name="launch_rise">salita: l\'app sale dal basso</string>

@@ -2289,6 +2289,13 @@ im Vordergrund %3$s · im Hintergrund %4$s
     <string name="start_free_hint">Eine Kachel bleibt, wo du sie ablegst, auf jeder Zelle des Rasters, und die anderen rücken nicht nach, um die Lücke zu füllen. Schaltest du es aus, laufen die Kacheln wieder der Reihe nach, wie zuvor; nichts, was du platziert hast, geht verloren.</string>
     <string name="gest_navbar_spacing">Abstand zwischen den Tasten</string>
     <string name="gest_navbar_spacing_hint">Wie weit Zurück, das Windows-Logo und die Suche in der Navigationsleiste auseinanderliegen, von 50 bis 110 Prozent des üblichen Abstands.</string>
+    <string name="gest_navbar_order">Reihenfolge der Tasten</string>
+    <string name="gest_navbar_order_hint">Zieh eine Taste auf einen anderen Platz, um sie zu tauschen. Die Leiste passt sich sofort an.</string>
+    <string name="nav_btn_back">Zurück</string>
+    <string name="nav_btn_start">Start</string>
+    <string name="nav_btn_search">Suche</string>
+    <string name="nav_move_left">Nach links</string>
+    <string name="nav_move_right">Nach rechts</string>
     <string name="launch_fade">Einblenden: die App blendet sich ein</string>
     <string name="launch_slide">Schieben: die App kommt von rechts</string>
     <string name="launch_rise">Aufsteigen: die App steigt von unten auf</string>

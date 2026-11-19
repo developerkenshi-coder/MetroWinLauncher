@@ -174,7 +174,7 @@ class LockAccessibilityService : AccessibilityService() {
         fun syncNavBar() {
             val service = instance ?: return
             val store = SettingsStore.of(service)
-            if (!safe && store.metroNavBarOn() && NavBarOverlay.threeButtons(service) && !NavBarOverlay.onSide(service)) service.navBar.show(store.navHoldMs(), store.navSpacing())
+            if (!safe && store.metroNavBarOn() && NavBarOverlay.threeButtons(service) && !NavBarOverlay.onSide(service)) service.navBar.show(store.navHoldMs(), store.navSpacing(), store.navOrder())
             else service.navBar.hide()
             service.gameBars.refresh()
         }

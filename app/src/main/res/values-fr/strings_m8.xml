@@ -16,7 +16,7 @@
     <string name="first_look_later">La visite du lanceur vient ensuite.</string>
     <string name="first_look_keep">Laisser tel quel</string>
     <string name="whatsnew_title">Nouveautés de la version %1$s</string>
-    <string name="whatsnew_body">• Look Windows Phone partout : grands titres de pivot, boutons qui se remplissent quand on appuie, pages qui tournent comme un tourniquet, la barre d’état Metro dans chaque app.\n• La super tuile a 32 faces qui tournent, un éditeur par catégories, des modèles prêts et peut se partager comme un code.\n• Réglages en 13 catégories, un « i » sur chaque réglage et une recherche qui les trouve avec des mots des six langues.\n• La recherche trouve les messages, notes, tâches et notifications, groupe par source, pardonne les fautes de frappe et calcule.\n• Icônes pour chaque app, double SIM, heures de silence, un démarrage sûr après deux plantages et une liste « qu’est-ce qui ne va pas ? » dans À propos.\n• Les apps intégrées ont beaucoup grandi : Calculatrice, Notes, Tâches, Dictaphone, Agenda, Data Sense, Wallet, Actualités, Fichiers, Photos, Mail et d’autres.</string>
+    <string name="whatsnew_body">• Vous choisissez l’ordre des boutons de navigation : dans les réglages, barre de navigation, faites glisser retour, Démarrer et recherche où vous voulez.\n• Une seule bannière Metro par notification, les mêmes mots ne sont pas annoncés deux fois.\n• Les nouveautés montrent désormais toujours les changements de la version que vous avez.</string>
     <string name="whatsnew_close">Fermer</string>
     <string name="whatsnew_open">Nouveautés de cette version</string>
     <string name="whatsnew_open_hint">Les changements de cette version, dans votre langue.</string>

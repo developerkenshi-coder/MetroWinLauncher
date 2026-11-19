@@ -153,6 +153,7 @@ object SettingsIndex {
         e("icons.tilecolors", Icons, R.string.icons_tile_colors, "colour", "color", "tile", "icon", "colore", "riquadro", "icona", "dominante"),
         e("gest.gameapps", NavBar, R.string.gest_game_apps, "game", "games", "add", "list", "not recognised", "gioco", "giochi", "aggiungi", "elenco", "non riconosciuto"),
         e("gest.gamebars", NavBar, R.string.gest_game_bars, "game", "games", "bars", "hide", "status bar", "navigation", "gioco", "giochi", "barre", "nascondi", "barra di stato", "navigazione"),
+        e("gest.navorder", NavBar, R.string.gest_navbar_order, "navigation", "bar", "order", "buttons", "move", "swap", "start", "back", "barra", "ordine", "tasti", "sposta", "scambia", "indietro"),
         e("gest.navspacing", NavBar, R.string.gest_navbar_spacing, "navigation", "bar", "spacing", "distance", "buttons", "barra", "distanza", "tasti", "spaziatura"),
         e("gest.navbarhold", NavBar, R.string.gest_navbar_hold, "navigation", "bar", "hold", "recent", "long", "barra", "tieni", "recenti", "lunga"),
         e("icons.glass", Icons, R.string.icons_glass, "glass", "transparent", "see-through", "icon", "tile", "vetro", "trasparente", "icona", "riquadro"),

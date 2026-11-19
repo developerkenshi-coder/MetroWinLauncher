@@ -5,6 +5,7 @@ import com.metrowin.launcher.data.NavButtons
 import com.metrowin.launcher.data.SettingsCodec
 import com.metrowin.launcher.data.TileGrid
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -58,5 +59,14 @@ class StartColumnsNavTest {
         for (x in listOf(5f, 119f, 121f, 241f, 355f)) assertEquals((x / 120f).toInt().coerceIn(0, 2), NavButtons.nearest(x, 360f, 100))
         assertEquals("the nearest centre wins", 1, NavButtons.nearest(160f, 360f, 50))
         assertEquals(0, NavButtons.nearest(10f, 360f, 50))
+    }
+
+    @Test
+    fun theOrderOfTheButtonsIsKeptAndABadOneGoesBackToTheDefault() {
+        assertEquals("012", NavButtons.DEFAULT)
+        assertEquals("120", NavButtons.orDefault("120"))
+        for (bad in listOf("", "00x", "0123", "011", "12", null)) assertEquals(bad, "012", NavButtons.orDefault(bad))
+        assertTrue(NavButtons.valid("210"))
+        assertFalse(NavButtons.valid(null))
     }
 }

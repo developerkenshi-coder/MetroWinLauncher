@@ -146,6 +146,7 @@ internal object SettingsInfoTable {
         "gest.navbar" to R.string.info_navbar_buttons,
         "gest.gamebars" to R.string.info_navbar_gamebars,
         "gest.gameapps" to R.string.info_navbar_gameapps,
+        "gest.navorder" to R.string.info_navbar_order,
         "gest.navspacing" to R.string.info_navbar_spacing,
         "gest.navbarhold" to R.string.info_navbar_hold,
         "ac.enabled" to R.string.info_ac_enabled,

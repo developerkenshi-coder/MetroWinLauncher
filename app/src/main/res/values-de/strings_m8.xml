@@ -16,7 +16,7 @@
     <string name="first_look_later">Danach folgt die Tour durch den Launcher.</string>
     <string name="first_look_keep">So lassen</string>
     <string name="whatsnew_title">Neu in %1$s</string>
-    <string name="whatsnew_body">• Windows-Phone-Look überall: große Pivot-Titel, Schaltflächen, die sich beim Drücken füllen, Seiten, die wie ein Drehkreuz wenden, die Metro-Statusleiste in jeder App.\n• Die Super-Kachel hat 32 Seiten, die wechseln, einen Editor nach Kategorien, fertige Vorlagen und lässt sich als Code teilen.\n• Einstellungen in 13 Kategorien, ein „i“ bei jeder Einstellung und eine Suche, die sie mit Wörtern der sechs Sprachen findet.\n• Die Suche findet Nachrichten, Notizen, Aufgaben und Benachrichtigungen, gruppiert nach Quelle, verzeiht Tippfehler und rechnet.\n• Symbole für jede App, Dual-SIM, Ruhezeiten, ein sicherer Start nach zwei Abstürzen und eine Liste „Was stimmt nicht?“ unter Info.\n• Die eingebauten Apps sind stark gewachsen: Rechner, Notizen, Aufgaben, Recorder, Kalender, Data Sense, Wallet, News, Dateien, Fotos, Mail und mehr.</string>
+    <string name="whatsnew_body">• Du bestimmst die Reihenfolge der Navigationstasten: In den Einstellungen unter Navigationsleiste ziehst du Zurück, Start und Suche an den gewünschten Platz.\n• Ein Metro-Banner pro Benachrichtigung, dieselben Worte werden nicht zweimal angesagt.\n• Die Neuigkeiten zeigen jetzt immer die Änderungen der Version, die du hast.</string>
     <string name="whatsnew_close">Schließen</string>
     <string name="whatsnew_open">Neu in dieser Version</string>
     <string name="whatsnew_open_hint">Die Änderungen dieser Version, in deiner Sprache.</string>

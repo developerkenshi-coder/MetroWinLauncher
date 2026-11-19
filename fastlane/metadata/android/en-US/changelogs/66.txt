@@ -1,0 +1,1 @@
+Order of the navigation buttons: in Settings, Navigation bar, drag back, Start and search to the places you like on a bar in miniature. The What's new window now shows the changes of the version you have.

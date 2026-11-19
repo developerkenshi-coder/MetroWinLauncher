@@ -2289,6 +2289,13 @@ in front %3$s · in the background %4$s
     <string name="start_free_hint">A tile stays where you drop it, on any cell of the grid, and the others do not move up to fill the gap. Turn it off and the tiles flow in order again, as before; nothing you placed is lost.</string>
     <string name="gest_navbar_spacing">Distance between the buttons</string>
     <string name="gest_navbar_spacing_hint">How far apart back, the Windows logo and search are in the navigation bar, from 50 to 110 percent of the usual distance.</string>
+    <string name="gest_navbar_order">Order of the buttons</string>
+    <string name="gest_navbar_order_hint">Drag a button onto another place to swap them. The bar follows at once.</string>
+    <string name="nav_btn_back">Back</string>
+    <string name="nav_btn_start">Start</string>
+    <string name="nav_btn_search">Search</string>
+    <string name="nav_move_left">Move left</string>
+    <string name="nav_move_right">Move right</string>
     <string name="launch_fade">fade: the app fades in</string>
     <string name="launch_slide">slide: the app comes in from the right</string>
     <string name="launch_rise">rise: the app rises from the bottom</string>

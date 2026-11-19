@@ -2306,6 +2306,13 @@ en primer plano %3$s · en segundo plano %4$s
     <string name="start_free_hint">Un mosaico se queda donde lo sueltas, en cualquier celda de la cuadrícula, y los demás no suben para llenar el hueco. Si lo apagas, los mosaicos vuelven a fluir en orden, como antes; no se pierde nada de lo que colocaste.</string>
     <string name="gest_navbar_spacing">Distancia entre los botones</string>
     <string name="gest_navbar_spacing_hint">Cuánto se separan atrás, el logo de Windows y la búsqueda en la barra de navegación, del 50 al 110 por ciento de la distancia habitual.</string>
+    <string name="gest_navbar_order">Orden de los botones</string>
+    <string name="gest_navbar_order_hint">Arrastra un botón a otro lugar para intercambiarlos. La barra se adapta al instante.</string>
+    <string name="nav_btn_back">Atrás</string>
+    <string name="nav_btn_start">Inicio</string>
+    <string name="nav_btn_search">Buscar</string>
+    <string name="nav_move_left">Mover a la izquierda</string>
+    <string name="nav_move_right">Mover a la derecha</string>
     <string name="launch_fade">fundido: la app aparece suavemente</string>
     <string name="launch_slide">deslizar: la app entra desde la derecha</string>
     <string name="launch_rise">subir: la app sube desde abajo</string>

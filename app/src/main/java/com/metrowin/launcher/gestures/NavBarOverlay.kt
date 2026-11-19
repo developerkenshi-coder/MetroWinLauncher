@@ -37,6 +37,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
     private var bar: Bar? = null
     private var holdMs = DEFAULT_HOLD_MS
     private var spacing = LauncherSettings.NAV_SPACING_DEFAULT
+    private var order = NavButtons.DEFAULT
     private var attempts = 0
     private val handler = Handler(Looper.getMainLooper())
 
@@ -98,10 +99,10 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
 
     private fun bleedPx() = (BLEED_DP * service.resources.displayMetrics.density).toInt()
 
-    fun show(holdMs: Int = DEFAULT_HOLD_MS, spacing: Int = LauncherSettings.NAV_SPACING_DEFAULT) {
+    fun show(holdMs: Int = DEFAULT_HOLD_MS, spacing: Int = LauncherSettings.NAV_SPACING_DEFAULT, order: String = NavButtons.DEFAULT) {
         val windows = service.getSystemService(WindowManager::class.java)
         bar?.let { view ->
-            if (this.holdMs != holdMs || this.spacing != spacing) {
+            if (this.holdMs != holdMs || this.spacing != spacing || this.order != order) {
                 hide()
             } else {
                 // Shown already: only the size can have changed (the phone turned, the bar of the system changed).
@@ -118,7 +119,8 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
         }
         this.holdMs = holdMs
         this.spacing = spacing
-        val view = Bar(service, holdMs, spacing) { visible -> bar?.let { setShown(it, visible) } }
+        this.order = order
+        val view = Bar(service, holdMs, spacing, order) { visible -> bar?.let { setShown(it, visible) } }
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT, heightPx(), WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
@@ -148,7 +150,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
         } else if (attempts < MAX_ATTEMPTS) {
             // Right after the service connects Android may not take the window yet: it is tried again a moment later.
             attempts++
-            handler.postDelayed({ if (bar == null) show(holdMs, spacing) }, RETRY_MS * attempts)
+            handler.postDelayed({ if (bar == null) show(holdMs, spacing, order) }, RETRY_MS * attempts)
         }
     }
 
@@ -190,6 +192,7 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
         private val service: AccessibilityService,
         private val holdMs: Int,
         private val spacing: Int,
+        private val order: String,
         private val onSystemBar: (Boolean) -> Unit,
     ) : View(service) {
         private val density = resources.displayMetrics.density
@@ -244,29 +247,35 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
             val centers = NavButtons.centers(width.toFloat(), spacing)
             val cy = height / 2f
             val s = height * 0.2f
-            // back: an arrow to the left
-            var cx = centers[0]
-            canvas.drawLine(cx + s, cy, cx - s, cy, line)
-            val head = arrowHead.apply {
-                rewind()
-                moveTo(cx - s + 0.75f * s, cy - 0.75f * s)
-                lineTo(cx - s, cy)
-                lineTo(cx - s + 0.75f * s, cy + 0.75f * s)
-            }
-            canvas.drawPath(head, line)
-            // home: the four panes of the Windows logo
-            cx = centers[1]
             val gap = 0.28f * s
             val pane = s - gap / 2
-            for (row in 0..1) for (col in 0..1) {
-                val left = cx - s + col * (pane + gap)
-                val top = cy - s + row * (pane + gap)
-                canvas.drawRect(left, top, left + pane, top + pane, fill)
+            for (place in 0..2) {
+                val cx = centers[place]
+                when (order[place]) {
+                    // back: an arrow to the left
+                    '0' -> {
+                        canvas.drawLine(cx + s, cy, cx - s, cy, line)
+                        val head = arrowHead.apply {
+                            rewind()
+                            moveTo(cx - s + 0.75f * s, cy - 0.75f * s)
+                            lineTo(cx - s, cy)
+                            lineTo(cx - s + 0.75f * s, cy + 0.75f * s)
+                        }
+                        canvas.drawPath(head, line)
+                    }
+                    // home: the four panes of the Windows logo
+                    '1' -> for (row in 0..1) for (col in 0..1) {
+                        val left = cx - s + col * (pane + gap)
+                        val top = cy - s + row * (pane + gap)
+                        canvas.drawRect(left, top, left + pane, top + pane, fill)
+                    }
+                    // search: a lens and its handle
+                    else -> {
+                        canvas.drawCircle(cx - 0.25f * s, cy - 0.25f * s, 0.8f * s, line)
+                        canvas.drawLine(cx + 0.35f * s, cy + 0.35f * s, cx + s, cy + s, line)
+                    }
+                }
             }
-            // search: a lens and its handle
-            cx = centers[2]
-            canvas.drawCircle(cx - 0.25f * s, cy - 0.25f * s, 0.8f * s, line)
-            canvas.drawLine(cx + 0.35f * s, cy + 0.35f * s, cx + s, cy + s, line)
         }
 
         override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -291,7 +300,8 @@ internal class NavBarOverlay(private val service: AccessibilityService) {
             return true
         }
 
-        private fun button(x: Float) = NavButtons.nearest(x, width.toFloat(), spacing)
+        /** The button (0 back, 1 the logo, 2 search) in the place the touch is nearest to. */
+        private fun button(x: Float) = order[NavButtons.nearest(x, width.toFloat(), spacing)] - '0'
 
         private fun press(button: Int) {
             performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)

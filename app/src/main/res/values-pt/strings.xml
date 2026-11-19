@@ -2306,6 +2306,13 @@ em primeiro plano %3$s · em segundo plano %4$s
     <string name="start_free_hint">Um bloco fica onde o largas, em qualquer célula da grelha, e os outros não sobem para preencher o vazio. Desligado, os blocos voltam a fluir por ordem, como antes; nada do que colocaste se perde.</string>
     <string name="gest_navbar_spacing">Distância entre os botões</string>
     <string name="gest_navbar_spacing_hint">A distância entre voltar, o logo do Windows e a pesquisa na barra de navegação, de 50 a 110 por cento da distância habitual.</string>
+    <string name="gest_navbar_order">Ordem dos botões</string>
+    <string name="gest_navbar_order_hint">Arraste um botão para outro lugar para trocá-los. A barra acompanha na hora.</string>
+    <string name="nav_btn_back">Voltar</string>
+    <string name="nav_btn_start">Início</string>
+    <string name="nav_btn_search">Pesquisa</string>
+    <string name="nav_move_left">Mover para a esquerda</string>
+    <string name="nav_move_right">Mover para a direita</string>
     <string name="launch_fade">esmaecer: o app surge suavemente</string>
     <string name="launch_slide">deslizar: o app entra pela direita</string>
     <string name="launch_rise">subir: o app sobe de baixo</string>

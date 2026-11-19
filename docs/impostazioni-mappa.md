@@ -173,6 +173,7 @@ Due livelli: la **radice** elenca le categorie (icona, nome, una riga, la "i" co
 | ora | `statusbar.time` | aspetto › Barra di stato | barre e action center › Barra di stato |
 | Giochi per cui le barre se ne vanno | `gest.gameapps` | uso › gesti | barre e action center › barra di navigazione |
 | Nascondi le barre nei giochi | `gest.gamebars` | uso › gesti | barre e action center › barra di navigazione |
+| Ordine dei pulsanti | `gest.navorder` | — (nuova) | barre e action center › barra di navigazione |
 | Distanza tra i tasti | `gest.navspacing` | uso › gesti | barre e action center › barra di navigazione |
 | Tempo per le app recenti | `gest.navbarhold` | uso › gesti | barre e action center › barra di navigazione |
 | Pulsanti di navigazione Windows Phone | `gest.navbar` | uso › gesti | barre e action center › barra di navigazione |
@@ -377,6 +378,7 @@ Le impostazioni che hanno cambiato categoria o pagina, e perché:
 | Colore del riquadro dall'icona (`icons.tilecolors`) | aspetto › aspetto | app e icone › icone | le icone sono delle app: stanno con la lista delle app, non con i colori |
 | Giochi per cui le barre se ne vanno (`gest.gameapps`) | uso › gesti | barre e action center › barra di navigazione | sono i pulsanti MetroWin, non un gesto: stanno con le barre |
 | Nascondi le barre nei giochi (`gest.gamebars`) | uso › gesti | barre e action center › barra di navigazione | sono i pulsanti MetroWin, non un gesto: stanno con le barre |
+| Ordine dei pulsanti (`gest.navorder`) | — (nuova) | barre e action center › barra di navigazione | nuova in 26.10.3S: sta con le altre impostazioni della barra |
 | Distanza tra i tasti (`gest.navspacing`) | uso › gesti | barre e action center › barra di navigazione | sono i pulsanti MetroWin, non un gesto: stanno con le barre |
 | Tempo per le app recenti (`gest.navbarhold`) | uso › gesti | barre e action center › barra di navigazione | sono i pulsanti MetroWin, non un gesto: stanno con le barre |
 | Icone vetro (`icons.glass`) | aspetto › aspetto | app e icone › icone | le icone sono delle app: stanno con la lista delle app, non con i colori |

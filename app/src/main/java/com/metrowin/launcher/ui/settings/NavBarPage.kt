@@ -7,7 +7,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.metrowin.launcher.R
 
-/** The MetroWin navigation bar (the three buttons of Windows Phone): the bar itself, its spacing and its hold time, and hiding the bars in games. */
+/** The MetroWin navigation bar (the three buttons of Windows Phone): the bar itself, the order of its buttons, their spacing and the hold time, and hiding the bars in games. */
 @Composable
 fun NavBarPage(env: SettingsEnv) {
     val settings = env.settings
@@ -21,6 +21,7 @@ fun NavBarPage(env: SettingsEnv) {
                 hint = stringResource(R.string.gest_navbar_hint), tag = "gestures:navbar", id = "gest.navbar",
             )
             if (!com.metrowin.launcher.gestures.NavBarOverlay.threeButtons(context)) SettingHint(stringResource(R.string.gest_navbar_needs_buttons))
+            NavOrderSetting(env)
             ToggleSetting(
                 label = stringResource(R.string.gest_game_bars),
                 checked = settings.hideBarsInGames,
