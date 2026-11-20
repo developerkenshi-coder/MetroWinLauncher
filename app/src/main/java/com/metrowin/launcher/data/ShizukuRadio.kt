@@ -25,9 +25,22 @@ object ShizukuRadio {
 
     fun granted(): Boolean = runCatching { Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED }.getOrDefault(false)
 
-    /** Asks Shizuku to show its dialog that allows this app (the answer is read again when the launcher is back on screen). */
+    /** True once the user pressed "Deny" on Shizuku's dialog: a caller must not go on waiting for an answer. */
+    @Volatile var refused = false
+        private set
+
+    private val onAnswer = Shizuku.OnRequestPermissionResultListener { code, result ->
+        if (code == REQUEST_CODE) refused = result != PackageManager.PERMISSION_GRANTED
+    }
+
+    /** Asks Shizuku to show its dialog that allows this app (the answer is read again when the launcher is back on screen, and [refused] tells a "no" at once). */
     fun requestPermission() {
-        runCatching { Shizuku.requestPermission(REQUEST_CODE) }
+        refused = false
+        runCatching {
+            Shizuku.removeRequestPermissionResultListener(onAnswer)
+            Shizuku.addRequestPermissionResultListener(onAnswer)
+            Shizuku.requestPermission(REQUEST_CODE)
+        }
     }
 
     /** The command that switches [action], or null for a button that is not a radio of this kind. */

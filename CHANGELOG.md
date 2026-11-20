@@ -3,6 +3,20 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
+## 26.10.4S: 2026-11-20
+
+The complete list is in the notes of the release / L'elenco completo è nelle note della versione.
+
+**English:**
+- **Settings in the Metro look no longer crash**: asking for a Wi-Fi password, joining a hidden network, forgetting a network and setting the time by hand closed the app (a dialog inside a page that scrolls). They now open over the whole screen.
+- **Cellular page**: opening it crashed on Android 15 and later, which no longer lets an app read the roaming key. The roaming switch now asks the phone itself and shows off when it cannot tell.
+- **Shizuku**: the Settings tile asks Shizuku for permission by itself (the launcher did not appear in Shizuku's list before it asked), says why Shizuku is needed, and goes on to the settings of Android at once if you press Deny. The messages now say what to do when Shizuku is not installed, not running or not allowed.
+
+**Italiano:**
+- **Le Impostazioni in stile Metro non vanno più in crash**: chiedere la password del Wi-Fi, collegarsi a una rete nascosta, dimenticare una rete e impostare l'ora a mano chiudevano l'app (una finestra dentro una pagina che scorre). Ora si aprono sopra tutto lo schermo.
+- **Pagina Rete cellulare**: aprirla andava in crash da Android 15 in poi, che non lascia più leggere alle app la chiave del roaming. L'interruttore del roaming ora chiede al telefono e mostra spento se non lo sa.
+- **Shizuku**: la tile Impostazioni chiede da sola il permesso a Shizuku (prima il launcher non compariva nell'elenco di Shizuku finché non lo chiedeva), spiega a cosa serve Shizuku e passa subito alle impostazioni di Android se premi Nega. I messaggi dicono cosa fare quando Shizuku non è installato, non è avviato o non è autorizzato.
+
 ## 26.10.3S: 2026-11-19
 
 The complete list is in the notes of the release / L'elenco completo è nelle note della versione.

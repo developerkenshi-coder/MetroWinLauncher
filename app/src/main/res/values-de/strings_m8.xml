@@ -16,7 +16,7 @@
     <string name="first_look_later">Danach folgt die Tour durch den Launcher.</string>
     <string name="first_look_keep">So lassen</string>
     <string name="whatsnew_title">Neu in %1$s</string>
-    <string name="whatsnew_body">• Du bestimmst die Reihenfolge der Navigationstasten: In den Einstellungen unter Navigationsleiste ziehst du Zurück, Start und Suche an den gewünschten Platz.\n• Ein Metro-Banner pro Benachrichtigung, dieselben Worte werden nicht zweimal angesagt.\n• Die Neuigkeiten zeigen jetzt immer die Änderungen der Version, die du hast.</string>
+    <string name="whatsnew_body">• Du bestimmst die Reihenfolge der Navigationstasten: In den Einstellungen unter Navigationsleiste ziehst du Zurück, Start und Suche an den gewünschten Platz.\n• Ein Metro-Banner pro Benachrichtigung, dieselben Worte werden nicht zweimal angesagt.\n• Die Neuigkeiten zeigen jetzt immer die Änderungen der Version, die du hast.\n• Die Einstellungen im Metro-Look stürzen nicht mehr ab: WLAN-Passwort, manuelle Uhrzeit und die Seite Mobilfunk funktionieren, und es wird erklärt, wofür Shizuku nötig ist.</string>
     <string name="whatsnew_close">Schließen</string>
     <string name="whatsnew_open">Neu in dieser Version</string>
     <string name="whatsnew_open_hint">Die Änderungen dieser Version, in deiner Sprache.</string>

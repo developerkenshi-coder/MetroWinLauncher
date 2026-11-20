@@ -43,6 +43,10 @@ internal object SettingsLogic {
         return ids.filter { it.contains('/') && (it.contains(q, true) || city(it).contains(q, true)) }.sortedBy { city(it) }.take(limit)
     }
 
+    /** [raw] is the value of the roaming key, [Int.MIN_VALUE] when it could not be read: then [phone] says, and a refusal of it means off. */
+    fun roamingOn(raw: Int, phone: () -> Boolean): Boolean =
+        if (raw == Int.MIN_VALUE) runCatching(phone).getOrDefault(false) else raw == 1
+
     /** AOSP keeps roaming per subscription as `data_roaming<id>` when the maker uses that; otherwise the plain key. */
     fun roamingKey(subId: Int, perSubscription: Boolean): String = if (subId > 0 && perSubscription) "data_roaming$subId" else "data_roaming"
 

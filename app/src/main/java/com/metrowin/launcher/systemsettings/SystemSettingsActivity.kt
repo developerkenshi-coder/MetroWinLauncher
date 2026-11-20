@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.metrowin.launcher.R
+import com.metrowin.launcher.data.ShizukuRadio
 import com.metrowin.launcher.shizukuterminal.ShizukuState
 import com.metrowin.launcher.ui.mini.MiniActivity
 import kotlinx.coroutines.delay
@@ -40,10 +41,23 @@ class SystemSettingsActivity : MiniActivity() {
         var attempt by remember { mutableIntStateOf(0) }
         LaunchedEffect(attempt) {
             ready = null
-            repeat(24) {
-                if (ShizukuState.read(context).ready) {
+            // Shizuku lists an app for the user to allow only after the app has asked, so the ask is made here, once, and the user gets 30 s to answer its dialog.
+            var tries = 24
+            var asked = false
+            var tried = 0
+            while (tried++ < tries) {
+                val now = ShizukuState.read(context)
+                if (now.ready) {
                     ready = true
                     return@LaunchedEffect
+                }
+                if (now == ShizukuState.NotAllowed) {
+                    if (asked && ShizukuRadio.refused) break
+                    if (!asked) {
+                        asked = true
+                        tries = 120
+                        ShizukuRadio.requestPermission()
+                    }
                 }
                 delay(250)
             }

@@ -16,7 +16,7 @@
     <string name="first_look_later">Dopo c’è il tour del launcher.</string>
     <string name="first_look_keep">Lascia così</string>
     <string name="whatsnew_title">Novità della versione %1$s</string>
-    <string name="whatsnew_body">• Scegli tu l\'ordine dei pulsanti di navigazione: in Impostazioni, barra di navigazione, trascina indietro, Start e cerca dove vuoi.\n• Un solo banner Metro per ogni notifica, le stesse parole non vengono annunciate due volte.\n• Le novità mostrano sempre i cambiamenti della versione che hai.</string>
+    <string name="whatsnew_body">• Scegli tu l\'ordine dei pulsanti di navigazione: in Impostazioni, barra di navigazione, trascina indietro, Start e cerca dove vuoi.\n• Un solo banner Metro per ogni notifica, le stesse parole non vengono annunciate due volte.\n• Le novità mostrano sempre i cambiamenti della versione che hai.\n• Le Impostazioni in stile Metro non vanno più in crash: password Wi-Fi, ora manuale e pagina rete cellulare funzionano, e si spiega a cosa serve Shizuku.</string>
     <string name="whatsnew_close">Chiudi</string>
     <string name="whatsnew_open">Novità di questa versione</string>
     <string name="whatsnew_open_hint">Le novità di questa versione, nella tua lingua.</string>

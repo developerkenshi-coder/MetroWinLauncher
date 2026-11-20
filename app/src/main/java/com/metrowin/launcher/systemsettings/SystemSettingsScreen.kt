@@ -58,6 +58,7 @@ internal fun SettingsSplash() {
         Column(Modifier.padding(horizontal = 24.dp, vertical = 48.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             MetroText(stringResource(R.string.ssx_wait), size = 22.sp)
             MetroProgressBar()
+            PageNote(stringResource(R.string.ssx_why))
         }
     }
 }
@@ -69,7 +70,8 @@ internal fun SystemSettingsScreen(reduced: Boolean = false, onRetry: () -> Unit 
     val opts = remember { Opts(context) }
     var refresh by remember { mutableIntStateOf(0) }
     var options by remember { mutableStateOf(false) }
-    CompositionLocalProvider(LocalOpts provides opts) {
+    val dialogs = remember { DialogSlot() }
+    CompositionLocalProvider(LocalOpts provides opts, LocalDialogSlot provides dialogs) {
         val pages = SettingsLogic.pages(reduced, opts[Option.MorePages])
         val pager = rememberPagerState { pages.size }
         MiniFrame {
@@ -102,6 +104,7 @@ internal fun SystemSettingsScreen(reduced: Boolean = false, onRetry: () -> Unit 
             AppBar(items, menu = listOf(AppBarItem("☰", stringResource(R.string.ssx_options)) { options = true }))
         }
         if (options) OptionsDialog(opts) { options = false }
+        dialogs.content?.invoke()
     }
 }
 

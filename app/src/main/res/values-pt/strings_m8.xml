@@ -16,7 +16,7 @@
     <string name="first_look_later">Depois vem o tour do launcher.</string>
     <string name="first_look_keep">Deixar como está</string>
     <string name="whatsnew_title">Novidades da versão %1$s</string>
-    <string name="whatsnew_body">• Você escolhe a ordem dos botões de navegação: em Configurações, barra de navegação, arraste voltar, Início e pesquisa para onde quiser.\n• Um só banner Metro por notificação, as mesmas palavras não são anunciadas duas vezes.\n• As novidades agora mostram sempre as mudanças da versão que você tem.</string>
+    <string name="whatsnew_body">• Você escolhe a ordem dos botões de navegação: em Configurações, barra de navegação, arraste voltar, Início e pesquisa para onde quiser.\n• Um só banner Metro por notificação, as mesmas palavras não são anunciadas duas vezes.\n• As novidades agora mostram sempre as mudanças da versão que você tem.\n• As Definições no estilo Metro já não fecham: palavra-passe Wi-Fi, hora manual e página rede móvel funcionam, e explica-se para que serve o Shizuku.</string>
     <string name="whatsnew_close">Fechar</string>
     <string name="whatsnew_open">Novidades desta versão</string>
     <string name="whatsnew_open_hint">As mudanças desta versão, na sua língua.</string>

@@ -12,6 +12,7 @@ import android.nfc.NfcAdapter
 import android.os.PowerManager
 import android.provider.Settings
 import android.telephony.SubscriptionManager
+import android.telephony.TelephonyManager
 import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -55,7 +56,9 @@ private fun word(on: Boolean) = if (on) "enable" else "disable"
 
 private fun flag(on: Boolean) = if (on) "1" else "0"
 
-private fun Context.global(key: String, default: Int) = Settings.Global.getInt(contentResolver, key, default)
+// data_roaming throws SecurityException for targetSdk >= 33: unreadable means off, not a crash.
+private fun Context.global(key: String, default: Int) =
+    runCatching { Settings.Global.getInt(contentResolver, key, default) }.getOrDefault(default)
 
 private fun Context.system(key: String, default: Int) = Settings.System.getInt(contentResolver, key, default)
 
@@ -81,7 +84,10 @@ internal fun CellularPage() {
         val sub = SubscriptionManager.getDefaultDataSubscriptionId()
         SettingsLogic.roamingKey(sub, context.global("data_roaming$sub", Int.MIN_VALUE) != Int.MIN_VALUE)
     }
-    val roaming = watched(uris = listOf(globalUri(key))) { context.global(key, 0) == 1 }
+    // Android 15+ refuses the key to apps targeting 33+ (raw stays MIN_VALUE): the phone itself is asked then.
+    val roaming = watched(uris = listOf(globalUri(key))) {
+        SettingsLogic.roamingOn(context.global(key, Int.MIN_VALUE)) { context.getSystemService(TelephonyManager::class.java)?.isDataRoamingEnabled == true }
+    }
     ToggleSetting(label = stringResource(R.string.qa_mobile_data), checked = data, onChange = { exec(context, "svc", "data", word(it)) }, hint = hint(R.string.ssx_data_hint), tag = "ss:data")
     ToggleSetting(
         label = stringResource(R.string.mo_roaming), checked = roaming, onChange = { exec(context, "settings", "put", "global", key, flag(it)) },
@@ -124,7 +130,7 @@ internal fun DateTimePage() {
         if (autoTime) PageNote(stringResource(R.string.ssx_manual_needs))
         else MetroButton(stringResource(R.string.ssx_set_time), Modifier.fillMaxWidth()) { picking = true }
     }
-    if (picking) DateTimeDialog(System.currentTimeMillis(), onChoose = { exec(context, "cmd", "alarm", "set-time", it.toString()); picking = false }, onCancel = { picking = false })
+    if (picking) PageDialog { DateTimeDialog(System.currentTimeMillis(), onChoose = { exec(context, "cmd", "alarm", "set-time", it.toString()); picking = false }, onCancel = { picking = false }) }
     MetroText(stringResource(R.string.ss_zone, SettingsLogic.zoneLabel(zone, System.currentTimeMillis())), size = 20.sp)
     if (!autoZone) {
         MetroTextField(query, { query = it }, stringResource(R.string.st_search), Modifier.fillMaxWidth())

@@ -20,10 +20,11 @@
     <string name="ssx_history_empty">Ainda nada.</string>
     <string name="ssx_history_clear">Limpar o registo</string>
     <string name="ssx_failed">O Android recusou a alteração.</string>
-    <string name="ssx_shizuku_missing">O Shizuku não está instalado: abro as definições do Android.</string>
-    <string name="ssx_shizuku_stopped">O Shizuku não está em execução: abro as definições do Android.</string>
-    <string name="ssx_shizuku_denied">O Shizuku não autorizou o launcher: abro as definições do Android.</string>
+    <string name="ssx_shizuku_missing">O Shizuku não está instalado: instala-o para usar estas definições. Abro as definições do Android.</string>
+    <string name="ssx_shizuku_stopped">O Shizuku não está em execução: abre a app Shizuku e inicia-o (com a Depuração sem fios; de novo após cada reinício). Abro as definições do Android.</string>
+    <string name="ssx_shizuku_denied">O Shizuku não autorizou o launcher: autoriza-o na app Shizuku. Abro as definições do Android.</string>
     <string name="ssx_wait">À espera do Shizuku…</string>
+    <string name="ssx_why">Porquê o Shizuku? O Android não deixa as apps ligar sozinhas o Wi-Fi, os dados móveis, o Bluetooth ou o relógio. O Shizuku é uma app de apoio gratuita que o permite, só às apps que aprovas. Sem ele, abrem-se as definições do Android.</string>
     <string name="ssx_wifi_off">O Wi-Fi está desligado.</string>
     <string name="ssx_scan_empty">Nenhuma rede encontrada.</string>
     <string name="ssx_scan_unreadable">Este telefone responde à pesquisa de uma forma que a app não lê.</string>

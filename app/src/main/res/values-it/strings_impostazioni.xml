@@ -20,10 +20,11 @@
     <string name="ssx_history_empty">Ancora niente.</string>
     <string name="ssx_history_clear">Svuota il registro</string>
     <string name="ssx_failed">Android ha rifiutato la modifica.</string>
-    <string name="ssx_shizuku_missing">Shizuku non è installato: apro le impostazioni di Android.</string>
-    <string name="ssx_shizuku_stopped">Shizuku non è avviato: apro le impostazioni di Android.</string>
-    <string name="ssx_shizuku_denied">Shizuku non ha autorizzato il launcher: apro le impostazioni di Android.</string>
+    <string name="ssx_shizuku_missing">Shizuku non è installato: installalo per usare queste impostazioni. Apro le impostazioni di Android.</string>
+    <string name="ssx_shizuku_stopped">Shizuku non è avviato: apri l\'app Shizuku e avvialo (con il Debug wireless; di nuovo a ogni riavvio). Apro le impostazioni di Android.</string>
+    <string name="ssx_shizuku_denied">Shizuku non ha autorizzato il launcher: autorizzalo nell\'app Shizuku. Apro le impostazioni di Android.</string>
     <string name="ssx_wait">Attendo Shizuku…</string>
+    <string name="ssx_why">Perché Shizuku? Android non lascia che le app accendano da sole Wi-Fi, dati mobili, Bluetooth o orologio. Shizuku è un\'app gratuita di supporto che lo permette, solo alle app che approvi. Senza, si aprono le impostazioni di Android.</string>
     <string name="ssx_wifi_off">Il Wi-Fi è spento.</string>
     <string name="ssx_scan_empty">Nessuna rete trovata.</string>
     <string name="ssx_scan_unreadable">Questo telefono risponde alla ricerca in una forma che l\'app non legge.</string>

@@ -1,0 +1,1 @@
+Settings in the Metro look no longer crash: the Wi-Fi password, hidden networks, forgetting a network, the manual time and the Cellular page work. The Settings tile now asks Shizuku for permission by itself and says why Shizuku is needed.

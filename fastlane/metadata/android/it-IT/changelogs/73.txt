@@ -1,0 +1,1 @@
+Le Impostazioni in stile Metro non vanno più in crash: password Wi-Fi, reti nascoste, dimentica rete, ora manuale e pagina Rete cellulare funzionano. La tile Impostazioni chiede da sola il permesso a Shizuku e spiega a cosa serve.

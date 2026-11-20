@@ -16,7 +16,7 @@
     <string name="first_look_later">La visite du lanceur vient ensuite.</string>
     <string name="first_look_keep">Laisser tel quel</string>
     <string name="whatsnew_title">Nouveautés de la version %1$s</string>
-    <string name="whatsnew_body">• Vous choisissez l’ordre des boutons de navigation : dans les réglages, barre de navigation, faites glisser retour, Démarrer et recherche où vous voulez.\n• Une seule bannière Metro par notification, les mêmes mots ne sont pas annoncés deux fois.\n• Les nouveautés montrent désormais toujours les changements de la version que vous avez.</string>
+    <string name="whatsnew_body">• Vous choisissez l’ordre des boutons de navigation : dans les réglages, barre de navigation, faites glisser retour, Démarrer et recherche où vous voulez.\n• Une seule bannière Metro par notification, les mêmes mots ne sont pas annoncés deux fois.\n• Les nouveautés montrent désormais toujours les changements de la version que vous avez.\n• Les Réglages au look Metro ne plantent plus : mot de passe Wi-Fi, heure manuelle et page réseau mobile fonctionnent, et on explique à quoi sert Shizuku.</string>
     <string name="whatsnew_close">Fermer</string>
     <string name="whatsnew_open">Nouveautés de cette version</string>
     <string name="whatsnew_open_hint">Les changements de cette version, dans votre langue.</string>

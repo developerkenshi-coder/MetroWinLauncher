@@ -16,7 +16,7 @@
     <string name="first_look_later">The tour of the launcher comes next.</string>
     <string name="first_look_keep">Keep as it is</string>
     <string name="whatsnew_title">What’s new in %1$s</string>
-    <string name="whatsnew_body">• You choose the order of the navigation buttons: in Settings, Navigation bar, drag back, Start and search where you want them.\n• One Metro banner for each notification, the same words are not announced twice.\n• What’s new now always shows the changes of the version you have.</string>
+    <string name="whatsnew_body">• You choose the order of the navigation buttons: in Settings, Navigation bar, drag back, Start and search where you want them.\n• One Metro banner for each notification, the same words are not announced twice.\n• What’s new now always shows the changes of the version you have.\n• The Settings in the Metro look no longer crash: the Wi-Fi password, the manual time and the cellular page work, and Shizuku is explained.</string>
     <string name="whatsnew_close">Close</string>
     <string name="whatsnew_open">What’s new in this version</string>
     <string name="whatsnew_open_hint">The changes of this version, in your language.</string>

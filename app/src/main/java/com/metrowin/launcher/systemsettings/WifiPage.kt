@@ -123,7 +123,7 @@ internal fun WifiPage(refresh: Int) {
         }
     }
     chosen?.let { net ->
-        DialogFrame(onCancel = { chosen = null }) {
+        PageDialog { DialogFrame(onCancel = { chosen = null }) {
             MetroText(net.ssid, size = 22.sp, maxLines = 2)
             if (net.secured) PasswordField(password, { password = it }, show) { show = it }
             MetroButton(stringResource(R.string.ss_connect), Modifier.fillMaxWidth()) {
@@ -134,21 +134,21 @@ internal fun WifiPage(refresh: Int) {
                 chosen = null
                 scope.launch { message = connect(context, WifiShell.connect(net, password), net.ssid) }
             }
-        }
+        } }
     }
-    if (hidden) HiddenDialog(onCancel = { hidden = false }) { ssid, secured, sae, pw ->
+    if (hidden) PageDialog { HiddenDialog(onCancel = { hidden = false }) { ssid, secured, sae, pw ->
         hidden = false
         scope.launch { message = connect(context, WifiShell.connect(WifiShell.Net(ssid, 0, 0, secured, sae), pw) + "-h", ssid) }
-    }
+    } }
     forget?.let { net ->
-        DialogFrame(onCancel = { forget = null }) {
+        PageDialog { DialogFrame(onCancel = { forget = null }) {
             MetroText(net.second, size = 22.sp, maxLines = 2)
             PageNote(stringResource(R.string.ss_forget_hint))
             MetroButton(stringResource(R.string.ss_forget), Modifier.fillMaxWidth()) {
                 exec(context, "cmd", "wifi", "forget-network", net.first.toString())
                 forget = null
             }
-        }
+        } }
     }
 }
 

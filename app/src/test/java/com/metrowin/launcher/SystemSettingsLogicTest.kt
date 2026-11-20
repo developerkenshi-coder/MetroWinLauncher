@@ -49,6 +49,15 @@ class SystemSettingsLogicTest {
     }
 
     @Test
+    fun roamingFallsBackToThePhoneOnlyWhenTheKeyCannotBeRead() {
+        assertEquals(true, SettingsLogic.roamingOn(1) { error("not asked") })
+        assertEquals(false, SettingsLogic.roamingOn(0) { error("not asked") })
+        assertEquals(true, SettingsLogic.roamingOn(Int.MIN_VALUE) { true })
+        assertEquals(false, SettingsLogic.roamingOn(Int.MIN_VALUE) { false })
+        assertEquals(false, SettingsLogic.roamingOn(Int.MIN_VALUE) { throw SecurityException("READ_PHONE_STATE") })
+    }
+
+    @Test
     fun roamingKeyIsPerSubscriptionOnlyWhenTheMakerKeepsIt() {
         assertEquals("data_roaming3", SettingsLogic.roamingKey(3, true))
         assertEquals("data_roaming", SettingsLogic.roamingKey(3, false))

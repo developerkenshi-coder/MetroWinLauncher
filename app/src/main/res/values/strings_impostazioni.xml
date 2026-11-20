@@ -20,10 +20,11 @@
     <string name="ssx_history_empty">Nothing yet.</string>
     <string name="ssx_history_clear">Clear the log</string>
     <string name="ssx_failed">Android refused the change.</string>
-    <string name="ssx_shizuku_missing">Shizuku is not installed: opening the settings of Android.</string>
-    <string name="ssx_shizuku_stopped">Shizuku is not running: opening the settings of Android.</string>
-    <string name="ssx_shizuku_denied">Shizuku has not allowed the launcher: opening the settings of Android.</string>
+    <string name="ssx_shizuku_missing">Shizuku is not installed: install it to use these settings. Opening the settings of Android.</string>
+    <string name="ssx_shizuku_stopped">Shizuku is not running: open the Shizuku app and start it (with Wireless debugging; again after each restart). Opening the settings of Android.</string>
+    <string name="ssx_shizuku_denied">Shizuku has not allowed the launcher: allow it in the Shizuku app. Opening the settings of Android.</string>
     <string name="ssx_wait">Waiting for Shizuku…</string>
+    <string name="ssx_why">Why Shizuku? Android does not let apps switch Wi-Fi, mobile data, Bluetooth or the clock on their own. Shizuku is a free helper app that allows it, only for the apps you approve. Without it, the settings of Android open instead.</string>
     <string name="ssx_wifi_off">Wi-Fi is off.</string>
     <string name="ssx_scan_empty">No network found.</string>
     <string name="ssx_scan_unreadable">This phone answers the scan in a form the app does not read.</string>

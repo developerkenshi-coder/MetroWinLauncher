@@ -20,10 +20,11 @@
     <string name="ssx_history_empty">Noch nichts.</string>
     <string name="ssx_history_clear">Protokoll leeren</string>
     <string name="ssx_failed">Android hat die Änderung abgelehnt.</string>
-    <string name="ssx_shizuku_missing">Shizuku ist nicht installiert: Android-Einstellungen werden geöffnet.</string>
-    <string name="ssx_shizuku_stopped">Shizuku läuft nicht: Android-Einstellungen werden geöffnet.</string>
-    <string name="ssx_shizuku_denied">Shizuku hat den Launcher nicht zugelassen: Android-Einstellungen werden geöffnet.</string>
+    <string name="ssx_shizuku_missing">Shizuku ist nicht installiert: Installiere es, um diese Einstellungen zu nutzen. Android-Einstellungen werden geöffnet.</string>
+    <string name="ssx_shizuku_stopped">Shizuku läuft nicht: Öffne die Shizuku-App und starte es (mit Drahtlosem Debugging; nach jedem Neustart erneut). Android-Einstellungen werden geöffnet.</string>
+    <string name="ssx_shizuku_denied">Shizuku hat den Launcher nicht zugelassen: Erlaube ihn in der Shizuku-App. Android-Einstellungen werden geöffnet.</string>
     <string name="ssx_wait">Warte auf Shizuku …</string>
+    <string name="ssx_why">Warum Shizuku? Android erlaubt Apps nicht, WLAN, mobile Daten, Bluetooth oder die Uhr selbst umzuschalten. Shizuku ist eine kostenlose Hilfs-App, die das erlaubt, nur für Apps, die du freigibst. Ohne Shizuku öffnen sich stattdessen die Android-Einstellungen.</string>
     <string name="ssx_wifi_off">WLAN ist aus.</string>
     <string name="ssx_scan_empty">Kein Netz gefunden.</string>
     <string name="ssx_scan_unreadable">Dieses Telefon beantwortet die Suche in einer Form, die die App nicht lesen kann.</string>

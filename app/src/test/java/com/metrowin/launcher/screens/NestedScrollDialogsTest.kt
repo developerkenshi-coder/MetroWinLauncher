@@ -1,5 +1,14 @@
 package com.metrowin.launcher.screens
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithTag
 import com.metrowin.launcher.files.ActionsDialog
@@ -9,6 +18,11 @@ import com.metrowin.launcher.files.PropertiesDialog
 import com.metrowin.launcher.news.NewsPresets
 import com.metrowin.launcher.news.NewsSourceList
 import com.metrowin.launcher.news.SourcesDialog
+import com.metrowin.launcher.systemsettings.DialogSlot
+import com.metrowin.launcher.systemsettings.LocalDialogSlot
+import com.metrowin.launcher.systemsettings.PageDialog
+import com.metrowin.launcher.ui.components.DialogFrame
+import com.metrowin.launcher.ui.components.MetroText
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -57,6 +71,24 @@ class NestedScrollDialogsTest : ScreenshotBase() {
         show { SourcesDialog(all, mapOf("WORLD" to "World"), onChange = {}, onRemove = {}, showImages = true, onImages = {}, onClose = {}) }
         advance(500)
         compose.onNodeWithTag("nws:add", useUnmergedTree = true).assertIsDisplayedOrExists()
+    }
+
+    @Test
+    fun aDialogOfASettingsPageOpensOutsideTheScrollingPage() {
+        // The pages of the settings scroll: a Wi-Fi password or the manual time asked in them used to crash the app (26.10.3S).
+        show {
+            val slot = remember { DialogSlot() }
+            CompositionLocalProvider(LocalDialogSlot provides slot) {
+                Box(Modifier.fillMaxSize()) {
+                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                        PageDialog { DialogFrame(onCancel = {}) { MetroText("password", Modifier.testTag("ss:dlg")) } }
+                    }
+                    slot.content?.invoke()
+                }
+            }
+        }
+        advance(500)
+        compose.onNodeWithTag("ss:dlg", useUnmergedTree = true).assertIsDisplayedOrExists()
     }
 
     private fun androidx.compose.ui.test.SemanticsNodeInteraction.assertIsDisplayedOrExists() = assertExists()
