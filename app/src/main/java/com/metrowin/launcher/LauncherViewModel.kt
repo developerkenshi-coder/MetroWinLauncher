@@ -956,7 +956,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     /** Called every time the launcher goes off screen: behind another app, or the screen turned off. */
     fun onStop() {
-        _volumeHud.value = null
+        volumeHudCtl.dismissVolumeHud()
         leftAt = android.os.SystemClock.elapsedRealtime()
         stopListening()
     }
@@ -1444,11 +1444,6 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    /** The contacts whose name matches [query]. Empty without the contacts permission. */
-    /** The phone number of a contact found by [searchContacts], or null when it has none or the contacts are not readable. */
-    suspend fun phoneNumberOf(lookupUri: String): String? =
-        withContext(Dispatchers.IO) { PhoneCalls.numberOfContact(getApplication(), lookupUri) }
-
     /** Calls [number] at once ([direct], the phone permission is granted) or opens the dialer with it written in. */
     fun dial(number: String, direct: Boolean) {
         val app = getApplication<Application>()
@@ -1456,69 +1451,31 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         if (!opened) tell(R.string.launch_failed)
     }
 
-    /** The contact that a spoken name asks for: the first of [names] that finds one. By name only, never as a dial. */
-    suspend fun pickContact(names: List<String>): ContactPick = withContext(Dispatchers.IO) {
-        val search = ContactSearch(getApplication())
-        names.firstNotNullOfOrNull { name ->
-            ContactSearch.pick(name, search.search(name, ContactSearch.SPOKEN_LIMIT)).takeIf { it != ContactPick.None }
-        } ?: ContactPick.None
-    }
+    // --- the search box: see [SearchController]
 
-    suspend fun searchContacts(query: String): List<ContactMatch> = withContext(Dispatchers.IO) {
-        val digits = query.trim()
-        // Digits are a dial: the keys of the names and the numbers, with the number to call at hand (see [SmartDial]).
-        if (_settings.value.searchSmartDial && SmartDial.isQuery(digits)) {
-            directory.search(digits).map { ContactMatch(it.name, it.lookupUri, it.number) }
-        } else {
-            ContactSearch(getApplication()).search(query)
-        }
-    }
+    private val search = SearchController(application, { _settings.value }, { notifications.value }, directory, currencyRepository, weatherRepository)
 
-    /** The files whose name matches [query], of the kinds the user chose in the settings. */
-    suspend fun searchFiles(query: String): List<FileMatch> = withContext(Dispatchers.IO) {
-        FileSearch(getApplication()).search(query, _settings.value.searchFileTypes.mapNotNullTo(HashSet(), FileType::fromCode))
-    }
+    suspend fun phoneNumberOf(lookupUri: String): String? = search.phoneNumberOf(lookupUri)
 
-    /** The notifications that wait in the Action Center whose title or text has every word of [query]. */
-    fun searchNotifications(query: String): List<NotificationEntry> {
-        val words = AppSections.fold(query).split(' ').filter { it.isNotEmpty() }
-        if (words.isEmpty() || query.trim().length < 2) return emptyList()
-        return notifications.value.filter { entry ->
-            val text = AppSections.fold(listOf(entry.title, entry.text, entry.longText.orEmpty()).joinToString(" "))
-            words.all { it in text }
-        }.take(NOTIFICATION_RESULTS)
-    }
+    suspend fun pickContact(names: List<String>): ContactPick = search.pickContact(names)
 
-    /** The conversations that have a text with [query] (needs the permission to read the messages). */
-    suspend fun searchMessages(query: String): List<com.metrowin.launcher.messages.Conversation> = withContext(Dispatchers.IO) {
-        if (query.trim().length < 2 || !LivePermissions.isGranted(getApplication(), android.Manifest.permission.READ_SMS)) emptyList()
-        else com.metrowin.launcher.messages.SmsRepository(getApplication()).search(query).take(MESSAGE_RESULTS)
-    }
+    suspend fun searchContacts(query: String): List<ContactMatch> = search.searchContacts(query)
 
-    /** The notes and the things to do of the launcher that match [query]; read from their files off the main thread. */
-    suspend fun searchNotes(query: String): List<NoteMatch> =
-        withContext(Dispatchers.IO) { MiniSearch.notes(NoteStore(getApplication<Application>()).load(), query) }
+    suspend fun searchFiles(query: String): List<FileMatch> = search.searchFiles(query)
 
-    suspend fun searchTodos(query: String): List<TodoMatch> =
-        withContext(Dispatchers.IO) { MiniSearch.todos(TodoStore(getApplication<Application>()).load(), query) }
+    fun searchNotifications(query: String): List<NotificationEntry> = search.searchNotifications(query)
 
-    suspend fun searchEvents(query: String): List<EventMatch> =
-        withContext(Dispatchers.IO) { CalendarSearch(getApplication()).search(query) }
+    suspend fun searchMessages(query: String): List<com.metrowin.launcher.messages.Conversation> = search.searchMessages(query)
 
-    /**
-     * The conversion [query] asks for, with the rates of the last six hours (asked from the Internet when they are older; the old
-     * ones are used when there is no connection). Null when there are no rates at all.
-     */
-    suspend fun currencyAnswer(query: Currencies.Query): QuickAnswer.Currency? = withContext(Dispatchers.IO) {
-        val now = System.currentTimeMillis()
-        val kept = currencyRepository.cached()
-        val rates = kept?.takeIf { now - it.fetchedAt < Currencies.MAX_AGE_MS } ?: currencyRepository.fetch(now) ?: kept
-        rates?.let { Currencies.answer(query, it) }
-    }
+    suspend fun searchNotes(query: String): List<NoteMatch> = search.searchNotes(query)
 
-    /** Null when the search could not be made (no connection), an empty list when nothing matches. */
-    suspend fun searchPlaces(query: String): List<PlaceMatch>? =
-        withContext(Dispatchers.IO) { weatherRepository.search(query, Locale.getDefault().language) }
+    suspend fun searchTodos(query: String): List<TodoMatch> = search.searchTodos(query)
+
+    suspend fun searchEvents(query: String): List<EventMatch> = search.searchEvents(query)
+
+    suspend fun currencyAnswer(query: Currencies.Query): QuickAnswer.Currency? = search.currencyAnswer(query)
+
+    suspend fun searchPlaces(query: String): List<PlaceMatch>? = search.searchPlaces(query)
 
     fun choosePlace(place: PlaceMatch) {
         updateSettings { it.copy(weatherCity = place.displayName, weatherLatitude = place.latitude, weatherLongitude = place.longitude) }
@@ -2395,104 +2352,22 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     suspend fun recentCalls(): List<RecentCall> = withContext(Dispatchers.IO) { people.recentCalls() }
 
-    // --- the volume keys: a panel over the launcher for what is sounding now
+    // --- the volume keys: a panel over the launcher for what is sounding now: see [VolumeHudController]
 
-    private val volumeControl = VolumeControl(application)
-    private val _volumeHud = MutableStateFlow<VolumeHud?>(null)
+    private val volumeHudCtl = VolumeHudController(application) { _settings.value.volumePanel }
 
     /** The volume panel, or null while it is away. It goes by itself (see VolumeHudPanel) and with the launcher leaving the screen. */
-    val volumeHud: StateFlow<VolumeHud?> = _volumeHud.asStateFlow()
-    private var hudToken = 0
+    val volumeHud: StateFlow<VolumeHud?> = volumeHudCtl.volumeHud
 
-    /** The player whose own volume the panel moves, while it is that one's. */
-    private var hudPlayer: android.media.session.MediaController? = null
+    fun onVolumeKey(raise: Boolean): Boolean = volumeHudCtl.onVolumeKey(raise)
 
-    private fun labelOf(packageName: String): String = runCatching {
-        val manager = getApplication<Application>().packageManager
-        manager.getApplicationLabel(manager.getApplicationInfo(packageName, 0)).toString()
-    }.getOrDefault(packageName)
+    fun setVolume(row: VolumeRow, fraction: Float) = volumeHudCtl.setVolume(row, fraction)
 
-    /**
-     * A press of a volume key while the launcher is on screen. It moves what is sounding, the way Android does (the call, then a
-     * player with a volume of its own, then the music of whatever app plays, then the ringer), and shows the panel with the name
-     * of the app that plays. False when the panel is off in the settings or nothing could be moved: Android then handles the key.
-     */
-    fun onVolumeKey(raise: Boolean): Boolean {
-        if (!_settings.value.volumePanel) return false
-        return runCatching {
-            val sessions = MediaSessions.active(getApplication())
-            val playing = sessions.firstOrNull { it.playbackState?.state == android.media.session.PlaybackState.STATE_PLAYING }
-            val remote = playing?.takeIf {
-                val info = it.playbackInfo
-                info != null && info.playbackType == android.media.session.MediaController.PlaybackInfo.PLAYBACK_TYPE_REMOTE &&
-                    info.volumeControl != android.media.VolumeProvider.VOLUME_CONTROL_FIXED
-            }
-            val hud = when (val route = VolumeRouting.route(volumeControl.inCall(), remote != null, volumeControl.musicActive() || playing != null)) {
-                VolumeRoute.Remote -> remote?.let { moveRemote(it, raise) }
-                is VolumeRoute.Stream -> volumeControl.adjust(route.stream, raise)?.let { row ->
-                    hudPlayer = null
-                    VolumeHud(++hudToken, row, app = playing?.takeIf { route.stream == VolumeStream.Music }?.let { labelOf(it.packageName) })
-                }
-            } ?: return false
-            _volumeHud.value = hud
-            true
-        }.getOrDefault(false)
-    }
+    fun toggleRinger() = volumeHudCtl.toggleRinger()
 
-    private fun moveRemote(player: android.media.session.MediaController, raise: Boolean): VolumeHud? {
-        val info = player.playbackInfo ?: return null
-        runCatching { player.adjustVolume(if (raise) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER, 0) }
-        hudPlayer = player
-        // The level is worked out here: the player reports the new one a moment later.
-        val level = VolumeRouting.step(info.currentVolume, 0, info.maxVolume, raise)
-        return VolumeHud(++hudToken, VolumeRow(null, player.packageName, level, 0, info.maxVolume), app = labelOf(player.packageName))
-    }
+    fun toggleVolumeHud() = volumeHudCtl.toggleVolumeHud()
 
-    /** A slider of the panel was touched: sets that volume and keeps the panel up. */
-    fun setVolume(row: VolumeRow, fraction: Float) {
-        val hud = _volumeHud.value ?: return
-        val level = VolumeRouting.level(fraction, row.min, row.max)
-        val updated = when {
-            row.remotePackage != null -> {
-                hudPlayer?.takeIf { it.packageName == row.remotePackage }?.let { runCatching { it.setVolumeTo(level, 0) } }
-                row.copy(level = level)
-            }
-            row.stream != null -> volumeControl.set(row.stream, level) ?: row
-            else -> row
-        }
-        fun same(other: VolumeRow) = other.stream == row.stream && other.remotePackage == row.remotePackage
-        _volumeHud.value = hud.copy(
-            token = ++hudToken,
-            main = if (same(hud.main)) updated else hud.main,
-            others = hud.others.map { if (same(it)) updated else it },
-        )
-    }
-
-    /** The ringer key of the panel was touched: the ringer goes from ringing to vibrating and back, and the panel stays up. */
-    fun toggleRinger() {
-        val hud = _volumeHud.value ?: return
-        val updated = volumeControl.toggleRinger() ?: return
-        fun swap(row: VolumeRow) = if (row.stream == VolumeStream.Ring) updated else row
-        _volumeHud.value = hud.copy(token = ++hudToken, main = swap(hud.main), others = hud.others.map(::swap))
-    }
-
-    /** Opens the panel out to the other volumes, or folds it back. */
-    fun toggleVolumeHud() {
-        val hud = _volumeHud.value ?: return
-        val expanded = !hud.expanded
-        val others = if (expanded) {
-            listOf(VolumeStream.Music, VolumeStream.Ring, VolumeStream.Alarm)
-                .filter { it != hud.main.stream }
-                .mapNotNull(volumeControl::read)
-        } else {
-            emptyList()
-        }
-        _volumeHud.value = hud.copy(token = ++hudToken, expanded = expanded, others = others)
-    }
-
-    fun dismissVolumeHud() {
-        _volumeHud.value = null
-    }
+    fun dismissVolumeHud() = volumeHudCtl.dismissVolumeHud()
 
     /** The gallery app, for a touch on an album tile. */
     fun openGallery() = startIntent(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_GALLERY))
@@ -2556,7 +2431,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** Puts the things to do, reminders, named layouts and place of the car of a backup in place of the phone's own. */
     private fun applyExtras(extras: BackupExtras) {
         BackupExtrasStore.apply(getApplication(), extras)
-        _layouts.value = layoutStore.load()
+        layouts_.reloadLayouts()
         _live.update { it.copy(reminders = extras.reminders, extras = it.extras.copy(parked = extras.car)) }
     }
 
@@ -2652,101 +2527,49 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    // --- quick profiles of the settings
+    // --- quick profiles of the settings and named layouts of Start: see [LayoutController]
 
-    private val profileStore = SettingProfileStore(application)
-    private val _quickProfiles = MutableStateFlow(profileStore.state())
-    val quickProfiles: StateFlow<ProfileState> = _quickProfiles.asStateFlow()
+    private val layouts_ = LayoutController(
+        application,
+        object : LayoutHost {
+            override val settings get() = _settings.value
+            override fun updateSettings(change: (LauncherSettings) -> LauncherSettings) = this@LauncherViewModel.updateSettings(change)
+            override val pages get() = _pages.value
+            override fun showPages(pages: List<List<StartEntry>>) {
+                _pages.value = pages
+                store.savePages(pages)
+            }
+            override val shortcuts get() = _shortcuts.value
+            override fun addShortcuts(list: List<ShortcutDef>) {
+                _shortcuts.value = _shortcuts.value + list
+                shortcutStore.save(_shortcuts.value)
+                rebuildItems()
+            }
+            override fun itemIds() = _items.value.mapTo(HashSet()) { it.id }
+        },
+    )
 
-    /** Keeps the settings as they are now under [profile]. */
-    fun saveProfile(profile: QuickProfile) {
-        profileStore.save(profile, _settings.value)
-        _quickProfiles.value = profileStore.state()
-    }
+    val quickProfiles: StateFlow<ProfileState> = layouts_.quickProfiles
 
-    fun forgetProfile(profile: QuickProfile) {
-        profileStore.forget(profile)
-        _quickProfiles.value = profileStore.state()
-    }
+    fun saveProfile(profile: QuickProfile) = layouts_.saveProfile(profile)
 
-    /** Puts the settings of [profile] on, over the ones of now; what belongs to this phone alone stays as it is. */
-    fun applyProfile(profile: QuickProfile) {
-        val restored = profileStore.read(profile)?.let { SettingsCodec.decode(it, _settings.value) } ?: return
-        updateSettings { restored }
-        profileStore.setActive(profile)
-        _quickProfiles.value = profileStore.state()
-    }
+    fun forgetProfile(profile: QuickProfile) = layouts_.forgetProfile(profile)
 
-    // --- named layouts of Start
+    fun applyProfile(profile: QuickProfile) = layouts_.applyProfile(profile)
 
-    private val layoutStore = LayoutStore(application)
-    private val _layouts = MutableStateFlow(layoutStore.load())
-    val layouts: StateFlow<List<SavedLayout>> = _layouts.asStateFlow()
+    val layouts: StateFlow<List<SavedLayout>> = layouts_.layouts
 
-    private fun saveLayouts(list: List<SavedLayout>) {
-        _layouts.value = list
-        layoutStore.save(list)
-    }
+    fun saveLayout(name: String): Boolean = layouts_.saveLayout(name)
 
-    /** Start as it is now (the pages and the shortcuts they hold), as a layout. */
-    private fun snapshotLayout(id: String, name: String, hour: Int): SavedLayout {
-        val pinned = StartPages.pinnedIds(_pages.value)
-        val used = _shortcuts.value.filter { it.id in pinned }
-        return SavedLayout(id, name, hour, TileCodec.encodePages(_pages.value), ShortcutCodec.encode(ShortcutCodec.portable(used)))
-    }
+    fun resaveLayout(id: String) = layouts_.resaveLayout(id)
 
-    /** Keeps Start as it is now under [name]; false when the name is empty or there are already as many layouts as allowed. */
-    fun saveLayout(name: String): Boolean {
-        val clean = name.trim().take(Layouts.MAX_NAME)
-        if (clean.isEmpty() || _layouts.value.size >= Layouts.MAX) return false
-        val layout = snapshotLayout(java.util.UUID.randomUUID().toString(), clean, -1)
-        saveLayouts(_layouts.value + layout)
-        updateSettings { it.copy(activeLayout = layout.id) }
-        return true
-    }
+    fun deleteLayout(id: String) = layouts_.deleteLayout(id)
 
-    /** Brings a layout up to date with what is on Start now. */
-    fun resaveLayout(id: String) = saveLayouts(_layouts.value.map { if (it.id == id) snapshotLayout(it.id, it.name, it.hour) else it })
+    fun setLayoutHour(id: String, hour: Int) = layouts_.setLayoutHour(id, hour)
 
-    fun deleteLayout(id: String) {
-        saveLayouts(_layouts.value.filterNot { it.id == id })
-        if (_settings.value.activeLayout == id) updateSettings { it.copy(activeLayout = "") }
-    }
+    fun applyLayout(id: String) = layouts_.applyLayout(id)
 
-    fun setLayoutHour(id: String, hour: Int) = saveLayouts(_layouts.value.map { if (it.id == id) it.copy(hour = hour.takeIf { h -> h in 0..23 } ?: -1) else it })
-
-    /**
-     * Puts a layout on Start. What is on Start now first goes back into the layout that was on, so what was changed during the day is not
-     * lost. The shortcuts the layout needs and this phone no longer has come back from it.
-     */
-    fun applyLayout(id: String) {
-        val layout = _layouts.value.firstOrNull { it.id == id } ?: return
-        val pages = TileCodec.decodePages(layout.pages) ?: return
-        val active = _settings.value.activeLayout
-        val kept = _layouts.value.map { if (it.id == active && active != id) snapshotLayout(it.id, it.name, it.hour) else it }
-        val have = _shortcuts.value.mapTo(HashSet()) { it.id }
-        val back = ShortcutCodec.decode(layout.shortcuts).orEmpty().filter { it.id !in have }
-        if (back.isNotEmpty()) {
-            _shortcuts.value = _shortcuts.value + back
-            shortcutStore.save(_shortcuts.value)
-            rebuildItems()
-        }
-        updateSettings { it.copy(startPages = pages.size.coerceIn(1, LauncherSettings.MAX_START_PAGES), activeLayout = id) }
-        val known = _items.value.mapTo(HashSet()) { it.id }
-        val shown = StartPages.prune(StartPages.resize(pages, _settings.value.startPages), known)
-        _pages.value = shown
-        store.savePages(shown)
-        saveLayouts(kept)
-    }
-
-    /** With the schedule on, the layout whose hour came last takes Start once, when its hour comes; a layout chosen by hand stays until the next hour. */
-    private fun applyScheduledLayout() {
-        if (!_settings.value.layoutSchedule) return
-        val due = Layouts.due(_layouts.value, java.time.LocalTime.now().hour) ?: return
-        if (due.id == layoutStore.lastScheduled) return
-        layoutStore.lastScheduled = due.id
-        if (due.id != _settings.value.activeLayout) applyLayout(due.id)
-    }
+    private fun applyScheduledLayout() = layouts_.applyScheduledLayout()
 
     // --- a photo for each Start screen
 
@@ -2914,8 +2737,6 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
         /** After the launcher comes on screen, this long nothing is announced: the service is reading what is up. */
         const val BANNER_SETTLE_MS = 1_500L
-        const val NOTIFICATION_RESULTS = 4
-        const val MESSAGE_RESULTS = 4
 
         /** The shortcuts of an app that find it in the search: more than the four of its menu. */
         const val SHORTCUT_NAMES = 12
