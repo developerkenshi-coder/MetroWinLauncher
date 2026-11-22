@@ -2259,12 +2259,16 @@ fun LauncherApp(vm: LauncherViewModel) {
                 var safeNotice by rememberSaveable { mutableStateOf(com.metrowin.launcher.data.SafeStart.on) }
                 if (safeNotice) SafeStartDialog { safeNotice = false }
                 if (lookOpen && !safeNotice) com.metrowin.launcher.ui.FirstLookDialog { look -> vm.chooseLook(look); lookOpen = false }
-                if (whatsNew && !safeNotice && !tutorialVisible && !lookOpen) com.metrowin.launcher.ui.WhatsNewDialog(about.versionName) { whatsNew = false }
-                // After the news (the one that was asked for first) and never on top of the tour, the looks or the safe start notice.
-                if (kofi && !whatsNew && !safeNotice && !tutorialVisible && !lookOpen) com.metrowin.launcher.ui.KofiBannerDialog(
-                    onOpen = { com.metrowin.launcher.ui.KofiBanner.open(appContext); kofi = false },
-                    onClose = { kofi = false },
-                )
+                if (whatsNew && !kofi && !safeNotice && !tutorialVisible && !lookOpen) com.metrowin.launcher.ui.WhatsNewDialog(about.versionName) { whatsNew = false }
+                // Before the news of the version (their text is long, and the banner must not be lost behind it), never on top of the tour, the looks or the safe start notice.
+                // It is marked seen when it is on screen, so an app closed before that gets it the next time.
+                if (kofi && !safeNotice && !tutorialVisible && !lookOpen) {
+                    androidx.compose.runtime.LaunchedEffect(Unit) { vm.kofiShown() }
+                    com.metrowin.launcher.ui.KofiBannerDialog(
+                        onOpen = { com.metrowin.launcher.ui.KofiBanner.open(appContext); kofi = false },
+                        onClose = { kofi = false },
+                    )
+                }
 
                 pendingRestore?.let { backup ->
                     RestoreDialog(backup, settings, pages.sumOf { it.size }, onDone = vm::applyRestore, onCancel = vm::cancelRestore)

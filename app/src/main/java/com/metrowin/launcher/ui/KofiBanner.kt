@@ -24,7 +24,7 @@ import com.metrowin.launcher.ui.settings.SettingHint
 
 /**
  * The banner that invites people to follow the author on Ko-fi, where the progress of the new features is told. It is shown **once**, to someone
- * who updates to 26.10.5S or later (not on a fresh install, which has the tour); asking marks it seen (see `LauncherViewModel.kofiDue`).
+ * who updates to 26.10.5S or later (not on a fresh install, which has the tour); it is marked seen when it is on screen (see `LauncherViewModel.kofiShown`).
  */
 object KofiBanner {
     /** The page of the author. The one place to change it. */
