@@ -204,7 +204,7 @@ class FinanceRepository(context: Context) {
 
     /** Blocking, call it off the main thread. The new quotes (and they are kept), or null when nothing could be read. */
     fun fetch(base: String, items: List<String>, now: Long, today: LocalDate = LocalDate.now()): FinanceData? {
-        val fx = Finance.fxUrl(base, items, today)?.let { SafeHttp.get(it, setOf(Finance.FX_HOST)) }?.let { Finance.parseFx(it, base, items) }
+        val fx = Finance.fxUrl(base, items, today)?.let { SafeHttp.get(it, setOf(Finance.FX_HOST), cached = true) }?.let { Finance.parseFx(it, base, items) }
         val coins = Finance.coinUrl(base, items)?.let { SafeHttp.get(it, setOf(Finance.COIN_HOST)) }?.let { Finance.parseCoins(it, base, items) }.orEmpty()
         val quotes = Finance.ordered(items, fx?.quotes.orEmpty() + coins)
         if (quotes.isEmpty()) return null

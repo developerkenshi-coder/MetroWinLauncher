@@ -17,3 +17,12 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew testDebugUnitTest :parsers:test lintDebug assembleDebug
+
+  # A pull request must not lower or repeat the versionCode of the last release (history is needed for the tags).
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: tools/check-release.sh --version-only

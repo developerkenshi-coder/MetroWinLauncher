@@ -3,7 +3,6 @@ package com.metrowin.launcher.data
 import androidx.compose.runtime.Immutable
 import org.json.JSONObject
 import java.io.File
-import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
 
@@ -110,7 +109,7 @@ object AppUpdate {
             ?.get(0)?.lowercase()
 
     /** Blocking, call it off the main thread. The latest release, or null when GitHub cannot be reached or has nothing usable. */
-    fun fetchLatest(): UpdateRelease? = SafeHttp.get(RELEASES, API_HOSTS, maxBytes = 2 * 1024 * 1024)?.let(::parseNewest)
+    fun fetchLatest(): UpdateRelease? = SafeHttp.get(RELEASES, API_HOSTS, maxBytes = 2 * 1024 * 1024, cached = true)?.let(::parseNewest)
 
     /**
      * Blocking. Downloads the APK of [release] to [target], telling [onProgress] how far it is (0 to 100). False, and no file left, when
@@ -123,55 +122,34 @@ object AppUpdate {
             val sums = SafeHttp.get(sumsUrl, DOWNLOAD_HOSTS, maxBytes = 16 * 1024) ?: return@runCatching false
             val expected = checksumFor(sums, release.apkUrl.substringAfterLast('/')) ?: return@runCatching false
             target.parentFile?.mkdirs()
-            val digest = MessageDigest.getInstance("SHA-256")
-            var url = URL(release.apkUrl)
-            repeat(SafeHttp.MAX_REDIRECTS + 1) {
-                require(url.protocol == "https" && url.host in DOWNLOAD_HOSTS)
-                val connection = (url.openConnection() as HttpURLConnection).apply {
-                    connectTimeout = SafeHttp.TIMEOUT_MS
-                    readTimeout = 20_000
-                    instanceFollowRedirects = false
-                    setRequestProperty("User-Agent", "MetroWinLauncher")
+            var last = -1
+            val request = HttpRequest(release.apkUrl, { it.host in DOWNLOAD_HOSTS }, readMs = 20_000)
+            val reply = Http.download(request, target, MAX_APK_BYTES, onProgress = { done, total ->
+                val size = if (total > 0) total else release.apkSize
+                val percent = if (size > 0) (done * 100 / size).toInt().coerceIn(0, 100) else 0
+                if (percent != last) {
+                    last = percent
+                    onProgress(percent)
                 }
-                try {
-                    val code = connection.responseCode
-                    if (code in setOf(301, 302, 303, 307, 308)) {
-                        url = URL(url, connection.getHeaderField("Location") ?: return@runCatching false)
-                        return@repeat
-                    }
-                    if (code != HttpURLConnection.HTTP_OK) return@runCatching false
-                    val total = connection.contentLengthLong.takeIf { it > 0 } ?: release.apkSize
-                    if (total > MAX_APK_BYTES || (release.apkSize > 0 && total != release.apkSize)) return@runCatching false
-                    var done = 0L
-                    connection.inputStream.use { input ->
-                        target.outputStream().use { out ->
-                            val buffer = ByteArray(32 * 1024)
-                            var last = -1
-                            while (true) {
-                                val n = input.read(buffer)
-                                if (n < 0) break
-                                done += n
-                                if (done > MAX_APK_BYTES) return@runCatching false
-                                digest.update(buffer, 0, n)
-                                out.write(buffer, 0, n)
-                                val percent = if (total > 0) (done * 100 / total).toInt().coerceIn(0, 100) else 0
-                                if (percent != last) {
-                                    last = percent
-                                    onProgress(percent)
-                                }
-                            }
-                        }
-                    }
-                    if (total > 0 && done != total) return@runCatching false
-                    val actual = digest.digest().joinToString("") { "%02x".format(it) }
-                    return@runCatching expected == actual
-                } finally {
-                    connection.disconnect()
-                }
-            }
-            false
+            })
+            if (reply !is HttpReply.Body) return@runCatching false
+            if (release.apkSize > 0 && target.length() != release.apkSize) return@runCatching false
+            sha256(target) == expected
         }.getOrDefault(false)
         if (!ok) target.delete()
         return ok
+    }
+
+    private fun sha256(file: File): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        file.inputStream().use { input ->
+            val buffer = ByteArray(32 * 1024)
+            while (true) {
+                val n = input.read(buffer)
+                if (n < 0) break
+                digest.update(buffer, 0, n)
+            }
+        }
+        return digest.digest().joinToString("") { "%02x".format(it) }
     }
 }

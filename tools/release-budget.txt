@@ -1,0 +1,5 @@
+# Limits of a release APK, checked by tools/check-release.sh (about 10% above the 26.10.4S build: 11.4 MB APK, one 8.0 MB classes.dex).
+# Raise a number only on purpose, in the same commit as the change that needs it, and say why in the message.
+apk_bytes=12500000
+dex_bytes=9000000
+dex_files=1

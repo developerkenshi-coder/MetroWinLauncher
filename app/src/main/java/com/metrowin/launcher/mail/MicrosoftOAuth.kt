@@ -5,8 +5,10 @@ import androidx.core.net.toUri
 import android.util.Base64
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.json.JSONObject
+import com.metrowin.launcher.data.Http
+import com.metrowin.launcher.data.HttpReply
+import com.metrowin.launcher.data.HttpRequest
 import java.io.IOException
-import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 import java.security.MessageDigest
@@ -88,25 +90,23 @@ object MicrosoftOAuth {
 
     private fun post(form: Map<String, String>): Tokens {
         val body = (form + ("client_id" to CLIENT_ID)).entries.joinToString("&") { (k, v) -> "$k=${URLEncoder.encode(v, "UTF-8")}" }
-        val connection = (URL("$AUTHORITY/token").openConnection() as HttpURLConnection).apply {
-            requestMethod = "POST"
-            connectTimeout = TIMEOUT_MS
-            readTimeout = TIMEOUT_MS
-            doOutput = true
-            setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+        val host = URL(AUTHORITY).host
+        val request = HttpRequest(
+            "$AUTHORITY/token", { it.host == host }, method = "POST", body = body.toByteArray(),
+            headers = mapOf("Content-Type" to "application/x-www-form-urlencoded"), connectMs = TIMEOUT_MS, readMs = TIMEOUT_MS,
+        )
+        val (code, text) = when (val reply = Http.fetch(request)) {
+            is HttpReply.Body -> 200 to reply.text
+            is HttpReply.Status -> reply.code to String(reply.body, Charsets.UTF_8)
+            HttpReply.NotModified, HttpReply.Offline -> throw IOException("no connection")
+            HttpReply.Blocked, HttpReply.TooBig -> throw IOException("unusable answer")
         }
-        try {
-            connection.outputStream.use { it.write(body.toByteArray()) }
-            val text = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)?.bufferedReader()?.use { it.readText() }.orEmpty()
-            val json = JSONObject(text.ifEmpty { "{}" })
-            if (connection.responseCode !in 200..299) throw IOException(json.optString("error_description").ifEmpty { json.optString("error", "HTTP ${connection.responseCode}") }.lineSequence().first())
-            return Tokens(
-                access = json.getString("access_token"),
-                refresh = json.optString("refresh_token").takeIf { it.isNotEmpty() },
-                expiresAtMs = System.currentTimeMillis() + json.optLong("expires_in", 3_000L) * 1_000L,
-            )
-        } finally {
-            connection.disconnect()
-        }
+        val json = JSONObject(text.ifEmpty { "{}" })
+        if (code !in 200..299) throw IOException(json.optString("error_description").ifEmpty { json.optString("error", "HTTP $code") }.lineSequence().first())
+        return Tokens(
+            access = json.getString("access_token"),
+            refresh = json.optString("refresh_token").takeIf { it.isNotEmpty() },
+            expiresAtMs = System.currentTimeMillis() + json.optLong("expires_in", 3_000L) * 1_000L,
+        )
     }
 }

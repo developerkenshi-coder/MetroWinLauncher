@@ -140,12 +140,9 @@ object MailAutoconfig {
         if (!Regex("^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$").matches(domain)) return null
         return listOf("https://autoconfig.$domain/mail/config-v1.1.xml", "https://autoconfig.thunderbird.net/v1.1/$domain").firstNotNullOfOrNull { url ->
             runCatching {
-                val connection = (java.net.URL(url).openConnection() as java.net.HttpURLConnection).apply { connectTimeout = 6_000; readTimeout = 6_000; instanceFollowRedirects = false }
-                try {
-                    if (connection.responseCode != 200) null else parse(connection.inputStream.use { it.readNBytes(200_000).toString(Charsets.UTF_8) }, domain)
-                } finally {
-                    connection.disconnect()
-                }
+                val host = java.net.URL(url).host
+                val request = com.metrowin.launcher.data.HttpRequest(url, { it.host == host }, maxBytes = 200_000, connectMs = 6_000, readMs = 6_000, retries = 0)
+                (com.metrowin.launcher.data.Http.fetch(request) as? com.metrowin.launcher.data.HttpReply.Body)?.let { parse(it.text, domain) }
             }.getOrNull()
         }
     }

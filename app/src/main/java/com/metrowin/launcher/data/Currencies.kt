@@ -141,7 +141,7 @@ class CurrencyRepository(context: Context) {
 
     /** Blocking, call it off the main thread. The new rates (and they are kept), or null when there is no connection. */
     fun fetch(now: Long): Currencies.Rates? {
-        val json = SafeHttp.get(Currencies.RATES_URL, setOf(Currencies.HOST)) ?: return null
+        val json = SafeHttp.get(Currencies.RATES_URL, setOf(Currencies.HOST), cached = true) ?: return null
         val rates = Currencies.parseRates(json, now) ?: return null
         prefs.edit {
             putString(KEY_RATES, json)

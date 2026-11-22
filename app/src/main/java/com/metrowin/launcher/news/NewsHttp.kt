@@ -1,7 +1,8 @@
 package com.metrowin.launcher.news
 
-import java.io.ByteArrayOutputStream
-import java.io.IOException
+import com.metrowin.launcher.data.Http
+import com.metrowin.launcher.data.HttpReply
+import com.metrowin.launcher.data.HttpRequest
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
@@ -35,12 +36,11 @@ enum class NewsFailure { Offline, Http, Parse, Blocked, TooBig, Metered, Address
  * (ETag, If-Modified-Since) so a feed that did not change costs almost nothing.
  */
 object NewsHttp {
-    const val TIMEOUT_MS = 8_000
-    const val MAX_REDIRECTS = 3
-    private val REDIRECTS = setOf(301, 302, 303, 307, 308)
+    const val TIMEOUT_MS = Http.TIMEOUT_MS
+    const val MAX_REDIRECTS = Http.MAX_REDIRECTS
 
     /** How a connection is opened; a test gives its own. */
-    val default: (URL) -> HttpURLConnection = { it.openConnection() as HttpURLConnection }
+    val default: (URL) -> HttpURLConnection = Http.default
 
     /**
      * Blocking, call it off the main thread. Reads [address] (https on one of [hosts]). A redirect goes on to another https address on one
@@ -55,48 +55,18 @@ object NewsHttp {
         maxBytes: Int = 512 * 1024,
         open: (URL) -> HttpURLConnection = default,
     ): NewsReply {
-        var url = runCatching { URL(address) }.getOrNull() ?: return NewsReply.Blocked
-        repeat(MAX_REDIRECTS + 1) {
-            if (url.protocol != "https" || !(url.host.lowercase(Locale.ROOT) in hosts || (anySite && isPublicHost(url.host)))) return NewsReply.Blocked
-            val connection = try { open(url) } catch (e: IOException) { return NewsReply.Offline }
-            try {
-                connection.connectTimeout = TIMEOUT_MS
-                connection.readTimeout = TIMEOUT_MS
-                connection.instanceFollowRedirects = false
-                connection.setRequestProperty("User-Agent", "MetroWinLauncher")
-                if (etag.isNotEmpty()) connection.setRequestProperty("If-None-Match", etag)
-                if (modified.isNotEmpty()) connection.setRequestProperty("If-Modified-Since", modified)
-                val code = connection.responseCode
-                when {
-                    code == HttpURLConnection.HTTP_NOT_MODIFIED -> return NewsReply.NotModified
-                    code in REDIRECTS -> url = runCatching { URL(url, connection.getHeaderField("Location") ?: return NewsReply.Blocked) }.getOrNull() ?: return NewsReply.Blocked
-                    code != HttpURLConnection.HTTP_OK -> return NewsReply.Http(code)
-                    else -> {
-                        val text = read(connection, maxBytes) ?: return NewsReply.TooBig
-                        return NewsReply.Body(text, connection.getHeaderField("ETag").orEmpty().take(200), connection.getHeaderField("Last-Modified").orEmpty().take(100))
-                    }
-                }
-            } catch (e: IOException) {
-                return NewsReply.Offline
-            } catch (e: RuntimeException) {
-                return NewsReply.Blocked
-            } finally {
-                connection.disconnect()
-            }
+        val request = HttpRequest(
+            address, { it.host.lowercase(Locale.ROOT) in hosts || (anySite && isPublicHost(it.host)) },
+            etag = etag, modified = modified, maxBytes = maxBytes,
+        )
+        return when (val reply = Http.fetch(request, open)) {
+            is HttpReply.Body -> NewsReply.Body(reply.text, reply.etag, reply.modified)
+            HttpReply.NotModified -> NewsReply.NotModified
+            HttpReply.Offline -> NewsReply.Offline
+            is HttpReply.Status -> NewsReply.Http(reply.code)
+            HttpReply.Blocked -> NewsReply.Blocked
+            HttpReply.TooBig -> NewsReply.TooBig
         }
-        return NewsReply.Blocked
-    }
-
-    private fun read(connection: HttpURLConnection, maxBytes: Int): String? = connection.inputStream.use { stream ->
-        val out = ByteArrayOutputStream()
-        val buffer = ByteArray(8 * 1024)
-        while (true) {
-            val read = stream.read(buffer)
-            if (read < 0) break
-            if (out.size() + read > maxBytes) return null
-            out.write(buffer, 0, read)
-        }
-        out.toString(Charsets.UTF_8.name())
     }
 
     /**

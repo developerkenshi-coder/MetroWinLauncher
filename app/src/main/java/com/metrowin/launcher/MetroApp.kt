@@ -12,6 +12,8 @@ class MetroApp : Application() {
         super.onCreate()
         PrefsMigrations.run(this)
         SafeStart.init(this)
+        // The one network client: the disk copy of answers and the check that there is a connection.
+        com.metrowin.launcher.data.Http.install(this)
         android.os.Handler(mainLooper).postDelayed({ SafeStart.markStable(this) }, SafeStart.QUICK_MS)
         // The newest crash is kept in a file, for the bug ticket.
         // AboutInfo.of reads the display, which an Application has none of: the version comes straight from the package.

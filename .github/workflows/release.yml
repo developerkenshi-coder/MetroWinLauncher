@@ -1,0 +1,33 @@
+name: Release
+
+# Runs when a version tag (v26.10.5S, ...) is pushed: two clean release builds compared byte for byte, the size and dex budget, the versionCode
+# and tag checks, and the checksum file. The APK built here is unsigned (the key of the author is never in CI); the author signs the one he publishes.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - run: python3 tools/test_check_translations.py && python3 tools/check-translations.py
+      - run: ./gradlew testDebugUnitTest :parsers:test
+      # Two builds from scratch, the same files inside (apart from the signature block).
+      - run: tools/check-reproducible.sh
+      # Budget, versionCode above the last release, tag equal to the version name, SHA256SUMS next to the APK.
+      - run: tools/check-release.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ github.ref_name }}
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/apk/release/SHA256SUMS

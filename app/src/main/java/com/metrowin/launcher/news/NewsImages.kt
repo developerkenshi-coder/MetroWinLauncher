@@ -4,9 +4,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.LruCache
+import com.metrowin.launcher.data.Http
+import com.metrowin.launcher.data.HttpReply
+import com.metrowin.launcher.data.HttpRequest
 import java.io.File
-import java.net.HttpURLConnection
-import java.net.URL
 import java.security.MessageDigest
 
 /** Where the headlines get their pictures from: the real one fetches them, a test gives its own. */
@@ -37,47 +38,13 @@ class NewsImages(context: Context) : NewsPictures {
         return bitmap
     }
 
-    private fun download(address: String, target: File): Boolean = runCatching {
-        var url = URL(address)
-        repeat(REDIRECTS + 1) {
-            // A picture comes from a public https address only, also after a redirect: a feed must not make the phone reach into the local network.
-            require(url.protocol == "https" && NewsHttp.isPublicHost(url.host))
-            val connection = (url.openConnection() as HttpURLConnection).apply {
-                connectTimeout = TIMEOUT_MS
-                readTimeout = TIMEOUT_MS
-                instanceFollowRedirects = false
-                setRequestProperty("User-Agent", "MetroWinLauncher")
-            }
-            try {
-                val code = connection.responseCode
-                if (code in 300..399) {
-                    url = URL(url, connection.getHeaderField("Location") ?: return false)
-                } else {
-                    if (code != HttpURLConnection.HTTP_OK || connection.contentType?.startsWith("image/") != true) return false
-                    val temporary = File(target.parentFile, target.name + ".part")
-                    var total = 0
-                    connection.inputStream.use { input ->
-                        temporary.outputStream().use { output ->
-                            val buffer = ByteArray(16 * 1024)
-                            while (true) {
-                                val read = input.read(buffer)
-                                if (read < 0) break
-                                total += read
-                                if (total > MAX_PICTURE) { temporary.delete(); return false }
-                                output.write(buffer, 0, read)
-                            }
-                        }
-                    }
-                    val moved = temporary.renameTo(target)
-                    if (moved) trim()
-                    return moved
-                }
-            } finally {
-                connection.disconnect()
-            }
-        }
-        false
-    }.getOrDefault(false)
+    private fun download(address: String, target: File): Boolean {
+        // A picture comes from a public https address only, also after a redirect: a feed must not make the phone reach into the local network.
+        val request = HttpRequest(address, { NewsHttp.isPublicHost(it.host) }, accepts = { it?.startsWith("image/") == true })
+        if (Http.download(request, target, MAX_PICTURE.toLong()) !is HttpReply.Body) return false
+        trim()
+        return true
+    }
 
     private fun decode(file: File, maxWidth: Int): Bitmap? {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
@@ -108,8 +75,6 @@ class NewsImages(context: Context) : NewsPictures {
         const val MAX_FILES = 150
         const val MAX_BYTES = 40L * 1024 * 1024
         private const val MAX_PICTURE = 3 * 1024 * 1024
-        private const val REDIRECTS = 3
-        private const val TIMEOUT_MS = 8_000
 
         private val locks = Array(16) { Any() }
 
