@@ -215,14 +215,41 @@ object HomeApp {
     /** [resolvedHomePackage] is who Android would open for Home now (the "chooser" when the user never picked one). */
     fun isOurs(resolvedHomePackage: String?, ownPackage: String): Boolean = resolvedHomePackage == ownPackage
 
-    fun isDefault(context: Context): Boolean {
-        if (Build.VERSION.SDK_INT >= 29) {
-            val roles = context.getSystemService(RoleManager::class.java)
-            if (roles != null && roles.isRoleAvailable(RoleManager.ROLE_HOME)) return roles.isRoleHeld(RoleManager.ROLE_HOME)
+    /** The role is ours but an "Always" choice saved for another Home app (vivo keeps one) still wins: [resolved] is that other app. "android" is the chooser. */
+    fun isOverridden(resolved: String?, ownPackage: String): Boolean = resolved != null && resolved != "android" && resolved != ownPackage
+
+    private fun resolved(context: Context): String? =
+        context.packageManager.resolveActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName
+
+    private fun roleHeld(context: Context): Boolean? {
+        if (Build.VERSION.SDK_INT < 29) return null
+        val roles = context.getSystemService(RoleManager::class.java)
+        return if (roles != null && roles.isRoleAvailable(RoleManager.ROLE_HOME)) roles.isRoleHeld(RoleManager.ROLE_HOME) else null
+    }
+
+    fun isDefault(context: Context): Boolean = when (val held = roleHeld(context)) {
+        null -> isOurs(resolved(context), context.packageName)
+        else -> held && !isOverridden(resolved(context), context.packageName)
+    }
+
+    /** The role is ours and Home still opens another app: the case [requestIntent] cannot mend. */
+    fun isHeldButOverridden(context: Context): Boolean = roleHeld(context) == true && isOverridden(resolved(context), context.packageName)
+
+    /**
+     * Puts the "Always" choice on this launcher through Shizuku (`set-home-activity` replaces it, clearing it only lets the phone write it back);
+     * without Shizuku the user is taken to the settings of the Home app. [done] runs on the main thread.
+     */
+    fun repair(context: Context, done: () -> Unit) {
+        if (!ShizukuShell.ready()) {
+            runCatching { context.startActivity(Intent(Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            return done()
         }
-        val home = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-        val resolved = context.packageManager.resolveActivity(home, PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName
-        return isOurs(resolved, context.packageName)
+        val component = android.content.ComponentName(context, com.metrowin.launcher.MainActivity::class.java).flattenToShortString()
+        val main = android.os.Handler(android.os.Looper.getMainLooper())
+        kotlin.concurrent.thread(name = "home-repair") {
+            ShizukuShell.run(arrayOf("cmd", "package", "set-home-activity", "--user", "0", component))
+            main.post(done)
+        }
     }
 
     /** Android 10 and later has a dialog for it; before that the user is taken to the settings of the Home app. */

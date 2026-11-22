@@ -207,6 +207,14 @@ class TutorialTest {
         assertFalse(HomeApp.isOurs(null, "com.metrowin.launcher"))
     }
 
+    @Test
+    fun anotherHomeAppWinningOverTheRoleIsTold() {
+        assertTrue(HomeApp.isOverridden("com.android.launcher3", "com.metrowin.launcher"))
+        assertFalse(HomeApp.isOverridden("com.metrowin.launcher", "com.metrowin.launcher"))
+        assertFalse(HomeApp.isOverridden("android", "com.metrowin.launcher"))
+        assertFalse(HomeApp.isOverridden(null, "com.metrowin.launcher"))
+    }
+
     // --- the words
 
     /** Every string of the folder, from all its files (the tour is in strings.xml and in strings_settings_info.xml). */

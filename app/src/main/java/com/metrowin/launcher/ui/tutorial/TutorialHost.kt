@@ -62,6 +62,7 @@ fun TutorialHost(
     fun request(need: Need) {
         when {
             need in denied -> openAppSettings(context)
+            need == Need.HomeApp && HomeApp.isHeldButOverridden(context) -> HomeApp.repair(context, ::refresh)
             need == Need.HomeApp -> runCatching { home.launch(HomeApp.requestIntent(context)) }
             need == Need.NotificationAccess -> onOpenNotificationAccess()
             need == Need.LockService -> onOpenAccessibility()
