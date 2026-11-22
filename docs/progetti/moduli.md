@@ -1,6 +1,6 @@
 # Dividere `:app` in moduli Gradle
 
-Stato: **fattibilità valutata; primo modulo foglia estratto** (`:parsers`). Il resto è documentato: oggi non è fattibile senza rompere prima i cicli.
+Stato: **fattibilità valutata; due moduli foglia estratti** (`:parsers`, `:logic`). Le fasi `:model`, `:store`, `:feature-*`, `:ui-kit` restano documentate: non sono fattibili senza rompere prima i cicli (vedi sotto), e non sono state fatte in 26.10.5S.
 
 ## Misura (strumento: `tools/package-deps.py`, legge gli `import` fra pacchetti)
 - 393 file Kotlin, circa 62 000 righe, tutto in `:app`. Pacchetti: `data` (142 file), `ui` (119), 20 di funzione (mail, notes, wallet, recorder, files...).
@@ -15,6 +15,13 @@ Modulo Kotlin puro (`parsers/`, nessun Android) con `BatteryDumps`, `WifiShell`,
 Il pacchetto resta `com.metrowin.launcher.data`, quindi nessun altro file è cambiato. `:app` lo importa con `implementation(project(":parsers"))`; in CI: `:parsers:test`.
 Costo reale: il plugin `org.jetbrains.kotlin.jvm` ha richiesto 37 righe nuove in `gradle/verification-metadata.xml` (marker del plugin e `kotlin-scripting-*`, generate da Gradle:
 vanno confrontate con Maven Central prima del rilascio). `DeviceMonitorTest` e i test di `BatteryDumps` restano in `:app` perché usano `DeviceReaders`/`ShizukuTerminal`.
+
+## Fatto: `:logic` (26.10.5S)
+Secondo modulo Kotlin puro (`logic/`, nessun Android, nessun altro file di `:app`): 26 file di `data` (2 225 righe) trovati con uno script che parte da ogni file di `data` e lascia solo quelli che usano
+unicamente `java.*`/`kotlin.*` e nomi di altri file dello stesso insieme: `CalcEngine`, `CalcSession`, `CalcTools`, `Calculator`, `WhenParser`, `SyncCrypto`, `Checklist`, `Countdown`, `ClockFormat`, `Places`, `SearchEngine`,
+`SiteInput`, `BoundedRead`, `BackupSchedule`, `BackupCopies`, `RefreshRate`, `PhotoFraming`, `PhotoMemories`, `NavButtons`, `HomePresses`, `AppLinks`, `DeferWhileAway`, `GlassIcon`, `LockIconRow`, `ClickSound`, `MetroSounds`.
+Il pacchetto resta `com.metrowin.launcher.data`; `:app` lo importa con `implementation(project(":logic"))` e i test restano in `:app`. Il compilatore di Compose non vede dentro un altro modulo: le classi senza `var` sono elencate in
+`app/compose_stability.conf` (come erano viste dentro `:app`). Costo sul checksum: nessuna riga nuova (il plugin `kotlin.jvm` c'era già).
 
 ## Altri candidati foglia (stima, da confermare compilando)
 Circa 28 file di `data` senza `import` del progetto né di Android e senza riferimenti agli altri file di `data` fuori dall'insieme: `CalcEngine`, `CalcSession`, `Calculator`, `Checklist`, `Countdown`,

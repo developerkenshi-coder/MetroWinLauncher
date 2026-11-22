@@ -23,6 +23,7 @@ dependencyResolutionManagement {
 rootProject.name = "MetroWinLauncher"
 include(":app")
 include(":parsers")
+include(":logic")
 include(":benchmark")
 include(":tile-sdk")
 include(":sample-tile")

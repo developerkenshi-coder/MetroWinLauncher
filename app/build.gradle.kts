@@ -101,6 +101,7 @@ kotlin {
 
 dependencies {
     implementation(project(":parsers"))
+    implementation(project(":logic"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.exifinterface)
