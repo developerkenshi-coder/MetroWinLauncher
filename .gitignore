@@ -19,3 +19,6 @@ keystore/
 benchmark/build/
 parsers/build/
 __pycache__/
+logic/build/
+tile-sdk/build/
+sample-tile/build/
