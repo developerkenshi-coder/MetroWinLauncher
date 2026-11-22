@@ -2257,8 +2257,12 @@ fun LauncherApp(vm: LauncherViewModel) {
 
                 var safeNotice by rememberSaveable { mutableStateOf(com.metrowin.launcher.data.SafeStart.on) }
                 if (safeNotice) SafeStartDialog { safeNotice = false }
+                val newsOnScreen = whatsNew && !safeNotice && !tutorialVisible && !lookOpen
                 if (lookOpen && !safeNotice) com.metrowin.launcher.ui.FirstLookDialog { look -> vm.chooseLook(look); lookOpen = false }
-                if (whatsNew && !kofi && !safeNotice && !tutorialVisible && !lookOpen) com.metrowin.launcher.ui.WhatsNewDialog(about.versionName) { whatsNew = false }
+                if (newsOnScreen) com.metrowin.launcher.ui.WhatsNewDialog(about.versionName) {
+                    whatsNew = false
+                    vm.whatsNewClosed(about.versionCode)
+                }
 
                 pendingRestore?.let { backup ->
                     RestoreDialog(backup, settings, pages.sumOf { it.size }, onDone = vm::applyRestore, onCancel = vm::cancelRestore)
@@ -2316,13 +2320,12 @@ fun LauncherApp(vm: LauncherViewModel) {
                     )
                 }
 
-                // Before the news of the version (their text is long, and the banner must not be lost behind it) and over everything else, the tour included (so it comes after the tour in this list, which draws on top): an update
-                // must show it, with no condition. It is marked seen when it is on screen, so an app closed before that gets it the next time.
-                if (kofi) {
-                    androidx.compose.runtime.LaunchedEffect(Unit) { vm.kofiShown() }
+                // After the news of the version (it waits while they are on screen) and over everything else, the tour included (so it comes after the tour in this list, which draws on top): an update
+                // must show it, with no condition. It is marked seen when the user answers it, so an app that dies first (or is started again over it) gets it the next time.
+                if (kofi && !newsOnScreen) {
                     com.metrowin.launcher.ui.KofiBannerDialog(
-                        onOpen = { com.metrowin.launcher.ui.KofiBanner.open(appContext); kofi = false },
-                        onClose = { kofi = false },
+                        onOpen = { com.metrowin.launcher.ui.KofiBanner.open(appContext); kofi = false; vm.kofiShown() },
+                        onClose = { kofi = false; vm.kofiShown() },
                     )
                 }
             }

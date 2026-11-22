@@ -1320,17 +1320,26 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     /**
      * Whether the news of this version are to be shown now: after an update (or the first start of a version that has them), not on a fresh install.
-     * Asking marks them seen, so it is asked once at the start of the launcher.
+     * They are marked seen when closed ([whatsNewClosed]).
      */
     fun whatsNewDue(versionCode: Long): Boolean {
         val seen = store.whatsNewSeen
+        // Someone who has not finished the tour is new: they never get the news of the versions before.
+        if (!store.tutorialDone) {
+            store.whatsNewSeen = versionCode
+            return false
+        }
+        return seen < versionCode
+    }
+
+    /** The news were read and closed: they are not asked for again. (Marked here, not when asked, so an activity that dies first does not lose them.) */
+    fun whatsNewClosed(versionCode: Long) {
         store.whatsNewSeen = versionCode
-        return store.tutorialDone && seen < versionCode
     }
 
     /**
      * Whether the Ko-fi banner is to be shown now (see [com.metrowin.launcher.ui.KofiBanner]): once, to everyone who updates to 26.10.5S or later, and to a
-     * fresh install after 48 hours. Asking does not mark it seen: [kofiShown] does, when the banner really is on screen.
+     * fresh install after 48 hours. Asking does not mark it seen: [kofiShown] does, when the user closes the banner.
      */
     fun kofiDue(versionCode: Long): Boolean {
         val app = getApplication<Application>()
@@ -1338,7 +1347,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         return com.metrowin.launcher.ui.KofiBanner.due(store.kofiSeen, versionCode, info.firstInstallTime, info.lastUpdateTime, System.currentTimeMillis())
     }
 
-    /** The banner is on screen: it is not asked for again. */
+    /** The banner was answered (opened or closed): it is not asked for again. */
     fun kofiShown() {
         store.kofiSeen = true
     }
