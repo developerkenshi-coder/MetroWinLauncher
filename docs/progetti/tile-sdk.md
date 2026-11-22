@@ -1,6 +1,6 @@
 # Tile di terze parti: protocollo e SDK
 
-Stato: **contratto documentato e bloccato da test** (`TilePublishContractTest`, `ThirdPartyTilesTest`). Nessun SDK (libreria) ancora.
+Stato: **contratto bloccato da test** (`TilePublishContractTest`, `ThirdPartyTilesTest`); **SDK e app di esempio implementati in 26.10.5S** (`tile-sdk/`, `sample-tile/`, prova di `MetroTile` in `TileSdkTest`). Da fare: pubblicarlo su un repository Maven (vedi sotto).
 
 ## Contratto (ricavato da `data/TilePublishProvider.kt`, `data/ThirdPartyTiles.kt`, `AndroidManifest.xml`)
 
@@ -35,12 +35,23 @@ Se MetroWin Launcher non è installato `call` lancia `IllegalArgumentException` 
 - Contenuto salvato in `Prefs.TILES`, in chiaro (vedi `docs/progetti/cifratura.md`).
 - Nessuna immagine, nessun colore, nessun clic personalizzato: il tile apre l'app.
 
-## Versionamento (da fare)
-Oggi non c'è numero di versione: i campi sono tre e fissi. Regola proposta:
-1. Aggiungere il metodo `version` che risponde `Bundle{version=1}` (i client vecchi non lo chiamano, quelli nuovi lo usano per scegliere i campi).
-2. Compatibile (senza cambiare versione): campi nuovi opzionali in `publish`; il launcher ignora gli extra che non conosce.
-3. Incompatibile (versione 2): nuova autorità o nuovo metodo, mai cambiare significato a `title/text/count`.
-4. Ogni modifica a nomi/limiti rompe `TilePublishContractTest`: va cambiato insieme a questo documento.
+## Versionamento (fatto)
+Il metodo `version` risponde `Bundle{accepted=true, version=1}` (anche quando l'utente ha spento la funzione, ma non a un chiamante sconosciuto). Il contratto 1 non cambia mai il significato di `title/text/count`:
+1. Compatibile (senza cambiare versione): campi nuovi opzionali in `publish`; il launcher ignora gli extra che non conosce.
+2. Incompatibile (versione 2): nuova autorità o nuovo metodo.
+3. Ogni modifica a nomi/limiti rompe `TilePublishContractTest`: va cambiato insieme a questo documento.
+
+## Controlli di sicurezza (fatti)
+- Il chiamante è quello che dice Android (`callingPackage`); un extra `package` è ignorato; senza chiamante noto: `unknown caller`.
+- Testo ripulito (una riga, niente caratteri di controllo, troncato), numero in 0..99 999, al massimo 64 app (le più recenti restano).
+- **Limite di frequenza**: una modifica a meno di 250 ms dall'ultima della stessa app è rifiutata (`too fast`); gli stessi valori ripetuti sono sempre accettati e non scrivono (un tile non è un flusso, e una app che gira in ciclo non consuma la memoria del launcher).
+- L'utente può spegnere la funzione: `turned off by the user`. Il permesso resta `normal`: vedi i rischi qui sotto.
+
+## SDK
+- `tile-sdk/`: libreria Android (Apache-2.0, `com.metrowin.launcher.tilesdk.MetroTile`): `publish(context, title, text, count)`, `clear`, `version`, `isInstalled`; accorcia il testo prima di inviarlo; ogni errore (launcher assente, permesso mancante) è un risultato (`MetroTileResult`), mai un'eccezione. Il suo manifest porta nel manifest dell'app il permesso e il `<queries>` del provider.
+- `sample-tile/`: app di esempio (nessuna dipendenza oltre all'SDK): si installa accanto al launcher, si fissa sulla Start, «Publish» fa girare il tile.
+- Si costruiscono con `./gradlew :tile-sdk:assembleRelease :sample-tile:assembleDebug` (in CI). Il checksum del plugin `com.android.library` in `gradle/verification-metadata.xml` coincide con quello pubblicato da Google Maven.
+- Da fare: pubblicare l'AAR su Maven Central o JitPack (serve un account e una chiave di firma dell'autore) e provare su telefono: fissare l'app di esempio sulla Start e vedere il numero e il testo che si girano.
 
 ## Rischi
 - `protectionLevel="normal"`: qualunque app installata può scrivere sul proprio tile. Non può impersonare un'altra app, ma può mostrare testo
@@ -49,7 +60,7 @@ Oggi non c'è numero di versione: i campi sono tre e fissi. Regola proposta:
   altrimenti `call` fallisce come se il launcher non ci fosse. Da mettere anche nel manifest dell'SDK.
 - I produttori aggressivi possono fermare il launcher (`docs/progetti/sfondo-affidabile.md`); la chiamata fa ripartire il processo del provider.
 
-## SDK: passi
+## SDK: passi (originali)
 1. Modulo `tile-sdk` (libreria Android con una sola classe `MetroTile.publish(context, title, text, count)` e `clear`) con `consumer` manifest che dichiara il permesso.
 2. Pubblicarlo su Maven Central o JitPack; licenza GPL-3.0 del launcher: l'SDK dovrebbe essere Apache-2.0 per poter essere usato da app non libere.
 3. App di esempio che si installa accanto al launcher; prova su telefono: fissare l'app sulla Start e vedere il numero e il testo che si girano.

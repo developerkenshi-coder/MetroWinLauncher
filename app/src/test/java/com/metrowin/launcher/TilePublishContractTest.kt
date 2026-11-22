@@ -15,7 +15,8 @@ class TilePublishContractTest {
 
     @Test
     fun methodsAndKeysAreTheOnesOfTheDocument() {
-        assertEquals(listOf("publish", "clear"), listOf(ThirdPartyTiles.METHOD_PUBLISH, ThirdPartyTiles.METHOD_CLEAR))
+        assertEquals(listOf("publish", "clear", "version"), listOf(ThirdPartyTiles.METHOD_PUBLISH, ThirdPartyTiles.METHOD_CLEAR, ThirdPartyTiles.METHOD_VERSION))
+        assertEquals(listOf("version", 1), listOf(ThirdPartyTiles.KEY_VERSION, ThirdPartyTiles.PROTOCOL))
         assertEquals(listOf("title", "text", "count"), listOf(ThirdPartyTiles.KEY_TITLE, ThirdPartyTiles.KEY_TEXT, ThirdPartyTiles.KEY_COUNT))
         assertEquals(listOf("accepted", "reason"), listOf(ThirdPartyTiles.KEY_ACCEPTED, ThirdPartyTiles.KEY_REASON))
     }

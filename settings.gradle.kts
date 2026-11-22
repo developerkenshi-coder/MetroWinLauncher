@@ -24,3 +24,5 @@ rootProject.name = "MetroWinLauncher"
 include(":app")
 include(":parsers")
 include(":benchmark")
+include(":tile-sdk")
+include(":sample-tile")

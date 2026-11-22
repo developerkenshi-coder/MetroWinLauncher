@@ -27,6 +27,14 @@ object ThirdPartyTiles {
 
     const val METHOD_PUBLISH = "publish"
     const val METHOD_CLEAR = "clear"
+
+    /** Answers `version=` [PROTOCOL] (the contract an app is written against, see docs/progetti/tile-sdk.md); the three fields of 1 never change meaning. */
+    const val METHOD_VERSION = "version"
+    const val KEY_VERSION = "version"
+    const val PROTOCOL = 1
+
+    /** An app that changes its tile more often than this is told "too fast": a tile is not a stream (the same values again are no change and always accepted). */
+    const val MIN_INTERVAL_MS = 250L
     const val KEY_TITLE = "title"
     const val KEY_TEXT = "text"
     const val KEY_COUNT = "count"
@@ -91,6 +99,9 @@ object TileFeed {
     @Volatile
     private var loaded = false
 
+    /** When each app last changed its tile (kept only in memory, trimmed): the rate limit of [handle]. */
+    private val lastChange = HashMap<String, Long>()
+
     private fun prefs(context: Context) = Prefs.open(context.applicationContext, Prefs.TILES)
 
     /** Reads the saved tiles, once per process. The provider and the launcher both call it first. */
@@ -113,9 +124,15 @@ object TileFeed {
         }
     }
 
-    fun clear(context: Context, packageName: String) = update(context) { ThirdPartyTiles.clear(it, packageName) }
+    fun clear(context: Context, packageName: String) {
+        synchronized(lastChange) { lastChange.remove(packageName) }
+        update(context) { ThirdPartyTiles.clear(it, packageName) }
+    }
 
-    fun clearAll(context: Context) = update(context) { emptyMap() }
+    fun clearAll(context: Context) {
+        synchronized(lastChange) { lastChange.clear() }
+        update(context) { emptyMap() }
+    }
 
     /**
      * Answers one call of the provider. [caller] is the package the system says is calling: a tile is only ever
@@ -127,13 +144,26 @@ object TileFeed {
             if (reason != null) putString(ThirdPartyTiles.KEY_REASON, reason)
         }
         if (caller.isNullOrBlank()) return answer(false, "unknown caller")
+        // The version is told even when the feature is off: a client uses it to choose its fields, and "turned off" comes with its first publish.
+        if (method == ThirdPartyTiles.METHOD_VERSION) return answer(true).apply { putInt(ThirdPartyTiles.KEY_VERSION, ThirdPartyTiles.PROTOCOL) }
         if (!enabled) return answer(false, "turned off by the user")
         return when (method) {
             ThirdPartyTiles.METHOD_PUBLISH -> {
                 val title = extras?.getString(ThirdPartyTiles.KEY_TITLE)
                 val text = extras?.getString(ThirdPartyTiles.KEY_TEXT)
                 val count = extras?.getInt(ThirdPartyTiles.KEY_COUNT, 0) ?: 0
-                update(context) { ThirdPartyTiles.publish(it, caller, title, text, count, now) }
+                load(context)
+                val before = _tiles.value
+                // The same values again are no change: accepted, nothing written. A change that comes too soon after the last one is refused.
+                if (ThirdPartyTiles.publish(before, caller, title, text, count, now) != before) {
+                    synchronized(lastChange) {
+                        val last = lastChange[caller]
+                        if (last != null && now - last in 0 until ThirdPartyTiles.MIN_INTERVAL_MS) return answer(false, "too fast")
+                        lastChange[caller] = now
+                        if (lastChange.size > ThirdPartyTiles.MAX_TILES * 4) lastChange.entries.removeAll { now - it.value > 60_000 }
+                    }
+                    update(context) { ThirdPartyTiles.publish(it, caller, title, text, count, now) }
+                }
                 answer(true)
             }
             ThirdPartyTiles.METHOD_CLEAR -> {

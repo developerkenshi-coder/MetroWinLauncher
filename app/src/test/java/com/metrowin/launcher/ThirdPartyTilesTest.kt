@@ -163,4 +163,32 @@ class ThirdPartyTilesTest {
         assertFalse(answer.getBoolean("accepted"))
         assertTrue(TileFeed.tiles.value.isEmpty())
     }
+
+    // --- the version and the rate limit (the SDK of docs/progetti/tile-sdk.md)
+
+    @Test
+    fun theVersionIsToldEvenWhenTheFeatureIsOffButNotToAnUnknownCaller() {
+        val on = TileFeed.handle(context, true, "com.example.mail", "version", null)
+        assertTrue(on.getBoolean("accepted"))
+        assertEquals(1, on.getInt("version"))
+        assertTrue(TileFeed.handle(context, false, "com.example.mail", "version", null).getBoolean("accepted"))
+        assertFalse(TileFeed.handle(context, true, null, "version", null).getBoolean("accepted"))
+    }
+
+    @Test
+    fun aChangeComesAtMostOnceEvery250msButTheSameValuesAreAlwaysAccepted() {
+        val app = "com.example.rate"
+        assertTrue(TileFeed.handle(context, true, app, "publish", extras("a", "one", 1), now = 1_000).getBoolean("accepted"))
+        // Too soon: refused, and the tile still says "one".
+        val soon = TileFeed.handle(context, true, app, "publish", extras("a", "two", 2), now = 1_100)
+        assertFalse(soon.getBoolean("accepted"))
+        assertEquals("too fast", soon.getString("reason"))
+        assertEquals("one", TileFeed.tiles.value[app]!!.text)
+        // The same values again, however soon: accepted and no change.
+        assertTrue(TileFeed.handle(context, true, app, "publish", extras("a", "one", 1), now = 1_120).getBoolean("accepted"))
+        // After the interval the change goes through; another app is never held back by this one.
+        assertTrue(TileFeed.handle(context, true, app, "publish", extras("a", "two", 2), now = 1_300).getBoolean("accepted"))
+        assertEquals("two", TileFeed.tiles.value[app]!!.text)
+        assertTrue(TileFeed.handle(context, true, "com.example.other", "publish", extras("b", "x", 1), now = 1_301).getBoolean("accepted"))
+    }
 }

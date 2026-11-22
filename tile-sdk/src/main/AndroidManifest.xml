@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Merged into the manifest of every app that uses the SDK: the permission to publish (normal: granted at install, no prompt), and the
+     visibility of the provider of MetroWin Launcher (Android 11 and later hide other apps' providers unless they are asked for here). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="com.metrowin.launcher.permission.PUBLISH_TILE" />
+
+    <queries>
+        <provider android:authorities="com.metrowin.launcher.tiles" />
+    </queries>
+</manifest>

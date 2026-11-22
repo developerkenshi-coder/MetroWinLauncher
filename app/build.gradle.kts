@@ -120,6 +120,8 @@ dependencies {
     implementation(libs.shizuku.provider)
 
     testImplementation(libs.junit)
+    // The SDK of the live tiles is tried against a provider that answers as the launcher does (TileSdkTest).
+    testImplementation(project(":tile-sdk"))
     testImplementation(libs.org.json)
     testImplementation(libs.robolectric)
     // A mail server inside the tests (IMAP and SMTP on a local port), for the mail client: no real account. It brings its own copy of JavaMail, which the app already has.

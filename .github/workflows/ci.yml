@@ -16,7 +16,7 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew testDebugUnitTest :parsers:test lintDebug assembleDebug
+      - run: ./gradlew testDebugUnitTest :parsers:test lintDebug assembleDebug :tile-sdk:assembleRelease :sample-tile:assembleDebug
 
   # A pull request must not lower or repeat the versionCode of the last release (history is needed for the tags).
   version:
