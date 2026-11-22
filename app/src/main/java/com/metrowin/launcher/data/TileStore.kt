@@ -181,7 +181,7 @@ class TileStore(context: Context) {
         set(value) = prefs.edit { putBoolean(KEY_MINI_APPS_MIGRATED, value) }
 
     private companion object {
-        const val KEY_KOFI_SEEN = "kofi_seen"
+        const val KEY_KOFI_SEEN = "kofi_shown_v2"
         const val KEY_MINI_APPS_MIGRATED = "mini_apps_migrated"
         const val KEY_TILES = "tiles"
         const val KEY_PAGES = "pages"
