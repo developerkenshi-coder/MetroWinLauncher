@@ -17,17 +17,30 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], qualifiers = "w360dp-h760dp-xxhdpi")
 class KofiBannerUiTest : ScreenshotBase() {
+    private val hour = 3_600_000L
+    private val installed = 1_000_000_000_000L
+
     @Test
-    fun onlyAnUpdateOfTheRightVersionThatWasNotSeenShowsIt() {
-        // Updating from before: the tour was done, the banner not seen yet, this is 26.10.5S (78) or later.
-        assertTrue(KofiBanner.due(seen = false, tutorialDone = true, versionCode = 78))
-        assertTrue(KofiBanner.due(seen = false, tutorialDone = true, versionCode = 79))
-        // Once: never again.
-        assertFalse(KofiBanner.due(seen = true, tutorialDone = true, versionCode = 78))
-        // A fresh install has the tour, not this.
-        assertFalse(KofiBanner.due(seen = false, tutorialDone = false, versionCode = 78))
-        // An older version does not have it.
-        assertFalse(KofiBanner.due(seen = false, tutorialDone = true, versionCode = 77))
+    fun anUpdateToTheVersionAlwaysGetsItAtOnceWhateverElseIsTrue() {
+        // Installed long ago and updated just now (last update > first install): due at the first look, with no wait and no tour condition.
+        assertTrue(KofiBanner.due(seen = false, versionCode = 78, firstInstall = installed, lastUpdate = installed + 300 * hour, now = installed + 300 * hour))
+        assertTrue(KofiBanner.due(seen = false, versionCode = 79, firstInstall = installed, lastUpdate = installed + 2 * hour, now = installed + 2 * hour))
+    }
+
+    @Test
+    fun aFreshInstallWaitsFortyEightHours() {
+        // First install and last update are the same moment.
+        assertFalse(KofiBanner.due(seen = false, versionCode = 78, firstInstall = installed, lastUpdate = installed, now = installed))
+        assertFalse(KofiBanner.due(seen = false, versionCode = 78, firstInstall = installed, lastUpdate = installed, now = installed + 47 * hour))
+        assertTrue(KofiBanner.due(seen = false, versionCode = 78, firstInstall = installed, lastUpdate = installed, now = installed + 48 * hour))
+        assertTrue(KofiBanner.due(seen = false, versionCode = 78, firstInstall = installed, lastUpdate = installed, now = installed + 500 * hour))
+    }
+
+    @Test
+    fun onceOnlyAndNotBeforeTheVersion() {
+        assertFalse(KofiBanner.due(seen = true, versionCode = 78, firstInstall = installed, lastUpdate = installed + 300 * hour, now = installed + 300 * hour))
+        assertFalse(KofiBanner.due(seen = true, versionCode = 78, firstInstall = installed, lastUpdate = installed, now = installed + 500 * hour))
+        assertFalse(KofiBanner.due(seen = false, versionCode = 77, firstInstall = installed, lastUpdate = installed + 300 * hour, now = installed + 300 * hour))
     }
 
     @Test

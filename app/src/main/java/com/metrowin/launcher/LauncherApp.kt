@@ -388,10 +388,9 @@ fun LauncherApp(vm: LauncherViewModel) {
     val sideBySide = !settings.kidsMode && StartPanels.active(settings.twoPanels, screenWidthDp, screenHeightDp)
     val startWidthDp = StartPanels.startWidthDp(sideBySide, screenWidthDp)
     val about = remember(appContext) { AboutInfo.of(appContext) }
-    androidx.compose.runtime.LaunchedEffect(Unit) {
-        if (vm.whatsNewDue(about.versionCode)) whatsNew = true
-        if (vm.kofiDue(about.versionCode)) kofi = true
-    }
+    androidx.compose.runtime.LaunchedEffect(Unit) { if (vm.whatsNewDue(about.versionCode)) whatsNew = true }
+    // The Ko-fi banner is asked for every time the launcher comes to the screen: an update shows it at the first one, a fresh install when the 48 hours are over.
+    LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_START) { if (vm.kofiDue(about.versionCode)) kofi = true }
     val kidsMode = settings.kidsMode
     val kidsCells = remember(settings.kidsApps, items) {
         items.filter { it.id in settings.kidsApps }.map { AppCell(Tile(it.id, TileSize.Medium), it) }

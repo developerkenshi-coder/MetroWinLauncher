@@ -1329,15 +1329,13 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     /**
-     * Whether the Ko-fi banner is to be shown now: once, to someone who updates to 26.10.5S or later. Asking does not mark it seen (the app may be
-     * closed before the banner is on screen, behind the news of the version): [kofiShown] does, when it really is. A fresh install never gets it.
+     * Whether the Ko-fi banner is to be shown now (see [com.metrowin.launcher.ui.KofiBanner]): once, to everyone who updates to 26.10.5S or later, and to a
+     * fresh install after 48 hours. Asking does not mark it seen: [kofiShown] does, when the banner really is on screen.
      */
     fun kofiDue(versionCode: Long): Boolean {
-        if (!store.tutorialDone) {
-            store.kofiSeen = true
-            return false
-        }
-        return com.metrowin.launcher.ui.KofiBanner.due(store.kofiSeen, store.tutorialDone, versionCode)
+        val app = getApplication<Application>()
+        val info = runCatching { app.packageManager.getPackageInfo(app.packageName, 0) }.getOrNull() ?: return false
+        return com.metrowin.launcher.ui.KofiBanner.due(store.kofiSeen, versionCode, info.firstInstallTime, info.lastUpdateTime, System.currentTimeMillis())
     }
 
     /** The banner is on screen: it is not asked for again. */

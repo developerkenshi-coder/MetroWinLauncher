@@ -23,8 +23,10 @@ import com.metrowin.launcher.ui.components.MetroButton
 import com.metrowin.launcher.ui.settings.SettingHint
 
 /**
- * The banner that invites people to follow the author on Ko-fi, where the progress of the new features is told. It is shown **once**, to someone
- * who updates to 26.10.5S or later (not on a fresh install, which has the tour); it is marked seen when it is on screen (see `LauncherViewModel.kofiShown`).
+ * The banner that invites people to follow the author on Ko-fi, where the progress of the new features is told. It is shown **once**:
+ *  - to everyone who **updates** the app to 26.10.5S or later, the first time the launcher is opened, whatever else is true of their phone;
+ *  - to a **fresh install**, after 48 hours (counted from the install).
+ * It is marked seen only when it really is on screen (see `LauncherViewModel.kofiShown`), so nothing that closes the app first can lose it.
  */
 object KofiBanner {
     /** The page of the author. The one place to change it. */
@@ -33,8 +35,18 @@ object KofiBanner {
     /** The first version code that shows it: 26.10.5S. */
     const val FROM_VERSION_CODE = 78L
 
-    /** Whether to show it now: not seen before, the tour already done (an update, not a first run) and this version or a later one. */
-    fun due(seen: Boolean, tutorialDone: Boolean, versionCode: Long): Boolean = !seen && tutorialDone && versionCode >= FROM_VERSION_CODE
+    /** A fresh install waits this long (48 hours) before it is shown. */
+    const val WAIT_MS = 48L * 3_600_000L
+
+    /** An app whose last update is later than its first install by more than this was updated, not installed anew (both times are the same on a fresh install). */
+    const val UPDATED_GAP_MS = 1_000L
+
+    /** Whether to show it now. [firstInstall] and [lastUpdate] are the times Android keeps for the package. */
+    fun due(seen: Boolean, versionCode: Long, firstInstall: Long, lastUpdate: Long, now: Long): Boolean {
+        if (seen || versionCode < FROM_VERSION_CODE) return false
+        val updated = lastUpdate - firstInstall > UPDATED_GAP_MS
+        return updated || now - firstInstall >= WAIT_MS
+    }
 
     /** Opens the page in the browser of the user; nothing happens when there is no browser. */
     fun open(context: Context) {
