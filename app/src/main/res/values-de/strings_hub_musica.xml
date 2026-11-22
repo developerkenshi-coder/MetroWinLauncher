@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the Music hub (music/). -->
+<resources>
+    <string name="stock_musichub">Musik-Hub</string>
+    <string name="music_artists">interpreten</string>
+    <string name="music_albums">alben</string>
+    <string name="music_songs">titel</string>
+    <string name="music_playlists">listen</string>
+    <string name="music_allow_why">Der Musik-Hub liest die Titel des Telefons, um sie aufzulisten. Nichts verlässt das Telefon.</string>
+    <string name="music_allow">erlauben</string>
+    <string name="music_empty">Hier sind keine Titel.</string>
+    <string name="music_unknown">Unbekannt</string>
+    <string name="music_loading">Titel werden gelesen …</string>
+    <string name="music_play_album">Album abspielen</string>
+    <string name="music_search">Suchen</string>
+    <string name="music_search_hint">Titel, Interpret oder Album</string>
+    <string name="music_add_to">Zu einer Liste hinzufügen</string>
+    <string name="music_new_list">Neue Liste</string>
+    <string name="music_list_name">Name</string>
+    <string name="music_create">erstellen</string>
+    <string name="music_delete_list">Diese Liste löschen</string>
+    <string name="music_list_exists">Eine Liste mit diesem Namen gibt es schon.</string>
+    <string name="music_no_player">Keine Musik-App zum Abspielen.</string>
+    <string name="music_remove_hint">Langer Druck auf einen Titel: nimmt ihn aus der Liste.</string>
+    <plurals name="music_songs_count">
+        <item quantity="one">%d Titel</item>
+        <item quantity="other">%d Titel</item>
+    </plurals>
+    <plurals name="music_albums_count">
+        <item quantity="one">%d Album</item>
+        <item quantity="other">%d Alben</item>
+    </plurals>
+</resources>

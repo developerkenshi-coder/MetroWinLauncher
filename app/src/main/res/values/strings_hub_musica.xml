@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the Music hub (music/). -->
+<resources>
+    <string name="stock_musichub">Music hub</string>
+    <string name="music_artists">artists</string>
+    <string name="music_albums">albums</string>
+    <string name="music_songs">songs</string>
+    <string name="music_playlists">playlists</string>
+    <string name="music_allow_why">The Music hub reads the songs of the phone to list them. Nothing leaves the phone.</string>
+    <string name="music_allow">allow</string>
+    <string name="music_empty">No songs here.</string>
+    <string name="music_unknown">Unknown</string>
+    <string name="music_loading">Reading the songs…</string>
+    <string name="music_play_album">play the album</string>
+    <string name="music_search">Search</string>
+    <string name="music_search_hint">Title, artist or album</string>
+    <string name="music_add_to">Add to a playlist</string>
+    <string name="music_new_list">New playlist</string>
+    <string name="music_list_name">Name</string>
+    <string name="music_create">create</string>
+    <string name="music_delete_list">Delete this playlist</string>
+    <string name="music_list_exists">A playlist with this name already exists.</string>
+    <string name="music_no_player">No music app to play this.</string>
+    <string name="music_remove_hint">Long touch on a song takes it out of the playlist.</string>
+    <plurals name="music_songs_count">
+        <item quantity="one">%d song</item>
+        <item quantity="other">%d songs</item>
+    </plurals>
+    <plurals name="music_albums_count">
+        <item quantity="one">%d album</item>
+        <item quantity="other">%d albums</item>
+    </plurals>
+</resources>

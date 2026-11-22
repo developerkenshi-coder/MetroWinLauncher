@@ -448,6 +448,13 @@
             android:launchMode="singleTask" />
 
         <activity
+            android:name=".music.MusicActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
+            android:exported="false"
+            android:label="@string/stock_musichub"
+            android:launchMode="singleTask" />
+
+        <activity
             android:name=".photos.PhotosActivity"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode|fontScale|locale|layoutDirection|density"
             android:exported="false"

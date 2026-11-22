@@ -1,6 +1,6 @@
 # Hub Musica nativo con libreria locale
 
-Stato: **documentata**, non implementata (decisione motivata sotto). Il lavoro dell'hub Foto (`docs/progetti/foto.md`) fa da modello: stessa struttura, stessi permessi.
+Stato: **fette 1-4 implementate in 26.10.5S** (libreria in sola lettura, pivot, riproduzione tramite l'app musicale dell'utente, playlist proprie in un file); la riproduzione propria (fetta 5) resta non fatta, per le ragioni sotto. Il lavoro dell'hub Foto (`docs/progetti/foto.md`) fa da modello: stessa struttura, stessi permessi.
 
 ## Obiettivo
 Mini app «Musica» in stile Windows Phone: pivot **Artisti / Album / Brani / Playlist**, sola lettura dalla libreria locale (`MediaStore.Audio`), riproduzione.

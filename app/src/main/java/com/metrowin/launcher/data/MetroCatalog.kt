@@ -84,6 +84,8 @@ object MetroCatalog {
         ),
         // The hub of the launcher itself (a mini app): the pictures by album, date and favourites. "photos" above stays the gallery the phone has.
         StockApp("photohub", R.string.stock_photohub, Glyph.Photos, live = LiveKind.Photos),
+        // The hub of the launcher itself (a mini app): the songs by artist, album and title, and playlists; "music" above stays the player the phone has.
+        StockApp("musichub", R.string.stock_musichub, Glyph.Music),
         // The song that plays in any app, across the page (a mini app); "music" above stays the player the phone has.
         StockApp("nowplaying", R.string.stock_nowplaying, Glyph.Music),
         StockApp(
