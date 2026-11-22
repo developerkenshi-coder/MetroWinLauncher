@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A cup with a heart on a blue square: the sign of the Ko-fi banner (KofiBanner). Drawn for the launcher; swap it for the official logo whenever you like. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#29ABE0"
+        android:pathData="M16,0h64a16,16 0 0,1 16,16v64a16,16 0 0,1 -16,16h-64a16,16 0 0,1 -16,-16v-64a16,16 0 0,1 16,-16z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M22,34H64V58C64,70 55,78 43,78C31,78 22,70 22,58Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M64,41H70A9,9 0 0,1 70,59H64V54H70A4,4 0 0,0 70,46H64Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M18,82H68V86H18Z" />
+    <path
+        android:fillColor="#FF5E5B"
+        android:pathData="M43,69C35,63 31,59 31,54C31,50 34,48 37,48C40,48 42,50 43,52C44,50 46,48 49,48C52,48 55,50 55,54C55,59 51,63 43,69Z" />
+</vector>

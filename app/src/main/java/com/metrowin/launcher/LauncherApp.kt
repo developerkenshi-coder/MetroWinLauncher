@@ -288,6 +288,8 @@ fun LauncherApp(vm: LauncherViewModel) {
     var lookOpen by rememberSaveable { mutableStateOf(vm.lookDue()) }
     // The news of this version: once after an update, and again from the About page.
     var whatsNew by rememberSaveable { mutableStateOf(false) }
+    // The invitation to follow the author on Ko-fi: once, after the update to 26.10.5S.
+    var kofi by rememberSaveable { mutableStateOf(false) }
     val tutorialVisible = (!tutorialDone || tutorialReplay) && !tutorialAside && !lookOpen
     val tutorialPager = rememberPagerState { Tutorial.steps.size }
     val homePress by vm.homePresses.collectAsStateWithLifecycle()
@@ -386,7 +388,10 @@ fun LauncherApp(vm: LauncherViewModel) {
     val sideBySide = !settings.kidsMode && StartPanels.active(settings.twoPanels, screenWidthDp, screenHeightDp)
     val startWidthDp = StartPanels.startWidthDp(sideBySide, screenWidthDp)
     val about = remember(appContext) { AboutInfo.of(appContext) }
-    androidx.compose.runtime.LaunchedEffect(Unit) { if (vm.whatsNewDue(about.versionCode)) whatsNew = true }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        if (vm.whatsNewDue(about.versionCode)) whatsNew = true
+        if (vm.kofiDue(about.versionCode)) kofi = true
+    }
     val kidsMode = settings.kidsMode
     val kidsCells = remember(settings.kidsApps, items) {
         items.filter { it.id in settings.kidsApps }.map { AppCell(Tile(it.id, TileSize.Medium), it) }
@@ -2255,6 +2260,11 @@ fun LauncherApp(vm: LauncherViewModel) {
                 if (safeNotice) SafeStartDialog { safeNotice = false }
                 if (lookOpen && !safeNotice) com.metrowin.launcher.ui.FirstLookDialog { look -> vm.chooseLook(look); lookOpen = false }
                 if (whatsNew && !safeNotice && !tutorialVisible && !lookOpen) com.metrowin.launcher.ui.WhatsNewDialog(about.versionName) { whatsNew = false }
+                // After the news (the one that was asked for first) and never on top of the tour, the looks or the safe start notice.
+                if (kofi && !whatsNew && !safeNotice && !tutorialVisible && !lookOpen) com.metrowin.launcher.ui.KofiBannerDialog(
+                    onOpen = { com.metrowin.launcher.ui.KofiBanner.open(appContext); kofi = false },
+                    onClose = { kofi = false },
+                )
 
                 pendingRestore?.let { backup ->
                     RestoreDialog(backup, settings, pages.sumOf { it.size }, onDone = vm::applyRestore, onCancel = vm::cancelRestore)

@@ -14,6 +14,7 @@ The complete list is in the notes of the release / L'elenco completo è nelle no
 - **Notes** show the list and the note side by side on a wide screen (tablet, folding phone opened).
 - **Right to left**: the turnstile and page swings and the slide of the settings page go the right way, and the signs that point are mirrored.
 - **One network client** for the update list, the rates, the news, the pictures, the Microsoft sign-in and the mail settings: https only, only the hosts each one needs, one more try after a connection or server error, and the last good copy when there is no connection (rates, update list).
+- **Ko-fi**: once, after this update, a banner in the style of the Windows Phone message box invites you to follow the author on Ko-fi (https://ko-fi.com/kenshi1299), where the progress of the new features will be told. It is shown a single time and not on a fresh install.
 - **For developers**: the live tiles of other apps now have an SDK (`tile-sdk`, Apache-2.0) and an example app; the provider answers its version and refuses a change that comes less than a quarter of a second after the last.
 - **Inside**: the calculator, the date parser and other plain files are a module of their own (`:logic`); the quick profiles, the layouts, the volume panel and the search box are cut out of the big view model; checks for the release (size, versionCode, tag, checksums) run in CI.
 
@@ -24,6 +25,7 @@ The complete list is in the notes of the release / L'elenco completo è nelle no
 - **Note**: su uno schermo largo (tablet, pieghevole aperto) la lista e la nota stanno affiancate.
 - **Da destra a sinistra**: i movimenti del tornello e delle pagine e lo scorrimento della pagina delle impostazioni vanno dal lato giusto, e i segni che indicano una direzione sono specchiati.
 - **Un solo client di rete** per l'elenco degli aggiornamenti, i cambi, le notizie, le immagini, l'accesso Microsoft e le impostazioni di posta: solo https, solo gli host che servono a ciascuno, un altro tentativo dopo un errore di connessione o del server, e l'ultima copia buona quando non c'è connessione (cambi, elenco degli aggiornamenti).
+- **Ko-fi**: una sola volta, dopo questo aggiornamento, un banner in stile Windows Phone ti invita a seguire l'autore su Ko-fi (https://ko-fi.com/kenshi1299), dove saranno raccontati gli avanzamenti delle nuove funzioni. Compare una volta soltanto e non su una installazione nuova.
 - **Per chi sviluppa**: i tile dal vivo delle altre app hanno ora un SDK (`tile-sdk`, Apache-2.0) e un'app di esempio; il provider risponde la sua versione e rifiuta una modifica che arriva meno di un quarto di secondo dopo l'ultima.
 - **Dentro**: la calcolatrice, il lettore di date e altri file semplici sono un modulo a parte (`:logic`); i profili rapidi, i layout, il pannello del volume e la casella di ricerca sono stati tolti dal grande view model; i controlli di rilascio (dimensioni, versionCode, tag, checksum) girano in CI.
 

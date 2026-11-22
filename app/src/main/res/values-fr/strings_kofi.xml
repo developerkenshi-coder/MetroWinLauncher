@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Ko-fi banner shown once after the update to 26.10.5S (ui/KofiBanner.kt). -->
+<resources>
+    <string name="kofi_title">Suivez-moi sur Ko-fi</string>
+    <string name="kofi_text">Merci d\'utiliser MetroWin Launcher ! J\'utiliserai Ko-fi pour donner des nouvelles de l\'avancement du développement des nouvelles fonctions : ce qui arrive, ce qu\'on essaie et ce qui est encore loin. Me suivre ne coûte rien.</string>
+    <string name="kofi_open">Ouvrir ma page Ko-fi</string>
+    <string name="kofi_close">Pas maintenant</string>
+</resources>

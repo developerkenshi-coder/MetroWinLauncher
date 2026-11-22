@@ -1328,6 +1328,13 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         return store.tutorialDone && seen < versionCode
     }
 
+    /** Whether the Ko-fi banner is to be shown now: once, to someone who updates to 26.10.5S or later. Asking marks it seen. */
+    fun kofiDue(versionCode: Long): Boolean {
+        val seen = store.kofiSeen
+        store.kofiSeen = true
+        return com.metrowin.launcher.ui.KofiBanner.due(seen, store.tutorialDone, versionCode)
+    }
+
     fun onTutorialFinished() {
         store.tutorialDone = true
         _tutorialDone.value = true
