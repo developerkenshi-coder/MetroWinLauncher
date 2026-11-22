@@ -101,6 +101,15 @@ object Motion {
     const val ORIGINAL_DEGREES = 50f
     const val ORIGINAL_PAGE_DEGREES = 80f
     const val ORIGINAL_PIVOT_X = -0.2f
+    /** The horizontal part of a pivot given for a layout that reads left to right: 0 is the edge a line starts from, so in RTL it is the right one. */
+    fun originX(x: Float): Float = if (MotionStyle.rtl) 1f - x else x
+
+    /** A rotation around the vertical axis made for a layout that reads left to right, turned the other way in RTL (the page swings about the other edge). */
+    fun turn(degrees: Float): Float = if (MotionStyle.rtl) -degrees else degrees
+
+    /** A move along x made for a layout that reads left to right, mirrored in RTL (a page that comes in from the end comes in from the left). */
+    fun along(px: Float): Float = if (MotionStyle.rtl) -px else px
+
     val ExpoIn = Easing { t -> (exp(EXPO * t) - 1f) / (exp(EXPO) - 1f) }
     val ExpoOut = Easing { t -> 1f - (exp(EXPO * (1f - t)) - 1f) / (exp(EXPO) - 1f) }
 }
@@ -109,6 +118,10 @@ object Motion {
 object MotionStyle {
     @Volatile
     var original: Boolean = false
+
+    /** The layout runs right to left (set by [com.metrowin.launcher.ui.theme.MetroTheme]): every swing that is made "around the left edge" is made around the right one. */
+    @Volatile
+    var rtl: Boolean = false
 }
 
 /**
@@ -124,13 +137,13 @@ fun GraphicsLayerScope.turnstile(away: Float, reduced: Boolean = false) {
     cameraDistance = Motion.CAMERA * density
     if (MotionStyle.original) {
         // The original one keeps the element whole until the turn is over, then it is gone.
-        transformOrigin = TransformOrigin(Motion.ORIGINAL_PIVOT_X, 0.5f)
-        rotationY = Motion.ORIGINAL_DEGREES * away
+        transformOrigin = TransformOrigin(Motion.originX(Motion.ORIGINAL_PIVOT_X), 0.5f)
+        rotationY = Motion.turn(Motion.ORIGINAL_DEGREES * away)
         alpha = if (away >= 0.999f) 0f else 1f
         return
     }
-    transformOrigin = TransformOrigin(0f, 0.5f)
-    rotationY = Motion.TURNSTILE_DEGREES * away
+    transformOrigin = TransformOrigin(Motion.originX(0f), 0.5f)
+    rotationY = Motion.turn(Motion.TURNSTILE_DEGREES * away)
     alpha = 1f - away * away * away
 }
 

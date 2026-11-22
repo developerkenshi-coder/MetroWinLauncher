@@ -92,13 +92,13 @@ fun TurnPage(turn: PageTurn, onBack: () -> Unit = {}, content: @Composable () ->
                     // Reduced motion: no swing, the page only fades.
                     alpha = 1f - a
                 } else if (MotionStyle.original) {
-                    transformOrigin = TransformOrigin(-0.1f, 0.5f)
-                    rotationY = -Motion.ORIGINAL_PAGE_DEGREES * a
+                    transformOrigin = TransformOrigin(Motion.originX(-0.1f), 0.5f)
+                    rotationY = Motion.turn(-Motion.ORIGINAL_PAGE_DEGREES * a)
                     alpha = if (a >= 0.999f) 0f else 1f
                 } else {
                     // The modern turnstile: the page swings around its left edge and fades as it turns away.
-                    transformOrigin = TransformOrigin(0f, 0.5f)
-                    rotationY = -Motion.TURNSTILE_DEGREES * a
+                    transformOrigin = TransformOrigin(Motion.originX(0f), 0.5f)
+                    rotationY = Motion.turn(-Motion.TURNSTILE_DEGREES * a)
                     alpha = 1f - a * a * a
                 }
             },

@@ -51,5 +51,12 @@ class NotesUiTest : ScreenshotBase() {
         compose.onAllNodesWithTag("sketch:ink:2").onNodeWithTagFirst().performClick()
     }
 
+    @Test
+    fun onAPhoneTheNoteReplacesTheListAndThereAreNoPanes() {
+        show { NotesScreen() }
+        settle()
+        compose.onNodeWithTag("notes:panes").assertDoesNotExist()
+    }
+
     private fun androidx.compose.ui.test.SemanticsNodeInteractionCollection.onNodeWithTagFirst() = this[0]
 }

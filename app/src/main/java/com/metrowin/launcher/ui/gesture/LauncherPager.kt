@@ -40,9 +40,9 @@ private const val PAGE_SWING = 0.3f
 fun Modifier.pageTurnstile(state: PagerState, page: Int, reduced: Boolean = false): Modifier = graphicsLayer {
     val away = state.distanceTo(page)
     if (away > 0f) {
-        transformOrigin = TransformOrigin(0f, 0.5f)
+        transformOrigin = TransformOrigin(Motion.originX(0f), 0.5f)
         // Reduced motion: the page follows the finger and fades, without the swing.
-        rotationY = if (reduced) 0f else Motion.TURNSTILE_DEGREES * PAGE_SWING * away
+        rotationY = if (reduced) 0f else Motion.turn(Motion.TURNSTILE_DEGREES * PAGE_SWING * away)
         cameraDistance = Motion.CAMERA * density
         alpha = 1f - away * away
         // Pages do not overlap their own content, so the alpha can be applied to each draw call

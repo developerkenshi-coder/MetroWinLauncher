@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings for the wide-screen layouts (tablets, folding phones opened). -->
+<resources>
+    <string name="notes_pick">Elige una nota a la izquierda, o escribe una nueva.</string>
+</resources>

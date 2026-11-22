@@ -2,6 +2,8 @@ package com.metrowin.launcher.ui.theme
 
 import com.metrowin.launcher.data.PagePadding
 import com.metrowin.launcher.ui.anim.MotionSpeed
+import com.metrowin.launcher.ui.anim.MotionStyle
+import androidx.compose.ui.platform.LocalLayoutDirection
 import com.metrowin.launcher.data.ActionBarStyle
 import com.metrowin.launcher.ui.components.LocalActionBar
 import com.metrowin.launcher.ui.components.LocalHubHeadings
@@ -190,6 +192,8 @@ fun MetroTheme(
     content: @Composable () -> Unit,
 ) {
     SideEffect { MotionSpeed.factor = speed.coerceIn(0.25f, 4f) }
+    val rtl = LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
+    SideEffect { MotionStyle.rtl = rtl }
     val adjustment = if (Build.VERSION.SDK_INT >= 31) LocalConfiguration.current.fontWeightAdjustment else 0
     // "Undefined" is a very large number, not a bold setting.
     val systemBold = adjustment != ADJUSTMENT_UNDEFINED && adjustment >= SYSTEM_BOLD_ADJUSTMENT

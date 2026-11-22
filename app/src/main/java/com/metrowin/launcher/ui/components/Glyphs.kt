@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -46,7 +47,12 @@ enum class Mark {
     Search, Menu, Star, StarFill, Folder, Archive, Mail, Swap, Sort, Clock, Timer, Home, Calendar, Moon, Copy, Backspace,
     Window, ReplyAll, FlagFill, Circle, Reading, Pin, Gift, Share, CallIn, CallMissed, Heart, HeartFill, Stop, Box, Line, Ellipse, Move;
 
+    /** A sign that points somewhere (back, forward, play, a call coming in): a layout that reads right to left draws it the other way round. */
+    val directional: Boolean get() = this in DIRECTIONAL
+
     companion object {
+        private val DIRECTIONAL = setOf(Arrow, Back, Open, Undo, Redo, ReplyAll, Play, CallIn, CallMissed)
+
         private val bySymbol = mapOf(
             "＋" to Add, "✕" to Close, "✎" to Edit, "⇪" to Upload, "⇧" to Upload, "⇩" to Download, "↻" to Refresh, "↺" to Refresh,
             "⚙" to Gear, "←" to Back, "→" to Arrow, "➜" to Arrow, "↗" to Open, "🗑" to Trash, "⚑" to FlagFill, "⚐" to Flag,
@@ -62,8 +68,10 @@ enum class Mark {
 }
 
 @Composable
-fun MarkIcon(mark: Mark, size: Dp, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.foreground) =
-    SpecIcon(remember(mark) { markSpec(mark) }, size, modifier, color, mark = true)
+fun MarkIcon(mark: Mark, size: Dp, modifier: Modifier = Modifier, color: Color = LocalMetroColors.current.foreground) {
+    val mirrored = mark.directional && androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
+    SpecIcon(remember(mark) { markSpec(mark) }, size, if (mirrored) modifier.graphicsLayer { scaleX = -1f } else modifier, color, mark = true)
+}
 
 /** On: the lines of a glyph keep one width (2.5 dp) at any size, with square ends and sharp corners, as on a Windows Phone tile. */
 val LocalSharpGlyphs = androidx.compose.runtime.staticCompositionLocalOf { false }

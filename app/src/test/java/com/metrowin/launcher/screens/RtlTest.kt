@@ -19,6 +19,11 @@ import com.metrowin.launcher.ui.components.PivotHeader
 import com.metrowin.launcher.ui.start.AppCell
 import com.metrowin.launcher.ui.start.StartActions
 import com.metrowin.launcher.ui.start.StartScreen
+import com.metrowin.launcher.ui.anim.Motion
+import com.metrowin.launcher.ui.anim.MotionStyle
+import com.metrowin.launcher.ui.components.Mark
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -104,5 +109,30 @@ class RtlTest : ScreenshotBase() {
         start(LayoutDirection.Rtl)
         capture("start_rtl")
         assertTrue("A ${centerX("A")} is to the right of B ${centerX("B")}", centerX("A") > centerX("B"))
+    }
+
+    @Test
+    fun theThemeTellsTheMotionWhichWayTheLayoutReads() {
+        fun themed(direction: LayoutDirection) {
+            compose.setContent { CompositionLocalProvider(LocalLayoutDirection provides direction) { com.metrowin.launcher.ui.theme.MetroTheme { } } }
+            compose.waitForIdle()
+        }
+        themed(LayoutDirection.Rtl)
+        assertTrue(MotionStyle.rtl)
+        // Around the left edge in LTR is around the right one in RTL, the swing the other way, the slide from the other side.
+        assertEquals(1f, Motion.originX(0f), 0f)
+        assertEquals(1.1f, Motion.originX(-0.1f), 0.0001f)
+        assertEquals(-30f, Motion.turn(30f), 0f)
+        assertEquals(-56f, Motion.along(56f), 0f)
+        MotionStyle.rtl = false
+        assertEquals(0f, Motion.originX(0f), 0f)
+        assertEquals(30f, Motion.turn(30f), 0f)
+        assertEquals(56f, Motion.along(56f), 0f)
+    }
+
+    @Test
+    fun onlyTheSignsThatPointAreMirrored() {
+        assertTrue(Mark.Back.directional && Mark.Play.directional && Mark.Undo.directional)
+        assertFalse(Mark.Check.directional || Mark.Search.directional || Mark.Close.directional)
     }
 }

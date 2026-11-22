@@ -348,7 +348,7 @@ private fun CategoryPage(
                 .onGloballyPositioned { titleTop = it.positionInRoot().y }
                 .graphicsLayer {
                     val away = 1f - settled.value
-                    transformOrigin = TransformOrigin(0f, 0.5f)
+                    transformOrigin = TransformOrigin(Motion.originX(0f), 0.5f)
                     translationY = (fromTop - titleTop) * away
                     scaleX = 1f - 0.3f * away
                     scaleY = 1f - 0.3f * away
@@ -359,7 +359,7 @@ private fun CategoryPage(
                 .weight(1f)
                 .graphicsLayer {
                     alpha = settled.value
-                    translationX = (1f - settled.value) * 56.dp.toPx()
+                    translationX = Motion.along((1f - settled.value) * 56.dp.toPx())
                 },
         ) {
             Column(Modifier.fillMaxSize()) {
