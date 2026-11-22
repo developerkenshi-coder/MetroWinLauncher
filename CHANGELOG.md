@@ -3,6 +3,30 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
+## 26.10.5S: 2026-11-22
+
+The complete list is in the notes of the release / L'elenco completo è nelle note della versione.
+
+**English:**
+- **Home key (vivo and others)**: when MetroWin held the Home role but an "Always" choice saved for another launcher still won, the Home key opened the other one. The tutorial now repairs it (through Shizuku, or by opening the Home app settings).
+- **Music hub** (new mini app, like the Photo hub): artists, albums and songs of the phone, and playlists of its own. A song or an album plays in the music app you already have; nothing runs in the background and no new permission is asked.
+- **Recent apps**: an optional "Previews" button shows the real screens of the apps (through Shizuku, off by default, only in memory, thrown away when you leave; an app that hides its screen shows its icon). Tried on Android 17.
+- **Notes** show the list and the note side by side on a wide screen (tablet, folding phone opened).
+- **Right to left**: the turnstile and page swings and the slide of the settings page go the right way, and the signs that point are mirrored.
+- **One network client** for the update list, the rates, the news, the pictures, the Microsoft sign-in and the mail settings: https only, only the hosts each one needs, one more try after a connection or server error, and the last good copy when there is no connection (rates, update list).
+- **For developers**: the live tiles of other apps now have an SDK (`tile-sdk`, Apache-2.0) and an example app; the provider answers its version and refuses a change that comes less than a quarter of a second after the last.
+- **Inside**: the calculator, the date parser and other plain files are a module of their own (`:logic`); the quick profiles, the layouts, the volume panel and the search box are cut out of the big view model; checks for the release (size, versionCode, tag, checksums) run in CI.
+
+**Italiano:**
+- **Tasto Home (vivo e altri)**: quando MetroWin aveva il ruolo Home ma una scelta «Sempre» salvata per un altro launcher vinceva ancora, il tasto Home apriva l'altro. Il tutorial ora la ripara (con Shizuku, o aprendo le impostazioni dell'app Home).
+- **Hub Musica** (nuova mini app, come l'hub Foto): artisti, album e brani del telefono, e playlist proprie. Un brano o un album si riproduce nell'app musicale che hai già; niente gira in secondo piano e non si chiede nessun permesso nuovo.
+- **App recenti**: un tasto «Anteprime» facoltativo mostra le schermate vere delle app (con Shizuku, spento di default, solo in memoria e cancellate quando esci; un'app che nasconde la sua schermata mostra l'icona). Provato su Android 17.
+- **Note**: su uno schermo largo (tablet, pieghevole aperto) la lista e la nota stanno affiancate.
+- **Da destra a sinistra**: i movimenti del tornello e delle pagine e lo scorrimento della pagina delle impostazioni vanno dal lato giusto, e i segni che indicano una direzione sono specchiati.
+- **Un solo client di rete** per l'elenco degli aggiornamenti, i cambi, le notizie, le immagini, l'accesso Microsoft e le impostazioni di posta: solo https, solo gli host che servono a ciascuno, un altro tentativo dopo un errore di connessione o del server, e l'ultima copia buona quando non c'è connessione (cambi, elenco degli aggiornamenti).
+- **Per chi sviluppa**: i tile dal vivo delle altre app hanno ora un SDK (`tile-sdk`, Apache-2.0) e un'app di esempio; il provider risponde la sua versione e rifiuta una modifica che arriva meno di un quarto di secondo dopo l'ultima.
+- **Dentro**: la calcolatrice, il lettore di date e altri file semplici sono un modulo a parte (`:logic`); i profili rapidi, i layout, il pannello del volume e la casella di ricerca sono stati tolti dal grande view model; i controlli di rilascio (dimensioni, versionCode, tag, checksum) girano in CI.
+
 ## 26.10.4S: 2026-11-20
 
 The complete list is in the notes of the release / L'elenco completo è nelle note della versione.

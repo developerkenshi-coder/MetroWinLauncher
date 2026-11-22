@@ -24,8 +24,8 @@ android {
         minSdk = 26
         targetSdk = 36
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        versionCode = 73
-        versionName = "26.10.4S"
+        versionCode = 78
+        versionName = "26.10.5S"
     }
 
     // The key of the official release comes from keystore.properties in the root of the project (never committed: it is in
