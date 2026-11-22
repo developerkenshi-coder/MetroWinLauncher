@@ -1,6 +1,6 @@
 # Miniature vere nelle app recenti
 
-Stato: **documentata**; dipende dal servizio utente Shizuku (`docs/shizuku-user-service.md`), che non esiste ancora. Nessuna implementazione.
+Stato: **implementata in 26.10.5S** (interruttore «Anteprime» nelle recenti, spento di default; servizio utente `shizukuservice/ShellUserService`). **Provata sull'emulatore Android 17 (API 37)** con Shizuku via adb: miniature vere di tre app. Non provata: l'app con `FLAG_SECURE`, altre versioni di Android, un telefono vero. **Android 17 ha spostato le API**: `ActivityTaskManager.getService().getTaskSnapshotManager().getTaskSnapshot(taskId, 0L, 1)` (la risoluzione 0 è rifiutata) e `TaskSnapshot.getHardwareBuffer()` risponde null mentre `wrapToBitmap()` dà il bitmap; il servizio prova la via nuova e poi quella delle versioni prima.
 
 ## Stato oggi
 `recents/RecentsScreen.kt` mostra carte con l'icona dell'app (a colori) invece della miniatura della finestra: Android non dà a un launcher qualsiasi la schermata dei task.

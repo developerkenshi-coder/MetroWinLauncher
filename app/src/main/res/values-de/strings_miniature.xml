@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the real previews in the recent apps (recents/, shizukuservice/). -->
+<resources>
+    <string name="rc_previews">Vorschau</string>
+    <string name="rc_previews_hint">Die echten Bildschirme der Apps, über Shizuku. Nur im Speicher gehalten und beim Verlassen gelöscht; eine App, die ihren Bildschirm verbirgt (eine Bank), zeigt ihr Symbol.</string>
+    <string name="rc_previews_no_shizuku">Die Vorschau braucht ein laufendes, erlaubtes Shizuku.</string>
+    <string name="rc_previews_allow">Erlaube den Launcher im Shizuku-Fenster und tippe dann noch einmal auf Vorschau.</string>
+</resources>

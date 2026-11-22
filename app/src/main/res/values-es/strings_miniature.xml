@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the real previews in the recent apps (recents/, shizukuservice/). -->
+<resources>
+    <string name="rc_previews">vistas</string>
+    <string name="rc_previews_hint">Las pantallas reales de las apps, con Shizuku. Solo en memoria y se borran al salir; una app que oculta su pantalla (un banco) muestra su icono.</string>
+    <string name="rc_previews_no_shizuku">Las vistas necesitan Shizuku en marcha y autorizado.</string>
+    <string name="rc_previews_allow">Permite el launcher en la ventana de Shizuku y toca Vistas otra vez.</string>
+</resources>

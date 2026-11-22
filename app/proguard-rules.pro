@@ -19,3 +19,10 @@
 -dontwarn javax.naming.**
 -dontwarn org.apache.harmony.**
 -dontwarn com.github.luben.zstd.**
+
+# The user service of Shizuku (shizukuservice/ShellUserService.kt): Shizuku starts it in its own process by the name of the class, and the AIDL
+# interface is called by its generated names, so none of them may be renamed or taken out.
+-keep class com.metrowin.launcher.shizukuservice.ShellUserService { <init>(...); }
+-keep class com.metrowin.launcher.shizukuservice.IShellService { *; }
+-keep class com.metrowin.launcher.shizukuservice.IShellService$Stub { *; }
+-keep class com.metrowin.launcher.shizukuservice.IShellService$Stub$Proxy { *; }

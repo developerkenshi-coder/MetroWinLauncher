@@ -4,6 +4,15 @@ import com.metrowin.launcher.ui.components.MarkIcon
 import com.metrowin.launcher.ui.components.Mark
 import com.metrowin.launcher.ui.actioncenter.MetroToast
 import android.content.Context
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import com.metrowin.launcher.data.ShizukuRadio
+import com.metrowin.launcher.data.ShizukuShell
+import com.metrowin.launcher.shizukuservice.TaskThumbs
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,6 +68,13 @@ fun RecentsScreen(finish: () -> Unit) {
         cards.addAll(withContext(Dispatchers.IO) { RecentTasks.read(context) })
         loaded = true
     }
+    // The real pictures of the apps (Shizuku, and only when the user switched them on): kept in memory, thrown away when this screen closes.
+    var previewsOn by remember { mutableStateOf(TaskThumbs.enabled(context)) }
+    var previews by remember { mutableStateOf<Map<String, Bitmap>>(emptyMap()) }
+    LaunchedEffect(previewsOn, loaded) {
+        previews = if (previewsOn && loaded) withContext(Dispatchers.IO) { TaskThumbs.load(context) } else emptyMap()
+    }
+    DisposableEffect(Unit) { onDispose { TaskThumbs.clear() } }
     MiniFrame {
         MetroText(stringResource(R.string.rc_title), size = 44.sp, modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp))
         if (loaded && cards.isEmpty()) PageNote(stringResource(R.string.rc_empty), Modifier.padding(horizontal = 24.dp))
@@ -74,8 +90,13 @@ fun RecentsScreen(finish: () -> Unit) {
                             finish()
                         }),
                 ) {
-                    Box(Modifier.align(Alignment.Center)) { AppIcon(overlayAppItem(pkg), 72.dp) }
-                    MetroText(label(context, pkg), size = 16.sp, weight = FontWeight.Normal, maxLines = 1, modifier = Modifier.align(Alignment.BottomStart).padding(10.dp))
+                    val picture = previews[pkg]
+                    if (picture != null) Image(picture.asImageBitmap(), null, Modifier.matchParentSize().testTag("recents:preview:$pkg"), contentScale = ContentScale.Crop, alignment = Alignment.TopCenter)
+                    else Box(Modifier.align(Alignment.Center)) { AppIcon(overlayAppItem(pkg), 72.dp) }
+                    MetroText(
+                        label(context, pkg), size = 16.sp, weight = FontWeight.Normal, maxLines = 1,
+                        modifier = Modifier.align(Alignment.BottomStart).then(if (picture != null) Modifier.background(LocalMetroColors.current.background.copy(alpha = 0.7f)) else Modifier).padding(10.dp),
+                    )
                     Box(
                         Modifier.align(Alignment.TopEnd).padding(4.dp).testTag("recents:close:$pkg").metroPress(onClick = { RecentTasks.close(context, pkg); cards.remove(pkg) }).padding(10.dp),
                     ) { MarkIcon(Mark.Close, 16.dp) }
@@ -88,6 +109,16 @@ fun RecentsScreen(finish: () -> Unit) {
                     cards.toList().forEach { RecentTasks.close(context, it) }
                     cards.clear()
                 },
+                AppBarItem("◉", stringResource(R.string.rc_previews)) {
+                    when {
+                        previewsOn -> { TaskThumbs.setEnabled(context, false); previewsOn = false }
+                        // The pictures come through Shizuku: without it the switch stays off and the user is told why.
+                        // Shizuku runs but has not allowed the launcher: its dialog comes up now, and the user touches the button again.
+                        !ShizukuShell.ready() && ShizukuRadio.running() -> { ShizukuRadio.requestPermission(); MetroToast.show(context, R.string.rc_previews_allow) }
+                        !ShizukuShell.ready() -> MetroToast.show(context, R.string.rc_previews_no_shizuku)
+                        else -> { TaskThumbs.setEnabled(context, true); previewsOn = true; MetroToast.show(context, R.string.rc_previews_hint) }
+                    }
+                }.marked(previewsOn),
                 AppBarItem("▭", stringResource(R.string.rc_android)) {
                     // Without the service there is nothing to ask: the cards stay, and the user is told why and taken to where it is switched on.
                     if (LockAccessibilityService.systemRecents()) finish() else {

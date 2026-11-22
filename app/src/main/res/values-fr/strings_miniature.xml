@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the real previews in the recent apps (recents/, shizukuservice/). -->
+<resources>
+    <string name="rc_previews">aperçus</string>
+    <string name="rc_previews_hint">Les vrais écrans des apps, via Shizuku. Gardés en mémoire seulement et effacés quand vous quittez ; une app qui cache son écran (une banque) montre son icône.</string>
+    <string name="rc_previews_no_shizuku">Les aperçus demandent Shizuku lancé et autorisé.</string>
+    <string name="rc_previews_allow">Autorisez le launcher dans la fenêtre de Shizuku, puis touchez Aperçus de nouveau.</string>
+</resources>

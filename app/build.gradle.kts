@@ -72,6 +72,8 @@ android {
 
     buildFeatures {
         compose = true
+        // The user service that Shizuku starts (shizukuservice/IShellService.aidl).
+        aidl = true
     }
 
     // F-Droid's scanner reports the dependency list the plugin signs into the APK, and it keeps the build from being reproducible.

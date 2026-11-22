@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the real previews in the recent apps (recents/, shizukuservice/). -->
+<resources>
+    <string name="rc_previews">anteprime</string>
+    <string name="rc_previews_hint">Le schermate vere delle app, da Shizuku. Restano solo in memoria e si cancellano quando esci; un\'app che nasconde la sua schermata (una banca) mostra la sua icona.</string>
+    <string name="rc_previews_no_shizuku">Le anteprime richiedono Shizuku avviato e autorizzato.</string>
+    <string name="rc_previews_allow">Consenti il launcher nella finestra di Shizuku, poi tocca di nuovo Anteprime.</string>
+</resources>
