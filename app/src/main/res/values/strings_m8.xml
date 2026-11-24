@@ -16,7 +16,7 @@
     <string name="first_look_later">The tour of the launcher comes next.</string>
     <string name="first_look_keep">Keep as it is</string>
     <string name="whatsnew_title">What’s new in %1$s</string>
-    <string name="whatsnew_body">• The Home key goes back to MetroWin on phones that kept another launcher\'s choice (vivo).\n• New Music hub: artists, albums, songs and playlists; a song plays in your music app.\n• Recent apps can show the real screens of the apps (Shizuku, off by default).\n• Notes sit side by side with their list on tablets; right-to-left layouts swing the right way.\n• One safer network client, with a saved copy of the rates and updates for when there is no connection.</string>
+    <string name="whatsnew_body">• Messages is faster with many messages and conversations: the names of the contacts are looked up once when it opens (not twice) and are kept when you come back to it.</string>
     <string name="whatsnew_close">Close</string>
     <string name="whatsnew_open">What’s new in this version</string>
     <string name="whatsnew_open_hint">The changes of this version, in your language.</string>

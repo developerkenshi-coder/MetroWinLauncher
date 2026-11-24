@@ -16,7 +16,7 @@
     <string name="first_look_later">Después viene el recorrido por el launcher.</string>
     <string name="first_look_keep">Dejarlo así</string>
     <string name="whatsnew_title">Novedades de la versión %1$s</string>
-    <string name="whatsnew_body">• La tecla Inicio vuelve a MetroWin en los teléfonos que guardan la elección de otro launcher (vivo).\n• Nuevo centro de música: artistas, álbumes, canciones y listas; una canción suena en tu app de música.\n• Las apps recientes pueden mostrar las pantallas reales de las apps (Shizuku, desactivado por defecto).\n• Las notas van junto a su lista en las tabletas; los diseños de derecha a izquierda se mueven en el sentido correcto.\n• Un solo cliente de red más seguro, con una copia guardada de los cambios y las actualizaciones para cuando no hay conexión.</string>
+    <string name="whatsnew_body">• Mensajes va más rápido con muchos mensajes y conversaciones: los nombres de los contactos se buscan una sola vez al abrir (no dos) y se conservan al volver a la aplicación.</string>
     <string name="whatsnew_close">Cerrar</string>
     <string name="whatsnew_open">Novedades de esta versión</string>
     <string name="whatsnew_open_hint">Los cambios de esta versión, en tu idioma.</string>

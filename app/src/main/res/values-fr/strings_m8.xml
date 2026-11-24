@@ -16,7 +16,7 @@
     <string name="first_look_later">La visite du lanceur vient ensuite.</string>
     <string name="first_look_keep">Laisser tel quel</string>
     <string name="whatsnew_title">Nouveautés de la version %1$s</string>
-    <string name="whatsnew_body">• La touche Accueil revient à MetroWin sur les téléphones qui gardent le choix d\'un autre launcher (vivo).\n• Nouveau hub Musique : artistes, albums, titres et listes ; un titre se lit dans votre app de musique.\n• Les apps récentes peuvent montrer les vrais écrans des apps (Shizuku, désactivé par défaut).\n• Les notes sont à côté de leur liste sur tablette ; les mises en page de droite à gauche bougent dans le bon sens.\n• Un seul client réseau plus sûr, avec une copie gardée des taux et des mises à jour sans connexion.</string>
+    <string name="whatsnew_body">• Messages est plus rapide avec beaucoup de messages et de conversations : les noms des contacts sont cherchés une seule fois à l\'ouverture (et non deux) et sont conservés quand on revient dans l\'application.</string>
     <string name="whatsnew_close">Fermer</string>
     <string name="whatsnew_open">Nouveautés de cette version</string>
     <string name="whatsnew_open_hint">Les changements de cette version, dans votre langue.</string>

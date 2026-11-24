@@ -3,6 +3,14 @@
 The version name is `versionName` in `app/build.gradle.kts`; each release is a tag named `v` plus the version name.
 La storia delle versioni; ogni versione è un tag con il nome `v` più il nome della versione.
 
+## 26.10.6S: 2026-11-24
+
+**English:**
+- **Messages with many texts**: the list of conversations no longer looks up every contact twice when the app opens, looks them up side by side, and keeps the names when you come back to the app (they are asked again after ten minutes or when the contacts change).
+
+**Italiano:**
+- **Messaggi con molti SMS**: la lista delle conversazioni non cerca più ogni contatto due volte all'apertura, li cerca in parallelo e tiene i nomi quando si torna all'app (si chiedono di nuovo dopo dieci minuti o quando i contatti cambiano).
+
 ## 26.10.5S: 2026-11-22
 
 The complete list is in the notes of the release / L'elenco completo è nelle note della versione.

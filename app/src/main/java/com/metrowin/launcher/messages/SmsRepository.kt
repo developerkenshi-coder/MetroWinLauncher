@@ -42,6 +42,8 @@ data class Sms(
     val sender: String? = null,
 )
 
+private data class ThreadRow(val thread: Long, val people: List<String>, val snippet: String, val date: Long)
+
 /** The text messages of the phone, read from and written to the messages of Android, and the drafts, kept encrypted. */
 class SmsRepository(context: Context) {
     private val context = context.applicationContext
@@ -57,18 +59,22 @@ class SmsRepository(context: Context) {
         val canonical = canonical()
         val unread = unreadCounts()
         val out = ArrayList<Conversation>()
+        val rows = ArrayList<ThreadRow>()
         runCatching {
             resolver.query(threadsUri(), arrayOf("_id", "date", "snippet", "message_count", "recipient_ids"), null, null, "date DESC")?.use { cursor ->
                 while (cursor.moveToNext()) {
                     if (cursor.getInt(3) == 0) continue
-                    val thread = cursor.getLong(0)
-                    val people = recipientNumbers(cursor.getString(4).orEmpty(), canonical)
-                    val address = people.joinToString(",")
-                    val contact = if (people.size == 1) contactOf(address) else null
-                    val name = if (people.size > 1) people.joinToString(", ") { nameOf(it) ?: it } else contact?.first
-                    out += Conversation(thread, address, name, cursor.getString(2).orEmpty(), cursor.getLong(1), unread[thread] ?: 0, contact?.second)
+                    rows += ThreadRow(cursor.getLong(0), recipientNumbers(cursor.getString(4).orEmpty(), canonical), cursor.getString(2).orEmpty(), cursor.getLong(1))
                 }
             }
+        }
+        // A number not known yet costs one query to the contacts of the phone, slow on some phones: the unknown ones are asked side by side.
+        rows.flatMap { it.people }.distinct().filter { !cache.containsKey(it) }.parallelStream().forEach { contactOf(it) }
+        for ((thread, people, snippet, date) in rows) {
+            val address = people.joinToString(",")
+            val contact = if (people.size == 1) contactOf(address) else null
+            val name = if (people.size > 1) people.joinToString(", ") { nameOf(it) ?: it } else contact?.first
+            out += Conversation(thread, address, name, snippet, date, unread[thread] ?: 0, contact?.second)
         }
         return out.filter { it.address.isNotEmpty() }
     }
@@ -393,10 +399,15 @@ class SmsRepository(context: Context) {
         val MMS: Uri = "content://mms".toUri()
         val MMS_PART: Uri = "content://mms/part".toUri()
         val cache = ConcurrentHashMap<String, Pair<String, String?>>()
+        const val NAMES_TTL_MS = 10 * 60 * 1000L
+        @Volatile var forgotAt = System.currentTimeMillis()
     }
 
     /** The cached names are dropped: a contact was added or renamed (the list asks again). */
-    fun forgetNames() = cache.clear()
+    fun forgetNames() { cache.clear(); forgotAt = System.currentTimeMillis() }
+
+    /** Coming back to the app: the names are asked again only when the last time was long ago (the contacts observer covers the changes seen meanwhile). */
+    fun forgetOldNames(now: Long = System.currentTimeMillis()) { if (now - forgotAt > NAMES_TTL_MS) forgetNames() }
 
     fun nameOf(address: String): String? = contactOf(address)?.first
 

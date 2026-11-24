@@ -1,0 +1,1 @@
+The Messages app is faster with many messages and many conversations: the contact names are asked once when it opens, not twice, and are kept when you come back to it.

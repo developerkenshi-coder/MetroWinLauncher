@@ -162,8 +162,11 @@ fun MessagesScreen(address: String?, body: String, onAddress: (String?) -> Unit,
     val conversations by produceState<List<Conversation>?>(null, allowed, refresh) {
         value = if (allowed) withContext(Dispatchers.IO) { repository.conversations() } else emptyList()
     }
-    // The names of the contacts are looked up again when the app comes back (a contact may have been added or renamed meanwhile).
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { repository.forgetNames(); refresh++ }
+    // The first resume is the start: the list is already being read. Later ones read it again; the names of the contacts are asked again
+    // only after a while or when the contacts change (a contact may have been added or renamed meanwhile).
+    var started by remember { mutableStateOf(false) }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { if (started) { repository.forgetOldNames(); refresh++ }; started = true }
+    LaunchedEffect(allowed) { if (allowed) DataChanges.flow(context, DataChanges.Source.Contacts).collect { repository.forgetNames(); refresh++ } }
     // The list follows the messages of the phone as they change, a moment after the last change.
     val live = options.on(MessagesOptions.Key.Live)
     LaunchedEffect(allowed, live) { if (allowed && live) DataChanges.flow(context, DataChanges.Source.Messages).collect { refresh++ } }
